@@ -1,0 +1,100 @@
+{
+ "index": {
+  "title": "LearnHoro — LearnHoro (BPHS)",
+  "h1": "LearnHoro",
+  "sub": "A source-grounded curriculum for Brihat Parashara Hora Shastra — from first principles to chart synthesis.",
+  "layout": "onecol",
+  "has_aside": false
+ },
+ "grahas": {
+  "title": "The Nine Grahas — LearnHoro (BPHS)",
+  "h1": "The Nine Grahas",
+  "sub": "Full profiles of the Sun through Ketu, the natural benefics and malefics, and the working classifications.",
+  "layout": "",
+  "has_aside": true
+ },
+ "dignity": {
+  "title": "Planetary Dignity &amp; Relationships — LearnHoro (BPHS)",
+  "h1": "Planetary Dignity & Relationships",
+  "sub": "Exaltation, debilitation, Moolatrikona and own sign; the three tiers of friendship; combustion, war and retrogression; and the nodes.",
+  "layout": "",
+  "has_aside": true
+ },
+ "rashis": {
+  "title": "The Twelve Rashis — LearnHoro (BPHS)",
+  "h1": "The Twelve Rashis",
+  "sub": "Every sign profiled, plus the modality, element, parity, rising-type, fertility and Kalapurusha classifications that drive later technique.",
+  "layout": "",
+  "has_aside": true
+ },
+ "bhavas": {
+  "title": "The Twelve Bhavas — LearnHoro (BPHS)",
+  "h1": "The Twelve Bhavas",
+  "sub": "House significations and karakas in depth, functional classes, bhava-lord placements with a worked case, house strength, and how a house prospers or breaks.",
+  "layout": "",
+  "has_aside": true
+ },
+ "lagna": {
+  "title": "Lagna &amp; Special Ascendants — LearnHoro (BPHS)",
+  "h1": "Lagna & Special Ascendants",
+  "sub": "The rising point that anchors the chart, the twelve ascendant temperaments, and the computed Bhava, Hora, Ghatika, Arudha, Sree and Prana ascendants.",
+  "layout": "",
+  "has_aside": true
+ },
+ "vargas": {
+  "title": "Shodasha Vargas — LearnHoro (BPHS)",
+  "h1": "Shodasha Vargas",
+  "sub": "All sixteen divisional charts, how to read a varga, and the significance of each of the twelve houses within every chart that is read as a chart.",
+  "layout": "",
+  "has_aside": true
+ },
+ "aspects": {
+  "title": "Aspects — Graha &amp; Rashi Drishti — LearnHoro (BPHS)",
+  "h1": "Aspects — Graha & Rashi Drishti",
+  "sub": "Planetary aspects with the graded glances and Virupa values, sign aspects in full, aspects on houses, and when to use which system.",
+  "layout": "",
+  "has_aside": true
+ },
+ "strength": {
+  "title": "Strength — Shadbala, Bhava Bala &amp; Ishta/Kashta — LearnHoro (BPHS)",
+  "h1": "Strength — Shadbala, Bhava Bala & Ishta/Kashta",
+  "sub": "Every Shadbala component and its sub-parts and minimums, house strength, benefic vs difficult potency, and Vimsopaka divisional strength.",
+  "layout": "",
+  "has_aside": true
+ },
+ "special-points": {
+  "title": "Arudhas, Argala, Karakas &amp; Karakamsa — LearnHoro (BPHS)",
+  "h1": "Arudhas, Argala, Karakas & Karakamsa",
+  "sub": "Image-points and how to read the Arudha Lagna and Upapada, interventions, both karaka schemes, and the Karakamsa lagna.",
+  "layout": "",
+  "has_aside": true
+ },
+ "yogas": {
+  "title": "Yogas — the full catalogue — LearnHoro (BPHS)",
+  "h1": "Yogas — the full catalogue",
+  "sub": "Yogakaraka, the five Mahapurusha yogas, lunar and solar yogas, the 32 Nabhasa yogas, Raja and Dhana yogas, Parivartana, Vipareeta and Neechabhanga, and the arishta and penury combinations.",
+  "layout": "",
+  "has_aside": true
+ },
+ "avasthas-longevity": {
+  "title": "Avasthas, Longevity &amp; Maraka — LearnHoro (BPHS)",
+  "h1": "Avasthas, Longevity & Maraka",
+  "sub": "The five avastha schemes, and the longevity methods and Maraka doctrine — presented academically, with care.",
+  "layout": "",
+  "has_aside": true
+ },
+ "dashas": {
+  "title": "Dashas — LearnHoro (BPHS)",
+  "h1": "Dashas",
+  "sub": "Vimshottari with worked balance-at-birth and sub-period examples, the conditional nakshatra dashas, and the rasi (sign) dashas of BPHS.",
+  "layout": "",
+  "has_aside": true
+ },
+ "ashtakavarga": {
+  "title": "Ashtakavarga — LearnHoro (BPHS)",
+  "h1": "Ashtakavarga",
+  "sub": "Benefic-point rules, Bhinna- and Sarvashtakavarga with reading thresholds, kakshas, the three shodhanas, and transit interpretation.",
+  "layout": "",
+  "has_aside": true
+ }
+}

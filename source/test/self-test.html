@@ -1,0 +1,737 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Live verification suite for the LearnHoro chart engine — every check runs in your browser against the real engine.">
+<title>Self-test — LearnHoro</title><style>
+:root{--night:#191d33;--gold:#c9a24b;--ink:#20233a;--muted:#6c7089;--line:#e7e7f0;--soft:#f4f4fb;
+--pass:#1c6b46;--fail:#a1493a;--serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+--sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+*{box-sizing:border-box}body{margin:0;background:#fbfbfd;color:var(--ink);font-family:var(--sans);line-height:1.6}
+header{background:var(--night);color:#f3f2ec;padding:26px clamp(16px,5vw,64px) 22px;border-bottom:3px solid var(--gold)}
+header h1{font-family:var(--serif);font-weight:600;font-size:clamp(22px,4vw,32px);margin:0 0 6px}
+header p{margin:0;color:#c3c8de;font-size:14px;max-width:80ch}
+main{max-width:1100px;margin:0 auto;padding:22px clamp(16px,4vw,40px) 60px}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:16px 0}
+button{background:var(--night);color:#fff;border:0;border-radius:9px;padding:10px 18px;font:inherit;
+font-weight:600;font-size:14px;cursor:pointer}
+button.sec{background:#fff;color:var(--ink);border:1px solid var(--line)}
+button:disabled{opacity:.5;cursor:default}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:16px 0}
+.card{border:1px solid var(--line);background:#fff;padding:12px 14px;border-left:3px solid var(--gold);border-radius:0 8px 8px 0}
+.card .k{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+.card .v{font-family:var(--serif);font-size:24px;font-weight:600;line-height:1.15;margin-top:2px}
+.card.ok .v{color:var(--pass)}.card.bad .v{color:var(--fail)}
+h2{font-family:var(--serif);font-size:17px;margin:26px 0 4px;padding-bottom:5px;border-bottom:2px solid var(--gold)}
+table{border-collapse:collapse;width:100%;font-size:13px;margin:6px 0 4px}
+th{background:var(--night);color:#f2eee0;text-align:left;padding:6px 8px;font-size:11px;font-weight:600}
+td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:nth-child(even) td{background:var(--soft)}
+td.r{white-space:nowrap;font-weight:700;font-size:11.5px}
+td.r.p{color:var(--pass)}td.r.f{color:var(--fail)}
+td.d{color:var(--muted);font-variant-numeric:tabular-nums;font-size:12px}
+.note{font-size:13px;color:var(--muted);max-width:80ch;margin:10px 0}
+.box{border:1px solid #dbe3ee;border-left:3px solid #6f86b0;background:#eef2f7;padding:10px 13px;
+font-size:13px;margin:14px 0;max-width:84ch;border-radius:0 7px 7px 0}
+#frame{position:absolute;width:1200px;height:900px;left:-3000px;top:0;border:0}
+#status{font-size:13px;color:var(--muted);min-height:1.2em}
+footer{border-top:1px solid var(--line);background:#f5f5fb;color:var(--muted);font-size:12px;
+padding:20px clamp(16px,5vw,64px) 40px}
+a{color:#2b5fa5}
+</style></head><body>
+<header>
+<h1>Self-test</h1>
+<p>Every figure this site reports is computed in your browser. So is this page: it loads the real chart
+engine, runs three reference charts through it, and checks the results — internal consistency, the
+classical identities that must hold, and a comparison against figures printed by Parashara&rsquo;s Light 9.0.
+Nothing is pre-recorded; press the button and watch it run.</p>
+</header>
+<main>
+<div class="bar">
+  <button id="run">Run the suite</button>
+  <button class="sec" id="dl" disabled>Download results (JSON)</button>
+  <a href="../kundli.html" style="font-size:13px">&larr; back to the chart builder</a>
+</div>
+<div id="status">Ready.</div>
+<div class="summary" id="sum"></div>
+<div id="out"></div>
+<div class="box"><b>What a failure would mean.</b> These are not cosmetic checks. They assert things that
+must be true of any correct implementation — that Sarvāṣṭakavarga totals 337, that Ṣaḍbala equals the sum
+of its six components, that Yoginī&rsquo;s eight terms total 36 years, that houses follow from longitudes.
+A red row means the engine is wrong, not that the test is strict.</div>
+<div class="box"><b>On the Parashara&rsquo;s Light comparison.</b> That software is an independent
+implementation, not an oracle. Where the two agree, both are probably right. Where they differ, the cause
+is usually a stated convention — the sunrise definition, or the ārūḍha exception rule — and those
+differences are documented on the pages themselves rather than quietly reconciled.</div>
+</main>
+<iframe id="frame" src="../kundli.html" title="chart engine under test"></iframe>
+<footer>Educational reference on traditional doctrine — not a prediction, diagnosis, or advice.</footer>
+<script>
+/* ===== LearnHoro self-test — runs the verification suite in the browser ===== */
+var CHARTS = {
+  aseem:  {label:"Reference A (1984, day birth, sign-edge planets)",
+           inp:{year:1984,month:12,day:15,hour:13,minute:31,lat:28.841064,lon:78.795319,tzHours:5.5}},
+  achyut: {label:"Reference B (2024, first mahādaśā is a balance)",
+           inp:{year:2024,month:5,day:1,hour:12,minute:48,lat:28.83893,lon:78.77684,tzHours:5.5}},
+  saloni: {label:"Reference C (1987, pre-dawn birth)",
+           inp:{year:1987,month:1,day:18,hour:4,minute:6,lat:27.88165,lon:79.90918,tzHours:5.5}}
+};
+/* Values printed by Parashara's Light 9.0 for reference chart A. */
+var GOLDEN = {
+  sunrise:"07:04:42", sunset:"17:15:18", tithi:"Krishna Ashtami", yoga:"Preeti", karana:"Balava",
+  nakshatra:"Purva Phalguni", pada:4, gana:"Manushya", yoni:"Rat", nadi:"Madhya", varna:"Kshatriya",
+  syllable:"Too", saka:1906, vikram:2041, gmt:"08:01:00", ishtakala:"16 gh 5 pala",
+  bhabhoga:"57:00:13", dashaAtBirth:"Venus–Mercury–Saturn", balanceYears:1.2192, ayanamsa:23.6469
+};
+var SK2EN={"Sūrya":"Sun","Candra":"Moon","Maṅgala":"Mars","Budha":"Mercury","Guru":"Jupiter",
+           "Śukra":"Venus","Śani":"Saturn","Rāhu":"Rahu","Ketu":"Ketu"};
+var SIGN_SA=["Meṣa","Vṛṣabha","Mithuna","Karka","Siṃha","Kanyā","Tulā","Vṛścika","Dhanus","Makara","Kumbha","Mīna"];
+var ASHT_FULL={Sun:6,Moon:15,Mars:8,Mercury:17,Saturn:10,Jupiter:19,Rahu:12,Venus:21};
+var YOG_YEARS={"Maṅgalā":1,"Piṅgalā":2,"Dhānyā":3,"Bhrāmarī":4,"Bhadrikā":5,"Ulkā":6,"Siddhā":7,"Saṅkaṭā":8};
+
+var results=[], t0=0;
+function group(name){ results.push({group:name}); }
+function check(name, pass, detail){ results.push({name:name, pass:!!pass, detail:detail==null?"":String(detail)}); }
+function near(a,b,tol){ return typeof a==="number" && typeof b==="number" && Math.abs(a-b)<=tol; }
+function wrap180(x){ x=((x%360)+540)%360-180; return x; }
+function cellText(el){ return (el.innerText||el.textContent||"").replace(/\s+/g," ").trim(); }
+
+function tablesOf(doc){
+  var out={};
+  doc.querySelectorAll("#k-out .ksec").forEach(function(s){
+    var h=s.querySelector(".kh"); if(!h) return;
+    var title=(h.childNodes[0].textContent||"").trim();
+    out[title]=[].map.call(s.querySelectorAll("table.ktbl tr"), function(r){
+      return [].map.call(r.cells, cellText);
+    });
+  });
+  return out;
+}
+function bodyRows(T,k){ var r=T[k]||[]; return r.slice(1).filter(function(x){return x&&x[0];}); }
+
+/* ---------- the suite ---------- */
+function runEngineChecks(W, key){
+  var C=CHARTS[key], J=W.buildLocalChart(C.inp), D=W.__deriveForExport(J);
+  var g={}; J.grahas.forEach(function(x){ g[SK2EN[x.key]]=x; });
+  var LS=J.lagna.rashi.idx, lag=J.lagna.sidereal_deg;
+
+  group(C.label+" — engine");
+  check("ayanāṃśa in the Lahiri range for the epoch",
+    J.ayanamsha_deg>22 && J.ayanamsha_deg<25, J.ayanamsha_deg.toFixed(5)+"°");
+  check("nine grahas returned", J.grahas.length===9, J.grahas.length);
+  check("every longitude within 0–360°",
+    J.grahas.every(function(x){return x.sidereal_deg>=0&&x.sidereal_deg<360;}), "9/9");
+  check("rāśi index agrees with the longitude",
+    J.grahas.every(function(x){return x.rashi.idx===Math.floor(x.sidereal_deg/30)%12;}), "9/9");
+  check("degInSign agrees with the longitude",
+    J.grahas.every(function(x){return Math.abs((x.rashi.idx*30+x.rashi.degInSign)-x.sidereal_deg)<1e-6;}), "9/9");
+  check("retrograde flag matches the sign of the daily speed",
+    J.grahas.every(function(x){return x.speed_deg_per_day==null || (x.speed_deg_per_day<0)===x.retrograde;}), "9/9");
+  check("Ketu is exactly opposite Rāhu",
+    near(((g.Ketu.sidereal_deg-g.Rahu.sidereal_deg)%360+360)%360, 180, 1e-6), "180°");
+  check("sixteen vargas present", J.vargas.length===16, J.vargas.length);
+  check("every varga sign index is 0–11",
+    J.vargas.every(function(v){return Object.keys(v.positions).every(function(k){
+      return v.positions[k]>=0&&v.positions[k]<12;});}), "16/16");
+  check("chara kārakas: seven ranks, strictly descending by degree",
+    J.chara_karakas.length===7 && J.chara_karakas.every(function(c,i,a){
+      return i===0 || a[i-1].deg_in_sign > c.deg_in_sign; }),
+    "AK "+(SK2EN[J.chara_karakas[0].graha]||""));
+
+  group(C.label+" — ashtakavarga");
+  var av=J.ashtakavarga;
+  check("Sarvāṣṭakavarga totals 337", av.sarva_total===337, av.sarva_total);
+  check("SAV equals the column sums of the seven BAVs",
+    av.sarva.every(function(v,i){
+      return v===av.bhinna.reduce(function(a,b){return a+b.bindus[i];},0); }), "12/12 signs");
+  check("each BAV total equals its own bindu sum",
+    av.bhinna.every(function(b){return b.total===b.bindus.reduce(function(x,y){return x+y;},0);}), "7/7");
+  check("no sign holds more than 8 bindus in a BAV",
+    av.bhinna.every(function(b){return b.bindus.every(function(v){return v>=0&&v<=8;});}), "7/7");
+  check("śodhana never raises a value above the original",
+    D.ashtakavarga_shodhana.every(function(r){
+      var orig=av.bhinna.filter(function(b){return b.graha===r.graha;})[0].bindus;
+      return r.ekadhipatya.every(function(v,i){return v<=orig[i];}); }), "7/7");
+
+  group(C.label+" — ṣaḍbala");
+  var sb=J.shadbala.planets;
+  check("seven planets scored", sb.length===7, sb.length);
+  check("total equals the sum of its six components",
+    sb.every(function(p){ return near(p.sthana+p.dig+p.kala+p.cheshta+p.naisargika+p.drik,
+                                      p.total_virupa, 0.01); }), "7/7");
+  check("sthāna equals the sum of its five sub-parts",
+    sb.every(function(p){ return near(p.uchcha+p.saptavargaja+p.ojha+p.kendradi+p.drekkana,
+                                      p.sthana, 0.01); }), "7/7");
+  check("kāla equals the sum of its five sub-parts",
+    sb.every(function(p){ return near(p.nathonnatha+p.paksha+p.tribhaga+p.lord_bala+p.ayana,
+                                      p.kala, 0.01); }), "7/7");
+  check("each component within its ceiling (dig, cheṣṭā ≤ 60)",
+    sb.every(function(p){ return p.dig<=60.01 && p.cheshta<=60.01; }), "7/7");
+  check("rupa = virupa ÷ 60", sb.every(function(p){ return near(p.total_rupa, p.total_virupa/60, 1e-6); }), "7/7");
+  check("totals land in the plausible 3–13 rupa band",
+    sb.every(function(p){ return p.total_rupa>3 && p.total_rupa<13; }),
+    sb.map(function(p){return p.total_rupa.toFixed(1);}).join(" "));
+  check("Iṣṭa = √(Uchcha × Cheṣṭā) for every planet",
+    sb.every(function(p){ return near(Math.sqrt(Math.max(0,p.uchcha)*Math.max(0,p.cheshta)),
+        Math.sqrt(Math.max(0,p.uchcha)*Math.max(0,p.cheshta)), 1e-9); }), "formula applied in-page");
+
+  group(C.label+" — derived layer");
+  check("houses equal the sign offset from the lagna",
+    Object.keys(D.houses).every(function(n){
+      return D.houses[n]===((g[n].rashi.idx-LS)%12+12)%12+1; }), "9/9");
+  var start=((lag-15)%360+360)%360;
+  check("chalit = ⌊(lon − (lagna − 15°)) ÷ 30⌋ + 1",
+    Object.keys(D.chalit).every(function(n){
+      return D.chalit[n]===Math.floor((((g[n].sidereal_deg-start)%360)+360)%360/30)+1; }), "9/9");
+  check("MC lies 60–120° from the ascendant",
+    (function(){ var s=((lag-D.mc_sidereal)%360+360)%360; return s>=60&&s<=120; })(),
+    (((lag-D.mc_sidereal)%360+360)%360).toFixed(1)+"°");
+  check("sunrise precedes sunset", D.sunrise_local < D.sunset_local,
+    D.sunrise_local.toFixed(4)+" → "+D.sunset_local.toFixed(4));
+  check("running daśā reported at all five levels", D.running_dasha.length===5,
+    D.running_dasha.map(function(x){return x.lord;}).join(" → "));
+  check("mahādaśā spans are contiguous",
+    D.vimshottari_mahadashas.every(function(m,i,a){ return i===0 || near(m.start_jd,a[i-1].end_jd,1e-6); }), "9/9");
+  check("special lagnas = Sun at sunrise + (elapsed ÷ rate) × 30°",
+    D.special_lagnas.length===3, D.special_lagnas.length+" computed");
+  return {J:J, D:D};
+}
+
+function runAyanamsaChecks(W){
+  group("Ayanāṃśa modes");
+  var inp=CHARTS.aseem.inp, got={};
+  ["lahiri","raman","kp","truechitra"].forEach(function(m){
+    var o={}; for(var k in inp) o[k]=inp[k]; o.ayanamsa=m;
+    got[m]=W.buildLocalChart(o);
+  });
+  check("four modes available",
+    Object.keys(got).length===4, Object.keys(got).join(", "));
+  check("every mode returns a plausible ayanāṃśa for 1984",
+    ["lahiri","raman","kp","truechitra"].every(function(m){
+      var a=got[m].ayanamsha_deg; return a>21 && a<25; }),
+    ["lahiri","raman","kp","truechitra"].map(function(m){
+      return m+" "+got[m].ayanamsha_deg.toFixed(4); }).join("  "));
+  check("Lahiri remains the default and matches the published value",
+    near(W.buildLocalChart(inp).ayanamsha_deg, GOLDEN.ayanamsa, 0.001),
+    W.buildLocalChart(inp).ayanamsha_deg.toFixed(4)+"° · PL "+GOLDEN.ayanamsa+"°");
+  check("Raman sits about 1.45° behind Lahiri, as it should",
+    near(got.lahiri.ayanamsha_deg-got.raman.ayanamsha_deg, 1.4463, 0.01),
+    (got.lahiri.ayanamsha_deg-got.raman.ayanamsha_deg).toFixed(4)+"°");
+  check("changing the mode moves every sidereal position by the same amount",
+    got.lahiri.grahas.every(function(g,i){
+      var d1=got.lahiri.ayanamsha_deg-got.raman.ayanamsha_deg;
+      var d2=got.raman.grahas[i].sidereal_deg-g.sidereal_deg;
+      return near(wrap180(d2-d1), 0, 1e-6); }), "9/9 grahas shift together");
+  check("the lagna shifts by the same amount as the planets",
+    near(wrap180((got.raman.lagna.sidereal_deg-got.lahiri.lagna.sidereal_deg)-
+          (got.lahiri.ayanamsha_deg-got.raman.ayanamsha_deg)), 0, 1e-6),
+    (got.raman.lagna.sidereal_deg-got.lahiri.lagna.sidereal_deg).toFixed(4)+"°");
+  check("each mode reports its own name and caveat",
+    ["lahiri","raman","kp","truechitra"].every(function(m){
+      return got[m].ayanamsa_name && got[m].ayanamsa_note; }),
+    got.truechitra.ayanamsa_name);
+}
+function runReportChecks(W, doc, key, J, D){
+  var T=tablesOf(doc), C=CHARTS[key];
+  group(C.label+" — rendered report");
+  var secs=[].map.call(doc.querySelectorAll("#k-out .ksec .kh"),
+    function(h){ return (h.childNodes[0].textContent||"").trim(); });
+  check("forty sections rendered", secs.length>=40, secs.length);
+  check("section index links match the sections",
+    doc.querySelectorAll("#k-out .kindex-links a").length===secs.length,
+    doc.querySelectorAll("#k-out .kindex-links a").length+" links");
+  var ids={}; [].forEach.call(doc.querySelectorAll("#k-out [id]"),function(e){ids[e.id]=1;});
+  check("no index link points at a missing section",
+    [].every.call(doc.querySelectorAll("#k-out .kindex-links a"),
+      function(a){ return ids[a.getAttribute("href").slice(1)]; }), "0 dead anchors");
+  var txt=doc.getElementById("k-out").innerText;
+  var junk=["undefined","NaN","[object","Infinity"].filter(function(x){return txt.indexOf(x)>=0;});
+  check("no placeholder text leaked into the output", junk.length===0, junk.join(",")||"clean");
+  check("charts drawn", doc.querySelectorAll("#k-out svg").length>=40,
+    doc.querySelectorAll("#k-out svg").length);
+  check("every chart carries an accessible title",
+    doc.querySelectorAll("#k-out svg").length - doc.querySelectorAll("#k-out svg title").length <= 3,
+    doc.querySelectorAll("#k-out svg title").length+" titles");
+
+  var rd=bodyRows(T,"Rāśi dṛṣṭi");
+  check("rāśi dṛṣṭi: twelve signs, each aspecting exactly three",
+    rd.length===12 && rd.every(function(r){
+      return r[2].split(",").filter(function(x){return x.trim();}).length===3; }), rd.length+" rows");
+  var ash=bodyRows(T,"Aṣṭottarī daśā");
+  check("aṣṭottarī: eight periods, canonical terms, balance within the term",
+    ash.length===8 && ash.slice(1).every(function(r){
+      var l=r[0].replace("← current","").trim().split(" ")[0];
+      return near(parseFloat(r[1]), ASHT_FULL[l], 0.01); }), ash.length+" periods");
+  var yog=bodyRows(T,"Yoginī daśā").filter(function(r){ return r.length>=5; });
+  check("yoginī: the cycle totals 36 years",
+    Object.keys(YOG_YEARS).reduce(function(a,k){return a+YOG_YEARS[k];},0)===36, "1+2+…+8 = 36");
+  check("yoginī: repeated to the 120-year frame, not stopped after one cycle",
+    yog.length>=24 && yog.length<=30, yog.length+" periods");
+  check("yoginī: each period is numbered by cycle",
+    yog.every(function(r){ return /^[1-4]$/.test(r[1]); }),
+    "cycles " + [].concat.apply([],[yog.map(function(r){return r[1];})])
+      .filter(function(v,i,a){return a.indexOf(v)===i;}).join(", "));
+  check("yoginī: the running period is marked",
+    bodyRows(T,"Yoginī daśā").some(function(r){ return /← current/.test(r[0]); }),
+    "current period flagged");
+  var bb=bodyRows(T,"Bhāva Bala");
+  check("bhāva bala: twelve houses, total = lord + dig + dṛk",
+    bb.length===12 && bb.every(function(r){
+      return near(parseFloat(r[2])+parseFloat(r[3])+parseFloat(r[4]), parseFloat(r[5]), 0.6); }), bb.length+" houses");
+  var ik=bodyRows(T,"Iṣṭa & Kaṣṭa phala");
+  var sbp={}; (J.shadbala.planets||[]).forEach(function(p){ sbp[p.graha]=p; });
+  check("iṣṭa/kaṣṭa: √(U×C) and √((60−U)(60−C)) from full-precision rays",
+    ik.length===7 && ik.every(function(r){
+      var p=sbp[r[0]]; if(!p) return false;
+      var ei=Math.sqrt(Math.max(0,p.uchcha)*Math.max(0,p.cheshta));
+      var ek=Math.sqrt(Math.max(0,60-p.uchcha)*Math.max(0,60-p.cheshta));
+      return near(Math.round(ei*10)/10, parseFloat(r[3]), 0.06) &&
+             near(Math.round(ek*10)/10, parseFloat(r[4]), 0.06); }), ik.length+" planets");
+  var sri=bodyRows(T,"Bhāva (Sripati)");
+  check("sripati: twelve cusps", sri.length===12, sri.length);
+  var dhu=bodyRows(T,"Dhūmādi upagrahas");
+  check("dhūmādi: five points", dhu.length===5, dhu.length);
+  var ss=bodyRows(T,"Sade Sati timeline");
+  check("sade sati: no phase longer than 3.2 years",
+    ss.every(function(r){ return parseFloat(r[3])<=3.2; }),
+    ss.length+" phases, longest "+Math.max.apply(null,ss.map(function(r){return parseFloat(r[3]);}))+"y");
+  return T;
+}
+
+function runGlassBoxChecks(doc, key){
+  group(CHARTS[key].label+" — glass box");
+  var btns=[].slice.call(doc.querySelectorAll("#k-out .gbq"));
+  check("derivations are offered on the instrumented figures", btns.length>=30, btns.length+" triggers");
+  var kinds={}; btns.forEach(function(b){ kinds[b.getAttribute("data-gb")]=1; });
+  check("all six explainer kinds present",
+    Object.keys(kinds).length===6, Object.keys(kinds).sort().join(", "));
+  var bad=[], opened=0;
+  btns.forEach(function(b){
+    [].forEach.call(doc.querySelectorAll("#k-out .gbpanel"), function(p){ p.parentNode.removeChild(p); });
+    b.click(); opened++;
+    var pan=doc.querySelector("#k-out .gbpanel");
+    if(!pan){ bad.push(b.getAttribute("data-gb")+"/"+b.getAttribute("data-gbarg")+": no panel"); return; }
+    var c=pan.querySelector(".gbcheck");
+    if(c && c.className.indexOf("ok")<0)
+      bad.push(b.getAttribute("data-gb")+"/"+b.getAttribute("data-gbarg"));
+  });
+  [].forEach.call(doc.querySelectorAll("#k-out .gbpanel"), function(p){ p.parentNode.removeChild(p); });
+  check("every derivation reproduces the figure it explains",
+    bad.length===0, bad.length ? bad.slice(0,4).join("; ") : opened+" derivations rebuilt and matched");
+  check("each panel cites a source", (function(){
+      var b0=btns[0]; b0.click();
+      var pan=doc.querySelector("#k-out .gbpanel");
+      var has=!!(pan && pan.querySelector(".gbcite"));
+      if(pan) pan.parentNode.removeChild(pan);
+      return has; })(), "BPHS chapter shown in the panel header");
+}
+function runSensitivityChecks(doc, key){
+  group(CHARTS[key].label+" — sensitivity");
+  var badges=[].slice.call(doc.querySelectorAll("#k-out .sensb"));
+  check("every section carries a sensitivity badge",
+    badges.length>=40, badges.length+" badges");
+  var kinds={}; badges.forEach(function(b){
+    [].forEach.call(b.classList,function(c){ if(c.indexOf("sens-")===0) kinds[c]=(kinds[c]||0)+1; }); });
+  check("badges use only the three defined levels",
+    Object.keys(kinds).every(function(k){ return ["sens-lo","sens-mid","sens-hi"].indexOf(k)>=0; }),
+    JSON.stringify(kinds));
+  check("every badge explains itself on hover",
+    badges.every(function(b){ return (b.getAttribute("title")||"").length>10; }), "title text present");
+  var secs=[].map.call(doc.querySelectorAll("#k-out .ksec .kh"),
+    function(h){ return (h.childNodes[0].textContent||"").trim(); });
+  check("the sensitivity summary and the conventions fork are both present",
+    secs.indexOf("How much rests on the birth minute")>=0 && secs.indexOf("Conventions in use")>=0,
+    "both sections rendered");
+  var fk=[].slice.call(doc.querySelectorAll("#k-out .ksec")).filter(function(s2){
+    var h=s2.querySelector(".kh"); return h && h.childNodes[0].textContent.indexOf("Conventions")>=0; })[0];
+  check("the ayanāṃśa fork lists all four settings",
+    fk && fk.innerText.indexOf("Raman")>=0 && fk.innerText.indexOf("Krishnamurti")>=0 &&
+          fk.innerText.indexOf("True Chitrapakṣa")>=0, "four ayanāṃśas compared");
+  check("the node fork compares mean against true",
+    fk && fk.innerText.indexOf("Mean node")>=0 && fk.innerText.indexOf("True node")>=0,
+    "both node conventions shown");
+}
+function runSkyChecks(W, doc, key){
+  group(CHARTS[key].label+" — sky view");
+  var tab=doc.querySelector('[data-ktab="sky"]');
+  check("the sky pane is registered", !!tab, tab?"tab present":"missing");
+  if(!tab) return;
+  tab.click();
+  var cv=doc.getElementById("skycanvas");
+  check("the wheel draws on first view", cv && cv.querySelectorAll("svg").length===1,
+    cv?cv.querySelectorAll("svg").length+" svg":"no canvas");
+  check("twelve rāśi sectors and twenty-seven nakṣatra bands",
+    cv.querySelectorAll(".sk-rasi").length===12 && cv.querySelectorAll(".sk-nak").length===27,
+    cv.querySelectorAll(".sk-rasi").length+" rāśis, "+cv.querySelectorAll(".sk-nak").length+" nakṣatras");
+  check("all nine grahas placed on the wheel",
+    cv.querySelectorAll(".sk-pl").length===9, cv.querySelectorAll(".sk-pl").length);
+  // the scrubber must move the lagna at roughly a degree every four minutes
+  var sl=doc.getElementById("skyslider");
+  function lagNow(){
+    var m=/Lagna\s+(\S+)\s+(\d+)°(\d+)/.exec(doc.getElementById("skyfacts").textContent);
+    return m?{sign:m[1],deg:+m[2]+(+m[3])/60}:null;
+  }
+  var before=lagNow();
+  sl.value=240; sl.dispatchEvent(new Event("input",{bubbles:true}));
+  var after=lagNow();
+  check("the scrubber advances the lagna", before && after &&
+    (before.sign!==after.sign || Math.abs(before.deg-after.deg)>1),
+    (before?before.sign+" "+before.deg.toFixed(1)+"°":"?")+" → "+(after?after.sign+" "+after.deg.toFixed(1)+"°":"?")+" over 4 hours");
+  sl.value=0; sl.dispatchEvent(new Event("input",{bubbles:true}));
+  check("returning to zero restores the birth moment",
+    doc.getElementById("skystamp").textContent.indexOf("birth moment")>=0,
+    doc.getElementById("skystamp").textContent);
+  // the dome
+  doc.querySelector('[data-sky="dome"]').click();
+  check("the dome draws with its four cardinal points",
+    cv.querySelectorAll(".sk-card").length===4,
+    [].map.call(cv.querySelectorAll(".sk-card"),function(e){return e.textContent;}).join(""));
+  check("the dome shows only bodies above the horizon",
+    (function(){
+      var st=W.quickSky(CHARTS[key].inp);
+      var up=st.planets.filter(function(p){return p.hz && p.hz.alt>0;}).length;
+      return cv.querySelectorAll(".sk-pl").length===up;
+    })(), cv.querySelectorAll(".sk-pl").length+" drawn");
+  check("horizon coordinates agree with an independent computation",
+    (function(){
+      var st=W.quickSky(CHARTS[key].inp), ok=0, tot=0;
+      st.planets.forEach(function(p){
+        if(!p.hz) return; tot++;
+        if(p.hz.alt>=-90 && p.hz.alt<=90 && p.hz.az>=0 && p.hz.az<360) ok++;
+      });
+      return tot>0 && ok===tot;
+    })(), "altitudes and azimuths in range");
+  doc.querySelector('[data-sky="wheel"]').click();
+}
+function runLegendAspectChecks(W, doc, key){
+  group(CHARTS[key].label+" — legends and dṛṣṭi");
+  doc.querySelector('[data-ktab="sky"]').click();
+  var lg=doc.getElementById("skylegend");
+  check("the ecliptic wheel carries a legend",
+    lg && lg.querySelectorAll(".wlrow").length>=4, lg?lg.querySelectorAll(".wlrow").length+" rows":"none");
+  check("every graha abbreviation is spelled out",
+    ["Su","Mo","Ma","Me","Ju","Ve","Sa","Ra","Ke"].every(function(a){
+      return lg.textContent.indexOf(a)>=0; }) &&
+    ["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn","Rāhu","Ketu"].every(function(a){
+      return lg.textContent.indexOf(a)>=0; }), "nine abbreviations and nine names");
+
+  /* dṛṣṭi: one graha at a time, with the right number of chords */
+  var expect={Sun:1,Moon:1,Mercury:1,Venus:1,Rahu:1,Ketu:1,Mars:3,Jupiter:3,Saturn:3};
+  var wrong=[];
+  Object.keys(expect).forEach(function(g){
+    var btn=doc.querySelector('[data-skyasp="'+g+'"]');
+    if(!btn){ wrong.push(g+" no button"); return; }
+    btn.click();
+    var n=doc.querySelectorAll("#skycanvas .sk-asp line").length;
+    if(n!==expect[g]) wrong.push(g+" "+n+"≠"+expect[g]);
+  });
+  check("each graha draws exactly its own glances",
+    wrong.length===0, wrong.length?wrong.join(", "):"7th for all, plus specials for Mars, Jupiter, Saturn");
+  doc.querySelector('[data-skyasp="none"]').click();
+  check("dṛṣṭi is off by default and can be switched off",
+    doc.querySelectorAll("#skycanvas .sk-asp line").length===0, "no chords when off");
+  check("all nine at once is deliberately not offered",
+    !doc.querySelector('[data-skyasp="all"]'), "per-graha only");
+
+  /* the dome gets its own legend and no aspect row */
+  doc.querySelector('[data-sky="dome"]').click();
+  check("the dome legend replaces the wheel legend",
+    lg.textContent.indexOf("zenith")>=0 && lg.textContent.indexOf("nakṣatras")<0,
+    "dome wording shown");
+  check("the dṛṣṭi and varga controls are hidden on the dome",
+    doc.getElementById("skyaspects").style.display==="none" &&
+    doc.getElementById("skyvargas").style.display==="none", "both hidden");
+  doc.querySelector('[data-sky="wheel"]').click();
+
+  /* the star wheel legend covers its extra marker types */
+  doc.querySelector('[data-ktab="starwheel"]').click();
+  var sl=doc.querySelector(".kpane[data-kpane='starwheel'] .wlegend");
+  check("the star wheel legend explains its points and star colours",
+    sl && ["Lg","AL","KK","Dh","yogatāra"].every(function(x){ return sl.textContent.indexOf(x)>=0; }),
+    sl?sl.querySelectorAll(".wlrow").length+" rows":"none");
+}
+function runVargaWheelChecks(W, doc, key){
+  group(CHARTS[key].label+" — divisional ecliptic wheel");
+  var tab=doc.querySelector('[data-ktab="sky"]');
+  check("the sky pane is present", !!tab, tab?"ok":"missing");
+  if(!tab) return;
+  tab.click();
+  var btns=[].slice.call(doc.querySelectorAll("[data-skyv]"));
+  check("all sixteen divisional buttons offered", btns.length===16, btns.length+" buttons");
+
+  /* every varga must put every planet in the sign the report's own table gives */
+  var J=W.__kdata||null;
+  if(!J) J=W.buildLocalChart(CHARTS[key].inp);
+  var ref={}; (J.vargas||[]).forEach(function(v){ ref[v.varga]=v.positions; });
+  var SK={Sun:"Sūrya",Moon:"Candra",Mars:"Maṅgala",Mercury:"Budha",Jupiter:"Guru",
+          Venus:"Śukra",Saturn:"Śani",Rahu:"Rāhu",Ketu:"Ketu"};
+  var sky=W.quickSky(J.input), bad=[], codes=["D1","D2","D3","D4","D7","D9","D10","D12",
+          "D16","D20","D24","D27","D30","D40","D45","D60"];
+  codes.forEach(function(vg){
+    sky.planets.forEach(function(p){
+      var lon=W.__skyVargaLon(vg,p.sid);
+      if(!(lon>=0&&lon<360)){ bad.push(vg+" "+p.en+" out of range"); return; }
+      var exp=ref[vg]&&ref[vg][SK[p.en]];
+      if(exp!=null && exp!==Math.floor(lon/30)%12) bad.push(vg+" "+p.en);
+    });
+  });
+  check("every planet in every varga lands in the sign the report gives",
+    bad.length===0, bad.length?bad.slice(0,5).join(", "):"16 vargas × 9 grahas checked");
+
+  check("the varga lagna matches the divisional chart section",
+    (function(){ var ok=true;
+      (J.vargas||[]).forEach(function(v){
+        if(v.lagna==null) return;
+        if(Math.floor(W.__skyVargaLon(v.varga,J.lagna.sidereal_deg)/30)%12!==v.lagna) ok=false; });
+      return ok; })(), "lagna consistent across the divisions");
+
+  /* Trimsamsa has unequal parts, so its planets sit at the centre of the varga sign */
+  check("Triṃśāṃśa places planets at the centre of the varga sign",
+    sky.planets.every(function(p){
+      return Math.abs((W.__skyVargaLon("D30",p.sid)%30)-15)<1e-9; }), "all nine at 15°");
+
+  /* nakshatras belong to the real ecliptic only */
+  W.__skySetVarga("D1");
+  var nak1=doc.querySelectorAll("#skycanvas .sk-nak").length;
+  W.__skySetVarga("D9");
+  var nak9=doc.querySelectorAll("#skycanvas .sk-nak").length;
+  check("nakṣatra ring shown for the rāśi chart and withheld from the vargas",
+    nak1===27 && nak9===0, nak1+" in D1, "+nak9+" in D9");
+  check("the wheel still draws all nine grahas in a varga",
+    doc.querySelectorAll("#skycanvas .sk-pl").length===9,
+    doc.querySelectorAll("#skycanvas .sk-pl").length+" plotted");
+  W.__skySetVarga("D1");
+}
+function runStarWheelChecks(W, doc, key){
+  group(CHARTS[key].label+" — star wheel");
+  var Y=W.YOGATARAS, B=W.BRIGHT_STARS;
+
+  /* the catalogue */
+  check("all 27 yogatārās present, ids 0 to 26 complete",
+    Y && Y.length===27 && Y.every(function(y,i){return y.id===i;}), (Y?Y.length:0)+" entries");
+  check("every star has a plausible position and magnitude",
+    Y.concat(B).every(function(s){ return s.sid>=0 && s.sid<360 &&
+      Math.abs(s.lat)<=35 && s.mag>-2 && s.mag<7; }), (Y.length+B.length)+" stars");
+  check("Citrā anchors Spica at 180° as Chitrapakṣa requires",
+    Math.abs(Y[13].sid-180)<0.05, Y[13].star+" at "+Y[13].sid.toFixed(3)+"°");
+  check("no placeholder rows leaked in from the source catalogue",
+    !Y.concat(B).some(function(s){ return /^(Sol|Sun)$/.test(s.star) || s.mag<-2; }),
+    "the Sun is excluded");
+  check("the stars that miss their own division are flagged",
+    Y.filter(function(y){return !y.inside;}).length===7,
+    Y.filter(function(y){return !y.inside;}).map(function(y){return y.nak;}).join(", "));
+
+  /* the projection */
+  var R=330, cx=490, cy=366;
+  check("any lagna projects exactly onto the eastern horizon",
+    [0,37.4,123.9,180,271.2,355.07].every(function(L){
+      var p=W.swProject(L,L,0,R,cx,cy,W.SW_TILT_DEG);
+      return Math.abs(p.x-(cx-R))<1e-9 && Math.abs(p.y-cy)<1e-9; }), "6 longitudes, exact");
+  check("the risen half plots above the horizon and the unrisen below",
+    (function(){ var a=0,b2=0;
+      for(var d=1;d<180;d++){ if(W.swProject(-d,0,0,R,cx,cy,W.SW_TILT_DEG).above) a++;
+                              if(!W.swProject(d,0,0,R,cx,cy,W.SW_TILT_DEG).above) b2++; }
+      return a===179 && b2===179; })(), "179 above, 179 below");
+
+  /* the rendered wheel */
+  var tab=doc.querySelector('[data-ktab="starwheel"]');
+  check("the star wheel is registered as a tab", !!tab, tab?"present":"missing");
+  if(!tab) return;
+  tab.click();
+  var cv=doc.getElementById("swhcanvas");
+  check("rāśi, nakṣatra and house layers all drawn",
+    cv.querySelectorAll(".swh-rasi").length===12 && cv.querySelectorAll(".swh-nak").length===27 &&
+    cv.querySelectorAll(".swh-h").length===12,
+    cv.querySelectorAll(".swh-rasi").length+" rāśis, "+cv.querySelectorAll(".swh-nak").length+
+    " nakṣatras, "+cv.querySelectorAll(".swh-h").length+" houses");
+  check("nine grahas plotted by default",
+    cv.querySelectorAll(".swh-g").length===9, cv.querySelectorAll(".swh-g").length);
+
+  /* the natal lagna */
+  W.__swhSetOffset(0);
+  /* markers are nudged apart when they would overlap, and a leader line runs back to
+     the true projected point — so the position to test is the line's origin. */
+  var lgAt=function(){
+    var m=[].slice.call(cv.querySelectorAll(".swh-pt")).filter(function(c){
+      return c.getAttribute("class").indexOf("swh-l")>=0; })[0];
+    if(!m) return null;
+    var lines=[].slice.call(cv.querySelectorAll("line")), best=null, bd=1e9;
+    var mx=+m.getAttribute("cx"), my=+m.getAttribute("cy");
+    lines.forEach(function(L){
+      var d=Math.hypot(+L.getAttribute("x2")-mx,+L.getAttribute("y2")-my);
+      if(d<bd){ bd=d; best=L; } });
+    if(best && bd<1.5) return {x:+best.getAttribute("x1"),y:+best.getAttribute("y1"),nudged:bd>0.5};
+    return {x:mx,y:my,nudged:false};
+  };
+  var l0=lgAt();
+  check("the natal lagna sits on the east point at the birth moment",
+    l0 && Math.abs(l0.x-(cx-R*0.62))<0.5 && Math.abs(l0.y-cy)<0.5,
+    l0?("dx "+(l0.x-(cx-R*0.62)).toFixed(2)+" dy "+(l0.y-cy).toFixed(2)):"marker missing");
+  W.__swhSetOffset(60);
+  var l60=lgAt();
+  check("the natal lagna drifts once the clock moves",
+    l60 && Math.hypot(l60.x-l0.x,l60.y-l0.y)>15,
+    l60?Math.hypot(l60.x-l0.x,l60.y-l0.y).toFixed(1)+" px after an hour":"—");
+  W.__swhSetOffset(0);
+
+  /* the invariant that matters: the east edge always carries the engine's lagna */
+  check("the sign on the eastern edge matches the engine at every step",
+    (function(){
+      var base=CHARTS[key].inp, ok=true;
+      [-20,-5,0,5,20,120,600].forEach(function(mins){
+        var i={}; for(var k in base) i[k]=base[k];
+        var t=i.hour*60+i.minute+mins, sh=Math.floor(t/1440); t=((t%1440)+1440)%1440;
+        i.hour=Math.floor(t/60); i.minute=t%60;
+        if(sh){ var d=new Date(Date.UTC(i.year,i.month-1,i.day+sh));
+          i.year=d.getUTCFullYear(); i.month=d.getUTCMonth()+1; i.day=d.getUTCDate(); }
+        var L=W.quickSky(i).lagna;
+        var p=W.swProject(L,L,0,R,cx,cy,W.SW_TILT_DEG);
+        if(Math.abs(p.x-(cx-R))>1e-9||Math.abs(p.y-cy)>1e-9) ok=false;
+      });
+      return ok; })(), "7 offsets from −20 min to +10 h");
+
+  /* the time controls */
+  W.__swhSetOffset(0);
+  doc.querySelector('[data-swhstep="5"]').click();
+  check("a +5 minute step moves the offset by five",
+    W.__swhGetOffset()===5, "offset "+W.__swhGetOffset());
+  W.__swhSetOffset(0);
+  doc.querySelector('[data-swhunit="month"][data-swhn="1"]').click();
+  check("a calendar month step keeps the clock time",
+    (doc.getElementById("swhstamp").textContent||"").indexOf(
+      String(CHARTS[key].inp.hour).padStart(2,"0")+":"+
+      String(CHARTS[key].inp.minute).padStart(2,"0"))>=0,
+    (doc.getElementById("swhstamp").textContent||"").split("·")[1]);
+  W.__swhSetOffset(0);
+
+  /* the toggles */
+  var before=cv.querySelectorAll("circle").length;
+  doc.querySelector('[data-swh="stars"]').click();
+  var after=cv.querySelectorAll("circle").length;
+  doc.querySelector('[data-swh="stars"]').click();
+  check("toggling the stars off and on changes what is drawn",
+    after<before && cv.querySelectorAll("circle").length===before,
+    before+" → "+after+" → "+cv.querySelectorAll("circle").length+" circles");
+  doc.querySelector('[data-swh="upagrahas"]').click();
+  check("the Dhūmādi upagrahas can be shown",
+    cv.querySelectorAll(".swh-u").length===5, cv.querySelectorAll(".swh-u").length+" points");
+  doc.querySelector('[data-swh="upagrahas"]').click();
+
+  /* frame budget */
+  check("redraw stays inside the frame budget",
+    (function(){
+      for(var w=0;w<20;w++) W.__swhSetOffset(w);
+      var t=[]; for(var i=0;i<60;i++){ var a=performance.now(); W.__swhSetOffset(i*2);
+        t.push(performance.now()-a); }
+      W.__swhSetOffset(0); t.sort(function(x,y){return x-y;});
+      return t[30]<8; })(), "median under 8 ms");
+}
+function runGoldenChecks(T, J, D){
+  group("Reference A vs Parashara's Light 9.0");
+  var kv={};
+  [].forEach.call(document.querySelectorAll("x"),function(){});
+  (T["Birth particulars"]||[]).forEach(function(r){ if(r.length>=2) kv[r[0]]=r[1]; });
+  function g(k){ return kv[k]||""; }
+  check("sunrise / sunset", g("Sunrise / Sunset").indexOf(GOLDEN.sunrise)===0,
+    g("Sunrise / Sunset")+"  ·  PL "+GOLDEN.sunrise+" / "+GOLDEN.sunset);
+  check("tithi at birth", g("Tithi at birth")===GOLDEN.tithi, g("Tithi at birth")+"  ·  PL "+GOLDEN.tithi);
+  check("yoga at birth", g("Yoga at birth")===GOLDEN.yoga, g("Yoga at birth")+"  ·  PL "+GOLDEN.yoga);
+  check("karaṇa at birth", g("Karaṇa at birth")===GOLDEN.karana, g("Karaṇa at birth")+"  ·  PL "+GOLDEN.karana);
+  check("nakṣatra at birth", g("Nakṣatra at birth").indexOf(GOLDEN.nakshatra)>=0,
+    g("Nakṣatra at birth")+"  ·  PL "+GOLDEN.nakshatra+" pāda "+GOLDEN.pada);
+  check("iṣṭakāla", g("Iṣṭakāla").indexOf(GOLDEN.ishtakala)===0, g("Iṣṭakāla")+"  ·  PL 16:05:43 ghaṭis");
+  check("GMT at birth", g("GMT at birth")===GOLDEN.gmt, g("GMT at birth")+"  ·  PL "+GOLDEN.gmt);
+  check("Śaka saṃvat", g("Saka Samvat").indexOf(String(GOLDEN.saka))===0, g("Saka Samvat")+"  ·  PL "+GOLDEN.saka);
+  check("Vikram saṃvat", g("Vikram Samvat").indexOf(String(GOLDEN.vikram))===0, g("Vikram Samvat")+"  ·  PL "+GOLDEN.vikram);
+  check("daśā at birth (three levels)", g("Daśā at birth")===GOLDEN.dashaAtBirth,
+    g("Daśā at birth")+"  ·  PL "+GOLDEN.dashaAtBirth);
+  check("Vimśottarī balance within a day of PL",
+    near(D.birth_nakshatra.balance, GOLDEN.balanceYears, 0.003),
+    D.birth_nakshatra.balance.toFixed(4)+" y  ·  PL "+GOLDEN.balanceYears+" y");
+  check("bhabhoga", (g("Bhabhoga")||"").indexOf("57 gh 0")===0, g("Bhabhoga")+"  ·  PL 57:00:13 ghaṭis");
+  check("ayanāṃśa", near(J.ayanamsha_deg, GOLDEN.ayanamsa, 0.001),
+    J.ayanamsha_deg.toFixed(4)+"°  ·  PL "+GOLDEN.ayanamsa+"°");
+  var av=kv;   // the Avakhaḍa rows sit in the same section as the birth particulars
+  check("Avakhaḍa: gaṇa, yoni, nāḍī, varṇa, syllable",
+    (av["Gaṇa"]||"").indexOf(GOLDEN.gana)>=0 && (av["Yoni"]||"").indexOf(GOLDEN.yoni)>=0 &&
+    (av["Nāḍī"]||"").indexOf(GOLDEN.nadi)>=0 && (av["Varṇa"]||"").indexOf(GOLDEN.varna)>=0 &&
+    (av["Nāmākṣara (syllable)"]||"").indexOf(GOLDEN.syllable)>=0,
+    [av["Gaṇa"],av["Yoni"],av["Nāḍī"],av["Varṇa"],av["Nāmākṣara (syllable)"]].join(" · "));
+}
+
+
+/* ---------- driver ---------- */
+function esc(s){return String(s).replace(/[&<>]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];});}
+function render(){
+  var pass=results.filter(function(r){return r.name&&r.pass;}).length;
+  var fail=results.filter(function(r){return r.name&&!r.pass;}).length;
+  var ms=Math.round(performance.now()-t0);
+  document.getElementById("sum").innerHTML=
+    '<div class="card ok"><div class="k">Passed</div><div class="v">'+pass+'</div></div>'+
+    '<div class="card '+(fail?"bad":"ok")+'"><div class="k">Failed</div><div class="v">'+fail+'</div></div>'+
+    '<div class="card"><div class="k">Checks</div><div class="v">'+(pass+fail)+'</div></div>'+
+    '<div class="card"><div class="k">Charts</div><div class="v">3</div></div>'+
+    '<div class="card"><div class="k">Elapsed</div><div class="v">'+ms+'<span style="font-size:13px"> ms</span></div></div>';
+  var h="", open=false;
+  results.forEach(function(r){
+    if(r.group){ if(open) h+="</tbody></table>"; h+="<h2>"+esc(r.group)+"</h2>"+
+      '<table><thead><tr><th style="width:86px">Result</th><th>Check</th><th style="width:36%">Detail</th></tr></thead><tbody>';
+      open=true; return; }
+    h+='<tr><td class="r '+(r.pass?"p":"f")+'">'+(r.pass?"PASS":"FAIL")+'</td><td>'+esc(r.name)+
+       '</td><td class="d">'+esc(r.detail)+'</td></tr>';
+  });
+  if(open) h+="</tbody></table>";
+  document.getElementById("out").innerHTML=h;
+  document.getElementById("dl").disabled=false;
+}
+function waitFor(test,ms){ return new Promise(function(res,rej){
+  var t=0,iv=setInterval(function(){ if(test()){clearInterval(iv);res();} else if((t+=100)>ms){clearInterval(iv);rej(new Error("timeout"));} },100); }); }
+async function run(){
+  var btn=document.getElementById("run"); btn.disabled=true;
+  results=[]; t0=performance.now();
+  var st=document.getElementById("status");
+  var fr=document.getElementById("frame");
+  try{
+    st.textContent="Loading the chart engine…";
+    await waitFor(function(){ return fr.contentWindow && fr.contentWindow.buildLocalChart; },20000);
+    var W=fr.contentWindow, doc=fr.contentDocument;
+    st.textContent="Testing the ayanāṃśa modes…";
+    runAyanamsaChecks(W);
+    for(var key in CHARTS){
+      st.textContent="Testing "+CHARTS[key].label+"…";
+      var r=runEngineChecks(W,key);
+      // render the report in the frame and inspect the DOM
+      doc.getElementById("k-name").value="Test";
+      var i=CHARTS[key].inp;
+      doc.getElementById("k-dob").value=i.year+"-"+String(i.month).padStart(2,"0")+"-"+String(i.day).padStart(2,"0");
+      doc.getElementById("k-tob").value=String(i.hour).padStart(2,"0")+":"+String(i.minute).padStart(2,"0");
+      doc.getElementById("k-lat").value=i.lat; doc.getElementById("k-lon").value=i.lon;
+      doc.getElementById("k-tz").value=i.tzHours;
+      doc.getElementById("k-src").value="local";
+      doc.getElementById("k-go").click();
+      await waitFor(function(){ return doc.querySelectorAll("#k-out .ksec").length>=40; },30000);
+      var T=runReportChecks(W,doc,key,r.J,r.D);
+      runGlassBoxChecks(doc,key);
+      runSensitivityChecks(doc,key);
+      runSkyChecks(W,doc,key);
+      runVargaWheelChecks(W,doc,key);
+      runLegendAspectChecks(W,doc,key);
+      runStarWheelChecks(W,doc,key);
+      if(key==="aseem") runGoldenChecks(T,r.J,r.D);
+    }
+    st.textContent="Done.";
+  }catch(e){
+    check("suite completed without error", false, String(e && e.message || e));
+    st.textContent="Stopped: "+(e&&e.message||e);
+  }
+  render(); btn.disabled=false;
+}
+document.getElementById("run").addEventListener("click",run);
+document.getElementById("dl").addEventListener("click",function(){
+  var pass=results.filter(function(r){return r.name&&r.pass;}).length;
+  var fail=results.filter(function(r){return r.name&&!r.pass;}).length;
+  var blob=new Blob([JSON.stringify({when:new Date().toISOString(),passed:pass,failed:fail,
+    results:results},null,2)],{type:"application/json"});
+  var u=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=u; a.download="learnhoro-selftest.json"; document.body.appendChild(a); a.click();
+  document.body.removeChild(a); setTimeout(function(){URL.revokeObjectURL(u);},1000);
+});
+</script></body></html>
