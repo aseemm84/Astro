@@ -349,6 +349,114 @@ function moSceneSheets(){
       cols:["Peak (UTC)","Kind","Type","Sidereal longitude °","Rāśi","Nakṣatra","Pāda",
             "Degrees from the node","Node","Obscuration","Greatest eclipse latitude °",""],
       rows:rowsE});
+  } else if(k==="lagna"){
+    /* Two sheets: what the lagna does across the span, and the rising times that
+       govern it. The second is the one worth keeping — it is the table BPHS asks
+       for when it says the ascendant follows the rāśi durations of the place. */
+    var W=moWhere(), tL=moBirthMs(), eL=tL+moSpanMs();
+    var ayL=0; try{ ayL=window.__ayanFor?window.__ayanFor("lahiri",tL/86400000+2440587.5):23.9; }catch(e){}
+    var RT=moRisingTimes(W.lat,ayL);
+    out.push({name:"Rāśi rising times",
+      cols:["Rāśi","Oblique ascension °","Rising time (minutes)","Rising time (h:mm)",
+            "Share of the day %"],
+      rows:SA.map(function(nm,i){
+        var dg=RT.deg[i], mi=RT.min[i];
+        if(dg==null) return [nm,"","","never rises at this latitude",""];
+        var hh=Math.floor(mi/60), mm=Math.round(mi-hh*60);
+        return [nm,+dg.toFixed(3),+mi.toFixed(1),hh+":"+(mm<10?"0":"")+mm,
+                +(dg/360*100).toFixed(2)];
+      })});
+    var NL=Math.min(1200,Math.max(60,Math.round((eL-tL)/600000))), rowsL=[], prevS=null;
+    for(var iL=0;iL<=NL;iL++){
+      var mL=tL+(eL-tL)*iL/NL, dL=new Date(mL);
+      var lagv=null;
+      try{
+        var utL=dL.getUTCHours()+dL.getUTCMinutes()/60+dL.getUTCSeconds()/3600;
+        lagv=window.quickSky({year:dL.getUTCFullYear(),month:dL.getUTCMonth()+1,
+          day:dL.getUTCDate(),hour:utL,minute:0,second:0,tzHours:0,
+          lat:W.lat,lon:W.lon,ayanamsa:"lahiri"}).lagna;
+      }catch(e){}
+      if(lagv==null) continue;
+      var sg=Math.floor(lagv/30)%12;
+      rowsL.push([moISO(mL),+lagv.toFixed(4),SA[sg],+(lagv%30).toFixed(4),
+                  nakOf(lagv).name,nakOf(lagv).pada,LORD[sg],
+                  (prevS!=null&&sg!==prevS)?"rāśi changes here":""]);
+      prevS=sg;
+    }
+    out.push({name:"Lagna across the span",
+      cols:["Time (UTC)","Lagna °","Rāśi","Degrees in rāśi","Nakṣatra","Pāda",
+            "Rāśi lord","Note"], rows:rowsL});
+    out.push({name:"Place", cols:["Quantity","Value"], rows:[
+      ["Latitude",W.lat],["Longitude (east +)",W.lon],
+      ["Ayanāṃśa at the start",+ayL.toFixed(4)],
+      ["Obliquity used",23.4393],
+      ["Note","rising times are the oblique ascension: the right ascension a rāśi "+
+              "spans, less its ascensional difference at this latitude"]]});
+  } else if(k==="moon"||k==="sun"){
+    var tM=Date.now(), eM=tM+moSpanMs(), spM=eM-tM;
+    var stepM=(spM<=3*86400000)?3600000:86400000;
+    var NM=Math.min(1500,Math.max(24,Math.round(spM/stepM))), rowsM=[];
+    for(var iM=0;iM<=NM;iM++){
+      var mM=tM+spM*iM/NM, dM=new Date(mM);
+      var suM=moSidAt("Sun",mM), moM=moSidAt("Moon",mM);
+      if(suM==null||moM==null) continue;
+      if(k==="moon"){
+        var ilM=null, lbM=null;
+        try{ ilM=Astronomy.Illumination(Astronomy.Body.Moon,dM);
+             lbM=Astronomy.Libration(dM); }catch(e){}
+        if(!ilM||!lbM) continue;
+        var pcM=panchanga(suM,moM), nkM=nakOf(moM), elM=((moM-suM)%360+360)%360;
+        rowsM.push([moISO(mM),pcM.tithi,pcM.paksha,elM<180?"waxing":"waning",
+                    +(ilM.phase_fraction*100).toFixed(2),+ilM.phase_angle.toFixed(3),
+                    +elM.toFixed(3),+moM.toFixed(4),moSignOf(moM),nkM.name,nkM.pada,
+                    Math.round(lbM.dist_km),+(lbM.diam_deg*60).toFixed(3),
+                    +lbM.elon.toFixed(3),+lbM.elat.toFixed(3),+ilM.mag.toFixed(2)]);
+      } else {
+        var ilS=null; try{ ilS=Astronomy.Illumination(Astronomy.Body.Sun,dM); }catch(e){}
+        var dsS=(ilS&&ilS.geo_dist)?ilS.geo_dist:1;
+        var ayS=0; try{ ayS=window.__ayanFor?window.__ayanFor("lahiri",mM/86400000+2440587.5):23.9; }catch(e){}
+        var trS=((suM+ayS)%360+360)%360, nkS=nakOf(suM);
+        rowsM.push([moISO(mM),+suM.toFixed(4),moSignOf(suM),+(suM%30).toFixed(4),
+                    nkS.name,nkS.pada,+dsS.toFixed(6),+((0.5331/dsS)*60).toFixed(3),
+                    +trS.toFixed(4),(trS>=90&&trS<270)?"Dakṣiṇāyana":"Uttarāyaṇa",
+                    +ayS.toFixed(4)]);
+      }
+    }
+    if(k==="moon")
+      out.push({name:"Candra",
+        cols:["Time (UTC)","Tithi","Pakṣa","Direction","Illuminated %","Phase angle °",
+              "Elongation °","Longitude °","Rāśi","Nakṣatra","Pāda","Distance km",
+              "Apparent diameter ′","Libration in longitude °","Libration in latitude °",
+              "Magnitude"], rows:rowsM});
+    else
+      out.push({name:"Sūrya",
+        cols:["Time (UTC)","Sidereal longitude °","Rāśi","Degrees in rāśi","Nakṣatra",
+              "Pāda","Distance AU","Apparent diameter ′","Tropical longitude °","Ayana",
+              "Ayanāṃśa °"], rows:rowsM});
+  } else if(k==="worlds"){
+    var tW=Date.now(), eW=tW+moSpanMs();
+    var NW=Math.min(900,Math.max(24,Math.round((eW-tW)/86400000/3))), rowsW=[];
+    var KM={Mercury:4879,Venus:12104,Mars:6779,Jupiter:139820,Saturn:116460};
+    for(var iW=0;iW<=NW;iW++){
+      var mW=tW+(eW-tW)*iW/NW, dW=new Date(mW);
+      ["Mercury","Venus","Mars","Jupiter","Saturn"].forEach(function(en){
+        var il=null; try{ il=Astronomy.Illumination(Astronomy.Body[en],dW); }catch(e){}
+        if(!il) return;
+        var L=moSidAt(en,mW), sp=moSpeed(en,mW);
+        var aa=(KM[en]/(il.geo_dist*149597870.7))*206264.8;
+        rowsW.push([moDay(mW),MO_FULL[en],L==null?"":+L.toFixed(4),
+                    L==null?"":moSignOf(L),+il.geo_dist.toFixed(5),
+                    +il.helio_dist.toFixed(5),+aa.toFixed(2),
+                    +(il.phase_fraction*100).toFixed(2),+il.phase_angle.toFixed(2),
+                    +il.mag.toFixed(2),
+                    (en==="Saturn"&&il.ring_tilt!=null)?+il.ring_tilt.toFixed(2):"",
+                    sp<0?"retrograde":"direct"]);
+      });
+    }
+    out.push({name:"The five worlds",
+      cols:["Date (UTC)","Graha","Sidereal longitude °","Rāśi","Distance from Earth AU",
+            "Distance from Sūrya AU","Apparent diameter ″","Illuminated %","Phase angle °",
+            "Magnitude","Ring tilt °","Motion"], rows:rowsW});
   } else if(k==="tilt"){
     /* The sheet behind the proof strip: every new and full moon in the span with Candra's
        ecliptic latitude at that moment and its distance from the node, so the pattern can

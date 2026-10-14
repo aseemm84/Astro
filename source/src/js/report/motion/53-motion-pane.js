@@ -173,6 +173,25 @@ function moSceneOpts(){
       "watch the karaṇa ring turn")+
       '<span class="mohint">the vāra follows the civil date, as the Overview tab does, not '+
       'sunrise to sunrise</span>';
+  } else if(k==="lagna"){
+    h=moSpanRow(["h","d"],"from the birth moment — a day walks all twelve lagnas past "+
+      "the east point")+
+      '<span class="mohint">drawn for the chart&rsquo;s own latitude, which is what sets '+
+      'the rising times along the foot</span>';
+  } else if(k==="moon"){
+    h=moSpanRow(["d","m"],"from today — one month takes Candra through every phase");
+  } else if(k==="sun"){
+    h=moSpanRow(["d","m","y"],"from today — a year carries Sūrya through all twelve rāśis");
+  } else if(k==="worlds"){
+    h=moSpanRow(["m","y"],"from today — the five are shown in turn across the span")+
+      '<span class="molab">Sizing</span>'+
+      [["same","one magnification"],["fill","fill the frame"]].map(function(m){
+        return '<button type="button" class="skyv'+
+          (((MO.opt.wsame===true)?"same":"fill")===m[0]?" on":"")+
+          '" data-mowsize="'+m[0]+'">'+esc(m[1])+'</button>'; }).join("")+
+      '<span class="mohint">one magnification keeps the five comparable — Guru a disc and '+
+      'Maṅgala a dot, which is the truth of it; filling the frame makes each legible but '+
+      'tells you nothing about size</span>';
   } else if(k==="tilt"){
     h=moSpanRow(["d","m"],"from today — six to twelve months reads best, and covers a whole "+
       "eclipse season coming round")+
@@ -242,6 +261,11 @@ document.addEventListener("click",function(ev){
     var s3=document.getElementById("moscrub"); if(s3) s3.value=Math.round(MO.p*1000);
     moDraw(); return;
   }
+  var ws=t.getAttribute("data-mowsize");
+  if(ws){ MO.opt.wsame=(ws==="same"); MO_CACHE={};
+    [].forEach.call(document.querySelectorAll("[data-mowsize]"),function(b){
+      b.className="skyv"+((b.getAttribute("data-mowsize")==="same")===(MO.opt.wsame===true)?" on":""); });
+    moDraw(); return; }
   if(t.id==="mostudio"){ moStudio(!MO.studio); return; }
   if(t.id==="moexit"){ moStudio(false); return; }
   if(t.id==="moxls"){ moExport(); return; }

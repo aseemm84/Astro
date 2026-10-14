@@ -45,6 +45,8 @@
   "motion/50-motion-core.js",
   "motion/51-motion-scenes.js",
   "motion/52-motion-export.js",
+  "motion/54-motion-bodies.js",
+  "motion/55-motion-sky-scenes.js",
   "motion/53-motion-pane.js",
   "export/42-json-export.js",
   "print/45-print-report.js",
