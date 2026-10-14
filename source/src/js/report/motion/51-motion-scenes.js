@@ -4,6 +4,11 @@
    fifteen seconds" is one control rather than a rate to work out. */
 
 var MO_CACHE={};
+/* The glances each graha casts, counted from itself. Everything looks at the 7th;
+   Maṅgala adds the 4th and 8th, Guru the 5th and 9th, Śani the 3rd and 10th. */
+var MO_SPECIAL={Sun:[180],Moon:[180],Mercury:[180],Venus:[180],
+                Mars:[90,180,210],Jupiter:[120,180,240],Saturn:[60,180,270],
+                Rahu:[180],Ketu:[180]};
 function moCached(key,make){
   if(MO_CACHE[key]===undefined) MO_CACHE[key]=make();
   return MO_CACHE[key];
@@ -46,7 +51,7 @@ function moGlyph(x,y,r,en,P,bold){
   moGlowDot(x,y,r,P.bg,col);
   c.strokeStyle=col; c.lineWidth=Math.max(2,r*0.16);
   c.beginPath(); c.arc(x,y,r,0,6.2832); c.stroke();
-  moText(GL[en],x,y+r*0.06,r*0.95,bold?P.ink:P.ink,"center",700);
+  moText(moG(en),x,y+r*0.06,r*(MO.opt.symbols?1.15:0.95),P.ink,"center",700);
   return col;
 }
 
@@ -92,7 +97,7 @@ var MO_SCENES=[
       c.beginPath(); c.moveTo(X(sg*30),by); c.lineTo(X(sg*30),by+bh); c.stroke();
       c.setLineDash([]); c.globalAlpha=1; }
     if(MO.opt.labels && X(b)-X(a)>S.w*0.12)
-      moText(SA[((sg%12)+12)%12],(X(a)+X(b))/2,by-S.w*0.035,S.w*0.030,P.dim,"center",600);
+      moText(moSign(((sg%12)+12)%12),(X(a)+X(b))/2,by-S.w*0.035,S.w*0.030,P.dim,"center",600);
   }
   /* the ecliptic plane */
   if(MO.opt.grid && la<0 && ha>0){
@@ -140,7 +145,7 @@ var MO_SCENES=[
  sub:"the natal chart inside, the transiting sky outside",
  draw:function(p){
   var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
-  var yrs=MO.opt.years||12, t0=Date.now(), t1=t0+yrs*365.2564*86400000;
+  var t0=Date.now(), t1=t0+moSpanMs();
   var ms=t0+(t1-t0)*p, R=st.R, cx=st.cx, cy=st.cy;
   moStars();
   /* rāśi ring */
@@ -149,15 +154,16 @@ var MO_SCENES=[
     c.beginPath(); c.arc(cx,cy,R,-a0,-a1,false); c.arc(cx,cy,R*0.86,-a1,-a0,true); c.closePath();
     c.fillStyle=(s%2)?"rgba(255,255,255,0.055)":"rgba(255,255,255,0.02)"; c.fill();
     var am=(180-(s*30+15))*Math.PI/180;
-    if(MO.opt.labels) moText(SA[s],cx+Math.cos(am)*R*0.93,cy-Math.sin(am)*R*0.93,
+    if(MO.opt.labels) moText(moSign(s),cx+Math.cos(am)*R*0.93,cy-Math.sin(am)*R*0.93,
       S.w*0.026,P.dim,"center",600);
   }
   c.strokeStyle=P.line; c.lineWidth=2;
   c.beginPath(); c.arc(cx,cy,R,0,6.2832); c.stroke();
   c.beginPath(); c.arc(cx,cy,R*0.86,0,6.2832); c.stroke();
   /* ingress flashes */
-  var ing=moCached("ing|"+yrs,function(){
-    var out=[], N=Math.min(1200,Math.round(yrs*26));
+  var yrs=(t1-t0)/31556952000;
+  var ing=moCached("ing|"+MO.opt.spanN+MO.opt.spanU,function(){
+    var out=[], N=Math.min(1400,Math.max(60,Math.round(yrs*26)));
     ["Jupiter","Saturn","Rahu","Mars"].forEach(function(en){
       var prev=null;
       for(var i=0;i<=N;i++){
@@ -239,14 +245,30 @@ var MO_SCENES=[
  sub:"each graha lifted by its true ecliptic latitude",
  draw:function(p){
   var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
-  var t0=moBirthMs(), t1=t0+(MO.opt.years||2)*365.2564*86400000;
-  var ms=t0+(t1-t0)*p, R=st.R*1.08, cx=st.cx, cy=st.cy;
+  var t0=moBirthMs(), t1=t0+moSpanMs();
+  var ms=t0+(t1-t0)*p, cx=st.cx, cy=st.cy;
   var tilt=(28+22*Math.sin(p*Math.PI*2))*Math.PI/180;      // the camera breathes
-  var kY=Math.cos(tilt), lift=Math.sin(tilt)*(MO.opt.exag||26);
+  var kY=Math.cos(tilt);
+  /* The lift is what pushed glyphs off the stage: at a steep tilt and a high multiplier
+     a latitude of 5° could throw the Moon a long way past the frame. The ring and the
+     worst lift together are measured against the stage, and everything is scaled to fit
+     with a margin for the glyph and its label — so no slider setting can overflow. */
+  var maxLat=0;
+  MO_NAMES.forEach(function(en){
+    if(!MO.show[en]||en==="Rahu"||en==="Ketu") return;
+    try{ var e=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[en],new Date(ms),true));
+         maxLat=Math.max(maxLat,Math.abs(e.elat)); }catch(e2){}
+  });
+  var lift=Math.sin(tilt)*(MO.opt.exag||26);
+  var R=st.R*1.08;
+  var halfH=R*kY+maxLat*lift+S.w*0.075;                   // glyph radius plus a little air
+  var limit=st.h*0.46;
+  if(halfH>limit){ var k=limit/halfH; R*=k; lift*=k; }
+  if(R*1.0+S.w*0.05>st.w*0.5) R=st.w*0.5-S.w*0.05;
   moStars();
-  function proj(lon,lat){
-    var a=(180-lon)*Math.PI/180;
-    return [cx+Math.cos(a)*R, cy-Math.sin(a)*R*kY-lat*lift];
+  function proj(lon,lat,rad){
+    var a=(180-lon)*Math.PI/180, rr=(rad==null?R:rad);
+    return [cx+Math.cos(a)*rr, cy-Math.sin(a)*rr*kY-lat*lift];
   }
   /* the ring: far half dimmer, so the disc reads as a disc */
   [[0,180,0.32],[180,360,1]].forEach(function(seg){
@@ -259,7 +281,7 @@ var MO_SCENES=[
     var q=proj(s*30+15,0);
     var back=(s*30+15)>0&&(s*30+15)<180;
     c.globalAlpha=back?0.4:0.95;
-    moText(SA[s],q[0],q[1]+(q[1]<cy?-S.w*0.028:S.w*0.030),S.w*0.024,P.dim,"center",600);
+    moText(moSign(s),q[0],q[1]+(q[1]<cy?-S.w*0.028:S.w*0.030),S.w*0.024,P.dim,"center",600);
     c.globalAlpha=1;
   }
   var items=[];
@@ -273,11 +295,15 @@ var MO_SCENES=[
     }
     items.push({en:en,lon:L,lat:lat});
   });
-  items.sort(function(a,b){ return proj(a.lon,a.lat)[1]-proj(b.lon,b.lat)[1]; });
+  /* crowding steps inward along the bearing, exactly as the wheel does, so a graha is
+     never drawn at a longitude it is not at */
+  moSpread(items,R,S.w*0.034);
+  items.sort(function(a,b){ return proj(a.lon,a.lat,a.r)[1]-proj(b.lon,b.lat,b.r)[1]; });
   items.forEach(function(q){
-    var pt=proj(q.lon,q.lat), base=proj(q.lon,0);
-    c.strokeStyle=P.line; c.globalAlpha=.8; c.lineWidth=2;
-    c.beginPath(); c.moveTo(base[0],base[1]); c.lineTo(pt[0],pt[1]); c.stroke(); c.globalAlpha=1;
+    var pt=proj(q.lon,q.lat,q.r), base=proj(q.lon,0,q.r);
+    c.strokeStyle=P.glow; c.globalAlpha=.85; c.lineWidth=3;
+    c.beginPath(); c.moveTo(base[0],base[1]); c.lineTo(pt[0],pt[1]); c.stroke();
+    moGlowDot(base[0],base[1],3.2,P.line,P.line); c.globalAlpha=1;
     moGlyph(pt[0],pt[1],S.w*0.034,q.en,P,true);
   });
   var mo=items.filter(function(x){return x.en==="Moon";})[0];
@@ -291,7 +317,7 @@ var MO_SCENES=[
  draw:function(p){
   var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
   var i=MO.J&&MO.J.input; if(!i) throw new Error("no birth data");
-  var b=moBirthMs(), half=(MO.opt.hours||14)*3600000/2;
+  var b=moBirthMs(), half=moSpanMs()/2;
   var t0=b-half, t1=b+half, ms=t0+(t1-t0)*p;
   var R=st.R*1.05, cx=st.cx, cy=st.cy;
   var sky=null;
@@ -432,6 +458,249 @@ var MO_SCENES=[
                     :"falls outside the division named after it",
          cx,cy+st.h*0.36,S.w*0.027,star.inside?P.benefic:P.malefic,"center",600);
   return {ms:null, sub:"nakṣatra "+(idx+1)+" of 27"};
+ }},
+
+/* ------------------------------------------------- 6. what turns and what does not */
+{key:"frames", label:"What actually turns", title:"The rāśis never move",
+ sub:"the lagna sweeps, the bhāvas follow it, the zodiac stays put",
+ draw:function(p){
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
+  var i=MO.J&&MO.J.input; if(!i) throw new Error("no birth data");
+  /* one sidereal day, so the lagna makes exactly one circuit and the loop is seamless */
+  var b=moBirthMs(), t0=b, t1=b+86164091, ms=t0+(t1-t0)*p;
+  var sky=null;
+  try{
+    var d=new Date(ms), ut=d.getUTCHours()+d.getUTCMinutes()/60+d.getUTCSeconds()/3600;
+    sky=window.quickSky({year:d.getUTCFullYear(),month:d.getUTCMonth()+1,day:d.getUTCDate(),
+      hour:ut,minute:0,second:0,tzHours:0,lat:i.lat,lon:i.lon,ayanamsa:i.ayanamsa||"lahiri"});
+  }catch(e){ throw e; }
+  var lag=sky.lagna, R=st.R, cx=st.cx, cy=st.cy;
+  moStars();
+  /* the rāśi ring: FIXED. drawn at absolute sidereal longitude and never rotated */
+  for(var s=0;s<12;s++){
+    var a0=(180-s*30)*Math.PI/180, a1=(180-(s*30+30))*Math.PI/180;
+    c.beginPath(); c.arc(cx,cy,R,-a0,-a1,false); c.arc(cx,cy,R*0.84,-a1,-a0,true); c.closePath();
+    c.fillStyle=(s%2)?"rgba(255,255,255,0.07)":"rgba(255,255,255,0.025)"; c.fill();
+    var am=(180-(s*30+15))*Math.PI/180;
+    moText(moSign(s),cx+Math.cos(am)*R*0.92,cy-Math.sin(am)*R*0.92,
+      S.w*(MO.opt.symbols?0.034:0.025),P.dim,"center",600);
+  }
+  c.strokeStyle=P.line; c.lineWidth=2.5;
+  c.beginPath(); c.arc(cx,cy,R,0,6.2832); c.stroke();
+  c.beginPath(); c.arc(cx,cy,R*0.84,0,6.2832); c.stroke();
+  /* the bhāvas: MOVING. twelve whole signs counted from whatever is rising */
+  var h1=Math.floor(lag/30);
+  for(var k=0;k<12;k++){
+    var sg=(h1+k)%12, b0=sg*30, b1=b0+30;
+    var q0=(180-b0)*Math.PI/180, q1=(180-b1)*Math.PI/180;
+    c.beginPath(); c.arc(cx,cy,R*0.80,-q0,-q1,false); c.arc(cx,cy,R*0.52,-q1,-q0,true); c.closePath();
+    c.fillStyle=(k===0)?"rgba(217,182,104,0.30)":
+                (k===3||k===6||k===9)?"rgba(217,182,104,0.12)":"rgba(255,255,255,0.03)";
+    c.fill();
+    c.strokeStyle=P.line; c.lineWidth=1.2; c.stroke();
+    var bm=(180-(b0+15))*Math.PI/180;
+    moText(String(k+1),cx+Math.cos(bm)*R*0.66,cy-Math.sin(bm)*R*0.66,
+      S.w*0.030,k===0?P.gold:P.dim,"center",700);
+  }
+  /* the horizon: the lagna degree itself */
+  var la=(180-lag)*Math.PI/180;
+  c.strokeStyle=P.gold; c.lineWidth=4;
+  c.beginPath();
+  c.moveTo(cx+Math.cos(la)*R*1.04,cy-Math.sin(la)*R*1.04);
+  c.lineTo(cx-Math.cos(la)*R*1.04,cy+Math.sin(la)*R*1.04);
+  c.stroke();
+  moGlowDot(cx+Math.cos(la)*R*0.92,cy-Math.sin(la)*R*0.92,S.w*0.016,P.gold,P.gold);
+  moText("lagna",cx+Math.cos(la)*R*1.14,cy-Math.sin(la)*R*1.14,S.w*0.028,P.gold,"center",700);
+  /* the grahas, which also sit at fixed longitudes over a single day */
+  var ring=[], gR=S.w*0.028;
+  MO_NAMES.forEach(function(en){
+    if(!MO.show[en]) return;
+    var q=null; sky.planets.forEach(function(x){ if(x.en===en) q=x; });
+    if(q) ring.push({en:en,lon:q.sid});
+  });
+  moSpread(ring,R*0.44,gR);
+  ring.forEach(function(q){
+    var a=(180-q.lon)*Math.PI/180;
+    moGlyph(cx+Math.cos(a)*q.r,cy-Math.sin(a)*q.r,gR,q.en,P,false);
+  });
+  moText("rāśis fixed",cx,cy-st.h*0.44,S.w*0.030,P.dim,"center",600);
+  moText("bhāvas turn with the lagna",cx,cy+st.h*0.44,S.w*0.030,P.gold,"center",600);
+  return {ms:ms, sub:"lagna "+SA[Math.floor(lag/30)%12]+" "+skyDM(lag)+
+          " · 1st bhāva is "+SA[h1]};
+ }},
+
+/* ------------------------------------------------------------------ 7. ayanāṃśa */
+{key:"ayanamsa", label:"Ayanāṃśa", title:"Two zodiacs, drifting apart",
+ sub:"the equinox slips about one degree every seventy-two years",
+ draw:function(p){
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
+  /* 4000 years, so the whole precessional story is visible in one loop */
+  var y0=-500, y1=3500, yr=y0+(y1-y0)*p;
+  var jd=2451545.0+(yr-2000)*365.2425;
+  var ay=0;
+  try{ ay=window.__ayanFor?window.__ayanFor("lahiri",jd):0; }catch(e){}
+  var R=st.R, cx=st.cx, cy=st.cy;
+  moStars();
+  /* the sidereal ring — fixed to the stars, so it never rotates */
+  for(var s=0;s<12;s++){
+    var a0=(180-s*30)*Math.PI/180, a1=(180-(s*30+30))*Math.PI/180;
+    c.beginPath(); c.arc(cx,cy,R,-a0,-a1,false); c.arc(cx,cy,R*0.82,-a1,-a0,true); c.closePath();
+    c.fillStyle=(s%2)?"rgba(217,182,104,0.14)":"rgba(217,182,104,0.05)"; c.fill();
+    var am=(180-(s*30+15))*Math.PI/180;
+    moText(moSign(s),cx+Math.cos(am)*R*0.91,cy-Math.sin(am)*R*0.91,
+      S.w*(MO.opt.symbols?0.032:0.023),P.gold,"center",600);
+  }
+  c.strokeStyle=P.gold; c.lineWidth=2.5; c.globalAlpha=.8;
+  c.beginPath(); c.arc(cx,cy,R,0,6.2832); c.stroke(); c.globalAlpha=1;
+  /* the tropical ring — tied to the equinox, so it creeps backwards against the stars */
+  var rt=R*0.76;
+  for(var t=0;t<12;t++){
+    var b0=t*30+ay, b1=b0+30;
+    var q0=(180-b0)*Math.PI/180, q1=(180-b1)*Math.PI/180;
+    c.beginPath(); c.arc(cx,cy,rt,-q0,-q1,false); c.arc(cx,cy,rt*0.80,-q1,-q0,true); c.closePath();
+    c.fillStyle=(t%2)?"rgba(111,124,192,0.22)":"rgba(111,124,192,0.08)"; c.fill();
+    var tm=(180-(b0+15))*Math.PI/180;
+    moText(moSign(t),cx+Math.cos(tm)*rt*0.90,cy-Math.sin(tm)*rt*0.90,
+      S.w*(MO.opt.symbols?0.030:0.021),P.glow,"center",600);
+  }
+  c.strokeStyle=P.glow; c.lineWidth=2; c.globalAlpha=.8;
+  c.beginPath(); c.arc(cx,cy,rt,0,6.2832); c.stroke(); c.globalAlpha=1;
+  /* the gap between the two zero points IS the ayanāṃśa */
+  var sa=(180-0)*Math.PI/180, ta=(180-ay)*Math.PI/180;
+  [[sa,P.gold,"sidereal 0°"],[ta,P.glow,"tropical 0°"]].forEach(function(z){
+    c.strokeStyle=z[1]; c.lineWidth=3.5;
+    c.beginPath(); c.moveTo(cx,cy);
+    c.lineTo(cx+Math.cos(z[0])*R*1.03,cy-Math.sin(z[0])*R*1.03); c.stroke();
+    var lx=cx+Math.cos(z[0])*R*1.13, ly=cy-Math.sin(z[0])*R*1.13;
+    lx=Math.max(S.w*0.13,Math.min(S.w*0.87,lx));      // never let the label leave the frame
+    moText(z[2],lx,ly,S.w*0.024,z[1],"center",600);
+  });
+  c.strokeStyle=P.ink; c.lineWidth=5; c.globalAlpha=.9;
+  c.beginPath(); c.arc(cx,cy,R*0.40,-sa,-ta,false); c.stroke(); c.globalAlpha=1;
+  var mid=(180-ay/2)*Math.PI/180;
+  moText(ay.toFixed(2)+"°",cx+Math.cos(mid)*R*0.30,cy-Math.sin(mid)*R*0.30,
+    S.w*0.042,P.ink,"center",800);
+  moText(yr<0?(Math.abs(Math.round(yr))+" BCE"):(Math.round(yr)+" CE"),
+    cx,cy-st.h*0.44,S.w*0.046,P.ink,"center",700);
+  moText("they met around 285 CE, and have separated ever since",
+    cx,cy+st.h*0.44,S.w*0.026,P.dim,"center",500);
+  return {ms:null, sub:"ayanāṃśa "+ay.toFixed(2)+"° · Lahiri"};
+ }},
+
+/* -------------------------------------------------------------------- 8. dṛṣṭi */
+{key:"drishti", label:"Dṛṣṭi sweep", title:"Where a graha looks",
+ sub:"every graha glances at the 7th; some glance further",
+ draw:function(p){
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
+  var en=MO.opt.subject, t0=Date.now(), t1=t0+moSpanMs(), ms=t0+(t1-t0)*p;
+  var L=moSidAt(en,ms); if(L==null) throw new Error("no position");
+  var R=st.R, cx=st.cx, cy=st.cy;
+  moStars();
+  for(var s=0;s<12;s++){
+    var a0=(180-s*30)*Math.PI/180, a1=(180-(s*30+30))*Math.PI/180;
+    c.beginPath(); c.arc(cx,cy,R,-a0,-a1,false); c.arc(cx,cy,R*0.86,-a1,-a0,true); c.closePath();
+    c.fillStyle=(s%2)?"rgba(255,255,255,0.055)":"rgba(255,255,255,0.02)"; c.fill();
+    var am=(180-(s*30+15))*Math.PI/180;
+    moText(moSign(s),cx+Math.cos(am)*R*0.93,cy-Math.sin(am)*R*0.93,
+      S.w*(MO.opt.symbols?0.032:0.024),P.dim,"center",600);
+  }
+  c.strokeStyle=P.line; c.lineWidth=2;
+  c.beginPath(); c.arc(cx,cy,R,0,6.2832); c.stroke();
+  c.beginPath(); c.arc(cx,cy,R*0.86,0,6.2832); c.stroke();
+  var offs=MO_SPECIAL[en]||[180], ben=!!MO_BEN[en], col=ben?P.benefic:P.malefic;
+  function pt(deg,rad){ var a=(180-deg)*Math.PI/180;
+    return [cx+Math.cos(a)*rad, cy-Math.sin(a)*rad]; }
+  var src=pt(L,R*0.80);
+  offs.forEach(function(off,ix){
+    var tgt=pt(L+off,R*0.80);
+    var full=(off===180);
+    c.strokeStyle=col; c.lineWidth=full?5:3; c.globalAlpha=full?0.95:0.6;
+    if(!full) c.setLineDash([12,10]);
+    c.beginPath(); c.moveTo(src[0],src[1]); c.lineTo(tgt[0],tgt[1]); c.stroke();
+    c.setLineDash([]); c.globalAlpha=1;
+    moGlowDot(tgt[0],tgt[1],S.w*0.014,col,col);
+    /* the sign the glance lands in gets lit */
+    var sg=Math.floor(((L+off)%360+360)%360/30);
+    var g0=(180-sg*30)*Math.PI/180, g1=(180-(sg*30+30))*Math.PI/180;
+    c.beginPath(); c.arc(cx,cy,R,-g0,-g1,false); c.arc(cx,cy,R*0.86,-g1,-g0,true); c.closePath();
+    c.fillStyle=col; c.globalAlpha=full?0.26:0.14; c.fill(); c.globalAlpha=1;
+    var hn=Math.round(off/30)+1;
+    moText(hn+"th",pt(L+off,R*1.09)[0],pt(L+off,R*1.09)[1],S.w*0.026,col,"center",700);
+  });
+  moGlyph(src[0],src[1],S.w*0.044,en,P,true);
+  if(moSpeed(en,ms)<0) moText("R",src[0]+S.w*0.040,src[1]-S.w*0.036,S.w*0.024,P.malefic,"center",800);
+  var note = (en==="Mars")?"Maṅgala adds the 4th and the 8th"
+           : (en==="Jupiter")?"Guru adds the 5th and the 9th"
+           : (en==="Saturn")?"Śani adds the 3rd and the 10th"
+           : "the 7th alone — the full glance every graha casts";
+  moText(note,cx,cy+st.h*0.44,S.w*0.028,P.dim,"center",600);
+  return {ms:ms, sub:MO_FULL[en]+" in "+SA[Math.floor(L/30)%12]+" "+skyDM(L)};
+ }},
+
+/* --------------------------------------------------------------------- 9. tithi */
+{key:"tithi", label:"Tithi & pakṣa", title:"A tithi is an angle",
+ sub:"twelve degrees of the Moon pulling away from the Sun",
+ draw:function(p){
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
+  var t0=Date.now(), t1=t0+29.530589*86400000, ms=t0+(t1-t0)*p;   // one synodic month
+  var su=moSidAt("Sun",ms), mo=moSidAt("Moon",ms);
+  if(su==null||mo==null) throw new Error("no position");
+  var el=((mo-su)%360+360)%360;
+  var ti=Math.floor(el/12)+1, pak=el<180?"Śukla":"Kṛṣṇa";
+  var tiIn=ti>15?ti-15:ti;
+  var R=st.R*0.86, cx=st.cx, cy=st.cy-st.h*0.06;
+  moStars();
+  /* the Moon's disc, lit by the elongation — the thing a tithi actually counts */
+  var mr=st.R*0.42;
+  /* The terminator is drawn as an explicit polygon rather than with arc/ellipse sweep
+     flags, which are easy to get subtly wrong: at 230° the flagged version drew a full
+     Moon instead of an 82% gibbous one. Here the lit edge is the limb and the inner edge
+     is the terminator, whose projected half-width is r·cos(phase) — zero at the quarters,
+     the full radius at new and at full, and bulging to whichever side the sign dictates. */
+  c.fillStyle="#1a1f33";
+  c.beginPath(); c.arc(cx,cy,mr,0,6.2832); c.fill();
+  (function(){
+    var waxing=el<180, ph=(waxing?el:360-el)*Math.PI/180, k=Math.cos(ph), sx=waxing?1:-1;
+    var N=84, i, t;
+    c.beginPath();
+    for(i=0;i<=N;i++){ t=-Math.PI/2+Math.PI*i/N;
+      var x=cx+sx*mr*Math.cos(t), y=cy+mr*Math.sin(t);
+      if(i===0) c.moveTo(x,y); else c.lineTo(x,y); }
+    for(i=N;i>=0;i--){ t=-Math.PI/2+Math.PI*i/N;
+      c.lineTo(cx+sx*mr*k*Math.cos(t), cy+mr*Math.sin(t)); }
+    c.closePath();
+    c.fillStyle="#efe9d8"; c.fill();
+  })();
+  c.strokeStyle=P.line; c.lineWidth=2.5;
+  c.beginPath(); c.arc(cx,cy,mr,0,6.2832); c.stroke();
+  /* the angle itself, drawn as a dial around the disc */
+  c.strokeStyle=P.line; c.lineWidth=1.6; c.globalAlpha=.5;
+  c.beginPath(); c.arc(cx,cy,R,0,6.2832); c.stroke(); c.globalAlpha=1;
+  function at2(deg,rad){ var a=(180-deg)*Math.PI/180;
+    return [cx+Math.cos(a)*rad, cy-Math.sin(a)*rad]; }
+  var sp=at2(0,R), mp=at2(el,R);
+  c.strokeStyle=P.gold; c.lineWidth=3.5;
+  c.beginPath(); c.moveTo(cx,cy); c.lineTo(sp[0],sp[1]); c.stroke();
+  c.strokeStyle=P.ink; c.lineWidth=3.5;
+  c.beginPath(); c.moveTo(cx,cy); c.lineTo(mp[0],mp[1]); c.stroke();
+  c.strokeStyle=P.benefic; c.lineWidth=6; c.globalAlpha=.85;
+  c.beginPath(); c.arc(cx,cy,R*0.62,-(180)*Math.PI/180,-(180-el)*Math.PI/180,true); c.stroke();
+  c.globalAlpha=1;
+  moGlowDot(sp[0],sp[1],S.w*0.030,"#f0b847","#ffd37a");
+  moText(moG("Sun"),sp[0],sp[1],S.w*0.024,"#3a2a06","center",800);
+  moGlowDot(mp[0],mp[1],S.w*0.028,"#e8eaf6","#ffffff");
+  moText(moG("Moon"),mp[0],mp[1],S.w*0.022,"#2a2f45","center",800);
+  /* the 30 tithi marks */
+  for(var t=0;t<30;t++){
+    var d0=at2(t*12,R*0.94), d1=at2(t*12,R);
+    c.strokeStyle=(t%15===0)?P.gold:P.line; c.lineWidth=(t%15===0)?2.5:1;
+    c.beginPath(); c.moveTo(d0[0],d0[1]); c.lineTo(d1[0],d1[1]); c.stroke();
+  }
+  moText(pak+" pakṣa",cx,cy-st.h*0.40,S.w*0.034,
+    el<180?P.benefic:P.dim,"center",600);
+  moSerif("Tithi "+tiIn,cx,cy+st.h*0.33,S.w*0.060,P.ink);
+  moText(el.toFixed(1)+"° between them",cx,cy+st.h*0.40,S.w*0.027,P.dim,"center",500);
+  return {ms:ms, sub:pak+" · tithi "+tiIn+" of 15 · elongation "+el.toFixed(1)+"°"};
  }},
 
 /* -------------------------------------------------------------------- 6. daśā */

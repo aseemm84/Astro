@@ -13,7 +13,8 @@ var MO_TOGGLES=[
   {k:"stars",  label:"Starfield"},
   {k:"grid",   label:"Guides"},
   {k:"labels", label:"Labels"},
-  {k:"loopFade",label:"Loop fade"}
+  {k:"loopFade",label:"Loop fade"},
+  {k:"symbols", label:"Symbols"}
 ];
 var MO_CAPS=[
   {k:"logo",  label:"Logo"},
@@ -24,7 +25,8 @@ function motionPane(D,J){
   if(!J||!J.input) return "";
   MO.D=D; MO.J=J; MO.p=0; MO.playing=false; MO.scene="retro"; MO.ratio="9:16";
   MO.pal="midnight"; MO.dur=15; MO.studio=false;
-  MO.opt.subject="Mars"; MO.opt.years=12; MO.opt.hours=14; MO.opt.exag=26;
+  MO.opt.subject="Mars"; MO.opt.exag=40; MO.opt.symbols=false;
+  MO.opt.spanN=12; MO.opt.spanU="y"; MO.speed=1;
   MO.cap.title=""; MO.cap.sub="";
   MO_CACHE={};
   for(var g in MO.show) MO.show[g]=true;
@@ -48,6 +50,13 @@ function motionPane(D,J){
           '<span class="molab">Length</span>'+
           '<select id="modur" class="skysel">'+MO_DUR.map(function(d){
             return '<option value="'+d.s+'"'+(d.s===15?" selected":"")+'>'+d.label+'</option>'; }).join("")+'</select>'+
+          '<span class="molab">Speed</span>'+
+          '<select id="mospeed" class="skysel">'+
+            [[0.25,"\u00bc\u00d7"],[0.5,"\u00bd\u00d7"],[1,"1\u00d7"],[2,"2\u00d7"],[4,"4\u00d7"]]
+            .map(function(s){ return '<option value="'+s[0]+'"'+(s[0]===1?" selected":"")+'>'+s[1]+'</option>'; }).join("")+
+          '</select>'+
+          '<button type="button" class="skyv" id="mostepb" title="Back one frame">\u2039</button>'+
+          '<button type="button" class="skyv" id="mostepf" title="Forward one frame">\u203a</button>'+
           '<span class="mofps" id="mofps">—</span>'+
         '</div>'+
         '<div class="morow"><span class="molab">Scrub</span>'+
@@ -112,35 +121,44 @@ function motionPane(D,J){
     'off the screen. For measurement, use the Sky tab.</div>';
 }
 /* per-scene extra controls */
+function moSpanRow(units,hint){
+  return '<span class="molab">Span</span>'+
+    '<input type="number" id="mospann" class="monum" min="1" max="999" step="1" value="'+
+      MO.opt.spanN+'">'+
+    '<select id="mospanu" class="skysel">'+units.map(function(u){
+      return '<option value="'+u+'"'+(u===MO.opt.spanU?" selected":"")+'>'+MO_UNITS[u].label+'</option>';
+    }).join("")+'</select>'+
+    (hint?('<span class="mohint">'+esc(hint)+'</span>'):"");
+}
 function moSceneOpts(){
   var host=document.getElementById("moscopts"); if(!host) return;
   var k=MO.scene, h="";
-  if(k==="retro"){
+  if(k==="retro"||k==="drishti"){
     h='<span class="molab">Graha</span>'+
-      ["Mercury","Venus","Mars","Jupiter","Saturn"].map(function(en){
+      (k==="drishti"?MO_NAMES:["Mercury","Venus","Mars","Jupiter","Saturn"]).map(function(en){
         return '<button type="button" class="skyv'+(MO.opt.subject===en?" on":"")+
           '" data-mosubj="'+en+'">'+esc(MO_FULL[en])+'</button>'; }).join("")+
-      '<span class="mohint">finds the retrograde nearest to today</span>';
+      (k==="drishti"?('<br>'+moSpanRow(["d","m","y"],"how far forward the graha travels"))
+                    :'<span class="mohint">finds the retrograde nearest to today</span>');
   } else if(k==="gochara"){
-    h='<span class="molab">Span</span>'+[6,12,20,30].map(function(y){
-        return '<button type="button" class="skyv'+(MO.opt.years===y?" on":"")+
-          '" data-moyears="'+y+'">'+y+' years</button>'; }).join("")+
-      '<span class="mohint">from today forward</span>';
+    h=moSpanRow(["d","m","y"],"from today forward");
   } else if(k==="orrery"){
-    h='<span class="molab">Span</span>'+[1,2,5,12].map(function(y){
-        return '<button type="button" class="skyv'+(MO.opt.years===y?" on":"")+
-          '" data-moyears="'+y+'">'+y+(y===1?" year":" years")+'</button>'; }).join("")+
-      '<span class="molab">Latitude ×</span><input type="range" id="moexag" min="6" max="60" step="2" value="'+
+    h=moSpanRow(["d","m","y"],"from the birth moment")+
+      '<span class="molab">Latitude ×</span><input type="range" id="moexag" min="8" max="90" step="2" value="'+
       MO.opt.exag+'"><span class="moval" id="moexagv">'+MO.opt.exag+'</span>';
   } else if(k==="birthsky"){
-    h='<span class="molab">Window</span>'+[6,14,24].map(function(hr){
-        return '<button type="button" class="skyv'+(MO.opt.hours===hr?" on":"")+
-          '" data-mohours="'+hr+'">'+hr+' hours</button>'; }).join("")+
-      '<span class="mohint">centred on the birth moment</span>';
+    h=moSpanRow(["h","d"],"centred on the birth moment");
   } else if(k==="nakshatra"){
-    h='<span class="mohint">all twenty-seven in turn — set the length to 60 s to linger on each</span>';
+    h='<span class="mohint">all twenty-seven in turn — a longer length lingers on each</span>';
   } else if(k==="dasha"){
     h='<span class="mohint">the whole Viṃśottarī cycle from birth</span>';
+  } else if(k==="frames"){
+    h='<span class="mohint">one sidereal day, so the lagna makes exactly one circuit and the '+
+      'loop closes on itself</span>';
+  } else if(k==="ayanamsa"){
+    h='<span class="mohint">500 BCE to 3500 CE — the Lahiri value, the same one the charts use</span>';
+  } else if(k==="tithi"){
+    h='<span class="mohint">one synodic month from today, new Moon to new Moon</span>';
   }
   host.innerHTML=h;
   host.style.display=h?"":"none";
@@ -168,6 +186,14 @@ document.addEventListener("click",function(ev){
   if(t.id==="moplay"){ moPlay(!MO.playing); return; }
   if(t.id==="morestart"){ MO.p=0; var s2=document.getElementById("moscrub");
     if(s2) s2.value=0; moDraw(); return; }
+  if(t.id==="mostepb"||t.id==="mostepf"){
+    moPlay(false);
+    var dp=(1/60)/Math.max(0.5,MO.dur/Math.max(0.1,MO.speed));
+    MO.p+=(t.id==="mostepf"?dp:-dp);
+    if(MO.p>=1) MO.p-=1; if(MO.p<0) MO.p+=1;
+    var s3=document.getElementById("moscrub"); if(s3) s3.value=Math.round(MO.p*1000);
+    moDraw(); return;
+  }
   if(t.id==="mostudio"){ moStudio(!MO.studio); return; }
   if(t.id==="moexit"){ moStudio(false); return; }
   if(t.id==="moxls"){ moExport(); return; }
@@ -233,13 +259,23 @@ document.addEventListener("input",function(ev){
     var b=document.getElementById("modensv"); if(b) b.textContent=t.value; moDraw(); return; }
   if(t.id==="moexag"){ MO.opt.exag=+t.value;
     var c=document.getElementById("moexagv"); if(c) c.textContent=t.value; moDraw(); return; }
+  if(t.id==="mospann"){ var v=Math.max(1,Math.min(999,+t.value||1));
+    MO.opt.spanN=v; MO.p=0; MO_CACHE={}; moDraw(); return; }
   if(t.id==="motitle"){ MO.cap.title=t.value; moDraw(); return; }
   if(t.id==="mosub"){ MO.cap.sub=t.value; moDraw(); return; }
   if(t.id==="mohandle"){ MO.cap.handle=t.value; moDraw(); return; }
 });
 document.addEventListener("change",function(ev){
-  if(ev.target && ev.target.id==="modur"){ MO.dur=+ev.target.value; }
+  var t2=ev.target; if(!t2) return;
+  if(t2.id==="modur"){ MO.dur=+t2.value; return; }
+  if(t2.id==="mospeed"){ MO.speed=+t2.value; return; }
+  if(t2.id==="mospanu"){ MO.opt.spanU=t2.value; MO.p=0; MO_CACHE={}; moDraw(); return; }
 });
 document.addEventListener("keydown",function(ev){
-  if(ev.key==="Escape" && MO.studio) moStudio(false);
+  if(ev.key==="Escape" && MO.studio){ moStudio(false); return; }
+  if(ev.code==="Space" && document.getElementById("mocanvas") &&
+     !/^(INPUT|TEXTAREA|SELECT)$/.test((ev.target&&ev.target.tagName)||"") &&
+     document.querySelector('.kpane[data-kpane="motion"]:not([hidden])')){
+    ev.preventDefault(); moPlay(!MO.playing);
+  }
 });

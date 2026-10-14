@@ -35,8 +35,12 @@ var MO={
   ratio:"9:16", scene:"retro", pal:"midnight", dur:15,
   p:0, playing:false, raf:null, last:null, studio:false,
   show:{Sun:true,Moon:true,Mars:true,Mercury:true,Jupiter:true,Venus:true,Saturn:true,Rahu:true,Ketu:true},
+  speed:1,                 // multiplies the loop length, live, without resetting
   opt:{trail:true, trailLen:0.35, glow:true, stars:true, starDensity:160, grid:true,
-       labels:true, loopFade:true, subject:"Mars"},
+       labels:true, loopFade:true, subject:"Mars", symbols:false, exag:40,
+       /* Every scene that covers a stretch of time reads its span from here, so days,
+          months and years are available wherever a span means anything at all. */
+       spanN:12, spanU:"y"},
   cap:{title:"", sub:"", logo:true, handle:"@learnhoro", date:true},
   fps:0, _fpsT:0, _fpsN:0
 };
@@ -131,6 +135,33 @@ function moNudge(pt,placed,gap,cx,cy){
   }
   return pt;
 }
+
+/* ---------------------------------------------------------------------------
+   Span. One control serves every scene that covers time: a number and a unit.
+   --------------------------------------------------------------------------- */
+var MO_UNITS={h:{label:"hours",ms:3600000},d:{label:"days",ms:86400000},
+              m:{label:"months",ms:2629746000},y:{label:"years",ms:31556952000}};
+function moSpanMs(){
+  var u=MO_UNITS[MO.opt.spanU]||MO_UNITS.y;
+  return Math.max(60000, MO.opt.spanN*u.ms);
+}
+function moSpanLabel(){
+  var u=MO_UNITS[MO.opt.spanU]||MO_UNITS.y, n=MO.opt.spanN;
+  return n+" "+(n===1?u.label.replace(/s$/,""):u.label);
+}
+/* ---------------------------------------------------------------------------
+   Glyphs. The site writes grahas as Su, Mo, Ma … because that is what a Jyotiṣa
+   reader expects and what every other page here uses. The astronomical symbols are
+   offered as a switch rather than a replacement: they carry no language at all, which
+   is worth something on a feed read in a dozen countries, but they are a Western
+   convention and a student should not meet them first.
+   --------------------------------------------------------------------------- */
+var MO_SYM={Sun:"\u2609",Moon:"\u263D",Mars:"\u2642",Mercury:"\u263F",Jupiter:"\u2643",
+            Venus:"\u2640",Saturn:"\u2644",Rahu:"\u260A",Ketu:"\u260B"};
+var MO_RSYM=["\u2648","\u2649","\u264A","\u264B","\u264C","\u264D",
+             "\u264E","\u264F","\u2650","\u2651","\u2652","\u2653"];
+function moG(en){ return MO.opt.symbols?(MO_SYM[en]||GL[en]):GL[en]; }
+function moSign(i){ var k=((i%12)+12)%12; return MO.opt.symbols?MO_RSYM[k]:SA[k]; }
 function moFmtDate(ms){
   var d=new Date(ms);
   return String(d.getUTCDate()).padStart(2,"0")+" "+MON[d.getUTCMonth()+1]+" "+d.getUTCFullYear();
@@ -202,7 +233,7 @@ function moTick(ts){
   if(!MO.playing){ MO.raf=null; return; }
   if(MO.last==null) MO.last=ts;
   var dt=Math.min(120,ts-MO.last); MO.last=ts;
-  MO.p+=(dt/1000)/MO.dur;
+  MO.p+=(dt/1000)/Math.max(0.5,MO.dur/Math.max(0.1,MO.speed));
   if(MO.p>=1) MO.p-=1;
   MO._fpsN++; MO._fpsT+=dt;
   if(MO._fpsT>500){ MO.fps=Math.round(1000*MO._fpsN/MO._fpsT); MO._fpsN=0; MO._fpsT=0;

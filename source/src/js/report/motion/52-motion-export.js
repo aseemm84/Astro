@@ -186,7 +186,7 @@ function moSceneSheets(){
       ["Turns retrograde",w.s?moDay(w.s):"not in range"],
       ["Resumes direct",  w.e?moDay(w.e):"not in range"]]});
   } else if(k==="gochara"){
-    var yrs=MO.opt.years||12, t0=Date.now(), t1=t0+yrs*365.2564*86400000;
+    var t0=Date.now(), t1=t0+moSpanMs(), yrs=(t1-t0)/31556952000;
     var ing=[], sta=[];
     ["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn","Rahu","Ketu"].forEach(function(en){
       if(en==="Moon") return;                       // a Moon ingress every 2.3 days drowns the sheet
@@ -223,10 +223,10 @@ function moSceneSheets(){
       cols:["Date (UTC)","Guru °","Guru rāśi","Śani °","Śani rāśi","Rāhu °","Rāhu rāśi",
             "Ketu °","Ketu rāśi","Maṅgala °","Maṅgala rāśi"], rows:pos});
   } else if(k==="orrery"){
-    var t0b=moBirthMs(), yrs2=MO.opt.years||2, rows2=[];
-    var N2=Math.min(900,Math.round(yrs2*73));
+    var t0b=moBirthMs(), spanMs=moSpanMs(), rows2=[];
+    var N2=Math.min(900,Math.max(40,Math.round(spanMs/86400000/5)));
     for(var q=0;q<=N2;q++){
-      var ms3=t0b+yrs2*365.2564*86400000*q/N2;
+      var ms3=t0b+spanMs*q/N2;
       MO_NAMES.forEach(function(en){
         var L=moSidAt(en,ms3); if(L==null) return;
         var lat2=0;
@@ -239,7 +239,7 @@ function moSceneSheets(){
     out.push({name:"Longitude and latitude",
       cols:["Date (UTC)","Graha","Sidereal longitude °","Rāśi","Ecliptic latitude °"], rows:rows2});
   } else if(k==="birthsky"){
-    var i3=MO.J&&MO.J.input||{}, b=moBirthMs(), half=(MO.opt.hours||14)*3600000/2, rows3=[];
+    var i3=MO.J&&MO.J.input||{}, b=moBirthMs(), half=moSpanMs()/2, rows3=[];
     var N3=96;
     for(var s3=0;s3<=N3;s3++){
       var ms4=b-half+(half*2)*s3/N3, d4=new Date(ms4);
@@ -270,6 +270,69 @@ function moSceneSheets(){
         for(var n=0;n<27;n++) r.push([n+1,SKY_NAKA[n],+(n*seg).toFixed(4),+((n+1)*seg).toFixed(4),
           moSignOf(n*seg)]);
         return r; })()});
+  } else if(k==="frames"){
+    var i5=MO.J&&MO.J.input||{}, b5=moBirthMs(), rows5=[], N5=144;
+    for(var f=0;f<=N5;f++){
+      var ms5=b5+86164091*f/N5, d5=new Date(ms5);
+      var ut5=d5.getUTCHours()+d5.getUTCMinutes()/60+d5.getUTCSeconds()/3600, sk5=null;
+      try{ sk5=window.quickSky({year:d5.getUTCFullYear(),month:d5.getUTCMonth()+1,day:d5.getUTCDate(),
+        hour:ut5,minute:0,second:0,tzHours:0,lat:i5.lat,lon:i5.lon,ayanamsa:i5.ayanamsa||"lahiri"}); }catch(e){}
+      if(!sk5) continue;
+      var h1=Math.floor(sk5.lagna/30)%12;
+      rows5.push([moISO(ms5),+sk5.lagna.toFixed(4),SA[h1],+(sk5.lagna%30).toFixed(4),
+                  SA[h1],SA[(h1+3)%12],SA[(h1+6)%12],SA[(h1+9)%12]]);
+    }
+    out.push({name:"Lagna through one day",
+      cols:["Time (UTC)","Lagna °","Rāśi rising","Degrees in rāśi","1st bhāva","4th","7th","10th"],
+      rows:rows5});
+  } else if(k==="ayanamsa"){
+    var rows6=[];
+    for(var yy=-500;yy<=3500;yy+=25){
+      var jd6=2451545.0+(yy-2000)*365.2425, a6=null;
+      try{ a6=window.__ayanFor?window.__ayanFor("lahiri",jd6):null; }catch(e){}
+      if(a6==null) continue;
+      var others={};
+      ["raman","kp","truechitra"].forEach(function(mdx){
+        try{ others[mdx]=window.__ayanFor(mdx,jd6); }catch(e){ others[mdx]=null; }
+      });
+      rows6.push([yy<0?(Math.abs(yy)+" BCE"):(yy+" CE"), yy, +a6.toFixed(5),
+                  others.raman!=null?+others.raman.toFixed(5):"",
+                  others.kp!=null?+others.kp.toFixed(5):"",
+                  others.truechitra!=null?+others.truechitra.toFixed(5):""]);
+    }
+    out.push({name:"Ayanāṃśa by year",
+      cols:["Year","Year (signed)","Lahiri °","Raman °","Krishnamurti °","True Chitrapakṣa °"],
+      rows:rows6});
+  } else if(k==="drishti"){
+    var en7=MO.opt.subject, t7=Date.now(), e7=t7+moSpanMs(), rows7=[];
+    var N7=Math.min(600,Math.max(40,Math.round((e7-t7)/86400000)));
+    var SP={Sun:[180],Moon:[180],Mercury:[180],Venus:[180],Mars:[90,180,210],
+            Jupiter:[120,180,240],Saturn:[60,180,270],Rahu:[180],Ketu:[180]};
+    for(var s7=0;s7<=N7;s7++){
+      var m7=t7+(e7-t7)*s7/N7, L7=moSidAt(en7,m7); if(L7==null) continue;
+      var row7=[moDay(m7),+L7.toFixed(4),moSignOf(L7)];
+      (SP[en7]||[180]).forEach(function(off){
+        var g=((L7+off)%360+360)%360;
+        row7.push(Math.round(off/30)+1, moSignOf(g), +g.toFixed(4));
+      });
+      rows7.push(row7);
+    }
+    var cols7=["Date (UTC)","Longitude °","Rāśi"];
+    (SP[en7]||[180]).forEach(function(){ cols7.push("House glanced","Rāśi glanced","Degree glanced °"); });
+    out.push({name:"Dṛṣṭi",cols:cols7,rows:rows7});
+  } else if(k==="tithi"){
+    var t8=Date.now(), rows8=[], N8=360;
+    for(var s8=0;s8<=N8;s8++){
+      var m8=t8+29.530589*86400000*s8/N8;
+      var su8=moSidAt("Sun",m8), mo8=moSidAt("Moon",m8);
+      if(su8==null||mo8==null) continue;
+      var el8=((mo8-su8)%360+360)%360, ti8=Math.floor(el8/12)+1;
+      rows8.push([moISO(m8),+su8.toFixed(4),+mo8.toFixed(4),+el8.toFixed(4),
+                  el8<180?"Śukla":"Kṛṣṇa", ti8>15?ti8-15:ti8, ti8]);
+    }
+    out.push({name:"Tithi through a month",
+      cols:["Time (UTC)","Sūrya °","Candra °","Elongation °","Pakṣa","Tithi in pakṣa","Tithi of 30"],
+      rows:rows8});
   } else if(k==="dasha"){
     var tr=null; try{ tr=buildTree(MO.D); }catch(e){}
     var md=[], ad=[];
