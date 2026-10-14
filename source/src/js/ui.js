@@ -376,6 +376,7 @@
     // the sky pane draws itself once the report is in the document
     try{ if(document.getElementById("skycanvas") && window.__skyRedraw) window.__skyRedraw(); }catch(e){}
     try{ if(document.getElementById("swhcanvas") && window.__swhDraw) window.__swhDraw(); }catch(e){}
+    try{ if(document.getElementById("mocanvas") && window.__moMount) window.__moMount(); }catch(e){}
     evRender();
     if(pendingTab){ showTab(pendingTab,true); pendingTab=null; }
   }

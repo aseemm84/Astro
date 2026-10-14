@@ -1,0 +1,245 @@
+/* ===== The Motion tab: markup, controls, handlers ===== */
+
+function moChipRow(label,items,cur,attr,extra){
+  return '<div class="morow"><span class="molab">'+esc(label)+'</span>'+
+    items.map(function(it){
+      return '<button type="button" class="skyv'+(it.k===cur?" on":"")+'" '+attr+'="'+it.k+'"'+
+        (it.title?(' title="'+esc(it.title)+'"'):"")+'>'+esc(it.label)+'</button>';
+    }).join("")+(extra||"")+'</div>';
+}
+var MO_TOGGLES=[
+  {k:"trail",  label:"Trails"},
+  {k:"glow",   label:"Glow"},
+  {k:"stars",  label:"Starfield"},
+  {k:"grid",   label:"Guides"},
+  {k:"labels", label:"Labels"},
+  {k:"loopFade",label:"Loop fade"}
+];
+var MO_CAPS=[
+  {k:"logo",  label:"Logo"},
+  {k:"date",  label:"Date"},
+  {k:"handle",label:"Handle"}
+];
+function motionPane(D,J){
+  if(!J||!J.input) return "";
+  MO.D=D; MO.J=J; MO.p=0; MO.playing=false; MO.scene="retro"; MO.ratio="9:16";
+  MO.pal="midnight"; MO.dur=15; MO.studio=false;
+  MO.opt.subject="Mars"; MO.opt.years=12; MO.opt.hours=14; MO.opt.exag=26;
+  MO.cap.title=""; MO.cap.sub="";
+  MO_CACHE={};
+  for(var g in MO.show) MO.show[g]=true;
+  return '<p class="knote">Six animations built from this chart and the same ephemeris the rest of '+
+    'the site uses. Everything here is drawn on a canvas rather than as a chart, because these are '+
+    'made to be <b>watched and posted</b> rather than measured — choose a vertical frame, press play, '+
+    'and screen-record. <b>Studio mode</b> hides the whole site so the recording is clean. The '+
+    '<b>export</b> button hands you the numbers behind whichever scene is running, as a spreadsheet.</p>'+
+
+    '<div class="moscenes">'+MO_SCENES.map(function(s){
+      return '<button type="button" class="moscene'+(s.key==="retro"?" on":"")+'" data-moscene="'+s.key+
+        '"><b>'+esc(s.label)+'</b><span>'+esc(s.sub)+'</span></button>'; }).join("")+'</div>'+
+
+    '<div class="mowrap" id="mowrap">'+
+      '<div class="mostage" id="mostage"><canvas id="mocanvas" width="1080" height="1920"></canvas></div>'+
+      '<button type="button" class="moexit" id="moexit">Esc — leave studio</button>'+
+      '<div class="mopanel">'+
+        '<div class="morow">'+
+          '<button type="button" class="k-btn" id="moplay" aria-pressed="false">Play</button>'+
+          '<button type="button" class="k-btn sec" id="morestart">Restart</button>'+
+          '<span class="molab">Length</span>'+
+          '<select id="modur" class="skysel">'+MO_DUR.map(function(d){
+            return '<option value="'+d.s+'"'+(d.s===15?" selected":"")+'>'+d.label+'</option>'; }).join("")+'</select>'+
+          '<span class="mofps" id="mofps">—</span>'+
+        '</div>'+
+        '<div class="morow"><span class="molab">Scrub</span>'+
+          '<input type="range" id="moscrub" min="0" max="1000" step="1" value="0"></div>'+
+        moChipRow("Frame",Object.keys(MO_RATIOS).map(function(k){
+          return {k:k,label:MO_RATIOS[k].label,title:MO_RATIOS[k].note}; }),"9:16","data-moratio")+
+        moChipRow("Palette",Object.keys(MO_PALS).map(function(k){
+          return {k:k,label:MO_PALS[k].label}; }),"midnight","data-mopal")+
+        '<div class="morow"><span class="molab">Show</span>'+
+          MO_TOGGLES.map(function(t){
+            return '<button type="button" class="skyv'+(MO.opt[t.k]?" on":"")+'" data-moopt="'+t.k+
+              '">'+esc(t.label)+'</button>'; }).join("")+
+        '</div>'+
+        '<div class="morow"><span class="molab">Grahas</span>'+
+          [["Sun","Su"],["Moon","Mo"],["Mars","Ma"],["Mercury","Me"],["Jupiter","Ju"],
+           ["Venus","Ve"],["Saturn","Sa"],["Rahu","Ra"],["Ketu","Ke"]].map(function(g){
+            return '<button type="button" class="skyv on" data-mograha="'+g[0]+'">'+g[1]+'</button>';
+          }).join("")+
+          '<span class="mopre"><button type="button" class="skyv" data-mopre="all">all</button>'+
+          '<button type="button" class="skyv" data-mopre="slow">slow</button></span>'+
+        '</div>'+
+        '<div class="morow" id="moscopts"></div>'+
+        '<div class="morow"><span class="molab">Trail</span>'+
+          '<input type="range" id="motrail" min="5" max="90" step="1" value="35">'+
+          '<span class="moval" id="motrailv">35%</span>'+
+          '<span class="molab">Stars</span>'+
+          '<input type="range" id="modens" min="0" max="400" step="10" value="160">'+
+          '<span class="moval" id="modensv">160</span></div>'+
+        '<div class="morow mocaprow"><span class="molab">Caption</span>'+
+          '<input type="text" id="motitle" class="motext" placeholder="title — leave blank for the scene&rsquo;s own" maxlength="64">'+
+          '<input type="text" id="mosub" class="motext" placeholder="subtitle" maxlength="80"></div>'+
+        '<div class="morow"><span class="molab">Stamp</span>'+
+          MO_CAPS.map(function(t){
+            return '<button type="button" class="skyv'+(MO.cap[t.k]?" on":"")+'" data-mocap="'+t.k+
+              '">'+esc(t.label)+'</button>'; }).join("")+
+          '<input type="text" id="mohandle" class="motext mohandle" value="@learnhoro" maxlength="30">'+
+        '</div>'+
+        '<div class="morow mofinal">'+
+          '<button type="button" class="k-btn" id="mostudio" aria-pressed="false">Studio mode</button>'+
+          '<button type="button" class="k-btn sec" id="moxls">Export data (.xlsx)</button>'+
+          '<button type="button" class="k-btn sec" id="mopng">Save this frame (.png)</button>'+
+          '<span class="moxlsmsg" id="moxlsmsg"></span>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+
+    '<div class="kbox"><b>Making a reel.</b> Pick the vertical frame, set the length to 15 seconds, '+
+    'press <b>Studio mode</b>, then record your screen — QuickTime on a Mac, or the built-in recorder '+
+    'on an iPhone. That gives you an MP4 straight away. A browser cannot write an MP4 by itself, which '+
+    'is why there is no video button here: anything it could produce would be a WebM you would have to '+
+    'convert anyway. Add music in Instagram rather than in the file — a licensed track baked into a '+
+    'video gets the post muted.</div>'+
+    '<div class="kbox"><b>The export.</b> Each scene can hand you its own numbers as a spreadsheet: '+
+    'the daily path and the station dates for a retrograde, every sign ingress across the span for '+
+    'gochara, altitude and azimuth through the night for the birth sky, the yogatārā table with real '+
+    'star positions, the daśā tree with its dates. Every workbook opens with a sheet recording the '+
+    'birth data, the ayanāṃśa and the house system, so a file still makes sense a year later.</div>'+
+    '<div class="kbox"><b>What these are and are not.</b> The positions are real and computed the same '+
+    'way as everywhere else on this site. The <i>drawing</i> takes liberties on purpose: latitude is '+
+    'exaggerated in the orrery, trails are longer than any real afterglow, and glow is decoration. '+
+    'They are made to be legible at the size of a phone held at arm&rsquo;s length, not to be measured '+
+    'off the screen. For measurement, use the Sky tab.</div>';
+}
+/* per-scene extra controls */
+function moSceneOpts(){
+  var host=document.getElementById("moscopts"); if(!host) return;
+  var k=MO.scene, h="";
+  if(k==="retro"){
+    h='<span class="molab">Graha</span>'+
+      ["Mercury","Venus","Mars","Jupiter","Saturn"].map(function(en){
+        return '<button type="button" class="skyv'+(MO.opt.subject===en?" on":"")+
+          '" data-mosubj="'+en+'">'+esc(MO_FULL[en])+'</button>'; }).join("")+
+      '<span class="mohint">finds the retrograde nearest to today</span>';
+  } else if(k==="gochara"){
+    h='<span class="molab">Span</span>'+[6,12,20,30].map(function(y){
+        return '<button type="button" class="skyv'+(MO.opt.years===y?" on":"")+
+          '" data-moyears="'+y+'">'+y+' years</button>'; }).join("")+
+      '<span class="mohint">from today forward</span>';
+  } else if(k==="orrery"){
+    h='<span class="molab">Span</span>'+[1,2,5,12].map(function(y){
+        return '<button type="button" class="skyv'+(MO.opt.years===y?" on":"")+
+          '" data-moyears="'+y+'">'+y+(y===1?" year":" years")+'</button>'; }).join("")+
+      '<span class="molab">Latitude ×</span><input type="range" id="moexag" min="6" max="60" step="2" value="'+
+      MO.opt.exag+'"><span class="moval" id="moexagv">'+MO.opt.exag+'</span>';
+  } else if(k==="birthsky"){
+    h='<span class="molab">Window</span>'+[6,14,24].map(function(hr){
+        return '<button type="button" class="skyv'+(MO.opt.hours===hr?" on":"")+
+          '" data-mohours="'+hr+'">'+hr+' hours</button>'; }).join("")+
+      '<span class="mohint">centred on the birth moment</span>';
+  } else if(k==="nakshatra"){
+    h='<span class="mohint">all twenty-seven in turn — set the length to 60 s to linger on each</span>';
+  } else if(k==="dasha"){
+    h='<span class="mohint">the whole Viṃśottarī cycle from birth</span>';
+  }
+  host.innerHTML=h;
+  host.style.display=h?"":"none";
+}
+function moMount(){
+  var cv=document.getElementById("mocanvas"); if(!cv) return false;
+  MO.cv=cv; moResize(); moLogo(); moSceneOpts();
+  if(MO__LOGO && !MO__LOGO.complete) MO__LOGO.onload=function(){ moDraw(); };
+  moDraw(); return true;
+}
+window.__moDraw=function(){ if(MO.cv) moDraw(); };
+window.__moMount=moMount;
+
+/* ---------------------------------------------------------------- handlers --- */
+document.addEventListener("click",function(ev){
+  var t=ev.target; if(!t||!t.getAttribute) return;
+  var sc=t.closest?t.closest("[data-moscene]"):null;
+  if(sc){
+    MO.scene=sc.getAttribute("data-moscene"); MO.p=0; moPlay(false);
+    [].forEach.call(document.querySelectorAll("[data-moscene]"),function(b){
+      b.className="moscene"+(b.getAttribute("data-moscene")===MO.scene?" on":""); });
+    var s1=document.getElementById("moscrub"); if(s1) s1.value=0;
+    moSceneOpts(); moDraw(); return;
+  }
+  if(t.id==="moplay"){ moPlay(!MO.playing); return; }
+  if(t.id==="morestart"){ MO.p=0; var s2=document.getElementById("moscrub");
+    if(s2) s2.value=0; moDraw(); return; }
+  if(t.id==="mostudio"){ moStudio(!MO.studio); return; }
+  if(t.id==="moexit"){ moStudio(false); return; }
+  if(t.id==="moxls"){ moExport(); return; }
+  if(t.id==="mopng"){
+    try{
+      var nm=(MO.J&&MO.J.input&&MO.J.input.name)||"chart";
+      MO.cv.toBlob(function(b){
+        var u=URL.createObjectURL(b), a=document.createElement("a");
+        a.href=u; a.download="learnhoro-"+MO.scene+"-"+String(nm).replace(/\s+/g,"-")+".png";
+        document.body.appendChild(a); a.click();
+        setTimeout(function(){ URL.revokeObjectURL(u); a.parentNode.removeChild(a); },400);
+      },"image/png");
+    }catch(e){
+      var m=document.getElementById("moxlsmsg"); if(m) m.textContent="could not save the frame";
+    }
+    return;
+  }
+  var r=t.getAttribute("data-moratio");
+  if(r){ MO.ratio=r;
+    [].forEach.call(document.querySelectorAll("[data-moratio]"),function(b){
+      b.className="skyv"+(b.getAttribute("data-moratio")===r?" on":""); });
+    moResize(); moDraw(); return; }
+  var pa=t.getAttribute("data-mopal");
+  if(pa){ MO.pal=pa;
+    [].forEach.call(document.querySelectorAll("[data-mopal]"),function(b){
+      b.className="skyv"+(b.getAttribute("data-mopal")===pa?" on":""); });
+    moDraw(); return; }
+  var op=t.getAttribute("data-moopt");
+  if(op){ MO.opt[op]=!MO.opt[op]; t.className="skyv"+(MO.opt[op]?" on":""); moDraw(); return; }
+  var cp=t.getAttribute("data-mocap");
+  if(cp){ MO.cap[cp]=!MO.cap[cp]; t.className="skyv"+(MO.cap[cp]?" on":""); moDraw(); return; }
+  var gh=t.getAttribute("data-mograha");
+  if(gh){ MO.show[gh]=!MO.show[gh]; t.className="skyv"+(MO.show[gh]?" on":""); moDraw(); return; }
+  var pr=t.getAttribute("data-mopre");
+  if(pr){
+    var on=pr==="slow"?["Jupiter","Saturn","Rahu","Ketu"]:MO_NAMES;
+    MO_NAMES.forEach(function(n){ MO.show[n]=on.indexOf(n)>=0; });
+    [].forEach.call(document.querySelectorAll("[data-mograha]"),function(b){
+      b.className="skyv"+(MO.show[b.getAttribute("data-mograha")]?" on":""); });
+    moDraw(); return; }
+  var sj=t.getAttribute("data-mosubj");
+  if(sj){ MO.opt.subject=sj; MO.p=0;
+    [].forEach.call(document.querySelectorAll("[data-mosubj]"),function(b){
+      b.className="skyv"+(b.getAttribute("data-mosubj")===sj?" on":""); });
+    moDraw(); return; }
+  var yr=t.getAttribute("data-moyears");
+  if(yr){ MO.opt.years=+yr; MO.p=0; MO_CACHE={};
+    [].forEach.call(document.querySelectorAll("[data-moyears]"),function(b){
+      b.className="skyv"+(+b.getAttribute("data-moyears")===MO.opt.years?" on":""); });
+    moDraw(); return; }
+  var hr2=t.getAttribute("data-mohours");
+  if(hr2){ MO.opt.hours=+hr2; MO.p=0;
+    [].forEach.call(document.querySelectorAll("[data-mohours]"),function(b){
+      b.className="skyv"+(+b.getAttribute("data-mohours")===MO.opt.hours?" on":""); });
+    moDraw(); return; }
+});
+document.addEventListener("input",function(ev){
+  var t=ev.target; if(!t||!t.id) return;
+  if(t.id==="moscrub"){ moPlay(false); MO.p=(+t.value)/1000; moDraw(); return; }
+  if(t.id==="motrail"){ MO.opt.trailLen=(+t.value)/100;
+    var a=document.getElementById("motrailv"); if(a) a.textContent=t.value+"%"; moDraw(); return; }
+  if(t.id==="modens"){ MO.opt.starDensity=+t.value;
+    var b=document.getElementById("modensv"); if(b) b.textContent=t.value; moDraw(); return; }
+  if(t.id==="moexag"){ MO.opt.exag=+t.value;
+    var c=document.getElementById("moexagv"); if(c) c.textContent=t.value; moDraw(); return; }
+  if(t.id==="motitle"){ MO.cap.title=t.value; moDraw(); return; }
+  if(t.id==="mosub"){ MO.cap.sub=t.value; moDraw(); return; }
+  if(t.id==="mohandle"){ MO.cap.handle=t.value; moDraw(); return; }
+});
+document.addEventListener("change",function(ev){
+  if(ev.target && ev.target.id==="modur"){ MO.dur=+ev.target.value; }
+});
+document.addEventListener("keydown",function(ev){
+  if(ev.key==="Escape" && MO.studio) moStudio(false);
+});

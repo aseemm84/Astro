@@ -233,6 +233,7 @@ window.buildKundliReport=function(J){
     ["events","Life events",function(){ return eventsPane(); }],
     ["sky","Sky",function(){ return skyPane(D,J); }],
     ["starwheel","Star wheel",function(){ return starWheelPane(D,J); }],
+    ["motion","Motion",function(){ return motionPane(D,J); }],
     ["btime","Birth-time check",function(){ return birthTimePane(D); }],
     ["match","Compatibility",function(){ return matchPane(); }],
     ["full","Full report",function(){ return '<div class="krprint">'+

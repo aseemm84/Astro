@@ -549,6 +549,46 @@ svg.lhmark .lhorb ellipse{fill:none}
 @media print{.kreport .krdash{display:none}}
 .kreport tr.kcycrow td{background:var(--soft);font-weight:600;font-size:12px;
   letter-spacing:.03em;color:var(--ink);border-top:2px solid var(--gold)}
+/* --- motion studio --- */
+.kreport .moscenes{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:8px;margin:12px 0}
+.kreport .moscene{text-align:left;background:#fff;border:1px solid var(--line);border-radius:9px;
+  padding:9px 12px;cursor:pointer;font:inherit;color:var(--ink);display:flex;flex-direction:column;gap:2px}
+.kreport .moscene b{font-size:13.5px}
+.kreport .moscene span{font-size:11px;color:var(--muted);line-height:1.35}
+.kreport .moscene:hover{border-color:var(--gold)}
+.kreport .moscene.on{background:var(--night);border-color:var(--night);color:#fff}
+.kreport .moscene.on span{color:#c6ccea}
+.kreport .mowrap{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:18px;align-items:start;margin:10px 0}
+@media (max-width:860px){.kreport .mowrap{grid-template-columns:1fr}}
+.kreport .mostage{background:#0b1020;border:1px solid var(--line);border-radius:10px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center}
+.kreport #mocanvas{display:block;width:100%;height:auto;max-height:70vh;object-fit:contain}
+.kreport .mopanel{border:1px solid var(--line);border-radius:10px;background:var(--soft);padding:10px 12px}
+.kreport .morow{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:0 0 8px}
+.kreport .morow:last-child{margin-bottom:0}
+.kreport .molab{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.kreport .morow input[type=range]{flex:1;min-width:110px;accent-color:var(--gold)}
+.kreport .moval{font-variant-numeric:tabular-nums;font-size:12px;font-weight:600;min-width:38px}
+.kreport .mofps{margin-left:auto;font:600 11px var(--sans);color:var(--muted);font-variant-numeric:tabular-nums}
+.kreport .mopre{display:inline-flex;gap:3px;margin-left:6px;padding-left:8px;border-left:1px solid var(--line)}
+.kreport .mohint{font-size:11.5px;color:var(--muted);flex:1 1 180px}
+.kreport .motext{font:inherit;font-size:12.5px;padding:6px 9px;border:1px solid var(--line);
+  border-radius:6px;background:#fff;color:var(--ink);flex:1 1 150px;min-width:0}
+.kreport .mohandle{flex:0 0 130px}
+.kreport .mofinal{border-top:1px dashed var(--line);padding-top:10px;margin-top:2px}
+.kreport .moxlsmsg{font-size:11.5px;color:var(--muted)}
+/* studio mode: a full-screen overlay rather than hiding the page, so nothing depends
+   on where the canvas happens to sit in the document */
+body.mostudio{overflow:hidden}
+body.mostudio .mostage{position:fixed;inset:0;z-index:99999;background:#000;border:0;border-radius:0;
+  padding:0}
+body.mostudio #mocanvas{max-height:100vh;max-width:100vw;width:auto;height:100vh;margin:0 auto}
+body.mostudio .mopanel,body.mostudio .moscenes{display:none!important}
+.kreport .moexit{display:none}
+body.mostudio .moexit{display:block;position:fixed;right:14px;top:14px;z-index:100000;
+  font:600 12px var(--sans);color:#cfd3e6;background:rgba(0,0,0,.55);border:1px solid #39406a;
+  border-radius:7px;padding:7px 12px;cursor:pointer}
+@media print{.kreport .moscenes,.kreport .mopanel{display:none}}
 </style></head><body><header class="masthead"><img class="lhlogo" src="data:image/jpeg;base64,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" alt="LearnHoro — Discover Your Stars" width="420" height="238"><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Build a Kundli</h1><p class="sub">How a birth chart is cast in the sidereal zodiac — and a tool that computes a full chart in your browser and links each planet into the padas reference.</p></header><nav class="site"><a href="index.html">Home</a><a href="kundli.html" class="active">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#what">What a kundli is</a><a href="#need">What you need</a><a href="#how">How a chart is cast</a><a href="#cast">Cast a chart now</a><a href="#read">How to read what comes back</a><a href="#limits">Accuracy, attribution & limits</a></aside><main><p class="lead">A <b>kundli</b> (janma-kundali) is a birth chart: a map of the sky at the exact moment and place of birth, projected onto the twelve bhavas counted from the Lagna. This page explains how a chart is cast, then lets you compute a real one and follow each piece into the reference pages.</p><p class="term"><b>Kundli / Janma-kundali</b> — birth chart &mdash; the positions of the nine grahas, the Lagna and the twelve bhavas at the birth instant, expressed in the sidereal (nirayana) zodiac.</p><h2 id="what">What a kundli is</h2><p>Vedic astrology reads the chart in the <b>sidereal</b> zodiac, measured from a fixed star point rather than the moving equinox. The difference between the two zodiacs at a given date is the <b>ayanamsha</b>; subtracting it from an ordinary (tropical) position gives the sidereal position Jyotisha uses. The chart is then a set of nine grahas seated in twelve rashis, read as twelve bhavas from the rising sign.</p><h2 id="need">What you need</h2><ul><li><b>Date of birth</b> &mdash; the calendar date.</li><li><b>Exact time of birth</b> &mdash; to the minute if possible. This is the most important input: the Lagna moves about one degree every four minutes, and the finest divisions (D60) change every ~30 seconds.</li><li><b>Place of birth</b> &mdash; resolved to latitude, longitude, and the UTC offset in force there at that date.</li></ul><div class="caution"><b>Handle with care.</b> Everything on this page is a <b>study aid</b> for learning BPHS method, not a prediction or a judgement about any person. Because results hinge on birth time, treat a chart cast from an uncertain time as provisional &mdash; and take medical, legal, financial or personal decisions to a qualified professional, never to a chart.</div><h2 id="how">How a chart is cast</h2><ol><li><b>Fix the exact birth instant.</b> Combine the date, the clock time, and the UTC offset that applied at that place and date. Errors here propagate into everything downstream.</li><li><b>Compute sidereal positions.</b> An ephemeris gives each graha&rsquo;s longitude; subtract the <b>ayanamsha</b> (Lahiri by default) to place it in the sidereal zodiac. See <a href="rashis.html">Rashis</a> and <a href="dignity.html">Dignity</a>.</li><li><b>Find the Lagna.</b> From the instant and the coordinates, determine the sign and degree rising in the east &mdash; the anchor of the chart. See <a href="lagna.html">Lagna</a>.</li><li><b>Place the grahas.</b> Seat each planet in its rashi and read its <b>nakshatra and pada</b>. See the <a href="108-nakshatra-padas.html">108 Padas</a> tool and <a href="grahas.html">Grahas</a>.</li><li><b>Build the bhavas and vargas.</b> Count the twelve houses from the Lagna (whole-sign by default), then derive the divisional charts &mdash; D9, D10 and the rest. See <a href="bhavas.html">Bhavas</a> and <a href="vargas.html">Vargas</a>.</li><li><b>Start the dasha clock.</b> From the Moon&rsquo;s nakshatra, compute the Vimshottari balance at birth and the sequence of periods. See <a href="dashas.html">Dashas</a>.</li></ol><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 3&ndash;6 (sidereal positions, rashis, dignity, vargas) and Vol. 2, Ch. 46 (Vimshottari from the Moon&rsquo;s nakshatra). The casting arithmetic itself is standard astronomy; BPHS supplies the framework the numbers are read within.</p><div class="note"><b>Translator / commentary.</b> This site&rsquo;s stated defaults are the sidereal zodiac, Lahiri/Chitrapaksha ayanamsha, whole-sign houses and Vimshottari dasha. The engine below uses the sidereal zodiac with Lahiri ayanamsha, so its output matches those defaults; note that other software using a different ayanamsha or house system will differ slightly.</div><h2 id="cast">Cast a chart now</h2><p>Everything below is computed <b>in your browser</b> — planetary positions, the lagna, all sixteen vargas, ashtakavarga, yogas, ṣaḍbala and the full daśā tree. Nothing is sent anywhere and the page works offline. Each planet&rsquo;s nakshatra links straight into the padas tool. If you want a second opinion on the positions, the chart-source selector can fetch the same chart from an external ephemeris service and report how far the two disagree.</p>
 <div class="k-form">
   <div class="k-full"><label for="k-ayan">Ayanāṃśa</label>
@@ -6494,6 +6534,1296 @@ window.__swhSetOffset=function(m){ if(SWH_ANIM){cancelAnimationFrame(SWH_ANIM);S
 /* the offset a step is heading for — settled immediately, even mid-animation */
 window.__swhGetOffset=function(){ return SWH_TARGET; };
 window.__swhGetDrawn=function(){ return SWH_OFFSET; };
+/* ===== Motion studio: the animations tab =====
+   A separate renderer from the ecliptic wheel, and deliberately so. The wheel is SVG
+   because it is a precise, printable chart. These are canvas because they want glow,
+   long fading trails, a few hundred stars and sixty frames a second at 1080×1920 —
+   all of which canvas does cheaply and SVG does not. The two share the engine, not
+   the drawing code, so nothing here can disturb the chart. */
+
+var MO_RATIOS={
+  "9:16":{w:1080,h:1920,label:"Vertical 9:16",note:"Reels, Stories, TikTok"},
+  "1:1" :{w:1080,h:1080,label:"Square 1:1",  note:"Feed post"},
+  "16:9":{w:1920,h:1080,label:"Wide 16:9",   note:"YouTube, a screen"}
+};
+/* Palettes. Midnight is the LearnHoro brand — gold on deep navy, the logo's own
+   colours. Eclipse is for maximum contrast on a phone in daylight. Parchment is for
+   a still you want to print or post as a light image. */
+var MO_PALS={
+  midnight:{key:"midnight",label:"Midnight",
+    bg:"#0b1020", bg2:"#161d3a", ink:"#f2efe4", dim:"#8f96bb", line:"#2b3358",
+    gold:"#d9b668", benefic:"#5fbf8f", malefic:"#e07a60", star:"#dfe6ff", glow:"#6f7cc0"},
+  eclipse:{key:"eclipse",label:"Eclipse",
+    bg:"#000000", bg2:"#0a0a0f", ink:"#ffffff", dim:"#9a9a9a", line:"#2a2a33",
+    gold:"#ffc83d", benefic:"#4dffa6", malefic:"#ff6b4a", star:"#ffffff", glow:"#ffb02e"},
+  parchment:{key:"parchment",label:"Parchment",
+    bg:"#f7f3e8", bg2:"#eee7d6", ink:"#1d2340", dim:"#6c7089", line:"#d8d0ba",
+    gold:"#a17c2a", benefic:"#2f7d55", malefic:"#b5533c", star:"#4a5078", glow:"#c9a24b"}
+};
+var MO_DUR=[{s:8,label:"8 s"},{s:15,label:"15 s"},{s:30,label:"30 s"},{s:60,label:"60 s"}];
+var MO_NAMES=["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn","Rahu","Ketu"];
+var MO_FULL={Sun:"Sūrya",Moon:"Candra",Mars:"Maṅgala",Mercury:"Budha",Jupiter:"Guru",
+             Venus:"Śukra",Saturn:"Śani",Rahu:"Rāhu",Ketu:"Ketu"};
+var MO_BEN={Jupiter:1,Venus:1,Mercury:1,Moon:1};
+
+var MO={
+  cv:null, ctx:null, D:null, J:null,
+  ratio:"9:16", scene:"retro", pal:"midnight", dur:15,
+  p:0, playing:false, raf:null, last:null, studio:false,
+  show:{Sun:true,Moon:true,Mars:true,Mercury:true,Jupiter:true,Venus:true,Saturn:true,Rahu:true,Ketu:true},
+  opt:{trail:true, trailLen:0.35, glow:true, stars:true, starDensity:160, grid:true,
+       labels:true, loopFade:true, subject:"Mars"},
+  cap:{title:"", sub:"", logo:true, handle:"@learnhoro", date:true},
+  fps:0, _fpsT:0, _fpsN:0
+};
+function moPal(){ return MO_PALS[MO.pal]||MO_PALS.midnight; }
+function moSize(){ return MO_RATIOS[MO.ratio]||MO_RATIOS["9:16"]; }
+
+/* ---------------------------------------------------------------------------
+   Canvas helpers
+   --------------------------------------------------------------------------- */
+function moClear(){
+  var P=moPal(), S=moSize(), c=MO.ctx;
+  var g=c.createLinearGradient(0,0,0,S.h);
+  g.addColorStop(0,P.bg2); g.addColorStop(1,P.bg);
+  c.fillStyle=g; c.fillRect(0,0,S.w,S.h);
+}
+/* A fixed starfield: the same every frame and every run, because a field that
+   reshuffles each frame reads as noise. Seeded by index, not by Math.random. */
+function moStars(){
+  if(!MO.opt.stars) return;
+  var P=moPal(), S=moSize(), c=MO.ctx, n=MO.opt.starDensity;
+  for(var i=0;i<n;i++){
+    var a=Math.sin(i*12.9898)*43758.5453, b=Math.sin(i*78.233)*12345.6789;
+    var x=(a-Math.floor(a))*S.w, y=(b-Math.floor(b))*S.h;
+    var m=(Math.sin(i*3.17)*0.5+0.5), r=0.7+m*1.9;
+    c.globalAlpha=0.20+m*0.55;
+    c.fillStyle=P.star;
+    c.beginPath(); c.arc(x,y,r,0,6.2832); c.fill();
+  }
+  c.globalAlpha=1;
+}
+function moGlowDot(x,y,r,fill,glow){
+  var c=MO.ctx;
+  if(MO.opt.glow){
+    c.save(); c.shadowColor=glow||fill; c.shadowBlur=r*2.4;
+    c.fillStyle=fill; c.beginPath(); c.arc(x,y,r,0,6.2832); c.fill(); c.restore();
+  } else {
+    c.fillStyle=fill; c.beginPath(); c.arc(x,y,r,0,6.2832); c.fill();
+  }
+}
+function moText(s,x,y,size,col,align,weight){
+  var c=MO.ctx;
+  c.fillStyle=col; c.textAlign=align||"center"; c.textBaseline="middle";
+  c.font=(weight||600)+" "+size+"px "+'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
+  c.fillText(s,x,y);
+}
+function moSerif(s,x,y,size,col,align){
+  var c=MO.ctx;
+  c.fillStyle=col; c.textAlign=align||"center"; c.textBaseline="middle";
+  c.font='600 '+size+'px "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif';
+  c.fillText(s,x,y);
+}
+/* the stage is everything above the caption band */
+function moStage(){
+  var S=moSize();
+  var capH = MO.ratio==="16:9" ? S.h*0.17 : S.h*0.19;
+  var H=S.h-capH;
+  return {x:0, y:0, w:S.w, h:H, cx:S.w/2, cy:H/2, capY:S.h-capH, capH:capH,
+          R:Math.min(S.w*0.455, H*0.455)};
+}
+
+/* Shared crowding fix, the same rule the ecliptic wheel uses: a glyph never slides
+   along the ring, it steps inward along its own bearing. The separation that clears
+   two discs is computed per lane, since the same gap in degrees is a smaller gap in
+   pixels further in. */
+function moSpread(items,R,gR){
+  var lanes=[R,R-gR*2.5,R-gR*5.0,R-gR*7.5], last=[];
+  items.sort(function(a,b){ return a.lon-b.lon; });
+  items.forEach(function(q){
+    var L=0;
+    while(L<lanes.length){
+      var sep=(2*gR+8)/Math.max(1,lanes[L])*180/Math.PI;
+      if(last[L]==null || (q.lon-last[L])>=sep) break;
+      L++;
+    }
+    if(L>=lanes.length) L=lanes.length-1;
+    last[L]=q.lon; q.r=lanes[L]; q.lane=L;
+  });
+  return items;
+}
+/* the dome works in altitude and azimuth, so crowding is pushed outward from the
+   zenith instead — the same thing the printed dome does */
+function moNudge(pt,placed,gap,cx,cy){
+  for(var i=0;i<10;i++){
+    var clash=false;
+    for(var j=0;j<placed.length;j++){
+      if(Math.hypot(placed[j][0]-pt[0],placed[j][1]-pt[1])<gap){ clash=true; break; }
+    }
+    if(!clash) break;
+    var a=Math.atan2(pt[1]-cy,pt[0]-cx);
+    if(!isFinite(a)) a=i*1.1;
+    pt=[pt[0]+Math.cos(a)*gap*0.66, pt[1]+Math.sin(a)*gap*0.66];
+  }
+  return pt;
+}
+function moFmtDate(ms){
+  var d=new Date(ms);
+  return String(d.getUTCDate()).padStart(2,"0")+" "+MON[d.getUTCMonth()+1]+" "+d.getUTCFullYear();
+}
+/* ---------------------------------------------------------------------------
+   Caption band — title, subtitle, running date, logo and handle. This is the part
+   that makes a frame look like it came from somewhere rather than from a browser.
+   --------------------------------------------------------------------------- */
+function moCaption(dateMs,sub){
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
+  var y0=st.capY;
+  var g=c.createLinearGradient(0,y0-40,0,y0+20);
+  g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,P.bg);
+  c.fillStyle=g; c.fillRect(0,y0-40,S.w,60);
+  c.fillStyle=P.bg; c.fillRect(0,y0+19,S.w,st.capH);
+  c.fillStyle=P.gold; c.fillRect(0,y0-1,S.w,2.5);
+
+  var pad=S.w*0.07, big=S.w*0.054, small=S.w*0.027;
+  var title=MO.cap.title||moSceneOf(MO.scene).title;
+  moSerif(title,S.w/2,y0+st.capH*0.30,big,P.ink);
+  var s2=MO.cap.sub||sub||moSceneOf(MO.scene).sub;
+  if(s2) moText(s2,S.w/2,y0+st.capH*0.52,small,P.dim,"center",500);
+  if(MO.cap.date && dateMs!=null)
+    moText(moFmtDate(dateMs),S.w/2,y0+st.capH*0.70,small*1.05,P.gold,"center",700);
+
+  /* logo: the masthead already holds it as a data URI, so it is reused rather than
+     duplicated into this file */
+  var lh=st.capH*0.30;
+  if(MO.cap.logo && MO__LOGO && MO__LOGO.complete && MO__LOGO.naturalWidth){
+    var lw=lh*(MO__LOGO.naturalWidth/MO__LOGO.naturalHeight);
+    try{ c.drawImage(MO__LOGO,pad,y0+st.capH*0.82-lh/2,lw,lh); }catch(e){}
+  }
+  if(MO.cap.handle)
+    moText(MO.cap.handle,S.w-pad,y0+st.capH*0.82,small,P.dim,"right",600);
+}
+var MO__LOGO=null;
+function moLogo(){
+  if(MO__LOGO) return;
+  var el=document.querySelector("img.lhlogo");
+  if(el && el.src){ var im=new Image(); im.src=el.src; MO__LOGO=im; }
+}
+/* ---------------------------------------------------------------------------
+   Transport. Time is normalised: every scene runs from 0 to 1 across the chosen
+   duration, so "the whole retrograde in fifteen seconds" is one setting rather than
+   a rate the viewer has to work out.
+   --------------------------------------------------------------------------- */
+function moDraw(){
+  if(!MO.ctx) return;
+  var sc=moSceneOf(MO.scene);
+  moClear();
+  var fade=1;
+  if(MO.opt.loopFade){                        // dip at the seam so a loop reads as a loop
+    if(MO.p>0.965) fade=(1-MO.p)/0.035;
+    else if(MO.p<0.035) fade=MO.p/0.035;
+    fade=0.25+0.75*Math.max(0,Math.min(1,fade));
+  }
+  MO.ctx.save(); MO.ctx.globalAlpha=fade;
+  var info=null;
+  try{ info=sc.draw(MO.p); }catch(e){ moErr(e); }
+  MO.ctx.restore();
+  moCaption(info&&info.ms, info&&info.sub);
+}
+function moErr(e){
+  var S=moSize();
+  moText("This scene could not be drawn: "+(e&&e.message?e.message:e),S.w/2,S.h*0.5,
+    S.w*0.025,"#e07a60","center",500);
+}
+function moTick(ts){
+  if(!MO.playing){ MO.raf=null; return; }
+  if(MO.last==null) MO.last=ts;
+  var dt=Math.min(120,ts-MO.last); MO.last=ts;
+  MO.p+=(dt/1000)/MO.dur;
+  if(MO.p>=1) MO.p-=1;
+  MO._fpsN++; MO._fpsT+=dt;
+  if(MO._fpsT>500){ MO.fps=Math.round(1000*MO._fpsN/MO._fpsT); MO._fpsN=0; MO._fpsT=0;
+    var f=document.getElementById("mofps"); if(f) f.textContent=MO.fps+" fps"; }
+  moDraw();
+  var sl=document.getElementById("moscrub"); if(sl) sl.value=Math.round(MO.p*1000);
+  MO.raf=requestAnimationFrame(moTick);
+}
+function moPlay(on){
+  MO.playing=on; MO.last=null;
+  var b=document.getElementById("moplay");
+  if(b){ b.textContent=on?"Pause":"Play"; b.setAttribute("aria-pressed",on?"true":"false"); }
+  if(on && !MO.raf) MO.raf=requestAnimationFrame(moTick);
+  if(!on && MO.raf){ cancelAnimationFrame(MO.raf); MO.raf=null; }
+}
+function moResize(){
+  var S=moSize(), cv=MO.cv; if(!cv) return;
+  cv.width=S.w; cv.height=S.h;
+  cv.style.aspectRatio=S.w+" / "+S.h;
+  MO.ctx=cv.getContext("2d");
+}
+function moStudio(on){
+  MO.studio=on;
+  document.body.classList.toggle("mostudio",on);
+  var b=document.getElementById("mostudio");
+  if(b){ b.textContent=on?"Leave studio":"Studio mode"; b.setAttribute("aria-pressed",on?"true":"false"); }
+  moDraw();
+}
+/* ===== The six scenes =====
+   Each one declares a span of real time and knows how to draw a single instant of it.
+   Progress runs 0→1 across whatever duration is set, so "the whole retrograde in
+   fifteen seconds" is one control rather than a rate to work out. */
+
+var MO_CACHE={};
+function moCached(key,make){
+  if(MO_CACHE[key]===undefined) MO_CACHE[key]=make();
+  return MO_CACHE[key];
+}
+function moSidAt(en,ms){
+  try{ return window.__kSidAt(en,new Date(ms)); }catch(e){ return null; }
+}
+function moSpeed(en,ms){
+  var a=moSidAt(en,ms-43200000), b=moSidAt(en,ms+43200000);
+  if(a==null||b==null) return 0;
+  var d=b-a; if(d>180)d-=360; if(d<-180)d+=360;
+  return d;
+}
+function moBirthMs(){
+  var i=MO.J&&MO.J.input; if(!i) return Date.now();
+  return Date.UTC(i.year,i.month-1,i.day,i.hour,i.minute)-i.tzHours*3600000;
+}
+/* The retrograde nearest to today for a given graha: scan forward, then back. */
+function moRetroWindow(en){
+  return moCached("retro|"+en,function(){
+    var now=Date.now(), DAY=86400000, stride=2*DAY;
+    var found=null, prev=null;
+    for(var k=-220;k<=900 && !found;k++){
+      var ms=now+k*stride, s=moSpeed(en,ms)<0;
+      if(prev!=null && s && !prev) found={start:ms};
+      prev=s;
+    }
+    if(!found) return {t0:now-60*DAY,t1:now+60*DAY,s:null,e:null};
+    var e=null;
+    for(var j=1;j<220;j++){ var m2=found.start+j*stride; if(moSpeed(en,m2)>=0){ e=m2; break; } }
+    if(e==null) e=found.start+70*DAY;
+    var pad=(e-found.start)*0.55;
+    return {t0:found.start-pad, t1:e+pad, s:found.start, e:e};
+  });
+}
+function moSceneOf(k){ for(var i=0;i<MO_SCENES.length;i++) if(MO_SCENES[i].key===k) return MO_SCENES[i]; return MO_SCENES[0]; }
+function moGlyph(x,y,r,en,P,bold){
+  var ben=MO_BEN[en], col=(en==="Rahu"||en==="Ketu")?P.dim:(ben?P.benefic:P.malefic);
+  var c=MO.ctx;
+  moGlowDot(x,y,r,P.bg,col);
+  c.strokeStyle=col; c.lineWidth=Math.max(2,r*0.16);
+  c.beginPath(); c.arc(x,y,r,0,6.2832); c.stroke();
+  moText(GL[en],x,y+r*0.06,r*0.95,bold?P.ink:P.ink,"center",700);
+  return col;
+}
+
+var MO_SCENES=[
+/* ---------------------------------------------------------------- 1. retrograde */
+{key:"retro", label:"Retrograde loop", title:"Retrograde is not backwards",
+ sub:"longitude across · ecliptic latitude up",
+ span:function(){ var w=moRetroWindow(MO.opt.subject); return {t0:w.t0,t1:w.t1}; },
+ draw:function(p){
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx, en=MO.opt.subject;
+  var w=moRetroWindow(en), t0=w.t0, t1=w.t1, ms=t0+(t1-t0)*p;
+  moStars();
+  /* the path, sampled once and reused */
+  var path=moCached("rpath|"+en,function(){
+    var out=[], N=240;
+    for(var i=0;i<=N;i++){
+      var m=t0+(t1-t0)*i/N, L=moSidAt(en,m);
+      var lat=0;
+      try{ var ev=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[en],new Date(m),true));
+           lat=ev.elat; }catch(e){}
+      if(L!=null) out.push({ms:m,lon:L,lat:lat,retro:moSpeed(en,m)<0});
+    }
+    return out;
+  });
+  if(!path.length) return {ms:ms};
+  var lo=1e9,hi=-1e9,la=1e9,ha=-1e9;
+  path.forEach(function(q){ var u=q.lon; lo=Math.min(lo,u); hi=Math.max(hi,u);
+    la=Math.min(la,q.lat); ha=Math.max(ha,q.lat); });
+  if(hi-lo>180){ path.forEach(function(q){ if(q.lon<180) q.lon+=360; });
+    lo=1e9;hi=-1e9; path.forEach(function(q){ lo=Math.min(lo,q.lon); hi=Math.max(hi,q.lon); }); }
+  var mx=(hi-lo)*0.12||1, my=(ha-la)*0.35||0.4;
+  lo-=mx; hi+=mx; la-=my; ha+=my;
+  var bx=S.w*0.11, bw=S.w-bx*2, by=st.cy-st.h*0.30, bh=st.h*0.60;
+  function X(l){ return bx+bw*(l-lo)/(hi-lo); }
+  function Y(b){ return by+bh-bh*(b-la)/(ha-la); }
+  /* sign bands and boundaries */
+  for(var sg=Math.floor(lo/30);sg<=Math.floor(hi/30);sg++){
+    var a=Math.max(lo,sg*30), b=Math.min(hi,sg*30+30);
+    if(b<=a) continue;
+    c.fillStyle=(sg%2)?"rgba(255,255,255,0.035)":"rgba(255,255,255,0.012)";
+    c.fillRect(X(a),by,X(b)-X(a),bh);
+    if(sg*30>lo){ c.strokeStyle=P.gold; c.globalAlpha=.45; c.setLineDash([6,8]); c.lineWidth=2;
+      c.beginPath(); c.moveTo(X(sg*30),by); c.lineTo(X(sg*30),by+bh); c.stroke();
+      c.setLineDash([]); c.globalAlpha=1; }
+    if(MO.opt.labels && X(b)-X(a)>S.w*0.12)
+      moText(SA[((sg%12)+12)%12],(X(a)+X(b))/2,by-S.w*0.035,S.w*0.030,P.dim,"center",600);
+  }
+  /* the ecliptic plane */
+  if(MO.opt.grid && la<0 && ha>0){
+    c.strokeStyle=P.line; c.lineWidth=2; c.setLineDash([5,7]);
+    c.beginPath(); c.moveTo(bx,Y(0)); c.lineTo(bx+bw,Y(0)); c.stroke(); c.setLineDash([]);
+    moText("ecliptic plane",bx+bw,Y(0)-S.w*0.022,S.w*0.022,P.dim,"right",500);
+  }
+  /* The whole path, faint: the shape of the loop is the point of the scene, so the
+     frame should never be a stub of a curve in an empty field. The travelled part is
+     then drawn bright over it. */
+  c.strokeStyle=P.dim; c.globalAlpha=.30; c.lineWidth=Math.max(2,S.w*0.0035);
+  c.beginPath();
+  path.forEach(function(q,i){ var x=X(q.lon), y=Y(q.lat);
+    if(i) c.lineTo(x,y); else c.moveTo(x,y); });
+  c.stroke(); c.globalAlpha=1;
+  /* trail up to now */
+  var cut=Math.round(p*(path.length-1));
+  var from=MO.opt.trail?Math.max(0,cut-Math.round(path.length*MO.opt.trailLen)):cut-1;
+  c.lineWidth=Math.max(3,S.w*0.006); c.lineJoin="round"; c.lineCap="round";
+  for(var i=Math.max(1,from);i<=cut;i++){
+    var q0=path[i-1], q1=path[i];
+    var al=(i-from)/Math.max(1,cut-from);
+    c.globalAlpha=0.15+0.85*al;
+    c.strokeStyle=q1.retro?P.malefic:P.gold;
+    c.beginPath(); c.moveTo(X(q0.lon),Y(q0.lat)); c.lineTo(X(q1.lon),Y(q1.lat)); c.stroke();
+  }
+  c.globalAlpha=1;
+  /* stations */
+  [["s","turns back"],["e","resumes"]].forEach(function(k){
+    var t=w[k[0]]; if(t==null||t>ms) return;
+    var near=path.reduce(function(a,b){ return Math.abs(b.ms-t)<Math.abs(a.ms-t)?b:a; },path[0]);
+    moGlowDot(X(near.lon),Y(near.lat),S.w*0.011,P.gold,P.gold);
+    if(MO.opt.labels) moText(k[1],X(near.lon),Y(near.lat)-S.w*0.034,S.w*0.024,P.gold,"center",600);
+  });
+  var cur=path[cut];
+  var r=S.w*0.043;
+  moGlyph(X(cur.lon),Y(cur.lat),r,en,P,true);
+  if(cur.retro) moText("R",X(cur.lon)+r*0.95,Y(cur.lat)-r*0.85,r*0.62,P.malefic,"center",800);
+  return {ms:ms, sub:MO_FULL[en]+" · "+(cur.retro?"retrograde":"direct")+" · lat "+
+          (cur.lat>=0?"+":"")+cur.lat.toFixed(2)+"°"};
+ }},
+
+/* ------------------------------------------------------------------- 2. gochara */
+{key:"gochara", label:"Gochara run", title:"Where the slow grahas go",
+ sub:"the natal chart inside, the transiting sky outside",
+ draw:function(p){
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
+  var yrs=MO.opt.years||12, t0=Date.now(), t1=t0+yrs*365.2564*86400000;
+  var ms=t0+(t1-t0)*p, R=st.R, cx=st.cx, cy=st.cy;
+  moStars();
+  /* rāśi ring */
+  for(var s=0;s<12;s++){
+    var a0=(180-s*30)*Math.PI/180, a1=(180-(s*30+30))*Math.PI/180;
+    c.beginPath(); c.arc(cx,cy,R,-a0,-a1,false); c.arc(cx,cy,R*0.86,-a1,-a0,true); c.closePath();
+    c.fillStyle=(s%2)?"rgba(255,255,255,0.055)":"rgba(255,255,255,0.02)"; c.fill();
+    var am=(180-(s*30+15))*Math.PI/180;
+    if(MO.opt.labels) moText(SA[s],cx+Math.cos(am)*R*0.93,cy-Math.sin(am)*R*0.93,
+      S.w*0.026,P.dim,"center",600);
+  }
+  c.strokeStyle=P.line; c.lineWidth=2;
+  c.beginPath(); c.arc(cx,cy,R,0,6.2832); c.stroke();
+  c.beginPath(); c.arc(cx,cy,R*0.86,0,6.2832); c.stroke();
+  /* ingress flashes */
+  var ing=moCached("ing|"+yrs,function(){
+    var out=[], N=Math.min(1200,Math.round(yrs*26));
+    ["Jupiter","Saturn","Rahu","Mars"].forEach(function(en){
+      var prev=null;
+      for(var i=0;i<=N;i++){
+        var m=t0+(t1-t0)*i/N, L=moSidAt(en,m); if(L==null) break;
+        var sg=Math.floor(L/30)%12;
+        if(prev!=null&&sg!==prev) out.push({ms:m,en:en,sign:sg});
+        prev=sg;
+      }
+    });
+    return out;
+  });
+  var flashWin=(t1-t0)*0.02, flash=null;
+  ing.forEach(function(e){ if(ms>=e.ms && ms-e.ms<flashWin) flash=e; });
+  /* natal ring */
+  var gN=S.w*0.026;
+  var nat=(MO.D&&MO.D.P)?MO_NAMES.filter(function(n){return MO.D.P[n]&&MO.show[n];})
+          .map(function(n){ return {en:n,lon:MO.D.P[n].sid}; }):[];
+  moSpread(nat,R*0.42,gN);
+  nat.forEach(function(q){
+    var a=(180-q.lon)*Math.PI/180;
+    c.globalAlpha=.6;
+    moGlyph(cx+Math.cos(a)*q.r,cy-Math.sin(a)*q.r,gN,q.en,P,false);
+    c.globalAlpha=1;
+  });
+  c.strokeStyle=P.line; c.globalAlpha=.5; c.setLineDash([3,6]);
+  c.beginPath(); c.arc(cx,cy,R*0.52,0,6.2832); c.stroke(); c.setLineDash([]); c.globalAlpha=1;
+  /* transiting grahas, with trails */
+  var SLOWT={Mars:1,Jupiter:1,Saturn:1,Rahu:1,Ketu:1};
+  var tr=[];
+  MO_NAMES.forEach(function(en){
+    if(!MO.show[en]) return;
+    var L0=moSidAt(en,ms); if(L0!=null) tr.push({en:en,lon:L0});
+  });
+  var gT=S.w*0.036;
+  moSpread(tr,R*0.74,gT);
+  MO_NAMES.forEach(function(en){
+    if(!MO.show[en]) return;
+    /* a trail is only meaningful for a graha slow enough to leave one: the Moon would
+       wrap the ring several times over and read as a solid band */
+    if(MO.opt.trail && SLOWT[en]){
+      var span=(t1-t0)*MO.opt.trailLen*0.25;
+      c.lineWidth=Math.max(2,S.w*0.004); c.strokeStyle=P.gold;
+      for(var i=10;i>=1;i--){
+        var m0=ms-span*i/10, m1=ms-span*(i-1)/10;
+        var L0=moSidAt(en,m0), L1=moSidAt(en,m1); if(L0==null||L1==null) continue;
+        var d=L1-L0; if(d>180)d-=360; if(d<-180)d+=360;
+        c.globalAlpha=0.06+0.5*(1-i/10);
+        var a0=(180-L0)*Math.PI/180, a1=(180-(L0+d))*Math.PI/180;
+        c.beginPath(); c.arc(cx,cy,R*0.74,-a0,-a1,d<0); c.stroke();
+      }
+      c.globalAlpha=1;
+    }
+    var me=null; tr.forEach(function(q){ if(q.en===en) me=q; });
+    if(!me) return;
+    var a=(180-me.lon)*Math.PI/180, x=cx+Math.cos(a)*me.r, y=cy-Math.sin(a)*me.r;
+    moGlyph(x,y,gT,en,P,true);
+    if(moSpeed(en,ms)<0) moText("R",x+gT*0.95,y-gT*0.85,S.w*0.022,P.malefic,"center",800);
+  });
+  if(flash){
+    var k=1-(ms-flash.ms)/flashWin;
+    c.globalAlpha=k*0.95;
+    var txt=MO_FULL[flash.en]+" enters "+SA[flash.sign];
+    c.font='700 '+(S.w*0.040)+'px system-ui,sans-serif';
+    var tw=c.measureText(txt).width;
+    c.fillStyle=P.bg; c.globalAlpha=k*0.82;
+    c.fillRect(cx-tw/2-S.w*0.03,cy-S.w*0.055,tw+S.w*0.06,S.w*0.075);
+    c.globalAlpha=k*0.95;
+    moText(txt,cx,cy-S.w*0.018,S.w*0.040,P.gold,"center",700);
+    c.globalAlpha=1;
+  } else if(MO.opt.labels){
+    moText("gochara",cx,cy-S.w*0.012,S.w*0.028,P.dim,"center",600);
+    moText("natal inside",cx,cy+S.w*0.028,S.w*0.022,P.dim,"center",500);
+  }
+  return {ms:ms};
+ }},
+
+/* -------------------------------------------------------------------- 3. orrery */
+{key:"orrery", label:"Tilted orrery", title:"Nothing sits on the ecliptic",
+ sub:"each graha lifted by its true ecliptic latitude",
+ draw:function(p){
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
+  var t0=moBirthMs(), t1=t0+(MO.opt.years||2)*365.2564*86400000;
+  var ms=t0+(t1-t0)*p, R=st.R*1.08, cx=st.cx, cy=st.cy;
+  var tilt=(28+22*Math.sin(p*Math.PI*2))*Math.PI/180;      // the camera breathes
+  var kY=Math.cos(tilt), lift=Math.sin(tilt)*(MO.opt.exag||26);
+  moStars();
+  function proj(lon,lat){
+    var a=(180-lon)*Math.PI/180;
+    return [cx+Math.cos(a)*R, cy-Math.sin(a)*R*kY-lat*lift];
+  }
+  /* the ring: far half dimmer, so the disc reads as a disc */
+  [[0,180,0.32],[180,360,1]].forEach(function(seg){
+    c.beginPath();
+    for(var l=seg[0];l<=seg[1];l+=2){ var q=proj(l,0);
+      if(l===seg[0]) c.moveTo(q[0],q[1]); else c.lineTo(q[0],q[1]); }
+    c.strokeStyle=P.line; c.globalAlpha=seg[2]; c.lineWidth=3; c.stroke(); c.globalAlpha=1;
+  });
+  if(MO.opt.labels) for(var s=0;s<12;s++){
+    var q=proj(s*30+15,0);
+    var back=(s*30+15)>0&&(s*30+15)<180;
+    c.globalAlpha=back?0.4:0.95;
+    moText(SA[s],q[0],q[1]+(q[1]<cy?-S.w*0.028:S.w*0.030),S.w*0.024,P.dim,"center",600);
+    c.globalAlpha=1;
+  }
+  var items=[];
+  MO_NAMES.forEach(function(en){
+    if(!MO.show[en]) return;
+    var L=moSidAt(en,ms); if(L==null) return;
+    var lat=0;
+    if(en!=="Rahu"&&en!=="Ketu"){
+      try{ var ev=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[en],new Date(ms),true));
+           lat=ev.elat; }catch(e){}
+    }
+    items.push({en:en,lon:L,lat:lat});
+  });
+  items.sort(function(a,b){ return proj(a.lon,a.lat)[1]-proj(b.lon,b.lat)[1]; });
+  items.forEach(function(q){
+    var pt=proj(q.lon,q.lat), base=proj(q.lon,0);
+    c.strokeStyle=P.line; c.globalAlpha=.8; c.lineWidth=2;
+    c.beginPath(); c.moveTo(base[0],base[1]); c.lineTo(pt[0],pt[1]); c.stroke(); c.globalAlpha=1;
+    moGlyph(pt[0],pt[1],S.w*0.034,q.en,P,true);
+  });
+  var mo=items.filter(function(x){return x.en==="Moon";})[0];
+  return {ms:ms, sub: mo? ("Candra "+(mo.lat>=0?"+":"")+mo.lat.toFixed(2)+"° from the plane"
+          +(Math.abs(mo.lat)<0.4?" — at the node":"")) : null};
+ }},
+
+/* ----------------------------------------------------------------- 4. birth sky */
+{key:"birthsky", label:"Sky at birth", title:"The sky you were born under",
+ sub:"zenith at the centre, horizon at the rim",
+ draw:function(p){
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
+  var i=MO.J&&MO.J.input; if(!i) throw new Error("no birth data");
+  var b=moBirthMs(), half=(MO.opt.hours||14)*3600000/2;
+  var t0=b-half, t1=b+half, ms=t0+(t1-t0)*p;
+  var R=st.R*1.05, cx=st.cx, cy=st.cy;
+  var sky=null;
+  try{
+    var d=new Date(ms), ut=d.getUTCHours()+d.getUTCMinutes()/60+d.getUTCSeconds()/3600;
+    sky=window.quickSky({year:d.getUTCFullYear(),month:d.getUTCMonth()+1,day:d.getUTCDate(),
+      hour:ut,minute:0,second:0,tzHours:0,lat:i.lat,lon:i.lon,ayanamsa:i.ayanamsa||"lahiri"});
+  }catch(e){ throw e; }
+  var sun=sky.planets.filter(function(x){return x.en==="Sun";})[0];
+  var day=sun&&sun.hz&&sun.hz.alt>0;
+  /* the dome darkens as the Sun sets — the whole point of the scene */
+  var k=sun&&sun.hz?Math.max(0,Math.min(1,(sun.hz.alt+14)/26)):0;
+  c.save();
+  c.beginPath(); c.arc(cx,cy,R,0,6.2832); c.clip();
+  var g=c.createRadialGradient(cx,cy,R*0.1,cx,cy,R);
+  g.addColorStop(0, day?"#9fc0e8":"#0d1430");
+  g.addColorStop(1, day?"#dfeaf7":"#05070f");
+  c.fillStyle=g; c.fillRect(cx-R,cy-R,R*2,R*2);
+  c.restore();
+  if(!day){ c.save(); c.beginPath(); c.arc(cx,cy,R,0,6.2832); c.clip(); moStars(); c.restore(); }
+  c.strokeStyle=P.gold; c.lineWidth=3;
+  c.beginPath(); c.arc(cx,cy,R,0,6.2832); c.stroke();
+  [30,60].forEach(function(alt){
+    c.strokeStyle=P.line; c.globalAlpha=.55; c.lineWidth=1.6; c.setLineDash([4,7]);
+    c.beginPath(); c.arc(cx,cy,R*(90-alt)/90,0,6.2832); c.stroke(); c.setLineDash([]); c.globalAlpha=1;
+  });
+  [["N",0],["E",90],["S",180],["W",270]].forEach(function(q){
+    var a=(q[1]-90)*Math.PI/180;
+    moText(q[0],cx+Math.cos(a)*(R+S.w*0.040),cy+Math.sin(a)*(R+S.w*0.040),S.w*0.030,P.gold,"center",700);
+  });
+  function hxy(alt,az){ var r=R*(90-alt)/90, a=(az-90)*Math.PI/180;
+    return [cx+Math.cos(a)*r, cy+Math.sin(a)*r]; }
+  /* the ecliptic arc across the sky */
+  if(MO.opt.grid){
+    c.strokeStyle=P.gold; c.globalAlpha=.4; c.lineWidth=2; c.setLineDash([4,6]); c.beginPath();
+    var started=false;
+    for(var L=0;L<360;L+=3){
+      var eq=skyEqOf(L,sky), h=skyHorizonOf(eq,sky);
+      if(h&&h.alt>-1){ var q2=hxy(h.alt,h.az);
+        if(!started){ c.moveTo(q2[0],q2[1]); started=true; } else c.lineTo(q2[0],q2[1]); }
+      else started=false;
+    }
+    c.stroke(); c.setLineDash([]); c.globalAlpha=1;
+  }
+  var below=[], placed=[];
+  sky.planets.slice().sort(function(a,b){
+    return (b.en==="Sun"?2:b.en==="Moon"?1:0)-(a.en==="Sun"?2:a.en==="Moon"?1:0); })
+  .forEach(function(q){
+    if(!MO.show[q.en]||!q.hz) return;
+    if(q.hz.alt<-1){ below.push(q.en); return; }
+    var pt=hxy(q.hz.alt,q.hz.az);
+    var rr=S.w*(q.en==="Sun"?0.050:q.en==="Moon"?0.045:0.032);
+    pt=moNudge(pt,placed,rr*2.15,cx,cy);
+    placed.push(pt);
+    if(q.en==="Sun"){ moGlowDot(pt[0],pt[1],rr,"#f0b847","#ffd37a");
+      moText("Sū",pt[0],pt[1],rr*0.8,"#3a2a06","center",800); }
+    else if(q.en==="Moon"){ moGlowDot(pt[0],pt[1],rr,"#e8eaf6","#ffffff");
+      moText("Mo",pt[0],pt[1],rr*0.8,"#2a2f45","center",800); }
+    else moGlyph(pt[0],pt[1],rr,q.en,P,true);
+  });
+  var lagA=hxy(0,90);
+  moText("lagna rising",lagA[0]-S.w*0.085,lagA[1],S.w*0.024,P.gold,"center",600);
+  return {ms:ms, sub:(day?"daylight":"night")+" · lagna "+SA[Math.floor(sky.lagna/30)%12]+
+          (below.length?(" · below the horizon: "+below.map(function(x){return GL[x];}).join(" ")):"")};
+ }},
+
+/* ---------------------------------------------------------------- 5. nakshatras */
+{key:"nakshatra", label:"Nakṣatra zoom", title:"The star behind the name",
+ sub:"the yogatārā each nakṣatra is named after",
+ draw:function(p){
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
+  var Y=(window.YOGATARAS||[]), n=Y.length||27;
+  var each=1/n, idx=Math.min(n-1,Math.floor(p/each)), q=(p-idx*each)/each;
+  var star=Y[idx]; if(!star) throw new Error("no star catalogue");
+  /* hold wide, close in, hold tight — the ease is what makes it feel like a camera */
+  var z=q<0.22?0:(q>0.72?1:(q-0.22)/0.5); z=z*z*(3-2*z);
+  /* The ecliptic is drawn as a strip rather than a ring: on a vertical frame a ring
+     puts the subject at the edge, and the whole point is the one star in the middle. */
+  var halfWide=24, halfTight=2.2;                 // degrees of longitude either side
+  var half=halfWide+(halfTight-halfWide)*z;
+  var cx=st.cx, cy=st.cy, bw=S.w*0.94;
+  var latSpan=12+(2.6-12)*z;
+  function X(sid){ var d=sid-star.sid; if(d>180)d-=360; if(d<-180)d+=360;
+                   return cx+(d/half)*(bw/2); }
+  function Yy(lat){ return cy-(lat/latSpan)*(st.h*0.30); }
+  moStars();
+  /* the ecliptic itself */
+  c.strokeStyle=P.line; c.lineWidth=2.5; c.globalAlpha=.75; c.setLineDash([7,9]);
+  c.beginPath(); c.moveTo(cx-bw/2,Yy(0)); c.lineTo(cx+bw/2,Yy(0)); c.stroke();
+  c.setLineDash([]); c.globalAlpha=1;
+  moText("ecliptic",cx+bw/2,Yy(0)-S.w*0.024,S.w*0.021,P.dim,"right",500);
+  /* nakṣatra boundaries, named */
+  var seg=40/3;
+  for(var k=-2;k<=2;k++){
+    var ni=((idx+k)%27+27)%27, b0=ni*seg, b1=b0+seg;
+    var x0=X(b0), x1=X(b1);
+    if(x1<cx-bw/2-40||x0>cx+bw/2+40) continue;
+    c.strokeStyle=P.gold; c.globalAlpha=.42; c.lineWidth=2; c.setLineDash([5,8]);
+    c.beginPath(); c.moveTo(x0,cy-st.h*0.27); c.lineTo(x0,cy+st.h*0.30); c.stroke();
+    c.setLineDash([]); c.globalAlpha=1;
+    if(k===0){
+      c.fillStyle="rgba(217,182,104,0.055)";
+      c.fillRect(Math.max(cx-bw/2,x0),cy-st.h*0.27,
+                 Math.min(cx+bw/2,x1)-Math.max(cx-bw/2,x0),st.h*0.57);
+    }
+    var mid=(x0+x1)/2;
+    if(MO.opt.labels && x1-x0>S.w*0.18 && mid>cx-bw/2+S.w*0.06 && mid<cx+bw/2-S.w*0.06)
+      moText(SKY_NAKA[ni],mid,cy+st.h*0.26,S.w*0.026,
+             k===0?P.gold:P.dim,"center",k===0?700:500);
+  }
+  /* every bright star near the ecliptic that falls in view */
+  (window.BRIGHT_STARS||[]).forEach(function(bs){
+    var x=X(bs.sid); if(x<cx-bw/2-20||x>cx+bw/2+20) return;
+    var y=Yy(bs.lat); if(y<st.y||y>st.capY) return;
+    var r=(3.4-Math.min(3.2,bs.mag))*(2.2+z*5);
+    c.globalAlpha=.8; moGlowDot(x,y,Math.max(2,r),P.star,P.star); c.globalAlpha=1;
+    if(z>0.5 && MO.opt.labels)
+      moText(bs.star,x,y-r-S.w*0.020,S.w*0.019,P.dim,"center",500);
+  });
+  /* the yogatārā */
+  var sx=X(star.sid), sy=Yy(star.lat);
+  var rr=S.w*(0.012+0.022*z);
+  moGlowDot(sx,sy,rr,P.gold,P.gold);
+  c.strokeStyle=P.gold; c.lineWidth=2.5; c.globalAlpha=.85;
+  c.beginPath(); c.arc(sx,sy,rr*2.8+S.w*0.012,0,6.2832); c.stroke(); c.globalAlpha=1;
+  /* a line down to the ecliptic, so the latitude is a distance you can see */
+  c.strokeStyle=P.gold; c.globalAlpha=.5; c.lineWidth=1.8; c.setLineDash([3,5]);
+  c.beginPath(); c.moveTo(sx,sy); c.lineTo(sx,Yy(0)); c.stroke();
+  c.setLineDash([]); c.globalAlpha=1;
+  /* type, drawn flat so nothing ever distorts */
+  var ty=cy-st.h*0.40;
+  moSerif(star.nak,cx,ty,S.w*0.074,P.gold);
+  moText(star.star+"  ·  "+star.bayer,cx,ty+S.w*0.064,S.w*0.032,P.ink,"center",600);
+  moText("magnitude "+star.mag.toFixed(2)+"   ·   "+star.sid.toFixed(2)+"° sidereal   ·   "+
+         (star.lat>=0?"+":"")+star.lat.toFixed(2)+"° latitude",
+         cx,ty+S.w*0.106,S.w*0.025,P.dim,"center",500);
+  moText(star.inside?"falls inside the division named after it"
+                    :"falls outside the division named after it",
+         cx,cy+st.h*0.36,S.w*0.027,star.inside?P.benefic:P.malefic,"center",600);
+  return {ms:null, sub:"nakṣatra "+(idx+1)+" of 27"};
+ }},
+
+/* -------------------------------------------------------------------- 6. daśā */
+{key:"dasha", label:"Daśā ribbon", title:"A life in nine periods",
+ sub:"Viṃśottarī mahādaśā and antardaśā",
+ draw:function(p){
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
+  var tree=null;
+  try{ tree=buildTree(MO.D); }catch(e){}
+  if(!tree||!tree.length) throw new Error("no daśā tree");
+  var j0=tree[0].dispStart!=null?tree[0].dispStart:tree[0].start;
+  var j1=tree[tree.length-1].end;
+  var jd=j0+(j1-j0)*p;
+  var ms=(jd-2440587.5)*86400000;
+  moStars();
+  var bx=S.w*0.08, bw=S.w-bx*2;
+  var by=st.cy-st.h*0.20, bh=st.h*0.11;
+  function X(j){ return bx+bw*(j-j0)/(j1-j0); }
+  /* mahādaśā band */
+  tree.forEach(function(md,k){
+    var s=md.dispStart!=null?md.dispStart:md.start;
+    var x0=X(s), x1=X(md.end);
+    var ben=MO_BEN[md.lord];
+    c.fillStyle=(k%2)?"rgba(255,255,255,0.10)":"rgba(255,255,255,0.045)";
+    c.fillRect(x0,by,x1-x0,bh);
+    c.strokeStyle=P.line; c.lineWidth=1.5; c.strokeRect(x0,by,x1-x0,bh);
+    if(x1-x0>S.w*0.035)
+      moText(GL[md.lord],(x0+x1)/2,by+bh*0.5,S.w*0.028,ben?P.benefic:P.malefic,"center",700);
+  });
+  /* antardaśā band of the running mahādaśā */
+  var cur=null;
+  tree.forEach(function(md){ var s=md.dispStart!=null?md.dispStart:md.start;
+    if(jd>=s&&jd<md.end) cur=md; });
+  if(cur){
+    var ay=by+bh*1.5, ah=bh*0.7;
+    var s0=cur.dispStart!=null?cur.dispStart:cur.start;
+    (cur.ads||[]).forEach(function(ad,k){
+      var x0=bx+bw*0+ (ad.start-s0)/(cur.end-s0)*bw, x1=(ad.end-s0)/(cur.end-s0)*bw+bx;
+      x0=bx+(ad.start-s0)/(cur.end-s0)*bw;
+      c.fillStyle=(k%2)?"rgba(217,182,104,0.22)":"rgba(217,182,104,0.10)";
+      c.fillRect(x0,ay,x1-x0,ah);
+      if(x1-x0>S.w*0.03)
+        moText(GL[ad.lord],(x0+x1)/2,ay+ah*0.5,S.w*0.022,P.ink,"center",600);
+    });
+    moText("antardaśā within "+MO_FULL[cur.lord],bx,ay+ah*1.75,S.w*0.023,P.dim,"left",500);
+  }
+  /* playhead */
+  var px=X(jd);
+  c.strokeStyle=P.gold; c.lineWidth=4;
+  c.beginPath(); c.moveTo(px,by-S.w*0.03); c.lineTo(px,by+bh*2.35); c.stroke();
+  moGlowDot(px,by-S.w*0.034,S.w*0.011,P.gold,P.gold);
+  /* the chart turning beneath */
+  var R=st.R*0.62, cx=st.cx, cy=st.cy+st.h*0.28;
+  c.strokeStyle=P.line; c.lineWidth=2;
+  c.beginPath(); c.arc(cx,cy,R,0,6.2832); c.stroke();
+  var ring=[], gD=S.w*0.027;
+  MO_NAMES.forEach(function(en){
+    if(!MO.show[en]) return;
+    var L=moSidAt(en,ms); if(L!=null) ring.push({en:en,lon:L});
+  });
+  moSpread(ring,R*0.84,gD);
+  ring.forEach(function(q){
+    var a=(180-q.lon)*Math.PI/180;
+    moGlyph(cx+Math.cos(a)*q.r,cy-Math.sin(a)*q.r,gD,q.en,P,false);
+  });
+  if(cur) moText(MO_FULL[cur.lord]+" mahādaśā",cx,by+bh*3.2,S.w*0.034,P.gold,"center",700);
+  var age=(jd-(MO.D&&MO.D.jd!=null?MO.D.jd:j0))/365.2564;
+  return {ms:ms, sub:"age "+Math.max(0,age).toFixed(1)};
+ }}
+];
+/* ===== Workbook export =====
+   An .xlsx is a ZIP of XML, so a real multi-sheet workbook needs no library — only a
+   store-only ZIP writer and a little SpreadsheetML. That keeps the page self-contained
+   and offline, which a 400 KB spreadsheet library would not.
+
+   What comes out is the data behind whichever scene is on screen: the positions, the
+   ingress dates, the stations, the rise and set times. The table a content calendar
+   is actually built from, generated rather than kept by hand. */
+
+/* ---------- store-only ZIP ---------- */
+var MO_CRCT=null;
+function moCrcTable(){
+  if(MO_CRCT) return MO_CRCT;
+  var t=new Int32Array(256);
+  for(var n=0;n<256;n++){ var c=n;
+    for(var k=0;k<8;k++) c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);
+    t[n]=c; }
+  MO_CRCT=t; return t;
+}
+function moCrc32(buf){
+  var t=moCrcTable(), c=0^(-1);
+  for(var i=0;i<buf.length;i++) c=(c>>>8)^t[(c^buf[i])&0xFF];
+  return (c^(-1))>>>0;
+}
+function moU8(str){ return new TextEncoder().encode(str); }
+function moZip(files){
+  /* files: [{name, data:Uint8Array}] — stored, not deflated */
+  var parts=[], central=[], offset=0;
+  var dt=new Date(), dosT=((dt.getHours()<<11)|(dt.getMinutes()<<5)|(dt.getSeconds()/2))&0xFFFF;
+  var dosD=(((dt.getFullYear()-1980)<<9)|((dt.getMonth()+1)<<5)|dt.getDate())&0xFFFF;
+  function w16(a,v){ a.push(v&0xFF,(v>>>8)&0xFF); }
+  function w32(a,v){ a.push(v&0xFF,(v>>>8)&0xFF,(v>>>16)&0xFF,(v>>>24)&0xFF); }
+  files.forEach(function(f){
+    var name=moU8(f.name), crc=moCrc32(f.data), n=f.data.length;
+    var h=[]; w32(h,0x04034b50); w16(h,20); w16(h,0x0800); w16(h,0); w16(h,dosT); w16(h,dosD);
+    w32(h,crc); w32(h,n); w32(h,n); w16(h,name.length); w16(h,0);
+    parts.push(new Uint8Array(h), name, f.data);
+    var c=[]; w32(c,0x02014b50); w16(c,20); w16(c,20); w16(c,0x0800); w16(c,0);
+    w16(c,dosT); w16(c,dosD); w32(c,crc); w32(c,n); w32(c,n);
+    w16(c,name.length); w16(c,0); w16(c,0); w16(c,0); w16(c,0); w32(c,0); w32(c,offset);
+    central.push(new Uint8Array(c), name);
+    offset+=h.length+name.length+n;
+  });
+  var cstart=offset, csize=0;
+  central.forEach(function(x){ csize+=x.length; });
+  var e=[]; w32(e,0x06054b50); w16(e,0); w16(e,0); w16(e,files.length); w16(e,files.length);
+  w32(e,csize); w32(e,cstart); w16(e,0);
+  var all=parts.concat(central,[new Uint8Array(e)]);
+  var total=0; all.forEach(function(x){ total+=x.length; });
+  var out=new Uint8Array(total), q=0;
+  all.forEach(function(x){ out.set(x,q); q+=x.length; });
+  return out;
+}
+/* ---------- SpreadsheetML ---------- */
+function moXmlEsc(s){
+  return String(s).replace(/[&<>"]/g,function(ch){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[ch]; })
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,"");
+}
+function moColName(i){
+  var s=""; i++;
+  while(i>0){ var m=(i-1)%26; s=String.fromCharCode(65+m)+s; i=Math.floor((i-1)/26); }
+  return s;
+}
+function moSheetXml(sheet){
+  var rows=[], widths=[];
+  (sheet.cols||[]).forEach(function(h,i){ widths.push(Math.min(42,Math.max(10,String(h).length+4))); });
+  var body="";
+  function cell(r,ci,v,styleHeader){
+    var ref=moColName(ci)+r;
+    if(v==null||v==="") return '<c r="'+ref+'"'+(styleHeader?' s="1"':'')+'/>';
+    if(typeof v==="number" && isFinite(v))
+      return '<c r="'+ref+'"'+(styleHeader?' s="1"':'')+'><v>'+v+'</v></c>';
+    return '<c r="'+ref+'"'+(styleHeader?' s="1"':'')+' t="inlineStr"><is><t xml:space="preserve">'+
+      moXmlEsc(v)+'</t></is></c>';
+  }
+  var r=1, cells="";
+  if(sheet.cols&&sheet.cols.length){
+    cells=sheet.cols.map(function(h,i){ return cell(1,i,h,true); }).join("");
+    body+='<row r="1">'+cells+'</row>'; r=2;
+  }
+  (sheet.rows||[]).forEach(function(row){
+    body+='<row r="'+r+'">'+row.map(function(v,i){ return cell(r,i,v,false); }).join("")+'</row>';
+    r++;
+  });
+  var colsXml=widths.length?('<cols>'+widths.map(function(w,i){
+    return '<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>'; }).join("")+'</cols>'):"";
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+    '<sheetViews><sheetView workbookViewId="0">'+
+    (sheet.cols&&sheet.cols.length?'<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>':'')+
+    '</sheetView></sheetViews>'+colsXml+'<sheetData>'+body+'</sheetData></worksheet>';
+}
+function moWorkbook(sheets,filename){
+  var types='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
+    '<Default Extension="xml" ContentType="application/xml"/>'+
+    '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+
+    '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'+
+    sheets.map(function(s,i){ return '<Override PartName="/xl/worksheets/sheet'+(i+1)+
+      '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'; }).join("")+
+    '</Types>';
+  var rels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>'+
+    '</Relationships>';
+  var wb='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '+
+    'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'+
+    sheets.map(function(s,i){ return '<sheet name="'+moXmlEsc(s.name.slice(0,31))+'" sheetId="'+(i+1)+
+      '" r:id="rId'+(i+1)+'"/>'; }).join("")+'</sheets></workbook>';
+  var wbRels='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+    sheets.map(function(s,i){ return '<Relationship Id="rId'+(i+1)+
+      '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+
+      (i+1)+'.xml"/>'; }).join("")+
+    '<Relationship Id="rId'+(sheets.length+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>'+
+    '</Relationships>';
+  var styles='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'+
+    '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+    '<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font>'+
+    '<font><b/><sz val="11"/><name val="Calibri"/></font></fonts>'+
+    '<fills count="2"><fill><patternFill patternType="none"/></fill>'+
+    '<fill><patternFill patternType="gray125"/></fill></fills>'+
+    '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>'+
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>'+
+    '<cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'+
+    '<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs>'+
+    '</styleSheet>';
+  var files=[
+    {name:"[Content_Types].xml",data:moU8(types)},
+    {name:"_rels/.rels",data:moU8(rels)},
+    {name:"xl/workbook.xml",data:moU8(wb)},
+    {name:"xl/_rels/workbook.xml.rels",data:moU8(wbRels)},
+    {name:"xl/styles.xml",data:moU8(styles)}
+  ];
+  sheets.forEach(function(s,i){
+    files.push({name:"xl/worksheets/sheet"+(i+1)+".xml",data:moU8(moSheetXml(s))});
+  });
+  var zip=moZip(files);
+  var blob=new Blob([zip],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+  var url=URL.createObjectURL(blob), a=document.createElement("a");
+  a.href=url; a.download=filename; document.body.appendChild(a); a.click();
+  setTimeout(function(){ URL.revokeObjectURL(url); a.parentNode.removeChild(a); },400);
+  return zip.length;
+}
+/* ---------- the data behind each scene ---------- */
+function moISO(ms){ return new Date(ms).toISOString().slice(0,19).replace("T"," "); }
+function moDay(ms){ return new Date(ms).toISOString().slice(0,10); }
+function moSignOf(L){ return SA[Math.floor(L/30)%12]; }
+function moDegIn(L){ return +(L%30).toFixed(4); }
+function moChartSheet(){
+  var i=MO.J&&MO.J.input||{}, rows=[];
+  rows.push(["Name",i.name||""]);
+  rows.push(["Date of birth",[String(i.day).padStart(2,"0"),MON[i.month],i.year].join(" ")]);
+  rows.push(["Time of birth",String(i.hour).padStart(2,"0")+":"+String(i.minute).padStart(2,"0")]);
+  rows.push(["UTC offset (hours)",i.tzHours]);
+  rows.push(["Latitude",i.lat]); rows.push(["Longitude",i.lon]);
+  rows.push(["Zodiac","sidereal (nirayana)"]);
+  rows.push(["Ayanāṃśa",(MO.J&&MO.J.ayanamsha_name)||i.ayanamsa||"Lahiri (Chitrapakṣa)"]);
+  rows.push(["Ayanāṃśa value (°)",MO.J&&MO.J.ayanamsha_deg!=null?+MO.J.ayanamsha_deg.toFixed(6):""]);
+  rows.push(["House system","whole sign"]);
+  rows.push(["Node reckoning",i.node==="true"?"true node":"mean node"]);
+  rows.push(["Positions from","astronomy-engine (VSOP87/ELP), computed in the browser"]);
+  rows.push(["Exported",moISO(Date.now())+" UTC"]);
+  rows.push(["Scene",moSceneOf(MO.scene).label]);
+  return {name:"Chart", cols:["Field","Value"], rows:rows};
+}
+function moSceneSheets(){
+  var k=MO.scene, out=[moChartSheet()];
+  if(k==="retro"){
+    var en=MO.opt.subject, w=moRetroWindow(en), rows=[], N=Math.round((w.t1-w.t0)/86400000);
+    for(var i=0;i<=N;i++){
+      var ms=w.t0+i*86400000, L=moSidAt(en,ms); if(L==null) continue;
+      var lat=0;
+      try{ lat=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[en],new Date(ms),true)).elat; }catch(e){}
+      var sp=moSpeed(en,ms);
+      rows.push([moDay(ms),+L.toFixed(5),moSignOf(L),moDegIn(L),+lat.toFixed(5),
+                 +sp.toFixed(5),sp<0?"retrograde":"direct"]);
+    }
+    out.push({name:"Daily path",
+      cols:["Date (UTC)","Sidereal longitude °","Rāśi","Degrees in rāśi","Ecliptic latitude °",
+            "Motion °/day","Direction"], rows:rows});
+    out.push({name:"Stations", cols:["Event","Date (UTC)"], rows:[
+      ["Turns retrograde",w.s?moDay(w.s):"not in range"],
+      ["Resumes direct",  w.e?moDay(w.e):"not in range"]]});
+  } else if(k==="gochara"){
+    var yrs=MO.opt.years||12, t0=Date.now(), t1=t0+yrs*365.2564*86400000;
+    var ing=[], sta=[];
+    ["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn","Rahu","Ketu"].forEach(function(en){
+      if(en==="Moon") return;                       // a Moon ingress every 2.3 days drowns the sheet
+      var N=Math.min(4000,Math.round(yrs*(en==="Mercury"||en==="Venus"||en==="Sun"?90:26)));
+      var ps=null, pd=null, pl=null;
+      for(var i=0;i<=N;i++){
+        var ms=t0+(t1-t0)*i/N, L=moSidAt(en,ms); if(L==null) break;
+        var sg=Math.floor(L/30)%12;
+        if(ps!=null&&sg!==ps) ing.push([moDay(ms),MO_FULL[en],SA[sg],sg+1]);
+        if(pl!=null){ var d=L-pl; if(d>180)d-=360; if(d<-180)d+=360;
+          var dir=d<0?-1:1;
+          if(pd!=null&&dir!==pd&&en!=="Rahu"&&en!=="Ketu")
+            sta.push([moDay(ms),MO_FULL[en],dir<0?"turns retrograde":"resumes direct",
+                      +L.toFixed(4),SA[sg]]);
+          pd=dir; }
+        ps=sg; pl=L;
+      }
+    });
+    ing.sort(function(a,b){ return a[0]<b[0]?-1:1; });
+    sta.sort(function(a,b){ return a[0]<b[0]?-1:1; });
+    out.push({name:"Sign ingresses",
+      cols:["Date (UTC)","Graha","Enters rāśi","Rāśi number"], rows:ing});
+    out.push({name:"Stations",
+      cols:["Date (UTC)","Graha","Event","Longitude °","Rāśi"], rows:sta});
+    var pos=[], M=Math.min(900,Math.round(yrs*12));
+    for(var m=0;m<=M;m++){
+      var ms2=t0+(t1-t0)*m/M, row=[moDay(ms2)];
+      ["Jupiter","Saturn","Rahu","Ketu","Mars"].forEach(function(en){
+        var L=moSidAt(en,ms2); row.push(L==null?"":+L.toFixed(4)); row.push(L==null?"":moSignOf(L));
+      });
+      pos.push(row);
+    }
+    out.push({name:"Monthly positions",
+      cols:["Date (UTC)","Guru °","Guru rāśi","Śani °","Śani rāśi","Rāhu °","Rāhu rāśi",
+            "Ketu °","Ketu rāśi","Maṅgala °","Maṅgala rāśi"], rows:pos});
+  } else if(k==="orrery"){
+    var t0b=moBirthMs(), yrs2=MO.opt.years||2, rows2=[];
+    var N2=Math.min(900,Math.round(yrs2*73));
+    for(var q=0;q<=N2;q++){
+      var ms3=t0b+yrs2*365.2564*86400000*q/N2;
+      MO_NAMES.forEach(function(en){
+        var L=moSidAt(en,ms3); if(L==null) return;
+        var lat2=0;
+        if(en!=="Rahu"&&en!=="Ketu"){
+          try{ lat2=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[en],new Date(ms3),true)).elat; }catch(e){}
+        }
+        rows2.push([moDay(ms3),MO_FULL[en],+L.toFixed(5),moSignOf(L),+lat2.toFixed(5)]);
+      });
+    }
+    out.push({name:"Longitude and latitude",
+      cols:["Date (UTC)","Graha","Sidereal longitude °","Rāśi","Ecliptic latitude °"], rows:rows2});
+  } else if(k==="birthsky"){
+    var i3=MO.J&&MO.J.input||{}, b=moBirthMs(), half=(MO.opt.hours||14)*3600000/2, rows3=[];
+    var N3=96;
+    for(var s3=0;s3<=N3;s3++){
+      var ms4=b-half+(half*2)*s3/N3, d4=new Date(ms4);
+      var ut=d4.getUTCHours()+d4.getUTCMinutes()/60+d4.getUTCSeconds()/3600, sk=null;
+      try{ sk=window.quickSky({year:d4.getUTCFullYear(),month:d4.getUTCMonth()+1,day:d4.getUTCDate(),
+        hour:ut,minute:0,second:0,tzHours:0,lat:i3.lat,lon:i3.lon,ayanamsa:i3.ayanamsa||"lahiri"}); }catch(e){}
+      if(!sk) continue;
+      sk.planets.forEach(function(pp){
+        if(!pp.hz) return;
+        rows3.push([moISO(ms4),MO_FULL[pp.en],+pp.hz.alt.toFixed(3),+pp.hz.az.toFixed(3),
+                    +pp.sid.toFixed(4),moSignOf(pp.sid),pp.hz.alt>0?"above":"below"]);
+      });
+    }
+    out.push({name:"Altitude and azimuth",
+      cols:["Time (UTC)","Graha","Altitude °","Azimuth °","Sidereal longitude °","Rāśi","Horizon"],
+      rows:rows3});
+  } else if(k==="nakshatra"){
+    var rows4=(window.YOGATARAS||[]).map(function(y){
+      return [y.id+1,y.nak,y.star,y.bayer,y.hr,+y.sid.toFixed(4),moSignOf(y.sid),
+              +y.lat.toFixed(4),+y.mag.toFixed(2),y.inside?"inside":"outside"];
+    });
+    out.push({name:"Yogatārās",
+      cols:["#","Nakṣatra","Star","Bayer","HR","Sidereal longitude °","Rāśi","Ecliptic latitude °",
+            "Magnitude","Falls within its own division"], rows:rows4});
+    out.push({name:"Equal divisions",
+      cols:["#","Nakṣatra","Starts °","Ends °","Rāśi at start"],
+      rows:(function(){ var seg=40/3, r=[];
+        for(var n=0;n<27;n++) r.push([n+1,SKY_NAKA[n],+(n*seg).toFixed(4),+((n+1)*seg).toFixed(4),
+          moSignOf(n*seg)]);
+        return r; })()});
+  } else if(k==="dasha"){
+    var tr=null; try{ tr=buildTree(MO.D); }catch(e){}
+    var md=[], ad=[];
+    (tr||[]).forEach(function(m){
+      var s=m.dispStart!=null?m.dispStart:m.start;
+      md.push([MO_FULL[m.lord],moDay((s-2440587.5)*86400000),moDay((m.end-2440587.5)*86400000),
+               +((m.end-s)/365.2564).toFixed(4),m.partial?"balance at birth":""]);
+      (m.ads||[]).forEach(function(a){
+        ad.push([MO_FULL[m.lord],MO_FULL[a.lord],
+                 moDay((a.start-2440587.5)*86400000),moDay((a.end-2440587.5)*86400000),
+                 +((a.end-a.start)/365.2564).toFixed(4)]);
+      });
+    });
+    out.push({name:"Mahādaśā",
+      cols:["Lord","Begins","Ends","Years","Note"], rows:md});
+    out.push({name:"Antardaśā",
+      cols:["Mahādaśā lord","Antardaśā lord","Begins","Ends","Years"], rows:ad});
+  }
+  return out;
+}
+function moExport(){
+  var btn=document.getElementById("moxls");
+  if(btn){ btn.disabled=true; btn.textContent="Building…"; }
+  setTimeout(function(){
+    var n=0, err=null;
+    try{
+      var sheets=moSceneSheets();
+      var nm=(MO.J&&MO.J.input&&MO.J.input.name)?MO.J.input.name.replace(/[^\w -]/g,"").trim():"chart";
+      n=moWorkbook(sheets,"learnhoro-"+MO.scene+"-"+(nm||"chart").replace(/\s+/g,"-")+".xlsx");
+    }catch(e){ err=e; }
+    if(btn){ btn.disabled=false; btn.textContent="Export data (.xlsx)"; }
+    var s=document.getElementById("moxlsmsg");
+    if(s) s.textContent = err ? ("could not build the workbook: "+err.message)
+                              : ("workbook downloaded · "+Math.round(n/1024)+" KB");
+  },30);
+}
+/* ===== The Motion tab: markup, controls, handlers ===== */
+
+function moChipRow(label,items,cur,attr,extra){
+  return '<div class="morow"><span class="molab">'+esc(label)+'</span>'+
+    items.map(function(it){
+      return '<button type="button" class="skyv'+(it.k===cur?" on":"")+'" '+attr+'="'+it.k+'"'+
+        (it.title?(' title="'+esc(it.title)+'"'):"")+'>'+esc(it.label)+'</button>';
+    }).join("")+(extra||"")+'</div>';
+}
+var MO_TOGGLES=[
+  {k:"trail",  label:"Trails"},
+  {k:"glow",   label:"Glow"},
+  {k:"stars",  label:"Starfield"},
+  {k:"grid",   label:"Guides"},
+  {k:"labels", label:"Labels"},
+  {k:"loopFade",label:"Loop fade"}
+];
+var MO_CAPS=[
+  {k:"logo",  label:"Logo"},
+  {k:"date",  label:"Date"},
+  {k:"handle",label:"Handle"}
+];
+function motionPane(D,J){
+  if(!J||!J.input) return "";
+  MO.D=D; MO.J=J; MO.p=0; MO.playing=false; MO.scene="retro"; MO.ratio="9:16";
+  MO.pal="midnight"; MO.dur=15; MO.studio=false;
+  MO.opt.subject="Mars"; MO.opt.years=12; MO.opt.hours=14; MO.opt.exag=26;
+  MO.cap.title=""; MO.cap.sub="";
+  MO_CACHE={};
+  for(var g in MO.show) MO.show[g]=true;
+  return '<p class="knote">Six animations built from this chart and the same ephemeris the rest of '+
+    'the site uses. Everything here is drawn on a canvas rather than as a chart, because these are '+
+    'made to be <b>watched and posted</b> rather than measured — choose a vertical frame, press play, '+
+    'and screen-record. <b>Studio mode</b> hides the whole site so the recording is clean. The '+
+    '<b>export</b> button hands you the numbers behind whichever scene is running, as a spreadsheet.</p>'+
+
+    '<div class="moscenes">'+MO_SCENES.map(function(s){
+      return '<button type="button" class="moscene'+(s.key==="retro"?" on":"")+'" data-moscene="'+s.key+
+        '"><b>'+esc(s.label)+'</b><span>'+esc(s.sub)+'</span></button>'; }).join("")+'</div>'+
+
+    '<div class="mowrap" id="mowrap">'+
+      '<div class="mostage" id="mostage"><canvas id="mocanvas" width="1080" height="1920"></canvas></div>'+
+      '<button type="button" class="moexit" id="moexit">Esc — leave studio</button>'+
+      '<div class="mopanel">'+
+        '<div class="morow">'+
+          '<button type="button" class="k-btn" id="moplay" aria-pressed="false">Play</button>'+
+          '<button type="button" class="k-btn sec" id="morestart">Restart</button>'+
+          '<span class="molab">Length</span>'+
+          '<select id="modur" class="skysel">'+MO_DUR.map(function(d){
+            return '<option value="'+d.s+'"'+(d.s===15?" selected":"")+'>'+d.label+'</option>'; }).join("")+'</select>'+
+          '<span class="mofps" id="mofps">—</span>'+
+        '</div>'+
+        '<div class="morow"><span class="molab">Scrub</span>'+
+          '<input type="range" id="moscrub" min="0" max="1000" step="1" value="0"></div>'+
+        moChipRow("Frame",Object.keys(MO_RATIOS).map(function(k){
+          return {k:k,label:MO_RATIOS[k].label,title:MO_RATIOS[k].note}; }),"9:16","data-moratio")+
+        moChipRow("Palette",Object.keys(MO_PALS).map(function(k){
+          return {k:k,label:MO_PALS[k].label}; }),"midnight","data-mopal")+
+        '<div class="morow"><span class="molab">Show</span>'+
+          MO_TOGGLES.map(function(t){
+            return '<button type="button" class="skyv'+(MO.opt[t.k]?" on":"")+'" data-moopt="'+t.k+
+              '">'+esc(t.label)+'</button>'; }).join("")+
+        '</div>'+
+        '<div class="morow"><span class="molab">Grahas</span>'+
+          [["Sun","Su"],["Moon","Mo"],["Mars","Ma"],["Mercury","Me"],["Jupiter","Ju"],
+           ["Venus","Ve"],["Saturn","Sa"],["Rahu","Ra"],["Ketu","Ke"]].map(function(g){
+            return '<button type="button" class="skyv on" data-mograha="'+g[0]+'">'+g[1]+'</button>';
+          }).join("")+
+          '<span class="mopre"><button type="button" class="skyv" data-mopre="all">all</button>'+
+          '<button type="button" class="skyv" data-mopre="slow">slow</button></span>'+
+        '</div>'+
+        '<div class="morow" id="moscopts"></div>'+
+        '<div class="morow"><span class="molab">Trail</span>'+
+          '<input type="range" id="motrail" min="5" max="90" step="1" value="35">'+
+          '<span class="moval" id="motrailv">35%</span>'+
+          '<span class="molab">Stars</span>'+
+          '<input type="range" id="modens" min="0" max="400" step="10" value="160">'+
+          '<span class="moval" id="modensv">160</span></div>'+
+        '<div class="morow mocaprow"><span class="molab">Caption</span>'+
+          '<input type="text" id="motitle" class="motext" placeholder="title — leave blank for the scene&rsquo;s own" maxlength="64">'+
+          '<input type="text" id="mosub" class="motext" placeholder="subtitle" maxlength="80"></div>'+
+        '<div class="morow"><span class="molab">Stamp</span>'+
+          MO_CAPS.map(function(t){
+            return '<button type="button" class="skyv'+(MO.cap[t.k]?" on":"")+'" data-mocap="'+t.k+
+              '">'+esc(t.label)+'</button>'; }).join("")+
+          '<input type="text" id="mohandle" class="motext mohandle" value="@learnhoro" maxlength="30">'+
+        '</div>'+
+        '<div class="morow mofinal">'+
+          '<button type="button" class="k-btn" id="mostudio" aria-pressed="false">Studio mode</button>'+
+          '<button type="button" class="k-btn sec" id="moxls">Export data (.xlsx)</button>'+
+          '<button type="button" class="k-btn sec" id="mopng">Save this frame (.png)</button>'+
+          '<span class="moxlsmsg" id="moxlsmsg"></span>'+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+
+    '<div class="kbox"><b>Making a reel.</b> Pick the vertical frame, set the length to 15 seconds, '+
+    'press <b>Studio mode</b>, then record your screen — QuickTime on a Mac, or the built-in recorder '+
+    'on an iPhone. That gives you an MP4 straight away. A browser cannot write an MP4 by itself, which '+
+    'is why there is no video button here: anything it could produce would be a WebM you would have to '+
+    'convert anyway. Add music in Instagram rather than in the file — a licensed track baked into a '+
+    'video gets the post muted.</div>'+
+    '<div class="kbox"><b>The export.</b> Each scene can hand you its own numbers as a spreadsheet: '+
+    'the daily path and the station dates for a retrograde, every sign ingress across the span for '+
+    'gochara, altitude and azimuth through the night for the birth sky, the yogatārā table with real '+
+    'star positions, the daśā tree with its dates. Every workbook opens with a sheet recording the '+
+    'birth data, the ayanāṃśa and the house system, so a file still makes sense a year later.</div>'+
+    '<div class="kbox"><b>What these are and are not.</b> The positions are real and computed the same '+
+    'way as everywhere else on this site. The <i>drawing</i> takes liberties on purpose: latitude is '+
+    'exaggerated in the orrery, trails are longer than any real afterglow, and glow is decoration. '+
+    'They are made to be legible at the size of a phone held at arm&rsquo;s length, not to be measured '+
+    'off the screen. For measurement, use the Sky tab.</div>';
+}
+/* per-scene extra controls */
+function moSceneOpts(){
+  var host=document.getElementById("moscopts"); if(!host) return;
+  var k=MO.scene, h="";
+  if(k==="retro"){
+    h='<span class="molab">Graha</span>'+
+      ["Mercury","Venus","Mars","Jupiter","Saturn"].map(function(en){
+        return '<button type="button" class="skyv'+(MO.opt.subject===en?" on":"")+
+          '" data-mosubj="'+en+'">'+esc(MO_FULL[en])+'</button>'; }).join("")+
+      '<span class="mohint">finds the retrograde nearest to today</span>';
+  } else if(k==="gochara"){
+    h='<span class="molab">Span</span>'+[6,12,20,30].map(function(y){
+        return '<button type="button" class="skyv'+(MO.opt.years===y?" on":"")+
+          '" data-moyears="'+y+'">'+y+' years</button>'; }).join("")+
+      '<span class="mohint">from today forward</span>';
+  } else if(k==="orrery"){
+    h='<span class="molab">Span</span>'+[1,2,5,12].map(function(y){
+        return '<button type="button" class="skyv'+(MO.opt.years===y?" on":"")+
+          '" data-moyears="'+y+'">'+y+(y===1?" year":" years")+'</button>'; }).join("")+
+      '<span class="molab">Latitude ×</span><input type="range" id="moexag" min="6" max="60" step="2" value="'+
+      MO.opt.exag+'"><span class="moval" id="moexagv">'+MO.opt.exag+'</span>';
+  } else if(k==="birthsky"){
+    h='<span class="molab">Window</span>'+[6,14,24].map(function(hr){
+        return '<button type="button" class="skyv'+(MO.opt.hours===hr?" on":"")+
+          '" data-mohours="'+hr+'">'+hr+' hours</button>'; }).join("")+
+      '<span class="mohint">centred on the birth moment</span>';
+  } else if(k==="nakshatra"){
+    h='<span class="mohint">all twenty-seven in turn — set the length to 60 s to linger on each</span>';
+  } else if(k==="dasha"){
+    h='<span class="mohint">the whole Viṃśottarī cycle from birth</span>';
+  }
+  host.innerHTML=h;
+  host.style.display=h?"":"none";
+}
+function moMount(){
+  var cv=document.getElementById("mocanvas"); if(!cv) return false;
+  MO.cv=cv; moResize(); moLogo(); moSceneOpts();
+  if(MO__LOGO && !MO__LOGO.complete) MO__LOGO.onload=function(){ moDraw(); };
+  moDraw(); return true;
+}
+window.__moDraw=function(){ if(MO.cv) moDraw(); };
+window.__moMount=moMount;
+
+/* ---------------------------------------------------------------- handlers --- */
+document.addEventListener("click",function(ev){
+  var t=ev.target; if(!t||!t.getAttribute) return;
+  var sc=t.closest?t.closest("[data-moscene]"):null;
+  if(sc){
+    MO.scene=sc.getAttribute("data-moscene"); MO.p=0; moPlay(false);
+    [].forEach.call(document.querySelectorAll("[data-moscene]"),function(b){
+      b.className="moscene"+(b.getAttribute("data-moscene")===MO.scene?" on":""); });
+    var s1=document.getElementById("moscrub"); if(s1) s1.value=0;
+    moSceneOpts(); moDraw(); return;
+  }
+  if(t.id==="moplay"){ moPlay(!MO.playing); return; }
+  if(t.id==="morestart"){ MO.p=0; var s2=document.getElementById("moscrub");
+    if(s2) s2.value=0; moDraw(); return; }
+  if(t.id==="mostudio"){ moStudio(!MO.studio); return; }
+  if(t.id==="moexit"){ moStudio(false); return; }
+  if(t.id==="moxls"){ moExport(); return; }
+  if(t.id==="mopng"){
+    try{
+      var nm=(MO.J&&MO.J.input&&MO.J.input.name)||"chart";
+      MO.cv.toBlob(function(b){
+        var u=URL.createObjectURL(b), a=document.createElement("a");
+        a.href=u; a.download="learnhoro-"+MO.scene+"-"+String(nm).replace(/\s+/g,"-")+".png";
+        document.body.appendChild(a); a.click();
+        setTimeout(function(){ URL.revokeObjectURL(u); a.parentNode.removeChild(a); },400);
+      },"image/png");
+    }catch(e){
+      var m=document.getElementById("moxlsmsg"); if(m) m.textContent="could not save the frame";
+    }
+    return;
+  }
+  var r=t.getAttribute("data-moratio");
+  if(r){ MO.ratio=r;
+    [].forEach.call(document.querySelectorAll("[data-moratio]"),function(b){
+      b.className="skyv"+(b.getAttribute("data-moratio")===r?" on":""); });
+    moResize(); moDraw(); return; }
+  var pa=t.getAttribute("data-mopal");
+  if(pa){ MO.pal=pa;
+    [].forEach.call(document.querySelectorAll("[data-mopal]"),function(b){
+      b.className="skyv"+(b.getAttribute("data-mopal")===pa?" on":""); });
+    moDraw(); return; }
+  var op=t.getAttribute("data-moopt");
+  if(op){ MO.opt[op]=!MO.opt[op]; t.className="skyv"+(MO.opt[op]?" on":""); moDraw(); return; }
+  var cp=t.getAttribute("data-mocap");
+  if(cp){ MO.cap[cp]=!MO.cap[cp]; t.className="skyv"+(MO.cap[cp]?" on":""); moDraw(); return; }
+  var gh=t.getAttribute("data-mograha");
+  if(gh){ MO.show[gh]=!MO.show[gh]; t.className="skyv"+(MO.show[gh]?" on":""); moDraw(); return; }
+  var pr=t.getAttribute("data-mopre");
+  if(pr){
+    var on=pr==="slow"?["Jupiter","Saturn","Rahu","Ketu"]:MO_NAMES;
+    MO_NAMES.forEach(function(n){ MO.show[n]=on.indexOf(n)>=0; });
+    [].forEach.call(document.querySelectorAll("[data-mograha]"),function(b){
+      b.className="skyv"+(MO.show[b.getAttribute("data-mograha")]?" on":""); });
+    moDraw(); return; }
+  var sj=t.getAttribute("data-mosubj");
+  if(sj){ MO.opt.subject=sj; MO.p=0;
+    [].forEach.call(document.querySelectorAll("[data-mosubj]"),function(b){
+      b.className="skyv"+(b.getAttribute("data-mosubj")===sj?" on":""); });
+    moDraw(); return; }
+  var yr=t.getAttribute("data-moyears");
+  if(yr){ MO.opt.years=+yr; MO.p=0; MO_CACHE={};
+    [].forEach.call(document.querySelectorAll("[data-moyears]"),function(b){
+      b.className="skyv"+(+b.getAttribute("data-moyears")===MO.opt.years?" on":""); });
+    moDraw(); return; }
+  var hr2=t.getAttribute("data-mohours");
+  if(hr2){ MO.opt.hours=+hr2; MO.p=0;
+    [].forEach.call(document.querySelectorAll("[data-mohours]"),function(b){
+      b.className="skyv"+(+b.getAttribute("data-mohours")===MO.opt.hours?" on":""); });
+    moDraw(); return; }
+});
+document.addEventListener("input",function(ev){
+  var t=ev.target; if(!t||!t.id) return;
+  if(t.id==="moscrub"){ moPlay(false); MO.p=(+t.value)/1000; moDraw(); return; }
+  if(t.id==="motrail"){ MO.opt.trailLen=(+t.value)/100;
+    var a=document.getElementById("motrailv"); if(a) a.textContent=t.value+"%"; moDraw(); return; }
+  if(t.id==="modens"){ MO.opt.starDensity=+t.value;
+    var b=document.getElementById("modensv"); if(b) b.textContent=t.value; moDraw(); return; }
+  if(t.id==="moexag"){ MO.opt.exag=+t.value;
+    var c=document.getElementById("moexagv"); if(c) c.textContent=t.value; moDraw(); return; }
+  if(t.id==="motitle"){ MO.cap.title=t.value; moDraw(); return; }
+  if(t.id==="mosub"){ MO.cap.sub=t.value; moDraw(); return; }
+  if(t.id==="mohandle"){ MO.cap.handle=t.value; moDraw(); return; }
+});
+document.addEventListener("change",function(ev){
+  if(ev.target && ev.target.id==="modur"){ MO.dur=+ev.target.value; }
+});
+document.addEventListener("keydown",function(ev){
+  if(ev.key==="Escape" && MO.studio) moStudio(false);
+});
 /* ===== Full JSON export =====
    Everything an analyst — human or machine — needs to work the chart without
    re-running this page. Birth data and engine output sit at the top level; every
@@ -7543,6 +8873,7 @@ window.buildKundliReport=function(J){
     ["events","Life events",function(){ return eventsPane(); }],
     ["sky","Sky",function(){ return skyPane(D,J); }],
     ["starwheel","Star wheel",function(){ return starWheelPane(D,J); }],
+    ["motion","Motion",function(){ return motionPane(D,J); }],
     ["btime","Birth-time check",function(){ return birthTimePane(D); }],
     ["match","Compatibility",function(){ return matchPane(); }],
     ["full","Full report",function(){ return '<div class="krprint">'+
@@ -7947,6 +9278,7 @@ window.buildKundliReport=function(J){
     // the sky pane draws itself once the report is in the document
     try{ if(document.getElementById("skycanvas") && window.__skyRedraw) window.__skyRedraw(); }catch(e){}
     try{ if(document.getElementById("swhcanvas") && window.__swhDraw) window.__swhDraw(); }catch(e){}
+    try{ if(document.getElementById("mocanvas") && window.__moMount) window.__moMount(); }catch(e){}
     evRender();
     if(pendingTab){ showTab(pendingTab,true); pendingTab=null; }
   }
@@ -8067,4 +9399,4 @@ window.buildKundliReport=function(J){
   }
 })();
 </script>
-<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-14.e3cda90</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer></body></html>
+<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-14.11eb865</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer></body></html>
