@@ -152,7 +152,14 @@ function moSceneOpts(){
         return '<button type="button" class="skyv'+(MO.opt.subject===en?" on":"")+
           '" data-mosubj="'+en+'">'+esc(MO_FULL[en])+'</button>'; }).join("")+
       (k==="drishti"?('<br>'+moSpanRow(["d","m","y"],"how far forward the graha travels"))
-                    :'<span class="mohint">finds the retrograde nearest to today</span>');
+       :('<br><span class="molab">From</span>'+
+         [["today","today"],["birth","the birth moment"]].map(function(f){
+           return '<button type="button" class="skyv'+
+             (((MO.opt.from||"today")===f[0])?" on":"")+
+             '" data-mofrom="'+f[0]+'">'+esc(f[1])+'</button>'; }).join("")+
+         '<br>'+moSpanRow(["m","y"],"the window to search")+
+         '<span class="mohint">every retrograde inside the window is found and shown in '+
+         'turn; if there is none, the frame says so and gives the date of the next one</span>'));
   } else if(k==="gochara"){
     h=moSpanRow(["d","m","y"],"from today forward");
   } else if(k==="orrery"){
@@ -280,6 +287,12 @@ document.addEventListener("click",function(ev){
     var sw=document.getElementById("moscrub"); if(sw) sw.value=0;
     [].forEach.call(document.querySelectorAll("[data-moworld]"),function(bn){
       bn.className="skyv"+((bn.getAttribute("data-moworld")||"")===(MO.opt.world||"")?" on":""); });
+    moDraw(); return; }
+  var fr=t.getAttribute&&t.getAttribute("data-mofrom");
+  if(fr){ MO.opt.from=fr; MO.p=0; MO_CACHE={};
+    var sf=document.getElementById("moscrub"); if(sf) sf.value=0;
+    [].forEach.call(document.querySelectorAll("[data-mofrom]"),function(bn){
+      bn.className="skyv"+((bn.getAttribute("data-mofrom")===(MO.opt.from||"today"))?" on":""); });
     moDraw(); return; }
   if(t.id==="mostudio"){ moStudio(!MO.studio); return; }
   if(t.id==="moexit"){ moStudio(false); return; }

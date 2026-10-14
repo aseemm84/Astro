@@ -170,21 +170,50 @@ function moChartSheet(){
 function moSceneSheets(){
   var k=MO.scene, out=[moChartSheet()];
   if(k==="retro"){
-    var en=MO.opt.subject, w=moRetroWindow(en), rows=[], N=Math.round((w.t1-w.t0)/86400000);
-    for(var i=0;i<=N;i++){
-      var ms=w.t0+i*86400000, L=moSidAt(en,ms); if(L==null) continue;
-      var lat=0;
-      try{ lat=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[en],new Date(ms),true)).elat; }catch(e){}
-      var sp=moSpeed(en,ms);
-      rows.push([moDay(ms),+L.toFixed(5),moSignOf(L),moDegIn(L),+lat.toFixed(5),
-                 +sp.toFixed(5),sp<0?"retrograde":"direct"]);
+    /* Every retrograde in the chosen window, one row each, plus the day-by-day
+       path of whichever loop the playhead is on. The first sheet is the one worth
+       keeping: it is the station dates, which is what anyone actually wants. */
+    var en=MO.opt.subject;
+    var w0=(MO.opt.from==="birth")?moBirthMs():Date.now(), w1=w0+moSpanMs();
+    var loops=moRetroLoops(en,w0,w1);
+    out.push({name:"Retrogrades in the window",
+      cols:["#","Turns retrograde (UTC)","Resumes direct (UTC)","Days","Longitude at station °",
+            "Rāśi at station","Longitude at resuming °","Rāśi at resuming","Arc covered °",
+            "Runs past the window"],
+      rows:loops.map(function(L,i){
+        var arc=(L.lonS!=null&&L.lonE!=null)?(function(){
+          var d=L.lonS-L.lonE; while(d<-180)d+=360; while(d>180)d-=360; return Math.abs(d); })():"";
+        return [i+1,moISO(L.s),moISO(L.e),+L.days.toFixed(2),
+                L.lonS!=null?+L.lonS.toFixed(4):"", L.lonS!=null?moSignOf(L.lonS):"",
+                L.lonE!=null?+L.lonE.toFixed(4):"", L.lonE!=null?moSignOf(L.lonE):"",
+                arc===""?"":+arc.toFixed(3), (L.cs||L.ce)?"yes":"no"];
+      })});
+    out.push({name:"Window", cols:["Quantity","Value"], rows:[
+      ["Graha",MO_FULL[en]],
+      ["From",(MO.opt.from==="birth")?"the birth moment":"today"],
+      ["Window opens",moISO(w0)],["Window closes",moISO(w1)],
+      ["Retrogrades found",loops.length],
+      ["Mean interval between them",(MO_SYNODIC[en]?(MO_SYNODIC[en]+" days (synodic period)"):"")],
+      ["Note","a period already running when the window opens, or still running when it "+
+              "closes, is included and flagged"]]});
+    if(loops.length){
+      var shown=Math.min(loops.length,8);
+      var ei=Math.min(shown-1,Math.floor(MO.p/(1/shown)));
+      var L2=loops[ei], pad2=(L2.e-L2.s)*0.55;
+      var a2=L2.s-pad2, b2=L2.e+pad2, rows=[];
+      var N2=Math.min(900,Math.max(40,Math.round((b2-a2)/86400000)));
+      for(var i2=0;i2<=N2;i2++){
+        var ms2=a2+(b2-a2)*i2/N2, Lo=moSidAt(en,ms2); if(Lo==null) continue;
+        var lat2=0;
+        try{ lat2=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[en],new Date(ms2),true)).elat; }catch(e){}
+        var sp2=moSpeed(en,ms2);
+        rows.push([moDay(ms2),+Lo.toFixed(5),moSignOf(Lo),moDegIn(Lo),+lat2.toFixed(5),
+                   +sp2.toFixed(5),sp2<0?"retrograde":"direct"]);
+      }
+      out.push({name:"Path of loop "+(ei+1),
+        cols:["Date (UTC)","Sidereal longitude °","Rāśi","Degrees in rāśi","Ecliptic latitude °",
+              "Motion °/day","Direction"], rows:rows});
     }
-    out.push({name:"Daily path",
-      cols:["Date (UTC)","Sidereal longitude °","Rāśi","Degrees in rāśi","Ecliptic latitude °",
-            "Motion °/day","Direction"], rows:rows});
-    out.push({name:"Stations", cols:["Event","Date (UTC)"], rows:[
-      ["Turns retrograde",w.s?moDay(w.s):"not in range"],
-      ["Resumes direct",  w.e?moDay(w.e):"not in range"]]});
   } else if(k==="gochara"){
     var t0=Date.now(), t1=t0+moSpanMs(), yrs=(t1-t0)/31556952000;
     var ing=[], sta=[];

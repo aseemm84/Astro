@@ -26,24 +26,78 @@ function moBirthMs(){
   var i=MO.J&&MO.J.input; if(!i) return Date.now();
   return Date.UTC(i.year,i.month-1,i.day,i.hour,i.minute)-i.tzHours*3600000;
 }
-/* The retrograde nearest to today for a given graha: scan forward, then back. */
-function moRetroWindow(en){
-  return moCached("retro|"+en,function(){
-    var now=Date.now(), DAY=86400000, stride=2*DAY;
-    var found=null, prev=null;
-    for(var k=-220;k<=900 && !found;k++){
-      var ms=now+k*stride, s=moSpeed(en,ms)<0;
-      if(prev!=null && s && !prev) found={start:ms};
-      prev=s;
+/* Every retrograde period of a graha inside a window, rather than the one nearest
+   to today. A coarse scan finds each change of direction and a bisection pins it
+   down; the stride is chosen so it cannot step over the shortest retrograde there
+   is — Budha's, at about three weeks — while still costing only a few hundred
+   samples for a decade.
+
+   A period already running when the window opens, or still running when it
+   closes, is kept and marked as clipped: it is a real retrograde and leaving it
+   out would be a lie about the window. */
+var MO_RSTRIDE={Mercury:2,Venus:3,Mars:4,Jupiter:5,Saturn:6};
+function moRetroLoops(en,t0,t1){
+  return moCached("rloops|"+en+"|"+Math.round(t0/3600000)+"|"+Math.round(t1/3600000),function(){
+    var DAY=86400000, stride=(MO_RSTRIDE[en]||4)*DAY;
+    var pre=160*DAY;                       /* reach back far enough to catch one in progress */
+    var n=Math.ceil((t1-t0+pre*2)/stride), out=[];
+    if(n>6000) { stride=(t1-t0+pre*2)/6000; n=6000; }
+    function retroAt(m){ return moSpeed(en,m)<0; }
+    function station(a,b,wantRetro){
+      /* bisect to the hour: the direction differs at the ends by construction */
+      for(var i=0;i<40&&b-a>3600000;i++){
+        var mid=(a+b)/2;
+        if(retroAt(mid)===wantRetro) b=mid; else a=mid;
+      }
+      return (a+b)/2;
     }
-    if(!found) return {t0:now-60*DAY,t1:now+60*DAY,s:null,e:null};
-    var e=null;
-    for(var j=1;j<220;j++){ var m2=found.start+j*stride; if(moSpeed(en,m2)>=0){ e=m2; break; } }
-    if(e==null) e=found.start+70*DAY;
-    var pad=(e-found.start)*0.55;
-    return {t0:found.start-pad, t1:e+pad, s:found.start, e:e};
+    var prevM=t0-pre, prevR=retroAt(prevM), openAt=prevR?prevM:null, openClipped=prevR;
+    for(var k=1;k<=n;k++){
+      var m=t0-pre+k*stride, r=retroAt(m);
+      if(r&&!prevR){ openAt=station(prevM,m,true); openClipped=false; }
+      else if(!r&&prevR&&openAt!=null){
+        var endAt=station(prevM,m,false);
+        if(endAt>t0&&openAt<t1)
+          out.push({s:openAt,e:endAt,cs:openClipped||openAt<t0,ce:endAt>t1});
+        openAt=null; openClipped=false;
+      }
+      prevM=m; prevR=r;
+    }
+    if(openAt!=null&&openAt<t1) out.push({s:openAt,e:t1,cs:openClipped||openAt<t0,ce:true});
+    /* fill in where each one begins and ends in the zodiac */
+    out.forEach(function(w){
+      w.lonS=moSidAt(en,w.s); w.lonE=moSidAt(en,w.e);
+      w.days=(w.e-w.s)/DAY;
+    });
+    return out;
   });
 }
+/* When the window holds none, it helps to say when the next one is rather than
+   leaving a blank frame. Searched forward from the end of the window. */
+function moNextRetro(en,from){
+  return moCached("rnext|"+en+"|"+Math.round(from/3600000),function(){
+    var DAY=86400000, stride=(MO_RSTRIDE[en]||4)*DAY;
+    var prevM=from, prev=moSpeed(en,from)<0;
+    for(var k=1;k<900;k++){
+      var m=from+k*stride, r=moSpeed(en,m)<0;
+      if(r&&!prev){
+        /* bisect, or the date quoted on the frame is only as good as the stride —
+           up to six days adrift for Śani, which is no use as a date */
+        var a=prevM, b=m;
+        for(var i=0;i<40&&b-a>3600000;i++){
+          var mid=(a+b)/2;
+          if(moSpeed(en,mid)<0) b=mid; else a=mid;
+        }
+        return (a+b)/2;
+      }
+      prev=r; prevM=m;
+    }
+    return null;
+  });
+}
+/* The mean interval between one retrograde and the next: the synodic period. */
+var MO_SYNODIC={Mercury:115.9,Venus:583.9,Mars:780.0,Jupiter:398.9,Saturn:378.1};
+
 function moSceneOf(k){ for(var i=0;i<MO_SCENES.length;i++) if(MO_SCENES[i].key===k) return MO_SCENES[i]; return MO_SCENES[0]; }
 function moGlyph(x,y,r,en,P,bold){
   var ben=MO_BEN[en], col=(en==="Rahu"||en==="Ketu")?P.dim:(ben?P.benefic:P.malefic);
@@ -58,85 +112,145 @@ function moGlyph(x,y,r,en,P,bold){
 var MO_SCENES=[
 /* ---------------------------------------------------------------- 1. retrograde */
 {key:"retro", label:"Retrograde loop", title:"Retrograde is not backwards",
- sub:"longitude across · ecliptic latitude up",
- span:function(){ var w=moRetroWindow(MO.opt.subject); return {t0:w.t0,t1:w.t1}; },
+ sub:"every loop inside the window you choose · longitude across, latitude up",
  draw:function(p){
-  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx, en=MO.opt.subject;
-  var w=moRetroWindow(en), t0=w.t0, t1=w.t1, ms=t0+(t1-t0)*p;
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx, en=MO.opt.subject, U=Math.min(S.w,S.h);
+  var w0=(MO.opt.from==="birth")?moBirthMs():Date.now();
+  var w1=w0+moSpanMs();
+  var loops=moRetroLoops(en,w0,w1);
   moStars();
-  /* the path, sampled once and reused */
-  var path=moCached("rpath|"+en,function(){
+
+  /* ---- the strip of the whole window, with every loop found marked on it */
+  var sy=st.capY-st.h*0.085, x0=S.w*0.08, x1=S.w*0.92;
+  function TX(m){ return x0+(x1-x0)*Math.max(0,Math.min(1,(m-w0)/(w1-w0))); }
+
+  if(!loops.length){
+    /* An empty window is an answer, not a failure — so say what the answer is, and
+       when the next one comes, rather than leaving the frame blank. */
+    var nx=moNextRetro(en,w1);
+    var syn=MO_SYNODIC[en];
+    moText(MO_FULL[en]+" does not turn retrograde",st.cx,st.cy-U*0.055,U*0.042,P.ink,"center",700);
+    moText("anywhere in this window",st.cx,st.cy-U*0.008,U*0.030,P.dim,"center",500);
+    moText(nx?("the next one begins "+moFmtDate(nx)):"none found within three years of it",
+      st.cx,st.cy+U*0.045,U*0.028,P.gold,"center",600);
+    if(syn) moText(MO_FULL[en]+" turns retrograde about every "+
+      (syn>400?(syn/365.25).toFixed(1)+" years":Math.round(syn)+" days")+
+      " — widen the span to catch one",
+      st.cx,st.cy+U*0.085,U*0.022,P.dim,"center",500);
+    c.strokeStyle=P.line; c.lineWidth=1.5;
+    c.beginPath(); c.moveTo(x0,sy); c.lineTo(x1,sy); c.stroke();
+    moText(moFmtDate(w0),x0,sy+U*0.030,U*0.019,P.dim,"left",500);
+    moText(moFmtDate(w1),x1,sy+U*0.030,U*0.019,P.dim,"right",500);
+    return {ms:w0+(w1-w0)*p, sub:MO_FULL[en]+" · no retrograde in this window"};
+  }
+
+  /* ---- one loop per slot of the playhead, so each keeps its shape */
+  var MAXL=8, shown=Math.min(loops.length,MAXL);
+  var each=1/shown, idx=Math.min(shown-1,Math.floor(p/each)), q=(p-idx*each)/each;
+  var L=loops[idx];
+  /* padding either side, so the loop is seen entering and leaving rather than
+     starting mid-turn */
+  var pad=(L.e-L.s)*0.55;
+  var t0=L.s-pad, t1=L.e+pad, ms=t0+(t1-t0)*q;
+
+  var path=moCached("rpath|"+en+"|"+Math.round(t0/3600000)+"|"+Math.round(t1/3600000),function(){
     var out=[], N=240;
     for(var i=0;i<=N;i++){
-      var m=t0+(t1-t0)*i/N, L=moSidAt(en,m);
+      var m=t0+(t1-t0)*i/N, Lo=moSidAt(en,m);
       var lat=0;
       try{ var ev=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[en],new Date(m),true));
            lat=ev.elat; }catch(e){}
-      if(L!=null) out.push({ms:m,lon:L,lat:lat,retro:moSpeed(en,m)<0});
+      if(Lo!=null) out.push({ms:m,lon:Lo,lat:lat,retro:moSpeed(en,m)<0});
     }
     return out;
   });
   if(!path.length) return {ms:ms};
   var lo=1e9,hi=-1e9,la=1e9,ha=-1e9;
-  path.forEach(function(q){ var u=q.lon; lo=Math.min(lo,u); hi=Math.max(hi,u);
-    la=Math.min(la,q.lat); ha=Math.max(ha,q.lat); });
-  if(hi-lo>180){ path.forEach(function(q){ if(q.lon<180) q.lon+=360; });
-    lo=1e9;hi=-1e9; path.forEach(function(q){ lo=Math.min(lo,q.lon); hi=Math.max(hi,q.lon); }); }
+  path.forEach(function(z){ var u=z.lon; lo=Math.min(lo,u); hi=Math.max(hi,u);
+    la=Math.min(la,z.lat); ha=Math.max(ha,z.lat); });
+  if(hi-lo>180){ path.forEach(function(z){ if(z.lon<180) z.lon+=360; });
+    lo=1e9;hi=-1e9; path.forEach(function(z){ lo=Math.min(lo,z.lon); hi=Math.max(hi,z.lon); }); }
   var mx=(hi-lo)*0.12||1, my=(ha-la)*0.35||0.4;
   lo-=mx; hi+=mx; la-=my; ha+=my;
-  var bx=S.w*0.11, bw=S.w-bx*2, by=st.cy-st.h*0.30, bh=st.h*0.60;
+  var bx=S.w*0.11, bw=S.w-bx*2, by=st.cy-st.h*0.30, bh=st.h*0.52;
   function X(l){ return bx+bw*(l-lo)/(hi-lo); }
-  function Y(b){ return by+bh-bh*(b-la)/(ha-la); }
+  function Y(bb){ return by+bh-bh*(bb-la)/(ha-la); }
   /* sign bands and boundaries */
   for(var sg=Math.floor(lo/30);sg<=Math.floor(hi/30);sg++){
-    var a=Math.max(lo,sg*30), b=Math.min(hi,sg*30+30);
-    if(b<=a) continue;
+    var aa=Math.max(lo,sg*30), bq=Math.min(hi,sg*30+30);
+    if(bq<=aa) continue;
     c.fillStyle=(sg%2)?"rgba(255,255,255,0.035)":"rgba(255,255,255,0.012)";
-    c.fillRect(X(a),by,X(b)-X(a),bh);
+    c.fillRect(X(aa),by,X(bq)-X(aa),bh);
     if(sg*30>lo){ c.strokeStyle=P.gold; c.globalAlpha=.45; c.setLineDash([6,8]); c.lineWidth=2;
       c.beginPath(); c.moveTo(X(sg*30),by); c.lineTo(X(sg*30),by+bh); c.stroke();
       c.setLineDash([]); c.globalAlpha=1; }
-    if(MO.opt.labels && X(b)-X(a)>S.w*0.12)
-      moText(moSign(((sg%12)+12)%12),(X(a)+X(b))/2,by-S.w*0.035,S.w*0.030,P.dim,"center",600);
+    if(MO.opt.labels && X(bq)-X(aa)>S.w*0.12)
+      moText(moSign(((sg%12)+12)%12),(X(aa)+X(bq))/2,by-U*0.035,U*0.030,P.dim,"center",600);
   }
   /* the ecliptic plane */
   if(MO.opt.grid && la<0 && ha>0){
     c.strokeStyle=P.line; c.lineWidth=2; c.setLineDash([5,7]);
     c.beginPath(); c.moveTo(bx,Y(0)); c.lineTo(bx+bw,Y(0)); c.stroke(); c.setLineDash([]);
-    moText("ecliptic plane",bx+bw,Y(0)-S.w*0.022,S.w*0.022,P.dim,"right",500);
+    moText("ecliptic plane",bx+bw,Y(0)-U*0.022,U*0.022,P.dim,"right",500);
   }
   /* The whole path, faint: the shape of the loop is the point of the scene, so the
      frame should never be a stub of a curve in an empty field. The travelled part is
      then drawn bright over it. */
   c.strokeStyle=P.dim; c.globalAlpha=.30; c.lineWidth=Math.max(2,S.w*0.0035);
   c.beginPath();
-  path.forEach(function(q,i){ var x=X(q.lon), y=Y(q.lat);
+  path.forEach(function(z,i){ var x=X(z.lon), y=Y(z.lat);
     if(i) c.lineTo(x,y); else c.moveTo(x,y); });
   c.stroke(); c.globalAlpha=1;
   /* trail up to now */
-  var cut=Math.round(p*(path.length-1));
+  var cut=Math.round(q*(path.length-1));
   var from=MO.opt.trail?Math.max(0,cut-Math.round(path.length*MO.opt.trailLen)):cut-1;
   c.lineWidth=Math.max(3,S.w*0.006); c.lineJoin="round"; c.lineCap="round";
-  for(var i=Math.max(1,from);i<=cut;i++){
-    var q0=path[i-1], q1=path[i];
-    var al=(i-from)/Math.max(1,cut-from);
+  for(var i2=Math.max(1,from);i2<=cut;i2++){
+    var z0=path[i2-1], z1=path[i2];
+    var al=(i2-from)/Math.max(1,cut-from);
     c.globalAlpha=0.15+0.85*al;
-    c.strokeStyle=q1.retro?P.malefic:P.gold;
-    c.beginPath(); c.moveTo(X(q0.lon),Y(q0.lat)); c.lineTo(X(q1.lon),Y(q1.lat)); c.stroke();
+    c.strokeStyle=z1.retro?P.malefic:P.gold;
+    c.beginPath(); c.moveTo(X(z0.lon),Y(z0.lat)); c.lineTo(X(z1.lon),Y(z1.lat)); c.stroke();
   }
   c.globalAlpha=1;
-  /* stations */
-  [["s","turns back"],["e","resumes"]].forEach(function(k){
-    var t=w[k[0]]; if(t==null||t>ms) return;
-    var near=path.reduce(function(a,b){ return Math.abs(b.ms-t)<Math.abs(a.ms-t)?b:a; },path[0]);
+  /* the two stations of THIS loop */
+  [[L.s,"turns back"],[L.e,"resumes"]].forEach(function(k){
+    var t=k[0]; if(t==null||t>ms) return;
+    var near=path.reduce(function(aq,bq2){ return Math.abs(bq2.ms-t)<Math.abs(aq.ms-t)?bq2:aq; },path[0]);
     moGlowDot(X(near.lon),Y(near.lat),S.w*0.011,P.gold,P.gold);
-    if(MO.opt.labels) moText(k[1],X(near.lon),Y(near.lat)-S.w*0.034,S.w*0.024,P.gold,"center",600);
+    if(MO.opt.labels) moText(k[1],X(near.lon),Y(near.lat)-U*0.034,U*0.024,P.gold,"center",600);
   });
   var cur=path[cut];
   var r=S.w*0.043;
   moGlyph(X(cur.lon),Y(cur.lat),r,en,P,true);
   if(cur.retro) moText("R",X(cur.lon)+r*0.95,Y(cur.lat)-r*0.85,r*0.62,P.malefic,"center",800);
-  return {ms:ms, sub:MO_FULL[en]+" · "+(cur.retro?"retrograde":"direct")+" · lat "+
+
+  /* ---- which loop of how many, and where it sits in the window */
+  var hy=by+bh+U*0.040;
+  moText("loop "+(idx+1)+" of "+loops.length+
+         (loops.length>MAXL?(" — first "+MAXL+" shown"):""),
+    st.cx,hy,U*0.026,P.gold,"center",700);
+  moText(moFmtDate(L.s)+"  \u2192  "+moFmtDate(L.e)+"   ·   "+Math.round(L.days)+" days"+
+         (L.cs||L.ce?"  (runs past the window)":""),
+    st.cx,hy+U*0.034,U*0.022,P.dim,"center",500);
+  c.strokeStyle=P.line; c.lineWidth=1.5;
+  c.beginPath(); c.moveTo(x0,sy); c.lineTo(x1,sy); c.stroke();
+  loops.forEach(function(lp,i){
+    var on=(i===idx);
+    c.strokeStyle=on?P.gold:P.malefic; c.globalAlpha=on?0.95:0.45;
+    c.lineWidth=on?U*0.013:U*0.008; c.lineCap="butt";
+    c.beginPath(); c.moveTo(TX(lp.s),sy); c.lineTo(Math.max(TX(lp.e),TX(lp.s)+2),sy); c.stroke();
+    c.globalAlpha=1;
+  });
+  var px=TX(ms);
+  c.strokeStyle=P.ink; c.lineWidth=2;
+  c.beginPath(); c.moveTo(px,sy-U*0.016); c.lineTo(px,sy+U*0.016); c.stroke();
+  moText(moFmtDate(w0),x0,sy+U*0.032,U*0.018,P.dim,"left",500);
+  moText(moFmtDate(w1),x1,sy+U*0.032,U*0.018,P.dim,"right",500);
+  moText(loops.length+" retrograde"+(loops.length===1?"":"s")+" in this window",
+    st.cx,sy+U*0.032,U*0.018,P.dim,"center",500);
+  return {ms:ms, sub:MO_FULL[en]+" · loop "+(idx+1)+" of "+loops.length+" · "+
+          (cur.retro?"retrograde":"direct")+" · lat "+
           (cur.lat>=0?"+":"")+cur.lat.toFixed(2)+"°"};
  }},
 

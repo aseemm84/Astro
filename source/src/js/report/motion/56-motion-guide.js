@@ -14,9 +14,10 @@
 var MO_READ={
 
 retro:[
- "The faint line is the whole path the graha traces through the rāśis across the window; the bright head is where it stands at the playhead.",
- "Nothing actually reverses. The loop appears because Earth overtakes the graha on the inside, so its direction <em>against the stars</em> turns around for a few weeks.",
- "<b>R</b> marks the retrograde stretch. The <b>Graha</b> buttons choose whose loop you see; the window finds the station nearest today."
+ "Set a window with <b>From</b> and <b>Span</b>, and every retrograde of the chosen graha inside it is found. The bar along the foot is that window with each one marked; the playhead takes them in turn, one loop per slot.",
+ "Within a loop: the faint line is the whole path, the bright head is where the graha stands, and the two gold dots are the stations where it turns back and resumes.",
+ "Nothing actually reverses. The loop appears because Earth overtakes the graha on the inside, so its direction <em>against the stars</em> turns around for a few weeks. The latitude on the vertical axis is why it is a loop and not a straight retrace.",
+ "If the window holds none, the frame says so and gives the date of the next one — Guru and Śani turn about once a year, Maṅgala only about every 26 months."
 ],
 gochara:[
  "The outer ring is where the slow grahas stand at the playhead. The inner ring is your natal chart, fixed.",
