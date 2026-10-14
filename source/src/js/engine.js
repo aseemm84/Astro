@@ -925,7 +925,11 @@ window.quickSky=function(inp){
       var h=Astronomy.Horizon(date,obs,eq.ra,eq.dec,"normal");
       hz={alt:h.altitude,az:h.azimuth};
     }catch(e){}
-    out.push({en:n,sid:sid,lat:ev.elat,hz:hz});
+    /* Apparent speed in degrees per day, measured across an hour centred on the instant.
+       The sign of it is retrogression — the wheel marks it, and the Sun and Moon never
+       retrograde, so they cost nothing to include. */
+    var sp=lonAndSpeed(n,date).speed;
+    out.push({en:n,sid:sid,lat:ev.elat,hz:hz,speed:sp,retro:sp<0});
   });
   var nodeTrop=(inp.node==="true")?trueNodeAt(date):meanNode(jd);
   [["Rahu",norm(nodeTrop-ay)],["Ketu",norm(nodeTrop-ay+180)]].forEach(function(x){
@@ -938,7 +942,9 @@ window.quickSky=function(inp){
       var h=Astronomy.Horizon(date,obs,((ra%24)+24)%24,dec,"normal");
       hz={alt:h.altitude,az:h.azimuth};
     }catch(e){}
-    out.push({en:x[0],sid:x[1],lat:0,hz:hz});
+    /* The nodes are always retrograde in the mean reckoning; the true node can creep
+       forward briefly, but both are drawn with the retrograde mark by convention. */
+    out.push({en:x[0],sid:x[1],lat:0,hz:hz,speed:-0.053,retro:true});
   });
   var lag=ascendant(jd,date,inp.lat,inp.lon,ay);
   var gast=Astronomy.SiderealTime(date);

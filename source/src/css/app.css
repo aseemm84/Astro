@@ -303,6 +303,22 @@ code.k-inline{background:#f0f0f6;padding:1px 5px;border-radius:5px;font-size:12.
 .kreport .skytoggle{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
 .kreport .skytoggle button{background:#fff;border:0;padding:8px 15px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
 .kreport .skytoggle button.on{background:var(--night);color:#fff;font-weight:600}
+.kreport .skyctl{border:1px solid var(--line);border-radius:10px;background:var(--soft);padding:10px 12px;margin:10px 0 8px}
+.kreport .skyrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 8px}
+.kreport .skyrow:last-child{margin-bottom:0}
+.kreport .skysel{font:inherit;font-size:12.5px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+.kreport .skysteps{display:inline-flex;gap:3px;flex-wrap:wrap;margin-left:auto}
+.kreport .skytoggles{border-top:1px dashed var(--line);padding-top:9px}
+.kreport .skygrahas{border-top:1px dashed var(--line);padding-top:9px}
+.kreport .skygrahas .wlitem{white-space:normal;flex:1 1 220px;font-size:12px}
+.kreport .skypre{display:inline-flex;gap:3px;margin-left:8px;padding-left:10px;border-left:1px solid var(--line)}
+.kreport .skyslides{gap:16px}
+.kreport .skysl{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+.kreport .skysl input[type=range]{width:116px;accent-color:var(--gold)}
+.kreport .skysl span{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink);min-width:36px}
+.kreport .skyrailwrap{margin:2px 0 9px}
+.kreport svg.skyrailsvg{width:100%;height:auto;display:block}
+.kreport svg.skyrailsvg .skyrt{font-size:9px;fill:var(--muted);font-family:var(--sans)}
 .kreport .skyscrub{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:6px 0 4px}
 .kreport .skyscrub label{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .kreport .skyscrub input[type=range]{flex:1;min-width:220px;accent-color:var(--gold)}
@@ -312,10 +328,12 @@ code.k-inline{background:#f0f0f6;padding:1px 5px;border-radius:5px;font-size:12.
 .kreport svg.skysvg{width:100%;height:auto;display:block}
 .kreport svg.skysvg text{font-family:system-ui,sans-serif}
 .kreport svg.skysvg .sk-rasi{font-size:13px;font-weight:600;fill:#1d2340;text-anchor:middle}
-.kreport svg.skysvg .sk-lord{font-size:9.5px;fill:#7a7f99;text-anchor:middle}
+.kreport svg.skysvg .sk-lord{font-size:9px;fill:#9aa0b8;font-style:italic;text-anchor:middle}
 .kreport svg.skysvg .sk-nak{font-size:8.5px;fill:#4a4f6b;text-anchor:middle}
 .kreport svg.skysvg .sk-pl{font-size:12px;font-weight:700;fill:#1d2340;text-anchor:middle}
 .kreport svg.skysvg .sk-deg{font-size:8.5px;fill:#6c7089;text-anchor:middle}
+.kreport svg.skysvg .sk-plnat{font-size:10px;font-weight:600;fill:#767c96;text-anchor:middle}
+.kreport svg.skysvg .sk-retro{font-size:9.5px;font-weight:700;fill:#b5533c;text-anchor:middle}
 .kreport svg.skysvg .sk-axis{font-size:11px;font-weight:700;text-anchor:middle}
 .kreport svg.skysvg .sk-c1{font-size:12px;fill:#9a9eb4;text-anchor:middle;letter-spacing:.08em}
 .kreport svg.skysvg .sk-c2{font-size:11px;fill:#7a7f99;text-anchor:middle}
@@ -382,7 +400,10 @@ code.k-inline{background:#f0f0f6;padding:1px 5px;border-radius:5px;font-size:12.
 .kreport .wlrow+.wlrow{border-top:1px dotted var(--line)}
 .kreport .wlk{flex:0 0 74px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .kreport .wlv{display:flex;flex-wrap:wrap;gap:3px 14px}
-.kreport .wlitem{color:var(--muted);white-space:nowrap}
+.kreport .wlitem{color:var(--muted);white-space:nowrap;min-width:0}
+.kreport .wlv{min-width:0}
+/* narrow screens: legend items wrap rather than push the page sideways */
+@media (max-width:680px){.kreport .wlitem{white-space:normal}.kreport .wlrow{flex-wrap:wrap}}
 .kreport .wlitem b{color:var(--ink);font-variant-numeric:tabular-nums}
 .kreport .wlitem b.wl-g{color:#8a6a1f}.kreport .wlitem b.wl-s{color:#2b5fa5}
 .kreport .wlitem b.wl-u{color:#1c6b46}

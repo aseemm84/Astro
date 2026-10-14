@@ -22,6 +22,11 @@ function wheelLegend(kind){
      '<span class="wlitem">degree shown beside each graha is its position within its sign</span>'+
      '</span></div>';
   if(kind==="ecliptic"){
+    o+='<div class="wlrow"><span class="wlk">Rings</span><span class="wlv">'+
+       '<span class="wlitem"><b>outer, bold</b> gochara — where the grahas stand at the moment shown</span>'+
+       '<span class="wlitem"><b style="color:#767c96">inner, grey</b> natal — where they stood at birth</span>'+
+       '<span class="wlitem">a crowded graha steps inward along its own bearing, never sideways</span>'+
+       '</span></div>';
     o+='<div class="wlrow"><span class="wlk">Axes</span><span class="wlv">'+
        '<span class="wlitem"><b style="color:#a1493a">Lagna</b> the rising degree</span>'+
        '<span class="wlitem"><b style="color:#3f6fa6">MC</b> the meridian, rāśi chart only</span>'+

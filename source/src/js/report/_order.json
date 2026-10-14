@@ -40,6 +40,7 @@
   "sky/41-wheel-legends.js",
   "sky/37-ecliptic-wheel.js",
   "sky/38-sky-pane.js",
+  "sky/39-wheel-controls.js",
   "sky/40-star-wheel.js",
   "export/42-json-export.js",
   "print/45-print-report.js",

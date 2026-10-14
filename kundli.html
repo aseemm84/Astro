@@ -303,6 +303,22 @@ code.k-inline{background:#f0f0f6;padding:1px 5px;border-radius:5px;font-size:12.
 .kreport .skytoggle{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden}
 .kreport .skytoggle button{background:#fff;border:0;padding:8px 15px;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
 .kreport .skytoggle button.on{background:var(--night);color:#fff;font-weight:600}
+.kreport .skyctl{border:1px solid var(--line);border-radius:10px;background:var(--soft);padding:10px 12px;margin:10px 0 8px}
+.kreport .skyrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 8px}
+.kreport .skyrow:last-child{margin-bottom:0}
+.kreport .skysel{font:inherit;font-size:12.5px;padding:5px 8px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink)}
+.kreport .skysteps{display:inline-flex;gap:3px;flex-wrap:wrap;margin-left:auto}
+.kreport .skytoggles{border-top:1px dashed var(--line);padding-top:9px}
+.kreport .skygrahas{border-top:1px dashed var(--line);padding-top:9px}
+.kreport .skygrahas .wlitem{white-space:normal;flex:1 1 220px;font-size:12px}
+.kreport .skypre{display:inline-flex;gap:3px;margin-left:8px;padding-left:10px;border-left:1px solid var(--line)}
+.kreport .skyslides{gap:16px}
+.kreport .skysl{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--muted)}
+.kreport .skysl input[type=range]{width:116px;accent-color:var(--gold)}
+.kreport .skysl span{font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink);min-width:36px}
+.kreport .skyrailwrap{margin:2px 0 9px}
+.kreport svg.skyrailsvg{width:100%;height:auto;display:block}
+.kreport svg.skyrailsvg .skyrt{font-size:9px;fill:var(--muted);font-family:var(--sans)}
 .kreport .skyscrub{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:6px 0 4px}
 .kreport .skyscrub label{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
 .kreport .skyscrub input[type=range]{flex:1;min-width:220px;accent-color:var(--gold)}
@@ -312,10 +328,12 @@ code.k-inline{background:#f0f0f6;padding:1px 5px;border-radius:5px;font-size:12.
 .kreport svg.skysvg{width:100%;height:auto;display:block}
 .kreport svg.skysvg text{font-family:system-ui,sans-serif}
 .kreport svg.skysvg .sk-rasi{font-size:13px;font-weight:600;fill:#1d2340;text-anchor:middle}
-.kreport svg.skysvg .sk-lord{font-size:9.5px;fill:#7a7f99;text-anchor:middle}
+.kreport svg.skysvg .sk-lord{font-size:9px;fill:#9aa0b8;font-style:italic;text-anchor:middle}
 .kreport svg.skysvg .sk-nak{font-size:8.5px;fill:#4a4f6b;text-anchor:middle}
 .kreport svg.skysvg .sk-pl{font-size:12px;font-weight:700;fill:#1d2340;text-anchor:middle}
 .kreport svg.skysvg .sk-deg{font-size:8.5px;fill:#6c7089;text-anchor:middle}
+.kreport svg.skysvg .sk-plnat{font-size:10px;font-weight:600;fill:#767c96;text-anchor:middle}
+.kreport svg.skysvg .sk-retro{font-size:9.5px;font-weight:700;fill:#b5533c;text-anchor:middle}
 .kreport svg.skysvg .sk-axis{font-size:11px;font-weight:700;text-anchor:middle}
 .kreport svg.skysvg .sk-c1{font-size:12px;fill:#9a9eb4;text-anchor:middle;letter-spacing:.08em}
 .kreport svg.skysvg .sk-c2{font-size:11px;fill:#7a7f99;text-anchor:middle}
@@ -382,7 +400,10 @@ code.k-inline{background:#f0f0f6;padding:1px 5px;border-radius:5px;font-size:12.
 .kreport .wlrow+.wlrow{border-top:1px dotted var(--line)}
 .kreport .wlk{flex:0 0 74px;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
 .kreport .wlv{display:flex;flex-wrap:wrap;gap:3px 14px}
-.kreport .wlitem{color:var(--muted);white-space:nowrap}
+.kreport .wlitem{color:var(--muted);white-space:nowrap;min-width:0}
+.kreport .wlv{min-width:0}
+/* narrow screens: legend items wrap rather than push the page sideways */
+@media (max-width:680px){.kreport .wlitem{white-space:normal}.kreport .wlrow{flex-wrap:wrap}}
 .kreport .wlitem b{color:var(--ink);font-variant-numeric:tabular-nums}
 .kreport .wlitem b.wl-g{color:#8a6a1f}.kreport .wlitem b.wl-s{color:#2b5fa5}
 .kreport .wlitem b.wl-u{color:#1c6b46}
@@ -1765,7 +1786,11 @@ window.quickSky=function(inp){
       var h=Astronomy.Horizon(date,obs,eq.ra,eq.dec,"normal");
       hz={alt:h.altitude,az:h.azimuth};
     }catch(e){}
-    out.push({en:n,sid:sid,lat:ev.elat,hz:hz});
+    /* Apparent speed in degrees per day, measured across an hour centred on the instant.
+       The sign of it is retrogression — the wheel marks it, and the Sun and Moon never
+       retrograde, so they cost nothing to include. */
+    var sp=lonAndSpeed(n,date).speed;
+    out.push({en:n,sid:sid,lat:ev.elat,hz:hz,speed:sp,retro:sp<0});
   });
   var nodeTrop=(inp.node==="true")?trueNodeAt(date):meanNode(jd);
   [["Rahu",norm(nodeTrop-ay)],["Ketu",norm(nodeTrop-ay+180)]].forEach(function(x){
@@ -1778,7 +1803,9 @@ window.quickSky=function(inp){
       var h=Astronomy.Horizon(date,obs,((ra%24)+24)%24,dec,"normal");
       hz={alt:h.altitude,az:h.azimuth};
     }catch(e){}
-    out.push({en:x[0],sid:x[1],lat:0,hz:hz});
+    /* The nodes are always retrograde in the mean reckoning; the true node can creep
+       forward briefly, but both are drawn with the retrograde mark by convention. */
+    out.push({en:x[0],sid:x[1],lat:0,hz:hz,speed:-0.053,retro:true});
   });
   var lag=ascendant(jd,date,inp.lat,inp.lon,ay);
   var gast=Astronomy.SiderealTime(date);
@@ -5112,6 +5139,11 @@ function wheelLegend(kind){
      '<span class="wlitem">degree shown beside each graha is its position within its sign</span>'+
      '</span></div>';
   if(kind==="ecliptic"){
+    o+='<div class="wlrow"><span class="wlk">Rings</span><span class="wlv">'+
+       '<span class="wlitem"><b>outer, bold</b> gochara — where the grahas stand at the moment shown</span>'+
+       '<span class="wlitem"><b style="color:#767c96">inner, grey</b> natal — where they stood at birth</span>'+
+       '<span class="wlitem">a crowded graha steps inward along its own bearing, never sideways</span>'+
+       '</span></div>';
     o+='<div class="wlrow"><span class="wlk">Axes</span><span class="wlv">'+
        '<span class="wlitem"><b style="color:#a1493a">Lagna</b> the rising degree</span>'+
        '<span class="wlitem"><b style="color:#3f6fa6">MC</b> the meridian, rāśi chart only</span>'+
@@ -5167,13 +5199,17 @@ function skyArc(cx,cy,r,a0,a1){
   var large=(((a1-a0)%360+360)%360)>180?1:0;
   return "M"+p0[0].toFixed(1)+","+p0[1].toFixed(1)+" A"+r+","+r+" 0 "+large+" 0 "+p1[0].toFixed(1)+","+p1[1].toFixed(1);
 }
+/* skyXY puts 0° at the left and increases clockwise on screen, so the outer arc of a
+   wedge is traversed in the positive (clockwise) direction — sweep 1 — and the inner
+   arc back again with sweep 0. These were the other way round until 2026-10, which bowed
+   every wedge to the wrong side of its chord: about 12px at the sign ring's radius. */
 function skyWedge(cx,cy,r0,r1,a0,a1,fill,op){
   var p=[skyXY(cx,cy,r1,a0),skyXY(cx,cy,r1,a1),skyXY(cx,cy,r0,a1),skyXY(cx,cy,r0,a0)];
   var lg=(((a1-a0)%360+360)%360)>180?1:0;
   return '<path d="M'+p[0][0].toFixed(1)+','+p[0][1].toFixed(1)+
-    ' A'+r1+','+r1+' 0 '+lg+' 0 '+p[1][0].toFixed(1)+','+p[1][1].toFixed(1)+
+    ' A'+r1+','+r1+' 0 '+lg+' 1 '+p[1][0].toFixed(1)+','+p[1][1].toFixed(1)+
     ' L'+p[2][0].toFixed(1)+','+p[2][1].toFixed(1)+
-    ' A'+r0+','+r0+' 0 '+lg+' 1 '+p[3][0].toFixed(1)+','+p[3][1].toFixed(1)+
+    ' A'+r0+','+r0+' 0 '+lg+' 0 '+p[3][0].toFixed(1)+','+p[3][1].toFixed(1)+
     ' Z" fill="'+fill+'" fill-opacity="'+op+'"/>';
 }
 /* A divisional chart maps a longitude to a varga sign. To place a planet on a wheel
@@ -5204,36 +5240,71 @@ var SKY_ASPOFF={Sun:[180],Moon:[180],Mercury:[180],Venus:[180],
                 Rahu:[180],Ketu:[180]};
 var SKY_BEN={Jupiter:1,Venus:1,Mercury:1,Moon:1};
 var SKY_ASPECT="none";
-function skyAspectChords(plots,cx,cy,rad){
-  if(SKY_ASPECT==="none") return "";
-  var o='<g class="sk-asp">';
-  plots.forEach(function(p){
-    if(SKY_ASPECT!==p.en) return;
-    var offs=SKY_ASPOFF[p.en]||[180], ben=!!SKY_BEN[p.en], only=true;
-    offs.forEach(function(off){
-      var a=skyXY(cx,cy,rad,p.sid), b=skyXY(cx,cy,rad,(p.sid+off)%360);
-      o+='<line x1="'+a[0].toFixed(1)+'" y1="'+a[1].toFixed(1)+'" x2="'+b[0].toFixed(1)+
-         '" y2="'+b[1].toFixed(1)+'" stroke="'+(ben?"#2f7d55":"#b5533c")+
-         '" stroke-width="'+(only?1.5:0.7)+'" opacity="'+(only?0.85:0.3)+
-         '"'+(off===180?'':' stroke-dasharray="5 4"')+'/>';
-      if(only){
-        var h=skyXY(cx,cy,rad-9,(p.sid+off)%360);
-        o+='<circle cx="'+h[0].toFixed(1)+'" cy="'+h[1].toFixed(1)+'" r="3.2" fill="'+
-           (ben?"#2f7d55":"#b5533c")+'"/>';
-      }
-    });
+
+/* ---------------------------------------------------------------------------
+   Display options. Every one of these is a switch in the pane; the renderer reads
+   them and nothing else decides what is drawn.
+   --------------------------------------------------------------------------- */
+var SKY_OPT={
+  natal:true,        // the inner ring: where the grahas stood at birth
+  transit:true,      // the outer ring: where they stand at the shown moment
+  nakshatra:true,    // the 27 nakṣatras and their pādas (rāśi chart only)
+  degrees:true,      // position to the arc-minute under each glyph
+  retro:true,        // the R mark
+  speed:false,       // a short arrow showing direction and pace
+  trail:false,       // where each graha has been
+  trailDays:90,
+  tilt:0,            // degrees; 0 is the flat wheel
+  latExag:8,         // how far latitude is exaggerated when tilted
+  lanes:true,        // stack crowded grahas inward instead of letting them collide
+  /* Which grahas are drawn. At a gochara rate the Moon crosses the whole wheel thirteen
+     times a second and Mercury is not much better, so watching Śani cross a sign means
+     turning the fast ones off. Nothing is being hidden from the arithmetic — only from
+     the drawing. */
+  show:{Sun:true,Moon:true,Mars:true,Mercury:true,Jupiter:true,Venus:true,Saturn:true,
+        Rahu:true,Ketu:true}
+};
+
+/* ---------------------------------------------------------------------------
+   Lane packing. Crowding is resolved by stacking inward, never by sliding a glyph
+   along the ring: the bearing from the centre stays the graha's true longitude, so
+   the wheel never lies about where anything is. A planet takes the outermost lane
+   whose last occupant is far enough round the arc that the two discs cannot touch,
+   and the separation needed is computed per lane, since the same gap in degrees is
+   a much smaller gap in pixels on an inner lane.
+   --------------------------------------------------------------------------- */
+function skyLanes(list,radii,glyphR){
+  var lastLon=[], out=[];
+  list.forEach(function(p){
+    var L=0;
+    while(L<radii.length){
+      var sep=(2*glyphR+6)/radii[L]*180/Math.PI;        // degrees of arc that clear two discs
+      if(lastLon[L]==null || (p.lon-lastLon[L])>=sep) break;
+      L++;
+    }
+    if(L>=radii.length) L=radii.length-1;
+    lastLon[L]=p.lon;
+    p.lane=L; p.r=radii[L];
+    out.push(p);
   });
-  return o+'</g>';
+  return out;
 }
-function skyWheel(S){
-  var cx=360,cy=360,R=350, o='';
-  o+='<svg viewBox="0 0 720 720" class="skysvg" role="img" aria-label="Ecliptic wheel showing the rāśis, '+
-     'nakṣatras, pādas and the grahas at their true longitudes"><title>Ecliptic wheel</title>';
+function skyDM(lon){
+  var d=lon%30, dg=Math.floor(d), mn=Math.round((d-dg)*60);
+  if(mn===60){ mn=0; dg++; }
+  return dg+"°"+(mn<10?"0":"")+mn+"′";
+}
+
+/* ---------------------------------------------------------------------------
+   Static furniture — the rings that do not move. Shared by the printed wheel and
+   the live one, so both always carry the same geometry.
+   --------------------------------------------------------------------------- */
+function skyFurniture(S,showNak){
+  var cx=360,cy=360,o='';
   o+='<circle cx="360" cy="360" r="350" fill="#fbf8f0" stroke="#1d2340" stroke-width="2"/>';
-  // rashi ring
   for(var s=0;s<12;s++){
-    var a0=s*30, a1=a0+30;
-    o+=skyWedge(cx,cy,300,350,a0,a1,SKY_ELEM[s],0.16);
+    var a0=s*30;
+    o+=skyWedge(cx,cy,300,350,a0,a0+30,SKY_ELEM[s],0.16);
     o+='<line x1="'+skyXY(cx,cy,300,a0)[0].toFixed(1)+'" y1="'+skyXY(cx,cy,300,a0)[1].toFixed(1)+
        '" x2="'+skyXY(cx,cy,350,a0)[0].toFixed(1)+'" y2="'+skyXY(cx,cy,350,a0)[1].toFixed(1)+
        '" stroke="#1d2340" stroke-width="1"/>';
@@ -5246,9 +5317,9 @@ function skyWheel(S){
      circle, so drawing them there would imply a correspondence that classical practice
      does not make. They are shown for the rāśi chart only. */
   var seg=40/3;
-  for(var n=0;SKY_VARGA==="D1"&&n<27;n++){
-    var b0=n*seg, b1=b0+seg;
-    if(n%2===0) o+=skyWedge(cx,cy,252,300,b0,b1,"#1d2340",0.05);
+  for(var n=0;showNak&&n<27;n++){
+    var b0=n*seg;
+    if(n%2===0) o+=skyWedge(cx,cy,252,300,b0,b0+seg,"#1d2340",0.05);
     o+='<line x1="'+skyXY(cx,cy,252,b0)[0].toFixed(1)+'" y1="'+skyXY(cx,cy,252,b0)[1].toFixed(1)+
        '" x2="'+skyXY(cx,cy,300,b0)[0].toFixed(1)+'" y2="'+skyXY(cx,cy,300,b0)[1].toFixed(1)+
        '" stroke="#8b8fa8" stroke-width="0.7"/>';
@@ -5258,13 +5329,12 @@ function skyWheel(S){
          '" x2="'+skyXY(cx,cy,264,t)[0].toFixed(1)+'" y2="'+skyXY(cx,cy,264,t)[1].toFixed(1)+
          '" stroke="#b9bccd" stroke-width="0.5"/>';
     }
-    var nm=skyXY(cx,cy,276,b0+seg/2), ang=-(b0+seg/2)+90;
+    var nm=skyXY(cx,cy,276,b0+seg/2);
     o+='<text x="'+nm[0].toFixed(1)+'" y="'+nm[1].toFixed(1)+'" class="sk-nak" transform="rotate('+
        (((b0+seg/2)>90&&(b0+seg/2)<270)?(180-(b0+seg/2)-90):(-(b0+seg/2)+90)).toFixed(1)+
        ' '+nm[0].toFixed(1)+' '+nm[1].toFixed(1)+')">'+SKY_NAKA[n]+'</text>';
   }
   o+='<circle cx="360" cy="360" r="252" fill="none" stroke="#1d2340" stroke-width="1"/>';
-  o+='<circle cx="360" cy="360" r="120" fill="none" stroke="#d8d8e4" stroke-width="1"/>';
   // degree ticks every 10°
   for(var d=0;d<360;d+=10){
     var r0=(d%30===0)?232:242;
@@ -5272,33 +5342,61 @@ function skyWheel(S){
        '" x2="'+skyXY(cx,cy,252,d)[0].toFixed(1)+'" y2="'+skyXY(cx,cy,252,d)[1].toFixed(1)+
        '" stroke="#c3c6d6" stroke-width="0.6"/>';
   }
-  // lagna / MC axes
-  function axis(deg,label,col){
-    var p0=skyXY(cx,cy,0,deg), p1=skyXY(cx,cy,252,deg), lp=skyXY(cx,cy,140,deg);
-    return '<line x1="360" y1="360" x2="'+p1[0].toFixed(1)+'" y2="'+p1[1].toFixed(1)+
-      '" stroke="'+col+'" stroke-width="2" stroke-dasharray="6 4"/>'+
-      '<text x="'+lp[0].toFixed(1)+'" y="'+lp[1].toFixed(1)+'" class="sk-axis" fill="'+col+'">'+label+'</text>';
-  }
-  o+=axis(skyVargaLon(SKY_VARGA,S.lagna),"Lagna","#a1493a");
-  if(SKY_VARGA==="D1") o+=axis(S.mc,"MC","#3f6fa6");
-  // planets, staggered outward when crowded
+  return o;
+}
+function skyAspectChords(plots,cx,cy,rad){
+  if(SKY_ASPECT==="none") return "";
+  var o='<g class="sk-asp">';
+  plots.forEach(function(p){
+    if(SKY_ASPECT!==p.en) return;
+    var offs=SKY_ASPOFF[p.en]||[180], ben=!!SKY_BEN[p.en];
+    offs.forEach(function(off){
+      var a=skyXY(cx,cy,rad,p.lon), b=skyXY(cx,cy,rad,(p.lon+off)%360);
+      o+='<line x1="'+a[0].toFixed(1)+'" y1="'+a[1].toFixed(1)+'" x2="'+b[0].toFixed(1)+
+         '" y2="'+b[1].toFixed(1)+'" stroke="'+(ben?"#2f7d55":"#b5533c")+
+         '" stroke-width="1.5" opacity="0.85"'+(off===180?'':' stroke-dasharray="5 4"')+'/>';
+      var h=skyXY(cx,cy,rad-9,(p.lon+off)%360);
+      o+='<circle cx="'+h[0].toFixed(1)+'" cy="'+h[1].toFixed(1)+'" r="3.2" fill="'+
+         (ben?"#2f7d55":"#b5533c")+'"/>';
+    });
+  });
+  return o+'</g>';
+}
+function skyAxisStr(deg,label,col){
+  var p1=skyXY(360,360,252,deg), lp=skyXY(360,360,140,deg);
+  return '<line x1="360" y1="360" x2="'+p1[0].toFixed(1)+'" y2="'+p1[1].toFixed(1)+
+    '" stroke="'+col+'" stroke-width="2" stroke-dasharray="6 4"/>'+
+    '<text x="'+lp[0].toFixed(1)+'" y="'+lp[1].toFixed(1)+'" class="sk-axis" fill="'+col+'">'+label+'</text>';
+}
+/* ---------------------------------------------------------------------------
+   The printed / static wheel. One snapshot, no interaction. The pane uses the live
+   renderer below instead, but both share the furniture and the lane packer so the
+   paper and the screen never drift apart.
+   --------------------------------------------------------------------------- */
+var SKY_PRINT_R=[225,191,157,123];
+function skyWheel(S){
+  var cx=360,cy=360, o='';
+  o+='<svg viewBox="0 0 720 720" class="skysvg" role="img" aria-label="Ecliptic wheel showing the rāśis, '+
+     'nakṣatras, pādas and the grahas at their true longitudes"><title>Ecliptic wheel</title>';
+  o+=skyFurniture(S,SKY_VARGA==="D1");
+  o+='<circle cx="360" cy="360" r="120" fill="none" stroke="#d8d8e4" stroke-width="1"/>';
+  o+=skyAxisStr(skyVargaLon(SKY_VARGA,S.lagna),"Lagna","#a1493a");
+  if(SKY_VARGA==="D1") o+=skyAxisStr(S.mc,"MC","#3f6fa6");
   var VG=SKY_VARGA;
   var sorted=S.planets.map(function(p){
-    return {en:p.en, sid:skyVargaLon(VG,p.sid), retro:p.retro};
-  }).sort(function(a,b){return a.sid-b.sid;});
+    return {en:p.en, lon:skyVargaLon(VG,p.sid), retro:!!p.retro};
+  }).sort(function(a,b){return a.lon-b.lon;});
   o+=skyAspectChords(sorted,cx,cy,212);
-  var lastDeg=-99, lane=0;
+  skyLanes(sorted,SKY_PRINT_R,13);
   sorted.forEach(function(p){
-    if(Math.abs(p.sid-lastDeg)<9) lane=(lane+1)%3; else lane=0;
-    lastDeg=p.sid;
-    var r=225-lane*34, pt=skyXY(cx,cy,r,p.sid), tick=skyXY(cx,cy,250,p.sid), tin=skyXY(cx,cy,r+12,p.sid);
+    var pt=skyXY(cx,cy,p.r,p.lon), tick=skyXY(cx,cy,250,p.lon), tin=skyXY(cx,cy,p.r+13,p.lon);
     o+='<line x1="'+tick[0].toFixed(1)+'" y1="'+tick[1].toFixed(1)+'" x2="'+tin[0].toFixed(1)+
        '" y2="'+tin[1].toFixed(1)+'" stroke="#1d2340" stroke-width="0.8"/>';
     o+='<circle cx="'+pt[0].toFixed(1)+'" cy="'+pt[1].toFixed(1)+'" r="13" fill="#fff" stroke="#1d2340" stroke-width="1"/>';
     o+='<text x="'+pt[0].toFixed(1)+'" y="'+(pt[1]+4).toFixed(1)+'" class="sk-pl">'+GL[p.en]+'</text>';
-    var dl=skyXY(cx,cy,r-20,p.sid);
-    o+='<text x="'+dl[0].toFixed(1)+'" y="'+(dl[1]+3).toFixed(1)+'" class="sk-deg">'+
-       Math.floor(p.sid%30)+'°</text>';
+    if(p.retro) o+='<text x="'+(pt[0]+11).toFixed(1)+'" y="'+(pt[1]-8).toFixed(1)+'" class="sk-retro">R</text>';
+    var dl=skyXY(cx,cy,p.r-20,p.lon);
+    o+='<text x="'+dl[0].toFixed(1)+'" y="'+(dl[1]+3).toFixed(1)+'" class="sk-deg">'+skyDM(p.lon)+'</text>';
   });
   var vlag=skyVargaLon(SKY_VARGA,S.lagna);
   o+='<text x="360" y="316" class="sk-c1">'+(SKY_VARGA==="D1"?"ecliptic":esc(SKY_VARGA))+'</text>'+
@@ -5307,6 +5405,232 @@ function skyWheel(S){
   o+='</svg>';
   return o;
 }
+
+/* ---------------------------------------------------------------------------
+   The live wheel. Built once; afterwards only transforms and text change, so the
+   browser never reparses the markup and the thing can actually play rather than
+   step. Each graha keeps its own displayed radius and eases toward its lane, so a
+   graha that changes lane glides in or out instead of snapping.
+   --------------------------------------------------------------------------- */
+var SKY_NS="http://www.w3.org/2000/svg";
+var SKL=null;                       // live node cache, or null before the first mount
+var SKY_NATAL=null;                 // natal positions, set by the pane
+function sklEl(tag,attrs,parent){
+  var n=document.createElementNS(SKY_NS,tag);
+  for(var k in attrs) n.setAttribute(k,attrs[k]);
+  if(parent) parent.appendChild(n);
+  return n;
+}
+function skyLiveKey(){ return SKY_VARGA+"|"+(SKY_OPT.nakshatra?1:0)+"|"+(SKY_OPT.natal?1:0); }
+function skyLiveMount(host,S){
+  host.innerHTML='<svg viewBox="0 0 720 720" class="skysvg" role="img" aria-label="Ecliptic wheel: '+
+    'the rāśis with each graha at its true longitude, animated through time">'+
+    '<title>Ecliptic wheel</title>'+
+    skyFurniture(S,SKY_VARGA==="D1"&&SKY_OPT.nakshatra)+'</svg>';
+  var svg=host.firstChild;
+  var tiltG=sklEl("g",{"class":"sk-tilt"},svg);        // everything that moves lives in here
+  var C={svg:svg,tilt:tiltG,key:skyLiveKey(),rad:{},natal:{},tran:{},trail:{},asp:{}};
+
+  sklEl("circle",{cx:360,cy:360,r:120,fill:"none",stroke:"#d8d8e4","stroke-width":1},tiltG);
+  if(SKY_OPT.natal){
+    sklEl("circle",{cx:360,cy:360,r:142,fill:"none",stroke:"#cdd2e0","stroke-width":1,
+      "stroke-dasharray":"3 5"},tiltG);
+  }
+  C.trailG=sklEl("g",{"class":"sk-trails"},tiltG);
+  C.aspG=sklEl("g",{"class":"sk-asp"},tiltG);
+  C.axisG=sklEl("g",{},tiltG);
+  C.lagLine=sklEl("line",{x1:360,y1:360,stroke:"#a1493a","stroke-width":2,"stroke-dasharray":"6 4"},C.axisG);
+  C.lagText=sklEl("text",{"class":"sk-axis",fill:"#a1493a"},C.axisG);
+  C.lagText.textContent="Lagna";
+  C.mcLine=sklEl("line",{x1:360,y1:360,stroke:"#3f6fa6","stroke-width":2,"stroke-dasharray":"6 4"},C.axisG);
+  C.mcText=sklEl("text",{"class":"sk-axis",fill:"#3f6fa6"},C.axisG);
+  C.mcText.textContent="MC";
+
+  var NAMES=["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn","Rahu","Ketu"];
+  // natal ring: smaller, quieter, no degree labels — it is a reference, not the subject
+  var natG=sklEl("g",{"class":"sk-natal"},tiltG);
+  NAMES.forEach(function(n){
+    var g=sklEl("g",{},natG);
+    var inner=sklEl("g",{},g);
+    sklEl("circle",{cx:0,cy:0,r:11,fill:"#fbf8f0",stroke:"#9aa0b8","stroke-width":1},inner);
+    var t=sklEl("text",{x:0,y:4,"text-anchor":"middle","class":"sk-plnat"},inner);
+    t.textContent=GL[n];
+    C.natal[n]={g:g,inner:inner,tick:sklEl("line",{stroke:"#c0c5d6","stroke-width":0.8},natG)};
+  });
+  // transit ring
+  var tranG=sklEl("g",{"class":"sk-tran"},tiltG);
+  NAMES.forEach(function(n){
+    var tick=sklEl("line",{stroke:"#1d2340","stroke-width":0.8},tranG);
+    var g=sklEl("g",{},tranG);
+    var inner=sklEl("g",{},g);
+    sklEl("circle",{cx:0,cy:0,r:13,fill:"#fff",stroke:"#1d2340","stroke-width":1},inner);
+    var t=sklEl("text",{x:0,y:4,"text-anchor":"middle","class":"sk-pl"},inner);
+    t.textContent=GL[n];
+    var rr=sklEl("text",{x:11,y:-8,"text-anchor":"middle","class":"sk-retro",opacity:0},inner);
+    rr.textContent="R";
+    var ar=sklEl("line",{stroke:"#5a6a80","stroke-width":1.6,opacity:0,"marker-end":""},inner);
+    var dg=sklEl("text",{x:0,y:0,"text-anchor":"middle","class":"sk-deg"},g);
+    C.tran[n]={g:g,inner:inner,tick:tick,retro:rr,deg:dg,arrow:ar};
+    C.trail[n]=sklEl("path",{fill:"none","stroke-width":2,"stroke-linecap":"round",opacity:0.75},C.trailG);
+    C.rad[n]=null;
+  });
+  C.c1=sklEl("text",{x:360,y:316,"text-anchor":"middle","class":"sk-c1"},tiltG);
+  C.c2=sklEl("text",{x:360,y:334,"text-anchor":"middle","class":"sk-c2"},tiltG);
+  SKL=C;
+  return C;
+}
+var SKY_LIVE_R=[232,204,176,148];
+var SKY_NATAL_R=[124,98,72];
+/* longitude of a graha at an arbitrary instant, in whatever varga is showing —
+   used by the trails, which need positions the snapshot does not carry */
+function skyLonAt(en,date){
+  var sid=window.__kSidAt(en,date);
+  return sid==null?null:skyVargaLon(SKY_VARGA,sid);
+}
+function skyLiveSync(S,date,dt){
+  var C=SKL; if(!C) return;
+  var cx=360, cy=360, VG=SKY_VARGA;
+  var t=SKY_OPT.tilt*Math.PI/180, kY=Math.cos(t), lift=Math.sin(t)*SKY_OPT.latExag;
+  C.tilt.setAttribute("transform", SKY_OPT.tilt?("translate(0,"+(cy*(1-kY)).toFixed(2)+") scale(1,"+kY.toFixed(4)+")"):"");
+  var invY=SKY_OPT.tilt?(1/kY):1;
+
+  /* Axes. With the natal ring showing, they start outside it rather than at the centre,
+     so the dashes do not cut through the natal glyphs, and the labels sit in the gap
+     between the two rings. */
+  var r0=SKY_OPT.natal?146:0, rLab=SKY_OPT.natal?172:140;
+  var lagL=skyVargaLon(VG,S.lagna);
+  var a0=skyXY(cx,cy,r0,lagL), p1=skyXY(cx,cy,252,lagL), lp=skyXY(cx,cy,rLab,lagL);
+  C.lagLine.setAttribute("x1",a0[0].toFixed(1)); C.lagLine.setAttribute("y1",a0[1].toFixed(1));
+  C.lagLine.setAttribute("x2",p1[0].toFixed(1)); C.lagLine.setAttribute("y2",p1[1].toFixed(1));
+  C.lagText.setAttribute("x",lp[0].toFixed(1)); C.lagText.setAttribute("y",lp[1].toFixed(1));
+  var showMC=(VG==="D1");
+  C.mcLine.setAttribute("opacity",showMC?1:0); C.mcText.setAttribute("opacity",showMC?1:0);
+  if(showMC){
+    var b0=skyXY(cx,cy,r0,S.mc), m1=skyXY(cx,cy,252,S.mc), mp=skyXY(cx,cy,rLab,S.mc);
+    C.mcLine.setAttribute("x1",b0[0].toFixed(1)); C.mcLine.setAttribute("y1",b0[1].toFixed(1));
+    C.mcLine.setAttribute("x2",m1[0].toFixed(1)); C.mcLine.setAttribute("y2",m1[1].toFixed(1));
+    C.mcText.setAttribute("x",mp[0].toFixed(1)); C.mcText.setAttribute("y",mp[1].toFixed(1));
+  }
+
+  /* natal ring */
+  var NAMES=Object.keys(C.tran);
+  if(SKY_OPT.natal && SKY_NATAL){
+    NAMES.forEach(function(n){ if(!SKY_OPT.show[n]){ C.natal[n].g.setAttribute("opacity",0);
+      C.natal[n].tick.setAttribute("opacity",0); } });
+    var nat=SKY_NATAL.filter(function(p){ return SKY_OPT.show[p.en]; })
+                     .map(function(p){ return {en:p.en, lon:skyVargaLon(VG,p.sid)}; })
+                     .sort(function(a,b){return a.lon-b.lon;});
+    skyLanes(nat,SKY_NATAL_R,11);
+    nat.forEach(function(p){
+      var N=C.natal[p.en], pt=skyXY(cx,cy,p.r,p.lon);
+      N.g.setAttribute("transform","translate("+pt[0].toFixed(1)+","+pt[1].toFixed(1)+")");
+      N.inner.setAttribute("transform",SKY_OPT.tilt?("scale(1,"+invY.toFixed(4)+")"):"");
+      N.g.setAttribute("opacity",1);
+      var a=skyXY(cx,cy,142,p.lon), b=skyXY(cx,cy,p.r+11,p.lon);
+      N.tick.setAttribute("x1",a[0].toFixed(1)); N.tick.setAttribute("y1",a[1].toFixed(1));
+      N.tick.setAttribute("x2",b[0].toFixed(1)); N.tick.setAttribute("y2",b[1].toFixed(1));
+      N.tick.setAttribute("opacity",1);
+    });
+  } else {
+    NAMES.forEach(function(n){ C.natal[n].g.setAttribute("opacity",0);
+      C.natal[n].tick.setAttribute("opacity",0); });
+  }
+
+  /* transit ring */
+  var show=SKY_OPT.transit;
+  NAMES.forEach(function(n){
+    if(!SKY_OPT.show[n]){
+      C.tran[n].g.setAttribute("opacity",0); C.tran[n].tick.setAttribute("opacity",0);
+      C.trail[n].setAttribute("d","");
+    }
+  });
+  var cur=S.planets.filter(function(p){ return SKY_OPT.show[p.en]; }).map(function(p){
+    return {en:p.en, lon:skyVargaLon(VG,p.sid), lat:p.lat||0, retro:!!p.retro, speed:p.speed||0};
+  }).sort(function(a,b){return a.lon-b.lon;});
+  if(SKY_OPT.lanes) skyLanes(cur,SKY_LIVE_R,13);
+  else cur.forEach(function(p){ p.r=SKY_LIVE_R[0]; p.lane=0; });
+  // a graha with something directly inside it loses its degree label, which would print on top
+  var occ=[];
+  cur.forEach(function(p){
+    if(p.lane>0 && occ[p.lane-1]) occ[p.lane-1].hasInner=true;
+    occ[p.lane]=p;
+  });
+  var ease=(dt==null)?1:(1-Math.exp(-dt/320));
+  cur.forEach(function(p){
+    var N=C.tran[p.en];
+    if(C.rad[p.en]==null) C.rad[p.en]=p.r;
+    C.rad[p.en]+=(p.r-C.rad[p.en])*ease;
+    var rr=C.rad[p.en];
+    var yOff=SKY_OPT.tilt?(-p.lat*lift*2.2/kY):0;       // lift is applied before the group squash
+    var pt=skyXY(cx,cy,rr,p.lon);
+    N.g.setAttribute("transform","translate("+pt[0].toFixed(1)+","+(pt[1]+yOff).toFixed(1)+")");
+    N.inner.setAttribute("transform",SKY_OPT.tilt?("scale(1,"+invY.toFixed(4)+")"):"");
+    N.g.setAttribute("opacity",show?1:0);
+    var t0=skyXY(cx,cy,250,p.lon), t1=skyXY(cx,cy,rr+13,p.lon);
+    N.tick.setAttribute("x1",t0[0].toFixed(1)); N.tick.setAttribute("y1",t0[1].toFixed(1));
+    N.tick.setAttribute("x2",t1[0].toFixed(1)); N.tick.setAttribute("y2",t1[1].toFixed(1));
+    N.tick.setAttribute("opacity",show?1:0);
+    N.retro.setAttribute("opacity",(show&&SKY_OPT.retro&&p.retro)?1:0);
+    N.deg.textContent=(show&&SKY_OPT.degrees&&!p.hasInner)?skyDM(p.lon):"";
+    N.deg.setAttribute("y",(SKY_OPT.tilt?(20*invY):20).toFixed(1));
+    if(SKY_OPT.speed && show){
+      // direction and pace: the arrow points the way the graha is going, length by speed
+      var k=Math.max(-1,Math.min(1,p.speed/1.2)), len=8+Math.abs(k)*12;
+      N.arrow.setAttribute("x1",0); N.arrow.setAttribute("y1",-17);
+      N.arrow.setAttribute("x2",(k>=0?len:-len).toFixed(1)); N.arrow.setAttribute("y2",-17);
+      N.arrow.setAttribute("stroke",p.retro?"#b5533c":"#2f7d55");
+      N.arrow.setAttribute("opacity",1);
+    } else N.arrow.setAttribute("opacity",0);
+  });
+
+  /* trails */
+  if(SKY_OPT.trail && show && date && window.__kSidAt){
+    var steps=36, span=SKY_OPT.trailDays;
+    cur.forEach(function(p){
+      var pts=[], ok=true;
+      for(var i=steps;i>=0;i--){
+        var d=new Date(date.getTime()-i*span/steps*86400000);
+        var L=skyLonAt(p.en,d); if(L==null){ ok=false; break; }
+        var q=skyXY(cx,cy,C.rad[p.en]-16,L);
+        pts.push((pts.length?"L":"M")+q[0].toFixed(1)+","+q[1].toFixed(1));
+      }
+      C.trail[p.en].setAttribute("d",ok?pts.join(" "):"");
+      C.trail[p.en].setAttribute("stroke",p.retro?"#b5533c":"#8a6f3a");
+      C.trail[p.en].setAttribute("opacity",0.7);
+    });
+  } else {
+    NAMES.forEach(function(n){ C.trail[n].setAttribute("d",""); });
+  }
+
+  /* aspects */
+  while(C.aspG.firstChild) C.aspG.removeChild(C.aspG.firstChild);
+  if(SKY_ASPECT!=="none" && show && SKY_OPT.show[SKY_ASPECT]){
+    var sel=null;
+    cur.forEach(function(p){ if(p.en===SKY_ASPECT) sel=p; });
+    if(sel){
+      var offs=SKY_ASPOFF[sel.en]||[180], ben=!!SKY_BEN[sel.en];
+      offs.forEach(function(off){
+        var a=skyXY(cx,cy,212,sel.lon), b=skyXY(cx,cy,212,(sel.lon+off)%360);
+        sklEl("line",{x1:a[0].toFixed(1),y1:a[1].toFixed(1),x2:b[0].toFixed(1),y2:b[1].toFixed(1),
+          stroke:ben?"#2f7d55":"#b5533c","stroke-width":1.5,opacity:0.85,
+          "stroke-dasharray":off===180?"none":"5 4"},C.aspG);
+        var h=skyXY(cx,cy,203,(sel.lon+off)%360);
+        sklEl("circle",{cx:h[0].toFixed(1),cy:h[1].toFixed(1),r:3.2,
+          fill:ben?"#2f7d55":"#b5533c"},C.aspG);
+      });
+    }
+  }
+
+  C.c1.textContent=(VG==="D1"?"ecliptic":VG);
+  C.c2.textContent=(VG==="D1"?"sidereal · ":"varga lagna ")+
+    SA[Math.floor(lagL/30)%12]+(VG==="D1"?" rising":"");
+}
+/* mount if the structure changed, otherwise just move things */
+function skyLiveDraw(host,S,date,dt){
+  if(!SKL || SKL.svg.parentNode!==host || SKL.key!==skyLiveKey()){ skyLiveMount(host,S); dt=null; }
+  skyLiveSync(S,date,dt);
+}
+
 function skyDome(S){
   var cx=360,cy=330,R=300,o='';
   o+='<svg viewBox="0 0 720 660" class="skysvg" role="img" aria-label="All-sky view from the birth place: '+
@@ -5357,6 +5681,7 @@ function skyDome(S){
     o+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="14" fill="'+col+
        '" stroke="#1d2340" stroke-width="1"/>';
     o+='<text x="'+q[0].toFixed(1)+'" y="'+(q[1]+4).toFixed(1)+'" class="sk-pl">'+GL[p.en]+'</text>';
+    if(p.retro) o+='<text x="'+(q[0]+12).toFixed(1)+'" y="'+(q[1]-9).toFixed(1)+'" class="sk-retro">R</text>';
     o+='<text x="'+q[0].toFixed(1)+'" y="'+(q[1]+27).toFixed(1)+'" class="sk-halt" fill="'+
        (day?"#5a6a80":"#8d95c2")+'">'+p.hz.alt.toFixed(0)+'°</text>';
   });
@@ -5380,42 +5705,83 @@ function skyHorizonOf(eq,S){
         Math.sin(dec)*Math.cos(phi)-Math.cos(dec)*Math.sin(phi)*Math.cos(H))/R;
   return {alt:alt, az:((az%360)+360)%360};
 }
-
-/* --- the pane: two views plus a time scrubber --- */
+/* --- the pane: two views, a transport and a set of switches --- */
 var SKY_BASE=null, SKY_OFFSET=0, SKY_VIEW="wheel";
 function skyStateAt(minutes){
   var i={}; for(var k in SKY_BASE) i[k]=SKY_BASE[k];
+  /* minutes may be fractional while playing, and may run to years either side, so the
+     day rollover is done on a real Date rather than by arithmetic on the fields. */
   var t=i.hour*60+i.minute+minutes, shift=Math.floor(t/1440);
-  t=((t%1440)+1440)%1440; i.hour=Math.floor(t/60); i.minute=t%60;
+  t=t-shift*1440;
+  i.hour=Math.floor(t/60);
+  var rem=t-i.hour*60;
+  i.minute=Math.floor(rem);
+  i.second=(rem-i.minute)*60;
   if(shift){ var d=new Date(Date.UTC(i.year,i.month-1,i.day+shift));
     i.year=d.getUTCFullYear(); i.month=d.getUTCMonth()+1; i.day=d.getUTCDate(); }
   return {inp:i, sky:window.quickSky(i)};
 }
 function skyStamp(st){
-  var i=st.inp;
+  var i=st.inp, off=SKY_OFFSET, tail;
+  if(!off) tail=" (birth moment)";
+  else {
+    var a=Math.abs(off), s=off>0?"+":"−";
+    tail = a<120 ? " ("+s+Math.round(a)+" min)"
+         : a<2880 ? " ("+s+(a/60).toFixed(1)+" h)"
+         : a<43830 ? " ("+s+(a/1440).toFixed(1)+" days)"
+         : a<525960 ? " ("+s+(a/43830).toFixed(1)+" months)"
+         : " ("+s+(a/525960).toFixed(2)+" years)";
+  }
   return String(i.day).padStart(2,"0")+" "+MON[i.month]+" "+i.year+" · "+
-         String(i.hour).padStart(2,"0")+":"+String(i.minute).padStart(2,"0")+
-         (SKY_OFFSET?(" ("+(SKY_OFFSET>0?"+":"")+SKY_OFFSET+" min)"):" (birth moment)");
+         String(i.hour).padStart(2,"0")+":"+String(i.minute).padStart(2,"0")+tail;
 }
-function skyRedraw(){
+/* dt is the milliseconds since the previous frame while playing, and null otherwise;
+   the wheel uses it to ease a graha toward a new lane instead of snapping it there. */
+function skyRedraw(dt){
   var st=skyStateAt(SKY_OFFSET);
   var host=document.getElementById("skycanvas"); if(!host) return;
-  host.innerHTML=(SKY_VIEW==="wheel")?skyWheel(st.sky):skyDome(st.sky);
+  /* first draw after the report is mounted: the rail and the scrubber have no state yet */
+  var rail=document.getElementById("skyrail");
+  if(rail && !rail.firstChild){ skySyncSlider(); skyRail(); }
+  if(SKY_VIEW==="wheel"){
+    skyLiveDraw(host,st.sky,st.sky.date,dt==null?null:dt);
+  } else {
+    SKL=null;                                  // the dome replaced the wheel's nodes
+    host.innerHTML=skyDome(st.sky);
+  }
   var lab=document.getElementById("skystamp"); if(lab) lab.textContent=skyStamp(st);
+  var cur=document.getElementById("skyrailcur");
+  if(cur&&SKY_BASE){
+    var R=skyRangeM(), x=8+(984)*(SKY_OFFSET+R.m)/(2*R.m);
+    cur.setAttribute("x",(x-1).toFixed(1));
+  }
   var det=document.getElementById("skyfacts");
   if(det){
     var s=st.sky, nk=nakOf(s.lagna);
+    var retro=s.planets.filter(function(p){return p.retro&&p.en!=="Rahu"&&p.en!=="Ketu";})
+                       .map(function(p){return GL[p.en];});
     det.innerHTML='Lagna '+SA[Math.floor(s.lagna/30)%12]+' '+dm(s.lagna%30)+' · '+esc(nk.name)+' pāda '+nk.pada+
-      ' &nbsp;·&nbsp; MC '+SA[Math.floor(s.mc/30)%12]+' '+dm(s.mc%30);
+      ' &nbsp;·&nbsp; MC '+SA[Math.floor(s.mc/30)%12]+' '+dm(s.mc%30)+
+      (retro.length?(' &nbsp;·&nbsp; retrograde: '+retro.join(" ")):' &nbsp;·&nbsp; nothing retrograde');
   }
+}
+function skyNatalPoints(D){
+  var out=[], N=["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn","Rahu","Ketu"];
+  N.forEach(function(en){ var p=D&&D.P&&D.P[en]; if(p&&p.sid!=null) out.push({en:en,sid:p.sid}); });
+  return out.length?out:null;
 }
 function skyPane(D,J){
   if(!J||!J.input) return "";
   SKY_BASE=J.input; SKY_OFFSET=0; SKY_VIEW="wheel"; SKY_VARGA="D1"; SKY_ASPECT="none";
+  SKY_NATAL=skyNatalPoints(D); SKL=null;
+  SKY_RANGE="12h"; SKY_SPEED="hour"; SKY_PLAYING=false;
+  SKY_OPT.tilt=0; SKY_OPT.trail=false; SKY_OPT.speed=false;
+  for(var g in SKY_OPT.show) SKY_OPT.show[g]=true;
   return '<p class="knote">The same moment drawn twice. The <b>wheel</b> is the ecliptic itself — twelve rāśis, '+
     'twenty-seven nakṣatras, a hundred and eight pādas, and each graha at its true degree, so a planet sitting '+
     'on a boundary looks like what it is. The <b>dome</b> is the sky over the birthplace: zenith at the centre, '+
-    'horizon at the rim, and the lagna literally rising in the east.</p>'+
+    'horizon at the rim, and the lagna literally rising in the east. Press play and the wheel runs: the inner '+
+    'ring stays at birth, the outer ring is the gochara of the moment shown.</p>'+
     '<div class="skybar">'+
       '<div class="skytoggle" role="group" aria-label="View">'+
         '<button type="button" data-sky="wheel" class="on">Ecliptic wheel</button>'+
@@ -5440,12 +5806,21 @@ function skyPane(D,J){
         return '<button type="button" class="skyv" data-skyasp="'+g[0]+'" title="'+g[0]+'">'+g[1]+'</button>';
       }).join("")+
       '<span class="wlitem" style="margin-left:6px">one graha at a time — all nine together is unreadable</span></div>'+
-    '<div class="skyscrub"><label for="skyslider">Move the clock</label>'+
-      '<input type="range" id="skyslider" min="-720" max="720" step="1" value="0">'+
-      '<span id="skystamp" class="skystamp"></span></div>'+
+    '<div id="skyctlwrap">'+skyControls()+'</div>'+
     '<p id="skyfacts" class="skyfacts"></p>'+
     '<div id="skycanvas" class="skycanvas"></div>'+
     '<div id="skylegend">'+wheelLegend("ecliptic")+'</div>'+
+    '<div class="kbox"><b>The transport.</b> <i>Span</i> sets how far the scrubber reaches either side of '+
+    'the birth moment, from twelve hours out to fifty years; <i>Rate</i> sets how much chart time passes '+
+    'per second of play. Short spans are for watching the lagna turn — about one degree every four minutes, '+
+    'which is what makes a recorded birth time matter so much. Long spans are for gochara: the slow grahas '+
+    'crossing signs, and the rail beneath the scrubber marking each crossing and each station, so the moments '+
+    'worth looking at can be found without hunting for them.</div>'+
+    '<div class="kbox"><b>Crowding and honesty.</b> When grahas bunch together the glyphs step inward, one '+
+    'lane at a time, and ease back out as the crowd breaks up. What never happens is a glyph sliding along '+
+    'the ring: the bearing from the centre is always the graha&rsquo;s true longitude, so a wheel that has run '+
+    'out of room moves a planet closer in rather than somewhere it is not. A graha with another directly '+
+    'inside it drops its degree label rather than printing over its neighbour.</div>'+
     '<div class="kbox"><b>The divisional buttons.</b> The wheel can be redrawn for any of the sixteen vargas. '+
     'A varga maps a longitude to a sign; to place a planet on a circle we also need a position within that sign, '+
     'so each planet is drawn according to how far it has travelled through its own division, stretched across '+
@@ -5454,15 +5829,17 @@ function skyPane(D,J){
     'the exception: its five parts are unequal (5°, 5°, 8°, 7°, 5°), so no single fraction is meaningful and each '+
     'planet is placed at the centre of its varga sign. The nakṣatra and pāda rings appear for the rāśi chart '+
     'only, since those divide the real ecliptic rather than a derived circle.</div>'+
-    '<div class="kbox">Drag the clock and watch the lagna sweep — about one degree every four minutes, which is '+
-    'what makes a recorded birth time matter so much. Two honest notes: the dome places each body by its real '+
-    'altitude and azimuth, including ecliptic latitude, whereas Jyotiṣa works in longitude alone and treats every '+
-    'graha as if it sat exactly on the ecliptic; and the nakṣatra ring shows the equal 13°20′ divisions, not the '+
-    'uneven real stars they are named after.</div>';
+    '<div class="kbox"><b>Tilt and latitude.</b> Jyotiṣa works in longitude alone and treats every graha as if '+
+    'it sat exactly on the ecliptic, which is why every chart is flat. The tilt slider lifts the wheel out of '+
+    'that plane and raises each graha by its real ecliptic latitude, so the Moon can be seen crossing the plane '+
+    'at the node rather than merely being said to. The latitude multiplier exaggerates the lift, as an orrery '+
+    'does — the true values run to about 5° for the Moon and 7° for Mercury, invisible at this scale. It is a '+
+    'way of seeing what the numbers mean, not a classical quantity. Two further honest notes: the dome places '+
+    'each body by its real altitude and azimuth, including that latitude; and the nakṣatra ring shows the equal '+
+    '13°20′ divisions, not the uneven real stars they are named after.</div>';
 }
 document.addEventListener("click",function(ev){
   var t=ev.target; if(!t||!t.getAttribute) return;
-  var v=t.getAttribute("data-sky");
   var ap=t.getAttribute("data-skyasp");
   if(ap){ SKY_ASPECT=ap;
     [].forEach.call(document.querySelectorAll("[data-skyasp]"),function(b){
@@ -5473,23 +5850,32 @@ document.addEventListener("click",function(ev){
     [].forEach.call(document.querySelectorAll("[data-skyv]"),function(b){
       b.className="skyv"+(b.getAttribute("data-skyv")===vg?" on":""); });
     skyRedraw(); return; }
+  var v=t.getAttribute("data-sky");
   if(v){ SKY_VIEW=v;
+    if(v!=="wheel") skyPlay(false);
     var lg=document.getElementById("skylegend");
     if(lg) lg.innerHTML=wheelLegend(v==="wheel"?"ecliptic":"dome");
     var vr=document.getElementById("skyvargas"); if(vr) vr.style.display=(v==="wheel")?"":"none";
     var ar=document.getElementById("skyaspects"); if(ar) ar.style.display=(v==="wheel")?"":"none";
+    var cw=document.getElementById("skyctlwrap");
+    if(cw){ var tg=cw.querySelector(".skytoggles"), sl=cw.querySelector(".skyslides");
+      if(tg) tg.style.display=(v==="wheel")?"":"none";
+      if(sl) sl.style.display=(v==="wheel")?"":"none"; }
     [].forEach.call(document.querySelectorAll("[data-sky]"),function(b){
       b.className=(b.getAttribute("data-sky")===v)?"on":""; });
     skyRedraw(); return; }
   var j=t.getAttribute("data-skyjump");
   if(j!=null){
+    skyPlay(false);
     if(j==="now"){
-      var n=new Date(), i=SKY_BASE;
-      var bm=Date.UTC(i.year,i.month-1,i.day,i.hour,i.minute)-i.tzHours*3600000;
-      SKY_OFFSET=Math.round((n.getTime()-bm)/60000);
-      var sl0=document.getElementById("skyslider");
-      if(sl0){ sl0.min=Math.min(-720,SKY_OFFSET); sl0.max=Math.max(720,SKY_OFFSET); sl0.value=SKY_OFFSET; }
-    } else { SKY_OFFSET=0; var sl=document.getElementById("skyslider"); if(sl) sl.value=0; }
+      SKY_OFFSET=Math.round((Date.now()-skyBirthMs())/60000);
+      // widen the span if the present lies outside it, so "right now" always lands somewhere visible
+      var need=Math.abs(SKY_OFFSET);
+      for(var i=0;i<SKY_RANGES.length;i++){ if(SKY_RANGES[i].m>=need){ SKY_RANGE=SKY_RANGES[i].k; break; } }
+      var rs=document.getElementById("skyrange"); if(rs) rs.value=SKY_RANGE;
+      skyClampOffset(); skyRail();
+    } else SKY_OFFSET=0;
+    skySyncSlider();
     skyRedraw();
   }
 });
@@ -5497,9 +5883,268 @@ window.__skyRedraw=skyRedraw;
 window.__skyVargaLon=function(code,sid){ return skyVargaLon(code,sid); };
 window.__skySetVarga=function(v){ SKY_VARGA=v; skyRedraw(); return SKY_VARGA; };
 window.__skyGetVarga=function(){ return SKY_VARGA; };
+window.__skySetOffset=function(m){ SKY_OFFSET=m; skySyncSlider(); skyRedraw(); return SKY_OFFSET; };
+window.__skyGetOffset=function(){ return SKY_OFFSET; };
 document.addEventListener("input",function(ev){
-  if(ev.target && ev.target.id==="skyslider"){ SKY_OFFSET=+ev.target.value; skyRedraw(); }
+  if(ev.target && ev.target.id==="skyslider"){ skyPlay(false); SKY_OFFSET=+ev.target.value; skyRedraw(); }
 });
+/* ===== Transport, event rail and display switches for the ecliptic wheel =====
+   The wheel knows how to draw a moment. This decides which moment, how fast the
+   moments follow one another, and which layers are on. */
+
+/* How far the scrubber reaches either side of the birth moment, in minutes. A wheel
+   that can only move twelve hours cannot show a gochara; one that always spans fifty
+   years cannot show the lagna turning. So the span is a choice. */
+var SKY_RANGES=[
+  {k:"12h",  m:720,       label:"±12 hours",  step:1},
+  {k:"7d",   m:10080,     label:"±7 days",    step:1},
+  {k:"1y",   m:525960,    label:"±1 year",    step:10},
+  {k:"10y",  m:5259600,   label:"±10 years",  step:60},
+  {k:"50y",  m:26298000,  label:"±50 years",  step:600}
+];
+/* Play rate, in chart-time per real second. */
+var SKY_SPEEDS=[
+  {k:"min",  m:60,      label:"1 min/s"},
+  {k:"hour", m:1440,    label:"1 hour/s"},
+  {k:"day",  m:10080,   label:"1 day/s"},
+  {k:"week", m:43830,   label:"1 week/s"},
+  {k:"month",m:131490,  label:"1 month/s"},
+  {k:"year", m:525960,  label:"1 year/s"}
+];
+var SKY_STEPS=[
+  {k:"-1y",m:-525960,label:"−1y"},{k:"-1mo",m:-43830,label:"−1mo"},{k:"-1d",m:-1440,label:"−1d"},
+  {k:"-1h",m:-60,label:"−1h"},{k:"+1h",m:60,label:"+1h"},{k:"+1d",m:1440,label:"+1d"},
+  {k:"+1mo",m:43830,label:"+1mo"},{k:"+1y",m:525960,label:"+1y"}
+];
+var SKY_RANGE="12h", SKY_SPEED="hour", SKY_PLAYING=false, SKY_RAF=null, SKY_LAST=null;
+
+function skyRangeM(){ for(var i=0;i<SKY_RANGES.length;i++) if(SKY_RANGES[i].k===SKY_RANGE) return SKY_RANGES[i]; return SKY_RANGES[0]; }
+function skySpeedM(){ for(var i=0;i<SKY_SPEEDS.length;i++) if(SKY_SPEEDS[i].k===SKY_SPEED) return SKY_SPEEDS[i].m; return 1440; }
+
+/* ---------------------------------------------------------------------------
+   Events on the rail: a sign ingress, or a station where a graha turns. Both are
+   found by walking the window at a stride and watching for a change — the same
+   method nextIngress() uses, without the bisection, because a tick two days wide
+   on a twenty-year rail is already finer than the pixel it is drawn in.
+   --------------------------------------------------------------------------- */
+var SKY_EVCACHE={key:null,ev:[]};
+function skyEvents(t0,t1){
+  var key=Math.round(t0/60000)+"|"+Math.round(t1/60000);
+  if(SKY_EVCACHE.key===key) return SKY_EVCACHE.ev;
+  var days=(t1-t0)/86400000, ev=[];
+  var bodies = days>2000 ? ["Jupiter","Saturn","Rahu"]
+             : days>200  ? ["Mars","Jupiter","Saturn","Rahu"]
+             : days>20   ? ["Sun","Mercury","Venus","Mars","Jupiter","Saturn","Rahu"]
+             :             ["Moon","Sun","Mercury","Venus","Mars"];
+  var N=Math.min(1400,Math.max(60,Math.round(days*2)));
+  var stride=(t1-t0)/N;
+  bodies.forEach(function(en){
+    var prevSign=null, prevLon=null, prevDir=null;
+    for(var i=0;i<=N;i++){
+      var ms=t0+i*stride, L=null;
+      try{ L=window.__kSidAt(en,new Date(ms)); }catch(e){}
+      if(L==null) break;
+      var sg=Math.floor(L/30)%12;
+      if(prevSign!=null && sg!==prevSign) ev.push({ms:ms,kind:"ingress",body:en,sign:sg});
+      if(prevLon!=null){
+        var d=L-prevLon; if(d>180)d-=360; if(d<-180)d+=360;
+        var dir=d<0?-1:1;
+        if(prevDir!=null && dir!==prevDir && en!=="Moon" && en!=="Sun")
+          ev.push({ms:ms,kind:dir<0?"retro":"direct",body:en});
+        prevDir=dir;
+      }
+      prevSign=sg; prevLon=L;
+    }
+  });
+  ev.sort(function(a,b){return a.ms-b.ms;});
+  SKY_EVCACHE={key:key,ev:ev};
+  return ev;
+}
+var SKY_SLOW={Jupiter:1,Saturn:1,Rahu:1,Mars:1};
+function skyRail(){
+  var host=document.getElementById("skyrail"); if(!host||!SKY_BASE) return;
+  var R=skyRangeM(), base=skyBirthMs();
+  var t0=base-R.m*60000, t1=base+R.m*60000;
+  var ev=skyEvents(t0,t1), W=1000, L=8, Rt=W-8;
+  function x(ms){ return L+(Rt-L)*(ms-t0)/(t1-t0); }
+  var o='<svg viewBox="0 0 1000 40" class="skyrailsvg" role="img" aria-label="Timeline marking sign '+
+        'ingresses and retrograde stations across the shown span">';
+  o+='<line x1="'+L+'" y1="26" x2="'+Rt+'" y2="26" stroke="#c9ccda" stroke-width="1"/>';
+  ev.forEach(function(e){
+    var col=e.kind==="ingress"?"#c9a24b":(e.kind==="retro"?"#b5533c":"#2f7d55");
+    var slow=SKY_SLOW[e.body], h=slow?12:6;
+    o+='<line x1="'+x(e.ms).toFixed(1)+'" y1="'+(26-h)+'" x2="'+x(e.ms).toFixed(1)+'" y2="26" stroke="'+
+       col+'" stroke-width="'+(slow?1.6:1)+'" opacity="'+(slow?0.95:0.45)+'"/>';
+  });
+  // birth moment and now
+  o+='<line x1="'+x(base).toFixed(1)+'" y1="18" x2="'+x(base).toFixed(1)+'" y2="34" stroke="#1d2340" stroke-width="1.4"/>';
+  o+='<text x="'+(x(base)+4).toFixed(1)+'" y="38" class="skyrt">birth</text>';
+  var nowMs=Date.now();
+  if(nowMs>t0&&nowMs<t1){
+    o+='<line x1="'+x(nowMs).toFixed(1)+'" y1="18" x2="'+x(nowMs).toFixed(1)+'" y2="34" stroke="#3f6fa6" stroke-width="1.4"/>';
+    o+='<text x="'+(x(nowMs)+4).toFixed(1)+'" y="38" class="skyrt" fill="#3f6fa6">now</text>';
+  }
+  var cm=base+SKY_OFFSET*60000;
+  o+='<rect id="skyrailcur" x="'+(x(cm)-1).toFixed(1)+'" y="12" width="2" height="22" fill="#a1493a"/>';
+  o+='<text x="'+L+'" y="10" class="skyrt">'+(ev.length?('ingress — gold · station — red turns back, green resumes'):'no sign changes in this span')+'</text>';
+  o+='</svg>';
+  host.innerHTML=o;
+}
+function skyBirthMs(){
+  var i=SKY_BASE;
+  return Date.UTC(i.year,i.month-1,i.day,i.hour,i.minute)-i.tzHours*3600000;
+}
+
+/* ---------------------------------------------------------------------------
+   Transport
+   --------------------------------------------------------------------------- */
+function skyClampOffset(){
+  var m=skyRangeM().m;
+  if(SKY_OFFSET>m) SKY_OFFSET=-m;              // play wraps rather than stopping dead
+  if(SKY_OFFSET<-m) SKY_OFFSET=m;
+}
+function skySyncSlider(){
+  var sl=document.getElementById("skyslider"); if(!sl) return;
+  var R=skyRangeM();
+  sl.min=-R.m; sl.max=R.m; sl.step=R.step; sl.value=SKY_OFFSET;
+}
+function skyPlayTick(ts){
+  if(!SKY_PLAYING){ SKY_RAF=null; return; }
+  if(SKY_LAST==null) SKY_LAST=ts;
+  var dt=Math.min(120,ts-SKY_LAST); SKY_LAST=ts;
+  SKY_OFFSET+=skySpeedM()*dt/1000;
+  skyClampOffset();
+  var sl=document.getElementById("skyslider"); if(sl) sl.value=SKY_OFFSET;
+  skyRedraw(dt);
+  SKY_RAF=requestAnimationFrame(skyPlayTick);
+}
+function skyPlay(on){
+  SKY_PLAYING=on; SKY_LAST=null;
+  var b=document.getElementById("skyplay");
+  if(b){ b.textContent=on?"Pause":"Play"; b.setAttribute("aria-pressed",on?"true":"false"); }
+  if(on && !SKY_RAF) SKY_RAF=requestAnimationFrame(skyPlayTick);
+  if(!on && SKY_RAF){ cancelAnimationFrame(SKY_RAF); SKY_RAF=null; }
+}
+
+/* ---------------------------------------------------------------------------
+   Markup
+   --------------------------------------------------------------------------- */
+function skyChips(name,items,cur,attr){
+  return items.map(function(it){
+    return '<button type="button" class="skyv'+(it.k===cur?" on":"")+'" '+attr+'="'+it.k+'">'+
+      esc(it.label)+'</button>';
+  }).join("");
+}
+var SKY_TOGGLES=[
+  {k:"natal",    label:"Natal ring",  hint:"where the grahas stood at birth"},
+  {k:"transit",  label:"Gochara",     hint:"where they stand at the shown moment"},
+  {k:"nakshatra",label:"Nakṣatras",   hint:"the 27 divisions and their pādas — rāśi chart only"},
+  {k:"degrees",  label:"Degrees",     hint:"position to the arc-minute"},
+  {k:"retro",    label:"Retrograde",  hint:"mark a graha that is moving backwards"},
+  {k:"speed",    label:"Motion",      hint:"an arrow for direction and pace"},
+  {k:"trail",    label:"Trails",      hint:"where each graha has been"},
+  {k:"lanes",    label:"Stacking",    hint:"crowded grahas step inward rather than collide"}
+];
+function skyControls(){
+  return '<div class="skyctl">'+
+    '<div class="skyrow">'+
+      '<button type="button" class="k-btn" id="skyplay" aria-pressed="false">Play</button>'+
+      '<span class="skyvlabel">Rate</span>'+
+      '<select id="skyspeed" class="skysel">'+SKY_SPEEDS.map(function(s){
+        return '<option value="'+s.k+'"'+(s.k===SKY_SPEED?" selected":"")+'>'+s.label+'</option>';
+      }).join("")+'</select>'+
+      '<span class="skyvlabel">Span</span>'+
+      '<select id="skyrange" class="skysel">'+SKY_RANGES.map(function(r){
+        return '<option value="'+r.k+'"'+(r.k===SKY_RANGE?" selected":"")+'>'+r.label+'</option>';
+      }).join("")+'</select>'+
+      '<span class="skysteps">'+SKY_STEPS.map(function(s){
+        return '<button type="button" class="skyv" data-skystep="'+s.m+'">'+s.label+'</button>';
+      }).join("")+'</span>'+
+    '</div>'+
+    '<div class="skyscrub"><label for="skyslider">Move the clock</label>'+
+      '<input type="range" id="skyslider" min="-720" max="720" step="1" value="0">'+
+      '<span id="skystamp" class="skystamp"></span></div>'+
+    '<div id="skyrail" class="skyrailwrap"></div>'+
+    '<div class="skyrow skytoggles"><span class="skyvlabel">Show</span>'+
+      SKY_TOGGLES.map(function(t){
+        return '<button type="button" class="skyv'+(SKY_OPT[t.k]?" on":"")+'" data-skyopt="'+t.k+
+          '" title="'+esc(t.hint)+'">'+esc(t.label)+'</button>';
+      }).join("")+
+    '</div>'+
+    '<div class="skyrow skygrahas"><span class="skyvlabel">Grahas</span>'+
+      [["Sun","Su"],["Moon","Mo"],["Mars","Ma"],["Mercury","Me"],["Jupiter","Ju"],
+       ["Venus","Ve"],["Saturn","Sa"],["Rahu","Ra"],["Ketu","Ke"]].map(function(g){
+        return '<button type="button" class="skyv'+(SKY_OPT.show[g[0]]?" on":"")+
+          '" data-skygraha="'+g[0]+'" title="'+g[0]+'">'+g[1]+'</button>';
+      }).join("")+
+      '<span class="skypre">'+
+      '<button type="button" class="skyv" data-skypre="all">all</button>'+
+      '<button type="button" class="skyv" data-skypre="slow">slow only</button>'+
+      '<button type="button" class="skyv" data-skypre="nodes">nodes</button></span>'+
+      '<span class="wlitem">at a gochara rate the Moon crosses the wheel thirteen times a second — '+
+      'turn the fast grahas off to watch the slow ones</span>'+
+    '</div>'+
+    '<div class="skyrow skyslides">'+
+      '<label class="skysl">Trail <input type="range" id="skytrail" min="7" max="365" step="1" value="'+
+        SKY_OPT.trailDays+'"><span id="skytrailv">'+SKY_OPT.trailDays+' d</span></label>'+
+      '<label class="skysl">Tilt <input type="range" id="skytilt" min="0" max="70" step="1" value="'+
+        SKY_OPT.tilt+'"><span id="skytiltv">'+SKY_OPT.tilt+'°</span></label>'+
+      '<label class="skysl">Latitude × <input type="range" id="skyexag" min="1" max="16" step="1" value="'+
+        SKY_OPT.latExag+'"><span id="skyexagv">'+SKY_OPT.latExag+'×</span></label>'+
+    '</div>'+
+  '</div>';
+}
+
+/* ---------------------------------------------------------------------------
+   Handlers
+   --------------------------------------------------------------------------- */
+document.addEventListener("click",function(ev){
+  var t=ev.target; if(!t||!t.getAttribute) return;
+  if(t.id==="skyplay"){ skyPlay(!SKY_PLAYING); return; }
+  var st=t.getAttribute("data-skystep");
+  if(st!=null){ skyPlay(false); SKY_OFFSET+=(+st); skyClampOffset(); skySyncSlider(); skyRedraw(); return; }
+  var op=t.getAttribute("data-skyopt");
+  if(op!=null){
+    SKY_OPT[op]=!SKY_OPT[op];
+    t.className="skyv"+(SKY_OPT[op]?" on":"");
+    skyRedraw(); return;
+  }
+  var gh=t.getAttribute("data-skygraha");
+  if(gh!=null){
+    SKY_OPT.show[gh]=!SKY_OPT.show[gh];
+    t.className="skyv"+(SKY_OPT.show[gh]?" on":"");
+    skyRedraw(); return;
+  }
+  var pre=t.getAttribute("data-skypre");
+  if(pre!=null){
+    var sets={ all:["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn","Rahu","Ketu"],
+               slow:["Jupiter","Saturn","Rahu","Ketu"],
+               nodes:["Rahu","Ketu"] };
+    var on=sets[pre]||sets.all;
+    for(var k in SKY_OPT.show) SKY_OPT.show[k]=(on.indexOf(k)>=0);
+    [].forEach.call(document.querySelectorAll("[data-skygraha]"),function(b){
+      b.className="skyv"+(SKY_OPT.show[b.getAttribute("data-skygraha")]?" on":""); });
+    skyRedraw(); return;
+  }
+});
+document.addEventListener("change",function(ev){
+  var t=ev.target; if(!t) return;
+  if(t.id==="skyspeed"){ SKY_SPEED=t.value; return; }
+  if(t.id==="skyrange"){
+    SKY_RANGE=t.value; skyClampOffset(); skySyncSlider(); skyRail(); skyRedraw(); return;
+  }
+});
+document.addEventListener("input",function(ev){
+  var t=ev.target; if(!t) return;
+  if(t.id==="skytrail"){ SKY_OPT.trailDays=+t.value;
+    var v=document.getElementById("skytrailv"); if(v) v.textContent=t.value+" d"; skyRedraw(); return; }
+  if(t.id==="skytilt"){ SKY_OPT.tilt=+t.value;
+    var v2=document.getElementById("skytiltv"); if(v2) v2.textContent=t.value+"°"; skyRedraw(); return; }
+  if(t.id==="skyexag"){ SKY_OPT.latExag=+t.value;
+    var v3=document.getElementById("skyexagv"); if(v3) v3.textContent=t.value+"×"; skyRedraw(); return; }
+});
+window.__skyPlay=skyPlay;
+window.__skyOpt=SKY_OPT;
 /* ===== Star wheel: the ecliptic as a tilted disc, horizon fixed, zodiac turning ===== */
 var SWH_NAK=["Aśvinī","Bharaṇī","Kṛttikā","Rohiṇī","Mṛgaśira","Ārdrā","Punarvasu","Puṣya","Āśleṣā",
 "Maghā","P.Phalgunī","U.Phalgunī","Hasta","Citrā","Svātī","Viśākhā","Anurādhā","Jyeṣṭhā","Mūla",
@@ -7422,4 +8067,4 @@ window.buildKundliReport=function(J){
   }
 })();
 </script>
-<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-09.fec3464</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer></body></html>
+<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-14.e3cda90</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer></body></html>
