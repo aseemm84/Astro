@@ -248,6 +248,142 @@
     $("k-go").disabled=false;
   }
   $("k-go").addEventListener("click",cast);
+
+  /* ------------------------------------------------------------------ here & now ---
+     Geolocation hands back a latitude and a longitude and nothing else: no timezone,
+     no place name. Both are found without any external service — the offset from the
+     device's own clock, which is exactly right for a chart cast where the device is,
+     and the town from the city list this page already carries. */
+  function nowParts(){
+    var d=new Date();
+    var pad=function(n){ return String(n).padStart(2,"0"); };
+    return {
+      date: d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()),
+      time: pad(d.getHours())+":"+pad(d.getMinutes()),
+      tz: -d.getTimezoneOffset()/60,
+      zone: (function(){ try{ return Intl.DateTimeFormat().resolvedOptions().timeZone||""; }
+                         catch(e){ return ""; } })()
+    };
+  }
+  function setNow(){
+    var n=nowParts();
+    $("k-dob").value=n.date; $("k-tob").value=n.time;
+    return n;
+  }
+  /* nearest city by great-circle distance — 44,000 rows is a few milliseconds */
+  function nearestCity(db,lat,lon){
+    var best=null, bd=Infinity, R=6371, D=Math.PI/180;
+    var la1=lat*D, cla1=Math.cos(la1), sla1=Math.sin(la1);
+    for(var i=0;i<db.c.length;i++){
+      var r=db.c[i], dla=(r[1]-lat), dlo=(r[2]-lon);
+      if(dla>8||dla<-8) continue;                       // cheap reject before the trigonometry
+      if(dlo>12||dlo<-12){ if(Math.abs(Math.abs(dlo)-360)>12) continue; }
+      var la2=r[1]*D;
+      var c=sla1*Math.sin(la2)+cla1*Math.cos(la2)*Math.cos((r[2]-lon)*D);
+      var d=Math.acos(Math.max(-1,Math.min(1,c)))*R;
+      if(d<bd){ bd=d; best=r; }
+    }
+    return best?{row:best,km:bd}:null;
+  }
+  function hereNote(msg,bad){
+    var el=$("k-herenote"); if(!el) return;
+    el.innerHTML=msg;
+    el.style.color=bad?"#a1493a":"";
+    el.style.fontWeight=bad?"600":"";
+  }
+  var GEO_DONE=true, GEO_WATCH=null;
+  function geoSettle(){
+    if(GEO_DONE) return false;
+    GEO_DONE=true;
+    if(GEO_WATCH){ clearTimeout(GEO_WATCH); GEO_WATCH=null; }
+    return true;
+  }
+  function geoFail(e){
+    if(!geoSettle()) return;
+    var msg;
+    if(e&&e.code===1) msg="<b>Permission refused.</b> The browser was not allowed to share this "+
+      "device&rsquo;s position. Allow location for this site in your browser settings, or use the city "+
+      "search above.";
+    else if(e&&e.code===2) msg="<b>No position available.</b> The device could not work out where it "+
+      "is — this is common indoors on a desktop with no Wi-Fi positioning. Use the city search above.";
+    else if(e&&e.code===3) msg="<b>Timed out.</b> The device took too long to find a position. Try "+
+      "again, or use the city search above.";
+    else msg="<b>Could not get a position.</b> "+esc((e&&e.message)||"Unknown error")+
+      " Use the city search above.";
+    hereNote(msg,true);
+    $("k-here").disabled=false; $("k-here").textContent="Here & now";
+  }
+  async function hereAndNow(){
+    var btn=$("k-here");
+    if(!navigator.geolocation){
+      hereNote("<b>This browser has no location service.</b> Use the city search above.",true); return; }
+    if(!window.isSecureContext){
+      hereNote("<b>This page is not running over https,</b> so the browser will not share a position. "+
+        "Open the site at its https address — from a file on disk this cannot work. The city search "+
+        "above does the same job by hand.",true); return; }
+    btn.disabled=true; btn.textContent="Locating…";
+    hereNote("Asking the browser where this device is… if nothing happens, look for a permission "+
+      "prompt at the top of the window.");
+    GEO_DONE=false;
+    /* The timeout in the options below only begins once permission has been granted, so a prompt
+       that is dismissed rather than answered — a swipe-away on a phone — leaves both callbacks
+       unfired and the button stuck on "Locating". This watchdog is the only thing that catches it. */
+    if(GEO_WATCH) clearTimeout(GEO_WATCH);
+    GEO_WATCH=setTimeout(function(){
+      if(!geoSettle()) return;
+      hereNote("<b>No answer from the browser.</b> The permission prompt may have been dismissed "+
+        "without choosing. Try again and answer the prompt, allow location for this site in your "+
+        "browser settings, or use the city search above.",true);
+      btn.disabled=false; btn.textContent="Here & now";
+    },20000);
+    navigator.geolocation.getCurrentPosition(async function(pos){
+      if(!geoSettle()) return;
+      try{
+        var lat=pos.coords.latitude, lon=pos.coords.longitude, acc=pos.coords.accuracy;
+        var n=setNow();
+        $("k-lat").value=lat.toFixed(4); $("k-lon").value=lon.toFixed(4); $("k-tz").value=n.tz;
+        var place=null, db=null;
+        try{ db=await loadCities(); place=nearestCity(db,lat,lon); }catch(e){}
+        var label = place ? cityLabel(db,place.row) : (lat.toFixed(3)+"°, "+lon.toFixed(3)+"°");
+        window.__kplace = label + (place && place.km>25 ? " (nearest town)" : "");
+        /* The offset should belong to the PLACE, not to the device. A phone carried across a
+           border keeps its old timezone, and using that would move the lagna by a sign or more.
+           So the zone of the nearest town decides, and any disagreement is said out loud. */
+        var zoneName=(place&&db)?db.tz[place.row[3]]:null, placeOff=null;
+        if(zoneName){ try{ placeOff=tzOffsetHours(zoneName,new Date()); }catch(e){} }
+        var used = (placeOff!=null) ? placeOff : n.tz;
+        $("k-tz").value=used;
+        var warn="";
+        if(placeOff!=null && Math.abs(placeOff-n.tz)>0.01){
+          warn=" <b>This device&rsquo;s clock is set to UTC"+(n.tz>=0?"+":"")+n.tz+
+            ", but "+esc(zoneName)+" is on UTC"+(used>=0?"+":"")+used+" right now, so the chart uses "+
+            "the latter &mdash; the offset of the place you are in. If the device is right and the "+
+            "position is wrong, change the offset above.</b>";
+          /* the wall-clock reading must follow the offset actually used */
+          var nowMs=Date.now()+used*3600000, dd=new Date(nowMs);
+          var pad=function(x){ return String(x).padStart(2,"0"); };
+          $("k-dob").value=dd.getUTCFullYear()+"-"+pad(dd.getUTCMonth()+1)+"-"+pad(dd.getUTCDate());
+          $("k-tob").value=pad(dd.getUTCHours())+":"+pad(dd.getUTCMinutes());
+        }
+        hereNote("Cast for <b>"+esc(label)+"</b>"+
+          (place?(place.km<2?"":" — about "+Math.round(place.km)+" km away"):"")+
+          ", at "+$("k-tob").value+" on "+$("k-dob").value+", UTC"+(used>=0?"+":"")+used+
+          (zoneName?(" ("+esc(zoneName)+")"):"")+
+          ". Position accurate to about "+Math.round(acc||0)+" m, far finer than a chart needs."+
+          warn, false);
+        btn.disabled=false; btn.textContent="Here & now";
+        var sel=document.getElementById("k-city"); if(sel) sel.value="1";
+        cast();
+      }catch(err){ geoFail(err); }
+    }, geoFail, {enableHighAccuracy:false, timeout:12000, maximumAge:60000});
+  }
+  $("k-here").addEventListener("click",hereAndNow);
+  $("k-now").addEventListener("click",function(){
+    var n=setNow();
+    hereNote("Date and time set to now — "+n.time+" on "+n.date+", UTC"+(n.tz>=0?"+":"")+n.tz+
+      (n.zone?(" ("+esc(n.zone)+")"):"")+". The place is unchanged; set it above if you have not yet.");
+  });
+
   $("k-clear").addEventListener("click",function(){["k-dob","k-tob","k-lat","k-lon","k-tz"].forEach(function(id){$(id).value="";});citySel.value="0";$("k-out").innerHTML="";$("k-status").textContent="";$("k-rawwrap").style.display="none";});
   document.addEventListener("click",function(ev){
     var t=ev.target; if(!t||t.id!=="k-depth")return;

@@ -34,6 +34,8 @@
 </div>
 <div class="k-actions">
   <button class="k-btn" id="k-go">Cast the chart</button>
+  <button class="k-btn sec" id="k-here" title="Uses the device&rsquo;s position and clock to cast a chart for this place and this moment">Here &amp; now</button>
+  <button class="k-btn sec" id="k-now" title="Sets only the date and time, leaving the place as it is">Now</button>
   <button class="k-btn sec" id="k-clear">Clear</button>
   <button class="k-btn sec" id="k-print" style="display:none">Print / Save as PDF</button>
   <button class="k-btn sec" id="k-dl" style="display:none">Download JSON</button>
@@ -43,6 +45,7 @@
   <span class="k-note">Sidereal &middot; Lahiri ayanamsha &middot; whole-sign houses</span>
 </div>
 <p class="k-note">The city search sets the UTC offset that applied on the birth date, including historical daylight saving. If you type coordinates by hand, set the offset yourself.</p>
+<p class="k-note" id="k-herenote"><b>Here &amp; now</b> asks the browser where this device is and casts a chart for that place at the present moment &mdash; useful for a praśna question, or simply to see the sky as it stands. The position comes from the browser, the clock and the UTC offset from the device, and the nearest town from the city list already on this page; nothing is sent anywhere. It needs the site to be open over https, so it will not work from a file opened directly off disk.</p>
 <div class="k-status" id="k-status"></div>
 <div id="k-out"></div>
 <details class="k-raw" id="k-rawwrap" style="display:none"><summary>Show the full raw API response (advanced)</summary><div class="k-rawbar"><button type="button" class="k-btn sec" id="k-copy">Copy JSON</button><span class="k-copymsg" id="k-copymsg"></span></div><pre id="k-raw"></pre></details>
