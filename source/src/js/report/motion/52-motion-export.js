@@ -349,6 +349,40 @@ function moSceneSheets(){
       cols:["Peak (UTC)","Kind","Type","Sidereal longitude °","Rāśi","Nakṣatra","Pāda",
             "Degrees from the node","Node","Obscuration","Greatest eclipse latitude °",""],
       rows:rowsE});
+  } else if(k==="panchanga"){
+    /* One row per sample, computed with the site's own panchanga() so the sheet and the
+       Overview tab can never disagree. The sample step follows the span: a day of hours,
+       anything longer by day. Past 1500 days the cap spreads the samples evenly instead,
+       so a long span thins out rather than running to tens of thousands of rows. */
+    var tP=Date.now(), eP=tP+moSpanMs(), spP=eP-tP;
+    var stepP=(spP<=2*86400000)?3600000:86400000;
+    var NP=Math.min(1500,Math.max(2,Math.round(spP/stepP))), rowsP=[];
+    for(var iP=0;iP<=NP;iP++){
+      var mP=tP+spP*iP/NP;
+      var suP=moSidAt("Sun",mP), moP=moSidAt("Moon",mP);
+      if(suP==null||moP==null) continue;
+      var pcP=panchanga(suP,moP), nkP=nakOf(moP);
+      var jdP=mP/86400000+2440587.5, viP=(Math.floor(jdP+1.5)%7+7)%7;
+      var elP=((moP-suP)%360+360)%360, ygP=((moP+suP)%360+360)%360;
+      rowsP.push([moISO(mP), pcP.tithi, pcP.paksha, pcP.tithiIdx+1,
+                  VARAS[viP], VARAE[viP],
+                  nkP.name, nkP.pada, nkP.lord,
+                  pcP.yoga, Math.floor(ygP/(800/60))+1,
+                  pcP.karana, Math.floor(elP/6)+1,
+                  +suP.toFixed(4), moSignOf(suP), +moP.toFixed(4), moSignOf(moP),
+                  +elP.toFixed(4)]);
+    }
+    out.push({name:"Pañcāṅga",
+      cols:["Time (UTC)","Tithi","Pakṣa","Tithi of 30","Vāra","Weekday",
+            "Nakṣatra","Pāda","Nakṣatra lord","Yoga","Yoga of 27","Karaṇa","Karaṇa of 60",
+            "Sūrya °","Sūrya rāśi","Candra °","Candra rāśi","Elongation °"],
+      rows:rowsP});
+    out.push({name:"Limb lengths", cols:["Limb","Divisions","Defined by","Mean length"], rows:[
+      ["Tithi",30,"Candra − Sūrya, each 12°","about 23 h 37 m"],
+      ["Vāra",7,"the civil weekday","24 h"],
+      ["Nakṣatra",27,"Candra's longitude, each 13°20′","about 24 h 17 m"],
+      ["Yoga",27,"Candra + Sūrya, each 13°20′","about 22 h 36 m"],
+      ["Karaṇa",60,"Candra − Sūrya, each 6°","about 11 h 48 m"]]});
   } else if(k==="eclipseseason"){
     var tE=Date.now(), eE=tE+moSpanMs();
     var EE=moEclipsesIn(tE,eE);

@@ -903,6 +903,82 @@ var MO_SOLAR_LIMIT=18.5, MO_LUNAR_LIMIT=12.2;
 
 var MO_MORE=[
 
+{key:"panchanga", label:"Pañcāṅga", title:"The five limbs of the day",
+ sub:"tithi · vāra · nakṣatra · yoga · karaṇa",
+ draw:function(p){
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
+  var t0=Date.now(), t1=t0+moSpanMs(), ms=t0+(t1-t0)*p;
+  var su=moSidAt("Sun",ms), mo=moSidAt("Moon",ms);
+  if(su==null||mo==null) throw new Error("no position");
+  var jd=ms/86400000+2440587.5;
+  /* the site's own pañcāṅga, so this can never disagree with the Overview tab */
+  var pc=panchanga(su,mo);
+  var nk=nakOf(mo);
+  var vi=(Math.floor(jd+1.5)%7+7)%7;
+  var elong=((mo-su)%360+360)%360;
+  var yogaRaw=((mo+su)%360+360)%360;
+  var R=st.R, cx=st.cx, cy=st.cy;
+  moStars();
+  /* Five rings, outermost to innermost, each a limb. The lit wedge is the division the
+     day is in; the brighter sliver inside it is how far through that division we are. */
+  var LIMBS=[
+    {n:27, i:nk.idx,            f:(mo%(40/3))/(40/3),          col:"#6f7cc0",
+     lab:"nakṣatra", val:nk.name+" · pāda "+nk.pada},
+    {n:27, i:Math.floor(yogaRaw/(800/60)), f:(yogaRaw%(800/60))/(800/60), col:"#5fbf8f",
+     lab:"yoga",     val:pc.yoga},
+    {n:30, i:Math.floor(elong/12), f:(elong%12)/12,            col:"#d9b668",
+     lab:"tithi",    val:pc.tithi+" · "+pc.paksha},
+    {n:60, i:Math.floor(elong/6),  f:(elong%6)/6,              col:"#e07a60",
+     lab:"karaṇa",   val:pc.karana},
+    {n:7,  i:vi, f:((jd+1.5)%1+1)%1,                           col:"#c89078",
+     lab:"vāra",     val:VARAS[vi]+" · "+VARAE[vi]}
+  ];
+  var rOut=1.00, rIn=0.44, gap=0.012;
+  var th=(rOut-rIn)/LIMBS.length;
+  LIMBS.forEach(function(L,k){
+    var a=R*(rOut-k*th), b=R*(rOut-(k+1)*th+gap);
+    var step=360/L.n;
+    for(var j=0;j<L.n;j++){
+      var a0=(180-j*step)*Math.PI/180, a1=(180-(j+1)*step)*Math.PI/180;
+      c.beginPath(); c.arc(cx,cy,a,-a0,-a1,false); c.arc(cx,cy,b,-a1,-a0,true); c.closePath();
+      if(j===L.i){ c.fillStyle=L.col; c.globalAlpha=0.38; }
+      else { c.fillStyle="#ffffff"; c.globalAlpha=(j%2)?0.055:0.022; }
+      c.fill(); c.globalAlpha=1;
+      if(L.n<=30){
+        c.strokeStyle=P.line; c.lineWidth=0.8; c.globalAlpha=.5; c.stroke(); c.globalAlpha=1;
+      }
+    }
+    /* how far through the current division */
+    var s0=(180-L.i*step)*Math.PI/180, s1=(180-(L.i+L.f)*step)*Math.PI/180;
+    c.beginPath(); c.arc(cx,cy,a,-s0,-s1,false); c.arc(cx,cy,b,-s1,-s0,true); c.closePath();
+    c.fillStyle=L.col; c.globalAlpha=0.85; c.fill(); c.globalAlpha=1;
+    c.strokeStyle=L.col; c.lineWidth=2; c.globalAlpha=.9;
+    c.beginPath(); c.arc(cx,cy,a,0,6.2832); c.stroke(); c.globalAlpha=1;
+  });
+  /* Sūrya and Candra on the outer rim, because every limb but the vāra is some
+     combination of exactly these two longitudes */
+  function rim(deg,rad){ var ang=(180-deg)*Math.PI/180;
+    return [cx+Math.cos(ang)*rad, cy-Math.sin(ang)*rad]; }
+  var sp=rim(su,R*1.07), mp=rim(mo,R*1.07);
+  moGlowDot(sp[0],sp[1],S.w*0.026,"#f0b847","#ffd37a");
+  moText(moG("Sun"),sp[0],sp[1],S.w*0.019,"#3a2a06","center",800);
+  moGlowDot(mp[0],mp[1],S.w*0.024,"#e8eaf6","#ffffff");
+  moText(moG("Moon"),mp[0],mp[1],S.w*0.018,"#2a2f45","center",800);
+  /* the five readings, stacked in the middle */
+  c.fillStyle=P.bg; c.globalAlpha=.80;
+  c.beginPath(); c.arc(cx,cy,R*0.425,0,6.2832); c.fill(); c.globalAlpha=1;
+  var rowH=R*0.148, y0=cy-rowH*2;
+  LIMBS.forEach(function(L,k){
+    var y=y0+k*rowH;
+    /* "TITHI 10 of 30" rather than a bare name: it says at once how far through the
+       limb's cycle the day sits, and it stops the rings being read as longitude rings.
+       Only the nakṣatra ring is one — the other four are dials of their own count. */
+    moText(L.lab.toUpperCase()+"  "+(L.i+1)+" of "+L.n,cx,y-S.w*0.021,S.w*0.019,L.col,"center",700);
+    moText(L.val,cx,y+S.w*0.010,S.w*0.028,P.ink,"center",600);
+  });
+  return {ms:ms, sub:pc.tithi+" · "+VARAE[vi]+" · "+nk.name+" · "+pc.yoga+" · "+pc.karana};
+ }},
+
 {key:"eclipseseason", label:"Eclipse seasons", title:"Why eclipses come in seasons",
  sub:"the nodes retreat, the Sun catches them twice a year",
  draw:function(p){

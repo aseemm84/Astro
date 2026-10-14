@@ -122,7 +122,17 @@ function motionPane(D,J){
     'off the screen. For measurement, use the Sky tab.</div>';
 }
 /* per-scene extra controls */
+var MO_UORD=["h","d","m","y"];
 function moSpanRow(units,hint){
+  /* A scene may not offer every unit — years are meaningless for the pañcāṅga, hours for
+     the daśā. If the unit carried over from the last scene is not on offer, snap the state
+     to the coarsest one that is no coarser than it, so the select and moSpanMs() agree.
+     Without this the browser shows the first option while the span stays whatever it was. */
+  if(units.indexOf(MO.opt.spanU)<0){
+    var cur=MO_UORD.indexOf(MO.opt.spanU), pick=units[0];
+    units.forEach(function(u){ if(MO_UORD.indexOf(u)<=cur) pick=u; });
+    MO.opt.spanU=pick; MO_CACHE={};
+  }
   return '<span class="molab">Span</span>'+
     '<input type="number" id="mospann" class="monum" min="1" max="999" step="1" value="'+
       MO.opt.spanN+'">'+
@@ -158,6 +168,11 @@ function moSceneOpts(){
         return '<button type="button" class="skyv'+(MO.opt.eclN===n?" on":"")+
           '" data-moecln="'+n+'">'+n+'</button>'; }).join("")+
       '<span class="mohint">of each kind, so 10 gives twenty in all — every type, from today</span>';
+  } else if(k==="panchanga"){
+    h=moSpanRow(["h","d","m"],"from now — a month shows all five limbs cycle; a day lets you "+
+      "watch the karaṇa ring turn")+
+      '<span class="mohint">the vāra follows the civil date, as the Overview tab does, not '+
+      'sunrise to sunrise</span>';
   } else if(k==="eclipseseason"){
     h=moSpanRow(["m","y"],"from today — turn Candra off above for long spans, it laps the ring "+
       "every 27 days and becomes a blur");
