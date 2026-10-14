@@ -126,7 +126,7 @@ code.k-inline{background:#f0f0f6;padding:1px 5px;border-radius:5px;font-size:12.
 .kreport .kpdate{color:var(--muted)}
 .kreport .kbox{border:1px solid #dbe3ee;border-left:3px solid #6f86b0;background:#eef2f7;padding:9px 12px;font-size:12.5px;margin:10px 0;max-width:82ch;border-radius:0 6px 6px 0}
 .kreport .kbox.kwarn{border-left-color:#b45252;background:#fbeeee}
-.kreport .kbox b{display:block;margin-bottom:2px}
+.kreport .kbox>b:first-child{display:block;margin-bottom:2px}  /* only the lead-in, not every inline bold: the unscoped rule broke the flow of any sentence that emphasised a word mid-paragraph */
 @media(max-width:700px){.kreport .kprow{grid-template-columns:96px 1fr 34px}.kreport .kpdate{display:none}}
 .kreport .kvgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin:12px 0}
 .kreport .kvgrid .kchartfig figcaption{font-size:11px}
@@ -591,3 +591,20 @@ body.mostudio .moexit{display:block;position:fixed;right:14px;top:14px;z-index:1
   font:600 12px var(--sans);color:#cfd3e6;background:rgba(0,0,0,.55);border:1px solid #39406a;
   border-radius:7px;padding:7px 12px;cursor:pointer}
 @media print{.kreport .moscenes,.kreport .mopanel{display:none}}
+
+/* "How to read this" — on the page, never on the frame. It sits inside the
+   control panel, which studio mode already hides, and the extra rule below makes
+   that explicit so a later change to the panel cannot let it into a recording. */
+.moread{margin:14px 0 2px;padding:12px 14px;border:1px solid var(--line);
+  border-radius:10px;background:rgba(127,140,200,.06);max-width:780px}
+.moreadh{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:#8f96bb;margin-bottom:8px}
+.moreadh span{text-transform:none;letter-spacing:0;color:var(--ink);font-weight:700}
+.moread ul{margin:0;padding-left:18px}
+.moread li{font-size:13.5px;line-height:1.55;margin:0 0 6px;color:#4a4e68}
+.moread li:last-child{margin-bottom:0}
+.moread li b{color:var(--ink)}
+.moread li em{font-style:italic}
+.moreadf{margin:9px 0 0;font-size:11.5px;line-height:1.45;color:#8a8fa8}
+body.mostudio .moread{display:none!important}
+@media print{.moread{display:none}}

@@ -45,6 +45,7 @@ function motionPane(D,J){
       '<div class="mostage" id="mostage"><canvas id="mocanvas" width="1080" height="1920"></canvas></div>'+
       '<button type="button" class="moexit" id="moexit">Esc — leave studio</button>'+
       '<div class="mopanel">'+
+        '<div class="moread" id="moread"></div>'+
         '<div class="morow">'+
           '<button type="button" class="k-btn" id="moplay" aria-pressed="false">Play</button>'+
           '<button type="button" class="k-btn sec" id="morestart">Restart</button>'+
@@ -142,6 +143,7 @@ function moSpanRow(units,hint){
     (hint?('<span class="mohint">'+esc(hint)+'</span>'):"");
 }
 function moSceneOpts(){
+  try{ moSceneGuide(); }catch(e){}
   var host=document.getElementById("moscopts"); if(!host) return;
   var k=MO.scene, h="";
   if(k==="retro"||k==="drishti"){
