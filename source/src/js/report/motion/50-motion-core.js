@@ -37,7 +37,7 @@ var MO={
   show:{Sun:true,Moon:true,Mars:true,Mercury:true,Jupiter:true,Venus:true,Saturn:true,Rahu:true,Ketu:true},
   speed:1,                 // multiplies the loop length, live, without resetting
   opt:{trail:true, trailLen:0.35, glow:true, stars:true, starDensity:160, grid:true,
-       labels:true, loopFade:true, subject:"Mars", symbols:false, exag:40,
+       labels:true, loopFade:true, subject:"Mars", symbols:false, exag:40, houses:"both", eclN:10,
        /* Every scene that covers a stretch of time reads its span from here, so days,
           months and years are available wherever a span means anything at all. */
        spanN:12, spanU:"y"},

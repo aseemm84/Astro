@@ -333,6 +333,73 @@ function moSceneSheets(){
     out.push({name:"Tithi through a month",
       cols:["Time (UTC)","Sūrya °","Candra °","Elongation °","Pakṣa","Tithi in pakṣa","Tithi of 30"],
       rows:rows8});
+  } else if(k==="eclipse"){
+    var E=moEclipses(), rowsE=E.map(function(x){
+      var nk=null; try{ if(x.lon!=null) nk=nakOf(x.lon); }catch(e){}
+      return [moISO(x.ms), x.kind==="solar"?"Solar":"Lunar",
+              (x.type||"").charAt(0).toUpperCase()+(x.type||"").slice(1),
+              x.lon!=null?+x.lon.toFixed(4):"", x.lon!=null?moSignOf(x.lon):"",
+              nk?nk.name:"", nk?nk.pada:"",
+              x.node!=null?+x.node.toFixed(2):"", x.which||"",
+              x.obsc!=null?+x.obsc.toFixed(3):"",
+              x.kind==="solar"&&x.lat!=null?+x.lat.toFixed(2):"",
+              x.kind==="solar"&&x.lon!=null&&x.lonG!=null?x.lonG:""];
+    });
+    out.push({name:"Eclipses ahead",
+      cols:["Peak (UTC)","Kind","Type","Sidereal longitude °","Rāśi","Nakṣatra","Pāda",
+            "Degrees from the node","Node","Obscuration","Greatest eclipse latitude °",""],
+      rows:rowsE});
+  } else if(k==="astanga"){
+    var t9=Date.now(), e9=t9+moSpanMs(), rows9=[];
+    var N9=Math.min(420,Math.max(40,Math.round((e9-t9)/86400000)));
+    var ORB={Moon:12,Mars:17,Mercury:14,Jupiter:11,Venus:10,Saturn:16};
+    for(var s9=0;s9<=N9;s9++){
+      var m9=t9+(e9-t9)*s9/N9, su9=moSidAt("Sun",m9); if(su9==null) continue;
+      Object.keys(ORB).forEach(function(en){
+        var L9=moSidAt(en,m9); if(L9==null) return;
+        var rel=((L9-su9)%360+360)%360; if(rel>180) rel-=360;
+        rows9.push([moDay(m9),MO_FULL[en],+L9.toFixed(4),moSignOf(L9),+rel.toFixed(3),
+                    ORB[en],Math.abs(rel)<=ORB[en]?"combust":""]);
+      });
+    }
+    out.push({name:"Combustion",
+      cols:["Date (UTC)","Graha","Longitude °","Rāśi","Degrees from Sūrya","Orb","Astaṅgata"],
+      rows:rows9});
+  } else if(k==="dignity"){
+    var enD=MO.opt.subject==="Moon"?"Mars":MO.opt.subject;
+    var tD=Date.now(), eD=tD+moSpanMs(), rowsD=[];
+    var ND=Math.min(900,Math.max(40,Math.round((eD-tD)/86400000)));
+    for(var sD=0;sD<=ND;sD++){
+      var mD=tD+(eD-tD)*sD/ND, LD=moSidAt(enD,mD); if(LD==null) continue;
+      var sgD=Math.floor(LD/30)%12, dg="";
+      try{ dg=dignity(enD,sgD,LD%30); }catch(e){}
+      rowsD.push([moDay(mD),MO_FULL[enD],+LD.toFixed(4),SA[sgD],+(LD%30).toFixed(4),dg]);
+    }
+    out.push({name:"Dignity",
+      cols:["Date (UTC)","Graha","Longitude °","Rāśi","Degrees in rāśi","Dignity"],rows:rowsD});
+    var tbl=[];
+    for(var sg2=0;sg2<12;sg2++){
+      var d2=""; try{ d2=dignity(enD,sg2,15); }catch(e){}
+      tbl.push([sg2+1,SA[sg2],d2]);
+    }
+    out.push({name:"Dignity by rāśi",cols:["#","Rāśi","Dignity"],rows:tbl});
+  } else if(k==="sadesati"){
+    if(MO.D&&MO.D.P&&MO.D.P.Moon){
+      var mS=Math.floor(MO.D.P.Moon.sid/30)%12, bS=moBirthMs(), rowsS=[];
+      var prevPh=null;
+      for(var y=0;y<=90*12;y++){
+        var mS2=bS+y*2629746000, sa2=moSidAt("Saturn",mS2); if(sa2==null) continue;
+        var ph=((Math.floor(sa2/30)%12)-mS+12)%12;
+        var name=(ph===11)?"Sade Sati — rising":(ph===0)?"Sade Sati — peak":
+                 (ph===1)?"Sade Sati — setting":(ph===3)?"Dhaiyā (4th)":
+                 (ph===7)?"Dhaiyā (8th)":"";
+        if(name && name!==prevPh)
+          rowsS.push([moDay(mS2),+((mS2-bS)/31556952000).toFixed(1),SA[Math.floor(sa2/30)%12],name]);
+        if(name!==prevPh) prevPh=name;
+      }
+      out.push({name:"Śani over the Moon",
+        cols:["Begins (UTC)","Age","Śani in rāśi","Phase"],rows:rowsS});
+    }
   } else if(k==="dasha"){
     var tr=null; try{ tr=buildTree(MO.D); }catch(e){}
     var md=[], ad=[];

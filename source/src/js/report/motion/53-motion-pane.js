@@ -27,6 +27,7 @@ function motionPane(D,J){
   MO.pal="midnight"; MO.dur=15; MO.studio=false;
   MO.opt.subject="Mars"; MO.opt.exag=40; MO.opt.symbols=false;
   MO.opt.spanN=12; MO.opt.spanU="y"; MO.speed=1;
+  MO.opt.houses="both"; MO.opt.eclN=10;
   MO.cap.title=""; MO.cap.sub="";
   MO_CACHE={};
   for(var g in MO.show) MO.show[g]=true;
@@ -152,9 +153,29 @@ function moSceneOpts(){
     h='<span class="mohint">all twenty-seven in turn — a longer length lingers on each</span>';
   } else if(k==="dasha"){
     h='<span class="mohint">the whole Viṃśottarī cycle from birth</span>';
+  } else if(k==="eclipse"){
+    h='<span class="molab">How many</span>'+[6,10,16,24].map(function(n){
+        return '<button type="button" class="skyv'+(MO.opt.eclN===n?" on":"")+
+          '" data-moecln="'+n+'">'+n+'</button>'; }).join("")+
+      '<span class="mohint">of each kind, so 10 gives twenty in all — every type, from today</span>';
+  } else if(k==="astanga"){
+    h=moSpanRow(["d","m","y"],"from today forward");
+  } else if(k==="dignity"){
+    h='<span class="molab">Graha</span>'+
+      ["Sun","Mars","Mercury","Jupiter","Venus","Saturn"].map(function(en){
+        return '<button type="button" class="skyv'+(MO.opt.subject===en?" on":"")+
+          '" data-mosubj="'+en+'">'+esc(MO_FULL[en])+'</button>'; }).join("")+
+      '<br>'+moSpanRow(["d","m","y"],"how far the graha travels");
+  } else if(k==="sadesati"){
+    h='<span class="mohint">ninety years from birth — Śani returns to the Moon about every '+
+      'twenty-nine</span>';
   } else if(k==="frames"){
-    h='<span class="mohint">one sidereal day, so the lagna makes exactly one circuit and the '+
-      'loop closes on itself</span>';
+    h='<span class="molab">Houses</span>'+
+      [["both","both"],["whole","whole sign"],["equal","equal from lagna"]].map(function(m){
+        return '<button type="button" class="skyv'+((MO.opt.houses||"both")===m[0]?" on":"")+
+          '" data-mohouse="'+m[0]+'">'+esc(m[1])+'</button>'; }).join("")+
+      '<span class="mohint">one sidereal day — the gold spokes slide continuously, the '+
+      'whole-sign ring steps once per rāśi</span>';
   } else if(k==="ayanamsa"){
     h='<span class="mohint">500 BCE to 3500 CE — the Lahiri value, the same one the charts use</span>';
   } else if(k==="tithi"){
@@ -243,6 +264,16 @@ document.addEventListener("click",function(ev){
   if(yr){ MO.opt.years=+yr; MO.p=0; MO_CACHE={};
     [].forEach.call(document.querySelectorAll("[data-moyears]"),function(b){
       b.className="skyv"+(+b.getAttribute("data-moyears")===MO.opt.years?" on":""); });
+    moDraw(); return; }
+  var hs=t.getAttribute("data-mohouse");
+  if(hs){ MO.opt.houses=hs;
+    [].forEach.call(document.querySelectorAll("[data-mohouse]"),function(b){
+      b.className="skyv"+(b.getAttribute("data-mohouse")===hs?" on":""); });
+    moDraw(); return; }
+  var ec=t.getAttribute("data-moecln");
+  if(ec){ MO.opt.eclN=+ec; MO.p=0; MO_CACHE={};
+    [].forEach.call(document.querySelectorAll("[data-moecln]"),function(b){
+      b.className="skyv"+(+b.getAttribute("data-moecln")===MO.opt.eclN?" on":""); });
     moDraw(); return; }
   var hr2=t.getAttribute("data-mohours");
   if(hr2){ MO.opt.hours=+hr2; MO.p=0;
