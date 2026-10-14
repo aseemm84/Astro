@@ -87,11 +87,6 @@ var KARMOV=["Bava","Balava","Kaulava","Taitila","Gara","Vanija","Vishti"];
 var KARFIX=["Shakuni","Chatushpada","Naga","Kimstughna"];
 var VARAS=["Ravivara","Somavara","Mangalavara","Budhavara","Guruvara","Shukravara","Shanivara"];
 var VARAE=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-var LMONTH=["Vaishakha","Jyeshtha","Ashadha","Shravana","Bhadrapada","Ashwina","Kartika","Margashirsha",
-"Pausha","Magha","Phalguna","Chaitra"];
-var RITU={Chaitra:"Vasanta",Vaishakha:"Vasanta",Jyeshtha:"Grishma",Ashadha:"Grishma",Shravana:"Varsha",
-Bhadrapada:"Varsha",Ashwina:"Sharad",Kartika:"Sharad",Margashirsha:"Hemanta",Pausha:"Hemanta",
-Magha:"Shishira",Phalguna:"Shishira"};
 
 function dmsStr(v,pos,neg){var s=v<0?neg:pos,a=Math.abs(v),d=Math.floor(a),m=Math.floor((a-d)*60),
   sec=Math.floor((((a-d)*60)-m)*60);
@@ -137,27 +132,16 @@ function panchanga(sun,moon){
     yoga:YOGAN[Math.floor((((moon+sun)%360+360)%360)/(800/60))],
     karana:(n===0?"Kimstughna":(n<=56?KARMOV[(n-1)%7]:KARFIX[n-57]))};
 }
-/* The lunar month, season and half-year. Not limbs of the pañcāṅga proper — those are the
-   five in panchanga() above — but every printed pañcāṅga carries them in its heading, so
-   the Motion tab shows them too. Factored out here so the Overview tab and the Motion tab
-   compute them in exactly one place and cannot drift apart.
+/* The lunar month, season and half-year. Not limbs of the pañcāṅga proper — those
+   are the five in panchanga() above — but every printed pañcāṅga carries them in
+   its heading, so the Overview and the Motion tab both show them.
 
-   The month is named for the rāśi the Sun occupied at the new moon that opened it. We do
-   not search back for that new moon; we step the Sun back by the tithis already elapsed,
-   at its mean rate, which is good to well under a degree and never straddles a boundary
-   except within a few hours of a saṅkrānti. Purnimanta names the same day for the month
-   that ENDS at the coming full moon, so in the dark fortnight it runs one month ahead. */
-function masaOf(sun,moon,ayan){
-  var elapsed=(((moon-sun)%360+360)%360)/12;
-  var sunAtNM=((sun-elapsed*0.9856*(29.53/30))%360+360)%360;
-  var amanta=LMONTH[Math.floor(sunAtNM/30)%12];
-  var krishna=((((moon-sun)%360+360)%360)/12)>=15;
-  var trop=((sun+(ayan||0))%360+360)%360;
-  return {amanta:amanta,
-    purnimanta:(krishna?LMONTH[(Math.floor(sunAtNM/30)+1)%12]:amanta),
-    ritu:RITU[amanta]||"",
-    ayana:(trop>=90&&trop<270)?"Dakshinayana":"Uttarayana"};
-}
+   The computation itself lives in the engine, because the engine is what builds
+   the downloaded JSON and that file now carries these too. Keeping a second copy
+   here would be two implementations of one quantity, free to disagree the moment
+   either is touched. */
+function masaOf(sun,moon,ayan){ return window.__masaOf(sun,moon,ayan); }
+
 function basicsSection(D,J){
   var i=D.input||{},lat=i.lat,lon=i.lon,tz=i.tzHours;
   var sun=D.P.Sun,moon=D.P.Moon; if(!sun||!moon)return "";
@@ -210,7 +194,7 @@ function basicsSection(D,J){
     ["Saka Samvat", (i.year-78)+" (approx.)"],
     ["Lunar month (Amānta)", amanta],
     ["Lunar month (Pūrṇimānta)", purnimanta],
-    ["Ṛtu (season)", RITU[amanta]||"—"],
+    ["Ṛtu (season)", ms.ritu||"—"],
     ["Ayana / Gola", ayana+" / "+(ayana==="Dakshinayana"?"Dakshina":"Uttara")],
     ["Pakṣa", pc.paksha],
     ["Tithi at birth", pc.paksha+" "+pc.tithi],

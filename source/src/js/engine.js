@@ -130,6 +130,102 @@ function panchang(sunSid,moonSid,jd){
     yoga_sa:PAN_Y[Math.floor(norm(moonSid+sunSid)/(800/60))],
     karana_sa:(n===0?"Kimstughna":(n<=56?KMOV[(n-1)%7]:KFIX[n-57]))};
 }
+/* ===== Quantities the JSON was missing =====
+   Each of these is classical chart material that the report already showed on
+   screen but never wrote into the downloaded file, so a reader of the JSON alone
+   could not reproduce the reading. They live here, in the engine, because the
+   engine is what the JSON is built from — and they are exposed on window so the
+   report draws them from one implementation rather than keeping a second copy
+   that is free to drift. */
+
+/* The lunar month, season and half-year. The month is named for the rāśi the Sun
+   held at the new moon that opened it; we step the Sun back by the tithis already
+   elapsed at its mean rate rather than searching for that new moon, which is good
+   to well under a degree except within hours of a saṅkrānti. Pūrṇimānta names the
+   same day for the month ENDING at the coming full moon, so through the dark
+   fortnight it runs one ahead. */
+var LMONTH=["Vaishakha","Jyeshtha","Ashadha","Shravana","Bhadrapada","Ashwina","Kartika",
+  "Margashirsha","Pausha","Magha","Phalguna","Chaitra"];
+var RITU={Chaitra:"Vasanta",Vaishakha:"Vasanta",Jyeshtha:"Grishma",Ashadha:"Grishma",
+  Shravana:"Varsha",Bhadrapada:"Varsha",Ashwina:"Sharad",Kartika:"Sharad",
+  Margashirsha:"Hemanta",Pausha:"Hemanta",Magha:"Shishira",Phalguna:"Shishira"};
+function masaOf(sunSid,moonSid,ayan){
+  var elapsed=norm(moonSid-sunSid)/12;
+  var sunAtNM=norm(sunSid-elapsed*0.9856*(29.53/30));
+  var amanta=LMONTH[Math.floor(sunAtNM/30)%12];
+  var krishna=(norm(moonSid-sunSid)/12)>=15;
+  var trop=norm(sunSid+(ayan||0));
+  return {amanta:amanta,
+    purnimanta:(krishna?LMONTH[(Math.floor(sunAtNM/30)+1)%12]:amanta),
+    ritu:RITU[amanta]||"",
+    ayana:(trop>=90&&trop<270)?"Dakshinayana":"Uttarayana"};
+}
+
+/* Combustion. A graha within its own orb of the Sun is astaṅgata — lost in the
+   glare — and classically treated as weakened however well it is otherwise
+   placed. The orbs are the common Parāśarī set; Rāhu and Ketu, having no disc to
+   be swallowed, are not reckoned combust at all. */
+var COMB={Moon:12,Mars:17,Mercury:14,Jupiter:11,Venus:10,Saturn:16};
+function combustionOf(name,sid,sunSid){
+  var orb=COMB[name]; if(orb==null) return null;
+  var sep=Math.abs(norm(sid-sunSid)); if(sep>180) sep=360-sep;
+  return {separation_deg:sep, orb_deg:orb, combust:sep<=orb};
+}
+
+/* Graha yuddha — planetary war. Two of the five tārā grahas within a degree of
+   each other are at war. BPHS does not settle who wins in the verses this engine
+   can point to, and the later authorities differ — some give it to the northerly
+   graha, some to the brighter — so the fact and the figures needed to judge it
+   are reported, and the verdict is left to the reader. */
+function yuddhaOf(pos){
+  var tara=["Mars","Mercury","Jupiter","Venus","Saturn"], out=[];
+  for(var i=0;i<tara.length;i++) for(var j=i+1;j<tara.length;j++){
+    var a=pos[tara[i]], b=pos[tara[j]]; if(!a||!b) continue;
+    var sep=Math.abs(norm(a.sid-b.sid)); if(sep>180) sep=360-sep;
+    if(sep>1) continue;
+    out.push({grahas:[SK[tara[i]],SK[tara[j]]], separation_deg:sep,
+      latitude_deg:[a.lat==null?null:a.lat, b.lat==null?null:b.lat],
+      northerly:(a.lat!=null&&b.lat!=null)?SK[(a.lat>b.lat)?tara[i]:tara[j]]:null,
+      note:"within one degree, so in yuddha; authorities differ on which graha prevails"});
+  }
+  return out;
+}
+
+/* How long each rāśi takes to rise at a given latitude — the oblique ascension.
+   BPHS asks for exactly this in its first chapter: the ascendant is to be found
+   "with the help of Rāśi durations applicable to the respective places". A sign
+   spans a certain arc of right ascension, and its declination buys or costs it
+   the ascensional difference; what is left is the time it occupies the eastern
+   horizon. At the latitudes most charts are cast for the spread is wide — about
+   an hour and a half for the quickest rāśi against nearly two and a half for the
+   slowest — which is why a chart's lagna is far more sensitive to birth time in
+   some signs than in others. */
+function risingTimes(latDeg,ayan){
+  var eps=23.4392911*D2R, se=Math.sin(eps), ce=Math.cos(eps), phi=latDeg*D2R;
+  function oa(lonSid){
+    var lt=(lonSid+(ayan||0))*D2R;
+    var ra=Math.atan2(ce*Math.sin(lt),Math.cos(lt))*R2D; if(ra<0) ra+=360;
+    var dec=Math.asin(se*Math.sin(lt));
+    var x=Math.tan(phi)*Math.tan(dec);
+    if(x>=1||x<=-1) return null;                  /* the rāśi never rises here */
+    return ra-Math.asin(x)*R2D;
+  }
+  var out=[];
+  for(var s=0;s<12;s++){
+    var a=oa(s*30), b=oa(s*30+30);
+    var nm=rashiObj(s*30+0.001).saName;
+    if(a==null||b==null){
+      out.push({rashi_idx:s, rashi:nm, oblique_ascension_deg:null, rising_minutes:null,
+                note:"never rises at this latitude"});
+      continue; }
+    var d=b-a; while(d<0) d+=360; while(d>=360) d-=360;
+    out.push({rashi_idx:s, rashi:nm, oblique_ascension_deg:d,
+      rising_minutes:d*1440/360.9856, share_of_day_percent:d/360*100});
+  }
+  return out;
+}
+try{ window.__masaOf=masaOf; window.__COMB=COMB; window.__risingTimes=risingTimes; }catch(e){}
+
 var ASPECTS=[[0,"conjunction"],[60,"sextile"],[90,"square"],[120,"trine"],[180,"opposition"]];
 function relations(tr,natal){
   var out=[];
@@ -964,19 +1060,31 @@ window.buildLocalChart=function(inp){
   var date=new Date(ms), ay=ayanamsa(jd);
   var names=["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn"], pos={},grahas=[];
   names.forEach(function(n){var r=lonAndSpeed(n,date);
-    pos[n]={sid:norm(r.lon-ay),speed:r.speed};});
+    /* Ecliptic latitude as well as longitude. Two grahas at the same longitude may
+       be a degree apart in the sky, and latitude is what tells them apart — it is
+       also what the later authorities use to settle a planetary war. */
+    var lat=null;
+    try{ lat=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[BODY[n]],date,true)).elat; }catch(e){}
+    pos[n]={sid:norm(r.lon-ay),speed:r.speed,lat:lat};});
   var nodeMode=(inp.node==="true")?"true":"mean";
   var nodeTrop=(nodeMode==="true")?trueNodeAt(date):meanNode(jd);
   var ra=norm(nodeTrop-ay);
-  pos.Rahu={sid:ra,speed:-0.0529}; pos.Ketu={sid:norm(ra+180),speed:-0.0529};
+  /* the nodes sit on the ecliptic by definition — they are where Candra crosses it */
+  pos.Rahu={sid:ra,speed:-0.0529,lat:0}; pos.Ketu={sid:norm(ra+180),speed:-0.0529,lat:0};
   var order=["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn","Rahu","Ketu"];
   var lagSid=ascendant(jd,date,inp.lat,inp.lon,ay), LS=Math.floor(lagSid/30)%12;
   var sunSid=pos.Sun.sid;
   order.forEach(function(n){
     var p=pos[n], nk=nak(p.sid);
+    var cmb=combustionOf(n,p.sid,sunSid);
     grahas.push({key:SK[n],sa:SK[n],iast:SK[n],rashi:rashiObj(p.sid),
       nakshatra_pada:nk.pada,dignity:null,retrograde:p.speed<0,
-      sidereal_deg:p.sid, speed_deg_per_day:p.speed});
+      sidereal_deg:p.sid, speed_deg_per_day:p.speed,
+      ecliptic_latitude_deg:p.lat,
+      combust:cmb?cmb.combust:false,
+      sun_separation_deg:(n==="Sun")?0:(function(){
+        var sp=Math.abs(norm(p.sid-sunSid)); return sp>180?360-sp:sp; })(),
+      combustion_orb_deg:cmb?cmb.orb_deg:null});
   });
   var posBySign={}; order.forEach(function(n){posBySign[n]=Math.floor(pos[n].sid/30)%12;});
   var bhavas=[];
@@ -1049,7 +1157,41 @@ window.buildLocalChart=function(inp){
       weekday:(Math.floor(jdFromUTC(inp.year,inp.month,inp.day,0)+1.5)%7+7)%7,
       varshaLord:DAYL[varshaW], masaLord:DAYL[masaW]});
   }catch(err){ sbOut={error:String(err&&err.message||err)}; }
+  /* The pañcāṅga OF THE BIRTH, which the report has always shown and the JSON has
+     never carried — only the pañcāṅga of the moment the file was made, under
+     current_phase. The two are different facts and a reader of the file alone
+     could not recover the first from the second. */
+  var natalPan=panchang(pos.Sun.sid,pos.Moon.sid,jd);
+  var natalMasa=masaOf(pos.Sun.sid,pos.Moon.sid,ay);
+  var civilWd=(Math.floor(jdFromUTC(inp.year,inp.month,inp.day,0)+1.5)%7+7)%7;
+  var beforeSunrise=(inp.hour+inp.minute/60)<srH;
+  var elong=norm(pos.Moon.sid-pos.Sun.sid);
+  var risingT=null;
+  try{ risingT=risingTimes(inp.lat,ay); }catch(e){}
+  var lagRashi=Math.floor(lagSid/30)%12;
   return {input:inp, jd_utc:jd, ayanamsha_deg:ay,
+    birth_panchanga:{
+      tithi_sa:natalPan.tithi_sa, paksha_sa:natalPan.paksha_sa,
+      tithi_of_30:Math.floor(elong/12)+1,
+      /* the vāra turns at sunrise, not at midnight: a birth before sunrise still
+         belongs to the previous day's vāra, and that is the one a reading uses */
+      vara_civil_sa:VARA[civilWd],
+      vara_from_sunrise_sa:VARA[beforeSunrise?((civilWd+6)%7):civilWd],
+      born_before_sunrise:beforeSunrise,
+      nakshatra_sa:natalPan.nakshatra_sa, nakshatra_pada:nak(pos.Moon.sid).pada,
+      yoga_sa:natalPan.yoga_sa, karana_sa:natalPan.karana_sa,
+      masa_amanta:natalMasa.amanta, masa_purnimanta:natalMasa.purnimanta,
+      ritu:natalMasa.ritu, ayana:natalMasa.ayana,
+      sun_moon_elongation_deg:elong,
+      moon_illuminated_fraction:(1-Math.cos(elong*D2R))/2,
+      sunrise_local_hours:srH, sunset_local_hours:ssH},
+    graha_yuddha:yuddhaOf(pos),
+    rashi_rising_times:{latitude_deg:inp.lat, obliquity_deg:23.4392911,
+      note:"oblique ascension — the time each rāśi takes to cross the eastern horizon "+
+           "at this latitude, which BPHS 1.8-9 calls for when finding the ascendant",
+      lagna_rashi_idx:lagRashi,
+      lagna_rashi_rising_minutes:(risingT&&risingT[lagRashi])?risingT[lagRashi].rising_minutes:null,
+      rashis:risingT},
     ayanamsa_mode:AYAN_MODE, ayanamsa_name:AYAN_MODES[AYAN_MODE].name, node_mode:nodeMode,
     ayanamsa_note:AYAN_MODES[AYAN_MODE].note, ashtakavarga:avOut, yogas:yg, bhayat:bb, shadbala:sbOut,
     lagna:{sidereal_deg:lagSid,rashi:rashiObj(lagSid),nakshatra_pada:nak(lagSid).pada},
