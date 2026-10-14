@@ -441,7 +441,13 @@ MO_SKY.push({key:"worlds", label:"The five worlds", title:"The tārā grahas as 
  draw:function(p){
   var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx, U=Math.min(S.w,S.h);
   var t0=Date.now(), t1=t0+moSpanMs(), ms=t0+(t1-t0)*p, dt=new Date(ms);
-  var n=MO_WORLD.length, each=1/n, idx=Math.min(n-1,Math.floor(p/each));
+  var n=MO_WORLD.length, each=1/n;
+  /* Either hold one graha for the whole span, or take the five in turn across it.
+     Holding one is what you want to watch a phase close or Śani's rings open;
+     the turn is what you want to see them against each other. */
+  var pick=MO.opt.world, idx=-1;
+  if(pick) for(var wi=0;wi<n;wi++) if(MO_WORLD[wi].en===pick) idx=wi;
+  if(idx<0) idx=Math.min(n-1,Math.floor(p/each));
   var Wd=MO_WORLD[idx], en=Wd.en;
   var ill=null; try{ ill=Astronomy.Illumination(Astronomy.Body[en],dt); }catch(e){}
   if(!ill) throw new Error("no ephemeris");
@@ -479,7 +485,7 @@ MO_SKY.push({key:"worlds", label:"The five worlds", title:"The tārā grahas as 
   var rot=((ms-t0)/86400000)*((en==="Jupiter")?880:(en==="Saturn")?810:(en==="Mars")?350:60);
   var R2=moR2(Rdraw,380);
   var disc=moBody(R2,{tex:Wd.tex(), lx:lx, ly:0.03, lz:lz, rot:rot, axis:Wd.axis,
-                      relief:Wd.relief, b:(Wd.relief?0.82:0.25), exposure:1.15,
+                      relief:(Wd.tex().gx?Wd.relief:0), b:(Wd.relief?0.82:0.25), exposure:1.15,
                       night:[2,2,3]});
   if(en==="Saturn") moRings(cx,cy,Rdraw,dt,lx,lz,P);
   c.drawImage(disc,cx-Rdraw,cy-Rdraw,Rdraw*2,Rdraw*2);

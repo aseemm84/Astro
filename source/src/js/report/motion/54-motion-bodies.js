@@ -32,17 +32,28 @@ function moNoiseField(n,rnd){
   for(var i=0;i<n*n;i++) g[i]=rnd();
   return {n:n,g:g};
 }
-function moNoise2(f,x,y){
+/* `perx` makes the field repeat after that many lattice cells in x. A map wraps
+   round the body, so a field that does not repeat over exactly the width of the
+   map leaves a seam down the texture — and on a smooth-banded world like Guru
+   that seam rotates into view as a row of vertical steps. Passing the x-frequency
+   as the period closes it. Each octave doubles the frequency, so it doubles the
+   period with it; the lattice has to be at least as large as the largest period
+   any octave asks for. */
+function moNoise2(f,x,y,perx){
   var n=f.n, g=f.g;
   var xi=Math.floor(x), yi=Math.floor(y), xf=x-xi, yf=y-yi;
   var u=xf*xf*xf*(xf*(xf*6-15)+10), v=yf*yf*yf*(yf*(yf*6-15)+10);
-  var x0=((xi%n)+n)%n, x1=(x0+1)%n, y0=((yi%n)+n)%n, y1=(y0+1)%n;
+  var P=(perx&&perx<=n)?perx:n;
+  var x0=((xi%P)+P)%P, x1=(x0+1)%P, y0=((yi%n)+n)%n, y1=(y0+1)%n;
   var a=g[y0*n+x0], b=g[y0*n+x1], c=g[y1*n+x0], d=g[y1*n+x1];
   return (a*(1-u)+b*u)*(1-v)+(c*(1-u)+d*u)*v;
 }
-function moFbm(f,x,y,oct,gain){
+function moFbm(f,x,y,oct,gain,perx){
   var s=0, amp=1, norm=0, fr=1;
-  for(var i=0;i<oct;i++){ s+=amp*moNoise2(f,x*fr,y*fr); norm+=amp; amp*=(gain||0.5); fr*=2; }
+  for(var i=0;i<oct;i++){
+    s+=amp*moNoise2(f,x*fr,y*fr,perx?perx*fr:0);
+    norm+=amp; amp*=(gain||0.5); fr*=2;
+  }
   return s/norm;
 }
 
@@ -93,7 +104,12 @@ function moTexGrad(t){
       gy[y*W+x]=(e[yD*W+x]-e[yU*W+x])*0.17;
     }
   }
-  t.gx=gx; t.gy=gy; return t;
+  t.gx=gx; t.gy=gy;
+  /* The height field has done its work. Nothing in the render path reads it
+     again — the loop uses the slope, not the height — so two megabytes a body
+     are released here rather than held for the life of the page. */
+  t.e=null;
+  return t;
 }
 
 /* Angular distance on the sphere, in degrees — craters and maria are circles on
@@ -152,12 +168,12 @@ var MO_RAYC=[[-11,-43,42,1.00],[-20,10,32,0.75],[-38,8,16,0.55],[-47,24,12,0.9]]
 function moMoonTex(){
   if(MO_TEX.moon) return MO_TEX.moon;
   var t=moTexBlank(), rnd=moRng(20261014), i;
-  var fine=moNoiseField(256,rnd), coarse=moNoiseField(64,rnd);
+  var fine=moNoiseField(512,rnd), coarse=moNoiseField(64,rnd);
   /* highlands: a bright, slightly mottled base */
   for(var y=0;y<MO_TH;y++){
     for(var x=0;x<MO_TW;x++){
       i=y*MO_TW+x;
-      var n=moFbm(fine,x/MO_TW*34,y/MO_TH*17,4,0.55);
+      var n=moFbm(fine,x/MO_TW*34,y/MO_TH*17,4,0.55,34);
       var v=204+ (n-0.5)*54;
       t.r[i]=v; t.g[i]=v*0.985; t.b[i]=v*0.95;
       t.e[i]=(moFbm(coarse,x/MO_TW*18,y/MO_TH*9,3,0.5)-0.5)*0.5;
@@ -259,10 +275,10 @@ function moMoonTex(){
 function moMercuryTex(){
   if(MO_TEX.mercury) return MO_TEX.mercury;
   var t=moTexBlank(), rnd=moRng(4401), i;
-  var fine=moNoiseField(256,rnd);
+  var fine=moNoiseField(512,rnd);
   for(var y=0;y<MO_TH;y++) for(var x=0;x<MO_TW;x++){
     i=y*MO_TW+x;
-    var n=moFbm(fine,x/MO_TW*30,y/MO_TH*15,4,0.55);
+    var n=moFbm(fine,x/MO_TW*30,y/MO_TH*15,4,0.55,30);
     var v=132+(n-0.5)*40;                                   /* darker than the Moon */
     t.r[i]=v*1.03; t.g[i]=v; t.b[i]=v*0.94; t.e[i]=(n-0.5)*0.6;
   }
@@ -295,22 +311,22 @@ function moVenusTex(){
   /* No surface: Venus shows an unbroken sulphuric cloud deck. The only structure
      is faint ultraviolet banding, which in visible light is almost nothing — so
      the honest rendering is a nearly featureless cream disc. */
-  var t=moTexBlank(), rnd=moRng(777), f=moNoiseField(128,rnd);
+  var t=moTexBlank(), rnd=moRng(777), f=moNoiseField(512,rnd);
   for(var y=0;y<MO_TH;y++) for(var x=0;x<MO_TW;x++){
     var i=y*MO_TW+x, la=90-(y/MO_TH)*180;
-    var band=moFbm(f,x/MO_TW*5+la/40,y/MO_TH*9,4,0.55);
+    var band=moFbm(f,x/MO_TW*5+la/40,y/MO_TH*9,4,0.55,5);
     var v=238+(band-0.5)*14-Math.abs(la)/90*8;
     t.r[i]=Math.min(255,v); t.g[i]=Math.min(255,v*0.955); t.b[i]=Math.min(255,v*0.80);
     t.e[i]=0;                                                /* cloud tops: no relief */
   }
-  moTexGrad(t); MO_TEX.venus=t; return t;
+  t.e=null; MO_TEX.venus=t; return t;
 }
 function moMarsTex(){
   if(MO_TEX.mars) return MO_TEX.mars;
-  var t=moTexBlank(), rnd=moRng(1877), f=moNoiseField(256,rnd), g=moNoiseField(64,rnd);
+  var t=moTexBlank(), rnd=moRng(1877), f=moNoiseField(512,rnd), g=moNoiseField(64,rnd);
   for(var y=0;y<MO_TH;y++) for(var x=0;x<MO_TW;x++){
     var i=y*MO_TW+x;
-    var n=moFbm(f,x/MO_TW*26,y/MO_TH*13,5,0.55);
+    var n=moFbm(f,x/MO_TW*26,y/MO_TH*13,5,0.55,26);
     var v=196+(n-0.5)*46;
     t.r[i]=Math.min(255,v); t.g[i]=v*0.60; t.b[i]=v*0.41;    /* iron oxide */
     t.e[i]=(n-0.5)*0.7;
@@ -343,7 +359,7 @@ function moJupiterTex(){
   if(MO_TEX.jupiter) return MO_TEX.jupiter;
   /* Belts and zones at their real latitudes, with the flow sheared east-west so
      the turbulence stretches into ribbons the way the real atmosphere does. */
-  var t=moTexBlank(), rnd=moRng(1610), f=moNoiseField(256,rnd);
+  var t=moTexBlank(), rnd=moRng(1610), f=moNoiseField(512,rnd);
   var BANDS=[[0,0.0,[232,214,186]],[8,5,[196,150,112]],[-8,5,[196,150,112]],
              [18,6,[238,226,202]],[-18,6,[238,226,202]],[27,6,[180,136,104]],
              [-27,6,[186,142,108]],[38,7,[222,208,190]],[-38,7,[222,208,190]],
@@ -360,7 +376,7 @@ function moJupiterTex(){
     for(var x=0;x<MO_TW;x++){
       var i=y*MO_TW+x;
       /* stretched 14:1 in longitude — zonal flow, not isotropic cloud */
-      var n=moFbm(f,x/MO_TW*11,y/MO_TH*62,5,0.52)-0.5;
+      var n=moFbm(f,x/MO_TW*11,y/MO_TH*62,5,0.52,11)-0.5;
       t.r[i]=Math.max(0,Math.min(255,cr+n*48));
       t.g[i]=Math.max(0,Math.min(255,cg+n*44));
       t.b[i]=Math.max(0,Math.min(255,cb+n*38));
@@ -378,11 +394,11 @@ function moJupiterTex(){
     t.g[i2]=t.g[i2]*(1-k)+(118+sw*26)*k;
     t.b[i2]=t.b[i2]*(1-k)+( 92+sw*22)*k;
   }
-  moTexGrad(t); MO_TEX.jupiter=t; return t;
+  t.e=null; MO_TEX.jupiter=t; return t;
 }
 function moSaturnTex(){
   if(MO_TEX.saturn) return MO_TEX.saturn;
-  var t=moTexBlank(), rnd=moRng(1655), f=moNoiseField(256,rnd);
+  var t=moTexBlank(), rnd=moRng(1655), f=moNoiseField(512,rnd);
   for(var y=0;y<MO_TH;y++){
     var la=90-(y+0.5)/MO_TH*180;
     /* Saturn's banding is the same physics as Jupiter's seen through a deeper
@@ -391,58 +407,92 @@ function moSaturnTex(){
     var bandy=Math.sin(la*Math.PI/180*7)*6;
     for(var x=0;x<MO_TW;x++){
       var i=y*MO_TW+x;
-      var n=moFbm(f,x/MO_TW*8,y/MO_TH*46,4,0.5)-0.5;
+      var n=moFbm(f,x/MO_TW*8,y/MO_TH*46,4,0.5,8)-0.5;
       var v=base+bandy+n*15;
       t.r[i]=Math.min(255,v*1.00); t.g[i]=Math.min(255,v*(0.90+warm*0.05));
       t.b[i]=Math.min(255,v*(0.70+warm*0.06));
       t.e[i]=0;
     }
   }
-  moTexGrad(t); MO_TEX.saturn=t; return t;
+  t.e=null; MO_TEX.saturn=t; return t;
 }
 var MO_TEXFN={moon:moMoonTex, mercury:moMercuryTex, venus:moVenusTex,
               mars:moMarsTex, jupiter:moJupiterTex, saturn:moSaturnTex};
 
 /* ------------------------------------------------- the per-radius geometry --- */
-/* Computed once for a given disc radius and kept: the view-space normal, the
-   texture row for the latitude, and the texture column before rotation. The
-   axis is vertical in view space, so rotation only shifts the column. */
-function moGeom(R,axTiltDeg){
-  var key=R+"|"+(axTiltDeg||0);
-  if(MO_GEO[key]) return MO_GEO[key];
-  var D=R*2, n=D*D;
-  /* Only the pixels inside the disc are kept, in one packed list. About a fifth
-     of the bounding box is outside it, and dropping those from the per-frame loop
-     is worth more than it looks: this loop runs a quarter of a million times a
-     frame, so every branch inside it is paid for a quarter of a million times. */
-  var cnt=0, py, px, i, x, y, r2;
-  for(py=0;py<D;py++) for(px=0;px<D;px++){
-    x=(px+0.5-R)/R; y=(py+0.5-R)/R; if(x*x+y*y<1) cnt++;
+/* THE CACHE MUST BE BOUNDED. This was a crash, not a slow path. The key is the
+   radius and the axis tilt, and for Candra both move every single frame — the
+   drawn size follows the real apparent diameter, and the tilt follows the real
+   libration in latitude. Every frame therefore minted a fresh set of multi-
+   megabyte arrays and a fresh canvas, and nothing was ever evicted: measured at
+   thirteen megabytes a frame, four gigabytes over three hundred frames. Desktop
+   browsers swallow that for a while. Safari on a phone reaches its limit for the
+   tab in a few seconds and reloads the page, which is exactly what it looked
+   like from the outside.
+
+   Two defences, because either alone is brittle. The inputs are quantised, so
+   consecutive frames land on the same key and the cache is actually used; and
+   the cache is capped and evicts its oldest entry, so no sequence of inputs can
+   make it grow without limit. */
+var MO_GEO_ORDER=[], MO_GEO_MAX=8;
+function moGeomPut(key,G){
+  MO_GEO[key]=G; MO_GEO_ORDER.push(key);
+  while(MO_GEO_ORDER.length>MO_GEO_MAX){
+    var old=MO_GEO_ORDER.shift();
+    if(old!==key) delete MO_GEO[old];
   }
-  var at=new Int32Array(cnt);
-  var nx=new Float32Array(cnt), ny=new Float32Array(cnt), nz=new Float32Array(cnt);
-  var col=new Int32Array(cnt), row=new Int32Array(cnt);
-  var ct=Math.cos((axTiltDeg||0)*Math.PI/180), stt=Math.sin((axTiltDeg||0)*Math.PI/180);
+  return G;
+}
+/* Stored per pixel: the texture column and row, which need the tilt, and the
+   z of the normal. The x and y of the normal are NOT stored — they follow from
+   the pixel's position, and walking each row left to right gives x by addition.
+   That is three fewer arrays, and it turns a scattered indexed write into a
+   sequential one. Columns and rows are sixteen-bit: the map is 1024 by 512. */
+function moGeom(R,axTiltDeg){
+  var ax=axTiltDeg||0;
+  var key=R+"|"+ax;
+  if(MO_GEO[key]) return MO_GEO[key];
+  var D=R*2, py, px;
+  var x0a=new Int16Array(D), x1a=new Int16Array(D), st0=new Int32Array(D);
+  var cnt=0;
+  for(py=0;py<D;py++){
+    var y=(py+0.5-R)/R;
+    if(y*y>=1){ x0a[py]=0; x1a[py]=-1; st0[py]=cnt; continue; }
+    var hx=Math.sqrt(1-y*y)*R;
+    var lo=Math.ceil(R-hx-0.5), hi=Math.floor(R+hx-0.5);
+    while(lo<=hi){ var xx=(lo+0.5-R)/R; if(xx*xx+y*y<1) break; lo++; }
+    while(hi>=lo){ var xh=(hi+0.5-R)/R; if(xh*xh+y*y<1) break; hi--; }
+    if(lo<0) lo=0; if(hi>D-1) hi=D-1;
+    x0a[py]=lo; x1a[py]=hi; st0[py]=cnt;
+    if(hi>=lo) cnt+=hi-lo+1;
+  }
+  var nz=new Float32Array(cnt), col=new Uint16Array(cnt), row=new Uint16Array(cnt);
+  var ct=Math.cos(ax*Math.PI/180), stt=Math.sin(ax*Math.PI/180);
   var k=0;
   for(py=0;py<D;py++){
-    for(px=0;px<D;px++){
-      x=(px+0.5-R)/R; y=(py+0.5-R)/R; r2=x*x+y*y;
-      if(r2>=1) continue;
-      var z=Math.sqrt(1-r2);
-      at[k]=(py*D+px)*4;
-      nx[k]=x; ny[k]=-y; nz[k]=z;                  /* screen y is down, world y is up */
+    var y2=(py+0.5-R)/R, lo2=x0a[py], hi2=x1a[py];
+    for(px=lo2;px<=hi2;px++){
+      var x2=(px+0.5-R)/R, r2=x2*x2+y2*y2;
+      var z=r2<1?Math.sqrt(1-r2):0;
+      nz[k]=z;
       /* tilt the pole towards or away from the viewer, then read off lat/lon */
-      var wy=(-y)*ct - z*stt, wz=(-y)*stt + z*ct;
-      var lat=Math.asin(Math.max(-1,Math.min(1,wy)));
-      var lon=Math.atan2(x,wz);
-      row[k]=Math.max(0,Math.min(MO_TH-1,Math.floor((0.5-lat/Math.PI)*MO_TH)));
-      col[k]=Math.floor(((lon/(2*Math.PI))+0.5)*MO_TW);
+      var wy=(-y2)*ct-z*stt, wz=(-y2)*stt+z*ct;
+      var lat=Math.asin(wy>1?1:(wy<-1?-1:wy));
+      var lon=Math.atan2(x2,wz);
+      var rr=Math.floor((0.5-lat/Math.PI)*MO_TH);
+      row[k]=rr<0?0:(rr>MO_TH-1?MO_TH-1:rr);
+      var cc=Math.floor(((lon/(2*Math.PI))+0.5)*MO_TW);
+      col[k]=((cc%MO_TW)+MO_TW)%MO_TW;
       k++;
     }
   }
-  var G={R:R,D:D,n:cnt,at:at,nx:nx,ny:ny,nz:nz,col:col,row:row};
-  MO_GEO[key]=G; return G;
+  return moGeomPut(key,{R:R,D:D,n:cnt,nz:nz,col:col,row:row,x0:x0a,x1:x1a,st:st0});
 }
+/* The radius and the tilt are rounded here rather than at each call site, so no
+   scene can reintroduce the unbounded key by forgetting to. Ten pixels of radius
+   and two degrees of tilt are both well under what anyone can see. */
+function moQR(R){ return Math.max(24,Math.round(R/10)*10); }
+function moQA(a){ return Math.round((a||0)/2)*2; }
 
 /* ------------------------------------------------------------- photometry --- */
 /* Lunar-Lambert. Pure Lambert makes an airless body look like a billiard ball,
@@ -463,76 +513,87 @@ function moShade(mu0,mu,b){
    opt: {tex, lx,ly,lz (light direction, view space, unit), rot (degrees),
          tint:[r,g,b] multiplier, relief, b (backscatter), gamma,
          night:[r,g,b] added on the unlit side, amb} */
+var MO_BUF_ORDER=[], MO_BUF_MAX=3;
 function moCanvas(key,D){
-  /* The pixel buffer and its ImageData are kept per size. Allocating a fresh
-     ImageData every frame is five megabytes a frame at this disc size, which the
-     collector then has to sweep — enough on its own to cost a steady ten frames
-     a second. */
+  /* The pixel buffer and its ImageData are kept per size — allocating a fresh
+     ImageData every frame is megabytes a frame for the collector to sweep. The
+     key is the SIZE only: the buffer holds pixels and does not care how the
+     sphere was tilted, and keying it by the tilt as well was half of the leak. */
+  key="d"+D;
   var e=MO_BUF[key];
   if(!e || e.cv.width!==D){
     var cv=document.createElement("canvas"); cv.width=D; cv.height=D;
     var cx2=cv.getContext("2d");
     e={cv:cv, cx:cx2, img:cx2.createImageData(D,D)};
-    MO_BUF[key]=e;
+    MO_BUF[key]=e; MO_BUF_ORDER.push(key);
+    while(MO_BUF_ORDER.length>MO_BUF_MAX){
+      var old=MO_BUF_ORDER.shift();
+      if(old!==key) delete MO_BUF[old];
+    }
   }
   return e;
 }
 function moBody(R,opt){
-  R=Math.max(16,Math.round(R));
-  var G=moGeom(R,opt.axis||0), D=G.D, t=opt.tex;
-  var E=moCanvas("b"+R+"|"+(opt.axis||0),D), p=E.img.data;
+  R=moQR(R);
+  var G=moGeom(R,moQA(opt.axis)), D=G.D, t=opt.tex;
+  var E=moCanvas(null,D), p=E.img.data;
   p.fill(0);
   var lx=opt.lx, ly=opt.ly, lz=opt.lz;
-  var rotCol=Math.round(((opt.rot||0)/360)*MO_TW)%MO_TW;
-  var relief=(opt.relief==null?1:opt.relief), b=(opt.b==null?0.85:opt.b);
+  var rotCol=Math.round(((opt.rot||0)/360)*MO_TW)%MO_TW; if(rotCol<0) rotCol+=MO_TW;
+  var relief=(opt.relief==null?1:opt.relief), b=(opt.b==null?0.85:opt.b), b1=1-b;
   var tr=opt.tint?opt.tint[0]:1, tg=opt.tint?opt.tint[1]:1, tb=opt.tint?opt.tint[2]:1;
   var nr=opt.night?opt.night[0]:0, ng=opt.night?opt.night[1]:0, nb=opt.night?opt.night[2]:0;
   var amb=opt.amb||0, gam=opt.gamma||1, exp=(opt.exposure==null?1:opt.exposure);
   var TW=MO_TW, tR=t.r, tG=t.g, tB=t.b, tgx=t.gx, tgy=t.gy;
-  var at=G.at, Gc=G.col, Gr=G.row, Gx=G.nx, Gy=G.ny, Gz=G.nz, n=G.n;
-  var b1=1-b;
-  for(var i=0;i<n;i++){
-    var c=Gc[i]+rotCol; if(c>=TW) c-=TW;
-    var rw=Gr[i], idx=rw*TW+c;
-    var ex=Gx[i], ey=Gy[i], ez=Gz[i];
-    var mu0=ex*lx+ey*ly+ez*lz, sh;
-    /* Deep on the night side no slope can reach the light: the relief tilts the
-       normal by at most the largest gradient in the map, so past that margin the
-       answer is settled and the expensive half of the loop can be skipped. On a
-       crescent that is most of the disc, which is where this scene spends its
-       frames. */
-    if(mu0<-0.42){
-      var q0=at[i];
-      p[q0]=nr>255?255:nr; p[q0+1]=ng>255?255:ng; p[q0+2]=nb>255?255:nb;
-      p[q0+3]=(ez<0.10)?Math.round(2550*ez):255;
-      continue;
+  var Gc=G.col, Gr=G.row, Gz=G.nz, X0=G.x0, X1=G.x1, ST=G.st;
+  var dnx=1/R;
+  for(var py=0;py<D;py++){
+    var lo=X0[py], hi=X1[py]; if(hi<lo) continue;
+    var ey=-((py+0.5-R)/R);
+    var nx=(lo+0.5-R)/R;
+    var i=ST[py], q=(py*D+lo)*4;
+    for(var px=lo;px<=hi;px++,i++,q+=4,nx+=dnx){
+      var ez=Gz[i];
+      var c=Gc[i]+rotCol; if(c>=TW) c-=TW;
+      var idx=Gr[i]*TW+c;
+      var ex=nx, ey2=ey;
+      var mu0=ex*lx+ey2*ly+ez*lz, sh;
+      /* Deep on the night side no slope can reach the light: the relief tilts the
+         normal by at most the largest gradient in the map, so past that margin the
+         answer is settled and the expensive half of the loop can be skipped. On a
+         crescent that is most of the disc, which is where this scene spends its
+         frames. */
+      if(mu0<-0.42){
+        p[q]=nr>255?255:nr; p[q+1]=ng>255?255:ng; p[q+2]=nb>255?255:nb;
+        p[q+3]=(ez<0.10)?Math.round(2550*ez):255;
+        continue;
+      }
+      if(relief){
+        /* tilt the normal by the surface slope — this is what makes a crater rim
+           catch the light a moment before its floor does, and why the relief
+           disappears at full phase exactly as it does in the sky */
+        ex-=tgx[idx]*relief; ey2-=tgy[idx]*relief;
+        /* one Newton step for the inverse square root: the perturbed normal is
+           still close to unit length, so this is good to second order and costs
+           neither a square root nor a division */
+        var l2=ex*ex+ey2*ey2+ez*ez, ln=1.5-0.5*l2;
+        ex*=ln; ey2*=ln; ez*=ln;
+        mu0=ex*lx+ey2*ly+ez*lz;
+      }
+      if(mu0<=0) sh=0; else sh=mu0*(b1+b*(2*mu0/(mu0+ez+1e-6)));
+      sh=sh*exp+amb;
+      var rr=tR[idx]*sh*tr+nr, gg=tG[idx]*sh*tg+ng, bb=tB[idx]*sh*tb+nb;
+      if(gam!==1){
+        rr=255*Math.pow(rr>0?rr/255:0,gam);
+        gg=255*Math.pow(gg>0?gg/255:0,gam);
+        bb=255*Math.pow(bb>0?bb/255:0,gam);
+      }
+      p[q]=rr>255?255:(rr<0?0:rr);
+      p[q+1]=gg>255?255:(gg<0?0:gg);
+      p[q+2]=bb>255?255:(bb<0?0:bb);
+      /* a sub-pixel feather at the very limb, so the disc has no staircase edge */
+      p[q+3]=(Gz[i]<0.10)?Math.round(2550*Gz[i]):255;
     }
-    if(relief){
-      /* tilt the normal by the surface slope — this is what makes a crater rim
-         catch the light a moment before its floor does, and why the relief
-         disappears at full phase exactly as it does in the sky */
-      ex-=tgx[idx]*relief; ey-=tgy[idx]*relief;
-      /* one Newton step for the inverse square root. The perturbed normal is
-         still close to unit length, so this is accurate to second order and
-         costs neither a square root nor a division. */
-      var l2=ex*ex+ey*ey+ez*ez, ln=1.5-0.5*l2;
-      ex*=ln; ey*=ln; ez*=ln;
-      mu0=ex*lx+ey*ly+ez*lz;
-    }
-    if(mu0<=0) sh=0; else sh=mu0*(b1+b*(2*mu0/(mu0+ez+1e-6)));
-    sh=sh*exp+amb;
-    var rr=tR[idx]*sh*tr+nr, gg=tG[idx]*sh*tg+ng, bb=tB[idx]*sh*tb+nb;
-    if(gam!==1){
-      rr=255*Math.pow(rr>0?rr/255:0,gam);
-      gg=255*Math.pow(gg>0?gg/255:0,gam);
-      bb=255*Math.pow(bb>0?bb/255:0,gam);
-    }
-    var q=at[i];
-    p[q]=rr>255?255:(rr<0?0:rr);
-    p[q+1]=gg>255?255:(gg<0?0:gg);
-    p[q+2]=bb>255?255:(bb<0?0:bb);
-    /* a sub-pixel feather at the very limb, so the disc has no staircase edge */
-    p[q+3]=(Gz[i]<0.10)?Math.round(2550*Gz[i]):255;
   }
   E.cx.putImageData(E.img,0,0);
   return E.cv;
@@ -545,13 +606,13 @@ function moBody(R,opt){
    cooler layer, and granulation, which is the top of the convection zone. */
 function moSunTex(){
   if(MO_TEX.sun) return MO_TEX.sun;
-  var t=moTexBlank(), rnd=moRng(1543), gr=moNoiseField(256,rnd), sp=moNoiseField(64,rnd);
+  var t=moTexBlank(), rnd=moRng(1543), gr=moNoiseField(512,rnd), sp=moNoiseField(64,rnd);
   for(var y=0;y<MO_TH;y++) for(var x=0;x<MO_TW;x++){
     var i=y*MO_TW+x;
     /* granules are about a thousand kilometres across, which on a disc of this
        size is a cell every few pixels — hence the high frequency */
-    var g1=moFbm(gr,x/MO_TW*150,y/MO_TH*75,2,0.45);
-    var g2=moFbm(gr,x/MO_TW*48+11,y/MO_TH*24+7,3,0.5);
+    var g1=moFbm(gr,x/MO_TW*150,y/MO_TH*75,2,0.45,150);
+    var g2=moFbm(gr,x/MO_TW*48+11,y/MO_TH*24+7,3,0.5,48);
     /* Granules are bright cells with dark lanes between them, not a smooth
        mottle, so the fine octave is pushed towards its bright end and the lanes
        fall out as what is left. */
@@ -600,24 +661,28 @@ function moSunTex(){
    like a disc with an edge rather than a glowing ball. */
 function moLimbDark(mu){ return 0.34+0.93*mu-0.27*mu*mu; }
 function moSunDisc(R,rot){
-  R=Math.max(16,Math.round(R));
+  R=moQR(R);
   var G=moGeom(R,0), D=G.D, t=moSunTex();
-  var E=moCanvas("sun"+R,D), p=E.img.data;
+  var E=moCanvas(null,D), p=E.img.data;
   p.fill(0);
   var rotCol=Math.round((rot/360)*MO_TW)%MO_TW; if(rotCol<0) rotCol+=MO_TW;
-  var TW=MO_TW, at=G.at, Gc=G.col, Gr=G.row, Gz=G.nz, n=G.n;
+  var TW=MO_TW, Gc=G.col, Gr=G.row, Gz=G.nz, X0=G.x0, X1=G.x1, ST=G.st;
   var norm=1/moLimbDark(1);
-  for(var i=0;i<n;i++){
-    var c=Gc[i]+rotCol; if(c>=TW) c-=TW;
-    var idx=Gr[i]*TW+c, mu=Gz[i];
-    var ld=(0.34+0.93*mu-0.27*mu*mu)*norm;
-    /* the edge runs red as well as dark: the oblique line of sight reaches only a
-       shallower, cooler layer, and a cooler gas radiates redder as well as fainter */
-    var warm=1-mu;
-    var rr=t.r[idx]*ld, gg=t.g[idx]*ld*(1-warm*0.22), bb=t.b[idx]*ld*(1-warm*0.45);
-    var q=at[i];
-    p[q]=rr>255?255:rr; p[q+1]=gg>255?255:gg; p[q+2]=bb>255?255:bb;
-    p[q+3]=(mu<0.07)?Math.round(3643*mu):255;
+  for(var py=0;py<D;py++){
+    var lo=X0[py], hi=X1[py]; if(hi<lo) continue;
+    var i=ST[py], q=(py*D+lo)*4;
+    for(var px=lo;px<=hi;px++,i++,q+=4){
+      var mu=Gz[i];
+      var c=Gc[i]+rotCol; if(c>=TW) c-=TW;
+      var idx=Gr[i]*TW+c;
+      var ld=(0.34+0.93*mu-0.27*mu*mu)*norm;
+      /* the edge runs red as well as dark: the oblique line of sight reaches only a
+         shallower, cooler layer, and a cooler gas radiates redder as well as fainter */
+      var warm=1-mu;
+      var rr=t.r[idx]*ld, gg=t.g[idx]*ld*(1-warm*0.22), bb=t.b[idx]*ld*(1-warm*0.45);
+      p[q]=rr>255?255:rr; p[q+1]=gg>255?255:gg; p[q+2]=bb>255?255:bb;
+      p[q+3]=(mu<0.07)?Math.round(3643*mu):255;
+    }
   }
   E.cx.putImageData(E.img,0,0);
   return E.cv;

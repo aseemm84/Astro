@@ -183,7 +183,14 @@ function moSceneOpts(){
   } else if(k==="sun"){
     h=moSpanRow(["d","m","y"],"from today — a year carries Sūrya through all twelve rāśis");
   } else if(k==="worlds"){
-    h=moSpanRow(["m","y"],"from today — the five are shown in turn across the span")+
+    h='<span class="molab">Graha</span>'+
+      [["","all five in turn"],["Mercury","Budha"],["Venus","Śukra"],["Mars","Maṅgala"],
+       ["Jupiter","Guru"],["Saturn","Śani"]].map(function(w){
+        return '<button type="button" class="skyv'+
+          (((MO.opt.world||"")===w[0])?" on":"")+
+          '" data-moworld="'+w[0]+'">'+esc(w[1])+'</button>'; }).join("")+
+      '<br>'+moSpanRow(["m","y"],"from today — with one graha held, the span is the "+
+        "stretch of time it moves through")+
       '<span class="molab">Sizing</span>'+
       [["same","one magnification"],["fill","fill the frame"]].map(function(m){
         return '<button type="button" class="skyv'+
@@ -265,6 +272,12 @@ document.addEventListener("click",function(ev){
   if(ws){ MO.opt.wsame=(ws==="same"); MO_CACHE={};
     [].forEach.call(document.querySelectorAll("[data-mowsize]"),function(b){
       b.className="skyv"+((b.getAttribute("data-mowsize")==="same")===(MO.opt.wsame===true)?" on":""); });
+    moDraw(); return; }
+  if(t.hasAttribute&&t.hasAttribute("data-moworld")){
+    MO.opt.world=t.getAttribute("data-moworld")||null; MO.p=0;
+    var sw=document.getElementById("moscrub"); if(sw) sw.value=0;
+    [].forEach.call(document.querySelectorAll("[data-moworld]"),function(bn){
+      bn.className="skyv"+((bn.getAttribute("data-moworld")||"")===(MO.opt.world||"")?" on":""); });
     moDraw(); return; }
   if(t.id==="mostudio"){ moStudio(!MO.studio); return; }
   if(t.id==="moexit"){ moStudio(false); return; }
