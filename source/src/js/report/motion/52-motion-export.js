@@ -349,6 +349,32 @@ function moSceneSheets(){
       cols:["Peak (UTC)","Kind","Type","Sidereal longitude °","Rāśi","Nakṣatra","Pāda",
             "Degrees from the node","Node","Obscuration","Greatest eclipse latitude °",""],
       rows:rowsE});
+  } else if(k==="eclipseseason"){
+    var tE=Date.now(), eE=tE+moSpanMs();
+    var EE=moEclipsesIn(tE,eE);
+    out.push({name:"Eclipses in the span",
+      cols:["Peak (UTC)","Kind","Type","Sidereal longitude °","Rāśi","Degrees from the node","Node"],
+      rows:EE.map(function(x){
+        return [moISO(x.ms), x.kind==="solar"?"Solar":"Lunar",
+                (x.type||"").charAt(0).toUpperCase()+(x.type||"").slice(1),
+                x.lon!=null?+x.lon.toFixed(4):"", x.lon!=null?moSignOf(x.lon):"",
+                x.node!=null?+x.node.toFixed(2):"", x.which||""];
+      })});
+    /* the slow hand: where the nodal axis sits month by month */
+    var rowsN=[], NN=Math.min(800,Math.max(24,Math.round((eE-tE)/2629746000)));
+    for(var q=0;q<=NN;q++){
+      var mN=tE+(eE-tE)*q/NN, raN=moSidAt("Rahu",mN), suN=moSidAt("Sun",mN);
+      if(raN==null||suN==null) continue;
+      var keN=(raN+180)%360;
+      var d1=Math.abs(((suN-raN)%360+360)%360); if(d1>180)d1=360-d1;
+      var d2=Math.abs(((suN-keN)%360+360)%360); if(d2>180)d2=360-d2;
+      var near=Math.min(d1,d2);
+      rowsN.push([moDay(mN),+raN.toFixed(4),moSignOf(raN),+keN.toFixed(4),moSignOf(keN),
+                  +suN.toFixed(4),+near.toFixed(2),near<=18.5?"eclipse season":""]);
+    }
+    out.push({name:"Nodes and Sun",
+      cols:["Date (UTC)","Rāhu °","Rāhu rāśi","Ketu °","Ketu rāśi","Sūrya °",
+            "Sūrya from nearest node °","Season"],rows:rowsN});
   } else if(k==="astanga"){
     var t9=Date.now(), e9=t9+moSpanMs(), rows9=[];
     var N9=Math.min(420,Math.max(40,Math.round((e9-t9)/86400000)));

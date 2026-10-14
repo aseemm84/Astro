@@ -7665,7 +7665,170 @@ function moEclipses(){
 }
 var MO_ECOL={total:"#e07a60",annular:"#d9b668",partial:"#8f96bb",penumbral:"#5a6a90",hybrid:"#c06a9a"};
 
+
+/* Every eclipse inside an arbitrary window, rather than a fixed count from today.
+   Both searches walk forward from the start of the span and stop once they pass its end. */
+function moEclipsesIn(t0,t1){
+  return moCached("eclin|"+Math.round(t0/3600000)+"|"+Math.round(t1/3600000),function(){
+    var out=[], guard=0;
+    try{
+      var e=Astronomy.SearchGlobalSolarEclipse(new Date(t0));
+      while(e && e.peak.date.getTime()<=t1 && guard++<400){
+        out.push({kind:"solar",type:e.kind,ms:e.peak.date.getTime(),
+                  obsc:e.obscuration==null?1:e.obscuration});
+        e=Astronomy.NextGlobalSolarEclipse(e.peak);
+      }
+    }catch(err){}
+    guard=0;
+    try{
+      var l=Astronomy.SearchLunarEclipse(new Date(t0));
+      while(l && l.peak.date.getTime()<=t1 && guard++<400){
+        out.push({kind:"lunar",type:l.kind,ms:l.peak.date.getTime(),
+                  obsc:l.obscuration==null?0:l.obscuration});
+        l=Astronomy.NextLunarEclipse(l.peak);
+      }
+    }catch(err2){}
+    out.sort(function(a,b){ return a.ms-b.ms; });
+    out.forEach(function(x){
+      var ra=moSidAt("Rahu",x.ms);
+      x.lon=(x.kind==="solar")?moSidAt("Sun",x.ms):moSidAt("Moon",x.ms);
+      if(x.lon!=null&&ra!=null){
+        var d1=Math.abs(((x.lon-ra)%360+360)%360); if(d1>180)d1=360-d1;
+        var d2=Math.abs(((x.lon-ra-180)%360+360)%360); if(d2>180)d2=360-d2;
+        x.node=Math.min(d1,d2); x.which=(d1<=d2)?"Rāhu":"Ketu";
+      }
+    });
+    return out;
+  });
+}
+/* The ecliptic limits: beyond roughly these distances from a node the geometry simply
+   cannot line up. The solar limit is the wider of the two, which is why solar eclipses
+   outnumber lunar ones. */
+var MO_SOLAR_LIMIT=18.5, MO_LUNAR_LIMIT=12.2;
+
 var MO_MORE=[
+
+{key:"eclipseseason", label:"Eclipse seasons", title:"Why eclipses come in seasons",
+ sub:"the nodes retreat, the Sun catches them twice a year",
+ draw:function(p){
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
+  var t0=Date.now(), t1=t0+moSpanMs(), ms=t0+(t1-t0)*p;
+  var su=moSidAt("Sun",ms), ra=moSidAt("Rahu",ms);
+  if(su==null||ra==null) throw new Error("no position");
+  var ke=((ra+180)%360+360)%360;
+  var mo=moSidAt("Moon",ms);
+  var E=moEclipsesIn(t0,t1);
+  var R=st.R, cx=st.cx, cy=st.cy;
+  moStars();
+  function at4(deg,rad){ var a=(180-deg)*Math.PI/180;
+    return [cx+Math.cos(a)*rad, cy-Math.sin(a)*rad]; }
+  function band(centre,half,rIn,rOut,fill,alpha){
+    var a0=(180-(centre-half))*Math.PI/180, a1=(180-(centre+half))*Math.PI/180;
+    c.beginPath(); c.arc(cx,cy,rOut,-a0,-a1,false); c.arc(cx,cy,rIn,-a1,-a0,true); c.closePath();
+    c.fillStyle=fill; c.globalAlpha=alpha; c.fill(); c.globalAlpha=1;
+  }
+  /* the zodiac, faint — this scene is about the geometry, not the signs */
+  for(var s=0;s<12;s++){
+    var a0=(180-s*30)*Math.PI/180, a1=(180-(s*30+30))*Math.PI/180;
+    c.beginPath(); c.arc(cx,cy,R,-a0,-a1,false); c.arc(cx,cy,R*0.90,-a1,-a0,true); c.closePath();
+    c.fillStyle=(s%2)?"rgba(255,255,255,0.045)":"rgba(255,255,255,0.015)"; c.fill();
+    if(MO.opt.labels){
+      var am=(180-(s*30+15))*Math.PI/180;
+      moText(moSign(s),cx+Math.cos(am)*R*0.95,cy-Math.sin(am)*R*0.95,
+        S.w*(MO.opt.symbols?0.028:0.020),P.dim,"center",600);
+    }
+  }
+  /* the eclipse windows around each node: wider for solar, narrower for lunar */
+  var dSun=Math.min(Math.abs(((su-ra)%360+360)%360)>180?360-Math.abs(((su-ra)%360+360)%360):Math.abs(((su-ra)%360+360)%360),
+                    Math.abs(((su-ke)%360+360)%360)>180?360-Math.abs(((su-ke)%360+360)%360):Math.abs(((su-ke)%360+360)%360));
+  var season=dSun<=MO_SOLAR_LIMIT;
+  [ra,ke].forEach(function(nd){
+    band(nd,MO_SOLAR_LIMIT,R*0.56,R*0.90,season?"#d9b668":"#6f7cc0",season?0.30:0.13);
+    band(nd,MO_LUNAR_LIMIT,R*0.56,R*0.90,season?"#e07a60":"#6f7cc0",season?0.22:0.10);
+  });
+  c.strokeStyle=P.line; c.lineWidth=2;
+  c.beginPath(); c.arc(cx,cy,R,0,6.2832); c.stroke();
+  c.beginPath(); c.arc(cx,cy,R*0.90,0,6.2832); c.stroke();
+  /* the nodal axis — the slow hand of this clock */
+  var rp=at4(ra,R*0.90), kp=at4(ke,R*0.90);
+  c.strokeStyle=P.glow; c.lineWidth=4; c.globalAlpha=.9;
+  c.beginPath(); c.moveTo(rp[0],rp[1]); c.lineTo(kp[0],kp[1]); c.stroke(); c.globalAlpha=1;
+  /* where the axis started, so its retreat is visible */
+  var ra0=moSidAt("Rahu",t0);
+  if(ra0!=null){
+    var q0=at4(ra0,R*0.90), q1=at4(ra0+180,R*0.90);
+    c.strokeStyle=P.glow; c.lineWidth=1.5; c.globalAlpha=.28; c.setLineDash([6,8]);
+    c.beginPath(); c.moveTo(q0[0],q0[1]); c.lineTo(q1[0],q1[1]); c.stroke();
+    c.setLineDash([]); c.globalAlpha=1;
+  }
+  /* Sun, Moon and the two nodes */
+  var sp=at4(su,R*0.73);
+  if(mo!=null && MO.show.Moon){
+    var mp=at4(mo,R*0.73);
+    c.strokeStyle=P.dim; c.lineWidth=1.6; c.globalAlpha=.45;
+    c.beginPath(); c.moveTo(sp[0],sp[1]); c.lineTo(mp[0],mp[1]); c.stroke(); c.globalAlpha=1;
+    moGlowDot(mp[0],mp[1],S.w*0.030,"#e8eaf6","#ffffff");
+    moText(moG("Moon"),mp[0],mp[1],S.w*0.022,"#2a2f45","center",800);
+  }
+  moGlowDot(sp[0],sp[1],S.w*0.038,"#f0b847","#ffd37a");
+  moText(moG("Sun"),sp[0],sp[1],S.w*0.026,"#3a2a06","center",800);
+  [[ra,"Rahu"],[ke,"Ketu"]].forEach(function(nd){
+    var q=at4(nd[0],R*0.90);
+    moGlyph(q[0],q[1],S.w*0.030,nd[1],P,true);
+  });
+  /* an eclipse happening right now, and the running tally */
+  /* The flash marks an eclipse as the playhead passes it. Its width is set in frames
+     rather than in days: a fixed number of days would be invisible at a long span and a
+     fixed fraction of the span would, at twenty years, announce an eclipse three months
+     away while the geometry on screen plainly says none is possible. */
+  var win=(t1-t0)/80, flash=null, done=0;
+  E.forEach(function(x){
+    if(x.ms<=ms) done++;
+    if(Math.abs(ms-x.ms)<win && (flash==null||Math.abs(ms-x.ms)<Math.abs(ms-flash.ms))) flash=x;
+  });
+  if(flash){
+    var k=1-Math.abs(ms-flash.ms)/win;
+    var fl=at4(flash.lon!=null?flash.lon:su,R*0.73);
+    c.strokeStyle=flash.kind==="solar"?"#f0b847":"#c89078";
+    c.lineWidth=4; c.globalAlpha=k;
+    c.beginPath(); c.arc(fl[0],fl[1],S.w*0.055+(1-k)*S.w*0.06,0,6.2832); c.stroke();
+    c.globalAlpha=1;
+    var txt=(flash.type||"").charAt(0).toUpperCase()+(flash.type||"").slice(1)+" "+
+            (flash.kind==="solar"?"solar":"lunar")+" eclipse  ·  "+moFmtDate(flash.ms);
+    c.font='700 '+(S.w*0.030)+'px system-ui,sans-serif';
+    var tw=c.measureText(txt).width;
+    c.fillStyle=P.bg; c.globalAlpha=k*0.85;
+    c.fillRect(cx-tw/2-S.w*0.025,cy-S.w*0.038,tw+S.w*0.05,S.w*0.064); c.globalAlpha=1;
+    c.globalAlpha=Math.max(0.25,k);
+    moText(txt,cx,cy-S.w*0.006,S.w*0.030,flash.kind==="solar"?P.gold:"#c89078","center",700);
+    c.globalAlpha=1;
+  } else {
+    moText(season?"eclipse season":"no eclipse possible",cx,cy-S.w*0.012,S.w*0.034,
+      season?P.gold:P.dim,"center",700);
+    moText(dSun.toFixed(1)+"° from the node",cx,cy+S.w*0.028,S.w*0.026,P.dim,"center",500);
+  }
+  /* the strip of the whole span */
+  var sy=st.capY-st.h*0.035, x0=S.w*0.08, x1=S.w*0.92;
+  c.strokeStyle=P.line; c.lineWidth=1.5;
+  c.beginPath(); c.moveTo(x0,sy); c.lineTo(x1,sy); c.stroke();
+  E.forEach(function(x){
+    var ex=x0+(x1-x0)*(x.ms-t0)/(t1-t0);
+    c.fillStyle=MO_ECOL[x.type]||P.dim; c.globalAlpha=(x.ms<=ms)?0.95:0.3;
+    c.beginPath(); c.arc(ex,sy+(x.kind==="solar"?-S.w*0.011:S.w*0.011),S.w*0.006,0,6.2832); c.fill();
+    c.globalAlpha=1;
+  });
+  var px=x0+(x1-x0)*p;
+  c.strokeStyle=P.gold; c.lineWidth=2.5;
+  c.beginPath(); c.moveTo(px,sy-S.w*0.024); c.lineTo(px,sy+S.w*0.024); c.stroke();
+  moText("☉ above the line · ☾ below",x0,sy+S.w*0.042,S.w*0.019,P.dim,"left",500);
+  var moved=null;
+  if(ra0!=null){ moved=((ra0-ra)%360+360)%360; if(moved>180) moved-=360; }
+  moText("the nodes retreat 19.3° a year — this axis has moved "+
+    (moved==null?"—":Math.abs(moved).toFixed(0)+"°")+" so far",
+    cx,cy+R*1.10,S.w*0.024,P.dim,"center",500);
+  return {ms:ms, sub:done+" of "+E.length+" eclipses · Sūrya "+dSun.toFixed(1)+"° from "+
+          (Math.abs(((su-ra)%360+360)%360)<90||Math.abs(((su-ra)%360+360)%360)>270?"Rāhu":"Ketu")};
+ }},
 {key:"eclipse", label:"Eclipses ahead", title:"Eclipses only happen at the nodes",
  sub:"every one of them within a few degrees of Rāhu or Ketu",
  draw:function(p){
@@ -8266,6 +8429,32 @@ function moSceneSheets(){
       cols:["Peak (UTC)","Kind","Type","Sidereal longitude °","Rāśi","Nakṣatra","Pāda",
             "Degrees from the node","Node","Obscuration","Greatest eclipse latitude °",""],
       rows:rowsE});
+  } else if(k==="eclipseseason"){
+    var tE=Date.now(), eE=tE+moSpanMs();
+    var EE=moEclipsesIn(tE,eE);
+    out.push({name:"Eclipses in the span",
+      cols:["Peak (UTC)","Kind","Type","Sidereal longitude °","Rāśi","Degrees from the node","Node"],
+      rows:EE.map(function(x){
+        return [moISO(x.ms), x.kind==="solar"?"Solar":"Lunar",
+                (x.type||"").charAt(0).toUpperCase()+(x.type||"").slice(1),
+                x.lon!=null?+x.lon.toFixed(4):"", x.lon!=null?moSignOf(x.lon):"",
+                x.node!=null?+x.node.toFixed(2):"", x.which||""];
+      })});
+    /* the slow hand: where the nodal axis sits month by month */
+    var rowsN=[], NN=Math.min(800,Math.max(24,Math.round((eE-tE)/2629746000)));
+    for(var q=0;q<=NN;q++){
+      var mN=tE+(eE-tE)*q/NN, raN=moSidAt("Rahu",mN), suN=moSidAt("Sun",mN);
+      if(raN==null||suN==null) continue;
+      var keN=(raN+180)%360;
+      var d1=Math.abs(((suN-raN)%360+360)%360); if(d1>180)d1=360-d1;
+      var d2=Math.abs(((suN-keN)%360+360)%360); if(d2>180)d2=360-d2;
+      var near=Math.min(d1,d2);
+      rowsN.push([moDay(mN),+raN.toFixed(4),moSignOf(raN),+keN.toFixed(4),moSignOf(keN),
+                  +suN.toFixed(4),+near.toFixed(2),near<=18.5?"eclipse season":""]);
+    }
+    out.push({name:"Nodes and Sun",
+      cols:["Date (UTC)","Rāhu °","Rāhu rāśi","Ketu °","Ketu rāśi","Sūrya °",
+            "Sūrya from nearest node °","Season"],rows:rowsN});
   } else if(k==="astanga"){
     var t9=Date.now(), e9=t9+moSpanMs(), rows9=[];
     var N9=Math.min(420,Math.max(40,Math.round((e9-t9)/86400000)));
@@ -8513,6 +8702,9 @@ function moSceneOpts(){
         return '<button type="button" class="skyv'+(MO.opt.eclN===n?" on":"")+
           '" data-moecln="'+n+'">'+n+'</button>'; }).join("")+
       '<span class="mohint">of each kind, so 10 gives twenty in all — every type, from today</span>';
+  } else if(k==="eclipseseason"){
+    h=moSpanRow(["m","y"],"from today — turn Candra off above for long spans, it laps the ring "+
+      "every 27 days and becomes a blur");
   } else if(k==="astanga"){
     h=moSpanRow(["d","m","y"],"from today forward");
   } else if(k==="dignity"){
@@ -10376,4 +10568,4 @@ window.buildKundliReport=function(J){
   }
 })();
 </script>
-<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-14.2cf4029</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer></body></html>
+<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-14.6de3a28</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer></body></html>

@@ -158,6 +158,9 @@ function moSceneOpts(){
         return '<button type="button" class="skyv'+(MO.opt.eclN===n?" on":"")+
           '" data-moecln="'+n+'">'+n+'</button>'; }).join("")+
       '<span class="mohint">of each kind, so 10 gives twenty in all — every type, from today</span>';
+  } else if(k==="eclipseseason"){
+    h=moSpanRow(["m","y"],"from today — turn Candra off above for long spans, it laps the ring "+
+      "every 27 days and becomes a blur");
   } else if(k==="astanga"){
     h=moSpanRow(["d","m","y"],"from today forward");
   } else if(k==="dignity"){
