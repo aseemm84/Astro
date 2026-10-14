@@ -349,6 +349,70 @@ function moSceneSheets(){
       cols:["Peak (UTC)","Kind","Type","Sidereal longitude °","Rāśi","Nakṣatra","Pāda",
             "Degrees from the node","Node","Obscuration","Greatest eclipse latitude °",""],
       rows:rowsE});
+  } else if(k==="tilt"){
+    /* The sheet behind the proof strip: every new and full moon in the span with Candra's
+       ecliptic latitude at that moment and its distance from the node, so the pattern can
+       be checked rather than taken on trust. The syzygies are found by sampling the
+       elongation and bisecting each crossing of 0° and 180°. */
+    var tT=Date.now(), eT=tT+moSpanMs();
+    function elAt(m){ var a=moSidAt("Moon",m), b=moSidAt("Sun",m);
+      return (a==null||b==null)?null:((a-b)%360+360)%360; }
+    function latAt(m){ try{ return Astronomy.Ecliptic(
+      Astronomy.GeoVector(Astronomy.Body.Moon,new Date(m),true)).elat; }catch(e){ return null; } }
+    var NT=Math.min(4000,Math.max(60,Math.round((eT-tT)/21600000))), rowsT=[], prev=null;
+    for(var iT=0;iT<=NT;iT++){
+      var mT=tT+(eT-tT)*iT/NT, elT=elAt(mT);
+      if(elT==null){ prev=null; continue; }
+      if(prev){
+        var kind=null;
+        if(prev.el>elT) kind="new";                       /* wrapped through 360 → 0 */
+        else if(prev.el<180&&elT>=180) kind="full";
+        if(kind){
+          /* bisect to the minute, so the latitude is the one at syzygy and not a sample
+             up to six hours off it — at 0.05°/hour that error would swamp the limit */
+          var lo=prev.m, hi=mT, tgt=(kind==="new")?0:180;
+          for(var bi=0;bi<40&&hi-lo>60000;bi++){
+            var mid=(lo+hi)/2, em=elAt(mid); if(em==null) break;
+            var d=((em-tgt)%360+360)%360; if(d>180) d-=360;
+            if(d<0) lo=mid; else hi=mid;
+          }
+          var mS=(lo+hi)/2, bS=latAt(mS), rS=moSidAt("Rahu",mS), lS=moSidAt("Moon",mS);
+          var nd=null, which="";
+          if(rS!=null&&lS!=null){
+            var d1=Math.abs(((lS-rS)%360+360)%360); if(d1>180) d1=360-d1;
+            var d2=Math.abs(((lS-rS-180)%360+360)%360); if(d2>180) d2=360-d2;
+            nd=Math.min(d1,d2); which=(d1<=d2)?"Rāhu":"Ketu";
+          }
+          /* A full moon has two limits: the umbra out to 1.03°, the penumbra out to 1.57°.
+             A flat yes/no would call the penumbral eclipses of 2027 "no", which is true
+             of the umbra and wrong of the sky. */
+          var ab=(bS==null)?null:Math.abs(bS), verdict;
+          if(ab==null) verdict="";
+          else if(kind==="new") verdict=(ab<=1.58)?"solar eclipse":"none";
+          else verdict=(ab<=1.03)?"lunar, umbral":((ab<=1.57)?"lunar, penumbral only":"none");
+          rowsT.push([moISO(mS), kind==="new"?"New moon":"Full moon",
+                      bS==null?"":+bS.toFixed(4), ab==null?"":+ab.toFixed(4),
+                      (kind==="new")?1.58:1.03, (kind==="new")?"":1.57, verdict,
+                      nd==null?"":+nd.toFixed(2), which,
+                      lS==null?"":+lS.toFixed(4), lS==null?"":moSignOf(lS)]);
+        }
+      }
+      prev={m:mT,el:elT};
+    }
+    out.push({name:"Syzygies and latitude",
+      cols:["Moment (UTC)","Phase","Candra latitude °","Absolute latitude °",
+            "Limit °","Penumbral limit °","Eclipse by latitude",
+            "Degrees from the node","Node","Candra longitude °","Candra rāśi"], rows:rowsT});
+    out.push({name:"The geometry", cols:["Quantity","Value","Why it matters"], rows:[
+      ["Inclination of Candra's orbit","5.145°","the tilt that makes most syzygies miss"],
+      ["Sūrya's ecliptic latitude","0° always","the ecliptic is defined as its path"],
+      ["Latitude limit, solar eclipse","1.58°","past this at a new moon, the cone misses Earth"],
+      ["Latitude limit, lunar umbral","1.03°","past this at a full moon, Candra misses the umbra"],
+      ["Latitude limit, lunar penumbral","1.57°","between the two, a faint penumbral eclipse"],
+      ["Ecliptic limit from the node, solar","18.5°","the same condition read along the ecliptic"],
+      ["Ecliptic limit from the node, lunar","12.2°","likewise, and narrower — hence fewer"],
+      ["Regression of the nodes","about 19.3° a year","why the seasons drift earlier each year"],
+      ["Eclipse year","about 346.6 days","two eclipse seasons, shorter than a solar year"]]});
   } else if(k==="panchanga"){
     /* One row per sample, computed with the site's own panchanga() so the sheet and the
        Overview tab can never disagree. The sample step follows the span: a day of hours,
@@ -363,8 +427,11 @@ function moSceneSheets(){
       if(suP==null||moP==null) continue;
       var pcP=panchanga(suP,moP), nkP=nakOf(moP);
       var jdP=mP/86400000+2440587.5, viP=(Math.floor(jdP+1.5)%7+7)%7;
+      var ayP=0; try{ ayP=window.__ayanFor?window.__ayanFor("lahiri",jdP):0; }catch(e){}
+      var msP=masaOf(suP,moP,ayP);
       var elP=((moP-suP)%360+360)%360, ygP=((moP+suP)%360+360)%360;
-      rowsP.push([moISO(mP), pcP.tithi, pcP.paksha, pcP.tithiIdx+1,
+      rowsP.push([moISO(mP), msP.amanta, msP.purnimanta, msP.ritu, msP.ayana,
+                  pcP.tithi, pcP.paksha, pcP.tithiIdx+1,
                   VARAS[viP], VARAE[viP],
                   nkP.name, nkP.pada, nkP.lord,
                   pcP.yoga, Math.floor(ygP/(800/60))+1,
@@ -373,7 +440,8 @@ function moSceneSheets(){
                   +elP.toFixed(4)]);
     }
     out.push({name:"Pañcāṅga",
-      cols:["Time (UTC)","Tithi","Pakṣa","Tithi of 30","Vāra","Weekday",
+      cols:["Time (UTC)","Māsa (amānta)","Māsa (pūrṇimānta)","Ṛtu","Ayana",
+            "Tithi","Pakṣa","Tithi of 30","Vāra","Weekday",
             "Nakṣatra","Pāda","Nakṣatra lord","Yoga","Yoga of 27","Karaṇa","Karaṇa of 60",
             "Sūrya °","Sūrya rāśi","Candra °","Candra rāśi","Elongation °"],
       rows:rowsP});
@@ -382,7 +450,13 @@ function moSceneSheets(){
       ["Vāra",7,"the civil weekday","24 h"],
       ["Nakṣatra",27,"Candra's longitude, each 13°20′","about 24 h 17 m"],
       ["Yoga",27,"Candra + Sūrya, each 13°20′","about 22 h 36 m"],
-      ["Karaṇa",60,"Candra − Sūrya, each 6°","about 11 h 48 m"]]});
+      ["Karaṇa",60,"Candra − Sūrya, each 6°","about 11 h 48 m"],
+      ["— the five limbs end here —","","",""],
+      ["Māsa (amānta)",12,"the rāśi Sūrya held at the opening new moon","about 29 d 13 h"],
+      ["Māsa (pūrṇimānta)",12,"the same month named for the full moon that ends it",
+       "runs one ahead through Kṛṣṇa pakṣa"],
+      ["Ṛtu",6,"a pair of māsas","about 2 months"],
+      ["Ayana",2,"tropical Sūrya north or south of the equator","about 6 months"]]});
   } else if(k==="eclipseseason"){
     var tE=Date.now(), eE=tE+moSpanMs();
     var EE=moEclipsesIn(tE,eE);

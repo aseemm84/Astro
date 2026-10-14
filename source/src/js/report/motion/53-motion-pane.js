@@ -173,9 +173,18 @@ function moSceneOpts(){
       "watch the karaṇa ring turn")+
       '<span class="mohint">the vāra follows the civil date, as the Overview tab does, not '+
       'sunrise to sunrise</span>';
+  } else if(k==="tilt"){
+    h=moSpanRow(["d","m"],"from today — six to twelve months reads best, and covers a whole "+
+      "eclipse season coming round")+
+      '<span class="molab">Latitude ×</span><input type="range" id="molatx" min="1" max="14" step="1" value="'+
+      (MO.opt.latx||6)+'"><span class="moval" id="molatxv">'+(MO.opt.latx||6)+'</span>'+
+      '<span class="mohint">at ×1 the tilt is true to scale and almost invisible, which is '+
+      'the point — the whole question turns on a degree or two</span>';
   } else if(k==="eclipseseason"){
     h=moSpanRow(["m","y"],"from today — turn Candra off above for long spans, it laps the ring "+
-      "every 27 days and becomes a blur");
+      "every 27 days and becomes a blur")+
+      '<span class="mohint">for why a new moon away from the nodes does nothing, see '+
+      'Tilt &amp; nodes</span>';
   } else if(k==="astanga"){
     h=moSpanRow(["d","m","y"],"from today forward");
   } else if(k==="dignity"){
@@ -308,6 +317,8 @@ document.addEventListener("input",function(ev){
     var b=document.getElementById("modensv"); if(b) b.textContent=t.value; moDraw(); return; }
   if(t.id==="moexag"){ MO.opt.exag=+t.value;
     var c=document.getElementById("moexagv"); if(c) c.textContent=t.value; moDraw(); return; }
+  if(t.id==="molatx"){ MO.opt.latx=+t.value;
+    var c9=document.getElementById("molatxv"); if(c9) c9.textContent=t.value; moDraw(); return; }
   if(t.id==="mospann"){ var v=Math.max(1,Math.min(999,+t.value||1));
     MO.opt.spanN=v; MO.p=0; MO_CACHE={}; moDraw(); return; }
   if(t.id==="motitle"){ MO.cap.title=t.value; moDraw(); return; }

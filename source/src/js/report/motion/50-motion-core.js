@@ -38,6 +38,7 @@ var MO={
   speed:1,                 // multiplies the loop length, live, without resetting
   opt:{trail:true, trailLen:0.35, glow:true, stars:true, starDensity:160, grid:true,
        labels:true, loopFade:true, subject:"Mars", symbols:false, exag:40, houses:"both", eclN:10,
+       latx:6,                  // latitude exaggeration in the tilt scene, stated on screen
        /* Every scene that covers a stretch of time reads its span from here, so days,
           months and years are available wherever a span means anything at all. */
        spanN:12, spanU:"y"},

@@ -137,6 +137,27 @@ function panchanga(sun,moon){
     yoga:YOGAN[Math.floor((((moon+sun)%360+360)%360)/(800/60))],
     karana:(n===0?"Kimstughna":(n<=56?KARMOV[(n-1)%7]:KARFIX[n-57]))};
 }
+/* The lunar month, season and half-year. Not limbs of the pañcāṅga proper — those are the
+   five in panchanga() above — but every printed pañcāṅga carries them in its heading, so
+   the Motion tab shows them too. Factored out here so the Overview tab and the Motion tab
+   compute them in exactly one place and cannot drift apart.
+
+   The month is named for the rāśi the Sun occupied at the new moon that opened it. We do
+   not search back for that new moon; we step the Sun back by the tithis already elapsed,
+   at its mean rate, which is good to well under a degree and never straddles a boundary
+   except within a few hours of a saṅkrānti. Purnimanta names the same day for the month
+   that ENDS at the coming full moon, so in the dark fortnight it runs one month ahead. */
+function masaOf(sun,moon,ayan){
+  var elapsed=(((moon-sun)%360+360)%360)/12;
+  var sunAtNM=((sun-elapsed*0.9856*(29.53/30))%360+360)%360;
+  var amanta=LMONTH[Math.floor(sunAtNM/30)%12];
+  var krishna=((((moon-sun)%360+360)%360)/12)>=15;
+  var trop=((sun+(ayan||0))%360+360)%360;
+  return {amanta:amanta,
+    purnimanta:(krishna?LMONTH[(Math.floor(sunAtNM/30)+1)%12]:amanta),
+    ritu:RITU[amanta]||"",
+    ayana:(trop>=90&&trop<270)?"Dakshinayana":"Uttarayana"};
+}
 function basicsSection(D,J){
   var i=D.input||{},lat=i.lat,lon=i.lon,tz=i.tzHours;
   var sun=D.P.Sun,moon=D.P.Moon; if(!sun||!moon)return "";
@@ -152,12 +173,8 @@ function basicsSection(D,J){
       gmst=280.46061837+360.98564736629*(jd-2451545.0)+0.000387933*T*T,
       lst=(((gmst+lon)%360)+360)%360/15;
   var trop=((sun.sid+D.ayan)%360+360)%360;
-  var ayana=(trop>=90&&trop<270)?"Dakshinayana":"Uttarayana";
-  // lunar month from Sun's sign at the preceding new moon
-  var elapsed=(((moon.sid-sun.sid)%360+360)%360)/12;         // tithis elapsed
-  var sunAtNM=((sun.sid-elapsed*0.9856*(29.53/30))%360+360)%360;
-  var amanta=LMONTH[Math.floor(sunAtNM/30)%12];
-  var purnimanta=(pc.paksha==="Krishna")?LMONTH[(Math.floor(sunAtNM/30)+1)%12]:amanta;
+  var ms=masaOf(sun.sid,moon.sid,D.ayan);        // month, season, ayana — see masaOf above
+  var ayana=ms.ayana, amanta=ms.amanta, purnimanta=ms.purnimanta;
   var ni=nakOf(moon.sid);
   var beforeSunrise=ev?(birthH<ev.rise):false;
   var ghatis=ev?((beforeSunrise?(birthH+24-ev.rise):(birthH-ev.rise))*2.5):null;

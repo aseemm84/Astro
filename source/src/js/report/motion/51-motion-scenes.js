@@ -900,6 +900,15 @@ function moEclipsesIn(t0,t1){
    cannot line up. The solar limit is the wider of the two, which is why solar eclipses
    outnumber lunar ones. */
 var MO_SOLAR_LIMIT=18.5, MO_LUNAR_LIMIT=12.2;
+/* The inclination of Candra's orbit to the ecliptic, and the latitude limits at syzygy:
+   past about 1.58° at a new moon, or 1.03° at a full one, the cones miss entirely. These
+   are the numbers behind the ecliptic limits above — the limits are what those latitudes
+   work out to as a distance from the node along the ecliptic.
+
+   A full moon has two limits, not one: past 1.03° Candra misses the umbra, but it still
+   grazes the penumbra out to about 1.57°, which is why February and August 2027 both
+   carry a penumbral eclipse at latitudes a shade over one degree. */
+var MO_INCL=5.145, MO_SOLZONE=1.58, MO_LUNZONE=1.03, MO_PENZONE=1.57;
 
 var MO_MORE=[
 
@@ -915,9 +924,32 @@ var MO_MORE=[
   var pc=panchanga(su,mo);
   var nk=nakOf(mo);
   var vi=(Math.floor(jd+1.5)%7+7)%7;
+  var ayn=0; try{ ayn=window.__ayanFor?window.__ayanFor("lahiri",jd):0; }catch(e){}
+  var MS=masaOf(su,mo,ayn);                 /* māsa, ṛtu, ayana — the pañcāṅga heading */
   var elong=((mo-su)%360+360)%360;
   var yogaRaw=((mo+su)%360+360)%360;
-  var R=st.R, cx=st.cx, cy=st.cy;
+  /* U is the frame's short side. Type and spacing are keyed to it rather than to the
+     width, because the width doubles in landscape while the height halves — a size of
+     S.w*0.03 that reads well at 9:16 becomes twice as tall a line on a frame half as
+     tall. At 9:16 and 1:1, U is the width, so those two layouts are unchanged. */
+  var U=Math.min(S.w,S.h);
+  /* Sūrya and Candra ride a rim outside the outermost ring, so the stage radius alone is
+     not the constraint — the dot and its glyph have to fit too, or a graha sitting at 0°
+     or 180° is sliced off by the frame edge. The budget is twice the dot radius, not one:
+     moGlowDot blurs by r*2.4, so a disc that merely fits still spills its halo over the
+     edge — which on an exported frame looks like a mistake. */
+  /* In landscape the five readings will not fit inside the wheel: the height caps the
+     wheel at a radius whose centre disc is narrower than "Budhavara · Wednesday" set at a
+     legible size. So in a frame wider than it is tall the wheel moves left and the
+     readings become a column beside it, where the empty width actually is. */
+  var wide=S.w>S.h*1.15;
+  var rimK=1.07, dotR=U*0.027, cx=wide?S.w*0.30:st.cx, cy=st.cy;
+  /* The māsa heading needs a band above the wheel. Reserving it after sizing the wheel
+     would only work at 9:16, where there is height to spare; in landscape the wheel fills
+     the frame and the heading lands on the outer ring. So the band is reserved first and
+     the wheel takes what is left, the same discipline the tilt scene uses. */
+  var headH=U*0.125;
+  var R=Math.min(st.R,(S.w*0.5-dotR*2)/rimK,(cy-headH-U*0.02)/rimK);
   moStars();
   /* Five rings, outermost to innermost, each a limb. The lit wedge is the division the
      day is in; the brighter sliver inside it is how far through that division we are. */
@@ -959,24 +991,246 @@ var MO_MORE=[
      combination of exactly these two longitudes */
   function rim(deg,rad){ var ang=(180-deg)*Math.PI/180;
     return [cx+Math.cos(ang)*rad, cy-Math.sin(ang)*rad]; }
-  var sp=rim(su,R*1.07), mp=rim(mo,R*1.07);
-  moGlowDot(sp[0],sp[1],S.w*0.026,"#f0b847","#ffd37a");
-  moText(moG("Sun"),sp[0],sp[1],S.w*0.019,"#3a2a06","center",800);
-  moGlowDot(mp[0],mp[1],S.w*0.024,"#e8eaf6","#ffffff");
-  moText(moG("Moon"),mp[0],mp[1],S.w*0.018,"#2a2f45","center",800);
-  /* the five readings, stacked in the middle */
-  c.fillStyle=P.bg; c.globalAlpha=.80;
-  c.beginPath(); c.arc(cx,cy,R*0.425,0,6.2832); c.fill(); c.globalAlpha=1;
-  var rowH=R*0.148, y0=cy-rowH*2;
+  var sp=rim(su,R*rimK), mp=rim(mo,R*rimK);
+  moGlowDot(sp[0],sp[1],U*0.026,"#f0b847","#ffd37a");
+  moText(moG("Sun"),sp[0],sp[1],U*0.019,"#3a2a06","center",800);
+  moGlowDot(mp[0],mp[1],U*0.024,"#e8eaf6","#ffffff");
+  moText(moG("Moon"),mp[0],mp[1],U*0.018,"#2a2f45","center",800);
+  /* the five readings: inside the wheel in portrait, beside it in landscape */
+  var tx, align, rowH;
+  if(wide){
+    tx=S.w*0.56; align="left"; rowH=Math.min(U*0.112,st.h*0.17);
+  } else {
+    c.fillStyle=P.bg; c.globalAlpha=.80;
+    c.beginPath(); c.arc(cx,cy,R*0.425,0,6.2832); c.fill(); c.globalAlpha=1;
+    tx=cx; align="center"; rowH=R*0.148;
+  }
+  /* the type follows the row, not the frame, so a shorter row never overlaps the next */
+  var vs=Math.min(U*0.028,rowH*0.42), ls=Math.min(U*0.019,rowH*0.28);
+  var y0=cy-rowH*2;
   LIMBS.forEach(function(L,k){
     var y=y0+k*rowH;
     /* "TITHI 10 of 30" rather than a bare name: it says at once how far through the
        limb's cycle the day sits, and it stops the rings being read as longitude rings.
        Only the nakṣatra ring is one — the other four are dials of their own count. */
-    moText(L.lab.toUpperCase()+"  "+(L.i+1)+" of "+L.n,cx,y-S.w*0.021,S.w*0.019,L.col,"center",700);
-    moText(L.val,cx,y+S.w*0.010,S.w*0.028,P.ink,"center",600);
+    moText(L.lab.toUpperCase()+"  "+(L.i+1)+" of "+L.n,tx,y-rowH*0.28,ls,L.col,align,700);
+    moText(L.val,tx,y+rowH*0.16,vs,P.ink,align,600);
   });
-  return {ms:ms, sub:pc.tithi+" · "+VARAE[vi]+" · "+nk.name+" · "+pc.yoga+" · "+pc.karana};
+  /* The heading a printed pañcāṅga carries above the five limbs: the lunar month, the
+     season and the half-year. The pūrṇimānta name is shown only in the dark fortnight,
+     which is the only time it differs from the amānta one. */
+  var hy=Math.max(U*0.065, cy-R*rimK-U*0.072);
+  moText("MĀSA · amānta",cx,hy-U*0.034,U*0.019,P.gold,"center",700);
+  moSerif(MS.amanta,cx,hy+U*0.014,U*0.046,P.ink,"center");
+  var tail=(MS.purnimanta!==MS.amanta?("pūrṇimānta "+MS.purnimanta+"  ·  "):"")+
+           "ṛtu "+MS.ritu+"  ·  "+MS.ayana;
+  moText(tail,cx,hy+U*0.052,U*0.021,P.dim,"center",500);
+  return {ms:ms, sub:MS.amanta+" "+pc.paksha+" · "+pc.tithi+" · "+VARAE[vi]+" · "+
+                     nk.name+" · "+pc.yoga+" · "+pc.karana};
+ }},
+
+/* ------------------------------------------------------- the tilt, seen from outside ---
+   The seasons scene above is a flat clock: it shows WHEN the nodes line up with the Sun.
+   It cannot show WHY a new moon away from the nodes produces nothing, because on a flat
+   wheel the Sun and Moon look like they meet. They do not — they pass, one above the
+   other. This scene is the same geometry viewed from outside the plane, so the miss is
+   visible as a gap you can measure. */
+{key:"tilt", label:"Tilt & nodes", title:"Why most months have no eclipse",
+ sub:"Candra's path is tilted 5°, so at most new moons the shadow passes above or below",
+ draw:function(p){
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
+  var t0=Date.now(), t1=t0+moSpanMs(), ms=t0+(t1-t0)*p;
+  var su=moSidAt("Sun",ms), mo=moSidAt("Moon",ms), ra=moSidAt("Rahu",ms);
+  if(su==null||mo==null||ra==null) throw new Error("no position");
+  var ke=((ra+180)%360+360)%360;
+  /* Candra's true ecliptic latitude. Sūrya's is zero by definition — the ecliptic IS its
+     path — and that is the whole reason this scene works: one body defines the plane, the
+     other is tilted away from it. */
+  var blat=0;
+  try{ blat=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body.Moon,new Date(ms),true)).elat; }
+  catch(e){}
+  var U=Math.min(S.w,S.h);          /* the short side — see the pañcāṅga scene */
+  var ex=MO.opt.latx||6;
+  /* The camera breathes, as the orrery's does, but never flattens towards top-down: at a
+     shallow angle the two rings project onto each other and the tilt — the whole subject
+     of the scene — stops being visible. */
+  var tilt=(38+14*Math.sin(p*Math.PI*2))*Math.PI/180;
+  var kY=Math.cos(tilt), kZ=Math.sin(tilt);
+  /* The scene is laid out from the bottom up, because three things have to share the
+     height and only the diagram can give way: the latitude strip sits at the foot, the
+     three-line verdict above it, and the diagram takes whatever is left. Fixing the
+     diagram first and hoping the text fits is what makes a layout collide at 16:9, where
+     the height is barely half what it is at 9:16. */
+  var sy=st.capY-st.h*0.085, amp=st.h*0.028;          // the strip, and its half-height
+  var topY=U*0.03, floorY=sy-amp*1.4-U*0.175;         // the band left for the diagram
+  var cx=st.cx, cy=(topY+floorY)/2, limit=Math.max(U*0.12,(floorY-topY)/2);
+  /* the vertical reach is the ring seen edge-on plus the worst exaggerated latitude */
+  var R=st.R*0.86;
+  var halfH=R*kY+R*Math.sin(MO_INCL*Math.PI/180)*ex*kZ+U*0.085;
+  if(halfH>limit) R*=limit/halfH;
+  moStars();
+  function proj(lon,lat,rad){
+    var a=(180-lon)*Math.PI/180, rr=(rad==null?R:rad);
+    return [cx+Math.cos(a)*rr,
+            cy-Math.sin(a)*rr*kY-Math.sin(lat*Math.PI/180)*rr*ex*kZ];
+  }
+  function far(lon){ var l=((lon%360)+360)%360; return l>0&&l<180; }   // the half behind Earth
+  /* A ring at a constant latitude above or below the ecliptic, drawn in two halves so the
+     near half can be drawn over the far one and the whole thing reads as a solid. */
+  function ring(latOf,col,w,alphaFar,alphaNear,dash){
+    [[0,180,alphaFar],[180,360,alphaNear]].forEach(function(seg){
+      c.beginPath();
+      for(var l=seg[0];l<=seg[1];l+=2){
+        var q=proj(l,latOf(l)); if(l===seg[0]) c.moveTo(q[0],q[1]); else c.lineTo(q[0],q[1]);
+      }
+      c.strokeStyle=col; c.lineWidth=w; c.globalAlpha=seg[2];
+      if(dash) c.setLineDash(dash);
+      c.stroke(); c.setLineDash([]); c.globalAlpha=1;
+    });
+  }
+  var zero=function(){ return 0; };
+  /* The shadow corridor: Candra must be within about a degree and a half of the ecliptic
+     at the moment of syzygy, or the cones miss. Drawn as two faint rails so the corridor
+     reads as a slab the tilted orbit dips in and out of. */
+  ring(function(){ return  MO_SOLZONE; },P.gold,1.5,0.10,0.26,[5,7]);
+  ring(function(){ return -MO_SOLZONE; },P.gold,1.5,0.10,0.26,[5,7]);
+  /* Label the rails a quarter turn from the nodes — that is where the orbit stands
+     furthest from the corridor, so the text never lands on a node glyph. */
+  var labLon=far(ra+90)?ra+270:ra+90, cl=proj(labLon,MO_SOLZONE);
+  moText("shadow corridor ±"+MO_SOLZONE+"°",cl[0],cl[1]-U*0.026,U*0.018,P.gold,"center",600);
+  ring(zero,P.line,3.5,0.30,1,null);                      /* the ecliptic itself */
+  /* Candra's orbit: a great circle inclined MO_INCL° to the ecliptic, crossing it at the
+     nodes. Swept by the argument from the ascending node, which is where Rāhu sits, so the
+     ring is tied to the same node the chart uses. */
+  function orbLat(lon){
+    var u=Math.atan2(Math.sin((lon-ra)*Math.PI/180),Math.cos((lon-ra)*Math.PI/180)*Math.cos(MO_INCL*Math.PI/180));
+    return Math.asin(Math.sin(MO_INCL*Math.PI/180)*Math.sin(u))*180/Math.PI;
+  }
+  ring(orbLat,P.glow,4,0.30,0.95,null);
+  /* Earth at the centre, and the nodes where the two rings cross */
+  moGlowDot(cx,cy,U*0.013,"#6ea9d9","#9fd0ff");
+  [[ra,"Rahu"],[ke,"Ketu"]].forEach(function(nd){
+    var q=proj(nd[0],0);
+    c.globalAlpha=far(nd[0])?0.5:1;
+    moGlyph(q[0],q[1],U*0.028,nd[1],P,true);
+    c.globalAlpha=1;
+  });
+  /* Sūrya, always exactly on the ecliptic ring */
+  var sp=proj(su,0), mp=proj(mo,blat), mf=proj(mo,0);      /* mf is Candra's foot on the plane */
+  c.strokeStyle=P.dim; c.lineWidth=1.4; c.globalAlpha=.30;
+  c.beginPath(); c.moveTo(cx,cy); c.lineTo(sp[0],sp[1]); c.stroke();
+  c.beginPath(); c.moveTo(cx,cy); c.lineTo(mf[0],mf[1]); c.stroke(); c.globalAlpha=1;
+  /* the dropline: the gap between Candra and the plane, which is the whole argument */
+  c.strokeStyle=Math.abs(blat)<=MO_SOLZONE?P.gold:P.malefic;
+  c.lineWidth=3; c.globalAlpha=.85;
+  c.beginPath(); c.moveTo(mf[0],mf[1]); c.lineTo(mp[0],mp[1]); c.stroke(); c.globalAlpha=1;
+  c.fillStyle=P.dim; c.beginPath(); c.arc(mf[0],mf[1],U*0.007,0,6.2832); c.fill();
+  moGlowDot(sp[0],sp[1],U*0.034,"#f0b847","#ffd37a");
+  moText(moG("Sun"),sp[0],sp[1],U*0.023,"#3a2a06","center",800);
+  moGlowDot(mp[0],mp[1],U*0.028,"#e8eaf6","#ffffff");
+  moText(moG("Moon"),mp[0],mp[1],U*0.020,"#2a2f45","center",800);
+  moText(Math.abs(blat).toFixed(2)+"° "+(blat>=0?"N":"S"),
+    mp[0]+U*0.055,mp[1]-U*0.010,U*0.022,
+    Math.abs(blat)<=MO_SOLZONE?P.gold:P.dim,"left",700);
+  /* the verdict for this moment */
+  var el=((mo-su)%360+360)%360;
+  var toNew=Math.min(el,360-el), toFull=Math.abs(el-180);
+  var syz=Math.min(toNew,toFull), isNew=toNew<=toFull;
+  var zoneNow=isNew?MO_SOLZONE:MO_LUNZONE;
+  var E=moEclipsesIn(t0,t1), near=null;
+  E.forEach(function(x){ if(near==null||Math.abs(x.ms-ms)<Math.abs(near.ms-ms)) near=x; });
+  var hit=near&&Math.abs(near.ms-ms)<43200000;            /* within half a day of a real one */
+  var line1, line2, col;
+  if(syz>6){
+    line1="no new or full moon now";
+    line2="Candra is "+syz.toFixed(0)+"° from lining up — nothing can happen between them";
+    col=P.dim;
+  } else if(hit){
+    line1=(near.type||"").charAt(0).toUpperCase()+(near.type||"").slice(1)+" "+
+          (near.kind==="solar"?"solar":"lunar")+" eclipse";
+    line2="Candra is only "+Math.abs(blat).toFixed(2)+"° off the ecliptic — inside the corridor";
+    col=P.gold;
+  } else if(Math.abs(blat)<=zoneNow){
+    line1=(isNew?"new moon, in the corridor":"full moon, in the corridor");
+    line2="Candra "+Math.abs(blat).toFixed(2)+"° off the ecliptic, inside the "+
+          zoneNow.toFixed(2)+"° limit";
+    col=P.gold;
+  } else if(!isNew && Math.abs(blat)<=MO_PENZONE){
+    /* past the umbra but still in the penumbra — a real eclipse, and a faint one */
+    line1="full moon — the penumbra only";
+    line2="Candra "+Math.abs(blat).toFixed(2)+"° off the ecliptic: past the "+
+          MO_LUNZONE.toFixed(2)+"° umbral limit, inside the "+MO_PENZONE.toFixed(2)+"° penumbral one";
+    col=P.benefic;
+  } else {
+    line1=(isNew?"new moon — and no eclipse":"full moon — and no eclipse");
+    line2="Candra passes "+Math.abs(blat).toFixed(2)+"° "+(blat>=0?"above":"below")+
+          " the ecliptic, past the "+(isNew?MO_SOLZONE:MO_PENZONE).toFixed(2)+"° limit";
+    col=P.malefic;
+  }
+  var ty=cy+R*kY+R*Math.sin(MO_INCL*Math.PI/180)*ex*kZ+U*0.085;
+  moText(line1,cx,ty,U*0.034,col,"center",700);
+  moText(line2,cx,ty+U*0.040,U*0.023,P.dim,"center",500);
+  moText("latitude shown ×"+ex+" — at true scale the gap is too fine to see",
+    cx,ty+U*0.074,U*0.019,P.dim,"center",500);
+  /* The proof strip: Candra's latitude as a wave across the whole span, with every new
+     and full moon marked on it. The eclipses are exactly the marks that sit near zero. */
+  var x0=S.w*0.07, x1=S.w*0.93;                       /* sy and amp are set at the top */
+  var wave=moCached("tiltwave|"+MO.opt.spanN+MO.opt.spanU,function(){
+    /* The wave swings through its whole range every 27 days, so the sample count has to
+       follow the span or the curve aliases into a smear. Four samples a day resolves it
+       comfortably; the cap keeps a very long span from costing a visible pause, and the
+       span control offers only days and months so that cap is rarely reached. */
+    var N=Math.max(300,Math.min(3000,Math.round((t1-t0)/86400000*4))), w=[];
+    for(var i=0;i<=N;i++){
+      var m=t0+(t1-t0)*i/N, b=0, L=moSidAt("Moon",m), s2=moSidAt("Sun",m);
+      try{ b=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body.Moon,new Date(m),true)).elat; }
+      catch(e2){}
+      var e2d=(L==null||s2==null)?null:((L-s2)%360+360)%360;
+      w.push({m:m,b:b,el:e2d});
+    }
+    return w;
+  });
+  c.strokeStyle=P.gold; c.globalAlpha=.20; c.lineWidth=1;
+  [1,-1].forEach(function(sgn){
+    var yy=sy-sgn*amp*MO_SOLZONE/5.3;
+    c.beginPath(); c.moveTo(x0,yy); c.lineTo(x1,yy); c.stroke();
+  });
+  c.globalAlpha=1;
+  c.strokeStyle=P.line; c.lineWidth=1.5;
+  c.beginPath(); c.moveTo(x0,sy); c.lineTo(x1,sy); c.stroke();
+  c.strokeStyle=P.glow; c.lineWidth=2; c.globalAlpha=.85; c.beginPath();
+  wave.forEach(function(w,i){
+    var wx=x0+(x1-x0)*(w.m-t0)/(t1-t0), wy=sy-amp*w.b/5.3;
+    if(i===0) c.moveTo(wx,wy); else c.lineTo(wx,wy);
+  });
+  c.stroke(); c.globalAlpha=1;
+  /* every syzygy in the span, from the sampled elongation crossing 0° or 180° */
+  for(var i2=1;i2<wave.length;i2++){
+    var a2=wave[i2-1], b2=wave[i2];
+    if(a2.el==null||b2.el==null) continue;
+    var cross=null;
+    if(a2.el>b2.el) cross="new";                                  /* wrapped past 360 → 0 */
+    else if(a2.el<180&&b2.el>=180) cross="full";
+    if(!cross) continue;
+    var wx2=x0+(x1-x0)*(b2.m-t0)/(t1-t0), wy2=sy-amp*b2.b/5.3;
+    /* the full-moon test uses the penumbral limit, so a penumbral eclipse is marked gold
+       like any other — it is one, and the sampled latitude is a little coarse besides */
+    var inZone=Math.abs(b2.b)<=(cross==="new"?MO_SOLZONE:MO_PENZONE)*1.12;
+    c.fillStyle=inZone?P.gold:P.dim; c.globalAlpha=inZone?0.95:0.45;
+    c.beginPath(); c.arc(wx2,wy2,U*(inZone?0.009:0.006),0,6.2832); c.fill(); c.globalAlpha=1;
+  }
+  var px=x0+(x1-x0)*p;
+  c.strokeStyle=P.gold; c.lineWidth=2.5;
+  c.beginPath(); c.moveTo(px,sy-amp*1.25); c.lineTo(px,sy+amp*1.25); c.stroke();
+  moText("Candra's latitude across the span — the gold marks are the eclipses",
+    cx,sy+amp*1.95,U*0.019,P.dim,"center",500);
+  /* distance to the NEARER node, not to Rāhu: when Candra sits by Ketu the Rāhu figure
+     reads 174°, which says the opposite of what the picture shows */
+  var dR=Math.abs(((mo-ra)%360+360)%360); if(dR>180) dR=360-dR;
+  var dK=Math.abs(((mo-ke)%360+360)%360); if(dK>180) dK=360-dK;
+  return {ms:ms, sub:"Candra "+(blat>=0?"+":"")+blat.toFixed(2)+"° · "+
+          syz.toFixed(0)+"° from "+(isNew?"new":"full")+" moon · "+
+          Math.min(dR,dK).toFixed(0)+"° from "+(dR<=dK?"Rāhu":"Ketu")};
  }},
 
 {key:"eclipseseason", label:"Eclipse seasons", title:"Why eclipses come in seasons",
