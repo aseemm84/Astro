@@ -688,6 +688,47 @@ function moSceneSheets(){
       cols:["Lord","Begins","Ends","Years","Note"], rows:md});
     out.push({name:"Antardaśā",
       cols:["Mahādaśā lord","Antardaśā lord","Begins","Ends","Years"], rows:ad});
+
+  } else if(k==="bhava"){
+    var J=MO.J, L=J.lagna.rashi.idx;
+    out.push({name:"The twelve bhāvas",
+      cols:["#","Sanskrit","What it carries","Rāśi","Lord","Occupants","Varga BPHS assigns",
+            "Lagna of that varga"],
+      rows:MT_BH.map(function(B,i){
+        var b=J.bhavas[i], v=MT_BHV[i+1], vg=null;
+        if(v&&J.vargas) J.vargas.forEach(function(x){ if(x.varga===v) vg=x; });
+        return [i+1,B.sa,B.sig,mtRa(b.rashi.idx),b.ruler,
+                (b.occupants||[]).join(", ")||"—",
+                v?(v+" · "+MT_VN[v]):"— none assigned —",
+                vg?mtRa(vg.lagna):"—"]; })});
+
+  } else if(k==="rashi"){
+    var J2=MO.J, L2=J2.lagna.rashi.idx;
+    var rr=J2.rashi_rising_times&&J2.rashi_rising_times.rashis;
+    out.push({name:"The twelve rāśis",
+      cols:["#","Rāśi","Mode","Element","Lord","Limb of the Kālapuruṣa","House from your lagna",
+            "Your grahas here","Rising minutes at your latitude","Share of the day %"],
+      rows:MT_RA.map(function(nm,i){
+        var mine=mtGrahas().filter(function(g){ return g.ri===i; })
+                 .map(function(g){ return g.full+" "+g.d.toFixed(2)+"°"; });
+        return [i+1,mtRa(i),MT_MO[i],MT_EL[i],mtLord(i),MT_LIMB[i],
+                ((i-L2)%12+12)%12+1, mine.join(", ")||"—",
+                rr&&rr[i]?Number(rr[i].rising_minutes.toFixed(1)):"",
+                rr&&rr[i]?Number(rr[i].share_of_day_percent.toFixed(2)):""]; })});
+
+  } else if(k==="nakfull"){
+    var seg=40/3, gs=mtGrahas();
+    out.push({name:"The twenty-seven",
+      cols:["#","Nakṣatra","From °","To °","Viṃśottarī lord","Deity","Gaṇa",
+            "Pāda 1","Pāda 2","Pāda 3","Pāda 4","Your grahas here"],
+      rows:MT_NKN.map(function(nm,i){
+        var b0=i*seg, b1=b0+seg, nav0=Math.floor(b0/(30/9));
+        var mine=gs.filter(function(g){ var d=((g.sid%360)+360)%360; return d>=b0&&d<b1; })
+                   .map(function(g){ return g.full+" "+(((g.sid%360)+360)%360).toFixed(2)+"°"; });
+        return [i+1,nm,Number(b0.toFixed(4)),Number(b1.toFixed(4)),mtNLord(i),
+                MT_NKD[i],MT_NKG[i],
+                mtRa((nav0)%12),mtRa((nav0+1)%12),mtRa((nav0+2)%12),mtRa((nav0+3)%12),
+                mine.join(", ")||"—"]; })});
   }
   return out;
 }

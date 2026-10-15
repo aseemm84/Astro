@@ -125,6 +125,27 @@ worlds:[
  "<b>Graha</b> holds one for the whole span — useful for watching Śukra's phase close, or Śani's rings open over the years. Leave it on <em>all five in turn</em> and the span walks through them.",
  "The row along the foot is the honest comparison: all five at one magnification, Guru a disc and Maṅgala a dot.",
  "<b>Sizing</b> switches the main disc between that same magnification and filling the frame. The frame always says which is in force."
+],
+bhava:[
+ "One bhāva at a time, with the wheel showing where it falls in your own chart. Houses run anticlockwise from the lagna, which is how a rāśi chart is read — the lagna is always house 1.",
+ "The significations are from <b>BPHS Ch. 11</b>. They overlap on purpose: the 7th is spouse and travel and trade, and the text does not rank them.",
+ "The line beneath gives this house in <i>your</i> chart — its rāśi, its lord, and whatever stands in it. Dots inside the wheel are your grahas.",
+ "<b>Where BPHS looks closer.</b> The vargas are tied to topics in Ch. 6, so the 5th (children) is refined by <b>D7</b>, not D5. The popular habit of matching house N to chart D-N is not in the text and is not used here.",
+ "Four houses have no varga of their own. The frame says so rather than inventing one."
+],
+rashi:[
+ "One rāśi at a time as its own 30° strip, with every degree that matters marked on it.",
+ "The green line is a <b>deep exaltation</b> point — the degree, not just the sign. The dashed red is the matching fall, always the same degree in the opposite rāśi.",
+ "Gold dots are your own grahas, placed at their true degree within the sign rather than lumped in the middle.",
+ "Movable, fixed and dual, with the element and the lord, are <b>BPHS Ch. 4</b>. The limb of the Kālapuruṣa is the same chapter's scheme of the zodiac as a body.",
+ "<b>The rising time</b> is computed for your latitude by oblique ascension, which is what BPHS 1.8–9 asks for. Signs do not take equal time to rise, and the further from the equator the less equal they get."
+],
+nakfull:[
+ "One nakṣatra at a time, the full 13°20′, divided into its four pādas.",
+ "Each pāda is one <b>navāṃśa</b>, so each carries a rāśi of its own — that is what the four names along the strip are, and it is why the pāda matters as much as the nakṣatra.",
+ "The lord is the <b>Viṃśottarī</b> lord, in the sequence BPHS gives: Ketu, Venus, Sun, Moon, Mars, Rāhu, Guru, Śani, Budha, repeating every nine.",
+ "Gold dots are your own grahas. When Candra is the one standing here, the frame says so — the Moon's nakṣatra is what opens your daśā sequence, and its lord is your first mahādaśā.",
+ "<b>Deity and gaṇa are later tradition</b>, not verses from Parāśara, and the frame labels them as such rather than letting them pass as BPHS."
 ]
 };
 
