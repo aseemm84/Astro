@@ -189,11 +189,17 @@
     }catch(e){}
     $("k-raw").textContent=JSON.stringify(d,null,2); $("k-rawwrap").style.display="";
     window.__kdata=d;
+    /* A fresh report opens on the first tab; initReport's showTab overrides this when a
+       link or the back button asked for a particular one. Set it before, not after —
+       initReport consumes pendingTab. */
+    currentTab="overview";
     initReport();
-    var pb=$("k-print"), db=$("k-dl");
-    if(pb) pb.style.display=""; if(db) db.style.display="";
-    var sb=$("k-save"); if(sb) sb.style.display="";
-    var r=$("k-result"); if(r&&r.scrollIntoView) r.scrollIntoView({behavior:"smooth",block:"start"});
+    ["k-print","k-dl","k-save","k-link"].forEach(function(id){
+      var b=$(id); if(b) b.style.display=""; });
+    try{ chipFill(); }catch(e){}
+    try{ writeHash(true); hashReady=true; }catch(e){}
+    var r=$("k-chip")&&!$("k-chip").hidden ? $("k-chip") : $("k-result");
+    if(r&&r.scrollIntoView) r.scrollIntoView({behavior:"smooth",block:"start"});
   }
   function fail(msg){ $("k-out").innerHTML='<div class="k-err">'+msg+"</div>"; }
   async function cast(){
@@ -402,7 +408,22 @@
       (n.zone?(" ("+esc(n.zone)+")"):"")+". The place is unchanged; set it above if you have not yet.");
   });
 
-  $("k-clear").addEventListener("click",function(){["k-dob","k-tob","k-lat","k-lon","k-tz"].forEach(function(id){$(id).value="";});citySel.value="0";$("k-out").innerHTML="";$("k-status").textContent="";$("k-rawwrap").style.display="none";});
+  $("k-clear").addEventListener("click",function(){
+    ["k-dob","k-tob","k-lat","k-lon","k-tz"].forEach(function(id){$(id).value="";});
+    citySel.value="0";$("k-out").innerHTML="";$("k-status").textContent="";$("k-rawwrap").style.display="none";
+    /* Clearing removes the chart, so the chip must go with it — otherwise it keeps
+       naming a chart that is no longer on the page — and the fragment with it, or a
+       refresh would bring the cleared chart straight back. */
+    window.__kdata=null; window.__kplace=null;
+    var chip=$("k-chip"); if(chip) chip.hidden=true;
+    var n=$("k-chipnote"); if(n) n.hidden=true;
+    document.body.classList.remove("kcast","kedit");
+    ["k-print","k-dl","k-save","k-link"].forEach(function(id){
+      var b=$(id); if(b) b.style.display="none"; });
+    lastHash="";
+    if(location.hash){ try{ history.replaceState(null,"",location.pathname+location.search); }
+                       catch(e){ try{ location.hash=""; }catch(e2){} } }
+  });
   document.addEventListener("click",function(ev){
     var t=ev.target; if(!t||t.id!=="k-depth")return;
     var rep=document.getElementById("kreport"); if(!rep)return;
@@ -445,14 +466,31 @@
   });
 
   /* ---------- report tabs and interactive panes ---------- */
-  var pendingTab=null;
+  var pendingTab=null, currentTab="overview";
   function rep(){ return document.getElementById("kreport"); }
   function showTab(name,scroll){
     var r=rep(); if(!r) return;
-    r.querySelectorAll("[data-ktab]").forEach(function(b){ var on=b.getAttribute("data-ktab")===name;
+    /* Resolve the name before touching anything. A link or a bookmark can name a tab
+       that no longer exists, and clearing the selection first would leave the report
+       with no tab lit and whichever pane happened to be open. Fall back to the first. */
+    var all=[].slice.call(r.querySelectorAll("[data-ktab]"));
+    if(!all.length) return;
+    if(!all.some(function(b){ return b.getAttribute("data-ktab")===name; }))
+      name=all[0].getAttribute("data-ktab");
+    all.forEach(function(b){ var on=b.getAttribute("data-ktab")===name;
       b.classList.toggle("on",on); b.setAttribute("aria-selected",on?"true":"false"); b.tabIndex=on?0:-1; });
     r.querySelectorAll(".kpane").forEach(function(p){ p.hidden=p.getAttribute("data-kpane")!==name; });
-    if(scroll){ var t=r.querySelector(".ktabs"); if(t&&t.scrollIntoView) t.scrollIntoView({behavior:"smooth",block:"start"}); }
+    currentTab=name;
+    /* On a phone the tab list is a sheet rather than a strip: close it on a choice and
+       keep the trigger showing where you are. */
+    var lst=r.querySelector(".ktabs"); if(lst) lst.classList.remove("open");
+    var sel=r.querySelector(".ktabsel");
+    if(sel){ var b=r.querySelector('[data-ktab="'+name+'"]');
+      sel.setAttribute("aria-expanded","false");
+      if(b) sel.querySelector(".ktabselt").textContent=b.textContent.trim(); }
+    if(hashReady) writeHash(false);
+    if(scroll){ var w=r.querySelector(".ktabwrap")||lst;
+      if(w&&w.scrollIntoView) w.scrollIntoView({behavior:"smooth",block:"start"}); }
   }
   /* ---- save and reopen a chart ----
      The chart is a pure function of the birth data and the two conventions, so a
@@ -526,6 +564,139 @@
   if($("k-open")) $("k-open").addEventListener("click",function(){ $("k-openfile").click(); });
   if($("k-openfile")) $("k-openfile").addEventListener("change",openSaved);
 
+  /* ---------- the chart chip ----------
+     The form is only interesting until the chart exists. Once it does, it folds into
+     one line and the report starts at the top of the screen rather than below a form
+     you have finished with. Edit brings it back; casting again folds it away. */
+  /* __kplace is set by both routes that name a place — the city search and the short
+     list. The select itself is not a source: it carries a placeholder at index 0, and
+     the search path parks its value on an unrelated row without firing change, so its
+     visible text does not describe the coordinates in the form. Coordinates are the
+     honest fallback. */
+  function placeLabel(){
+    if(window.__kplace) return String(window.__kplace).trim();
+    var la=$("k-lat").value, lo=$("k-lon").value;
+    if(la!==""&&lo!==""&&!isNaN(+la)&&!isNaN(+lo))
+      return (+la).toFixed(3)+"°, "+(+lo).toFixed(3)+"°";
+    return "";
+  }
+  var MONS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+  function prettyWhen(){
+    var d=($("k-dob").value||"").split("-"), t=$("k-tob").value||"";
+    if(d.length!==3) return "";
+    return (+d[2])+" "+MONS[(+d[1])-1]+" "+d[0]+", "+t;
+  }
+  function chipFill(){
+    var chip=$("k-chip"); if(!chip) return;
+    var nm=($("k-name")&&$("k-name").value||"").trim();
+    var pl=placeLabel(), tz=$("k-tz").value;
+    $("k-chipwho").innerHTML = nm ? esc(nm) : '<span class="kmut">Chart</span>';
+    $("k-chipwhen").innerHTML = esc(prettyWhen())+
+      (pl?(' <span class="kdot">·</span> '+esc(pl)):"")+
+      (tz!==""?(' <span class="kmut">UTC'+(+tz>=0?"+":"")+(+tz)+'</span>'):"");
+    /* The output buttons belong with the chart, not with the form that produced it. */
+    var acts=$("k-chipacts");
+    ["k-print","k-dl","k-save","k-link"].forEach(function(id){
+      var b=$(id); if(b&&b.parentNode!==acts) acts.appendChild(b); });
+    chip.hidden=false;
+    document.body.classList.add("kcast");
+    document.body.classList.remove("kedit");
+  }
+  function chipEdit(){
+    document.body.classList.add("kedit");
+    var f=$("k-inputs"); if(f&&f.scrollIntoView) f.scrollIntoView({behavior:"smooth",block:"start"});
+    var n=$("k-dob"); if(n&&n.focus) try{ n.focus({preventScroll:true}); }catch(e){ }
+  }
+  if($("k-edit")) $("k-edit").addEventListener("click",chipEdit);
+
+  /* ---------- the chart in the URL ----------
+     A fragment is never sent in an HTTP request, so a link that carries a chart still
+     reaches no server — the page rebuilds it from the engine already in the browser.
+     That keeps back, forward, refresh and bookmarking working without weakening the
+     claim that nothing leaves this machine. What a link does do is carry the birth
+     data to whoever you send it to, which is why the Copy link button says so. */
+  var lastHash="", hashReady=false;
+  function chartKey(){
+    return [$("k-dob").value,$("k-tob").value,$("k-lat").value,$("k-lon").value,$("k-tz").value,
+      ($("k-ayan")&&$("k-ayan").value)||"",($("k-node")&&$("k-node").value)||""].join("|");
+  }
+  function buildHash(tab){
+    var d=($("k-dob").value||"").split("-"), t=($("k-tob").value||"").split(":");
+    if(d.length!==3||t.length<2) return "";
+    var p=["d="+d[0]+d[1]+d[2], "t="+t[0]+t[1],
+           "p="+[$("k-lat").value,$("k-lon").value,$("k-tz").value].join(",")];
+    var a=($("k-ayan")&&$("k-ayan").value)||"lahiri"; if(a!=="lahiri") p.push("a="+a);
+    var nd=($("k-node")&&$("k-node").value)||"mean";  if(nd!=="mean")  p.push("nd="+nd);
+    var nm=($("k-name")&&$("k-name").value||"").trim();
+    if(nm) p.push("n="+encodeURIComponent(nm.slice(0,48)));
+    /* Only a named place is worth carrying; the coordinate fallback is already in p=. */
+    var pl=(window.__kplace||"").trim();
+    if(pl) p.push("pl="+encodeURIComponent(pl.slice(0,64)));
+    if(tab&&tab!=="overview") p.push("v="+tab);
+    return "#"+p.join("&");
+  }
+  function parseHash(){
+    var h=(location.hash||"").replace(/^#/,""); if(!h) return null;
+    var o={};
+    h.split("&").forEach(function(kv){ var i=kv.indexOf("="); if(i<0) return;
+      o[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1).replace(/\+/g," ")); });
+    if(!/^\d{8}$/.test(o.d||"")||!/^\d{4}$/.test(o.t||"")||!o.p) return null;
+    var p=String(o.p).split(",");
+    if(p.length<3||p.some(function(x){ return isNaN(parseFloat(x)); })) return null;
+    return {dob:o.d.slice(0,4)+"-"+o.d.slice(4,6)+"-"+o.d.slice(6,8),
+            tob:o.t.slice(0,2)+":"+o.t.slice(2,4),
+            lat:p[0], lon:p[1], tz:p[2], ayan:o.a||"lahiri", node:o.nd||"mean",
+            name:o.n||"", place:o.pl||"", tab:o.v||"overview"};
+  }
+  /* A cast is a new place in history; changing tab is not — otherwise Back would walk
+     backwards through eleven tabs before it left the chart. */
+  function writeHash(push){
+    var s=buildHash(currentTab); if(!s||s===location.hash) { lastHash=location.hash; return; }
+    lastHash=s;
+    if(push){ try{ location.hash=s; }catch(e){} return; }
+    try{ history.replaceState(null,"",s); }
+    catch(e){ try{ location.hash=s; }catch(e2){} }
+  }
+  function applyHash(o){
+    $("k-name").value=o.name||"";
+    $("k-dob").value=o.dob; $("k-tob").value=o.tob;
+    $("k-lat").value=o.lat; $("k-lon").value=o.lon; $("k-tz").value=o.tz;
+    if($("k-ayan")) $("k-ayan").value=o.ayan;
+    if($("k-node")) $("k-node").value=o.node;
+    if(o.place) window.__kplace=o.place;
+  }
+  function castFromHash(){
+    var o=parseHash(); if(!o) return false;
+    applyHash(o); pendingTab=o.tab; lastHash=location.hash;
+    var g=$("k-go"); if(g) g.click();
+    return true;
+  }
+  window.addEventListener("hashchange",function(){
+    if(location.hash===lastHash) return;          // our own write
+    var o=parseHash();
+    if(!o){ lastHash=location.hash; return; }
+    lastHash=location.hash;
+    var before=chartKey();
+    applyHash(o);
+    if(chartKey()!==before || !window.__kdata){ pendingTab=o.tab; var g=$("k-go"); if(g) g.click(); }
+    else showTab(o.tab);
+  });
+  if($("k-link")) $("k-link").addEventListener("click",async function(){
+    var s=buildHash(currentTab); if(!s) return;
+    var url=location.href.split("#")[0]+s, done=false;
+    try{ if(navigator.clipboard&&navigator.clipboard.writeText){ await navigator.clipboard.writeText(url); done=true; } }catch(e){}
+    if(!done){ try{ var ta=document.createElement("textarea"); ta.value=url; ta.style.position="fixed";
+      ta.style.opacity="0"; document.body.appendChild(ta); ta.select();
+      done=document.execCommand("copy"); document.body.removeChild(ta); }catch(e2){} }
+    var n=$("k-chipnote"); if(!n) return;
+    n.hidden=false;
+    n.innerHTML = done
+      ? "Link copied. It rebuilds the chart in whoever opens it — nothing is sent to a server, "+
+        "but the birth details are in the link itself, so share it as you would the details."
+      : "Couldn’t reach the clipboard. The address bar already holds this chart — copy it from there.";
+    clearTimeout(n.__t); n.__t=setTimeout(function(){ n.hidden=true; },9000);
+  });
+
   function initReport(){
     // the sky pane draws itself once the report is in the document
     try{ if(document.getElementById("skycanvas") && window.__skyRedraw) window.__skyRedraw(); }catch(e){}
@@ -534,6 +705,38 @@
     evRender();
     if(pendingTab){ showTab(pendingTab,true); pendingTab=null; }
   }
+  /* A link, a bookmark or a refresh arrives as a fragment; rebuild the chart from it.
+     Nothing was fetched to do this — the engine is already here.
+     Deferred by a tick on purpose: casting touches state declared further down this
+     file, and `var` hoisting means those names exist but hold undefined until the
+     script finishes. Running inline here failed inside the events layer. */
+  setTimeout(function(){
+    try{ if(!castFromHash()) hashReady=true; }catch(e){ hashReady=true; }
+  },0);
+
+  /* On a narrow screen the eleven tabs are a sheet behind one trigger rather than a
+     strip you have to swipe. Close it on Escape or on a click outside. */
+  document.addEventListener("click",function(ev){
+    var r=rep(); if(!r) return;
+    var sel=ev.target.closest&&ev.target.closest(".ktabsel");
+    var lst=r.querySelector(".ktabs");
+    if(sel&&lst){ var open=!lst.classList.contains("open");
+      lst.classList.toggle("open",open); sel.setAttribute("aria-expanded",open?"true":"false");
+      if(open){ var on=lst.querySelector("[data-ktab].on"); if(on&&on.focus) on.focus(); }
+      ev.preventDefault(); return; }
+    if(lst&&lst.classList.contains("open")&&!ev.target.closest(".ktabs")){
+      lst.classList.remove("open");
+      var s=r.querySelector(".ktabsel"); if(s) s.setAttribute("aria-expanded","false"); }
+  },true);
+  document.addEventListener("keydown",function(ev){
+    if(ev.key!=="Escape") return;
+    var r=rep(); if(!r) return;
+    var lst=r.querySelector(".ktabs.open"); if(!lst) return;
+    lst.classList.remove("open");
+    var s=r.querySelector(".ktabsel");
+    if(s){ s.setAttribute("aria-expanded","false"); if(s.focus) s.focus(); }
+  });
+
   document.addEventListener("click",function(ev){
     var t=ev.target; if(!t||!t.closest||!rep()||!rep().contains(t)) return;
     var b=t.closest("[data-ktab]"); if(b){ showTab(b.getAttribute("data-ktab")); return; }

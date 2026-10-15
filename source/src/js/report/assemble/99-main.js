@@ -255,7 +255,16 @@ window.buildKundliReport=function(J){
   var body=PANES.map(function(p,i){
     return '<div class="kpane" role="tabpanel" id="kp-'+p[0]+'" data-kpane="'+p[0]+'" aria-labelledby="kt-'+p[0]+'"'+(i?' hidden':'')+'>'+
       '<h3 class="kpaneh">'+esc(p[1])+'</h3>'+pane(p[2],p[1])+'</div>'; }).join("");
-  return HEAD.join("")+tabs+body+'</div>';
+  /* Three navigations, one list of buttons. Wide: a rail down the left, so all eleven
+     names are legible at once and none is hidden off the edge. Medium: the strip.
+     Narrow: a sheet behind this trigger, because a horizontal scroller on a phone hides
+     most of the tabs behind a gesture there is nothing to suggest. */
+  var sel='<button type="button" class="ktabsel" aria-expanded="false" aria-haspopup="true" '+
+    'aria-label="Choose a report view">'+
+    '<span class="ktabsell">View</span><span class="ktabselt">'+esc(PANES[0][1])+'</span>'+
+    '<span class="ktabselc" aria-hidden="true">▾</span></button>';
+  return HEAD.join("")+'<div class="ktabwrap">'+sel+tabs+
+    '<div class="kpanes">'+body+'</div></div></div>';
 };
 })();
 

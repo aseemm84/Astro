@@ -149,7 +149,7 @@ code.k-inline{background:#f0f0f6;padding:1px 5px;border-radius:5px;font-size:12.
 .kreport .kchartsvg .sc-p{font:700 10px system-ui,sans-serif;fill:#1d2340;text-anchor:middle}
 .kreport .kchartsvg .sc-c{font:16px serif;fill:#a1493a;text-anchor:middle}
 @media print{
-  nav.site,aside.onpage,.k-form,.k-actions,.k-status,.katoggle,details.k-raw,#k-searchnote,.k-results,header.masthead p.sub{display:none!important}
+  nav.site,aside.onpage,#k-inputs,.k-form,.k-actions,.k-status,.katoggle,details.k-raw,#k-searchnote,.k-results,header.masthead p.sub{display:none!important}
   body{background:#fff}
   .kreport .kmore{display:inline!important}
   .kreport .ksec{break-inside:avoid;page-break-inside:avoid}
@@ -197,13 +197,71 @@ code.k-inline{background:#f0f0f6;padding:1px 5px;border-radius:5px;font-size:12.
 .kreport .ktwrap:focus{outline:2px solid var(--gold);outline-offset:2px}
 @media print{.kreport .kindex{display:none}}
 
-/* ---- report tabs ---- */
+/* ---- the chart chip ----
+   Once a chart exists the form that produced it folds away, so the report starts at
+   the top of the screen rather than below three screens of inputs. */
+body.kcast #k-inputs{display:none}
+body.kcast.kedit #k-inputs{display:block}
+body.kcast.kedit .k-chip{opacity:.62}
+.k-chip{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;margin:16px 0 4px;
+  padding:11px 15px;background:#fff;border:1px solid var(--line);border-left:3px solid var(--gold);
+  border-radius:4px 11px 11px 4px}
+.k-chipmain{flex:1 1 260px;min-width:0;line-height:1.4}
+.k-chipwho{display:block;font-family:var(--serif);font-size:18px;font-weight:600;color:#1b1e33}
+.k-chipwhen{display:block;font-size:12.5px;color:#4a4e68;font-variant-numeric:tabular-nums}
+.k-chipwhen .kdot{color:var(--line)}
+.k-chipacts{display:flex;gap:7px;flex-wrap:wrap}
+.k-chipacts .k-btn{font-size:12.5px;padding:7px 12px}
+.k-chipnote{flex:1 0 100%;margin:0;font-size:11.5px;line-height:1.5;color:var(--muted)}
+/* The chip names the chart, so the heading that used to do it is redundant on screen —
+   but it is still the right heading on paper, where there is no chip. The reserved
+   status line is only there to stop the page jumping while computing. */
+body.kcast #k-result{display:none}
+body.kcast .k-status{min-height:0;margin:0}
+@media print{
+  .k-chip{border-left-width:2px;break-inside:avoid}
+  .k-chipacts,.k-chipnote{display:none}
+  body.kcast #k-result{display:block}
+}
+
+/* ---- report tabs ----
+   One list of buttons, three navigations: a rail on a wide screen, the strip in the
+   middle, and a sheet on a phone. The sheet exists because a horizontal scroller hides
+   most of eleven tabs behind a gesture nothing on screen suggests. */
+.kreport .ktabsel{display:none;align-items:center;gap:9px;width:100%;margin:14px 0 0;
+  padding:10px 13px;border:1px solid var(--line);border-left:3px solid var(--gold);
+  border-radius:4px 10px 10px 4px;background:#fff;color:var(--ink);font:inherit;cursor:pointer;text-align:left}
+.kreport .ktabsell{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.kreport .ktabselt{flex:1;font-size:14px;font-weight:700}
+.kreport .ktabselc{color:var(--muted);font-size:12px}
+.kreport .ktabsel[aria-expanded="true"] .ktabselc{transform:rotate(180deg);display:inline-block}
 .kreport .ktabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin;background:var(--paper);border-bottom:2px solid var(--gold);padding:8px 0 0;margin:14px 0 4px;scroll-margin-top:50px}
 .kreport .ktabs button{flex:0 0 auto;border:1px solid var(--line);border-bottom:0;background:#fff;color:#4a4e68;font:inherit;font-size:13px;font-weight:600;padding:8px 13px;border-radius:9px 9px 0 0;cursor:pointer}
 .kreport .ktabs button:hover{color:var(--ink);background:#fdfbf4}
 .kreport .ktabs button.on{background:var(--night);color:#fff;border-color:var(--night)}
 .kreport .ktabs button.on .kmut{color:#c7cbe4}
 .kreport .ktabs button:focus-visible{outline:2px solid var(--gold);outline-offset:1px}
+/* Wide: a rail, sticky so the eleven names stay reachable however long a pane runs. */
+@media (min-width:1120px){
+  .kreport .ktabwrap{display:grid;grid-template-columns:196px minmax(0,1fr);gap:26px;align-items:start}
+  .kreport .ktabs{flex-direction:column;gap:2px;overflow:visible;position:sticky;top:52px;
+    border-bottom:0;border-right:2px solid var(--gold);padding:0 11px 0 0;margin:16px 0 0}
+  .kreport .ktabs button{width:100%;text-align:left;border:1px solid transparent;border-right:0;
+    border-radius:8px 0 0 8px;padding:8px 12px;background:none}
+  .kreport .ktabs button:hover{background:#fdfbf4;border-color:var(--line);border-right:0}
+  .kreport .ktabs button.on{background:var(--night);border-color:var(--night)}
+  .kreport .kpanes{min-width:0}
+  .kreport .kpane{padding-top:4px}
+}
+/* Narrow: the sheet. */
+@media (max-width:760px){
+  .kreport .ktabsel{display:flex}
+  .kreport .ktabs{display:none;flex-direction:column;gap:3px;overflow:visible;
+    border-bottom:0;border:1px solid var(--line);border-radius:10px;padding:7px;margin:5px 0 8px;
+    background:#fff;box-shadow:0 10px 26px rgba(25,29,51,.12)}
+  .kreport .ktabs.open{display:flex}
+  .kreport .ktabs button{width:100%;text-align:left;border:0;border-radius:8px;padding:11px 12px;font-size:14px}
+}
 .kreport .kpane{padding-top:10px}
 .kreport .kpaneh{display:none}
 .kreport .kgo{font-size:12.5px;font-weight:600;color:#2b5fa5;text-decoration:none;white-space:nowrap}
@@ -269,7 +327,9 @@ code.k-inline{background:#f0f0f6;padding:1px 5px;border-radius:5px;font-size:12.
 .kreport .kmbar i{position:absolute;top:-4px;width:2px;height:20px;background:#1d2340}
 .kreport ul.kmlist{font-size:13px;margin:6px 0 8px}
 @media print{
-  .kreport .ktabs,.kreport .kday-bar,.kreport .klifebar,.kreport .kpath-nav,.kreport .kpath-foot,.kreport .kev-form,.kreport .kmatch-form,.kreport .kev-del{display:none!important}
+  .kreport .ktabs,.kreport .ktabsel,.kreport .kday-bar,.kreport .klifebar,.kreport .kpath-nav,.kreport .kpath-foot,.kreport .kev-form,.kreport .kmatch-form,.kreport .kev-del{display:none!important}
+  /* the rail is a screen affordance; on paper the panes run one after another */
+  .kreport .ktabwrap{display:block!important}
   .kreport .kpane[hidden],.kreport .kstep[hidden],.kreport .klifev[hidden]{display:block!important}
   .kreport .kipanel[hidden],.kreport .kipanel[data-panel="none"]{display:none!important}
   .kreport .kpaneh{display:block;font-size:20px;border-bottom:2px solid var(--gold);margin:22px 0 8px;break-after:avoid}
