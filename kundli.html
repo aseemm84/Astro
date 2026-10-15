@@ -765,6 +765,73 @@ body.mostudio .moread{display:none!important}
     animation-duration:0.001ms!important; animation-iteration-count:1!important;
     transition-duration:0.001ms!important; scroll-behavior:auto!important}
 }
+
+/* ===== navigation that fits the screen ======================================
+   Sixteen links in a horizontal scroller hid 883px of themselves on a phone.
+   Wide screens keep the row; narrow ones get a button and a panel. */
+.navbar{display:none}
+html.navlock,html.navlock body{overflow:hidden}
+@media(max-width:1000px){
+  .navbar{display:block;position:sticky;top:0;z-index:31;
+    background:linear-gradient(160deg,var(--night),var(--night2));
+    border-bottom:1px solid #333a5e}
+  .navtoggle{display:flex;align-items:center;gap:11px;width:100%;
+    padding:11px clamp(12px,4vw,24px);background:none;border:0;cursor:pointer;
+    font:inherit;color:#f0eee6;text-align:left}
+  .navtoggle-i{display:inline-flex;flex-direction:column;gap:3.5px;flex:0 0 auto}
+  .navtoggle-i i{display:block;width:17px;height:2px;background:var(--gold);border-radius:2px}
+  .navtoggle-t{flex:1;font-size:14.5px;font-weight:600;letter-spacing:.01em}
+  .navtoggle-c{color:var(--gold);font-size:12px;transition:transform .18s}
+  .navtoggle[aria-expanded="true"] .navtoggle-c{transform:rotate(180deg)}
+  nav.site{display:none;position:sticky;top:44px;z-index:30;
+    flex-wrap:wrap;overflow:visible;padding:8px clamp(12px,4vw,24px) 14px;
+    -webkit-mask-image:none;mask-image:none;
+    max-height:calc(100vh - 44px);overflow-y:auto}
+  nav.site.open{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+  nav.site a{white-space:normal;padding:10px 11px;font-size:13.5px;border-radius:8px}
+  nav.site a.active{background:var(--gold);color:#231c07}
+}
+/* two columns even on a small phone: sixteen single-file items is a long scroll,
+   and the labels wrap rather than truncate */
+@media(max-width:340px){ nav.site.open{grid-template-columns:1fr} }
+
+/* ---- section links where the sidebar is hidden --------------------------- */
+.onpage-m{display:none}
+@media(max-width:999px){
+  .onpage-m{display:block;margin:0 0 18px;border:1px solid var(--line);
+    border-left:3px solid var(--gold);border-radius:4px 10px 10px 4px;background:#fff}
+  .onpage-m>summary{list-style:none;cursor:pointer;padding:10px 14px;
+    font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+  .onpage-m>summary::-webkit-details-marker{display:none}
+  .onpage-m>summary span{font-weight:400;letter-spacing:0;text-transform:none;font-size:12px}
+  .onpage-m>summary::after{content:"\25be";color:var(--gold);margin-left:8px}
+  .onpage-m[open]>summary::after{content:"\25b4"}
+  .onpage-m-list{padding:2px 10px 10px;display:flex;flex-direction:column}
+  .onpage-m-list a{display:block;padding:7px 10px;color:#4a4e68;text-decoration:none;
+    font-size:14px;border-left:2px solid var(--line);line-height:1.3}
+  .onpage-m-list a:hover{color:var(--gold);border-left-color:var(--gold)}
+}
+
+/* ===== your own chart, on a reference page ==================================
+   A rule is easier to hold once you have seen it land somewhere. These state
+   what your chart contains and stop there; the page around them carries the
+   interpretation. */
+.inchart{margin:0 0 20px;border:1px solid #d8e7db;border-left:3px solid #4f8c5f;
+  border-radius:0 10px 10px 0;background:#f4faf5;padding:13px 16px;max-width:84ch}
+.inchart h4{margin:0 0 8px;font-family:var(--serif);font-size:16px;color:#1f4f33}
+.inchart h4 span{font-family:var(--sans);font-size:12.5px;color:#5c7a66;font-weight:400}
+.inchart ul{margin:0;padding-left:18px;max-width:none}
+.inchart li{font-size:13.5px;line-height:1.55;margin:0 0 5px;color:#33493b}
+.inchart li b{color:#15351f}
+.inchart-f{margin:10px 0 0;font-size:11.5px;line-height:1.5;color:#6a8271;max-width:none}
+.inchart-f a{color:#2b5fa5}
+.inchart-x{font:inherit;font-size:11.5px;color:#6a8271;background:none;border:0;
+  border-bottom:1px dotted #9db3a3;padding:0;cursor:pointer;margin-left:2px}
+.inchart-x:hover{color:#1f4f33;border-bottom-color:#1f4f33}
+.inchart-ask{font-size:13px;color:var(--muted);background:var(--soft);
+  border:1px dashed var(--line);border-radius:9px;padding:9px 13px;margin:0 0 18px;max-width:84ch}
+@media print{.inchart-ask,.inchart-f,.navbar{display:none}.inchart{break-inside:avoid}}
 </style></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Build a Kundli</h1><p class="sub">How a birth chart is cast in the sidereal zodiac — and a tool that computes a full chart in your browser and links each planet into the padas reference.</p></header><nav class="site"><a href="index.html">Home</a><a href="kundli.html" class="active">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#cast">Cast a chart now</a><a href="#what">What a kundli is</a><a href="#need">What you need</a><a href="#how">How a chart is cast</a><a href="#read">How to read what comes back</a><a href="#limits">Accuracy, attribution & limits</a></aside><main><p class="lead">A <b>kundli</b> (janma-kundali) is a birth chart: a map of the sky at the exact moment and place of birth, projected onto the twelve bhavas counted from the Lagna. Enter the birth details and the whole chart is computed below, in this browser. Everything after it explains what a chart is and how it is cast.</p><h2 id="cast">Cast a chart now</h2><p>Everything is computed <b>in your browser</b> — nothing is sent anywhere, and the page works offline.</p>
 <div id="k-inputs">
 <div class="k-form">
@@ -12766,6 +12833,17 @@ window.buildKundliReport=function(J){
     initReport();
     ["k-print","k-dl","k-save","k-link"].forEach(function(id){
       var b=$(id); if(b) b.style.display=""; });
+    /* Leave the birth particulars where the reference pages can find them — about
+       250 bytes, no chart data, recomputed there in milliseconds. This browser
+       only; the "Forget this chart" button on those pages clears it. */
+    try{ localStorage.setItem("nirayana.birth",JSON.stringify({
+      year:+($("k-dob").value||"").slice(0,4),
+      month:+($("k-dob").value||"").slice(5,7), day:+($("k-dob").value||"").slice(8,10),
+      hour:+($("k-tob").value||"").slice(0,2), minute:+($("k-tob").value||"").slice(3,5),
+      lat:+$("k-lat").value, lon:+$("k-lon").value, tzHours:+$("k-tz").value,
+      ayanamsa:($("k-ayan")&&$("k-ayan").value)||"lahiri",
+      node:($("k-node")&&$("k-node").value)||"mean",
+      name:($("k-name")&&$("k-name").value||"").trim()||null })); }catch(e){}
     try{ chipFill(); }catch(e){}
     try{ writeHash(true); hashReady=true; }catch(e){}
     var r=$("k-chip")&&!$("k-chip").hidden ? $("k-chip") : $("k-result");
@@ -13427,4 +13505,4 @@ window.buildKundliReport=function(J){
   }
 })();
 </script>
-<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-15.81c3ea1</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer></body></html>
+<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-15.b186333</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer></body></html>

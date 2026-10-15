@@ -196,6 +196,17 @@
     initReport();
     ["k-print","k-dl","k-save","k-link"].forEach(function(id){
       var b=$(id); if(b) b.style.display=""; });
+    /* Leave the birth particulars where the reference pages can find them — about
+       250 bytes, no chart data, recomputed there in milliseconds. This browser
+       only; the "Forget this chart" button on those pages clears it. */
+    try{ localStorage.setItem("nirayana.birth",JSON.stringify({
+      year:+($("k-dob").value||"").slice(0,4),
+      month:+($("k-dob").value||"").slice(5,7), day:+($("k-dob").value||"").slice(8,10),
+      hour:+($("k-tob").value||"").slice(0,2), minute:+($("k-tob").value||"").slice(3,5),
+      lat:+$("k-lat").value, lon:+$("k-lon").value, tzHours:+$("k-tz").value,
+      ayanamsa:($("k-ayan")&&$("k-ayan").value)||"lahiri",
+      node:($("k-node")&&$("k-node").value)||"mean",
+      name:($("k-name")&&$("k-name").value||"").trim()||null })); }catch(e){}
     try{ chipFill(); }catch(e){}
     try{ writeHash(true); hashReady=true; }catch(e){}
     var r=$("k-chip")&&!$("k-chip").hidden ? $("k-chip") : $("k-result");

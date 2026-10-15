@@ -156,6 +156,23 @@ def build_kundli():
     print("  build id %s" % stamp)
     return shell
 
+def build_shared():
+    """Files the reference pages reference rather than inline.
+
+    engine.js is the ephemeris and the chart engine — about 200 KB, and far too
+    much to paste into thirteen pages. It is fetched only when a reader actually
+    has a chart stored, so a first visit never pays for it. site.js is small and
+    always loaded: navigation, section links, and the hook that decides whether
+    the engine is needed at all.
+
+    Both are referenced, not inlined, which works offline: <script src> is not
+    subject to the restriction that blocks fetch() on file://."""
+    return {
+        "engine.js": (read(VEND, "astronomy.browser.min.js") + "\n" +
+                      brandify(read(SRC, "js", "engine.js"))),
+        "site.js":   brandify(read(SRC, "js", "site.js")),
+    }
+
 def build_pages():
     shell  = read(SRC, "pages", "_shell.html")
     css    = read(SRC, "css", "pages.css")
@@ -194,6 +211,7 @@ def main():
     outdir = args[args.index("--out") + 1] if "--out" in args else default_out
     built = {"kundli.html": build_kundli()}
     built.update(build_pages())
+    built.update(build_shared())
 
     if "--check" in args:
         ok = True
