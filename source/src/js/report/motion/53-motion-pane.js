@@ -45,7 +45,6 @@ function motionPane(D,J){
       '<div class="mostage" id="mostage"><canvas id="mocanvas" width="1080" height="1920" role="img" aria-label="Animated diagram. The written explanation is below it."></canvas></div>'+
       '<button type="button" class="moexit" id="moexit">Esc — leave studio</button>'+
       '<div class="mopanel">'+
-        '<div class="moread" id="moread"></div>'+
         '<div class="morow">'+
           '<button type="button" class="k-btn" id="moplay" aria-pressed="false">Play</button>'+
           '<button type="button" class="k-btn sec" id="morestart">Restart</button>'+
@@ -102,6 +101,10 @@ function motionPane(D,J){
           '<button type="button" class="k-btn sec" id="mopng">Save this frame (.png)</button>'+
           '<span class="moxlsmsg" id="moxlsmsg"></span>'+
         '</div>'+
+        /* The reading note sits below every control, so the controls stay within reach of
+           the frame and the note reads as a footnote to the scene rather than a preamble
+           you scroll past to get to Play. */
+        '<div class="moread" id="moread"></div>'+
       '</div>'+
     '</div>'+
 

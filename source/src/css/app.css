@@ -592,10 +592,11 @@ body.mostudio .moexit{display:block;position:fixed;right:14px;top:14px;z-index:1
   border-radius:7px;padding:7px 12px;cursor:pointer}
 @media print{.kreport .moscenes,.kreport .mopanel{display:none}}
 
-/* "How to read this" — on the page, never on the frame. It sits inside the
-   control panel, which studio mode already hides, and the extra rule below makes
-   that explicit so a later change to the panel cannot let it into a recording. */
-.moread{margin:14px 0 2px;padding:12px 14px;border:1px solid var(--line);
+/* "How to read this" — on the page, never on the frame. It sits at the foot of the
+   control panel, below every control, so Play stays close to the frame. Studio mode
+   already hides the panel; the extra rule below makes that explicit so a later change
+   to the panel cannot let this note into a recording. */
+.moread{margin:18px 0 2px;padding:12px 14px;border:1px solid var(--line);
   border-radius:10px;background:rgba(127,140,200,.06);max-width:780px}
 .moreadh{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
   color:#8f96bb;margin-bottom:8px}
