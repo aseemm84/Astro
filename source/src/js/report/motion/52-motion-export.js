@@ -690,17 +690,27 @@ function moSceneSheets(){
       cols:["Mahādaśā lord","Antardaśā lord","Begins","Ends","Years"], rows:ad});
 
   } else if(k==="bhava"){
-    var J=MO.J, L=J.lagna.rashi.idx;
-    out.push({name:"The twelve bhāvas",
-      cols:["#","Sanskrit","What it carries","Rāśi","Lord","Occupants","Varga BPHS assigns",
-            "Lagna of that varga"],
+    /* The twelve houses as the chosen division reads them, and then the same twelve
+       across all sixteen, which is the sheet worth keeping. */
+    var J=MO.J, V=mtView();
+    out.push({name:"Bhāvas in "+V.name,
+      cols:["#","Sanskrit","What it carries","Rāśi","Lord","Occupants",
+            "Varga BPHS assigns to this topic","Lagna of that varga"],
       rows:MT_BH.map(function(B,i){
-        var b=J.bhavas[i], v=MT_BHV[i+1], vg=null;
+        var v=MT_BHV[i+1], vg=null;
         if(v&&J.vargas) J.vargas.forEach(function(x){ if(x.varga===v) vg=x; });
-        return [i+1,B.sa,B.sig,mtRa(b.rashi.idx),b.ruler,
-                (b.occupants||[]).join(", ")||"—",
+        return [i+1,B.sa,B.sig,mtRa(V.sign(i)),V.lord(i),V.occ(i).join(", ")||"—",
                 v?(v+" · "+MT_VN[v]):"— none assigned —",
                 vg?mtRa(vg.lagna):"—"]; })});
+    var hdr=["#","Sanskrit"], keep=MO.opt.varga;
+    (J.vargas||[]).forEach(function(v){ hdr.push(v.varga+" rāśi"); hdr.push(v.varga+" lord"); });
+    var grid=MT_BH.map(function(B,i){ return [i+1,B.sa]; });
+    (J.vargas||[]).forEach(function(v,vi){
+      MO.opt.varga=vi; var W=mtView();
+      for(var i=0;i<12;i++){ grid[i].push(mtRa(W.sign(i))); grid[i].push(W.lord(i)); }
+    });
+    MO.opt.varga=keep;
+    out.push({name:"Every bhāva in every varga", cols:hdr, rows:grid});
 
   } else if(k==="rashi"){
     var J2=MO.J, L2=J2.lagna.rashi.idx;

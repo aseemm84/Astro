@@ -37,6 +37,7 @@ function motionPane(D,J){
   MO.opt.subject="Mars"; MO.opt.exag=40; MO.opt.symbols=false;
   MO.opt.spanN=12; MO.opt.spanU="y"; MO.speed=1;
   MO.opt.houses="both"; MO.opt.eclN=10;
+  MO.opt.varga=0; MO.opt.rpin=-1; MO.opt.npin=-1;
   MO.cap.title=""; MO.cap.sub="";
   MO_CACHE={};
   for(var g in MO.show) MO.show[g]=true;
@@ -168,6 +169,11 @@ function motionPane(D,J){
    right computed flex but still lays it out at zero width, so the break never happens.
    An empty span is an ordinary flex item and breaks the line as intended. */
 var MO_BRK='<span class="mobrk"></span>';
+/* Names for the two subject pickers. The scenes themselves carry the same
+   tables; these are here because the control panel is built before any scene
+   draws. */
+var MO_RA12=["Meṣa","Vṛṣabha","Mithuna","Karka","Siṃha","Kanyā","Tulā","Vṛścika","Dhanus","Makara","Kumbha","Mīna"];
+var MO_NK27=["Aśvinī","Bharaṇī","Kṛttikā","Rohiṇī","Mṛgaśirā","Ārdrā","Punarvasu","Puṣya","Āśleṣā","Maghā","Pūrva Phalgunī","Uttara Phalgunī","Hasta","Citrā","Svātī","Viśākhā","Anurādhā","Jyeṣṭhā","Mūla","Pūrva Āṣāḍhā","Uttara Āṣāḍhā","Śravaṇa","Dhaniṣṭhā","Śatabhiṣā","Pūrva Bhādrapadā","Uttara Bhādrapadā","Revatī"];
 var MO_UORD=["h","d","m","y"];
 function moSpanRow(units,hint){
   /* A scene may not offer every unit — years are meaningless for the pañcāṅga, hours for
@@ -245,6 +251,37 @@ function moSceneOpts(){
     h=moSpanRow(["d","m"],"from today — one month takes Candra through every phase");
   } else if(k==="sun"){
     h=moSpanRow(["d","m","y"],"from today — a year carries Sūrya through all twelve rāśis");
+  } else if(k==="bhava"){
+    /* The same twelve significations can be read in any division — the houses are
+       counted whole-sign from that division's own lagna. */
+    h='<span class="molab">Division</span>'+
+      '<select id="movarga" class="skysel">'+
+      ((MO.J&&MO.J.vargas)||[]).map(function(v,i){
+        return '<option value="'+i+'"'+(((MO.opt.varga|0)===i)?" selected":"")+'>'+
+               esc(v.varga+" — "+v.en)+'</option>'; }).join("")+'</select>'+
+      '<span class="mohint">the walk through the twelve houses stays the same; what '+
+      'changes is the chart they are counted in</span>';
+
+  } else if(k==="rashi"){
+    h='<span class="molab">Rāśi</span>'+
+      '<select id="morpin" class="skysel">'+
+      ['<option value="-1"'+(((MO.opt.rpin|0)<0)?" selected":"")+'>all twelve in turn</option>']
+      .concat(MO_RA12.map(function(n,i){
+        return '<option value="'+i+'"'+(((MO.opt.rpin|0)===i)?" selected":"")+'>'+
+               esc((i+1)+". "+n)+'</option>'; })).join("")+'</select>'+
+      '<span class="mohint">hold one and the whole length is spent on it, with a marker '+
+      'walking its thirty degrees</span>';
+
+  } else if(k==="nakfull"){
+    h='<span class="molab">Nakṣatra</span>'+
+      '<select id="monpin" class="skysel">'+
+      ['<option value="-1"'+(((MO.opt.npin|0)<0)?" selected":"")+'>all twenty-seven in turn</option>']
+      .concat(MO_NK27.map(function(n,i){
+        return '<option value="'+i+'"'+(((MO.opt.npin|0)===i)?" selected":"")+'>'+
+               esc((i+1)+". "+n)+'</option>'; })).join("")+'</select>'+
+      '<span class="mohint">hold one and the marker walks its 13°20′, lighting each pāda '+
+      'as it enters it</span>';
+
   } else if(k==="worlds"){
     h='<span class="molab">Graha</span>'+
       [["","all five in turn"],["Mercury","Budha"],["Venus","Śukra"],["Mars","Maṅgala"],
@@ -436,6 +473,10 @@ document.addEventListener("change",function(ev){
   if(t2.id==="modur"){ MO.dur=+t2.value; return; }
   if(t2.id==="mospeed"){ MO.speed=+t2.value; return; }
   if(t2.id==="mospanu"){ MO.opt.spanU=t2.value; MO.p=0; MO_CACHE={}; moDraw(); return; }
+  if(t2.id==="movarga"){ MO.opt.varga=+t2.value||0; MO.p=0; MO_CACHE={};
+    moSceneOpts(); moDraw(); return; }
+  if(t2.id==="morpin"){ MO.opt.rpin=+t2.value; MO.p=0; MO_CACHE={}; moDraw(); return; }
+  if(t2.id==="monpin"){ MO.opt.npin=+t2.value; MO.p=0; MO_CACHE={}; moDraw(); return; }
 });
 document.addEventListener("keydown",function(ev){
   if(ev.key==="Escape" && MO.studio){ moStudio(false); return; }

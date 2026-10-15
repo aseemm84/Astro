@@ -63,6 +63,10 @@ var MT_NKN=["Aśvinī","Bharaṇī","Kṛttikā","Rohiṇī","Mṛgaśirā","Ār
  "Āśleṣā","Maghā","Pūrva Phalgunī","Uttara Phalgunī","Hasta","Citrā","Svātī","Viśākhā",
  "Anurādhā","Jyeṣṭhā","Mūla","Pūrva Āṣāḍhā","Uttara Āṣāḍhā","Śravaṇa","Dhaniṣṭhā",
  "Śatabhiṣā","Pūrva Bhādrapadā","Uttara Bhādrapadā","Revatī"];
+/* LORD is English; the chart's own rulers and the varga positions are Sanskrit.
+   One naming, so a varga house does not read "lord Venus · Śukra". */
+var MT_SA={Sun:"Sūrya",Moon:"Candra",Mars:"Maṅgala",Mercury:"Budha",
+  Jupiter:"Guru",Venus:"Śukra",Saturn:"Śani",Rahu:"Rāhu",Ketu:"Ketu"};
 var MT_RA=["Meṣa","Vṛṣabha","Mithuna","Karka","Siṃha","Kanyā","Tulā","Vṛścika","Dhanus","Makara","Kumbha","Mīna"];
 function mtRa(i){ return (typeof SKY_RASI!=="undefined"&&SKY_RASI[i])||MT_RA[i]; }
 function mtNk(i){ return MT_NKN[i]||("nakṣatra "+(i+1)); }
@@ -78,11 +82,24 @@ function mtGrahas(){
             full:g.iast||g.key, sid:g.sidereal_deg,
             ri:g.rashi.idx, d:g.rashi.degInSign, retro:g.retrograde}; });
 }
-/* step p across n items with a hold-move-hold ease, so each one is readable */
-function mtStep(p,n){
+/* Step p across n items with a hold-move-hold ease, so each one is readable.
+   When a subject is pinned the walk stops: the frame holds that one and q runs
+   0 to 1 across the whole duration, which the scene uses to sweep a marker along
+   the span. A scene that is pinned should still move — the movement is just the
+   degrees rather than the subject. */
+function mtStep(p,n,pin){
+  if(pin!=null && pin>=0 && pin<n) return {i:pin,q:p,e:1,pinned:true};
   var each=1/n, i=Math.min(n-1,Math.floor(p/each)), q=(p-i*each)/each;
   var e=q<0.18?0:(q>0.58?1:(q-0.18)/0.40); e=e*e*(3-2*e);
-  return {i:i,q:q,e:e};
+  return {i:i,q:q,e:e,pinned:false};
+}
+/* the travelling degree marker a pinned scene shows */
+function mtSweep(x,y0,y1,P,label,U){
+  var c=MO.ctx;
+  c.strokeStyle=P.gold; c.lineWidth=2.4; c.globalAlpha=.85;
+  c.beginPath(); c.moveTo(x,y0); c.lineTo(x,y1); c.stroke(); c.globalAlpha=1;
+  moGlowDot(x,y1,U*0.009,P.gold,P.gold);
+  if(label) moText(label,x,y0-U*0.052,U*0.021,P.gold,"center",700);
 }
 /* a plain 30-degree strip with ticks, used by two of the three */
 function mtStrip(x0,x1,y,h,P,ticks,lab){
@@ -118,6 +135,36 @@ function mtRail(n,i,P){
   moText((i+1)+" / "+n, st.cx, y+U*0.040, U*0.020, P.dim, "center", 500);
 }
 
+/* One view of the chart, whichever division is chosen. A varga carries its own
+   lagna and its own placements, and whole-sign houses are counted from that lagna
+   exactly as they are in the rāśi chart — so the same twelve significations can be
+   read in D9 or D10 without changing anything but the ground they stand on.
+
+   D1 comes from J.bhavas, which already carries rulers and occupants. The other
+   fifteen carry only {lagna, positions}, so houses, lords and occupants are derived
+   here from the same rule. */
+function mtView(){
+  var J=MO.J, vi=Math.max(0,Math.min(15,MO.opt.varga|0));
+  var v=J.vargas&&J.vargas[vi];
+  if(vi===0 || !v){
+    var L0=J.lagna.rashi.idx;
+    return {vi:0, name:"D1", en:"Rāśi — the birth chart itself", lagna:L0, isD1:true,
+      sign:function(k){ return J.bhavas[k].rashi.idx; },
+      lord:function(k){ return J.bhavas[k].ruler; },
+      occ:function(k){ return (J.bhavas[k].occupants||[]).slice(); },
+      house:function(g){ return ((g.ri-L0)%12+12)%12; }};
+  }
+  var pos=v.positions||{};
+  return {vi:vi, name:v.varga, en:v.en, lagna:v.lagna, isD1:false,
+    sign:function(k){ return (v.lagna+k)%12; },
+    lord:function(k){ var en=(typeof LORD!=="undefined"&&LORD[(v.lagna+k)%12])||"";
+      return MT_SA[en]||en; },
+    occ:function(k){ var sg=(v.lagna+k)%12, out=[];
+      Object.keys(pos).forEach(function(n){ if(pos[n]===sg) out.push(n); }); return out; },
+    house:function(g){ var sg=pos[g.key]; if(sg==null) return -1;
+      return ((sg-v.lagna)%12+12)%12; }};
+}
+
 var MO_TEACH=[
 
 /* ------------------------------------------------------------- 1. the bhāvas */
@@ -132,7 +179,8 @@ var MO_TEACH=[
      small, with about 90px of the stage still to spare. */
   var U=Math.min(S.w, st.h*1.18);
   var J=MO.J; if(!J||!J.bhavas) throw new Error("no chart");
-  var s=mtStep(p,12), i=s.i, B=MT_BH[i], bh=J.bhavas[i];
+  var V=mtView();
+  var s=mtStep(p,12), i=s.i, B=MT_BH[i];
   moStars();
 
   /* the wheel: twelve sectors, the current one lit. Houses run anticlockwise
@@ -152,13 +200,12 @@ var MO_TEACH=[
     /* the rāśi each house falls in, outside the rim */
     if(MO.opt.labels){
       var rx=cx+Math.cos(am)*(R+U*0.045), ry=cy+Math.sin(am)*(R+U*0.045);
-      moText(mtRa(J.bhavas[k].rashi.idx),rx,ry,U*0.019,on?P.ink:P.dim,"center",on?700:400);
+      moText(mtRa(V.sign(k)),rx,ry,U*0.019,on?P.ink:P.dim,"center",on?700:400);
     }
   }
-  /* the reader's grahas, placed in their houses */
-  var L=J.lagna.rashi.idx;
+  /* the reader's grahas, placed in their houses in THIS division */
   mtGrahas().forEach(function(g){
-    var h=((g.ri-L)%12+12)%12;
+    var h=V.house(g); if(h<0) return;
     var am=-Math.PI/2-(h+0.5)*Math.PI/6;
     var gx=cx+Math.cos(am)*R*0.40, gy=cy+Math.sin(am)*R*0.40;
     moGlowDot(gx,gy,U*0.009,h===i?P.gold:P.dim,h===i?P.gold:P.dim);
@@ -171,27 +218,35 @@ var MO_TEACH=[
   moText(B.en,cx,ty+U*0.052,U*0.030,P.ink,"center",600);
   moText(B.sig,cx,ty+U*0.092,U*0.0225,P.dim,"center",400);
 
-  /* this house in this chart */
-  var occ=(bh.occupants||[]).join(", ");
-  moText(mtRa(bh.rashi.idx)+"  ·  lord "+bh.ruler+(occ?("  ·  "+occ):"  ·  empty"),
+  /* this house, in the division being shown */
+  var occ=V.occ(i).join(", ");
+  moText(mtRa(V.sign(i))+"  ·  lord "+V.lord(i)+(occ?("  ·  "+occ):"  ·  empty"),
     cx,ty+U*0.132,U*0.026,P.ink,"center",600);
 
-  /* and where BPHS looks closer */
-  var v=MT_BHV[i+1];
+  /* which division this is, and — when it is the rāśi chart — where BPHS says to
+     look closer for this particular topic */
   var vy=ty+U*0.176;
-  if(v && J.vargas){
-    var vg=null; J.vargas.forEach(function(x){ if(x.varga===v) vg=x; });
-    if(vg){
-      moText("BPHS refines this topic in "+MT_VN[v],cx,vy,U*0.0225,P.gold,"center",600);
-      moText("in your "+v+" the lagna falls in "+mtRa(vg.lagna),
-        cx,vy+U*0.034,U*0.024,P.ink,"center",500);
+  if(V.isD1){
+    var v=MT_BHV[i+1];
+    if(v && J.vargas){
+      var vg=null; J.vargas.forEach(function(x){ if(x.varga===v) vg=x; });
+      if(vg){
+        moText("BPHS refines this topic in "+MT_VN[v],cx,vy,U*0.0225,P.gold,"center",600);
+        moText("in your "+v+" the lagna falls in "+mtRa(vg.lagna)+
+          " — switch the division above to read the houses there",
+          cx,vy+U*0.034,U*0.022,P.ink,"center",500);
+      }
+    } else {
+      moText("No divisional chart is assigned to this topic — it is read from the rāśi chart",
+        cx,vy,U*0.0215,P.dim,"center",400);
     }
   } else {
-    moText("No divisional chart is assigned to this topic — it is read from the rāśi chart",
-      cx,vy,U*0.0215,P.dim,"center",400);
+    moText(V.name+" \u2014 "+V.en,cx,vy,U*0.026,P.gold,"center",700);
+    moText("houses counted whole-sign from the "+V.name+" lagna in "+mtRa(V.lagna)+
+      ", not from the rāśi lagna",cx,vy+U*0.036,U*0.021,P.dim,"center",400);
   }
   mtRail(12,i,P);
-  return {ms:null, sub:"bhāva "+(i+1)+" of 12"};
+  return {ms:null, sub:V.name+" \u00b7 bhāva "+(i+1)+" of 12"};
  }},
 
 /* -------------------------------------------------------------- 2. the rāśis */
@@ -206,7 +261,7 @@ var MO_TEACH=[
      small, with about 90px of the stage still to spare. */
   var U=Math.min(S.w, st.h*1.18);
   var J=MO.J; if(!J) throw new Error("no chart");
-  var s=mtStep(p,12), i=s.i;
+  var s=mtStep(p,12,MO.opt.rpin), i=s.i;
   moStars();
   var lord=mtLord(i);
   var cx=st.cx;
@@ -235,6 +290,11 @@ var MO_TEACH=[
       moText(mtGl(g)+" falls",x2,y+h+U*0.050,U*0.019,P.malefic,"center",600);
     }
   });
+  /* when this sign is pinned, a marker walks its thirty degrees */
+  if(s.pinned){
+    var sd=s.q*30;
+    mtSweep(X(sd),y-U*0.010,y+h+U*0.006,P,dmDeg(sd),U);
+  }
   /* the reader's own grahas in this sign, at their true degree */
   var mine=mtGrahas().filter(function(g){ return g.ri===i; });
   mine.forEach(function(g,k){
@@ -264,7 +324,7 @@ var MO_TEACH=[
     moText("takes "+Math.round(rr[i].rising_minutes)+" minutes to rise at your latitude \u2014 "+
            rr[i].share_of_day_percent.toFixed(1)+"% of the day",
       cx,ty+U*0.208,U*0.0225,P.dim,"center",400);
-  mtRail(12,i,P);
+  if(!s.pinned) mtRail(12,i,P);
   return {ms:null, sub:mtRa(i)+" — "+(i+1)+" of 12"};
  }},
 
@@ -280,7 +340,7 @@ var MO_TEACH=[
      small, with about 90px of the stage still to spare. */
   var U=Math.min(S.w, st.h*1.18);
   var J=MO.J; if(!J) throw new Error("no chart");
-  var s=mtStep(p,27), i=s.i;
+  var s=mtStep(p,27,MO.opt.npin), i=s.i;
   moStars();
   var seg=40/3, b0=i*seg, b1=b0+seg;
   var lord=mtNLord(i);
@@ -304,6 +364,15 @@ var MO_TEACH=[
   moText(dmDeg(b0),x0,y+h+U*0.028,U*0.019,P.dim,"left",500);
   moText(dmDeg(b1),x1,y+h+U*0.028,U*0.019,P.dim,"right",500);
 
+  /* when this nakṣatra is pinned, a marker walks its 13°20′, and the pāda it is
+     in at that moment is the one lit — which is the point of the division */
+  if(s.pinned){
+    var nd=b0+s.q*seg, pk=Math.min(3,Math.floor(s.q*4));
+    var px0=x0+(x1-x0)*(pk/4), px1=x0+(x1-x0)*((pk+1)/4);
+    MO.ctx.fillStyle="rgba(217,182,104,0.10)";
+    MO.ctx.fillRect(px0,y,px1-px0,h);
+    mtSweep(X(nd),y-U*0.010,y+h+U*0.006,P,dmDeg(nd),U);
+  }
   /* anything of the reader's that falls in this nakṣatra */
   var mine=mtGrahas().filter(function(g){
     var d=((g.sid%360)+360)%360; return d>=b0 && d<b1; });
@@ -332,7 +401,7 @@ var MO_TEACH=[
                            : "nothing of yours falls in this division",
       cx,ty+U*0.162,U*0.024,mine.length?P.ink:P.dim,"center",500);
   }
-  mtRail(27,i,P);
+  if(!s.pinned) mtRail(27,i,P);
   return {ms:null, sub:mtNk(i)+" — "+(i+1)+" of 27"};
  }}
 
