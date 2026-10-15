@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-LearnHoro build.
+Nirayana build.
 
 Source lives in src/ and vendor/. This assembles the shipped files:
 
@@ -48,11 +48,65 @@ def report_bundle():
         raise SystemExit("report modules not listed in _order.json: %s" % stray)
     return "".join(read(d, n) for n in order)
 
-# Where the site lives. Only the social-card scrapers and search engines ever
-# follow these; a browser never fetches a canonical or an og:image, so a local
-# copy opened from Finder makes no request for any of it. Change this one line
-# if the site ever moves to a custom domain.
-SITE_BASE = "https://aseemm84.github.io/Astro/"
+# ---------------------------------------------------------------------------
+# The brand, in one place.
+#
+# Everything the site shows about what it is called lives here, and the sources
+# reach it through {{BRAND}} and friends rather than spelling it out. Renaming is
+# then this block plus a new mark in assets/brand/ — not a search across 17 files,
+# which is what it used to be.
+#
+# What is deliberately NOT here: four strings that look like branding and are
+# actually identifiers. Renaming them breaks things silently.
+#   * `learnhoro:1` in a saved chart file (ui.js) — the format marker. Change it
+#     and every chart anyone has already saved stops opening.
+#   * localStorage "learnhoro.chart" (print path → dashboard.html) — a key agreed
+#     between two files; rename one and the handoff fails with no error.
+#   * "LearnHoro built-in engine" in engine.js, matched by substring in
+#     99-main.js — a contract between producer and consumer.
+#   * "@learnhoro" is a social handle, which is the user's to change, not ours.
+# Those stay as they are on purpose, and each carries a comment saying so.
+# ---------------------------------------------------------------------------
+BRAND = {
+    "name":    "Nirayana",
+    "deva":    "निरयन",      # निरयन
+    "slug":    "nirayana",
+    "tagline": "Vedic astrology from Bṛhat Parāśara Horā Śāstra",
+    # "without ayana" — the sidereal zodiac. The mark draws the offset it names.
+    "gloss":   "“without ayana” — the sidereal zodiac",
+    # Where the site lives. Only social-card scrapers and search engines follow
+    # these; a browser never fetches a canonical or an og:image, so a local copy
+    # opened from Finder makes no request for any of it. One line to change if the
+    # repository is renamed or the site moves to a domain of its own.
+    "base":    "https://aseemm84.github.io/Astro/",
+    "navy":    "#1d2340",
+    "gold":    "#c9a24b",
+}
+SITE_BASE = BRAND["base"]
+
+def brandify(s):
+    """Resolve the brand tokens in a source file."""
+    return (s.replace("{{BRAND}}",   BRAND["name"])
+             .replace("{{BRAND_DEVA}}", BRAND["deva"])
+             .replace("{{BRAND_SLUG}}", BRAND["slug"])
+             .replace("{{TAGLINE}}",  BRAND["tagline"])
+             .replace("{{GLOSS}}",    BRAND["gloss"])
+             .replace("{{NAVY}}",     BRAND["navy"]))
+
+def logo_mark():
+    """The emblem, referenced rather than inlined.
+
+    The mark carries the photographic sun, so it is ~108 KB. Inlining that into
+    all nineteen pages would be nine times the weight of the base64 JPEG it
+    replaced. As a file it is fetched once and cached across the whole site, and
+    <img src> is not subject to the restriction that blocks fetch() on file://,
+    so a local copy still shows it with no server.
+
+    Nothing draws this into a canvas — the motion watermark and the print cover
+    each carry their own reduced mark as a data URI — so the tainting that would
+    otherwise argue for inlining does not apply."""
+    return ('<img class="lhmark" src="assets/brand/mark.svg" '
+            'width="512" height="512" alt="" decoding="async">')
 
 def head_meta(desc, path, og_title):
     """The shared head block: description, canonical, Open Graph, Twitter card,
@@ -60,10 +114,10 @@ def head_meta(desc, path, og_title):
     — a referenced icon file would be one network request on every page load, and
     the whole point of this build is that an offline copy makes none."""
     frag = read(SRC, "pages", "_head.frag")
-    return (frag.replace("{{DESC}}", esc_attr(desc))
-                .replace("{{BASE}}", SITE_BASE)
-                .replace("{{PATH}}", path)
-                .replace("{{OGTITLE}}", esc_attr(og_title))).strip()
+    return brandify(frag.replace("{{DESC}}", esc_attr(desc))
+                        .replace("{{BASE}}", SITE_BASE)
+                        .replace("{{PATH}}", path)
+                        .replace("{{OGTITLE}}", esc_attr(og_title))).strip()
 
 def esc_attr(s):
     return (s.replace("&", "&amp;").replace('"', "&quot;")
@@ -84,7 +138,8 @@ def build_kundli():
         raise SystemExit("token <!--HEAD--> missing from the kundli shell")
     shell = shell.replace("<!--HEAD-->",
                           head_meta(kdesc, "kundli.html",
-                                    "Build a Vedic birth chart — LearnHoro"))
+                                    "Build a Vedic birth chart — " + BRAND["name"]))
+    shell = brandify(shell).replace("<!--LOGO-->", logo_mark())
     parts = [("<!--CSS-->", read(SRC, "css", "app.css"), "style"),
              ("<!--JS0-->", read(VEND, "astronomy.browser.min.js"), "script"),
              ("<!--JS1-->", read(SRC, "js", "engine.js"), "script"),
@@ -96,7 +151,8 @@ def build_kundli():
     for tok, body, tag in parts:
         if tok not in shell:
             raise SystemExit("token %s missing from the shell" % tok)
-        shell = shell.replace(tok, "<%s>%s</%s>" % (tag, body, tag))
+        # the bundles carry brand tokens too — a few strings the report prints
+        shell = shell.replace(tok, "<%s>%s</%s>" % (tag, brandify(body), tag))
     print("  build id %s" % stamp)
     return shell
 
@@ -119,13 +175,15 @@ def build_pages():
                 aside = ('<aside class="onpage"><b>On this page</b>' +
                          "".join('<a href="#%s">%s</a>' % (i, re.sub(r"<[^>]+>", "", t))
                                  for i, t in secs) + "</aside>")
-        out[href] = (shell.replace("{{CSS}}", css).replace("{{TITLE}}", m["title"])
-                          .replace("{{HEAD}}", head_meta(m["desc"], href, m["title"]))
+        out[href] = brandify(
+                     shell.replace("{{CSS}}", css).replace("{{TITLE}}", brandify(m["title"]))
+                          .replace("{{HEAD}}", head_meta(m["desc"], href, brandify(m["title"])))
                           .replace("{{H1}}", m["h1"]).replace("{{SUB}}", m["sub"])
                           .replace("{{NAV}}", navhtml)
                           .replace("{{LAYOUT}}", (" " + m["layout"]).rstrip())
-                          .replace("{{ASIDE}}", aside).replace("{{MAIN}}", body)
-                          .replace("{{FOOTER}}", footer))
+                          .replace("{{ASIDE}}", aside).replace("{{MAIN}}", brandify(body))
+                          .replace("{{FOOTER}}", footer)
+                          .replace("<!--LOGO-->", logo_mark()))
     return out
 
 def main():

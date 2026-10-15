@@ -699,7 +699,7 @@ function moExport(){
     try{
       var sheets=moSceneSheets();
       var nm=(MO.J&&MO.J.input&&MO.J.input.name)?MO.J.input.name.replace(/[^\w -]/g,"").trim():"chart";
-      n=moWorkbook(sheets,"learnhoro-"+MO.scene+"-"+(nm||"chart").replace(/\s+/g,"-")+".xlsx");
+      n=moWorkbook(sheets,"{{BRAND_SLUG}}-"+MO.scene+"-"+(nm||"chart").replace(/\s+/g,"-")+".xlsx");
     }catch(e){ err=e; }
     if(btn){ btn.disabled=false; btn.textContent="Export data (.xlsx)"; }
     var s=document.getElementById("moxlsmsg");

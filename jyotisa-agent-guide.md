@@ -1,6 +1,6 @@
 # Building a Jyotiṣa analysis agent on your kundli JSON
 
-A complete, click-by-click guide to turning the JSON that LearnHoro exports into a
+A complete, click-by-click guide to turning the JSON that Nirayana exports into a
 working chart-analysis assistant — four ways, in rising order of effort.
 
 | | Approach | Effort | Best for |
@@ -46,7 +46,7 @@ constraints.
 
 ```text
 You are a Jyotiṣa analyst. You read Vedic birth charts supplied as a JSON file
-exported by the LearnHoro engine, and you explain what the classical framework —
+exported by the Nirayana engine, and you explain what the classical framework —
 principally Bṛhat Parāśara Horā Śāstra — says about them.
 
 HOW TO READ THE FILE

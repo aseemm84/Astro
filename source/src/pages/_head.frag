@@ -1,19 +1,20 @@
 <meta name="description" content="{{DESC}}">
 <link rel="canonical" href="{{BASE}}{{PATH}}">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="LearnHoro">
+<meta property="og:site_name" content="{{BRAND}}">
 <meta property="og:locale" content="en_GB">
 <meta property="og:title" content="{{OGTITLE}}">
 <meta property="og:description" content="{{DESC}}">
 <meta property="og:url" content="{{BASE}}{{PATH}}">
-<meta property="og:image" content="{{BASE}}assets/og-learnhoro.png">
+<meta property="og:image" content="{{BASE}}assets/og-{{BRAND_SLUG}}.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="LearnHoro — a Vedic astrology reference and chart engine">
+<meta property="og:image:alt" content="{{BRAND}} — a Vedic astrology reference and chart engine">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{{OGTITLE}}">
 <meta name="twitter:description" content="{{DESC}}">
-<meta name="twitter:image" content="{{BASE}}assets/og-learnhoro.png">
+<meta name="twitter:image" content="{{BASE}}assets/og-{{BRAND_SLUG}}.png">
 <meta name="theme-color" content="#1d2340">
 <meta name="color-scheme" content="light">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%231d2340'/%3E%3Ccircle cx='32' cy='32' r='11' fill='%23f0b847'/%3E%3Cg stroke='%23d9b668' stroke-width='3.4' stroke-linecap='round'%3E%3Cpath d='M32 6v8M32 50v8M6 32h8M50 32h8'/%3E%3Cpath d='M13.6 13.6l5.7 5.7M44.7 44.7l5.7 5.7M50.4 13.6l-5.7 5.7M19.3 44.7l-5.7 5.7' opacity='.8'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2213%22%20fill%3D%22%231d2340%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2212.5%22%20fill%3D%22none%22%20stroke%3D%22%23c9a24b%22%20stroke-width%3D%223%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%227.5%22%20fill%3D%22%23edc968%22%2F%3E%3Cpath%20d%3D%22M46.8%2020.6A19%2019%200%200%201%2051%2032%22%20fill%3D%22none%22%20stroke%3D%22%23e7d19a%22%20stroke-width%3D%225%22%2F%3E%3Cpath%20d%3D%22M32%2013.5v3.4M32%2047.1v3.4M13.5%2032h3.4M47.1%2032h3.4%22%20stroke%3D%22%23c9a24b%22%20stroke-width%3D%222.6%22%2F%3E%3C%2Fsvg%3E">
+<link rel="apple-touch-icon" href="assets/brand/icon-180.png">

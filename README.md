@@ -1,4 +1,4 @@
-# LearnHoro — Jyotiṣa reference and chart engine
+# Nirayana — Jyotiṣa reference and chart engine
 
 A static website for learning and applying classical Vedic astrology, grounded in
 *Bṛhat Parāśara Horā Śāstra*. Fourteen reference pages, a chart builder that computes

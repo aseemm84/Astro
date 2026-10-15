@@ -214,6 +214,7 @@ window.buildKundliReport=function(J){
       J.__crosscheck.max_arcsec.toFixed(0)+'&Prime;</b> ('+esc(J.__crosscheck.graha)+'), lagna '+
       J.__crosscheck.lagna_arcsec.toFixed(0)+'&Prime;. Ṣaḍbala and Bhayāta are not returned by the remote engine, '+
       'so they were computed locally from the same birth data.</div>');
+  /* Paired with the stamp engine.js writes — an identifier, not branding. */
   if((J.substrate_stamp||"").indexOf("LearnHoro built-in")>=0)
     H.push('<div class="kbox"><b>Computed in your browser</b>Every figure here — positions, ashtakavarga, yogas, Bhay\u0101ta/Bhabhoga and the da\u015b\u0101 tree — was computed locally by the built-in engine (astronomy-engine, MIT) with the Lahiri ayan\u0101\u1e43\u015ba fitted to Swiss Ephemeris; no network call was made. \u0100r\u016b\u1e0dha exception cases follow the rule this site documents (the 4th from the house when the pada falls in the 7th), which differs from the remote engine\'s convention.</div>');
   H.push('<div class="kbox kwarn"><b>What this is</b>A technical presentation of a traditional system, for study and reflection — not a prediction, diagnosis, or basis for medical, financial, legal or personal decisions. Positions and engine-computed values come from the chart engine; houses, nakṣatra-pādas, combustion, Moolatrikona by degree and the daśā sequence are recomputed here. Charts with planets at sign edges are sensitive to the exact birth time.</div>');

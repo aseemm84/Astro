@@ -10,7 +10,7 @@ var MO_RATIOS={
   "1:1" :{w:1080,h:1080,label:"Square 1:1",  note:"Feed post"},
   "16:9":{w:1920,h:1080,label:"Wide 16:9",   note:"YouTube, a screen"}
 };
-/* Palettes. Midnight is the LearnHoro brand — gold on deep navy, the logo's own
+/* Palettes. Midnight is the {{BRAND}} brand — gold on deep navy, the logo's own
    colours. Eclipse is for maximum contrast on a phone in daylight. Parchment is for
    a still you want to print or post as a light image. */
 var MO_PALS={
@@ -225,8 +225,7 @@ function moCaption(dateMs,sub){
     y+=f*0.60;
   });
 
-  /* logo: the masthead already holds it as a data URI, so it is reused rather than
-     duplicated into this file */
+  /* logo: the reduced mark, drawn from the data URI below */
   var fy=y0+st.capH-footH*0.5;
   var lh=Math.min(footH*0.92, st.capH*0.30);
   if(MO.cap.logo && MO__LOGO && MO__LOGO.complete && MO__LOGO.naturalWidth){
@@ -238,11 +237,22 @@ function moCaption(dateMs,sub){
   MO._rawType=false;
 }
 
+/* The watermark draws its own copy of the mark rather than reusing the masthead's.
+   The masthead holds an inline <svg>, which cannot be handed to drawImage, and an
+   <img> pointing at an SVG file taints the canvas over file:// — which would break
+   "save this frame". A data URI taints nothing. This is the reduced mark, the same
+   one the favicon uses: at watermark size the full emblem's detail is lost anyway. */
 var MO__LOGO=null;
+var MO_MARK='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'+
+  '<circle cx="32" cy="32" r="12.5" fill="none" stroke="#c9a24b" stroke-width="3"/>'+
+  '<circle cx="32" cy="32" r="7.5" fill="#edc968"/>'+
+  '<path d="M46.8 20.6A19 19 0 0 1 51 32" fill="none" stroke="#e7d19a" stroke-width="5"/>'+
+  '<path d="M32 13.5v3.4M32 47.1v3.4M13.5 32h3.4M47.1 32h3.4" stroke="#c9a24b" stroke-width="2.6"/>'+
+  '</svg>');
 function moLogo(){
   if(MO__LOGO) return;
-  var el=document.querySelector("img.lhlogo");
-  if(el && el.src){ var im=new Image(); im.src=el.src; MO__LOGO=im; }
+  var im=new Image(); im.src=MO_MARK; MO__LOGO=im;
 }
 /* ---------------------------------------------------------------------------
    Transport. Time is normalised: every scene runs from 0 to 1 across the chosen

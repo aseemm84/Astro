@@ -1,38 +1,68 @@
 # Nirayana — brand assets
 
-Source images for the rename from LearnHoro to Nirayana (निरयन). Generated with
-Gemini, kept here as the masters. Nothing in the site references them yet.
+## What the build uses
 
-| File | Use |
+| File | Where it appears |
 |---|---|
-| `nirayana-logo-horizontal.jpg` | Masthead lockup, emblem left of the wordmark, navy ground |
-| `nirayana-stacked-navy.jpg` | Square lockup, emblem above the wordmark — phone masthead, social card |
-| `nirayana-horizontal-light.jpg` | For white pages and print: rings and wordmark in navy, gold kept only as the offset arc and the sun |
-| `nirayana-icon-navy.jpg` | Square emblem, no wordmark — superseded, see note below |
+| `mark.svg` | The masthead on every page. Referenced, not inlined — see below. |
+| `icon-180.png` | `apple-touch-icon`, for a home-screen shortcut on iOS |
+| `icon-192.png`, `icon-512.png` | Android / PWA sizes, available if a manifest is ever added |
+| `../og-nirayana.png` | The 1200×630 social card named in the Open Graph tags |
+| `favicon.svg` | Reference copy of the reduced mark. The shipped favicon is the same
+  artwork as a data URI in `src/pages/_head.frag`, so a local copy makes no request. |
 
-The emblem is a ticked gold ring inside a broken slate ring, with a bright pale-gold
-arc at the upper right. That arc is the ayanāṃśa — the offset between the tropical and
-sidereal zero points — which is what the name means. It is the element that must
-survive at every size.
+`sun-source.png` is the sun with its alpha channel, extracted from the master
+below. `mark.svg` embeds it; keep it if the mark is ever regenerated.
 
-## Still to derive (no new generation needed)
+## Why the mark is referenced rather than inlined
 
-- **App icon** — crop the emblem from the stacked lockup (910px diameter there) and pad
-  to ~16% inset. The existing `nirayana-icon-navy.jpg` is inset only 6.9%, so the slate
-  ring clips once a platform rounds the corners, and it uses a stylised vector sun
-  rather than the photographic one used everywhere else.
-- **Transparent PNG** — cut from the horizontal navy master. JPEG cannot carry alpha, so
-  no generated file can supply this.
-- **16px favicon** — must be drawn as SVG. Every raster version is an indistinct blob at
-  tab size; at 16px the mark needs to reduce to one ring plus the arc.
+It carries the photographic sun, so it is about 108 KB. Inlined into all
+nineteen pages that would be nine times the weight of the base64 JPEG it
+replaced. As a file it is fetched once and cached across the site, and `<img
+src>` is not subject to the restriction that blocks `fetch()` on `file://`, so
+an offline copy still shows it with no server.
+
+Nothing draws it into a canvas. The motion watermark and the print cover each
+carry their own copy of the *reduced* mark as a small inline SVG, because an
+`<img>` pointing at an SVG file taints a canvas over `file://`, which would
+break "save this frame".
+
+## The reduced mark
+
+At 32px the two rings merge and at 16px the full emblem is an indistinct blob,
+so the favicon, the motion watermark and the print cover use a simplified
+version: one gold ring, a solid disc for the sun, the pale offset arc, and four
+ticks. It reads at 16px. It is six shapes, duplicated in three places on
+purpose — each needs to be self-contained.
+
+## Geometry
+
+Measured off the master by radial and angular profiling, in a 512 viewBox:
+
+- gold ring r=174, stroke 10.5; eight ticks at exactly 45°, from r=152 to r=180
+- slate ring r=232, stroke 17, broken between −48° and +3°
+- pale arc r=232, stroke 21, spanning −45° to 0° — this is the ayanāṃśa, the
+  offset between the tropical and the sidereal zero point, and the whole reason
+  the name is *Nirayana*. It must survive at every size.
 
 ## Colour
 
-Brand navy `#1d2340`, gold `#c9a24b`, pale gold `#e7d19a`.
+Navy `#1d2340`, gold `#c9a24b`, pale gold `#e7d19a`, slate `#46496c`.
 
-The three navy files currently carry three different backgrounds — `#111427`,
-`#1F233E` and `#20243F` — none of them the CSS value. Normalise to `#1d2340` when
-these are wired in.
+Gold measures 2.3:1 against white, so gold linework must never sit on a light
+ground. On light backgrounds the rings and the wordmark go navy and gold is kept
+for the offset arc alone — that is what `nirayana-horizontal-light.jpg` shows.
 
-Gold measures 2.3:1 against white, so gold linework must never sit on a light ground.
-That is why the light lockup inverts the rings and wordmark to navy.
+## Masters
+
+`nirayana-logo-horizontal.jpg`, `nirayana-stacked-navy.jpg`,
+`nirayana-horizontal-light.jpg` and `nirayana-icon-navy.jpg` are the originals
+everything else was derived from. They carry three different navy backgrounds,
+none of them `#1d2340`; the derived assets are normalised.
+
+## Renaming
+
+The name lives in `source/build.py` under `BRAND`. Sources reach it through
+`{{BRAND}}`, `{{BRAND_DEVA}}`, `{{BRAND_SLUG}}`, `{{TAGLINE}}` and `{{GLOSS}}`.
+Four strings that look like branding are identifiers and must not be renamed;
+`BRAND` says which and why, and each carries a comment at its own site.

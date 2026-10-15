@@ -356,7 +356,7 @@ document.addEventListener("click",function(ev){
       var nm=(MO.J&&MO.J.input&&MO.J.input.name)||"chart";
       MO.cv.toBlob(function(b){
         var u=URL.createObjectURL(b), a=document.createElement("a");
-        a.href=u; a.download="learnhoro-"+MO.scene+"-"+String(nm).replace(/\s+/g,"-")+".png";
+        a.href=u; a.download="{{BRAND_SLUG}}-"+MO.scene+"-"+String(nm).replace(/\s+/g,"-")+".png";
         document.body.appendChild(a); a.click();
         setTimeout(function(){ URL.revokeObjectURL(u); a.parentNode.removeChild(a); },400);
       },"image/png");

@@ -501,6 +501,9 @@
   function saveMini(){
     var d=($("k-dob").value||"").split("-"), tp=($("k-tob").value||"").split(":");
     if(d.length!==3||tp.length<2){ alert("Enter a date and time first."); return; }
+    /* `learnhoro` is the file-format marker, not branding. It stays spelled this
+       way through any rename: change it and every chart already saved to disk
+       stops opening. applyChart() below reads the same key. */
     var mini={learnhoro:1, name:($("k-name").value||"").trim()||null,
       year:+d[0], month:+d[1], day:+d[2], hour:+tp[0], minute:+tp[1],
       lat:+$("k-lat").value, lon:+$("k-lon").value, tzHours:+$("k-tz").value,
@@ -515,7 +518,7 @@
     var blob=new Blob([JSON.stringify(mini,null,1)],{type:"application/json"});
     var u=URL.createObjectURL(blob), a=document.createElement("a");
     a.href=u; a.download=((mini.name||"chart").replace(/[^\w\- ]+/g,"").replace(/\s+/g,"-")
-      .toLowerCase()||"chart")+".learnhoro.json";
+      .toLowerCase()||"chart")+".{{BRAND_SLUG}}.json";
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function(){URL.revokeObjectURL(u);},1000);
   }
@@ -523,7 +526,7 @@
      fields in `input`, so every JSON already downloaded remains openable. */
   function applyChart(o){
     var i=(o&&o.learnhoro)?o:(o&&o.input);
-    if(!i||i.year==null||i.lat==null){ alert("That does not look like a LearnHoro chart file."); return false; }
+    if(!i||i.year==null||i.lat==null){ alert("That does not look like a {{BRAND}} chart file."); return false; }
     $("k-name").value=i.name||"";
     $("k-dob").value=i.year+"-"+String(i.month).padStart(2,"0")+"-"+String(i.day).padStart(2,"0");
     $("k-tob").value=String(i.hour).padStart(2,"0")+":"+String(i.minute).padStart(2,"0");
@@ -540,7 +543,7 @@
       var o=null;
       try{ o=JSON.parse(r.result); }catch(e){ alert("That file is not valid JSON."); return; }
       if(o&&o.learnhoro&&o.learnhoro>1){
-        alert("That file was saved by a newer version of LearnHoro."); return; }
+        alert("That file was saved by a newer version of {{BRAND}}."); return; }
       if(applyChart(o)) $("k-go").click();
     };
     r.onerror=function(){ alert("The file could not be read."); };

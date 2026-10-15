@@ -179,9 +179,22 @@ code.k-inline{background:#f0f0f6;padding:1px 5px;border-radius:5px;font-size:12.
 svg.lhmark .lhink{stroke:currentColor}
 svg.lhmark .lhorb{stroke:#c9a24b;fill:#c9a24b}
 svg.lhmark .lhorb ellipse{fill:none}
-.masthead .lhlogo{display:block;width:min(330px,60vw);height:auto;margin:0 0 12px -6px;
-  border-radius:10px;box-shadow:0 0 0 1px rgba(255,255,255,.05)}
-@media print{.masthead .lhlogo{display:none}}
+/* --- brand lockup: inline vector mark + the name as real text ---------------
+   The mark used to be a 12 KB base64 JPEG pasted into both shells and the print
+   module. It is now one SVG on disk, inlined by the build, and the wordmark is
+   text rather than a picture of text, so it stays crisp, themes with the page and
+   is readable by a screen reader. */
+.masthead .lhbrand{display:inline-flex;align-items:center;gap:15px;text-decoration:none;
+  color:inherit;margin:0 0 14px}
+.masthead .lhmarkwrap{display:block;width:clamp(52px,11vw,74px);flex:0 0 auto}
+.masthead .lhmark{display:block;width:100%;height:auto}
+.masthead .lhword{display:flex;flex-direction:column;line-height:1}
+.masthead .lhname{font-family:var(--serif);font-size:clamp(27px,6.4vw,37px);font-weight:600;
+  color:#dcb866;letter-spacing:.012em}
+.masthead .lhdeva{font-size:clamp(15px,3.4vw,20px);color:#c9a24b;opacity:.9;margin-top:4px;
+  font-family:"Noto Sans Devanagari","Nirmala UI",system-ui,sans-serif}
+.masthead .lhbrand:hover .lhname{color:#edc968}
+@media print{.masthead .lhbrand{display:none}}
 
 /* The landing hero: say what the thing does, show that it does it, and give one
    way in. Before this the page opened with a paragraph and seventeen equal

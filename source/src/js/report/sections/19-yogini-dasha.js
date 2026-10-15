@@ -62,7 +62,7 @@ function deriveForExport(J){
   for(var k in full) out[k]=full[k];
   out.as_of=jxAsOf(D,J);
   out.guide=jxGuide();
-  out.note="Derived layer added by the LearnHoro page at render time. Everything here is computed from the engine output in this same file and is reproducible from it.";
+  out.note="Derived layer added by the {{BRAND}} page at render time. Everything here is computed from the engine output in this same file and is reproducible from it.";
   return out;
 }
 /* ======================================================================

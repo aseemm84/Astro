@@ -517,27 +517,36 @@ body.kcast .k-status{min-height:0;margin:0}
   @page{margin:14mm}
 }
 /* --- brand mark --- */
-.lhbrand{display:inline-block;vertical-align:-0.22em;margin-right:12px}
-.lhbrand .lhmark{width:1.55em;height:1.18em;color:currentColor}
-.lhbrand .lhmark .lhorb{color:var(--gold)}
-svg.lhmark .lhorb{stroke:var(--gold);fill:var(--gold)}
-svg.lhmark .lhorb ellipse{fill:none}
 @media print{
   #kprintdoc .prbrand{display:flex;align-items:center;gap:14px;justify-content:center;margin:0 0 26px}
-  #kprintdoc .prbrand .lhmark{width:62px;height:47px;color:#1d2340}
-  #kprintdoc .prbrand .lhorb{stroke:#c9a24b;fill:#c9a24b}
-  #kprintdoc .prbrand .lhorb ellipse{fill:none}
   #kprintdoc .prwm{font-family:var(--serif);font-size:23px;font-weight:600;color:#1d2340;line-height:1.1;text-align:left}
   #kprintdoc .prby{font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:#6c7089;text-align:left}
 }
-/* --- brand lockup (raster) --- */
-.masthead .lhlogo{display:block;width:min(330px,60vw);height:auto;margin:0 0 12px -6px;
-  border-radius:10px;box-shadow:0 0 0 1px rgba(255,255,255,.05)}
+/* --- brand lockup: inline vector mark + the name as real text ---------------
+   The mark used to be a 12 KB base64 JPEG pasted into both shells and the print
+   module. It is now one SVG on disk, inlined by the build, and the wordmark is
+   text rather than a picture of text, so it stays crisp, themes with the page and
+   is readable by a screen reader. */
+.masthead .lhbrand{display:inline-flex;align-items:center;gap:15px;text-decoration:none;
+  color:inherit;margin:0 0 14px}
+.masthead .lhmarkwrap{display:block;width:clamp(52px,11vw,74px);flex:0 0 auto}
+.masthead .lhmark{display:block;width:100%;height:auto}
+.masthead .lhword{display:flex;flex-direction:column;line-height:1}
+.masthead .lhname{font-family:var(--serif);font-size:clamp(27px,6.4vw,37px);font-weight:600;
+  color:#dcb866;letter-spacing:.012em}
+.masthead .lhdeva{font-size:clamp(15px,3.4vw,20px);color:#c9a24b;opacity:.9;margin-top:4px;
+  font-family:"Noto Sans Devanagari","Nirmala UI",system-ui,sans-serif}
+.masthead .lhbrand:hover .lhname{color:#edc968}
+@media print{.masthead .lhbrand{display:none}}
 @media print{
-  .masthead .lhlogo{display:none}
-  #kprintdoc .prbrand{display:block;text-align:center;margin:0 0 6px}
-  #kprintdoc .prlogo{width:330px;max-width:70%;height:auto;border-radius:12px;
+  /* the cover: the same mark the masthead shows, lifted at print time, with the
+     name as text beside it rather than a second picture of the name */
+  #kprintdoc .prbrand{display:flex;align-items:center;justify-content:center;gap:16px;margin:0 0 6px}
+  #kprintdoc .prlogo{display:block;width:104px;flex:0 0 auto;
     -webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #kprintdoc .prlogo .lhmark{display:block;width:100%;height:auto}
+  #kprintdoc .prname{font-family:var(--serif);font-size:38px;font-weight:600;color:#1d2340;
+    letter-spacing:.012em;line-height:1}
   #kprintdoc .prby{font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;
     color:#6c7089;text-align:center;margin:0 0 26px}
 }

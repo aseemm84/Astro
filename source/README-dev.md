@@ -1,4 +1,4 @@
-# LearnHoro — source
+# Nirayana — source
 
 The site is **built, not hand-edited**. `kundli.html` and the fourteen reference pages
 are assembled by `build.py` from the files in `src/`. Editing a built file directly

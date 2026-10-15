@@ -1200,6 +1200,9 @@ window.buildLocalChart=function(inp){
     current_phase:{asOf_jd_utc:nowJd, asOf_iso:nowD.toISOString(),
       transits:transits, transitRelations:relations(trForRel,natalForRel),
       panchang:panchang(tpos.Sun.sid,tpos.Moon.sid,nowJd), sadeSati:sade},
+    /* Identifier, not branding: 99-main.js tests this string by substring to tell
+       a locally computed chart from a remote one. The two must agree, so it keeps
+       its original spelling through any rename. */
     substrate_stamp:"LearnHoro built-in engine · astronomy-engine (MIT) · Lahiri ayanāṃśa fitted to Swiss Ephemeris"};
 };
 })();
