@@ -8290,6 +8290,40 @@ var MO_SOLAR_LIMIT=18.5, MO_LUNAR_LIMIT=12.2;
    carry a penumbral eclipse at latitudes a shade over one degree. */
 var MO_INCL=5.145, MO_SOLZONE=1.58, MO_LUNZONE=1.03, MO_PENZONE=1.57;
 
+/* --- the zodiac band the tilt scene wears -----------------------------------
+   The scene answers "why no eclipse this month" in latitude, which is a question
+   about the plane. It never said WHERE along the ring any of it was happening, so
+   Rahu at 7 deg Mina and Rahu at 7 deg Kanya looked the same. This band supplies the
+   longitude frame: twelve rasi spokes, twenty-seven naksatra ticks, and the arc
+   holding each of the four bodies lit.
+
+   It is drawn through the scene's own proj(), so it sits in the same tilted
+   perspective as the ecliptic ring rather than floating flat in front of it. A
+   separate flat ring would read as a second, contradictory plane. */
+var MO_NAKW=40/3;                               /* 13 deg 20' */
+function moNak(lon){
+  var l=((lon%360)+360)%360, n=Math.floor(l/MO_NAKW);
+  return {n:n, pada:Math.floor((l-n*MO_NAKW)/(MO_NAKW/4))+1,
+          name:(typeof MO_NK27!=="undefined"&&MO_NK27[n])||("naksatra "+(n+1))};
+}
+function moRasiOf(lon){
+  var l=((lon%360)+360)%360, i=Math.floor(l/30);
+  return {i:i, deg:l-i*30,
+          name:(typeof MO_RA12!=="undefined"&&MO_RA12[i])||("rasi "+(i+1))};
+}
+/* An arc of the band, swept in longitude at a fixed radius. Short arcs still get a
+   few segments, so a naksatra arc does not degenerate into a chord. */
+function moBandArc(proj,l0,l1,rad,col,w,alpha){
+  var c=MO.ctx, n=Math.max(6,Math.ceil((l1-l0)/2));
+  c.beginPath();
+  for(var i=0;i<=n;i++){
+    var q=proj(l0+(l1-l0)*i/n,0,rad);
+    if(i===0) c.moveTo(q[0],q[1]); else c.lineTo(q[0],q[1]);
+  }
+  c.strokeStyle=col; c.lineWidth=w; c.globalAlpha=alpha;
+  c.stroke(); c.globalAlpha=1;
+}
+
 var MO_MORE=[
 
 {key:"panchanga", label:"Pañcāṅga", title:"The five limbs of the day",
@@ -8423,6 +8457,14 @@ var MO_MORE=[
   var su=moSidAt("Sun",ms), mo=moSidAt("Moon",ms), ra=moSidAt("Rahu",ms);
   if(su==null||mo==null||ra==null) throw new Error("no position");
   var ke=((ra+180)%360+360)%360;
+  /* The four the band reports on. Closures rather than values, so the readout and the
+     arcs cannot drift apart from the positions the diagram is drawn from. */
+  var MO_TILTB=[
+    {sa:"Sūrya", col:"#f0b847", lon:function(){ return su; }},
+    {sa:"Candra",col:"#e8eaf6", lon:function(){ return mo; }},
+    {sa:"Rāhu",  col:"#9f8fe0", lon:function(){ return ra; }},
+    {sa:"Ketu",  col:"#d59a72", lon:function(){ return ke; }}
+  ];
   /* Candra's true ecliptic latitude. Sūrya's is zero by definition — the ecliptic IS its
      path — and that is the whole reason this scene works: one body defines the plane, the
      other is tilted away from it. */
@@ -8430,6 +8472,14 @@ var MO_MORE=[
   try{ blat=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body.Moon,new Date(ms),true)).elat; }
   catch(e){}
   var U=Math.min(S.w,S.h)/moTypeK();  /* short side; see the pañcāṅga scene */
+  /* U is a TYPE unit: moText multiplies what it is given by moTypeK(), so U*0.03 is
+     the same rendered height on every frame. A vertical OFFSET gets no such
+     multiplication, so the same U*0.03 is 1.78x larger on 16:9 than on 9:16 — which
+     is why this scene's three verdict lines stood twice as far apart there as the
+     type they separate, and why the foot reserve ate half the stage. UT is the unit
+     an offset wants: the rendered size of U, which comes out the same on all three
+     frames. Sizes keep U, offsets take UT. */
+  var UT=U*moTypeK();
   var ex=MO.opt.latx||6;
   /* The camera breathes, as the orrery's does, but never flattens towards top-down: at a
      shallow angle the two rings project onto each other and the tilt — the whole subject
@@ -8442,11 +8492,20 @@ var MO_MORE=[
      diagram first and hoping the text fits is what makes a layout collide at 16:9, where
      the height is barely half what it is at 9:16. */
   var sy=st.capY-st.h*0.085, amp=st.h*0.028;          // the strip, and its half-height
-  var topY=U*0.03, floorY=sy-amp*1.4-U*0.175;         // the band left for the diagram
-  var cx=st.cx, cy=(topY+floorY)/2, limit=Math.max(U*0.12,(floorY-topY)/2);
+  /* The four-body readout adds two rows under the verdict, so the diagram gives up
+     that much height. The scene is laid out from the foot up precisely so this can
+     be a number rather than a collision. */
+  var footRes=((MO.opt.tring==null)?"nak":MO.opt.tring)==="off"?0.175:0.250;
+  var topY=UT*0.03, floorY=sy-amp*1.4-UT*footRes;     // the band left for the diagram
+  var cx=st.cx, cy=(topY+floorY)/2, limit=Math.max(UT*0.12,(floorY-topY)/2);
   /* the vertical reach is the ring seen edge-on plus the worst exaggerated latitude */
   var R=st.R*0.86;
-  var halfH=R*kY+R*Math.sin(MO_INCL*Math.PI/180)*ex*kZ+U*0.085;
+  /* The band rides outside the ecliptic ring, so the fit has to allow for its outer
+     edge, not the ring's. Leaving this at R is how a new outer element silently
+     clips off the top of a 16:9 frame. */
+  var tring=(MO.opt.tring==null)?"nak":MO.opt.tring;     /* off | rasi | nak */
+  var ringF=(tring==="off")?1:1.155;
+  var halfH=R*ringF*kY+R*Math.sin(MO_INCL*Math.PI/180)*ex*kZ+UT*0.085;
   if(halfH>limit) R*=limit/halfH;
   moStars();
   function proj(lon,lat,rad){
@@ -8477,8 +8536,59 @@ var MO_MORE=[
   /* Label the rails a quarter turn from the nodes — that is where the orbit stands
      furthest from the corridor, so the text never lands on a node glyph. */
   var labLon=far(ra+90)?ra+270:ra+90, cl=proj(labLon,MO_SOLZONE);
-  moText("shadow corridor ±"+MO_SOLZONE+"°",cl[0],cl[1]-U*0.026,U*0.018,P.gold,"center",600);
+  moText("shadow corridor ±"+MO_SOLZONE+"°",cl[0],cl[1]-UT*0.026,U*0.018,P.gold,"center",600);
   ring(zero,P.line,3.5,0.30,1,null);                      /* the ecliptic itself */
+  /* ---- the zodiac band ---------------------------------------------------- */
+  var RI=R*1.045, RM=R*1.10, RO=R*1.155;
+  if(tring!=="off"){
+    /* the two rims, in the same two halves the other rings use */
+    [RI,RO].forEach(function(rr){
+      [[0,180,0.22],[180,360,0.55]].forEach(function(seg){
+        c.beginPath();
+        for(var l=seg[0];l<=seg[1];l+=2){
+          var q=proj(l,0,rr); if(l===seg[0]) c.moveTo(q[0],q[1]); else c.lineTo(q[0],q[1]);
+        }
+        c.strokeStyle=P.line; c.lineWidth=1.4; c.globalAlpha=seg[2]; c.stroke();
+        c.globalAlpha=1;
+      });
+    });
+    if(tring==="nak"){
+      for(var nk=0;nk<27;nk++){
+        var nl=nk*MO_NAKW, qa=proj(nl,0,RI), qb=proj(nl,0,RI+(RO-RI)*0.45);
+        c.strokeStyle=P.line; c.lineWidth=1; c.globalAlpha=far(nl)?0.18:0.45;
+        c.beginPath(); c.moveTo(qa[0],qa[1]); c.lineTo(qb[0],qb[1]); c.stroke();
+        c.globalAlpha=1;
+      }
+    }
+    for(var rs=0;rs<12;rs++){
+      var rl=rs*30, ra0=proj(rl,0,RI), rb0=proj(rl,0,RO);
+      c.strokeStyle=P.line; c.lineWidth=1.6; c.globalAlpha=far(rl)?0.28:0.70;
+      c.beginPath(); c.moveTo(ra0[0],ra0[1]); c.lineTo(rb0[0],rb0[1]); c.stroke();
+      c.globalAlpha=1;
+      /* the rasi name, on the near half only — on the far half the ellipse squeezes
+         the spokes together and the names overprint each other */
+      if(MO.opt.labels && !far(rl+15)){
+        var rq=proj(rl+15,0,RO+R*0.055);
+        moText((typeof MO_RA12!=="undefined"?MO_RA12[rs]:String(rs+1)),
+          rq[0],rq[1],U*0.0165,P.dim,"center",500);
+      }
+    }
+    /* the arcs holding the four bodies: rasi faint and wide, naksatra bright and
+       narrow, so the two scales are told apart at a glance */
+    MO_TILTB.forEach(function(B){
+      var lon=B.lon(); if(lon==null) return;
+      var rr=moRasiOf(lon), nn=moNak(lon), a=far(lon)?0.35:1;
+      moBandArc(proj, rr.i*30, rr.i*30+30, RM, B.col, R*0.052, a*0.20);
+      if(tring==="nak")
+        moBandArc(proj, nn.n*MO_NAKW, (nn.n+1)*MO_NAKW, RM, B.col, R*0.052, a*0.60);
+      /* a stub pointing from the ring out to the band, so the arc is unambiguously
+         this body's and not its neighbour's */
+      var s0=proj(lon,0,R*1.0), s1=proj(lon,0,RO);
+      c.strokeStyle=B.col; c.lineWidth=2; c.globalAlpha=a*0.75;
+      c.beginPath(); c.moveTo(s0[0],s0[1]); c.lineTo(s1[0],s1[1]); c.stroke();
+      c.globalAlpha=1;
+    });
+  }
   /* Candra's orbit: a great circle inclined MO_INCL° to the ecliptic, crossing it at the
      nodes. Swept by the argument from the ascending node, which is where Rāhu sits, so the
      ring is tied to the same node the chart uses. */
@@ -8488,11 +8598,11 @@ var MO_MORE=[
   }
   ring(orbLat,P.glow,4,0.30,0.95,null);
   /* Earth at the centre, and the nodes where the two rings cross */
-  moGlowDot(cx,cy,U*0.013,"#6ea9d9","#9fd0ff");
+  moGlowDot(cx,cy,UT*0.013,"#6ea9d9","#9fd0ff");
   [[ra,"Rahu"],[ke,"Ketu"]].forEach(function(nd){
     var q=proj(nd[0],0);
     c.globalAlpha=far(nd[0])?0.5:1;
-    moGlyph(q[0],q[1],U*0.028,nd[1],P,true);
+    moGlyph(q[0],q[1],UT*0.028,nd[1],P,true);
     c.globalAlpha=1;
   });
   /* Sūrya, always exactly on the ecliptic ring */
@@ -8504,13 +8614,13 @@ var MO_MORE=[
   c.strokeStyle=Math.abs(blat)<=MO_SOLZONE?P.gold:P.malefic;
   c.lineWidth=3; c.globalAlpha=.85;
   c.beginPath(); c.moveTo(mf[0],mf[1]); c.lineTo(mp[0],mp[1]); c.stroke(); c.globalAlpha=1;
-  c.fillStyle=P.dim; c.beginPath(); c.arc(mf[0],mf[1],U*0.007,0,6.2832); c.fill();
-  moGlowDot(sp[0],sp[1],U*0.034,"#f0b847","#ffd37a");
+  c.fillStyle=P.dim; c.beginPath(); c.arc(mf[0],mf[1],UT*0.007,0,6.2832); c.fill();
+  moGlowDot(sp[0],sp[1],UT*0.034,"#f0b847","#ffd37a");
   moText(moG("Sun"),sp[0],sp[1],U*0.023,"#3a2a06","center",800);
-  moGlowDot(mp[0],mp[1],U*0.028,"#e8eaf6","#ffffff");
+  moGlowDot(mp[0],mp[1],UT*0.028,"#e8eaf6","#ffffff");
   moText(moG("Moon"),mp[0],mp[1],U*0.020,"#2a2f45","center",800);
   moText(Math.abs(blat).toFixed(2)+"° "+(blat>=0?"N":"S"),
-    mp[0]+U*0.055,mp[1]-U*0.010,U*0.022,
+    mp[0]+UT*0.055,mp[1]-UT*0.010,U*0.022,
     Math.abs(blat)<=MO_SOLZONE?P.gold:P.dim,"left",700);
   /* the verdict for this moment */
   var el=((mo-su)%360+360)%360;
@@ -8547,11 +8657,26 @@ var MO_MORE=[
           " the ecliptic, past the "+(isNew?MO_SOLZONE:MO_PENZONE).toFixed(2)+"° limit";
     col=P.malefic;
   }
-  var ty=cy+R*kY+R*Math.sin(MO_INCL*Math.PI/180)*ex*kZ+U*0.085;
+  var ty=cy+R*ringF*kY+R*Math.sin(MO_INCL*Math.PI/180)*ex*kZ+UT*0.085;
   moText(line1,cx,ty,U*0.034,col,"center",700);
-  moText(line2,cx,ty+U*0.040,U*0.023,P.dim,"center",500);
+  moText(line2,cx,ty+UT*0.040,U*0.023,P.dim,"center",500);
   moText("latitude shown ×"+ex+" — at true scale the gap is too fine to see",
-    cx,ty+U*0.074,U*0.019,P.dim,"center",500);
+    cx,ty+UT*0.074,U*0.019,P.dim,"center",500);
+  /* Where each of the four stands in longitude, in words. The band shows it; this
+     says it, because four labels crowded onto a tilted ellipse collide — Surya and
+     Candra sit within a degree of each other at every new moon. */
+  if(tring!=="off"){
+    var ry=ty+UT*0.112, colX=[cx-S.w*0.215, cx+S.w*0.215];
+    MO_TILTB.forEach(function(B,i){
+      var lon=B.lon(); if(lon==null) return;
+      var rr=moRasiOf(lon), nn=moNak(lon);
+      var bx=colX[i%2], by=ry+Math.floor(i/2)*UT*0.040;
+      moText(B.sa,bx-S.w*0.085,by,U*0.021,B.col,"right",700);
+      moText(rr.name+" "+rr.deg.toFixed(1)+"°"+
+        (tring==="nak"?("  ·  "+nn.name+" "+nn.pada):""),
+        bx-S.w*0.072,by,U*0.021,P.ink,"left",500);
+    });
+  }
   /* The proof strip: Candra's latitude as a wave across the whole span, with every new
      and full moon marked on it. The eclipses are exactly the marks that sit near zero. */
   var x0=S.w*0.07, x1=S.w*0.93;                       /* sy and amp are set at the top */
@@ -9512,11 +9637,20 @@ function moSceneSheets(){
           if(ab==null) verdict="";
           else if(kind==="new") verdict=(ab<=1.58)?"solar eclipse":"none";
           else verdict=(ab<=1.03)?"lunar, umbral":((ab<=1.57)?"lunar, penumbral only":"none");
+          /* Longitude as well as latitude. The band on screen shows where along the
+             ring each of the four stands; without these columns the sheet could say
+             only how far off the plane Candra was, never where it happened. */
+          var sS=moSidAt("Sun",mS), kS=(rS==null)?null:((rS+180)%360+360)%360;
+          function rn(x){ return x==null?"":moRasiOf(x).name; }
+          function nn2(x){ if(x==null) return ""; var q=moNak(x); return q.name+" "+q.pada; }
           rowsT.push([moISO(mS), kind==="new"?"New moon":"Full moon",
                       bS==null?"":+bS.toFixed(4), ab==null?"":+ab.toFixed(4),
                       (kind==="new")?1.58:1.03, (kind==="new")?"":1.57, verdict,
                       nd==null?"":+nd.toFixed(2), which,
-                      lS==null?"":+lS.toFixed(4), lS==null?"":moSignOf(lS)]);
+                      lS==null?"":+lS.toFixed(4), lS==null?"":moSignOf(lS), nn2(lS),
+                      sS==null?"":+sS.toFixed(4), rn(sS), nn2(sS),
+                      rS==null?"":+rS.toFixed(4), rn(rS), nn2(rS),
+                      rn(kS), nn2(kS)]);
         }
       }
       prev={m:mT,el:elT};
@@ -9524,7 +9658,11 @@ function moSceneSheets(){
     out.push({name:"Syzygies and latitude",
       cols:["Moment (UTC)","Phase","Candra latitude °","Absolute latitude °",
             "Limit °","Penumbral limit °","Eclipse by latitude",
-            "Degrees from the node","Node","Candra longitude °","Candra rāśi"], rows:rowsT});
+            "Degrees from the node","Node",
+            "Candra longitude °","Candra rāśi","Candra nakṣatra + pāda",
+            "Sūrya longitude °","Sūrya rāśi","Sūrya nakṣatra + pāda",
+            "Rāhu longitude °","Rāhu rāśi","Rāhu nakṣatra + pāda",
+            "Ketu rāśi","Ketu nakṣatra + pāda"], rows:rowsT});
     out.push({name:"The geometry", cols:["Quantity","Value","Why it matters"], rows:[
       ["Inclination of Candra's orbit","5.145°","the tilt that makes most syzygies miss"],
       ["Sūrya's ecliptic latitude","0° always","the ecliptic is defined as its path"],
@@ -11608,6 +11746,8 @@ panchanga:[
 ],
 tilt:[
  "The flat ring is the ecliptic. The tilted one is Candra's orbit, inclined 5.1° to it; they cross at Rāhu and Ketu.",
+ "<b>The zodiac band</b> outside them carries the twelve rāśi spokes and, at the fuller setting, the twenty-seven nakṣatra ticks. The arc each of <b>Sūrya, Candra, Rāhu and Ketu</b> stands in is lit in that body's colour — the wide faint arc is its rāśi, the narrow bright one its nakṣatra — with a stub joining it to the ring so it cannot be mistaken for a neighbour's. Rāśi names are printed on the near half only; on the far half the ellipse squeezes the spokes together and they would overprint.",
+ "The readout under the verdict gives the same four in words, with the degree in the rāśi and the pāda in the nakṣatra. It is there because at a new moon Sūrya and Candra sit within a degree of each other, and two labels on the band would land on top of one another.",
  "The coloured dropline is how far Candra stands above or below the plane. The dashed rails are the shadow corridor — inside it an eclipse can happen, outside it the shadow misses.",
  "The wave along the foot is that height across the whole span, with every new and full moon marked on it. The gold marks are the eclipses, and they are exactly the ones near zero.",
  "<b>Latitude ×</b> exaggerates the tilt. At ×1 it is true to scale and nearly invisible, which is why most months pass without an eclipse."
@@ -12013,6 +12153,16 @@ function moSceneOpts(){
       "eclipse season coming round")+
       '<span class="molab">Latitude ×</span><input type="range" id="molatx" min="1" max="14" step="1" value="'+
       (MO.opt.latx||6)+'"><span class="moval" id="molatxv">'+(MO.opt.latx||6)+'</span>'+
+      MO_BRK+
+      '<span class="molab">Zodiac band</span>'+
+      [["nak","rāśi + nakṣatra"],["rasi","rāśi only"],["off","off"]].map(function(m){
+        return '<button type="button" class="skyv'+
+          ((((MO.opt.tring==null)?"nak":MO.opt.tring)===m[0])?" on":"")+
+          '" data-motring="'+m[0]+'">'+esc(m[1])+'</button>'; }).join("")+
+      '<span class="mohint">the band rides outside the ecliptic ring in the same tilt, '+
+      'and lights the arc each of Sūrya, Candra, Rāhu and Ketu stands in — the readout '+
+      'below the verdict names them, since at a new moon two of the four sit on top of '+
+      'each other</span>'+
       '<span class="mohint">at ×1 the tilt is true to scale and almost invisible, which is '+
       'the point — the whole question turns on a degree or two</span>';
   } else if(k==="eclipseseason"){
@@ -12077,6 +12227,11 @@ document.addEventListener("click",function(ev){
     var s3=document.getElementById("moscrub"); if(s3) s3.value=Math.round(MO.p*1000);
     moDraw(); return;
   }
+  var tr=t.getAttribute("data-motring");
+  if(tr){ MO.opt.tring=tr; MO_CACHE={};
+    [].forEach.call(document.querySelectorAll("[data-motring]"),function(b){
+      b.className="skyv"+(b.getAttribute("data-motring")===tr?" on":""); });
+    moDraw(); return; }
   var ws=t.getAttribute("data-mowsize");
   if(ws){ MO.opt.wsame=(ws==="same"); MO_CACHE={};
     [].forEach.call(document.querySelectorAll("[data-mowsize]"),function(b){
@@ -12208,6 +12363,8 @@ window.__moSet=function(k,v){
   MO_CACHE={}; return MO[k]!==undefined?MO[k]:MO.opt[k];
 };
 window.__moDraw=function(){ moDraw(); };
+window.__moSpan=function(){ return moSpanMs(); };
+window.__moSidAt=function(n,ms){ return moSidAt(n,ms); };
 window.__moMetrics=function(){
   var S=moSize(), st=moStage();
   return {w:S.w, h:S.h, stageY:st.y, stageH:st.h, cx:st.cx,
@@ -14201,4 +14358,4 @@ window.buildKundliReport=function(J){
   }
 })();
 </script>
-<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-15.4dcfc49</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer></body></html>
+<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-15.f851567</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer></body></html>

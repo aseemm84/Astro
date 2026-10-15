@@ -527,11 +527,20 @@ function moSceneSheets(){
           if(ab==null) verdict="";
           else if(kind==="new") verdict=(ab<=1.58)?"solar eclipse":"none";
           else verdict=(ab<=1.03)?"lunar, umbral":((ab<=1.57)?"lunar, penumbral only":"none");
+          /* Longitude as well as latitude. The band on screen shows where along the
+             ring each of the four stands; without these columns the sheet could say
+             only how far off the plane Candra was, never where it happened. */
+          var sS=moSidAt("Sun",mS), kS=(rS==null)?null:((rS+180)%360+360)%360;
+          function rn(x){ return x==null?"":moRasiOf(x).name; }
+          function nn2(x){ if(x==null) return ""; var q=moNak(x); return q.name+" "+q.pada; }
           rowsT.push([moISO(mS), kind==="new"?"New moon":"Full moon",
                       bS==null?"":+bS.toFixed(4), ab==null?"":+ab.toFixed(4),
                       (kind==="new")?1.58:1.03, (kind==="new")?"":1.57, verdict,
                       nd==null?"":+nd.toFixed(2), which,
-                      lS==null?"":+lS.toFixed(4), lS==null?"":moSignOf(lS)]);
+                      lS==null?"":+lS.toFixed(4), lS==null?"":moSignOf(lS), nn2(lS),
+                      sS==null?"":+sS.toFixed(4), rn(sS), nn2(sS),
+                      rS==null?"":+rS.toFixed(4), rn(rS), nn2(rS),
+                      rn(kS), nn2(kS)]);
         }
       }
       prev={m:mT,el:elT};
@@ -539,7 +548,11 @@ function moSceneSheets(){
     out.push({name:"Syzygies and latitude",
       cols:["Moment (UTC)","Phase","Candra latitude °","Absolute latitude °",
             "Limit °","Penumbral limit °","Eclipse by latitude",
-            "Degrees from the node","Node","Candra longitude °","Candra rāśi"], rows:rowsT});
+            "Degrees from the node","Node",
+            "Candra longitude °","Candra rāśi","Candra nakṣatra + pāda",
+            "Sūrya longitude °","Sūrya rāśi","Sūrya nakṣatra + pāda",
+            "Rāhu longitude °","Rāhu rāśi","Rāhu nakṣatra + pāda",
+            "Ketu rāśi","Ketu nakṣatra + pāda"], rows:rowsT});
     out.push({name:"The geometry", cols:["Quantity","Value","Why it matters"], rows:[
       ["Inclination of Candra's orbit","5.145°","the tilt that makes most syzygies miss"],
       ["Sūrya's ecliptic latitude","0° always","the ecliptic is defined as its path"],

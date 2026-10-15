@@ -1024,6 +1024,40 @@ var MO_SOLAR_LIMIT=18.5, MO_LUNAR_LIMIT=12.2;
    carry a penumbral eclipse at latitudes a shade over one degree. */
 var MO_INCL=5.145, MO_SOLZONE=1.58, MO_LUNZONE=1.03, MO_PENZONE=1.57;
 
+/* --- the zodiac band the tilt scene wears -----------------------------------
+   The scene answers "why no eclipse this month" in latitude, which is a question
+   about the plane. It never said WHERE along the ring any of it was happening, so
+   Rahu at 7 deg Mina and Rahu at 7 deg Kanya looked the same. This band supplies the
+   longitude frame: twelve rasi spokes, twenty-seven naksatra ticks, and the arc
+   holding each of the four bodies lit.
+
+   It is drawn through the scene's own proj(), so it sits in the same tilted
+   perspective as the ecliptic ring rather than floating flat in front of it. A
+   separate flat ring would read as a second, contradictory plane. */
+var MO_NAKW=40/3;                               /* 13 deg 20' */
+function moNak(lon){
+  var l=((lon%360)+360)%360, n=Math.floor(l/MO_NAKW);
+  return {n:n, pada:Math.floor((l-n*MO_NAKW)/(MO_NAKW/4))+1,
+          name:(typeof MO_NK27!=="undefined"&&MO_NK27[n])||("naksatra "+(n+1))};
+}
+function moRasiOf(lon){
+  var l=((lon%360)+360)%360, i=Math.floor(l/30);
+  return {i:i, deg:l-i*30,
+          name:(typeof MO_RA12!=="undefined"&&MO_RA12[i])||("rasi "+(i+1))};
+}
+/* An arc of the band, swept in longitude at a fixed radius. Short arcs still get a
+   few segments, so a naksatra arc does not degenerate into a chord. */
+function moBandArc(proj,l0,l1,rad,col,w,alpha){
+  var c=MO.ctx, n=Math.max(6,Math.ceil((l1-l0)/2));
+  c.beginPath();
+  for(var i=0;i<=n;i++){
+    var q=proj(l0+(l1-l0)*i/n,0,rad);
+    if(i===0) c.moveTo(q[0],q[1]); else c.lineTo(q[0],q[1]);
+  }
+  c.strokeStyle=col; c.lineWidth=w; c.globalAlpha=alpha;
+  c.stroke(); c.globalAlpha=1;
+}
+
 var MO_MORE=[
 
 {key:"panchanga", label:"Pañcāṅga", title:"The five limbs of the day",
@@ -1157,6 +1191,14 @@ var MO_MORE=[
   var su=moSidAt("Sun",ms), mo=moSidAt("Moon",ms), ra=moSidAt("Rahu",ms);
   if(su==null||mo==null||ra==null) throw new Error("no position");
   var ke=((ra+180)%360+360)%360;
+  /* The four the band reports on. Closures rather than values, so the readout and the
+     arcs cannot drift apart from the positions the diagram is drawn from. */
+  var MO_TILTB=[
+    {sa:"Sūrya", col:"#f0b847", lon:function(){ return su; }},
+    {sa:"Candra",col:"#e8eaf6", lon:function(){ return mo; }},
+    {sa:"Rāhu",  col:"#9f8fe0", lon:function(){ return ra; }},
+    {sa:"Ketu",  col:"#d59a72", lon:function(){ return ke; }}
+  ];
   /* Candra's true ecliptic latitude. Sūrya's is zero by definition — the ecliptic IS its
      path — and that is the whole reason this scene works: one body defines the plane, the
      other is tilted away from it. */
@@ -1164,6 +1206,14 @@ var MO_MORE=[
   try{ blat=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body.Moon,new Date(ms),true)).elat; }
   catch(e){}
   var U=Math.min(S.w,S.h)/moTypeK();  /* short side; see the pañcāṅga scene */
+  /* U is a TYPE unit: moText multiplies what it is given by moTypeK(), so U*0.03 is
+     the same rendered height on every frame. A vertical OFFSET gets no such
+     multiplication, so the same U*0.03 is 1.78x larger on 16:9 than on 9:16 — which
+     is why this scene's three verdict lines stood twice as far apart there as the
+     type they separate, and why the foot reserve ate half the stage. UT is the unit
+     an offset wants: the rendered size of U, which comes out the same on all three
+     frames. Sizes keep U, offsets take UT. */
+  var UT=U*moTypeK();
   var ex=MO.opt.latx||6;
   /* The camera breathes, as the orrery's does, but never flattens towards top-down: at a
      shallow angle the two rings project onto each other and the tilt — the whole subject
@@ -1176,11 +1226,20 @@ var MO_MORE=[
      diagram first and hoping the text fits is what makes a layout collide at 16:9, where
      the height is barely half what it is at 9:16. */
   var sy=st.capY-st.h*0.085, amp=st.h*0.028;          // the strip, and its half-height
-  var topY=U*0.03, floorY=sy-amp*1.4-U*0.175;         // the band left for the diagram
-  var cx=st.cx, cy=(topY+floorY)/2, limit=Math.max(U*0.12,(floorY-topY)/2);
+  /* The four-body readout adds two rows under the verdict, so the diagram gives up
+     that much height. The scene is laid out from the foot up precisely so this can
+     be a number rather than a collision. */
+  var footRes=((MO.opt.tring==null)?"nak":MO.opt.tring)==="off"?0.175:0.250;
+  var topY=UT*0.03, floorY=sy-amp*1.4-UT*footRes;     // the band left for the diagram
+  var cx=st.cx, cy=(topY+floorY)/2, limit=Math.max(UT*0.12,(floorY-topY)/2);
   /* the vertical reach is the ring seen edge-on plus the worst exaggerated latitude */
   var R=st.R*0.86;
-  var halfH=R*kY+R*Math.sin(MO_INCL*Math.PI/180)*ex*kZ+U*0.085;
+  /* The band rides outside the ecliptic ring, so the fit has to allow for its outer
+     edge, not the ring's. Leaving this at R is how a new outer element silently
+     clips off the top of a 16:9 frame. */
+  var tring=(MO.opt.tring==null)?"nak":MO.opt.tring;     /* off | rasi | nak */
+  var ringF=(tring==="off")?1:1.155;
+  var halfH=R*ringF*kY+R*Math.sin(MO_INCL*Math.PI/180)*ex*kZ+UT*0.085;
   if(halfH>limit) R*=limit/halfH;
   moStars();
   function proj(lon,lat,rad){
@@ -1211,8 +1270,59 @@ var MO_MORE=[
   /* Label the rails a quarter turn from the nodes — that is where the orbit stands
      furthest from the corridor, so the text never lands on a node glyph. */
   var labLon=far(ra+90)?ra+270:ra+90, cl=proj(labLon,MO_SOLZONE);
-  moText("shadow corridor ±"+MO_SOLZONE+"°",cl[0],cl[1]-U*0.026,U*0.018,P.gold,"center",600);
+  moText("shadow corridor ±"+MO_SOLZONE+"°",cl[0],cl[1]-UT*0.026,U*0.018,P.gold,"center",600);
   ring(zero,P.line,3.5,0.30,1,null);                      /* the ecliptic itself */
+  /* ---- the zodiac band ---------------------------------------------------- */
+  var RI=R*1.045, RM=R*1.10, RO=R*1.155;
+  if(tring!=="off"){
+    /* the two rims, in the same two halves the other rings use */
+    [RI,RO].forEach(function(rr){
+      [[0,180,0.22],[180,360,0.55]].forEach(function(seg){
+        c.beginPath();
+        for(var l=seg[0];l<=seg[1];l+=2){
+          var q=proj(l,0,rr); if(l===seg[0]) c.moveTo(q[0],q[1]); else c.lineTo(q[0],q[1]);
+        }
+        c.strokeStyle=P.line; c.lineWidth=1.4; c.globalAlpha=seg[2]; c.stroke();
+        c.globalAlpha=1;
+      });
+    });
+    if(tring==="nak"){
+      for(var nk=0;nk<27;nk++){
+        var nl=nk*MO_NAKW, qa=proj(nl,0,RI), qb=proj(nl,0,RI+(RO-RI)*0.45);
+        c.strokeStyle=P.line; c.lineWidth=1; c.globalAlpha=far(nl)?0.18:0.45;
+        c.beginPath(); c.moveTo(qa[0],qa[1]); c.lineTo(qb[0],qb[1]); c.stroke();
+        c.globalAlpha=1;
+      }
+    }
+    for(var rs=0;rs<12;rs++){
+      var rl=rs*30, ra0=proj(rl,0,RI), rb0=proj(rl,0,RO);
+      c.strokeStyle=P.line; c.lineWidth=1.6; c.globalAlpha=far(rl)?0.28:0.70;
+      c.beginPath(); c.moveTo(ra0[0],ra0[1]); c.lineTo(rb0[0],rb0[1]); c.stroke();
+      c.globalAlpha=1;
+      /* the rasi name, on the near half only — on the far half the ellipse squeezes
+         the spokes together and the names overprint each other */
+      if(MO.opt.labels && !far(rl+15)){
+        var rq=proj(rl+15,0,RO+R*0.055);
+        moText((typeof MO_RA12!=="undefined"?MO_RA12[rs]:String(rs+1)),
+          rq[0],rq[1],U*0.0165,P.dim,"center",500);
+      }
+    }
+    /* the arcs holding the four bodies: rasi faint and wide, naksatra bright and
+       narrow, so the two scales are told apart at a glance */
+    MO_TILTB.forEach(function(B){
+      var lon=B.lon(); if(lon==null) return;
+      var rr=moRasiOf(lon), nn=moNak(lon), a=far(lon)?0.35:1;
+      moBandArc(proj, rr.i*30, rr.i*30+30, RM, B.col, R*0.052, a*0.20);
+      if(tring==="nak")
+        moBandArc(proj, nn.n*MO_NAKW, (nn.n+1)*MO_NAKW, RM, B.col, R*0.052, a*0.60);
+      /* a stub pointing from the ring out to the band, so the arc is unambiguously
+         this body's and not its neighbour's */
+      var s0=proj(lon,0,R*1.0), s1=proj(lon,0,RO);
+      c.strokeStyle=B.col; c.lineWidth=2; c.globalAlpha=a*0.75;
+      c.beginPath(); c.moveTo(s0[0],s0[1]); c.lineTo(s1[0],s1[1]); c.stroke();
+      c.globalAlpha=1;
+    });
+  }
   /* Candra's orbit: a great circle inclined MO_INCL° to the ecliptic, crossing it at the
      nodes. Swept by the argument from the ascending node, which is where Rāhu sits, so the
      ring is tied to the same node the chart uses. */
@@ -1222,11 +1332,11 @@ var MO_MORE=[
   }
   ring(orbLat,P.glow,4,0.30,0.95,null);
   /* Earth at the centre, and the nodes where the two rings cross */
-  moGlowDot(cx,cy,U*0.013,"#6ea9d9","#9fd0ff");
+  moGlowDot(cx,cy,UT*0.013,"#6ea9d9","#9fd0ff");
   [[ra,"Rahu"],[ke,"Ketu"]].forEach(function(nd){
     var q=proj(nd[0],0);
     c.globalAlpha=far(nd[0])?0.5:1;
-    moGlyph(q[0],q[1],U*0.028,nd[1],P,true);
+    moGlyph(q[0],q[1],UT*0.028,nd[1],P,true);
     c.globalAlpha=1;
   });
   /* Sūrya, always exactly on the ecliptic ring */
@@ -1238,13 +1348,13 @@ var MO_MORE=[
   c.strokeStyle=Math.abs(blat)<=MO_SOLZONE?P.gold:P.malefic;
   c.lineWidth=3; c.globalAlpha=.85;
   c.beginPath(); c.moveTo(mf[0],mf[1]); c.lineTo(mp[0],mp[1]); c.stroke(); c.globalAlpha=1;
-  c.fillStyle=P.dim; c.beginPath(); c.arc(mf[0],mf[1],U*0.007,0,6.2832); c.fill();
-  moGlowDot(sp[0],sp[1],U*0.034,"#f0b847","#ffd37a");
+  c.fillStyle=P.dim; c.beginPath(); c.arc(mf[0],mf[1],UT*0.007,0,6.2832); c.fill();
+  moGlowDot(sp[0],sp[1],UT*0.034,"#f0b847","#ffd37a");
   moText(moG("Sun"),sp[0],sp[1],U*0.023,"#3a2a06","center",800);
-  moGlowDot(mp[0],mp[1],U*0.028,"#e8eaf6","#ffffff");
+  moGlowDot(mp[0],mp[1],UT*0.028,"#e8eaf6","#ffffff");
   moText(moG("Moon"),mp[0],mp[1],U*0.020,"#2a2f45","center",800);
   moText(Math.abs(blat).toFixed(2)+"° "+(blat>=0?"N":"S"),
-    mp[0]+U*0.055,mp[1]-U*0.010,U*0.022,
+    mp[0]+UT*0.055,mp[1]-UT*0.010,U*0.022,
     Math.abs(blat)<=MO_SOLZONE?P.gold:P.dim,"left",700);
   /* the verdict for this moment */
   var el=((mo-su)%360+360)%360;
@@ -1281,11 +1391,26 @@ var MO_MORE=[
           " the ecliptic, past the "+(isNew?MO_SOLZONE:MO_PENZONE).toFixed(2)+"° limit";
     col=P.malefic;
   }
-  var ty=cy+R*kY+R*Math.sin(MO_INCL*Math.PI/180)*ex*kZ+U*0.085;
+  var ty=cy+R*ringF*kY+R*Math.sin(MO_INCL*Math.PI/180)*ex*kZ+UT*0.085;
   moText(line1,cx,ty,U*0.034,col,"center",700);
-  moText(line2,cx,ty+U*0.040,U*0.023,P.dim,"center",500);
+  moText(line2,cx,ty+UT*0.040,U*0.023,P.dim,"center",500);
   moText("latitude shown ×"+ex+" — at true scale the gap is too fine to see",
-    cx,ty+U*0.074,U*0.019,P.dim,"center",500);
+    cx,ty+UT*0.074,U*0.019,P.dim,"center",500);
+  /* Where each of the four stands in longitude, in words. The band shows it; this
+     says it, because four labels crowded onto a tilted ellipse collide — Surya and
+     Candra sit within a degree of each other at every new moon. */
+  if(tring!=="off"){
+    var ry=ty+UT*0.112, colX=[cx-S.w*0.215, cx+S.w*0.215];
+    MO_TILTB.forEach(function(B,i){
+      var lon=B.lon(); if(lon==null) return;
+      var rr=moRasiOf(lon), nn=moNak(lon);
+      var bx=colX[i%2], by=ry+Math.floor(i/2)*UT*0.040;
+      moText(B.sa,bx-S.w*0.085,by,U*0.021,B.col,"right",700);
+      moText(rr.name+" "+rr.deg.toFixed(1)+"°"+
+        (tring==="nak"?("  ·  "+nn.name+" "+nn.pada):""),
+        bx-S.w*0.072,by,U*0.021,P.ink,"left",500);
+    });
+  }
   /* The proof strip: Candra's latitude as a wave across the whole span, with every new
      and full moon marked on it. The eclipses are exactly the marks that sit near zero. */
   var x0=S.w*0.07, x1=S.w*0.93;                       /* sy and amp are set at the top */

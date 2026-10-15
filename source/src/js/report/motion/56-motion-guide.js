@@ -72,6 +72,8 @@ panchanga:[
 ],
 tilt:[
  "The flat ring is the ecliptic. The tilted one is Candra's orbit, inclined 5.1° to it; they cross at Rāhu and Ketu.",
+ "<b>The zodiac band</b> outside them carries the twelve rāśi spokes and, at the fuller setting, the twenty-seven nakṣatra ticks. The arc each of <b>Sūrya, Candra, Rāhu and Ketu</b> stands in is lit in that body's colour — the wide faint arc is its rāśi, the narrow bright one its nakṣatra — with a stub joining it to the ring so it cannot be mistaken for a neighbour's. Rāśi names are printed on the near half only; on the far half the ellipse squeezes the spokes together and they would overprint.",
+ "The readout under the verdict gives the same four in words, with the degree in the rāśi and the pāda in the nakṣatra. It is there because at a new moon Sūrya and Candra sit within a degree of each other, and two labels on the band would land on top of one another.",
  "The coloured dropline is how far Candra stands above or below the plane. The dashed rails are the shadow corridor — inside it an eclipse can happen, outside it the shadow misses.",
  "The wave along the foot is that height across the whole span, with every new and full moon marked on it. The gold marks are the eclipses, and they are exactly the ones near zero.",
  "<b>Latitude ×</b> exaggerates the tilt. At ×1 it is true to scale and nearly invisible, which is why most months pass without an eclipse."

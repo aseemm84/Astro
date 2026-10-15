@@ -309,6 +309,16 @@ function moSceneOpts(){
       "eclipse season coming round")+
       '<span class="molab">Latitude ×</span><input type="range" id="molatx" min="1" max="14" step="1" value="'+
       (MO.opt.latx||6)+'"><span class="moval" id="molatxv">'+(MO.opt.latx||6)+'</span>'+
+      MO_BRK+
+      '<span class="molab">Zodiac band</span>'+
+      [["nak","rāśi + nakṣatra"],["rasi","rāśi only"],["off","off"]].map(function(m){
+        return '<button type="button" class="skyv'+
+          ((((MO.opt.tring==null)?"nak":MO.opt.tring)===m[0])?" on":"")+
+          '" data-motring="'+m[0]+'">'+esc(m[1])+'</button>'; }).join("")+
+      '<span class="mohint">the band rides outside the ecliptic ring in the same tilt, '+
+      'and lights the arc each of Sūrya, Candra, Rāhu and Ketu stands in — the readout '+
+      'below the verdict names them, since at a new moon two of the four sit on top of '+
+      'each other</span>'+
       '<span class="mohint">at ×1 the tilt is true to scale and almost invisible, which is '+
       'the point — the whole question turns on a degree or two</span>';
   } else if(k==="eclipseseason"){
@@ -373,6 +383,11 @@ document.addEventListener("click",function(ev){
     var s3=document.getElementById("moscrub"); if(s3) s3.value=Math.round(MO.p*1000);
     moDraw(); return;
   }
+  var tr=t.getAttribute("data-motring");
+  if(tr){ MO.opt.tring=tr; MO_CACHE={};
+    [].forEach.call(document.querySelectorAll("[data-motring]"),function(b){
+      b.className="skyv"+(b.getAttribute("data-motring")===tr?" on":""); });
+    moDraw(); return; }
   var ws=t.getAttribute("data-mowsize");
   if(ws){ MO.opt.wsame=(ws==="same"); MO_CACHE={};
     [].forEach.call(document.querySelectorAll("[data-mowsize]"),function(b){
@@ -504,6 +519,8 @@ window.__moSet=function(k,v){
   MO_CACHE={}; return MO[k]!==undefined?MO[k]:MO.opt[k];
 };
 window.__moDraw=function(){ moDraw(); };
+window.__moSpan=function(){ return moSpanMs(); };
+window.__moSidAt=function(n,ms){ return moSidAt(n,ms); };
 window.__moMetrics=function(){
   var S=moSize(), st=moStage();
   return {w:S.w, h:S.h, stageY:st.y, stageH:st.h, cx:st.cx,
