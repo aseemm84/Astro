@@ -693,15 +693,26 @@ function moSceneSheets(){
     /* The twelve houses as the chosen division reads them, and then the same twelve
        across all sixteen, which is the sheet worth keeping. */
     var J=MO.J, V=mtView();
+    /* "What it carries" is Ch. 11 and is identical in every division; "Read in
+       <varga> for" is the division's own matter from Ch. 6. Two columns, because
+       they are two different claims and only the second one moves. */
+    var LN0=MT_VLENS[V.name]||MT_VLENS.D1;
     out.push({name:"Bhāvas in "+V.name,
-      cols:["#","Sanskrit","What it carries","Rāśi","Lord","Occupants",
+      cols:["#","Sanskrit","What it carries (BPHS Ch. 11 — same in every division)",
+            "Read in "+V.name+" for","Division exists to refine it","Rāśi","Lord","Occupants",
             "Varga BPHS assigns to this topic","Lagna of that varga"],
       rows:MT_BH.map(function(B,i){
         var v=MT_BHV[i+1], vg=null;
         if(v&&J.vargas) J.vargas.forEach(function(x){ if(x.varga===v) vg=x; });
-        return [i+1,B.sa,B.sig,mtRa(V.sign(i)),V.lord(i),V.occ(i).join(", ")||"—",
+        return [i+1,B.sa,B.sig,LN0.t,(LN0.k.indexOf(i+1)>=0)?"yes":"",
+                mtRa(V.sign(i)),V.lord(i),V.occ(i).join(", ")||"—",
                 v?(v+" · "+MT_VN[v]):"— none assigned —",
                 vg?mtRa(vg.lagna):"—"]; })});
+    out.push({name:"What each division is read for",
+      cols:["Varga","The matter it refines (BPHS Ch. 6)","House(s) it exists to refine"],
+      rows:(J.vargas||[]).map(function(v){
+        var L=MT_VLENS[v.varga]||{t:"",k:[]};
+        return [v.varga, L.t, L.k.length?L.k.join(", "):"— read whole —"]; })});
     var hdr=["#","Sanskrit"], keep=MO.opt.varga;
     (J.vargas||[]).forEach(function(v){ hdr.push(v.varga+" rāśi"); hdr.push(v.varga+" lord"); });
     var grid=MT_BH.map(function(B,i){ return [i+1,B.sa]; });

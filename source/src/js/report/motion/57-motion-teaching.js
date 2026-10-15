@@ -38,6 +38,39 @@ var MT_VN={D2:"Horā — wealth",D3:"Drekkāṇa — siblings",D4:"Caturthāṃ�
   D7:"Saptāṃśa — children",D9:"Navāṃśa — spouse and dharma",D10:"Daśāṃśa — profession",
   D12:"Dvādaśāṃśa — parents"};
 
+/* --- the reading lens each division supplies ----------------------------------
+   What a bhāva *means* does not change between divisions. The 4th is home and
+   mother in the rāśi chart and in the Daśāṃśa alike; that is BPHS Ch. 11 and it
+   is an invariant, not an oversight.
+
+   What changes is the QUESTION being put to it. Ch. 6 assigns each division a
+   matter, so the twelve significations are read inside that matter: the 4th in
+   D10 is the standing a profession rests on, the 4th in D7 the home children are
+   born into. That composition — division's topic × house's signification — is
+   standard reading practice, not a verse of Parāśara, and the frame says so.
+
+   `k` is the house the division exists to refine, by the topic Ch. 6 gives it
+   rather than by matching the number: D7 refines the 5th, not the 7th. Empty
+   where the division is read whole (D1, D27, D60) rather than through one house. */
+var MT_VLENS={
+  D1:  {t:"the whole life as it stands",              k:[]},
+  D2:  {t:"wealth and what sustains it",              k:[2]},
+  D3:  {t:"siblings, courage and initiative",k:[3]},
+  D4:  {t:"home, land and fixed assets",              k:[4]},
+  D7:  {t:"children and progeny",                     k:[5]},
+  D9:  {t:"marriage, dharma, and how each graha ripens", k:[7,9]},
+  D10: {t:"profession and action in the world",        k:[10]},
+  D12: {t:"parents and what came down from them",      k:[4,9]},
+  D16: {t:"vehicles, comforts and ease",      k:[4]},
+  D20: {t:"worship and spiritual practice",            k:[5,9]},
+  D24: {t:"learning and what is studied",              k:[4,5]},
+  D27: {t:"the strength each graha brings to it", k:[]},
+  D30: {t:"affliction and misfortune",                 k:[6]},
+  D40: {t:"what comes down the mother's line",    k:[4]},
+  D45: {t:"what comes down the father's line",    k:[9]},
+  D60: {t:"the karmic residue standing behind it",       k:[]}
+};
+
 /* --- rāśi attributes, BPHS Ch. 4 ---------------------------------------- */
 var MT_EL=["Fire","Earth","Air","Water","Fire","Earth","Air","Water","Fire","Earth","Air","Water"];
 var MT_MO=["Movable","Fixed","Dual","Movable","Fixed","Dual","Movable","Fixed","Dual","Movable","Fixed","Dual"];
@@ -135,6 +168,60 @@ function mtRail(n,i,P){
   moText((i+1)+" / "+n, st.cx, y+U*0.040, U*0.020, P.dim, "center", 500);
 }
 
+/* A stack of caption lines laid out to fit the room there is.
+
+   The lines were at hand-written offsets, which was fine while every subject
+   contributed the same number of them. It stopped being fine as soon as a
+   division could add one — seven lines on a 16:9 frame walked straight into the
+   rail. So the block is a list now, and this lays it out: natural height first,
+   and if that overruns the floor, the whole stack is scaled down together until
+   it fits, to a floor of 0.72 so it never shrinks past legibility.
+
+   Each line is {t, s, c, w, gap, serif}: text, size as a fraction of U, colour,
+   weight, extra space above it, and whether to set it in the serif face. */
+function mtFit(t,s,L,wmax){
+  /* The size a line can actually be set at without running to the frame edge.
+     Measured rather than estimated, because the glyph widths here are not the
+     ones a rule of thumb assumes: Sanskrit with its diacritics, middots as
+     separators, and a serif face for the heading. 0.66 is the floor — a line that
+     needs more than that is too long to be written, not too long to be set. */
+  var c=MO.ctx, k=moTypeK();
+  c.font = L.serif
+    ? '600 '+(s*k)+'px "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif'
+    : (L.w||500)+" "+(s*k)+'px system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
+  var w=c.measureText(t).width;
+  return w>wmax ? s*Math.max(0.66, wmax/w) : s;
+}
+function mtLines(lines,cx,yTop,yMax,U,P,wmax){
+  /* moText and moSerif scale what they are given by moTypeK(), which is 1 on a
+     vertical or square frame and 0.5625 on a wide one. The line step has to carry
+     the same factor or a 16:9 frame spaces half-size glyphs as though they were
+     full size — which is exactly how seven lines came to walk off the stage.
+
+     Two fits happen here, and in this order: each line is narrowed on its own if
+     it would reach the frame edge, then the whole stack is scaled together if it
+     would reach the floor. Doing it the other way round would narrow lines that
+     the stack scaling was about to shrink anyway. */
+  var k=moTypeK(), i, nat=0, L, step=1.62;
+  for(i=0;i<lines.length;i++){
+    L=lines[i]; if(!L||!L.t) continue;
+    L._s = wmax ? mtFit(L.t, L.s*U, L, wmax)/U : L.s;
+    nat += (L.gap||0)*U + L._s*k*step*U;
+  }
+  var room=yMax-yTop, f=1;
+  if(nat>room && nat>0) f=Math.max(0.72, room/nat);
+  var y=yTop;
+  for(i=0;i<lines.length;i++){
+    L=lines[i]; if(!L||!L.t) continue;
+    var h=L._s*k*step*U*f;
+    y += (L.gap||0)*U*f + h*0.70;        /* 0.70 of the step sits above the baseline */
+    if(L.serif) moSerif(L.t,cx,y,L._s*U*f,L.c);
+    else moText(L.t,cx,y,L._s*U*f,L.c,"center",L.w||500);
+    y += h*0.30;
+  }
+  return y;
+}
+
 /* One view of the chart, whichever division is chosen. A varga carries its own
    lagna and its own placements, and whole-sign houses are counted from that lagna
    exactly as they are in the rāśi chart — so the same twelve significations can be
@@ -185,7 +272,16 @@ var MO_TEACH=[
 
   /* the wheel: twelve sectors, the current one lit. Houses run anticlockwise
      from the lagna, which is how a rāśi chart is read. */
-  var R=Math.min(S.w*0.30, st.h*0.26), cx=st.cx, cy=st.y+st.h*0.33;
+  /* How much height the wheel may take depends on the frame. Only the vertical
+     frame has room to spare below it; the square is tighter and the wide one
+     tightest, so there the wheel gives height back rather than squeezing seven
+     lines of caption into the slack. The three sets of numbers were measured, not
+     guessed: every house in every division clears the rail on all three frames. */
+  var aspect=S.w/st.h, FR;
+  if(aspect>1.6)       FR={R:0.225, cy:0.29, gap:0.045};   /* 16:9 */
+  else if(aspect>1.15) FR={R:0.200, cy:0.26, gap:0.045};   /* 1:1  */
+  else                 FR={R:0.260, cy:0.33, gap:0.070};   /* 9:16 */
+  var R=Math.min(S.w*0.30, st.h*FR.R), cx=st.cx, cy=st.y+st.h*FR.cy;
   for(var k=0;k<12;k++){
     var a0=-Math.PI/2 - (k+1)*Math.PI/6, a1=-Math.PI/2 - k*Math.PI/6;
     var on=(k===i);
@@ -212,39 +308,58 @@ var MO_TEACH=[
     if(h===i) moText(g.n,gx,gy-U*0.022,U*0.020,P.gold,"center",700);
   });
 
-  /* the words */
-  var ty=cy+R+st.h*0.10;
-  moSerif(String(i+1)+".  "+B.sa,cx,ty,U*0.066,P.gold);
-  moText(B.en,cx,ty+U*0.052,U*0.030,P.ink,"center",600);
-  moText(B.sig,cx,ty+U*0.092,U*0.0225,P.dim,"center",400);
-
-  /* this house, in the division being shown */
+  /* The words. Three registers, kept apart on purpose:
+       - the significations      BPHS Ch. 11, the same in every division
+       - the reading lens        the division's topic, Ch. 6, composed with the
+                                 house by ordinary reading practice, not a verse
+       - the reader's own house  sign, lord and occupants, in THIS division
+     Changing the division above changes the second and third and leaves the
+     first alone, which is the doctrine rather than a stuck screen. */
+  var LN=MT_VLENS[V.name]||MT_VLENS.D1, key=(LN.k.indexOf(i+1)>=0);
   var occ=V.occ(i).join(", ");
-  moText(mtRa(V.sign(i))+"  ·  lord "+V.lord(i)+(occ?("  ·  "+occ):"  ·  empty"),
-    cx,ty+U*0.132,U*0.026,P.ink,"center",600);
+  var lines=[
+    {t:String(i+1)+".  "+B.sa, s:0.066, c:P.gold, serif:true},
+    {t:B.en,  s:0.030,  c:P.ink, w:600, gap:0.008},
+    {t:B.sig, s:0.0225, c:P.dim, w:400, gap:0.008}
+  ];
 
-  /* which division this is, and — when it is the rāśi chart — where BPHS says to
-     look closer for this particular topic */
-  var vy=ty+U*0.176;
+  /* the lens - the one line that answers "so what changes when I switch?" */
   if(V.isD1){
-    var v=MT_BHV[i+1];
-    if(v && J.vargas){
-      var vg=null; J.vargas.forEach(function(x){ if(x.varga===v) vg=x; });
-      if(vg){
-        moText("BPHS refines this topic in "+MT_VN[v],cx,vy,U*0.0225,P.gold,"center",600);
-        moText("in your "+v+" the lagna falls in "+mtRa(vg.lagna)+
-          " — switch the division above to read the houses there",
-          cx,vy+U*0.034,U*0.022,P.ink,"center",500);
-      }
+    lines.push({t:"read plainly, with no division narrowing them",
+      s:0.0225, c:P.dim, w:500, gap:0.014});
+  } else {
+    lines.push({t:"in "+V.name+", read these same meanings for "+LN.t,
+      s:0.0235, c:P.gold, w:600, gap:0.014});
+    if(key) lines.push({t:"★  this is the house "+V.name+" exists to refine",
+      s:0.021, c:P.gold, w:700, gap:0.004});
+  }
+
+  /* the reader's own house, in the division being shown */
+  lines.push({t:mtRa(V.sign(i))+"  ·  lord "+V.lord(i)+
+    (occ?("  ·  "+occ):"  ·  empty"),
+    s:0.026, c:P.ink, w:600, gap:0.016});
+
+  /* and, on the rasi chart, where BPHS says to look closer at this topic */
+  if(V.isD1){
+    var v=MT_BHV[i+1], vg=null;
+    if(v && J.vargas) J.vargas.forEach(function(x){ if(x.varga===v) vg=x; });
+    if(vg){
+      lines.push({t:"BPHS refines this topic in "+MT_VN[v],
+        s:0.0225, c:P.gold, w:600, gap:0.014});
+      lines.push({t:"in your "+v+" the lagna falls in "+mtRa(vg.lagna)+
+        " — switch the division above to read the houses there",
+        s:0.022, c:P.ink, w:500});
     } else {
-      moText("No divisional chart is assigned to this topic — it is read from the rāśi chart",
-        cx,vy,U*0.0215,P.dim,"center",400);
+      lines.push({t:"No division is assigned to this topic — it is read from the rāśi chart",
+        s:0.0215, c:P.dim, w:400, gap:0.014});
     }
   } else {
-    moText(V.name+" \u2014 "+V.en,cx,vy,U*0.026,P.gold,"center",700);
-    moText("houses counted whole-sign from the "+V.name+" lagna in "+mtRa(V.lagna)+
-      ", not from the rāśi lagna",cx,vy+U*0.036,U*0.021,P.dim,"center",400);
+    lines.push({t:V.name+" — "+V.en+", counted whole-sign from its own lagna in "+mtRa(V.lagna),
+      s:0.021, c:P.dim, w:400, gap:0.012});
   }
+
+  var ty=cy+R+st.h*FR.gap;
+  mtLines(lines,cx,ty,st.y+st.h-U*0.112,U,P,S.w*0.88);
   mtRail(12,i,P);
   return {ms:null, sub:V.name+" \u00b7 bhāva "+(i+1)+" of 12"};
  }},

@@ -486,3 +486,35 @@ document.addEventListener("keydown",function(ev){
     ev.preventDefault(); moPlay(!MO.playing);
   }
 });
+
+/* Test hooks, in the same spirit as the sky pane's __sky* set. The bundle is one
+   closure, so MO and moDraw are not reachable from outside it; without these a
+   harness can only click controls and look at pixels, which cannot tell a caption
+   that overflows the stage from one that merely looks tight. Nothing in the site
+   calls them, and they expose state the controls already expose. */
+window.__moState=function(){ return MO; };
+window.__moSet=function(k,v){
+  if(k==="ratio") MO.ratio=v; else if(k==="scene") MO.scene=v;
+  else if(k==="p") MO.p=v; else MO.opt[k]=v;
+  MO_CACHE={}; return MO[k]!==undefined?MO[k]:MO.opt[k];
+};
+window.__moDraw=function(){ moDraw(); };
+window.__moMetrics=function(){
+  var S=moSize(), st=moStage();
+  return {w:S.w, h:S.h, stageY:st.y, stageH:st.h, cx:st.cx,
+          U:Math.min(S.w, st.h*1.18)};
+};
+/* Capture every piece of type a draw lays down, with its baseline and size, so a
+   harness can assert that nothing runs past the stage floor. */
+window.__moCapture=function(){
+  var ot=moText, os=moSerif, out=[];
+  /* measure after the call, when the context still carries the font it just used */
+  moText=function(t,x,y,s){ var r=ot.apply(null,arguments);
+    out.push({t:String(t),x:x,y:y,s:s,w:MO.ctx.measureText(String(t)).width}); return r; };
+  moSerif=function(t,x,y,s){ var r=os.apply(null,arguments);
+    out.push({t:String(t),x:x,y:y,s:s,w:MO.ctx.measureText(String(t)).width}); return r; };
+  var err=null;
+  try{ moDraw(); }catch(e){ err=e&&e.message||String(e); }
+  moText=ot; moSerif=os;
+  return {err:err, type:out};
+};

@@ -129,7 +129,9 @@ worlds:[
 bhava:[
  "One bhāva at a time, with the wheel showing where it falls in your own chart. Houses run anticlockwise from the lagna, which is how a rāśi chart is read — the lagna is always house 1.",
  "The significations are from <b>BPHS Ch. 11</b>. They overlap on purpose: the 7th is spouse and travel and trade, and the text does not rank them.",
- "The line beneath gives this house in <i>your</i> chart — its rāśi, its lord, and whatever stands in it. Dots inside the wheel are your grahas.",
+ "<b>Those twelve meanings do not change with the division</b>, and the frame is not stuck when they stay put: the 4th is home and mother in the rāśi chart and in the Daśāṃśa alike. What the <b>Division</b> picker changes is the question put to them — the gold line gives the matter that division is for (Ch. 6), so the 4th read in D10 is the standing a profession rests on, and in D7 the home children are born into. That composition of topic with house is ordinary reading practice, not a verse.",
+ "A star marks the house a division exists to refine — the 5th in D7, the 7th and 9th in D9. Three divisions carry no star, because D1, D27 and D60 are read whole rather than through one house.",
+ "The line beneath gives this house in <i>your</i> chart — its rāśi, its lord, and whatever stands in it, all recomputed for the division on show. Dots inside the wheel are your grahas, in their places in that division.",
  "<b>Where BPHS looks closer.</b> The vargas are tied to topics in Ch. 6, so the 5th (children) is refined by <b>D7</b>, not D5. The popular habit of matching house N to chart D-N is not in the text and is not used here.",
  "Four houses have no varga of their own. The frame says so rather than inventing one."
 ],
