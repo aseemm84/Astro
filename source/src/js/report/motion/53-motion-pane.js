@@ -70,7 +70,12 @@ function motionPane(D,J){
             return '<option value="'+d.s+'"'+(d.s===15?" selected":"")+'>'+d.label+'</option>'; }).join("")+'</select>'+
           '<span class="molab">Speed</span>'+
           '<select id="mospeed" class="skysel">'+
-            [[0.25,"\u00bc\u00d7"],[0.5,"\u00bd\u00d7"],[1,"1\u00d7"],[2,"2\u00d7"],[4,"4\u00d7"]]
+            /* Down to a tenth. The slow end is for study rather than for export:
+               a 60 s loop at 1/10 runs ten minutes, which on a twelve-step walk is
+               about fifty seconds on each bhava - long enough to read the words and
+               look back at the wheel before it moves on. The fast end is unchanged. */
+            [[0.1,"\u2152\u00d7"],[0.2,"\u2155\u00d7"],[0.25,"\u00bc\u00d7"],[0.5,"\u00bd\u00d7"],
+             [1,"1\u00d7"],[2,"2\u00d7"],[4,"4\u00d7"]]
             .map(function(s){ return '<option value="'+s[0]+'"'+(s[0]===1?" selected":"")+'>'+s[1]+'</option>'; }).join("")+
           '</select>'+
         '</div>'+
@@ -362,7 +367,7 @@ document.addEventListener("click",function(ev){
     if(s2) s2.value=0; moDraw(); return; }
   if(t.id==="mostepb"||t.id==="mostepf"){
     moPlay(false);
-    var dp=(1/60)/Math.max(0.5,MO.dur/Math.max(0.1,MO.speed));
+    var dp=(1/60)/Math.max(0.5,MO.dur/Math.max(MO_SPEED_MIN,MO.speed));
     MO.p+=(t.id==="mostepf"?dp:-dp);
     if(MO.p>=1) MO.p-=1; if(MO.p<0) MO.p+=1;
     var s3=document.getElementById("moscrub"); if(s3) s3.value=Math.round(MO.p*1000);

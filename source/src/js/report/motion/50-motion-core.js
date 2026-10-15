@@ -25,6 +25,11 @@ var MO_PALS={
     gold:"#a17c2a", benefic:"#2f7d55", malefic:"#b5533c", star:"#4a5078", glow:"#c9a24b"}
 };
 var MO_DUR=[{s:8,label:"8 s"},{s:15,label:"15 s"},{s:30,label:"30 s"},{s:60,label:"60 s"}];
+/* The floor the playhead maths guards against, kept below the slowest option the
+   Speed menu offers. It is a guard against a zero or a negative, not a policy on
+   how slow the animation may run - when it sat at the slowest option's own value,
+   adding a slower one would have been clamped away with nothing said. */
+var MO_SPEED_MIN=0.02;
 var MO_NAMES=["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn","Rahu","Ketu"];
 var MO_FULL={Sun:"Sūrya",Moon:"Candra",Mars:"Maṅgala",Mercury:"Budha",Jupiter:"Guru",
              Venus:"Śukra",Saturn:"Śani",Rahu:"Rāhu",Ketu:"Ketu"};
@@ -284,7 +289,7 @@ function moTick(ts){
   if(!MO.playing){ MO.raf=null; return; }
   if(MO.last==null) MO.last=ts;
   var dt=Math.min(120,ts-MO.last); MO.last=ts;
-  MO.p+=(dt/1000)/Math.max(0.5,MO.dur/Math.max(0.1,MO.speed));
+  MO.p+=(dt/1000)/Math.max(0.5,MO.dur/Math.max(MO_SPEED_MIN,MO.speed));
   if(MO.p>=1) MO.p-=1;
   MO._fpsN++; MO._fpsT+=dt;
   if(MO._fpsT>500){ MO.fps=Math.round(1000*MO._fpsN/MO._fpsT); MO._fpsN=0; MO._fpsT=0;
