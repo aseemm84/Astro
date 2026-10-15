@@ -48,6 +48,27 @@ def report_bundle():
         raise SystemExit("report modules not listed in _order.json: %s" % stray)
     return "".join(read(d, n) for n in order)
 
+# Where the site lives. Only the social-card scrapers and search engines ever
+# follow these; a browser never fetches a canonical or an og:image, so a local
+# copy opened from Finder makes no request for any of it. Change this one line
+# if the site ever moves to a custom domain.
+SITE_BASE = "https://aseemm84.github.io/Astro/"
+
+def head_meta(desc, path, og_title):
+    """The shared head block: description, canonical, Open Graph, Twitter card,
+    theme colour and an inline SVG favicon. The favicon is a data URI on purpose
+    — a referenced icon file would be one network request on every page load, and
+    the whole point of this build is that an offline copy makes none."""
+    frag = read(SRC, "pages", "_head.frag")
+    return (frag.replace("{{DESC}}", esc_attr(desc))
+                .replace("{{BASE}}", SITE_BASE)
+                .replace("{{PATH}}", path)
+                .replace("{{OGTITLE}}", esc_attr(og_title))).strip()
+
+def esc_attr(s):
+    return (s.replace("&", "&amp;").replace('"', "&quot;")
+             .replace("<", "&lt;").replace(">", "&gt;"))
+
 def build_stamp(parts):
     """A short fingerprint of what actually went into this build, so the shipped page
     can say which version it is. Content-derived, so an unchanged rebuild keeps its id."""
@@ -57,6 +78,13 @@ def build_stamp(parts):
 
 def build_kundli():
     shell = read(SRC, "kundli.shell.html")
+    kdesc = json.load(open(os.path.join(SRC, "pages", "_kundli_desc.json"),
+                           encoding="utf-8"))["kundli"]
+    if "<!--HEAD-->" not in shell:
+        raise SystemExit("token <!--HEAD--> missing from the kundli shell")
+    shell = shell.replace("<!--HEAD-->",
+                          head_meta(kdesc, "kundli.html",
+                                    "Build a Vedic birth chart — LearnHoro"))
     parts = [("<!--CSS-->", read(SRC, "css", "app.css"), "style"),
              ("<!--JS0-->", read(VEND, "astronomy.browser.min.js"), "script"),
              ("<!--JS1-->", read(SRC, "js", "engine.js"), "script"),
@@ -92,6 +120,7 @@ def build_pages():
                          "".join('<a href="#%s">%s</a>' % (i, re.sub(r"<[^>]+>", "", t))
                                  for i, t in secs) + "</aside>")
         out[href] = (shell.replace("{{CSS}}", css).replace("{{TITLE}}", m["title"])
+                          .replace("{{HEAD}}", head_meta(m["desc"], href, m["title"]))
                           .replace("{{H1}}", m["h1"]).replace("{{SUB}}", m["sub"])
                           .replace("{{NAV}}", navhtml)
                           .replace("{{LAYOUT}}", (" " + m["layout"]).rstrip())

@@ -83,13 +83,27 @@ function moGlowDot(x,y,r,fill,glow){
     c.fillStyle=fill; c.beginPath(); c.arc(x,y,r,0,6.2832); c.fill();
   }
 }
+/* Scene type is written as a fraction of the canvas WIDTH, which is the right
+   instinct at 9:16 and wrong at 16:9: there the width is 1920 and the height
+   1080, so every label grows by 78% while the frame it must fit in loses the
+   same. Rather than rewrite seventeen scenes' worth of offsets, type is scaled
+   by the ratio of the short side to the width — exactly 1.0 at 9:16 and 1:1, so
+   those layouts are untouched, and 0.5625 at 16:9, which is the figure that was
+   missing. The caption band sizes itself from the short side already and so opts
+   out through MO._rawType. */
+function moTypeK(){
+  if(MO._rawType) return 1;
+  var S=moSize(); return Math.min(S.w,S.h)/S.w;
+}
 function moText(s,x,y,size,col,align,weight){
+  size*=moTypeK();
   var c=MO.ctx;
   c.fillStyle=col; c.textAlign=align||"center"; c.textBaseline="middle";
   c.font=(weight||600)+" "+size+"px "+'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
   c.fillText(s,x,y);
 }
 function moSerif(s,x,y,size,col,align){
+  size*=moTypeK();
   var c=MO.ctx;
   c.fillStyle=col; c.textAlign=align||"center"; c.textBaseline="middle";
   c.font='600 '+size+'px "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif';
@@ -175,6 +189,7 @@ function moFmtDate(ms){
    --------------------------------------------------------------------------- */
 function moCaption(dateMs,sub){
   var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
+  MO._rawType=true;
   var y0=st.capY;
   var g=c.createLinearGradient(0,y0-40,0,y0+20);
   g.addColorStop(0,"rgba(0,0,0,0)"); g.addColorStop(1,P.bg);
@@ -182,24 +197,47 @@ function moCaption(dateMs,sub){
   c.fillStyle=P.bg; c.fillRect(0,y0+19,S.w,st.capH);
   c.fillStyle=P.gold; c.fillRect(0,y0-1,S.w,2.5);
 
-  var pad=S.w*0.07, big=S.w*0.054, small=S.w*0.027;
-  var title=MO.cap.title||moSceneOf(MO.scene).title;
-  moSerif(title,S.w/2,y0+st.capH*0.30,big,P.ink);
+  /* The band is laid out as measured rows stacked from the top, not as fractions
+     of its height. Fractions were fine at 9:16 and collided at 16:9, where the
+     type — keyed to the canvas WIDTH — grew by 78% while the band it had to fit
+     in shrank by the same factor, so the title, the subtitle and the date landed
+     on top of one another. Type is now keyed to the frame's short side, and if
+     the rows still do not fit they are scaled down together until they do. */
+  var U=Math.min(S.w,S.h);
+  var pad=S.w*0.07, big=U*0.054, small=U*0.027;
+  var rows=[];
+  rows.push({t:MO.cap.title||moSceneOf(MO.scene).title, f:big, col:P.ink, serif:true});
   var s2=MO.cap.sub||sub||moSceneOf(MO.scene).sub;
-  if(s2) moText(s2,S.w/2,y0+st.capH*0.52,small,P.dim,"center",500);
+  if(s2) rows.push({t:s2, f:small, col:P.dim, w:500});
   if(MO.cap.date && dateMs!=null)
-    moText(moFmtDate(dateMs),S.w/2,y0+st.capH*0.70,small*1.05,P.gold,"center",700);
+    rows.push({t:moFmtDate(dateMs), f:small*1.05, col:P.gold, w:700});
+
+  var footH=st.capH*0.30;                       /* the logo and handle sit here */
+  var avail=st.capH-footH-U*0.014;
+  var need=0; rows.forEach(function(r){ need+=r.f*1.34; });
+  var k=Math.min(1, need>0?avail/need:1);
+  var y=y0+U*0.012;
+  rows.forEach(function(r){
+    var f=r.f*k;
+    y+=f*0.74;
+    if(r.serif) moSerif(r.t,S.w/2,y,f,r.col,"center");
+    else moText(r.t,S.w/2,y,f,r.col,"center",r.w||500);
+    y+=f*0.60;
+  });
 
   /* logo: the masthead already holds it as a data URI, so it is reused rather than
      duplicated into this file */
-  var lh=st.capH*0.30;
+  var fy=y0+st.capH-footH*0.5;
+  var lh=Math.min(footH*0.92, st.capH*0.30);
   if(MO.cap.logo && MO__LOGO && MO__LOGO.complete && MO__LOGO.naturalWidth){
     var lw=lh*(MO__LOGO.naturalWidth/MO__LOGO.naturalHeight);
-    try{ c.drawImage(MO__LOGO,pad,y0+st.capH*0.82-lh/2,lw,lh); }catch(e){}
+    try{ c.drawImage(MO__LOGO,pad,fy-lh/2,lw,lh); }catch(e){}
   }
   if(MO.cap.handle)
-    moText(MO.cap.handle,S.w-pad,y0+st.capH*0.82,small,P.dim,"right",600);
+    moText(MO.cap.handle,S.w-pad,fy,small*0.95,P.dim,"right",600);
+  MO._rawType=false;
 }
+
 var MO__LOGO=null;
 function moLogo(){
   if(MO__LOGO) return;

@@ -77,7 +77,7 @@ function moRisingTimes(latDeg,ayan){
 MO_SKY.push({key:"lagna", label:"Lagna", title:"The sign climbing out of the east",
  sub:"the lagna is a point on the ecliptic, and the Earth's turning brings it up",
  draw:function(p){
-  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx, U=Math.min(S.w,S.h);
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx, U=Math.min(S.w,S.h)/moTypeK();
   var W=moWhere();
   var t0=moBirthMs(), t1=t0+moSpanMs(), ms=t0+(t1-t0)*p;
   var d=new Date(ms), jd=ms/86400000+2440587.5;
@@ -243,7 +243,7 @@ function moR2(Rdraw,cap){
 MO_SKY.push({key:"moon", label:"Candra", title:"Candra, lit as the sky lights it",
  sub:"the phase, the libration and the distance are the real ones for the moment shown",
  draw:function(p){
-  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx, U=Math.min(S.w,S.h);
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx, U=Math.min(S.w,S.h)/moTypeK();
   var t0=Date.now(), t1=t0+moSpanMs(), ms=t0+(t1-t0)*p, dt=new Date(ms);
   var su=moSidAt("Sun",ms), mo=moSidAt("Moon",ms);
   if(su==null||mo==null) throw new Error("no position");
@@ -335,7 +335,7 @@ MO_SKY.push({key:"moon", label:"Candra", title:"Candra, lit as the sky lights it
 MO_SKY.push({key:"sun", label:"Sūrya", title:"Sūrya, the one graha with no phase",
  sub:"granulation, limb darkening and spots — and a latitude of zero, always",
  draw:function(p){
-  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx, U=Math.min(S.w,S.h);
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx, U=Math.min(S.w,S.h)/moTypeK();
   var t0=Date.now(), t1=t0+moSpanMs(), ms=t0+(t1-t0)*p, dt=new Date(ms);
   var su=moSidAt("Sun",ms); if(su==null) throw new Error("no position");
   var ill=null; try{ ill=Astronomy.Illumination(Astronomy.Body.Sun,dt); }catch(e){}
@@ -439,7 +439,7 @@ var MO_WORLD=[
 MO_SKY.push({key:"worlds", label:"The five worlds", title:"The tārā grahas as worlds",
  sub:"each at its true phase, with its real size and distance beside it",
  draw:function(p){
-  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx, U=Math.min(S.w,S.h);
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx, U=Math.min(S.w,S.h)/moTypeK();
   var t0=Date.now(), t1=t0+moSpanMs(), ms=t0+(t1-t0)*p, dt=new Date(ms);
   var n=MO_WORLD.length, each=1/n;
   /* Either hold one graha for the whole span, or take the five in turn across it.

@@ -42,7 +42,7 @@ function motionPane(D,J){
         '"><b>'+esc(s.label)+'</b><span>'+esc(s.sub)+'</span></button>'; }).join("")+'</div>'+
 
     '<div class="mowrap" id="mowrap">'+
-      '<div class="mostage" id="mostage"><canvas id="mocanvas" width="1080" height="1920"></canvas></div>'+
+      '<div class="mostage" id="mostage"><canvas id="mocanvas" width="1080" height="1920" role="img" aria-label="Animated diagram. The written explanation is below it."></canvas></div>'+
       '<button type="button" class="moexit" id="moexit">Esc — leave studio</button>'+
       '<div class="mopanel">'+
         '<div class="moread" id="moread"></div>'+
@@ -144,6 +144,14 @@ function moSpanRow(units,hint){
 }
 function moSceneOpts(){
   try{ moSceneGuide(); }catch(e){}
+  /* A canvas is opaque to a screen reader. The written note below carries the
+     meaning, so the label points at it and names the scene rather than leaving
+     an unlabelled graphic. */
+  try{
+    var cv=document.getElementById("mocanvas"), sc=moSceneOf(MO.scene);
+    if(cv&&sc) cv.setAttribute("aria-label",
+      sc.title+" — "+sc.sub+". Animated diagram; the written explanation is below it.");
+  }catch(e){}
   var host=document.getElementById("moscopts"); if(!host) return;
   var k=MO.scene, h="";
   if(k==="retro"||k==="drishti"){

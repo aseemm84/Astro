@@ -72,14 +72,32 @@
   function loadCities(){
     if(CITYDB) return Promise.resolve(CITYDB);
     if(CITYLOADING) return CITYLOADING;
+    /* Two ways in, and the second is the one that matters for a local copy.
+       fetch() is blocked on file:// — the page's origin is "null" and the browser
+       refuses the read — so a copy opened straight from Finder could never load
+       the city list, however correctly it sat beside the page. A <script> tag is
+       not subject to that rule. So: try fetch first, because over http it is the
+       cheaper path and needs no global; fall back to loading cities.js, which
+       assigns the same data to window.__CITIES. Both files hold the same rows. */
     CITYLOADING=fetch("cities.json").then(function(r){
       if(!r.ok) throw new Error("HTTP "+r.status);
       return r.json();
-    }).then(function(d){
+    }).catch(function(){ return loadCitiesByScript(); }).then(function(d){
       d.c.forEach(function(row){ row[8]=foldStr(row[0]); });
       CITYDB=d; return d;
     });
     return CITYLOADING;
+  }
+  function loadCitiesByScript(){
+    return new Promise(function(res,rej){
+      if(window.__CITIES) return res(window.__CITIES);
+      var s=document.createElement("script");
+      s.src="cities.js";
+      s.onload=function(){ window.__CITIES?res(window.__CITIES)
+                                           :rej(new Error("cities.js loaded but held no data")); };
+      s.onerror=function(){ rej(new Error("neither cities.json nor cities.js could be read")); };
+      document.head.appendChild(s);
+    });
   }
   function searchCities(db,q,limit){
     var f=foldStr(q); if(f.length<2) return [];
@@ -125,7 +143,7 @@
                 label:cityLabel(db,r)}; });
     }catch(e){
       showResults('<div class="k-rmsg">The city list could not be loaded ('+esc(e.message)+
-        '). Make sure <code class="k-inline">cities.json</code> sits beside this page, or enter coordinates manually below.</div>');
+        '). Make sure <code class="k-inline">cities.json</code> and <code class="k-inline">cities.js</code> sit beside this page, or enter the coordinates by hand below.</div>');
     }
   }
   document.addEventListener("click",function(ev){

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aseemm84.github.io/Astro/sitemap.xml

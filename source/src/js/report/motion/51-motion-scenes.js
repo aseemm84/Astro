@@ -1046,7 +1046,7 @@ var MO_MORE=[
      width, because the width doubles in landscape while the height halves — a size of
      S.w*0.03 that reads well at 9:16 becomes twice as tall a line on a frame half as
      tall. At 9:16 and 1:1, U is the width, so those two layouts are unchanged. */
-  var U=Math.min(S.w,S.h);
+  var U=Math.min(S.w,S.h)/moTypeK();
   /* Sūrya and Candra ride a rim outside the outermost ring, so the stage radius alone is
      not the constraint — the dot and its glyph have to fit too, or a graha sitting at 0°
      or 180° is sliced off by the frame edge. The budget is twice the dot radius, not one:
@@ -1163,7 +1163,7 @@ var MO_MORE=[
   var blat=0;
   try{ blat=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body.Moon,new Date(ms),true)).elat; }
   catch(e){}
-  var U=Math.min(S.w,S.h);          /* the short side — see the pañcāṅga scene */
+  var U=Math.min(S.w,S.h)/moTypeK();  /* short side; see the pañcāṅga scene */
   var ex=MO.opt.latx||6;
   /* The camera breathes, as the orrery's does, but never flattens towards top-down: at a
      shallow angle the two rings project onto each other and the tilt — the whole subject

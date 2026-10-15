@@ -608,3 +608,12 @@ body.mostudio .moexit{display:block;position:fixed;right:14px;top:14px;z-index:1
 .moreadf{margin:9px 0 0;font-size:11.5px;line-height:1.45;color:#8a8fa8}
 body.mostudio .moread{display:none!important}
 @media print{.moread{display:none}}
+
+/* Someone who has asked their system to reduce motion has asked for a reason.
+   Decorative transitions stop; the Motion tab still animates when its Play button
+   is pressed, because that is a deliberate act, but nothing moves unbidden. */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:0.001ms!important; animation-iteration-count:1!important;
+    transition-duration:0.001ms!important; scroll-behavior:auto!important}
+}

@@ -1,6 +1,24 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Kundli — technical report</title><style>
+<title>How the chart engine works — LearnHoro</title><meta name="description" content="The technical report behind the LearnHoro engine: ephemeris, ayanāṃśa fitting, house system, Ṣaḍbala components and the 318 self-tests it ships with.">
+<link rel="canonical" href="https://aseemm84.github.io/Astro/kundli-technical-report.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="LearnHoro">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="How the chart engine works — LearnHoro">
+<meta property="og:description" content="The technical report behind the LearnHoro engine: ephemeris, ayanāṃśa fitting, house system, Ṣaḍbala components and the 318 self-tests it ships with.">
+<meta property="og:url" content="https://aseemm84.github.io/Astro/kundli-technical-report.html">
+<meta property="og:image" content="https://aseemm84.github.io/Astro/assets/og-learnhoro.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="LearnHoro — a Vedic astrology reference and chart engine">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="How the chart engine works — LearnHoro">
+<meta name="twitter:description" content="The technical report behind the LearnHoro engine: ephemeris, ayanāṃśa fitting, house system, Ṣaḍbala components and the 318 self-tests it ships with.">
+<meta name="twitter:image" content="https://aseemm84.github.io/Astro/assets/og-learnhoro.png">
+<meta name="theme-color" content="#1d2340">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%231d2340'/%3E%3Ccircle cx='32' cy='32' r='11' fill='%23f0b847'/%3E%3Cg stroke='%23d9b668' stroke-width='3.4' stroke-linecap='round'%3E%3Cpath d='M32 6v8M32 50v8M6 32h8M50 32h8'/%3E%3Cpath d='M13.6 13.6l5.7 5.7M44.7 44.7l5.7 5.7M50.4 13.6l-5.7 5.7M19.3 44.7l-5.7 5.7' opacity='.8'/%3E%3C/g%3E%3C/svg%3E"><style>
 :root{--ink:#1d2340;--ink2:#3a4060;--mut:#6f6a5c;--parch:#fbf8f0;--parch2:#f4efe2;--brass:#b08a2e;--line:#e4dcc6;--rule:#cdbf9a}
 *{box-sizing:border-box}body{margin:0;background:#efe9da;color:var(--ink);
 font:15px/1.6 "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif}
@@ -67,7 +85,7 @@ font-size:13px;margin:12px 0;max-width:82ch}
 footer{border-top:2px solid var(--rule);margin-top:34px;padding:18px clamp(16px,4vw,40px) 34px;
 font-size:12px;color:var(--mut);font-family:ui-sans-serif,system-ui,sans-serif}
 .legend{font-family:ui-sans-serif,system-ui,sans-serif;font-size:11px;color:var(--mut);margin:6px 0 0}
-</style></head><body><div class="sheet"><header class="top"><h1>Janma Kuṇḍalī — technical report</h1>
+</style><style>@media(max-width:760px){.kt-scroll,table{display:block;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}}</style></head><body><div class="sheet"><header class="top"><h1>Janma Kuṇḍalī — technical report</h1>
 <p>Every computed layer of the chart: positions, dignities, houses, sixteen divisions, ashtakavarga, yogas, karakas, daśās and current transits.</p>
 <div class="meta">
 <div>Birth<b>15 Dec 1984 · 13:31 (UTC+5.5)</b></div>
