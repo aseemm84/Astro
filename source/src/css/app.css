@@ -503,7 +503,14 @@ body.kcast .k-status{min-height:0;margin:0}
      or a heading stranded at the foot of a page, reads as a fault even when the
      content is complete. */
   #kprintdoc .kchartfig,#kprintdoc .wlegend,#kprintdoc .ksudnote,
-  #kprintdoc .kcharts,#kprintdoc .prwheel{page-break-inside:avoid}
+  #kprintdoc .kcharts,#kprintdoc .prwheel,
+  #kprintdoc .kinteract,#kprintdoc .kichartwrap{page-break-inside:avoid}
+  /* The interactive chart is a 400x400 square. Left to fill the text column it stands
+     about 180mm tall, which is most of a page on its own and splits across the break
+     whatever the avoid rule says, because a box taller than the page cannot be kept
+     whole. Capping it fixes the clipping the avoid rule alone could not. */
+  #kprintdoc .kichartwrap{max-width:108mm;margin:0 auto}
+  #kprintdoc .kinteract .kipanels{page-break-inside:avoid}
   #kprintdoc .prsub,#kprintdoc .ksub,#kprintdoc h4,
   #kprintdoc figcaption,#kprintdoc .kh,#kprintdoc .prh{page-break-after:avoid}
   #kprintdoc .ksec>.knote:first-of-type{page-break-before:avoid}
@@ -513,6 +520,27 @@ body.kcast .k-status{min-height:0;margin:0}
   #kprintdoc p{orphans:3;widows:3}
   #kprintdoc thead{display:table-header-group}
   #kprintdoc details>summary{list-style:none}
+  /* ---- the same, for every other control strip ----------------------------
+     A trap worth naming: the print document is appended to <body>, so it sits
+     OUTSIDE .kreport. Every rule written as `@media print{.kreport .x{display:none}}`
+     — and there are nine of them — hides that control when you print the page
+     directly, and silently misses it here. That is why the sky control strip was
+     turning up in the full report. Anything hidden from one must be hidden from
+     both, so the list is repeated against #kprintdoc rather than re-scoped, which
+     would change the direct-print behaviour. */
+  #kprintdoc .ktabs,#kprintdoc .ktabsel,#kprintdoc .kindex,#kprintdoc .kdt-bar,
+  #kprintdoc .kday-bar,#kprintdoc .klifebar,#kprintdoc .kpath-nav,#kprintdoc .kpath-foot,
+  #kprintdoc .kev-form,#kprintdoc .kev-del,#kprintdoc .kmatch-form,#kprintdoc .gbclose,
+  #kprintdoc .skybar,#kprintdoc .skyscrub,#kprintdoc .skyctl,#kprintdoc .skyrow,
+  #kprintdoc .skysteps,#kprintdoc .skypre,#kprintdoc .skyrailwrap,
+  #kprintdoc .swhctl,#kprintdoc .swhchips,#kprintdoc .swhfine,
+  #kprintdoc .moscenes,#kprintdoc .mopanel,#kprintdoc .moread{display:none!important}
+  /* belt and braces: no live control survives into the printed document */
+  #kprintdoc input,#kprintdoc select,#kprintdoc button{display:none!important}
+  #kprintdoc .ktabwrap{display:block!important}
+  #kprintdoc .kmore{display:inline!important}
+  /* The controls that start a print have no business inside the printed thing. */
+  #kprintdoc .krprint,#kprintdoc .krphint,#kprintdoc .krdash{display:none!important}
   #kprintdoc .sensb{border:1px solid #bbb;background:none!important;color:#444!important}
   @page{margin:14mm}
 }

@@ -238,7 +238,8 @@ window.buildKundliReport=function(J){
     ["btime","Birth-time check",function(){ return birthTimePane(D); }],
     ["match","Compatibility",function(){ return matchPane(); }],
     ["full","Full report",function(){ return '<div class="krprint">'+
-      '<button type="button" class="k-btn" data-krprint>Print full report (all ten tabs)</button>'+
+      '<button type="button" class="k-btn" data-krprint>Print full report ('+
+      (PANES.length-1)+' tabs)</button>'+
       '<span class="krphint">Builds one PDF of every tab — the daśā tree fully expanded, all sixteen '+
       'divisional wheels, and the star wheel with every group shown. The input form, the tab bar and '+
       'every control are left out, and the sky views are cast at the birth moment.</span></div>'+

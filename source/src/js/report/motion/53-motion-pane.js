@@ -40,7 +40,7 @@ function motionPane(D,J){
   MO.cap.title=""; MO.cap.sub="";
   MO_CACHE={};
   for(var g in MO.show) MO.show[g]=true;
-  return '<p class="knote">Six animations built from this chart and the same ephemeris the rest of '+
+  return '<p class="knote">'+MO_SCENES.length+' animations built from this chart and the same ephemeris the rest of '+
     'the site uses. Everything here is drawn on a canvas rather than as a chart, because these are '+
     'made to be <b>watched and posted</b> rather than measured — choose a vertical frame, press play, '+
     'and screen-record. <b>Studio mode</b> hides the whole site so the recording is clean. The '+

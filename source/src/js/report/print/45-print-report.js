@@ -91,7 +91,13 @@ function buildPrintDoc(){
     '<p class="prfoot">An educational reckoning of traditional doctrine — not a prediction, '+
     'a diagnosis, or advice. Generated '+new Date().toISOString().slice(0,10)+'.</p></section>';
   var html=[head];
-  var panes=[].slice.call(document.querySelectorAll(".kpane"));
+  /* Motion is a studio tool, not report content. Cloning it put an empty 1080x1920
+     canvas on the page — a canvas keeps its bitmap in the element, not the markup, so
+     a clone is always blank — followed by a page of advice about recording reels. The
+     printed report is better without both. */
+  var PR_SKIP={motion:1};
+  var panes=[].slice.call(document.querySelectorAll(".kpane"))
+               .filter(function(p){ return !PR_SKIP[p.getAttribute("data-kpane")]; });
   panes.forEach(function(pn){
     var key=pn.getAttribute("data-kpane");
     var title=(pn.querySelector(".kpaneh")||{}).textContent||key;
