@@ -581,21 +581,52 @@ svg.lhmark .lhorb ellipse{fill:none}
 .kreport .mostage{background:#0b1020;border:1px solid var(--line);border-radius:10px;overflow:hidden;
   display:flex;align-items:center;justify-content:center}
 .kreport #mocanvas{display:block;width:100%;height:auto;max-height:70vh;object-fit:contain}
-.kreport .mopanel{border:1px solid var(--line);border-radius:10px;background:var(--soft);padding:10px 12px}
+.kreport .mopanel{border:1px solid var(--line);border-radius:10px;background:var(--soft);
+  padding:11px;counter-reset:moband}
+/* Banded groups. The header strip borrows the table-header idiom used everywhere else
+   on the site — night ground, gold rule — so the panel reads as the same house style
+   rather than a second visual language. The numeral is a CSS counter rather than markup,
+   so the bands stay renumbered if one is added, removed or reordered. */
+.kreport .moband{border:1px solid var(--line);border-radius:9px;background:#fff;
+  overflow:hidden;margin:0 0 10px}
+.kreport .moband:last-of-type{margin-bottom:0}
+.kreport .mobandh{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin:0;
+  padding:7px 11px;font-weight:400;border-bottom:2px solid var(--gold);
+  background:linear-gradient(160deg,var(--night),var(--night2))}
+.kreport .mobandt{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--gold-soft)}
+.kreport .mobandt::before{counter-increment:moband;content:counter(moband);
+  display:inline-block;width:17px;height:17px;line-height:17px;text-align:center;
+  margin-right:8px;border-radius:50%;background:var(--gold);color:#231c07;
+  font-size:10px;font-weight:700;letter-spacing:0;vertical-align:1px}
+.kreport .mobandn{font-size:11.5px;color:#aeb4d2;line-height:1.3;letter-spacing:0;
+  text-transform:none;font-weight:400}
+.kreport .mobandb{padding:10px 11px}
 .kreport .morow{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:0 0 8px}
 .kreport .morow:last-child{margin-bottom:0}
+/* A scene with no extra controls of its own leaves #moscopts empty; without this it
+   would still take a row's worth of margin inside the band. */
+.kreport .morow:empty{display:none}
 .kreport .molab{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
 .kreport .morow input[type=range]{flex:1;min-width:110px;accent-color:var(--gold)}
 .kreport .moval{font-variant-numeric:tabular-nums;font-size:12px;font-weight:600;min-width:38px}
-.kreport .mofps{margin-left:auto;font:600 11px var(--sans);color:var(--muted);font-variant-numeric:tabular-nums}
+.kreport .mogrp{display:inline-flex;gap:5px;align-items:center;margin-left:auto}
+.kreport .mosld{display:flex;gap:7px;align-items:center;flex:1 1 190px;min-width:0}
+.kreport .mosld input[type=range]{flex:1;min-width:70px}
+.kreport .mofps{font:600 11px var(--sans);color:var(--muted);font-variant-numeric:tabular-nums;
+  min-width:34px;text-align:right}
 .kreport .mopre{display:inline-flex;gap:3px;margin-left:6px;padding-left:8px;border-left:1px solid var(--line)}
-.kreport .mohint{font-size:11.5px;color:var(--muted);flex:1 1 180px}
+/* A scene's hint explains the row above it, so it takes a line of its own. Sharing the
+   row left it squeezed into a narrow column beside the control it describes. */
+.kreport .mohint{font-size:11.5px;color:var(--muted);flex:1 0 100%;line-height:1.45;margin-top:-1px}
 .kreport .motext{font:inherit;font-size:12.5px;padding:6px 9px;border:1px solid var(--line);
   border-radius:6px;background:#fff;color:var(--ink);flex:1 1 150px;min-width:0}
 .kreport .mohandle{flex:0 0 130px}
 .kreport .monum{font:inherit;font-size:12.5px;padding:5px 7px;border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);width:72px}
-.kreport .moscopts br{flex-basis:100%;height:0}
-.kreport .mofinal{border-top:1px dashed var(--line);padding-top:10px;margin-top:2px}
+/* The scene options break their own lines with this spacer. It must be unshrinkable,
+   not merely 100% wide — with flex-basis alone the default shrink lets it collapse into
+   the line it was meant to end. */
+.kreport .mobrk{flex:0 0 100%;height:0;margin:0}
 .kreport .moxlsmsg{font-size:11.5px;color:var(--muted)}
 /* studio mode: a full-screen overlay rather than hiding the page, so nothing depends
    on where the canvas happens to sit in the document */
@@ -10862,6 +10893,15 @@ function moSceneGuide(){
 }
 /* ===== The Motion tab: markup, controls, handlers ===== */
 
+/* One banded group inside the control panel. The key becomes a data attribute so a
+   band can be tinted or hidden without reaching for :nth-child, which would silently
+   re-target the moment a band is added. */
+function moBand(key,title,hint,rows){
+  return '<section class="moband" data-moband="'+key+'">'+
+    '<h4 class="mobandh"><span class="mobandt">'+esc(title)+'</span>'+
+    (hint?('<span class="mobandn">'+esc(hint)+'</span>'):"")+'</h4>'+
+    '<div class="mobandb">'+rows+'</div></section>';
+}
 function moChipRow(label,items,cur,attr,extra){
   return '<div class="morow"><span class="molab">'+esc(label)+'</span>'+
     items.map(function(it){
@@ -10907,6 +10947,13 @@ function motionPane(D,J){
       '<div class="mostage" id="mostage"><canvas id="mocanvas" width="1080" height="1920" role="img" aria-label="Animated diagram. The written explanation is below it."></canvas></div>'+
       '<button type="button" class="moexit" id="moexit">Esc — leave studio</button>'+
       '<div class="mopanel">'+
+
+        /* Five bands. Thirteen flat rows all looked alike, so finding the speed
+           control meant reading every label. The grouping is by what you are
+           doing — running it, choosing what is in it, how it looks, what it says,
+           getting it out — and each band is a card of its own so the boundaries
+           are visible rather than implied by spacing. */
+        moBand("play","Playback","run the scene and move through it",
         '<div class="morow">'+
           '<button type="button" class="k-btn" id="moplay" aria-pressed="false">Play</button>'+
           '<button type="button" class="k-btn sec" id="morestart">Restart</button>'+
@@ -10918,12 +10965,34 @@ function motionPane(D,J){
             [[0.25,"\u00bc\u00d7"],[0.5,"\u00bd\u00d7"],[1,"1\u00d7"],[2,"2\u00d7"],[4,"4\u00d7"]]
             .map(function(s){ return '<option value="'+s[0]+'"'+(s[0]===1?" selected":"")+'>'+s[1]+'</option>'; }).join("")+
           '</select>'+
-          '<button type="button" class="skyv" id="mostepb" title="Back one frame">\u2039</button>'+
-          '<button type="button" class="skyv" id="mostepf" title="Forward one frame">\u203a</button>'+
-          '<span class="mofps" id="mofps">—</span>'+
         '</div>'+
+        /* Frame stepping sits with the scrub rather than with Play: both move the
+           playhead, and loose in the row above the two arrows wrapped apart from
+           each other and from the frame counter, reading as unrelated controls. */
         '<div class="morow"><span class="molab">Scrub</span>'+
-          '<input type="range" id="moscrub" min="0" max="1000" step="1" value="0"></div>'+
+          '<input type="range" id="moscrub" min="0" max="1000" step="1" value="0">'+
+          '<span class="mogrp">'+
+            '<button type="button" class="skyv" id="mostepb" title="Back one frame">\u2039</button>'+
+            '<button type="button" class="skyv" id="mostepf" title="Forward one frame">\u203a</button>'+
+            '<span class="mofps" id="mofps">—</span>'+
+          '</span>'+
+        '</div>')+
+
+        moBand("scene","This scene","what the frame contains",
+        /* The class matters: the row breaks its own lines with a full-width spacer, and the
+           rule that gives it that width is written against .moscopts. With the id alone
+           it never matched, so every scene's options ran together on one line. */
+        '<div class="morow moscopts" id="moscopts"></div>'+
+        '<div class="morow"><span class="molab">Grahas</span>'+
+          [["Sun","Su"],["Moon","Mo"],["Mars","Ma"],["Mercury","Me"],["Jupiter","Ju"],
+           ["Venus","Ve"],["Saturn","Sa"],["Rahu","Ra"],["Ketu","Ke"]].map(function(g){
+            return '<button type="button" class="skyv on" data-mograha="'+g[0]+'">'+g[1]+'</button>';
+          }).join("")+
+          '<span class="mopre"><button type="button" class="skyv" data-mopre="all">all</button>'+
+          '<button type="button" class="skyv" data-mopre="slow">slow</button></span>'+
+        '</div>')+
+
+        moBand("look","Look","shape, colour and the drawing itself",
         moChipRow("Frame",Object.keys(MO_RATIOS).map(function(k){
           return {k:k,label:MO_RATIOS[k].label,title:MO_RATIOS[k].note}; }),"9:16","data-moratio")+
         moChipRow("Palette",Object.keys(MO_PALS).map(function(k){
@@ -10933,21 +11002,19 @@ function motionPane(D,J){
             return '<button type="button" class="skyv'+(MO.opt[t.k]?" on":"")+'" data-moopt="'+t.k+
               '">'+esc(t.label)+'</button>'; }).join("")+
         '</div>'+
-        '<div class="morow"><span class="molab">Grahas</span>'+
-          [["Sun","Su"],["Moon","Mo"],["Mars","Ma"],["Mercury","Me"],["Jupiter","Ju"],
-           ["Venus","Ve"],["Saturn","Sa"],["Rahu","Ra"],["Ketu","Ke"]].map(function(g){
-            return '<button type="button" class="skyv on" data-mograha="'+g[0]+'">'+g[1]+'</button>';
-          }).join("")+
-          '<span class="mopre"><button type="button" class="skyv" data-mopre="all">all</button>'+
-          '<button type="button" class="skyv" data-mopre="slow">slow</button></span>'+
-        '</div>'+
-        '<div class="morow" id="moscopts"></div>'+
-        '<div class="morow"><span class="molab">Trail</span>'+
-          '<input type="range" id="motrail" min="5" max="90" step="1" value="35">'+
-          '<span class="moval" id="motrailv">35%</span>'+
-          '<span class="molab">Stars</span>'+
-          '<input type="range" id="modens" min="0" max="400" step="10" value="160">'+
-          '<span class="moval" id="modensv">160</span></div>'+
+        /* Each slider keeps its label and its read-out in one group, so a narrow panel
+           wraps the pair as a unit instead of orphaning "Stars" at the end of the
+           trail slider's line. */
+        '<div class="morow">'+
+          '<span class="mosld"><span class="molab">Trail</span>'+
+            '<input type="range" id="motrail" min="5" max="90" step="1" value="35">'+
+            '<span class="moval" id="motrailv">35%</span></span>'+
+          '<span class="mosld"><span class="molab">Stars</span>'+
+            '<input type="range" id="modens" min="0" max="400" step="10" value="160">'+
+            '<span class="moval" id="modensv">160</span></span>'+
+        '</div>')+
+
+        moBand("cap","Caption","the words burned into the frame",
         '<div class="morow mocaprow"><span class="molab">Caption</span>'+
           '<input type="text" id="motitle" class="motext" placeholder="title — leave blank for the scene&rsquo;s own" maxlength="64">'+
           '<input type="text" id="mosub" class="motext" placeholder="subtitle" maxlength="80"></div>'+
@@ -10956,13 +11023,15 @@ function motionPane(D,J){
             return '<button type="button" class="skyv'+(MO.cap[t.k]?" on":"")+'" data-mocap="'+t.k+
               '">'+esc(t.label)+'</button>'; }).join("")+
           '<input type="text" id="mohandle" class="motext mohandle" value="@learnhoro" maxlength="30">'+
-        '</div>'+
-        '<div class="morow mofinal">'+
+        '</div>')+
+
+        moBand("out","Take it away","record it, or take the numbers",
+        '<div class="morow">'+
           '<button type="button" class="k-btn" id="mostudio" aria-pressed="false">Studio mode</button>'+
           '<button type="button" class="k-btn sec" id="moxls">Export data (.xlsx)</button>'+
           '<button type="button" class="k-btn sec" id="mopng">Save this frame (.png)</button>'+
           '<span class="moxlsmsg" id="moxlsmsg"></span>'+
-        '</div>'+
+        '</div>')+
         /* The reading note sits below every control, so the controls stay within reach of
            the frame and the note reads as a footnote to the scene rather than a preamble
            you scroll past to get to Play. */
@@ -10988,6 +11057,10 @@ function motionPane(D,J){
     'off the screen. For measurement, use the Sky tab.</div>';
 }
 /* per-scene extra controls */
+/* A line break inside the flex row. A literal <br> will not do it: Chromium gives it the
+   right computed flex but still lays it out at zero width, so the break never happens.
+   An empty span is an ordinary flex item and breaks the line as intended. */
+var MO_BRK='<span class="mobrk"></span>';
 var MO_UORD=["h","d","m","y"];
 function moSpanRow(units,hint){
   /* A scene may not offer every unit — years are meaningless for the pañcāṅga, hours for
@@ -11024,21 +11097,22 @@ function moSceneOpts(){
       (k==="drishti"?MO_NAMES:["Mercury","Venus","Mars","Jupiter","Saturn"]).map(function(en){
         return '<button type="button" class="skyv'+(MO.opt.subject===en?" on":"")+
           '" data-mosubj="'+en+'">'+esc(MO_FULL[en])+'</button>'; }).join("")+
-      (k==="drishti"?('<br>'+moSpanRow(["d","m","y"],"how far forward the graha travels"))
-       :('<br><span class="molab">From</span>'+
+      (k==="drishti"?(MO_BRK+moSpanRow(["d","m","y"],"how far forward the graha travels"))
+       :(MO_BRK+'<span class="molab">From</span>'+
          [["today","today"],["birth","the birth moment"]].map(function(f){
            return '<button type="button" class="skyv'+
              (((MO.opt.from||"today")===f[0])?" on":"")+
              '" data-mofrom="'+f[0]+'">'+esc(f[1])+'</button>'; }).join("")+
-         '<br>'+moSpanRow(["m","y"],"the window to search")+
+         MO_BRK+moSpanRow(["m","y"],"the window to search")+
          '<span class="mohint">every retrograde inside the window is found and shown in '+
          'turn; if there is none, the frame says so and gives the date of the next one</span>'));
   } else if(k==="gochara"){
     h=moSpanRow(["d","m","y"],"from today forward");
   } else if(k==="orrery"){
     h=moSpanRow(["d","m","y"],"from the birth moment")+
-      '<span class="molab">Latitude ×</span><input type="range" id="moexag" min="8" max="90" step="2" value="'+
-      MO.opt.exag+'"><span class="moval" id="moexagv">'+MO.opt.exag+'</span>';
+      '<span class="mosld"><span class="molab">Latitude ×</span>'+
+      '<input type="range" id="moexag" min="8" max="90" step="2" value="'+
+      MO.opt.exag+'"><span class="moval" id="moexagv">'+MO.opt.exag+'</span></span>';
   } else if(k==="birthsky"){
     h=moSpanRow(["h","d"],"centred on the birth moment");
   } else if(k==="nakshatra"){
@@ -11071,7 +11145,7 @@ function moSceneOpts(){
         return '<button type="button" class="skyv'+
           (((MO.opt.world||"")===w[0])?" on":"")+
           '" data-moworld="'+w[0]+'">'+esc(w[1])+'</button>'; }).join("")+
-      '<br>'+moSpanRow(["m","y"],"from today — with one graha held, the span is the "+
+      MO_BRK+moSpanRow(["m","y"],"from today — with one graha held, the span is the "+
         "stretch of time it moves through")+
       '<span class="molab">Sizing</span>'+
       [["same","one magnification"],["fill","fill the frame"]].map(function(m){
@@ -11100,7 +11174,7 @@ function moSceneOpts(){
       ["Sun","Mars","Mercury","Jupiter","Venus","Saturn"].map(function(en){
         return '<button type="button" class="skyv'+(MO.opt.subject===en?" on":"")+
           '" data-mosubj="'+en+'">'+esc(MO_FULL[en])+'</button>'; }).join("")+
-      '<br>'+moSpanRow(["d","m","y"],"how far the graha travels");
+      MO_BRK+moSpanRow(["d","m","y"],"how far the graha travels");
   } else if(k==="sadesati"){
     h='<span class="mohint">ninety years from birth — Śani returns to the Moon about every '+
       'twenty-nine</span>';
@@ -12993,4 +13067,4 @@ window.buildKundliReport=function(J){
   }
 })();
 </script>
-<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-15.3970b0b</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer></body></html>
+<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-15.e241d03</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer></body></html>

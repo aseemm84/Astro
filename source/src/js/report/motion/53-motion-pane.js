@@ -1,5 +1,14 @@
 /* ===== The Motion tab: markup, controls, handlers ===== */
 
+/* One banded group inside the control panel. The key becomes a data attribute so a
+   band can be tinted or hidden without reaching for :nth-child, which would silently
+   re-target the moment a band is added. */
+function moBand(key,title,hint,rows){
+  return '<section class="moband" data-moband="'+key+'">'+
+    '<h4 class="mobandh"><span class="mobandt">'+esc(title)+'</span>'+
+    (hint?('<span class="mobandn">'+esc(hint)+'</span>'):"")+'</h4>'+
+    '<div class="mobandb">'+rows+'</div></section>';
+}
 function moChipRow(label,items,cur,attr,extra){
   return '<div class="morow"><span class="molab">'+esc(label)+'</span>'+
     items.map(function(it){
@@ -45,6 +54,13 @@ function motionPane(D,J){
       '<div class="mostage" id="mostage"><canvas id="mocanvas" width="1080" height="1920" role="img" aria-label="Animated diagram. The written explanation is below it."></canvas></div>'+
       '<button type="button" class="moexit" id="moexit">Esc — leave studio</button>'+
       '<div class="mopanel">'+
+
+        /* Five bands. Thirteen flat rows all looked alike, so finding the speed
+           control meant reading every label. The grouping is by what you are
+           doing — running it, choosing what is in it, how it looks, what it says,
+           getting it out — and each band is a card of its own so the boundaries
+           are visible rather than implied by spacing. */
+        moBand("play","Playback","run the scene and move through it",
         '<div class="morow">'+
           '<button type="button" class="k-btn" id="moplay" aria-pressed="false">Play</button>'+
           '<button type="button" class="k-btn sec" id="morestart">Restart</button>'+
@@ -56,12 +72,34 @@ function motionPane(D,J){
             [[0.25,"\u00bc\u00d7"],[0.5,"\u00bd\u00d7"],[1,"1\u00d7"],[2,"2\u00d7"],[4,"4\u00d7"]]
             .map(function(s){ return '<option value="'+s[0]+'"'+(s[0]===1?" selected":"")+'>'+s[1]+'</option>'; }).join("")+
           '</select>'+
-          '<button type="button" class="skyv" id="mostepb" title="Back one frame">\u2039</button>'+
-          '<button type="button" class="skyv" id="mostepf" title="Forward one frame">\u203a</button>'+
-          '<span class="mofps" id="mofps">—</span>'+
         '</div>'+
+        /* Frame stepping sits with the scrub rather than with Play: both move the
+           playhead, and loose in the row above the two arrows wrapped apart from
+           each other and from the frame counter, reading as unrelated controls. */
         '<div class="morow"><span class="molab">Scrub</span>'+
-          '<input type="range" id="moscrub" min="0" max="1000" step="1" value="0"></div>'+
+          '<input type="range" id="moscrub" min="0" max="1000" step="1" value="0">'+
+          '<span class="mogrp">'+
+            '<button type="button" class="skyv" id="mostepb" title="Back one frame">\u2039</button>'+
+            '<button type="button" class="skyv" id="mostepf" title="Forward one frame">\u203a</button>'+
+            '<span class="mofps" id="mofps">—</span>'+
+          '</span>'+
+        '</div>')+
+
+        moBand("scene","This scene","what the frame contains",
+        /* The class matters: the row breaks its own lines with a full-width spacer, and the
+           rule that gives it that width is written against .moscopts. With the id alone
+           it never matched, so every scene's options ran together on one line. */
+        '<div class="morow moscopts" id="moscopts"></div>'+
+        '<div class="morow"><span class="molab">Grahas</span>'+
+          [["Sun","Su"],["Moon","Mo"],["Mars","Ma"],["Mercury","Me"],["Jupiter","Ju"],
+           ["Venus","Ve"],["Saturn","Sa"],["Rahu","Ra"],["Ketu","Ke"]].map(function(g){
+            return '<button type="button" class="skyv on" data-mograha="'+g[0]+'">'+g[1]+'</button>';
+          }).join("")+
+          '<span class="mopre"><button type="button" class="skyv" data-mopre="all">all</button>'+
+          '<button type="button" class="skyv" data-mopre="slow">slow</button></span>'+
+        '</div>')+
+
+        moBand("look","Look","shape, colour and the drawing itself",
         moChipRow("Frame",Object.keys(MO_RATIOS).map(function(k){
           return {k:k,label:MO_RATIOS[k].label,title:MO_RATIOS[k].note}; }),"9:16","data-moratio")+
         moChipRow("Palette",Object.keys(MO_PALS).map(function(k){
@@ -71,21 +109,19 @@ function motionPane(D,J){
             return '<button type="button" class="skyv'+(MO.opt[t.k]?" on":"")+'" data-moopt="'+t.k+
               '">'+esc(t.label)+'</button>'; }).join("")+
         '</div>'+
-        '<div class="morow"><span class="molab">Grahas</span>'+
-          [["Sun","Su"],["Moon","Mo"],["Mars","Ma"],["Mercury","Me"],["Jupiter","Ju"],
-           ["Venus","Ve"],["Saturn","Sa"],["Rahu","Ra"],["Ketu","Ke"]].map(function(g){
-            return '<button type="button" class="skyv on" data-mograha="'+g[0]+'">'+g[1]+'</button>';
-          }).join("")+
-          '<span class="mopre"><button type="button" class="skyv" data-mopre="all">all</button>'+
-          '<button type="button" class="skyv" data-mopre="slow">slow</button></span>'+
-        '</div>'+
-        '<div class="morow" id="moscopts"></div>'+
-        '<div class="morow"><span class="molab">Trail</span>'+
-          '<input type="range" id="motrail" min="5" max="90" step="1" value="35">'+
-          '<span class="moval" id="motrailv">35%</span>'+
-          '<span class="molab">Stars</span>'+
-          '<input type="range" id="modens" min="0" max="400" step="10" value="160">'+
-          '<span class="moval" id="modensv">160</span></div>'+
+        /* Each slider keeps its label and its read-out in one group, so a narrow panel
+           wraps the pair as a unit instead of orphaning "Stars" at the end of the
+           trail slider's line. */
+        '<div class="morow">'+
+          '<span class="mosld"><span class="molab">Trail</span>'+
+            '<input type="range" id="motrail" min="5" max="90" step="1" value="35">'+
+            '<span class="moval" id="motrailv">35%</span></span>'+
+          '<span class="mosld"><span class="molab">Stars</span>'+
+            '<input type="range" id="modens" min="0" max="400" step="10" value="160">'+
+            '<span class="moval" id="modensv">160</span></span>'+
+        '</div>')+
+
+        moBand("cap","Caption","the words burned into the frame",
         '<div class="morow mocaprow"><span class="molab">Caption</span>'+
           '<input type="text" id="motitle" class="motext" placeholder="title — leave blank for the scene&rsquo;s own" maxlength="64">'+
           '<input type="text" id="mosub" class="motext" placeholder="subtitle" maxlength="80"></div>'+
@@ -94,13 +130,15 @@ function motionPane(D,J){
             return '<button type="button" class="skyv'+(MO.cap[t.k]?" on":"")+'" data-mocap="'+t.k+
               '">'+esc(t.label)+'</button>'; }).join("")+
           '<input type="text" id="mohandle" class="motext mohandle" value="@learnhoro" maxlength="30">'+
-        '</div>'+
-        '<div class="morow mofinal">'+
+        '</div>')+
+
+        moBand("out","Take it away","record it, or take the numbers",
+        '<div class="morow">'+
           '<button type="button" class="k-btn" id="mostudio" aria-pressed="false">Studio mode</button>'+
           '<button type="button" class="k-btn sec" id="moxls">Export data (.xlsx)</button>'+
           '<button type="button" class="k-btn sec" id="mopng">Save this frame (.png)</button>'+
           '<span class="moxlsmsg" id="moxlsmsg"></span>'+
-        '</div>'+
+        '</div>')+
         /* The reading note sits below every control, so the controls stay within reach of
            the frame and the note reads as a footnote to the scene rather than a preamble
            you scroll past to get to Play. */
@@ -126,6 +164,10 @@ function motionPane(D,J){
     'off the screen. For measurement, use the Sky tab.</div>';
 }
 /* per-scene extra controls */
+/* A line break inside the flex row. A literal <br> will not do it: Chromium gives it the
+   right computed flex but still lays it out at zero width, so the break never happens.
+   An empty span is an ordinary flex item and breaks the line as intended. */
+var MO_BRK='<span class="mobrk"></span>';
 var MO_UORD=["h","d","m","y"];
 function moSpanRow(units,hint){
   /* A scene may not offer every unit — years are meaningless for the pañcāṅga, hours for
@@ -162,21 +204,22 @@ function moSceneOpts(){
       (k==="drishti"?MO_NAMES:["Mercury","Venus","Mars","Jupiter","Saturn"]).map(function(en){
         return '<button type="button" class="skyv'+(MO.opt.subject===en?" on":"")+
           '" data-mosubj="'+en+'">'+esc(MO_FULL[en])+'</button>'; }).join("")+
-      (k==="drishti"?('<br>'+moSpanRow(["d","m","y"],"how far forward the graha travels"))
-       :('<br><span class="molab">From</span>'+
+      (k==="drishti"?(MO_BRK+moSpanRow(["d","m","y"],"how far forward the graha travels"))
+       :(MO_BRK+'<span class="molab">From</span>'+
          [["today","today"],["birth","the birth moment"]].map(function(f){
            return '<button type="button" class="skyv'+
              (((MO.opt.from||"today")===f[0])?" on":"")+
              '" data-mofrom="'+f[0]+'">'+esc(f[1])+'</button>'; }).join("")+
-         '<br>'+moSpanRow(["m","y"],"the window to search")+
+         MO_BRK+moSpanRow(["m","y"],"the window to search")+
          '<span class="mohint">every retrograde inside the window is found and shown in '+
          'turn; if there is none, the frame says so and gives the date of the next one</span>'));
   } else if(k==="gochara"){
     h=moSpanRow(["d","m","y"],"from today forward");
   } else if(k==="orrery"){
     h=moSpanRow(["d","m","y"],"from the birth moment")+
-      '<span class="molab">Latitude ×</span><input type="range" id="moexag" min="8" max="90" step="2" value="'+
-      MO.opt.exag+'"><span class="moval" id="moexagv">'+MO.opt.exag+'</span>';
+      '<span class="mosld"><span class="molab">Latitude ×</span>'+
+      '<input type="range" id="moexag" min="8" max="90" step="2" value="'+
+      MO.opt.exag+'"><span class="moval" id="moexagv">'+MO.opt.exag+'</span></span>';
   } else if(k==="birthsky"){
     h=moSpanRow(["h","d"],"centred on the birth moment");
   } else if(k==="nakshatra"){
@@ -209,7 +252,7 @@ function moSceneOpts(){
         return '<button type="button" class="skyv'+
           (((MO.opt.world||"")===w[0])?" on":"")+
           '" data-moworld="'+w[0]+'">'+esc(w[1])+'</button>'; }).join("")+
-      '<br>'+moSpanRow(["m","y"],"from today — with one graha held, the span is the "+
+      MO_BRK+moSpanRow(["m","y"],"from today — with one graha held, the span is the "+
         "stretch of time it moves through")+
       '<span class="molab">Sizing</span>'+
       [["same","one magnification"],["fill","fill the frame"]].map(function(m){
@@ -238,7 +281,7 @@ function moSceneOpts(){
       ["Sun","Mars","Mercury","Jupiter","Venus","Saturn"].map(function(en){
         return '<button type="button" class="skyv'+(MO.opt.subject===en?" on":"")+
           '" data-mosubj="'+en+'">'+esc(MO_FULL[en])+'</button>'; }).join("")+
-      '<br>'+moSpanRow(["d","m","y"],"how far the graha travels");
+      MO_BRK+moSpanRow(["d","m","y"],"how far the graha travels");
   } else if(k==="sadesati"){
     h='<span class="mohint">ninety years from birth — Śani returns to the Moon about every '+
       'twenty-nine</span>';
