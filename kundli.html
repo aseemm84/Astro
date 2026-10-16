@@ -707,7 +707,10 @@ body.kcast .k-status{min-height:0;margin:0}
 .kreport .morow:empty{display:none}
 .kreport .molab{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
 .kreport .morow input[type=range]{flex:1;min-width:110px;accent-color:var(--gold)}
-.kreport .moval{font-variant-numeric:tabular-nums;font-size:12px;font-weight:600;min-width:38px}
+.kreport /* The derived-duration read-out. Wider than a slider value and set in the ink
+   colour, because it is a statement rather than a number on a control. */
+.kreport .modurv{min-width:9.5em;color:var(--ink);opacity:.85;font-variant-numeric:tabular-nums}
+.moval{font-variant-numeric:tabular-nums;font-size:12px;font-weight:600;min-width:38px}
 .kreport .mogrp{display:inline-flex;gap:5px;align-items:center;margin-left:auto}
 .kreport .mosld{display:flex;gap:7px;align-items:center;flex:1 1 190px;min-width:0}
 .kreport .mosld input[type=range]{flex:1;min-width:70px}
@@ -7748,6 +7751,182 @@ function moContextRows(dateMs){
   } else if(out.length) rows.push(out.join("  ·  "));
   return rows;
 }
+/* ===== Motion — how long a loop takes, and where it spends the time ========
+
+   TWO KNOBS, NOT THREE. The panel used to carry Span, Length and Speed. Span says
+   how much sky-time is covered; Length said how many real seconds the loop took;
+   Speed multiplied that. Speed and Length were two controls doing one job, which is
+   why "1/8 speed for 12 months" had no single obvious meaning. Now the reader sets
+   the span and the speed, and the duration is DERIVED and shown read-only.
+
+   WHY base() IS NOT LINEAR. A one-day span and a twelve-year span should not both
+   take fifteen seconds at 1x — there is far more to see in the twelve years. But
+   nor should the twelve years take four thousand times longer, which is what a
+   linear rate gives. A log curve sits between the two: each tenfold increase in
+   span adds a fixed amount of screen time rather than multiplying it.
+
+   WHERE THE TIME GOES. An eclipse window is about one day in three hundred and
+   sixty. Slowing the whole loop down — which is all a speed multiplier can do —
+   leaves the eclipse at 0.3% of the running time however slow it gets, which is
+   exactly the complaint: the text flashes past even at a tenth. So events get a
+   guaranteed DWELL measured in real seconds, and the quiet stretches take whatever
+   real time is left. The playhead consults a schedule rather than having its rate
+   clamped: a floor on dp/dt is the silent-clamp pattern that hid a whole option in
+   the speed menu, and this has to be inspectable instead. */
+
+var MO_PACE={
+  hold:true,          /* hold on events while watching */
+  dwell:2.5,          /* real seconds an ordinary syzygy gets, when there are few */
+  dwellEcl:4.0,       /* an eclipse gets longer — it is the point of the scene */
+  dwellMin:1.2,       /* below this nothing is readable, so the loop lengthens instead */
+  busy:8              /* events past which the ordinary dwell starts shrinking */
+};
+/* How long one event holds the frame. Twelve months carries about twenty-nine new
+   and full moons; giving each the full dwell would turn a 27-second loop into a
+   92-second one, which is a surprise rather than a setting. So the ordinary dwell
+   shrinks as the count rises, down to the shortest hold that can still be read —
+   and eclipses keep their full dwell whatever else is going on, because they are
+   what the scene is about. */
+function moDwellFor(kind,n){
+  var d;
+  if(kind==="eclipse") d=MO_PACE.dwellEcl;
+  else if(n<=MO_PACE.busy) d=MO_PACE.dwell;
+  else d=Math.max(MO_PACE.dwellMin, MO_PACE.dwell*MO_PACE.busy/n);
+  /* The hold scales with the speed like everything else. Without this a tenth-speed
+     loop would stretch the quiet months tenfold and leave the eclipse the same two
+     seconds it always had — the events would become relatively FASTER the slower
+     the reader asked the animation to run, which is the opposite of the request. */
+  return d/Math.max(MO_SPEED_MIN,MO.speed);
+}
+/* Only the scenes whose subject is an event. The others have nothing to hold on. */
+var MO_PACE_SCENES={tilt:1, eclipseseason:1, eclipse:1};
+
+/* --- the derived duration ------------------------------------------------ */
+function moBaseSeconds(){
+  var days=moSpanMs()/86400000;
+  /* 12 s at a day, about 18 s at a month, 24 s at a year, 30 s at a decade: each
+     tenfold span adds roughly six seconds rather than multiplying the lot. */
+  return 12 + 6*Math.log10(Math.max(1,days));
+}
+function moDuration(){
+  var d=moBaseSeconds()/Math.max(MO_SPEED_MIN,MO.speed);
+  return Math.max(2, d);
+}
+/* "2 min 10 s", or "14 s" — written the way a person would say it. */
+function moDurLabel(sec){
+  sec=Math.round(sec);
+  if(sec<60) return sec+" s";
+  var m=Math.floor(sec/60), s=sec%60;
+  return m+" min"+(s?(" "+s+" s"):"");
+}
+
+/* --- the event schedule --------------------------------------------------
+   A list of {at, dwell} in loop position 0..1, built once per span and cached the
+   way the latitude wave already is. Positions, not timestamps: the scrubber stays
+   linear in span, which is what "where in the twelve months am I" means. */
+function moEvents(){
+  if(!MO_PACE.hold || !MO_PACE_SCENES[MO.scene]) return [];
+  var t0=Date.now(), t1=t0+moSpanMs();
+  return moCached("pace|"+MO.scene+"|"+MO.opt.spanN+MO.opt.spanU+"|"+MO.speed,function(){
+    var out=[];
+    /* the eclipses themselves, from the same finder the scenes draw from */
+    var E=[]; try{ E=moEclipsesIn(t0,t1)||[]; }catch(e){}
+    E.forEach(function(x){
+      out.push({at:(x.ms-t0)/(t1-t0), dwell:MO_PACE.dwellEcl, kind:"eclipse"});
+    });
+    /* and every new and full moon, found by sampling the elongation and bisecting
+       each crossing — the same method the proof strip uses, so the marks on the
+       strip and the holds in the playback are the same events */
+    function el(m){ var a=moSidAt("Moon",m), b=moSidAt("Sun",m);
+      return (a==null||b==null)?null:((a-b)%360+360)%360; }
+    var N=Math.min(3000,Math.max(120,Math.round((t1-t0)/21600000))), prev=null;
+    for(var i=0;i<=N;i++){
+      var m=t0+(t1-t0)*i/N, e=el(m);
+      if(e==null){ prev=null; continue; }
+      if(prev){
+        var tgt=null;
+        if(prev.e>e) tgt=0; else if(prev.e<180&&e>=180) tgt=180;
+        if(tgt!=null){
+          var lo=prev.m, hi=m;
+          for(var b2=0;b2<30&&hi-lo>60000;b2++){
+            var mid=(lo+hi)/2, em=el(mid); if(em==null) break;
+            var d=((em-tgt)%360+360)%360; if(d>180) d-=360;
+            if(d<0) lo=mid; else hi=mid;
+          }
+          var at=((lo+hi)/2-t0)/(t1-t0);
+          /* an eclipse is a syzygy too; do not hold twice on the same instant */
+          var dup=out.some(function(o){ return Math.abs(o.at-at)<0.004; });
+          if(!dup) out.push({at:at, dwell:MO_PACE.dwell, kind:"syzygy"});
+        }
+      }
+      prev={m:m,e:e};
+    }
+    out=out.filter(function(o){ return o.at>0.001 && o.at<0.999; })
+           .sort(function(a,b){ return a.at-b.at; });
+    var n=out.length;
+    out.forEach(function(o){ o.dwell=moDwellFor(o.kind,n); });
+    return out;
+  });
+}
+
+/* --- the playhead --------------------------------------------------------
+   Given the loop position and a real-time step, return the new position. Around an
+   event the position advances slowly; between them it advances fast enough that the
+   whole loop still finishes in the duration the panel promised. If the dwells alone
+   exceed that duration the loop takes longer, and moPaceReport says so rather than
+   compressing the holds back to uselessness. */
+function moPaceWindow(){
+  /* the span-fraction an event holds the frame over; small enough that the reader
+     is held at the event rather than near it */
+  return 0.004;
+}
+function moPaceReport(){
+  var ev=moEvents(), base=moDuration();
+  if(!ev.length) return {dur:base, base:base, held:0, extra:0};
+  var w=moPaceWindow(), held=0;
+  ev.forEach(function(o){ held+=o.dwell; });
+  var quietFrac=Math.max(0.05, 1-ev.length*w*2);
+  var quietTime=base*quietFrac;
+  var total=quietTime+held;
+  return {dur:Math.max(base,total), base:base, held:ev.length, extra:Math.max(0,total-base)};
+}
+/* Position after dt milliseconds of real time. */
+function moPaceStep(p,dtMs){
+  var ev=moEvents(), rep=moPaceReport(), dur=rep.dur;
+  if(!ev.length) return p + (dtMs/1000)/Math.max(0.5,dur);
+  var w=moPaceWindow();
+  /* real seconds per unit of loop position, at this position */
+  var inEvent=null;
+  for(var i=0;i<ev.length;i++){
+    if(Math.abs(p-ev[i].at)<=w){ inEvent=ev[i]; break; }
+  }
+  var rate;                                     /* loop position per second */
+  if(inEvent) rate=(2*w)/inEvent.dwell;
+  else {
+    var quietSpan=Math.max(0.02, 1-ev.length*2*w);
+    var quietTime=Math.max(0.5, dur - ev.reduce(function(a,o){ return a+o.dwell; },0));
+    rate=quietSpan/quietTime;
+  }
+  return p + rate*(dtMs/1000);
+}
+
+/* The read-out under the Speed control. States the derived duration, and when the
+   holds push it past the base duration it says so and how many held it — "the
+   system decides" is only honest if the system also says what it decided. */
+function moPaceLabel(){
+  var r=moPaceReport();
+  var t=moT("thisLoop")+" "+moDurLabel(r.dur);
+  /* When the holds stretched the loop, say both numbers. "The system decides" is
+     only honest if the system also shows what it decided and why. */
+  if(r.held && r.extra>0.5)
+    t=moT("thisLoop")+" "+moDurLabel(r.base)+" \u2192 "+moDurLabel(r.dur)+
+      "  ("+moNum(r.held)+" "+moT("held")+")";
+  return t;
+}
+function moDurRead(){
+  var el=document.getElementById("modurv");
+  if(el) el.textContent=moPaceLabel();
+}
 /* ===== Motion studio: the animations tab =====
    A separate renderer from the ecliptic wheel, and deliberately so. The wheel is SVG
    because it is a precise, printable chart. These are canvas because they want glow,
@@ -8051,7 +8230,10 @@ function moTick(ts){
   if(!MO.playing){ MO.raf=null; return; }
   if(MO.last==null) MO.last=ts;
   var dt=Math.min(120,ts-MO.last); MO.last=ts;
-  MO.p+=(dt/1000)/Math.max(0.5,MO.dur/Math.max(MO_SPEED_MIN,MO.speed));
+  /* The playhead consults the pacing model rather than dividing a fixed length:
+     the duration is derived from span and speed, and the time inside it is spent
+     unevenly so an eclipse is readable instead of flashing past. */
+  MO.p=moPaceStep(MO.p,dt);
   if(MO.p>=1) MO.p-=1;
   MO._fpsN++; MO._fpsT+=dt;
   if(MO._fpsT>500){ MO.fps=Math.round(1000*MO._fpsN/MO._fpsT); MO._fpsN=0; MO._fpsT=0;
@@ -12690,7 +12872,7 @@ var MO_CAPS=[
 function motionPane(D,J){
   if(!J||!J.input) return "";
   MO.D=D; MO.J=J; MO.p=0; MO.playing=false; MO.scene="retro"; MO.ratio="9:16";
-  MO.pal="midnight"; MO.dur=15; MO.studio=false;
+  MO.pal="midnight"; MO.studio=false;
   MO.opt.subject="Mars"; MO.opt.exag=40; MO.opt.symbols=false;
   MO.opt.spanN=12; MO.opt.spanU="y"; MO.speed=1;
   MO.opt.houses="both"; MO.opt.eclN=10;
@@ -12731,9 +12913,9 @@ function moPaneHTML(){
         '<div class="morow">'+
           '<button type="button" class="k-btn" id="moplay" aria-pressed="false">Play</button>'+
           '<button type="button" class="k-btn sec" id="morestart">Restart</button>'+
-          '<span class="molab">Length</span>'+
-          '<select id="modur" class="skysel">'+MO_DUR.map(function(d){
-            return '<option value="'+d.s+'"'+(d.s===15?" selected":"")+'>'+d.label+'</option>'; }).join("")+'</select>'+
+          /* No Length control: the duration is derived from the span and the
+             speed and shown read-only, because three knobs for two degrees of
+             freedom is what made "1/8 speed for 12 months" ambiguous. */
           '<span class="molab">Speed</span>'+
           '<select id="mospeed" class="skysel">'+
             /* Down to a tenth. The slow end is for study rather than for export:
@@ -12742,8 +12924,12 @@ function moPaneHTML(){
                look back at the wheel before it moves on. The fast end is unchanged. */
             [[0.1,"\u2152\u00d7"],[0.2,"\u2155\u00d7"],[0.25,"\u00bc\u00d7"],[0.5,"\u00bd\u00d7"],
              [1,"1\u00d7"],[2,"2\u00d7"],[4,"4\u00d7"]]
-            .map(function(s){ return '<option value="'+s[0]+'"'+(s[0]===1?" selected":"")+'>'+s[1]+'</option>'; }).join("")+
+            .map(function(s){ return '<option value="'+s[0]+'"'+(s[0]===MO.speed?" selected":"")+'>'+s[1]+'</option>'; }).join("")+
           '</select>'+
+          '<span class="moval modurv" id="modurv">'+esc(moPaceLabel())+'</span>'+
+          '<button type="button" class="skyv'+(MO_PACE.hold?" on":"")+
+            '" data-mohold="1" title="Slow down at every new moon, full moon and '+
+            'eclipse so the words can be read">'+esc(moT("holdEvents"))+'</button>'+
         '</div>'+
         /* Frame stepping sits with the scrub rather than with Play: both move the
            playhead, and loose in the row above the two arrows wrapped apart from
@@ -13056,11 +13242,15 @@ function moPaneRefresh(){
   [].forEach.call(host.querySelectorAll("[data-mopal]"),function(b){
     b.className="skyv"+(b.getAttribute("data-mopal")===MO.pal?" on":""); });
   var sl=document.getElementById("moscrub"); if(sl) sl.value=Math.round(MO.p*1000);
-  moSceneGuide(); moDraw();
+  moSceneGuide(); moDurRead(); moDraw();
   if(wasPlaying) moPlay(true);
 }
 
 window.__moDraw=function(){ if(MO.cv) moDraw(); };
+window.__moPaceLabel=function(){ MO_CACHE={}; return moPaceLabel(); };
+window.__moPaceReport=function(){ return moPaceReport(); };
+window.__moPaceStep=function(p,dt){ return moPaceStep(p,dt); };
+window.__moEvents=function(){ return moEvents(); };
 window.__moCtxRows=function(){ var r=null; try{ r=moDraw(); }catch(e){} return moContextRows(MO._lastMs||Date.now()); };
 window.__moMount=moMount;
 
@@ -13073,18 +13263,26 @@ document.addEventListener("click",function(ev){
     [].forEach.call(document.querySelectorAll("[data-moscene]"),function(b){
       b.className="moscene"+(b.getAttribute("data-moscene")===MO.scene?" on":""); });
     var s1=document.getElementById("moscrub"); if(s1) s1.value=0;
-    moSceneOpts(); moDraw(); return;
+    /* the derived duration depends on the scene, because only some scenes have
+               events to hold on; without this the read-out lags one scene behind */
+    moSceneOpts(); moDurRead(); moDraw(); return;
   }
   if(t.id==="moplay"){ moPlay(!MO.playing); return; }
   if(t.id==="morestart"){ MO.p=0; var s2=document.getElementById("moscrub");
     if(s2) s2.value=0; moDraw(); return; }
   if(t.id==="mostepb"||t.id==="mostepf"){
     moPlay(false);
-    var dp=(1/60)/Math.max(0.5,MO.dur/Math.max(MO_SPEED_MIN,MO.speed));
+    /* one frame of the current pacing, so stepping matches what playing does */
+    var dp=moPaceStep(MO.p,1000/60)-MO.p;
     MO.p+=(t.id==="mostepf"?dp:-dp);
     if(MO.p>=1) MO.p-=1; if(MO.p<0) MO.p+=1;
     var s3=document.getElementById("moscrub"); if(s3) s3.value=Math.round(MO.p*1000);
     moDraw(); return;
+  }
+  if(t.getAttribute("data-mohold")){
+    MO_PACE.hold=!MO_PACE.hold;
+    t.className="skyv"+(MO_PACE.hold?" on":"");
+    MO_CACHE={}; moDurRead(); return;
   }
   var lg=t.getAttribute("data-molang");
   if(lg){
@@ -13197,16 +13395,15 @@ document.addEventListener("input",function(ev){
   if(t.id==="molatx"){ MO.opt.latx=+t.value;
     var c9=document.getElementById("molatxv"); if(c9) c9.textContent=t.value; moDraw(); return; }
   if(t.id==="mospann"){ var v=Math.max(1,Math.min(999,+t.value||1));
-    MO.opt.spanN=v; MO.p=0; MO_CACHE={}; moDraw(); return; }
+    MO.opt.spanN=v; MO.p=0; MO_CACHE={}; moDurRead(); moDraw(); return; }
   if(t.id==="motitle"){ MO.cap.title=t.value; moDraw(); return; }
   if(t.id==="mosub"){ MO.cap.sub=t.value; moDraw(); return; }
   if(t.id==="mohandle"){ MO.cap.handle=t.value; moDraw(); return; }
 });
 document.addEventListener("change",function(ev){
   var t2=ev.target; if(!t2) return;
-  if(t2.id==="modur"){ MO.dur=+t2.value; return; }
-  if(t2.id==="mospeed"){ MO.speed=+t2.value; return; }
-  if(t2.id==="mospanu"){ MO.opt.spanU=t2.value; MO.p=0; MO_CACHE={}; moDraw(); return; }
+  if(t2.id==="mospeed"){ MO.speed=+t2.value; moDurRead(); return; }
+  if(t2.id==="mospanu"){ MO.opt.spanU=t2.value; MO.p=0; MO_CACHE={}; moDurRead(); moDraw(); return; }
   if(t2.id==="movarga"){ MO.opt.varga=+t2.value||0; MO.p=0; MO_CACHE={};
     moSceneOpts(); moDraw(); return; }
   if(t2.id==="morpin"){ MO.opt.rpin=+t2.value; MO.p=0; MO_CACHE={}; moDraw(); return; }
@@ -15228,4 +15425,4 @@ window.buildKundliReport=function(J){
   }
 })();
 </script>
-<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-16.2a67006</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer></body></html>
+<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-16.e5df6ae</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer></body></html>

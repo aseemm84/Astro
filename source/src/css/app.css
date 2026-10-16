@@ -688,7 +688,10 @@ body.kcast .k-status{min-height:0;margin:0}
 .kreport .morow:empty{display:none}
 .kreport .molab{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
 .kreport .morow input[type=range]{flex:1;min-width:110px;accent-color:var(--gold)}
-.kreport .moval{font-variant-numeric:tabular-nums;font-size:12px;font-weight:600;min-width:38px}
+.kreport /* The derived-duration read-out. Wider than a slider value and set in the ink
+   colour, because it is a statement rather than a number on a control. */
+.kreport .modurv{min-width:9.5em;color:var(--ink);opacity:.85;font-variant-numeric:tabular-nums}
+.moval{font-variant-numeric:tabular-nums;font-size:12px;font-weight:600;min-width:38px}
 .kreport .mogrp{display:inline-flex;gap:5px;align-items:center;margin-left:auto}
 .kreport .mosld{display:flex;gap:7px;align-items:center;flex:1 1 190px;min-width:0}
 .kreport .mosld input[type=range]{flex:1;min-width:70px}

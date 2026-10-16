@@ -34,7 +34,7 @@ var MO_CAPS=[
 function motionPane(D,J){
   if(!J||!J.input) return "";
   MO.D=D; MO.J=J; MO.p=0; MO.playing=false; MO.scene="retro"; MO.ratio="9:16";
-  MO.pal="midnight"; MO.dur=15; MO.studio=false;
+  MO.pal="midnight"; MO.studio=false;
   MO.opt.subject="Mars"; MO.opt.exag=40; MO.opt.symbols=false;
   MO.opt.spanN=12; MO.opt.spanU="y"; MO.speed=1;
   MO.opt.houses="both"; MO.opt.eclN=10;
@@ -75,9 +75,9 @@ function moPaneHTML(){
         '<div class="morow">'+
           '<button type="button" class="k-btn" id="moplay" aria-pressed="false">Play</button>'+
           '<button type="button" class="k-btn sec" id="morestart">Restart</button>'+
-          '<span class="molab">Length</span>'+
-          '<select id="modur" class="skysel">'+MO_DUR.map(function(d){
-            return '<option value="'+d.s+'"'+(d.s===15?" selected":"")+'>'+d.label+'</option>'; }).join("")+'</select>'+
+          /* No Length control: the duration is derived from the span and the
+             speed and shown read-only, because three knobs for two degrees of
+             freedom is what made "1/8 speed for 12 months" ambiguous. */
           '<span class="molab">Speed</span>'+
           '<select id="mospeed" class="skysel">'+
             /* Down to a tenth. The slow end is for study rather than for export:
@@ -86,8 +86,12 @@ function moPaneHTML(){
                look back at the wheel before it moves on. The fast end is unchanged. */
             [[0.1,"\u2152\u00d7"],[0.2,"\u2155\u00d7"],[0.25,"\u00bc\u00d7"],[0.5,"\u00bd\u00d7"],
              [1,"1\u00d7"],[2,"2\u00d7"],[4,"4\u00d7"]]
-            .map(function(s){ return '<option value="'+s[0]+'"'+(s[0]===1?" selected":"")+'>'+s[1]+'</option>'; }).join("")+
+            .map(function(s){ return '<option value="'+s[0]+'"'+(s[0]===MO.speed?" selected":"")+'>'+s[1]+'</option>'; }).join("")+
           '</select>'+
+          '<span class="moval modurv" id="modurv">'+esc(moPaceLabel())+'</span>'+
+          '<button type="button" class="skyv'+(MO_PACE.hold?" on":"")+
+            '" data-mohold="1" title="Slow down at every new moon, full moon and '+
+            'eclipse so the words can be read">'+esc(moT("holdEvents"))+'</button>'+
         '</div>'+
         /* Frame stepping sits with the scrub rather than with Play: both move the
            playhead, and loose in the row above the two arrows wrapped apart from
@@ -400,11 +404,15 @@ function moPaneRefresh(){
   [].forEach.call(host.querySelectorAll("[data-mopal]"),function(b){
     b.className="skyv"+(b.getAttribute("data-mopal")===MO.pal?" on":""); });
   var sl=document.getElementById("moscrub"); if(sl) sl.value=Math.round(MO.p*1000);
-  moSceneGuide(); moDraw();
+  moSceneGuide(); moDurRead(); moDraw();
   if(wasPlaying) moPlay(true);
 }
 
 window.__moDraw=function(){ if(MO.cv) moDraw(); };
+window.__moPaceLabel=function(){ MO_CACHE={}; return moPaceLabel(); };
+window.__moPaceReport=function(){ return moPaceReport(); };
+window.__moPaceStep=function(p,dt){ return moPaceStep(p,dt); };
+window.__moEvents=function(){ return moEvents(); };
 window.__moCtxRows=function(){ var r=null; try{ r=moDraw(); }catch(e){} return moContextRows(MO._lastMs||Date.now()); };
 window.__moMount=moMount;
 
@@ -417,18 +425,26 @@ document.addEventListener("click",function(ev){
     [].forEach.call(document.querySelectorAll("[data-moscene]"),function(b){
       b.className="moscene"+(b.getAttribute("data-moscene")===MO.scene?" on":""); });
     var s1=document.getElementById("moscrub"); if(s1) s1.value=0;
-    moSceneOpts(); moDraw(); return;
+    /* the derived duration depends on the scene, because only some scenes have
+               events to hold on; without this the read-out lags one scene behind */
+    moSceneOpts(); moDurRead(); moDraw(); return;
   }
   if(t.id==="moplay"){ moPlay(!MO.playing); return; }
   if(t.id==="morestart"){ MO.p=0; var s2=document.getElementById("moscrub");
     if(s2) s2.value=0; moDraw(); return; }
   if(t.id==="mostepb"||t.id==="mostepf"){
     moPlay(false);
-    var dp=(1/60)/Math.max(0.5,MO.dur/Math.max(MO_SPEED_MIN,MO.speed));
+    /* one frame of the current pacing, so stepping matches what playing does */
+    var dp=moPaceStep(MO.p,1000/60)-MO.p;
     MO.p+=(t.id==="mostepf"?dp:-dp);
     if(MO.p>=1) MO.p-=1; if(MO.p<0) MO.p+=1;
     var s3=document.getElementById("moscrub"); if(s3) s3.value=Math.round(MO.p*1000);
     moDraw(); return;
+  }
+  if(t.getAttribute("data-mohold")){
+    MO_PACE.hold=!MO_PACE.hold;
+    t.className="skyv"+(MO_PACE.hold?" on":"");
+    MO_CACHE={}; moDurRead(); return;
   }
   var lg=t.getAttribute("data-molang");
   if(lg){
@@ -541,16 +557,15 @@ document.addEventListener("input",function(ev){
   if(t.id==="molatx"){ MO.opt.latx=+t.value;
     var c9=document.getElementById("molatxv"); if(c9) c9.textContent=t.value; moDraw(); return; }
   if(t.id==="mospann"){ var v=Math.max(1,Math.min(999,+t.value||1));
-    MO.opt.spanN=v; MO.p=0; MO_CACHE={}; moDraw(); return; }
+    MO.opt.spanN=v; MO.p=0; MO_CACHE={}; moDurRead(); moDraw(); return; }
   if(t.id==="motitle"){ MO.cap.title=t.value; moDraw(); return; }
   if(t.id==="mosub"){ MO.cap.sub=t.value; moDraw(); return; }
   if(t.id==="mohandle"){ MO.cap.handle=t.value; moDraw(); return; }
 });
 document.addEventListener("change",function(ev){
   var t2=ev.target; if(!t2) return;
-  if(t2.id==="modur"){ MO.dur=+t2.value; return; }
-  if(t2.id==="mospeed"){ MO.speed=+t2.value; return; }
-  if(t2.id==="mospanu"){ MO.opt.spanU=t2.value; MO.p=0; MO_CACHE={}; moDraw(); return; }
+  if(t2.id==="mospeed"){ MO.speed=+t2.value; moDurRead(); return; }
+  if(t2.id==="mospanu"){ MO.opt.spanU=t2.value; MO.p=0; MO_CACHE={}; moDurRead(); moDraw(); return; }
   if(t2.id==="movarga"){ MO.opt.varga=+t2.value||0; MO.p=0; MO_CACHE={};
     moSceneOpts(); moDraw(); return; }
   if(t2.id==="morpin"){ MO.opt.rpin=+t2.value; MO.p=0; MO_CACHE={}; moDraw(); return; }

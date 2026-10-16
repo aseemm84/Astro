@@ -301,7 +301,10 @@ function moTick(ts){
   if(!MO.playing){ MO.raf=null; return; }
   if(MO.last==null) MO.last=ts;
   var dt=Math.min(120,ts-MO.last); MO.last=ts;
-  MO.p+=(dt/1000)/Math.max(0.5,MO.dur/Math.max(MO_SPEED_MIN,MO.speed));
+  /* The playhead consults the pacing model rather than dividing a fixed length:
+     the duration is derived from span and speed, and the time inside it is spent
+     unevenly so an eclipse is readable instead of flashing past. */
+  MO.p=moPaceStep(MO.p,dt);
   if(MO.p>=1) MO.p-=1;
   MO._fpsN++; MO._fpsT+=dt;
   if(MO._fpsT>500){ MO.fps=Math.round(1000*MO._fpsN/MO._fpsT); MO._fpsN=0; MO._fpsT=0;

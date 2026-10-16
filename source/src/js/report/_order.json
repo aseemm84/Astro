@@ -44,6 +44,7 @@
   "sky/40-star-wheel.js",
   "motion/49-motion-lang.js",
   "motion/48-motion-context.js",
+  "motion/47-motion-pacing.js",
   "motion/50-motion-core.js",
   "motion/51-motion-scenes.js",
   "motion/52-motion-export.js",
