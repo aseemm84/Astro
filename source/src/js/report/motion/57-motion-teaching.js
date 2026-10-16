@@ -101,11 +101,11 @@ var MT_NKN=["Aśvinī","Bharaṇī","Kṛttikā","Rohiṇī","Mṛgaśirā","Ār
 var MT_SA={Sun:"Sūrya",Moon:"Candra",Mars:"Maṅgala",Mercury:"Budha",
   Jupiter:"Guru",Venus:"Śukra",Saturn:"Śani",Rahu:"Rāhu",Ketu:"Ketu"};
 var MT_RA=["Meṣa","Vṛṣabha","Mithuna","Karka","Siṃha","Kanyā","Tulā","Vṛścika","Dhanus","Makara","Kumbha","Mīna"];
-function mtRa(i){ return (typeof SKY_RASI!=="undefined"&&SKY_RASI[i])||MT_RA[i]; }
-function mtNk(i){ return MT_NKN[i]||("nakṣatra "+(i+1)); }
-function mtLord(i){ return (typeof LORD!=="undefined"&&LORD[i])||""; }
+function mtRa(i){ return moTrasi(i); }
+function mtNk(i){ return moTnak(i); }
+function mtLord(i){ return (typeof LORD!=="undefined"&&LORD[i])?moTgraha(LORD[i]):""; }
 function mtNLord(i){ return (typeof NL9!=="undefined"&&NL9[i%9])||""; }
-function mtGl(n){ return (typeof GL!=="undefined"&&GL[n])||n; }
+function mtGl(n){ return moTgl(n); }
 /* the reader's own grahas, as {name, sid, rashi, degInSign} */
 function mtGrahas(){
   var J=MO.J; if(!J||!J.grahas) return [];
@@ -165,7 +165,7 @@ function mtRail(n,i,P){
     c.fillRect(x-mw/2, y-h/2, mw, h);
     c.globalAlpha=1;
   }
-  moText((i+1)+" / "+n, st.cx, y+U*0.040, U*0.020, P.dim, "center", 500);
+  moText(moP("ofN",i+1,n), st.cx, y+U*0.040, U*0.020, P.dim, "center", 500);
 }
 
 /* A stack of caption lines laid out to fit the room there is.
@@ -237,17 +237,19 @@ function mtView(){
     var L0=J.lagna.rashi.idx;
     return {vi:0, name:"D1", en:"Rāśi — the birth chart itself", lagna:L0, isD1:true,
       sign:function(k){ return J.bhavas[k].rashi.idx; },
-      lord:function(k){ return J.bhavas[k].ruler; },
-      occ:function(k){ return (J.bhavas[k].occupants||[]).slice(); },
+      /* the engine stores these in its own Sanskrit; EN maps back to the English
+         key the language table is built on, so Hindi mode reaches the same term */
+      lord:function(k){ return moTsk(J.bhavas[k].ruler); },
+      occ:function(k){ return (J.bhavas[k].occupants||[]).map(moTsk); },
       house:function(g){ return ((g.ri-L0)%12+12)%12; }};
   }
   var pos=v.positions||{};
   return {vi:vi, name:v.varga, en:v.en, lagna:v.lagna, isD1:false,
     sign:function(k){ return (v.lagna+k)%12; },
     lord:function(k){ var en=(typeof LORD!=="undefined"&&LORD[(v.lagna+k)%12])||"";
-      return MT_SA[en]||en; },
+      return moTgraha(en); },
     occ:function(k){ var sg=(v.lagna+k)%12, out=[];
-      Object.keys(pos).forEach(function(n){ if(pos[n]===sg) out.push(n); }); return out; },
+      Object.keys(pos).forEach(function(n){ if(pos[n]===sg) out.push(moTsk(n)); }); return out; },
     house:function(g){ var sg=pos[g.key]; if(sg==null) return -1;
       return ((sg-v.lagna)%12+12)%12; }};
 }
@@ -318,25 +320,25 @@ var MO_TEACH=[
   var LN=MT_VLENS[V.name]||MT_VLENS.D1, key=(LN.k.indexOf(i+1)>=0);
   var occ=V.occ(i).join(", ");
   var lines=[
-    {t:String(i+1)+".  "+B.sa, s:0.066, c:P.gold, serif:true},
-    {t:B.en,  s:0.030,  c:P.ink, w:600, gap:0.008},
-    {t:B.sig, s:0.0225, c:P.dim, w:400, gap:0.008}
+    {t:moNum(i+1)+".  "+moTbhSa(i,B.sa), s:0.066, c:P.gold, serif:true},
+    {t:moTbhEn(i,B.en),  s:0.030,  c:P.ink, w:600, gap:0.008},
+    {t:moTbhSig(i,B.sig), s:0.0225, c:P.dim, w:400, gap:0.008}
   ];
 
   /* the lens - the one line that answers "so what changes when I switch?" */
   if(V.isD1){
-    lines.push({t:"read plainly, with no division narrowing them",
+    lines.push({t:moP("readPlain"),
       s:0.0225, c:P.dim, w:500, gap:0.014});
   } else {
-    lines.push({t:"in "+V.name+", read these same meanings for "+LN.t,
+    lines.push({t:moP("lensIn",V.name,moTvlens(V.name,LN.t)),
       s:0.0235, c:P.gold, w:600, gap:0.014});
-    if(key) lines.push({t:"★  this is the house "+V.name+" exists to refine",
+    if(key) lines.push({t:moP("keyHouse",V.name),
       s:0.021, c:P.gold, w:700, gap:0.004});
   }
 
   /* the reader's own house, in the division being shown */
-  lines.push({t:mtRa(V.sign(i))+"  ·  lord "+V.lord(i)+
-    (occ?("  ·  "+occ):"  ·  empty"),
+  lines.push({t:mtRa(V.sign(i))+"  ·  "+moP("lordIs",V.lord(i))+
+    (occ?("  ·  "+occ):("  ·  "+moP("emptyHouse"))),
     s:0.026, c:P.ink, w:600, gap:0.016});
 
   /* and, on the rasi chart, where BPHS says to look closer at this topic */
@@ -344,24 +346,23 @@ var MO_TEACH=[
     var v=MT_BHV[i+1], vg=null;
     if(v && J.vargas) J.vargas.forEach(function(x){ if(x.varga===v) vg=x; });
     if(vg){
-      lines.push({t:"BPHS refines this topic in "+MT_VN[v],
+      lines.push({t:moP("bphsRefines",moTvn(v,MT_VN[v])),
         s:0.0225, c:P.gold, w:600, gap:0.014});
-      lines.push({t:"in your "+v+" the lagna falls in "+mtRa(vg.lagna)+
-        " — switch the division above to read the houses there",
+      lines.push({t:moP("yourVarga",v,mtRa(vg.lagna)),
         s:0.022, c:P.ink, w:500});
     } else {
-      lines.push({t:"No division is assigned to this topic — it is read from the rāśi chart",
+      lines.push({t:moP("noDivision"),
         s:0.0215, c:P.dim, w:400, gap:0.014});
     }
   } else {
-    lines.push({t:V.name+" — "+V.en+", counted whole-sign from its own lagna in "+mtRa(V.lagna),
+    lines.push({t:moP("countedFrom",V.name,V.en,mtRa(V.lagna)),
       s:0.021, c:P.dim, w:400, gap:0.012});
   }
 
   var ty=cy+R+st.h*FR.gap;
   mtLines(lines,cx,ty,st.y+st.h-U*0.112,U,P,S.w*0.88);
   mtRail(12,i,P);
-  return {ms:null, sub:V.name+" \u00b7 bhāva "+(i+1)+" of 12"};
+  return {ms:null, sub:V.name+" \u00b7 "+moP("bhavaOfN",i+1,12)};
  }},
 
 /* -------------------------------------------------------------- 2. the rāśis */
@@ -393,7 +394,7 @@ var MO_TEACH=[
       var x=X(e[1]);
       c.strokeStyle=P.benefic; c.lineWidth=2.6; c.globalAlpha=.9;
       c.beginPath(); c.moveTo(x,y); c.lineTo(x,y+h); c.stroke(); c.globalAlpha=1;
-      moText(mtGl(g)+" exalts",x,y-U*0.016,U*0.019,P.benefic,"center",700);
+      moText(moP("exalts",mtGl(g)),x,y-U*0.016,U*0.019,P.benefic,"center",700);
     }
     var dd=(e[0]+6)%12;
     if(dd===i){
@@ -402,7 +403,7 @@ var MO_TEACH=[
       c.setLineDash([4,5]);
       c.beginPath(); c.moveTo(x2,y); c.lineTo(x2,y+h); c.stroke();
       c.setLineDash([]); c.globalAlpha=1;
-      moText(mtGl(g)+" falls",x2,y+h+U*0.050,U*0.019,P.malefic,"center",600);
+      moText(moP("falls",mtGl(g)),x2,y+h+U*0.050,U*0.019,P.malefic,"center",600);
     }
   });
   /* when this sign is pinned, a marker walks its thirty degrees */
@@ -421,26 +422,26 @@ var MO_TEACH=[
   /* the words */
   var ty=y+h+st.h*0.16;
   moSerif(String(i+1)+".  "+mtRa(i),cx,ty,U*0.070,P.gold);
-  moText(MT_MO[i]+"  ·  "+MT_EL[i]+"  ·  lord "+lord,
+  moText(moP("rasiAttrs",moTmode(i%3),moTelem(i%4),moTgraha(lord)),
     cx,ty+U*0.056,U*0.030,P.ink,"center",600);
-  moText("of the Kālapuruṣa, the "+MT_LIMB[i],cx,ty+U*0.094,U*0.024,P.dim,"center",400);
+  moText(moP("kalapurusha",moTlimb(i)),cx,ty+U*0.094,U*0.024,P.dim,"center",400);
 
   /* which house it is, for this chart */
   var L=J.lagna.rashi.idx, hn=((i-L)%12+12)%12+1;
-  moText("From your lagna this is house "+hn+" — "+MT_BH[hn-1].en.toLowerCase(),
+  moText(moP("houseFromLagna",hn,moTbhEn(hn-1,MT_BH[hn-1].en).toLowerCase()),
     cx,ty+U*0.136,U*0.026,P.gold,"center",600);
-  moText(mine.length? ("holding "+mine.map(function(g){ return g.full; }).join(", "))
-                    : "no graha of yours stands here",
+  moText(mine.length? moP("holding",mine.map(function(g){ return moTgraha((typeof EN!=="undefined"&&EN[g.full])||g.full); }).join(", "))
+                    : moP("nothingHere"),
     cx,ty+U*0.172,U*0.024,mine.length?P.ink:P.dim,"center",500);
 
   /* rising time at this latitude, which the engine already computes */
   var rr=J.rashi_rising_times&&J.rashi_rising_times.rashis;
   if(rr&&rr[i]&&rr[i].rising_minutes!=null)
-    moText("takes "+Math.round(rr[i].rising_minutes)+" minutes to rise at your latitude \u2014 "+
-           rr[i].share_of_day_percent.toFixed(1)+"% of the day",
+    moText(moP("risingMin",Math.round(rr[i].rising_minutes),
+             rr[i].share_of_day_percent.toFixed(1)),
       cx,ty+U*0.208,U*0.0225,P.dim,"center",400);
   if(!s.pinned) mtRail(12,i,P);
-  return {ms:null, sub:mtRa(i)+" — "+(i+1)+" of 12"};
+  return {ms:null, sub:mtRa(i)+" \u2014 "+moP("ofN",i+1,12)};
  }},
 
 /* --------------------------------------------------------- 3. the nakṣatras */
@@ -473,7 +474,7 @@ var MO_TEACH=[
       c.setLineDash([4,6]); c.beginPath(); c.moveTo(px0,y); c.lineTo(px0,y+h);
       c.stroke(); c.setLineDash([]); c.globalAlpha=1; }
     var ns=(nav0+k)%12;
-    moText("pāda "+(k+1),(px0+px1)/2,y+h*0.34,U*0.020,P.dim,"center",500);
+    moText(moP("padaN",k+1),(px0+px1)/2,y+h*0.34,U*0.020,P.dim,"center",500);
     moText(mtRa(ns),(px0+px1)/2,y+h*0.74,U*0.026,P.ink,"center",700);
   }
   moText(dmDeg(b0),x0,y+h+U*0.028,U*0.019,P.dim,"left",500);
@@ -499,21 +500,21 @@ var MO_TEACH=[
 
   var ty=y+h+st.h*0.15;
   moSerif(String(i+1)+".  "+mtNk(i),cx,ty,U*0.066,P.gold);
-  moText("lord "+lord+"  ·  "+dmDeg(b0)+" to "+dmDeg(b1),
+  moText(moP("nakLord",moTgraha(lord),dmDeg(b0),dmDeg(b1)),
     cx,ty+U*0.052,U*0.028,P.ink,"center",600);
-  moText("deity "+MT_NKD[i]+"  ·  "+MT_NKG[i]+" gaṇa",
+  moText(moP("nakDeity",moTdeity(i,MT_NKD[i]),moTgana(MT_NKG[i])),
     cx,ty+U*0.090,U*0.024,P.dim,"center",400);
-  moText("— deity and gaṇa are later tradition, not BPHS verses —",
+  moText(moP("nakLater"),
     cx,ty+U*0.122,U*0.019,P.dim,"center",400);
 
   /* the one that matters most: the Moon's, which starts the daśā */
   var moon=(J.grahas||[]).filter(function(g){ return /Candra/.test(g.key||""); })[0];
   if(moon){
     var md=((moon.sidereal_deg%360)+360)%360, mi=Math.floor(md/seg);
-    if(mi===i) moText("your Candra stands here — this is what opens the Viṃśottarī, in "+lord,
+    if(mi===i) moText(moP("nakCandra")+" \u2014 "+lord,
       cx,ty+U*0.162,U*0.026,P.gold,"center",700);
-    else moText(mine.length? ("holding "+mine.map(function(g){ return g.full; }).join(", "))
-                           : "nothing of yours falls in this division",
+    else moText(mine.length? moP("holding",mine.map(function(g){ return moTgraha((typeof EN!=="undefined"&&EN[g.full])||g.full); }).join(", "))
+                           : moP("nothingIn"),
       cx,ty+U*0.162,U*0.024,mine.length?P.ink:P.dim,"center",500);
   }
   if(!s.pinned) mtRail(27,i,P);

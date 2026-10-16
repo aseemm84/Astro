@@ -193,13 +193,13 @@ MO_SKY.push({key:"lagna", label:"Lagna", title:"The sign climbing out of the eas
   var dm=Math.floor(deg), mn=Math.floor((deg-dm)*60);
 
   /* ---- the reading, in the band kept for it */
-  var nk=nakOf(lag), lord=LORD[sgn];
+  var nk=nakOf(lag), lord=moTgraha(LORD[sgn]);
   var lordL=moSidAt(lord,ms);
   var ty=hzY+grndH+U*0.026;
-  moText("LAGNA",st.cx,ty-U*0.004,U*0.019,P.gold,"center",700);
-  moSerif(dm+"° "+(mn<10?"0":"")+mn+"′  "+SA[sgn],st.cx,ty+U*0.032,U*0.038,P.ink,"center");
-  moText(nk.name+" pāda "+nk.pada+"  ·  lord "+MO_FULL[lord]+
-         (lordL==null?"":" in "+SA[Math.floor(lordL/30)%12]),
+  moText(moP("LAGNA"),st.cx,ty-U*0.004,U*0.019,P.gold,"center",700);
+  moSerif(dm+"° "+(mn<10?"0":"")+mn+"′  "+moTrasi(sgn),st.cx,ty+U*0.032,U*0.038,P.ink,"center");
+  moText(moNakName(lag)+" "+moP("padaN",nk.pada)+"  ·  "+moP("lordIs",lord)+
+         (lordL==null?"":" in "+moTrasi(Math.floor(lordL/30)%12)),
     st.cx,ty+U*0.066,U*0.021,P.dim,"center",500);
 
   /* ---- the rāśi durations: the part a boxed chart cannot show */
@@ -225,9 +225,8 @@ MO_SKY.push({key:"lagna", label:"Lagna", title:"The sign climbing out of the eas
       moText((m3/60).toFixed(1)+"h",x3+cw/2,bBase-hgt+U*0.016,U*0.0145,
         on?"#2a2206":P.ink,"center",700);
   }
-  return {ms:ms, sub:"lagna "+dm+"° "+(mn<10?"0":"")+mn+"′ "+SA[sgn]+
-          "  ·  "+(RT.min[sgn]==null?"circumpolar":(RT.min[sgn]/60).toFixed(2)+
-          " h for this rāśi to rise")};
+  return {ms:ms, sub:moP("lagnaRise",dm+"° "+(mn<10?"0":"")+mn+"′",moTrasi(sgn),
+          (RT.min[sgn]==null?moP("circumpolar"):(RT.min[sgn]/60).toFixed(2)))};
  }});
 
 /* The disc is rendered at full size when the playhead is still and at a reduced
@@ -317,18 +316,16 @@ MO_SKY.push({key:"moon", label:"Candra", title:"Candra, lit as the sky lights it
 
   /* the reading */
   var ry=cy+Rdraw+U*0.075;
-  moSerif(pc.tithi+"  ·  "+pc.paksha+" pakṣa",st.cx,ry,U*0.040,P.ink,"center");
-  moText((waxing?"waxing":"waning")+"  ·  "+(ill.phase_fraction*100).toFixed(1)+
-         "% lit  ·  "+el.toFixed(1)+"° from Sūrya",
+  moSerif(moTtithiName(pc.tithi)+"  ·  "+moP("pakshaOf",moTpaksha(pc.paksha)),st.cx,ry,U*0.040,P.ink,"center");
+  moText(moP("pctLit",(waxing?moP("waxing"):moP("waning")),
+           (ill.phase_fraction*100).toFixed(1),el.toFixed(1),moTgraha("Sun")),
     st.cx,ry+U*0.042,U*0.023,P.gold,"center",600);
-  moText(nk.name+" pāda "+nk.pada+"  ·  "+SA[Math.floor(mo/30)%12]+"  ·  "+
-         Math.round(lib.dist_km).toLocaleString()+" km  ·  "+
-         (lib.diam_deg*60).toFixed(1)+"′ across",
+  moText(moP("moonWhere",moNakName(mo),nk.pada,moTrasi(Math.floor(mo/30)%12),
+           Math.round(lib.dist_km).toLocaleString()),
     st.cx,ry+U*0.076,U*0.020,P.dim,"center",500);
-  moText("surface generated from code — maria at their true selenographic places, "+
-         "lit by the real phase",st.cx,ry+U*0.104,U*0.016,P.dim,"center",500);
-  return {ms:ms, sub:pc.tithi+" "+pc.paksha+" · "+(ill.phase_fraction*100).toFixed(0)+
-          "% lit · "+(lib.diam_deg*60).toFixed(1)+"′"};
+  moText(moP("moonSurface"),st.cx,ry+U*0.104,U*0.016,P.dim,"center",500);
+  return {ms:ms, sub:moTtithiName(pc.tithi)+" "+moTpaksha(pc.paksha)+" · "+(ill.phase_fraction*100).toFixed(0)+
+          "% · "+(lib.diam_deg*60).toFixed(1)+"′"};
  }});
 
 /* =========================================================== 3. Sūrya ====== */
@@ -408,16 +405,14 @@ MO_SKY.push({key:"sun", label:"Sūrya", title:"Sūrya, the one graha with no pha
   c.restore();
   /* the reading */
   var ry=cy+Rdraw+U*0.085;
-  moSerif(dmsShort(su%30)+"  "+SA[sgn],st.cx,ry,U*0.040,P.ink,"center");
-  moText(nk.name+" pāda "+nk.pada+"  ·  "+
-         (trop>=90&&trop<270?"Dakṣiṇāyana":"Uttarāyaṇa"),
+  moSerif(dmsShort(su%30)+"  "+moTrasi(sgn),st.cx,ry,U*0.040,P.ink,"center");
+  moText(moP("sunWhere",moNakName(su),nk.pada,
+           trop>=90&&trop<270?moP("dakshinayana"):moP("uttarayana")),
     st.cx,ry+U*0.042,U*0.023,P.gold,"center",600);
-  moText(dist.toFixed(4)+" AU  ·  "+(diam*60).toFixed(2)+"′ across  ·  "+
-         "ecliptic latitude 0°, by definition",
+  moText(moP("sunFacts",dist.toFixed(4),(diam*60).toFixed(2)),
     st.cx,ry+U*0.076,U*0.020,P.dim,"center",500);
-  moText("the disc is generated: granulation, limb darkening, spot groups within "+
-         "30° of its equator",st.cx,ry+U*0.104,U*0.016,P.dim,"center",500);
-  return {ms:ms, sub:SA[sgn]+" "+dmsShort(su%30)+" · "+dist.toFixed(4)+" AU · "+
+  moText(moP("sunSpots","30"),st.cx,ry+U*0.104,U*0.016,P.dim,"center",500);
+  return {ms:ms, sub:moTrasi(sgn)+" "+dmsShort(su%30)+" · "+dist.toFixed(4)+" AU · "+
           (diam*60).toFixed(2)+"′"};
  }});
 function dmsShort(v){ var d=Math.floor(v), m=Math.floor((v-d)*60);
@@ -426,15 +421,15 @@ function dmsShort(v){ var d=Math.floor(v), m=Math.floor((v-d)*60);
 /* ====================================================== 4. the five worlds == */
 var MO_WORLD=[
   {en:"Mercury", tex:moMercuryTex, axis:0,   col:[1,1,1],        km:4879,   relief:1.0,
-   note:"airless and cratered, and never more than 28° from Sūrya"},
+   note:"mercuryNote"},
   {en:"Venus",   tex:moVenusTex,   axis:0,   col:[1,1,1],        km:12104,  relief:0,
-   note:"a cloud deck with nothing beneath it to see — and the clearest phases of any graha"},
+   note:"venusNote"},
   {en:"Mars",    tex:moMarsTex,    axis:25,  col:[1,1,1],        km:6779,   relief:0.9,
-   note:"the dark markings and the polar caps that a small telescope shows"},
+   note:"marsNote"},
   {en:"Jupiter", tex:moJupiterTex, axis:3,   col:[1,1,1],        km:139820, relief:0,
-   note:"belts and zones at their true latitudes, and the red spot at 22° south"},
+   note:"jupiterNote"},
   {en:"Saturn",  tex:moSaturnTex,  axis:27,  col:[1,1,1],        km:116460, relief:0,
-   note:"the rings open and close over fifteen years as the tilt turns towards us"}
+   note:"saturnNote"}
 ];
 MO_SKY.push({key:"worlds", label:"The five worlds", title:"The tārā grahas as worlds",
  sub:"each at its true phase, with its real size and distance beside it",
@@ -492,16 +487,15 @@ MO_SKY.push({key:"worlds", label:"The five worlds", title:"The tārā grahas as 
   if(en==="Saturn") moRings(cx,cy,Rdraw,dt,lx,lz,P,true);
   /* the reading */
   var ry=cy+Rdraw*ringK+U*0.080;
-  moSerif(MO_FULL[en],st.cx,ry,U*0.044,P.ink,"center");
-  moText((ill.phase_fraction*100).toFixed(0)+"% lit  ·  "+appArc.toFixed(1)+"″ across  ·  "+
-         "magnitude "+ill.mag.toFixed(1),st.cx,ry+U*0.044,U*0.023,P.gold,"center",600);
-  moText((L==null?"":SA[Math.floor(L/30)%12]+" "+dmsShort(L%30)+"  ·  ")+
+  moSerif(moTgraha(en),st.cx,ry,U*0.044,P.ink,"center");
+  moText(moP("worldLit",(ill.phase_fraction*100).toFixed(0),appArc.toFixed(1),ill.mag.toFixed(1)),st.cx,ry+U*0.044,U*0.023,P.gold,"center",600);
+  moText((L==null?"":moTrasi(Math.floor(L/30)%12)+" "+dmsShort(L%30)+"  ·  ")+
          ill.geo_dist.toFixed(3)+" AU from Earth",
     st.cx,ry+U*0.078,U*0.020,P.dim,"center",500);
-  moText(Wd.note,st.cx,ry+U*0.106,U*0.017,P.dim,"center",500);
+  moText(moP(Wd.note),st.cx,ry+U*0.106,U*0.017,P.dim,"center",500);
   moText(same?("every disc at one magnification — "+Math.round(MAG)+" px per arcsecond, "+
                "so these five can be compared")
-             :"this disc is filled to the frame; for their real sizes see the row below",
+             :moP("worldFilled"),
     st.cx,ry+U*0.130,U*0.016,P.dim,"center",500);
   /* a size strip, so the five can be compared rather than taken one at a time */
   var sBase=st.capY-U*0.052, bw=S.w*0.84, bx0=st.cx-bw/2, cw=bw/5;
@@ -511,7 +505,7 @@ MO_SKY.push({key:"worlds", label:"The five worlds", title:"The tārā grahas as 
   });
   var amax=Math.max.apply(null,arcs)||1;
   var srMax=Math.min(cw*0.30,U*0.038);
-  moText("their true sizes beside one another, at one magnification",
+  moText(moP("oneMag"),
     st.cx,sBase-srMax*2-U*0.030,U*0.018,P.dim,"center",500);
   MO_WORLD.forEach(function(w,i){
     var rr=Math.max(1.5,(arcs[i]/amax)*srMax);
@@ -521,7 +515,7 @@ MO_SKY.push({key:"worlds", label:"The five worlds", title:"The tārā grahas as 
     moText(moG(w.en),x,sBase+U*0.010,U*0.017,on?P.gold:P.dim,"center",700);
     moText(arcs[i].toFixed(0)+"″",x,sBase+U*0.030,U*0.014,P.dim,"center",500);
   });
-  return {ms:ms, sub:MO_FULL[en]+" · "+(ill.phase_fraction*100).toFixed(0)+"% lit · "+
+  return {ms:ms, sub:moTgraha(en)+" · "+(ill.phase_fraction*100).toFixed(0)+"% lit · "+
           appArc.toFixed(1)+"″ · "+ill.geo_dist.toFixed(3)+" AU"};
  }});
 
@@ -555,7 +549,7 @@ function moRings(cx,cy,R,dt,lx,lz,P,front){
   });
   c.restore();
   if(!front){
-    moText("rings open "+Math.abs(B).toFixed(1)+"°",cx,cy-R*2.0-Math.max(12,R*0.16),
+    moText(moP("ringsOpen",Math.abs(B).toFixed(1)),cx,cy-R*2.0-Math.max(12,R*0.16),
       Math.max(11,R*0.14),P.dim,"center",500);
   }
 }

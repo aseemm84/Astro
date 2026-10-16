@@ -148,7 +148,9 @@ function moWorkbook(sheets,filename){
 /* ---------- the data behind each scene ---------- */
 function moISO(ms){ return new Date(ms).toISOString().slice(0,19).replace("T"," "); }
 function moDay(ms){ return new Date(ms).toISOString().slice(0,10); }
-function moSignOf(L){ return SA[Math.floor(L/30)%12]; }
+/* The rāśi a longitude falls in. Routed through the language table so a sheet
+   exported in Hindi carries Devanāgarī names, matching the frame it came from. */
+function moSignOf(L){ return moTrasi(Math.floor(((L%360)+360)%360/30)); }
 function moDegIn(L){ return +(L%30).toFixed(4); }
 function moChartSheet(){
   var i=MO.J&&MO.J.input||{}, rows=[];
@@ -189,7 +191,7 @@ function moSceneSheets(){
                 arc===""?"":+arc.toFixed(3), (L.cs||L.ce)?"yes":"no"];
       })});
     out.push({name:"Window", cols:["Quantity","Value"], rows:[
-      ["Graha",MO_FULL[en]],
+      ["Graha",moTgraha(en)],
       ["From",(MO.opt.from==="birth")?"the birth moment":"today"],
       ["Window opens",moISO(w0)],["Window closes",moISO(w1)],
       ["Retrogrades found",loops.length],
@@ -224,12 +226,12 @@ function moSceneSheets(){
       for(var i=0;i<=N;i++){
         var ms=t0+(t1-t0)*i/N, L=moSidAt(en,ms); if(L==null) break;
         var sg=Math.floor(L/30)%12;
-        if(ps!=null&&sg!==ps) ing.push([moDay(ms),MO_FULL[en],SA[sg],sg+1]);
+        if(ps!=null&&sg!==ps) ing.push([moDay(ms),moTgraha(en),moTrasi(sg),sg+1]);
         if(pl!=null){ var d=L-pl; if(d>180)d-=360; if(d<-180)d+=360;
           var dir=d<0?-1:1;
           if(pd!=null&&dir!==pd&&en!=="Rahu"&&en!=="Ketu")
-            sta.push([moDay(ms),MO_FULL[en],dir<0?"turns retrograde":"resumes direct",
-                      +L.toFixed(4),SA[sg]]);
+            sta.push([moDay(ms),moTgraha(en),dir<0?"turns retrograde":"resumes direct",
+                      +L.toFixed(4),moTrasi(sg)]);
           pd=dir; }
         ps=sg; pl=L;
       }
@@ -262,7 +264,7 @@ function moSceneSheets(){
         if(en!=="Rahu"&&en!=="Ketu"){
           try{ lat2=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[en],new Date(ms3),true)).elat; }catch(e){}
         }
-        rows2.push([moDay(ms3),MO_FULL[en],+L.toFixed(5),moSignOf(L),+lat2.toFixed(5)]);
+        rows2.push([moDay(ms3),moTgraha(en),+L.toFixed(5),moSignOf(L),+lat2.toFixed(5)]);
       });
     }
     out.push({name:"Longitude and latitude",
@@ -278,7 +280,7 @@ function moSceneSheets(){
       if(!sk) continue;
       sk.planets.forEach(function(pp){
         if(!pp.hz) return;
-        rows3.push([moISO(ms4),MO_FULL[pp.en],+pp.hz.alt.toFixed(3),+pp.hz.az.toFixed(3),
+        rows3.push([moISO(ms4),moTgraha(pp.en),+pp.hz.alt.toFixed(3),+pp.hz.az.toFixed(3),
                     +pp.sid.toFixed(4),moSignOf(pp.sid),pp.hz.alt>0?"above":"below"]);
       });
     }
@@ -296,7 +298,7 @@ function moSceneSheets(){
     out.push({name:"Equal divisions",
       cols:["#","Nakṣatra","Starts °","Ends °","Rāśi at start"],
       rows:(function(){ var seg=40/3, r=[];
-        for(var n=0;n<27;n++) r.push([n+1,SKY_NAKA[n],+(n*seg).toFixed(4),+((n+1)*seg).toFixed(4),
+        for(var n=0;n<27;n++) r.push([n+1,moTnak(n),+(n*seg).toFixed(4),+((n+1)*seg).toFixed(4),
           moSignOf(n*seg)]);
         return r; })()});
   } else if(k==="frames"){
@@ -308,8 +310,8 @@ function moSceneSheets(){
         hour:ut5,minute:0,second:0,tzHours:0,lat:i5.lat,lon:i5.lon,ayanamsa:i5.ayanamsa||"lahiri"}); }catch(e){}
       if(!sk5) continue;
       var h1=Math.floor(sk5.lagna/30)%12;
-      rows5.push([moISO(ms5),+sk5.lagna.toFixed(4),SA[h1],+(sk5.lagna%30).toFixed(4),
-                  SA[h1],SA[(h1+3)%12],SA[(h1+6)%12],SA[(h1+9)%12]]);
+      rows5.push([moISO(ms5),+sk5.lagna.toFixed(4),moTrasi(h1),+(sk5.lagna%30).toFixed(4),
+                  moTrasi(h1),moTrasi((h1+3)%12),moTrasi((h1+6)%12),moTrasi((h1+9)%12)]);
     }
     out.push({name:"Lagna through one day",
       cols:["Time (UTC)","Lagna °","Rāśi rising","Degrees in rāśi","1st bhāva","4th","7th","10th"],
@@ -407,7 +409,7 @@ function moSceneSheets(){
       }catch(e){}
       if(lagv==null) continue;
       var sg=Math.floor(lagv/30)%12;
-      rowsL.push([moISO(mL),+lagv.toFixed(4),SA[sg],+(lagv%30).toFixed(4),
+      rowsL.push([moISO(mL),+lagv.toFixed(4),moTrasi(sg),+(lagv%30).toFixed(4),
                   nakOf(lagv).name,nakOf(lagv).pada,LORD[sg],
                   (prevS!=null&&sg!==prevS)?"rāśi changes here":""]);
       prevS=sg;
@@ -473,7 +475,7 @@ function moSceneSheets(){
         if(!il) return;
         var L=moSidAt(en,mW), sp=moSpeed(en,mW);
         var aa=(KM[en]/(il.geo_dist*149597870.7))*206264.8;
-        rowsW.push([moDay(mW),MO_FULL[en],L==null?"":+L.toFixed(4),
+        rowsW.push([moDay(mW),moTgraha(en),L==null?"":+L.toFixed(4),
                     L==null?"":moSignOf(L),+il.geo_dist.toFixed(5),
                     +il.helio_dist.toFixed(5),+aa.toFixed(2),
                     +(il.phase_fraction*100).toFixed(2),+il.phase_angle.toFixed(2),
@@ -642,7 +644,7 @@ function moSceneSheets(){
       Object.keys(ORB).forEach(function(en){
         var L9=moSidAt(en,m9); if(L9==null) return;
         var rel=((L9-su9)%360+360)%360; if(rel>180) rel-=360;
-        rows9.push([moDay(m9),MO_FULL[en],+L9.toFixed(4),moSignOf(L9),+rel.toFixed(3),
+        rows9.push([moDay(m9),moTgraha(en),+L9.toFixed(4),moSignOf(L9),+rel.toFixed(3),
                     ORB[en],Math.abs(rel)<=ORB[en]?"combust":""]);
       });
     }
@@ -657,14 +659,14 @@ function moSceneSheets(){
       var mD=tD+(eD-tD)*sD/ND, LD=moSidAt(enD,mD); if(LD==null) continue;
       var sgD=Math.floor(LD/30)%12, dg="";
       try{ dg=dignity(enD,sgD,LD%30); }catch(e){}
-      rowsD.push([moDay(mD),MO_FULL[enD],+LD.toFixed(4),SA[sgD],+(LD%30).toFixed(4),dg]);
+      rowsD.push([moDay(mD),moTgraha(enD),+LD.toFixed(4),moTrasi(sgD),+(LD%30).toFixed(4),dg]);
     }
     out.push({name:"Dignity",
       cols:["Date (UTC)","Graha","Longitude °","Rāśi","Degrees in rāśi","Dignity"],rows:rowsD});
     var tbl=[];
     for(var sg2=0;sg2<12;sg2++){
       var d2=""; try{ d2=dignity(enD,sg2,15); }catch(e){}
-      tbl.push([sg2+1,SA[sg2],d2]);
+      tbl.push([sg2+1,moTrasi(sg2),d2]);
     }
     out.push({name:"Dignity by rāśi",cols:["#","Rāśi","Dignity"],rows:tbl});
   } else if(k==="sadesati"){
@@ -678,7 +680,7 @@ function moSceneSheets(){
                  (ph===1)?"Sade Sati — setting":(ph===3)?"Dhaiyā (4th)":
                  (ph===7)?"Dhaiyā (8th)":"";
         if(name && name!==prevPh)
-          rowsS.push([moDay(mS2),+((mS2-bS)/31556952000).toFixed(1),SA[Math.floor(sa2/30)%12],name]);
+          rowsS.push([moDay(mS2),+((mS2-bS)/31556952000).toFixed(1),moTrasi(Math.floor(sa2/30)%12),name]);
         if(name!==prevPh) prevPh=name;
       }
       out.push({name:"Śani over the Moon",
@@ -689,10 +691,10 @@ function moSceneSheets(){
     var md=[], ad=[];
     (tr||[]).forEach(function(m){
       var s=m.dispStart!=null?m.dispStart:m.start;
-      md.push([MO_FULL[m.lord],moDay((s-2440587.5)*86400000),moDay((m.end-2440587.5)*86400000),
+      md.push([moTgraha(m.lord),moDay((s-2440587.5)*86400000),moDay((m.end-2440587.5)*86400000),
                +((m.end-s)/365.2564).toFixed(4),m.partial?"balance at birth":""]);
       (m.ads||[]).forEach(function(a){
-        ad.push([MO_FULL[m.lord],MO_FULL[a.lord],
+        ad.push([moTgraha(m.lord),moTgraha(a.lord),
                  moDay((a.start-2440587.5)*86400000),moDay((a.end-2440587.5)*86400000),
                  +((a.end-a.start)/365.2564).toFixed(4)]);
       });

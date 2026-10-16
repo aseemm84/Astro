@@ -182,8 +182,16 @@ var MO_SYM={Sun:"\u2609",Moon:"\u263D",Mars:"\u2642",Mercury:"\u263F",Jupiter:"\
             Venus:"\u2640",Saturn:"\u2644",Rahu:"\u260A",Ketu:"\u260B"};
 var MO_RSYM=["\u2648","\u2649","\u264A","\u264B","\u264C","\u264D",
              "\u264E","\u264F","\u2650","\u2651","\u2652","\u2653"];
-function moG(en){ return MO.opt.symbols?(MO_SYM[en]||GL[en]):GL[en]; }
-function moSign(i){ var k=((i%12)+12)%12; return MO.opt.symbols?MO_RSYM[k]:SA[k]; }
+/* The two-letter wheel glyph. Astronomical symbols are language-neutral and stay
+   as they are; the letters come from the language table, so Hindi gets सू rather
+   than a transliterated "Su" sitting among Devanāgarī. */
+/* The nakṣatra a longitude falls in, named in the current language. The engine's
+   nak() carries its own English spelling; the index is what the language table
+   needs, so this re-derives it rather than matching on the name. */
+function moNakIdx(lon){ return Math.min(26,Math.floor(((lon%360)+360)%360/(40/3))); }
+function moNakName(lon){ return moTnak(moNakIdx(lon)); }
+function moG(en){ return MO.opt.symbols?(MO_SYM[en]||moTgl(en)):moTgl(en); }
+function moSign(i){ var k=((i%12)+12)%12; return MO.opt.symbols?MO_RSYM[k]:moTrasi(k); }
 function moFmtDate(ms){
   var d=new Date(ms);
   return String(d.getUTCDate()).padStart(2,"0")+" "+MON[d.getUTCMonth()+1]+" "+d.getUTCFullYear();
@@ -211,8 +219,8 @@ function moCaption(dateMs,sub){
   var U=Math.min(S.w,S.h);
   var pad=S.w*0.07, big=U*0.054, small=U*0.027;
   var rows=[];
-  rows.push({t:MO.cap.title||moSceneOf(MO.scene).title, f:big, col:P.ink, serif:true});
-  var s2=MO.cap.sub||sub||moSceneOf(MO.scene).sub;
+  rows.push({t:MO.cap.title||moSceneWords(moSceneOf(MO.scene)).title, f:big, col:P.ink, serif:true});
+  var s2=MO.cap.sub||sub||moSceneWords(moSceneOf(MO.scene)).sub;
   if(s2) rows.push({t:s2, f:small, col:P.dim, w:500});
   if(MO.cap.date && dateMs!=null)
     rows.push({t:moFmtDate(dateMs), f:small*1.05, col:P.gold, w:700});
@@ -282,7 +290,7 @@ function moDraw(){
 }
 function moErr(e){
   var S=moSize();
-  moText("This scene could not be drawn: "+(e&&e.message?e.message:e),S.w/2,S.h*0.5,
+  moText(moP("drawFailed",(e&&e.message?e.message:e)),S.w/2,S.h*0.5,
     S.w*0.025,"#e07a60","center",500);
 }
 function moTick(ts){

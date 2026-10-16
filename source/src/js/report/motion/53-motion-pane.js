@@ -41,6 +41,15 @@ function motionPane(D,J){
   MO.cap.title=""; MO.cap.sub="";
   MO_CACHE={};
   for(var g in MO.show) MO.show[g]=true;
+  return moPaneHTML();
+}
+
+/* The panel's markup, with no state reset in it.
+   Switching language has to rebuild the whole panel rather than repaint a few
+   buttons — scene names, option lists and band headings all carry language, and
+   patching only the obvious ones leaves a Hindi frame under English controls. So
+   the markup is separated from the initialisation that motionPane() does once. */
+function moPaneHTML(){
   return '<p class="knote">'+MO_SCENES.length+' animations built from this chart and the same ephemeris the rest of '+
     'the site uses. Everything here is drawn on a canvas rather than as a chart, because these are '+
     'made to be <b>watched and posted</b> rather than measured — choose a vertical frame, press play, '+
@@ -49,7 +58,7 @@ function motionPane(D,J){
 
     '<div class="moscenes">'+MO_SCENES.map(function(s){
       return '<button type="button" class="moscene'+(s.key==="retro"?" on":"")+'" data-moscene="'+s.key+
-        '"><b>'+esc(s.label)+'</b><span>'+esc(s.sub)+'</span></button>'; }).join("")+'</div>'+
+        '"><b>'+esc(moSceneWords(s).label)+'</b><span>'+esc(moSceneWords(s).sub)+'</span></button>'; }).join("")+'</div>'+
 
     '<div class="mowrap" id="mowrap">'+
       '<div class="mostage" id="mostage"><canvas id="mocanvas" width="1080" height="1920" role="img" aria-label="Animated diagram. The written explanation is below it."></canvas></div>'+
@@ -106,6 +115,19 @@ function motionPane(D,J){
         '</div>')+
 
         moBand("look","Look","shape, colour and the drawing itself",
+        /* Language sits in Look because that is what it changes: the frame's own
+           words. It governs the canvas, this panel's labels and what the exports
+           carry — not the reference pages and not the reading note below, which
+           stay in English on purpose. */
+        '<div class="morow"><span class="molab">'+esc(moT("language"))+'</span>'+
+          [["en","English"],["hi","\u0939\u093f\u0928\u094d\u0926\u0940"]].map(function(l){
+            return '<button type="button" class="skyv'+((MO_LANG===l[0])?" on":"")+
+              '" data-molang="'+l[0]+'">'+esc(l[1])+'</button>'; }).join("")+
+          '<button type="button" class="skyv'+(MO_DEVNUM?" on":"")+
+            '" data-modevnum="1" title="Devan\u0101gar\u012b numerals">\u0968\u0969</button>'+
+          '<span class="mohint">the frame, this panel and the exports follow it; the '+
+          'reading note below and the reference pages stay in English</span>'+
+        '</div>'+
         moChipRow("Frame",Object.keys(MO_RATIOS).map(function(k){
           return {k:k,label:MO_RATIOS[k].label,title:MO_RATIOS[k].note}; }),"9:16","data-moratio")+
         moChipRow("Palette",Object.keys(MO_PALS).map(function(k){
@@ -206,7 +228,8 @@ function moSceneOpts(){
   try{
     var cv=document.getElementById("mocanvas"), sc=moSceneOf(MO.scene);
     if(cv&&sc) cv.setAttribute("aria-label",
-      sc.title+" — "+sc.sub+". Animated diagram; the written explanation is below it.");
+      moSceneWords(sc).title+" \u2014 "+moSceneWords(sc).sub+
+      ". Animated diagram; the written explanation is below it.");
   }catch(e){}
   var host=document.getElementById("moscopts"); if(!host) return;
   var k=MO.scene, h="";
@@ -273,7 +296,7 @@ function moSceneOpts(){
       ['<option value="-1"'+(((MO.opt.rpin|0)<0)?" selected":"")+'>all twelve in turn</option>']
       .concat(MO_RA12.map(function(n,i){
         return '<option value="'+i+'"'+(((MO.opt.rpin|0)===i)?" selected":"")+'>'+
-               esc((i+1)+". "+n)+'</option>'; })).join("")+'</select>'+
+               esc((i+1)+". "+moTrasi(i))+'</option>'; })).join("")+'</select>'+
       '<span class="mohint">hold one and the whole length is spent on it, with a marker '+
       'walking its thirty degrees</span>';
 
@@ -283,7 +306,7 @@ function moSceneOpts(){
       ['<option value="-1"'+(((MO.opt.npin|0)<0)?" selected":"")+'>all twenty-seven in turn</option>']
       .concat(MO_NK27.map(function(n,i){
         return '<option value="'+i+'"'+(((MO.opt.npin|0)===i)?" selected":"")+'>'+
-               esc((i+1)+". "+n)+'</option>'; })).join("")+'</select>'+
+               esc((i+1)+". "+moTnak(i))+'</option>'; })).join("")+'</select>'+
       '<span class="mohint">hold one and the marker walks its 13°20′, lighting each pāda '+
       'as it enters it</span>';
 
@@ -358,6 +381,28 @@ function moMount(){
   if(MO__LOGO && !MO__LOGO.complete) MO__LOGO.onload=function(){ moDraw(); };
   moDraw(); return true;
 }
+/* Rebuild the panel in place, preserving what the viewer had set. The canvas is a
+   fresh element afterwards, so it must be re-mounted; the playhead, scene, frame
+   and span all live on MO and survive untouched. */
+function moPaneRefresh(){
+  var host=document.querySelector('.kpane[data-kpane="motion"]');
+  if(!host) return;
+  var wasPlaying=MO.playing;
+  if(wasPlaying) moPlay(false);
+  host.innerHTML=moPaneHTML();
+  moMount();
+  /* restore the lit state of every chip the markup defaults to its first option */
+  [].forEach.call(host.querySelectorAll("[data-moscene]"),function(b){
+    b.className="moscene"+(b.getAttribute("data-moscene")===MO.scene?" on":""); });
+  [].forEach.call(host.querySelectorAll("[data-moratio]"),function(b){
+    b.className="skyv"+(b.getAttribute("data-moratio")===MO.ratio?" on":""); });
+  [].forEach.call(host.querySelectorAll("[data-mopal]"),function(b){
+    b.className="skyv"+(b.getAttribute("data-mopal")===MO.pal?" on":""); });
+  var sl=document.getElementById("moscrub"); if(sl) sl.value=Math.round(MO.p*1000);
+  moSceneGuide(); moDraw();
+  if(wasPlaying) moPlay(true);
+}
+
 window.__moDraw=function(){ if(MO.cv) moDraw(); };
 window.__moMount=moMount;
 
@@ -382,6 +427,17 @@ document.addEventListener("click",function(ev){
     if(MO.p>=1) MO.p-=1; if(MO.p<0) MO.p+=1;
     var s3=document.getElementById("moscrub"); if(s3) s3.value=Math.round(MO.p*1000);
     moDraw(); return;
+  }
+  var lg=t.getAttribute("data-molang");
+  if(lg){
+    MO_LANG=lg; MO_CACHE={};
+    /* The whole panel is rebuilt rather than patched: option lists, band headings
+       and scene labels all carry language, and repainting only the buttons would
+       leave a Hindi frame under English controls. */
+    moPaneRefresh(); return;
+  }
+  if(t.getAttribute("data-modevnum")){
+    MO_DEVNUM=!MO_DEVNUM; MO_CACHE={}; moPaneRefresh(); return;
   }
   var tr=t.getAttribute("data-motring");
   if(tr){ MO.opt.tring=tr; MO_CACHE={};

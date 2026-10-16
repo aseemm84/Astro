@@ -129,11 +129,11 @@ var MO_SCENES=[
        when the next one comes, rather than leaving the frame blank. */
     var nx=moNextRetro(en,w1);
     var syn=MO_SYNODIC[en];
-    moText(MO_FULL[en]+" does not turn retrograde",st.cx,st.cy-U*0.055,U*0.042,P.ink,"center",700);
-    moText("anywhere in this window",st.cx,st.cy-U*0.008,U*0.030,P.dim,"center",500);
+    moText(moP("noRetro",moTgraha(en)),st.cx,st.cy-U*0.055,U*0.042,P.ink,"center",700);
+    moText(moP("inWindow"),st.cx,st.cy-U*0.008,U*0.030,P.dim,"center",500);
     moText(nx?("the next one begins "+moFmtDate(nx)):"none found within three years of it",
       st.cx,st.cy+U*0.045,U*0.028,P.gold,"center",600);
-    if(syn) moText(MO_FULL[en]+" turns retrograde about every "+
+    if(syn) moText(moTgraha(en)+" turns retrograde about every "+
       (syn>400?(syn/365.25).toFixed(1)+" years":Math.round(syn)+" days")+
       " — widen the span to catch one",
       st.cx,st.cy+U*0.085,U*0.022,P.dim,"center",500);
@@ -141,7 +141,7 @@ var MO_SCENES=[
     c.beginPath(); c.moveTo(x0,sy); c.lineTo(x1,sy); c.stroke();
     moText(moFmtDate(w0),x0,sy+U*0.030,U*0.019,P.dim,"left",500);
     moText(moFmtDate(w1),x1,sy+U*0.030,U*0.019,P.dim,"right",500);
-    return {ms:w0+(w1-w0)*p, sub:MO_FULL[en]+" · no retrograde in this window"};
+    return {ms:w0+(w1-w0)*p, sub:moTgraha(en)+" · no retrograde in this window"};
   }
 
   /* ---- one loop per slot of the playhead, so each keeps its shape */
@@ -191,7 +191,7 @@ var MO_SCENES=[
   if(MO.opt.grid && la<0 && ha>0){
     c.strokeStyle=P.line; c.lineWidth=2; c.setLineDash([5,7]);
     c.beginPath(); c.moveTo(bx,Y(0)); c.lineTo(bx+bw,Y(0)); c.stroke(); c.setLineDash([]);
-    moText("ecliptic plane",bx+bw,Y(0)-U*0.022,U*0.022,P.dim,"right",500);
+    moText(moP("eclPlane"),bx+bw,Y(0)-U*0.022,U*0.022,P.dim,"right",500);
   }
   /* The whole path, faint: the shape of the loop is the point of the scene, so the
      frame should never be a stub of a curve in an empty field. The travelled part is
@@ -214,7 +214,7 @@ var MO_SCENES=[
   }
   c.globalAlpha=1;
   /* the two stations of THIS loop */
-  [[L.s,"turns back"],[L.e,"resumes"]].forEach(function(k){
+  [[L.s,moP("turnsBack")],[L.e,moP("resumes")]].forEach(function(k){
     var t=k[0]; if(t==null||t>ms) return;
     var near=path.reduce(function(aq,bq2){ return Math.abs(bq2.ms-t)<Math.abs(aq.ms-t)?bq2:aq; },path[0]);
     moGlowDot(X(near.lon),Y(near.lat),S.w*0.011,P.gold,P.gold);
@@ -227,10 +227,10 @@ var MO_SCENES=[
 
   /* ---- which loop of how many, and where it sits in the window */
   var hy=by+bh+U*0.040;
-  moText("loop "+(idx+1)+" of "+loops.length+
+  moText(moP("loopOf",idx+1,loops.length)+
          (loops.length>MAXL?(" — first "+MAXL+" shown"):""),
     st.cx,hy,U*0.026,P.gold,"center",700);
-  moText(moFmtDate(L.s)+"  \u2192  "+moFmtDate(L.e)+"   ·   "+Math.round(L.days)+" days"+
+  moText(moP("daysSpan",moFmtDate(L.s),moFmtDate(L.e),Math.round(L.days))+
          (L.cs||L.ce?"  (runs past the window)":""),
     st.cx,hy+U*0.034,U*0.022,P.dim,"center",500);
   c.strokeStyle=P.line; c.lineWidth=1.5;
@@ -247,15 +247,15 @@ var MO_SCENES=[
   c.beginPath(); c.moveTo(px,sy-U*0.016); c.lineTo(px,sy+U*0.016); c.stroke();
   moText(moFmtDate(w0),x0,sy+U*0.032,U*0.018,P.dim,"left",500);
   moText(moFmtDate(w1),x1,sy+U*0.032,U*0.018,P.dim,"right",500);
-  moText(loops.length+" retrograde"+(loops.length===1?"":"s")+" in this window",
+  moText(moP("retroCount",loops.length,loops.length===1?"":"s"),
     st.cx,sy+U*0.032,U*0.018,P.dim,"center",500);
-  return {ms:ms, sub:MO_FULL[en]+" · loop "+(idx+1)+" of "+loops.length+" · "+
-          (cur.retro?"retrograde":"direct")+" · lat "+
-          (cur.lat>=0?"+":"")+cur.lat.toFixed(2)+"°"};
+  return {ms:ms, sub:moTgraha(en)+" · "+moP("loopOf",idx+1,loops.length)+" · "+
+          (cur.retro?moP("retrograde"):moP("direct"))+" · "+moP("latIs",
+          (cur.lat>=0?"+":"")+cur.lat.toFixed(2))};
  }},
 
 /* ------------------------------------------------------------------- 2. gochara */
-{key:"gochara", label:"Gochara run", title:"Where the slow grahas go",
+{key:moP("gochara"), label:"Gochara run", title:"Where the slow grahas go",
  sub:"the natal chart inside, the transiting sky outside",
  draw:function(p){
   var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
@@ -339,7 +339,7 @@ var MO_SCENES=[
   if(flash){
     var k=1-(ms-flash.ms)/flashWin;
     c.globalAlpha=k*0.95;
-    var txt=MO_FULL[flash.en]+" enters "+SA[flash.sign];
+    var txt=moP("entersSign",moTgraha(flash.en),moTrasi(flash.sign));
     c.font='700 '+(S.w*0.040)+'px system-ui,sans-serif';
     var tw=c.measureText(txt).width;
     c.fillStyle=P.bg; c.globalAlpha=k*0.82;
@@ -349,7 +349,7 @@ var MO_SCENES=[
     c.globalAlpha=1;
   } else if(MO.opt.labels){
     moText("gochara",cx,cy-S.w*0.012,S.w*0.028,P.dim,"center",600);
-    moText("natal inside",cx,cy+S.w*0.028,S.w*0.022,P.dim,"center",500);
+    moText(moP("natalInside"),cx,cy+S.w*0.028,S.w*0.022,P.dim,"center",500);
   }
   return {ms:ms};
  }},
@@ -421,8 +421,8 @@ var MO_SCENES=[
     moGlyph(pt[0],pt[1],S.w*0.034,q.en,P,true);
   });
   var mo=items.filter(function(x){return x.en==="Moon";})[0];
-  return {ms:ms, sub: mo? ("Candra "+(mo.lat>=0?"+":"")+mo.lat.toFixed(2)+"° from the plane"
-          +(Math.abs(mo.lat)<0.4?" — at the node":"")) : null};
+  return {ms:ms, sub: mo? (moP("fromPlane",moTgraha("Moon"),(mo.lat>=0?"+":"")+mo.lat.toFixed(2))
+          +(Math.abs(mo.lat)<0.4?(" \u2014 "+moP("atTheNode")):"")) : null};
  }},
 
 /* ----------------------------------------------------------------- 4. birth sky */
@@ -493,9 +493,9 @@ var MO_SCENES=[
     else moGlyph(pt[0],pt[1],rr,q.en,P,true);
   });
   var lagA=hxy(0,90);
-  moText("lagna rising",lagA[0]-S.w*0.085,lagA[1],S.w*0.024,P.gold,"center",600);
-  return {ms:ms, sub:(day?"daylight":"night")+" · lagna "+SA[Math.floor(sky.lagna/30)%12]+
-          (below.length?(" · below the horizon: "+below.map(function(x){return GL[x];}).join(" ")):"")};
+  moText(moP("lagnaRising"),lagA[0]-S.w*0.085,lagA[1],S.w*0.024,P.gold,"center",600);
+  return {ms:ms, sub:moP("dayNight",day?moP("daylight"):moP("night"),moTrasi(Math.floor(sky.lagna/30)%12),
+          (below.length?below.map(function(x){return moTgl(x);}).join(" "):"\u2014"))};
  }},
 
 /* ---------------------------------------------------------------- 5. nakshatras */
@@ -522,7 +522,7 @@ var MO_SCENES=[
   c.strokeStyle=P.line; c.lineWidth=2.5; c.globalAlpha=.75; c.setLineDash([7,9]);
   c.beginPath(); c.moveTo(cx-bw/2,Yy(0)); c.lineTo(cx+bw/2,Yy(0)); c.stroke();
   c.setLineDash([]); c.globalAlpha=1;
-  moText("ecliptic",cx+bw/2,Yy(0)-S.w*0.024,S.w*0.021,P.dim,"right",500);
+  moText(moP("ecliptic"),cx+bw/2,Yy(0)-S.w*0.024,S.w*0.021,P.dim,"right",500);
   /* nakṣatra boundaries, named */
   var seg=40/3;
   for(var k=-2;k<=2;k++){
@@ -539,7 +539,7 @@ var MO_SCENES=[
     }
     var mid=(x0+x1)/2;
     if(MO.opt.labels && x1-x0>S.w*0.18 && mid>cx-bw/2+S.w*0.06 && mid<cx+bw/2-S.w*0.06)
-      moText(SKY_NAKA[ni],mid,cy+st.h*0.26,S.w*0.026,
+      moText(moTnak(ni),mid,cy+st.h*0.26,S.w*0.026,
              k===0?P.gold:P.dim,"center",k===0?700:500);
   }
   /* every bright star near the ecliptic that falls in view */
@@ -563,15 +563,15 @@ var MO_SCENES=[
   c.setLineDash([]); c.globalAlpha=1;
   /* type, drawn flat so nothing ever distorts */
   var ty=cy-st.h*0.40;
-  moSerif(star.nak,cx,ty,S.w*0.074,P.gold);
-  moText(star.star+"  ·  "+star.bayer,cx,ty+S.w*0.064,S.w*0.032,P.ink,"center",600);
-  moText("magnitude "+star.mag.toFixed(2)+"   ·   "+star.sid.toFixed(2)+"° sidereal   ·   "+
-         (star.lat>=0?"+":"")+star.lat.toFixed(2)+"° latitude",
+  moSerif(moTnak(idx),cx,ty,S.w*0.074,P.gold);
+  moText(moP("starName",star.star,star.bayer),cx,ty+S.w*0.064,S.w*0.032,P.ink,"center",600);
+  moText(moP("starAt",star.mag.toFixed(2),star.sid.toFixed(2),
+           (star.lat>=0?"+":"")+star.lat.toFixed(2)),
          cx,ty+S.w*0.106,S.w*0.025,P.dim,"center",500);
-  moText(star.inside?"falls inside the division named after it"
+  moText(star.inside?moP("starInside")
                     :"falls outside the division named after it",
          cx,cy+st.h*0.36,S.w*0.027,star.inside?P.benefic:P.malefic,"center",600);
-  return {ms:null, sub:"nakṣatra "+(idx+1)+" of 27"};
+  return {ms:null, sub:moP("nakOfN",idx+1,27)};
  }},
 
 /* ------------------------------------------------- 6. what turns and what does not */
@@ -650,7 +650,7 @@ var MO_SCENES=[
   c.stroke();
   moGlowDot(cx+Math.cos(la)*R*0.94,cy-Math.sin(la)*R*0.94,S.w*0.017,P.gold,P.gold);
   var llx=Math.max(S.w*0.12,Math.min(S.w*0.88,cx+Math.cos(la)*R*1.16));
-  moText("lagna",llx,cy-Math.sin(la)*R*1.16,S.w*0.028,P.gold,"center",700);
+  moText(moP("lagna"),llx,cy-Math.sin(la)*R*1.16,S.w*0.028,P.gold,"center",700);
 
   /* the grahas: over a single day they barely move either, which is the other half
      of the point. Drawn inside the equal-house spokes so nothing overlaps. */
@@ -675,21 +675,21 @@ var MO_SCENES=[
       hour:put,minute:0,second:0,tzHours:0,lat:i.lat,lon:i.lon,ayanamsa:i.ayanamsa||"lahiri"}).lagna;
   }catch(e){}
   if(prevLag!=null && Math.floor(prevLag/30)%12!==h1 && mode!=="equal"){
-    var txt="lagna enters "+SA[h1]+" — the bhāvas step round";
+    var txt=moP("lagnaEnters",moTrasi(h1));
     c.font='700 '+(S.w*0.034)+'px system-ui,sans-serif';
     var tw=c.measureText(txt).width;
     c.fillStyle=P.bg; c.globalAlpha=.88;
     c.fillRect(cx-tw/2-S.w*0.025,cy-S.w*0.042,tw+S.w*0.05,S.w*0.068); c.globalAlpha=1;
     moText(txt,cx,cy-S.w*0.009,S.w*0.034,P.gold,"center",700);
   }
-  moText(mode==="equal"?"equal houses — the cusps slide":
-         mode==="whole"?"whole-sign bhāvas — the ring steps":
-         "gold spokes slide · the shaded ring steps",
+  moText(mode==="equal"?moP("housesEqual"):
+         mode==="whole"?moP("housesWhole"):
+         moP("spokesSlide"),
     cx,cy+st.h*0.45,S.w*0.028,P.dim,"center",600);
-  moText("rāśis fixed",cx,cy-st.h*0.45,S.w*0.030,P.dim,"center",600);
+  moText(moP("rasisFixed"),cx,cy-st.h*0.45,S.w*0.030,P.dim,"center",600);
   var mins=(ms-b)/60000;
-  return {ms:ms, sub:"lagna "+SA[h1]+" "+skyDM(lag)+" · "+
-          (mins<60?(mins.toFixed(0)+" min"):((mins/60).toFixed(1)+" h"))+" after birth"};
+  return {ms:ms, sub:moP("lagnaAfter",moTrasi(h1),skyDM(lag),
+          (mins<60?(mins.toFixed(0)+"m"):((mins/60).toFixed(1)+"h")))};
  }},
 
 /* ------------------------------------------------------------------ 7. ayanāṃśa */
@@ -730,7 +730,7 @@ var MO_SCENES=[
   c.beginPath(); c.arc(cx,cy,rt,0,6.2832); c.stroke(); c.globalAlpha=1;
   /* the gap between the two zero points IS the ayanāṃśa */
   var sa=(180-0)*Math.PI/180, ta=(180-ay)*Math.PI/180;
-  [[sa,P.gold,"sidereal 0°"],[ta,P.glow,"tropical 0°"]].forEach(function(z){
+  [[sa,P.gold,moP("siderealLbl")+" 0°"],[ta,P.glow,moP("tropicalLbl")+" 0°"]].forEach(function(z){
     c.strokeStyle=z[1]; c.lineWidth=3.5;
     c.beginPath(); c.moveTo(cx,cy);
     c.lineTo(cx+Math.cos(z[0])*R*1.03,cy-Math.sin(z[0])*R*1.03); c.stroke();
@@ -745,9 +745,9 @@ var MO_SCENES=[
     S.w*0.042,P.ink,"center",800);
   moText(yr<0?(Math.abs(Math.round(yr))+" BCE"):(Math.round(yr)+" CE"),
     cx,cy-st.h*0.44,S.w*0.046,P.ink,"center",700);
-  moText("they met around 285 CE, and have separated ever since",
+  moText(moP("ayanSep"),
     cx,cy+st.h*0.44,S.w*0.026,P.dim,"center",500);
-  return {ms:null, sub:"ayanāṃśa "+ay.toFixed(2)+"° · Lahiri"};
+  return {ms:null, sub:moP("ayanIs",ay.toFixed(2),"Lahiri")};
  }},
 
 /* -------------------------------------------------------------------- 8. dṛṣṭi */
@@ -792,12 +792,12 @@ var MO_SCENES=[
   });
   moGlyph(src[0],src[1],S.w*0.044,en,P,true);
   if(moSpeed(en,ms)<0) moText("R",src[0]+S.w*0.040,src[1]-S.w*0.036,S.w*0.024,P.malefic,"center",800);
-  var note = (en==="Mars")?"Maṅgala adds the 4th and the 8th"
-           : (en==="Jupiter")?"Guru adds the 5th and the 9th"
-           : (en==="Saturn")?"Śani adds the 3rd and the 10th"
+  var note = (en==="Mars")?moP("adds48",moTgraha("Mars"))
+           : (en==="Jupiter")?moP("adds59",moTgraha("Jupiter"))
+           : (en==="Saturn")?moP("adds310",moTgraha("Saturn"))
            : "the 7th alone — the full glance every graha casts";
   moText(note,cx,cy+st.h*0.44,S.w*0.028,P.dim,"center",600);
-  return {ms:ms, sub:MO_FULL[en]+" in "+SA[Math.floor(L/30)%12]+" "+skyDM(L)};
+  return {ms:ms, sub:moTgraha(en)+" in "+moTrasi(Math.floor(L/30)%12)+" "+skyDM(L)};
  }},
 
 /* --------------------------------------------------------------------- 9. tithi */
@@ -809,7 +809,7 @@ var MO_SCENES=[
   var su=moSidAt("Sun",ms), mo=moSidAt("Moon",ms);
   if(su==null||mo==null) throw new Error("no position");
   var el=((mo-su)%360+360)%360;
-  var ti=Math.floor(el/12)+1, pak=el<180?"Śukla":"Kṛṣṇa";
+  var ti=Math.floor(el/12)+1, pak=el<180?moP("shukla"):moP("krishnaP");
   var tiIn=ti>15?ti-15:ti;
   var R=st.R*0.86, cx=st.cx, cy=st.cy-st.h*0.06;
   moStars();
@@ -859,11 +859,11 @@ var MO_SCENES=[
     c.strokeStyle=(t%15===0)?P.gold:P.line; c.lineWidth=(t%15===0)?2.5:1;
     c.beginPath(); c.moveTo(d0[0],d0[1]); c.lineTo(d1[0],d1[1]); c.stroke();
   }
-  moText(pak+" pakṣa",cx,cy-st.h*0.40,S.w*0.034,
+  moText(moP("pakshaOf",pak),cx,cy-st.h*0.40,S.w*0.034,
     el<180?P.benefic:P.dim,"center",600);
-  moSerif("Tithi "+tiIn,cx,cy+st.h*0.33,S.w*0.060,P.ink);
-  moText(el.toFixed(1)+"° between them",cx,cy+st.h*0.40,S.w*0.027,P.dim,"center",500);
-  return {ms:ms, sub:pak+" · tithi "+tiIn+" of 15 · elongation "+el.toFixed(1)+"°"};
+  moSerif(moP("tithiN",tiIn),cx,cy+st.h*0.33,S.w*0.060,P.ink);
+  moText(moP("degBetween",el.toFixed(1)),cx,cy+st.h*0.40,S.w*0.027,P.dim,"center",500);
+  return {ms:ms, sub:moP("tithiOf",pak,tiIn,el.toFixed(1))};
  }},
 
 /* -------------------------------------------------------------------- 6. daśā */
@@ -908,7 +908,7 @@ var MO_SCENES=[
       if(x1-x0>S.w*0.03)
         moText(GL[ad.lord],(x0+x1)/2,ay+ah*0.5,S.w*0.022,P.ink,"center",600);
     });
-    moText("antardaśā within "+MO_FULL[cur.lord],bx,ay+ah*1.75,S.w*0.023,P.dim,"left",500);
+    moText(moP("antarWithin",moTgraha(cur.lord)),bx,ay+ah*1.75,S.w*0.023,P.dim,"left",500);
   }
   /* playhead */
   var px=X(jd);
@@ -929,7 +929,7 @@ var MO_SCENES=[
     var a=(180-q.lon)*Math.PI/180;
     moGlyph(cx+Math.cos(a)*q.r,cy-Math.sin(a)*q.r,gD,q.en,P,false);
   });
-  if(cur) moText(MO_FULL[cur.lord]+" mahādaśā",cx,by+bh*3.2,S.w*0.034,P.gold,"center",700);
+  if(cur) moText(moP("mahadasha",moTgraha(cur.lord)),cx,by+bh*3.2,S.w*0.034,P.gold,"center",700);
   var age=(jd-(MO.D&&MO.D.jd!=null?MO.D.jd:j0))/365.2564;
   return {ms:ms, sub:"age "+Math.max(0,age).toFixed(1)};
  }}
@@ -966,7 +966,7 @@ function moEclipses(){
       if(x.lon!=null&&ra!=null){
         var d1=Math.abs(((x.lon-ra)%360+360)%360); if(d1>180)d1=360-d1;
         var d2=Math.abs(((x.lon-ra-180)%360+360)%360); if(d2>180)d2=360-d2;
-        x.node=Math.min(d1,d2); x.which=(d1<=d2)?"Rāhu":"Ketu";
+        x.node=Math.min(d1,d2); x.which=(d1<=d2)?moTgraha("Rahu"):moTgraha("Ketu");
       }
     });
     return out;
@@ -1038,12 +1038,12 @@ var MO_NAKW=40/3;                               /* 13 deg 20' */
 function moNak(lon){
   var l=((lon%360)+360)%360, n=Math.floor(l/MO_NAKW);
   return {n:n, pada:Math.floor((l-n*MO_NAKW)/(MO_NAKW/4))+1,
-          name:(typeof MO_NK27!=="undefined"&&MO_NK27[n])||("naksatra "+(n+1))};
+          name:moTnak(n)};
 }
 function moRasiOf(lon){
   var l=((lon%360)+360)%360, i=Math.floor(l/30);
   return {i:i, deg:l-i*30,
-          name:(typeof MO_RA12!=="undefined"&&MO_RA12[i])||("rasi "+(i+1))};
+          name:moTrasi(i)};
 }
 /* An arc of the band, swept in longitude at a fixed radius. Short arcs still get a
    few segments, so a naksatra arc does not degenerate into a chord. */
@@ -1103,15 +1103,15 @@ var MO_MORE=[
      day is in; the brighter sliver inside it is how far through that division we are. */
   var LIMBS=[
     {n:27, i:nk.idx,            f:(mo%(40/3))/(40/3),          col:"#6f7cc0",
-     lab:"nakṣatra", val:nk.name+" · pāda "+nk.pada},
+     lab:moP("limbNak"), val:moNakName(mo)+" · "+moP("padaN",nk.pada)},
     {n:27, i:Math.floor(yogaRaw/(800/60)), f:(yogaRaw%(800/60))/(800/60), col:"#5fbf8f",
-     lab:"yoga",     val:pc.yoga},
+     lab:moP("limbYoga"),     val:moTyoga(pc.yoga)},
     {n:30, i:Math.floor(elong/12), f:(elong%12)/12,            col:"#d9b668",
-     lab:"tithi",    val:pc.tithi+" · "+pc.paksha},
+     lab:moP("limbTithi"),    val:moTtithiName(pc.tithi)+" · "+moTpaksha(pc.paksha)},
     {n:60, i:Math.floor(elong/6),  f:(elong%6)/6,              col:"#e07a60",
-     lab:"karaṇa",   val:pc.karana},
+     lab:moP("limbKarana"),   val:moTkarana(pc.karana)},
     {n:7,  i:vi, f:((jd+1.5)%1+1)%1,                           col:"#c89078",
-     lab:"vāra",     val:VARAS[vi]+" · "+VARAE[vi]}
+     lab:moP("limbVara"),     val:moP("varaBoth",moTvara(vi),VARAE[vi])}
   ];
   var rOut=1.00, rIn=0.44, gap=0.012;
   var th=(rOut-rIn)/LIMBS.length;
@@ -1161,20 +1161,20 @@ var MO_MORE=[
     /* "TITHI 10 of 30" rather than a bare name: it says at once how far through the
        limb's cycle the day sits, and it stops the rings being read as longitude rings.
        Only the nakṣatra ring is one — the other four are dials of their own count. */
-    moText(L.lab.toUpperCase()+"  "+(L.i+1)+" of "+L.n,tx,y-rowH*0.28,ls,L.col,align,700);
+    moText(moP("limbOf",L.lab.toUpperCase(),L.i+1,L.n),tx,y-rowH*0.28,ls,L.col,align,700);
     moText(L.val,tx,y+rowH*0.16,vs,P.ink,align,600);
   });
   /* The heading a printed pañcāṅga carries above the five limbs: the lunar month, the
      season and the half-year. The pūrṇimānta name is shown only in the dark fortnight,
      which is the only time it differs from the amānta one. */
   var hy=Math.max(U*0.065, cy-R*rimK-U*0.072);
-  moText("MĀSA · amānta",cx,hy-U*0.034,U*0.019,P.gold,"center",700);
-  moSerif(MS.amanta,cx,hy+U*0.014,U*0.046,P.ink,"center");
-  var tail=(MS.purnimanta!==MS.amanta?("pūrṇimānta "+MS.purnimanta+"  ·  "):"")+
-           "ṛtu "+MS.ritu+"  ·  "+MS.ayana;
+  moText(moP("masaAmanta"),cx,hy-U*0.034,U*0.019,P.gold,"center",700);
+  moSerif(moTmasa(MS.amanta),cx,hy+U*0.014,U*0.046,P.ink,"center");
+  var tail=(MS.purnimanta!==MS.amanta?(moTmasa(MS.purnimanta)+"  ·  "):"")+
+           moP("rituAyana",moTritu(MS.ritu),moTayana(MS.ayana));
   moText(tail,cx,hy+U*0.052,U*0.021,P.dim,"center",500);
-  return {ms:ms, sub:MS.amanta+" "+pc.paksha+" · "+pc.tithi+" · "+VARAE[vi]+" · "+
-                     nk.name+" · "+pc.yoga+" · "+pc.karana};
+  return {ms:ms, sub:moTmasa(MS.amanta)+" "+moTpaksha(pc.paksha)+" · "+moTtithiName(pc.tithi)+" · "+moTvara(vi)+" · "+
+                     moNakName(mo)+" · "+moTyoga(pc.yoga)+" · "+moTkarana(pc.karana)};
  }},
 
 /* ------------------------------------------------------- the tilt, seen from outside ---
@@ -1194,10 +1194,10 @@ var MO_MORE=[
   /* The four the band reports on. Closures rather than values, so the readout and the
      arcs cannot drift apart from the positions the diagram is drawn from. */
   var MO_TILTB=[
-    {sa:"Sūrya", col:"#f0b847", lon:function(){ return su; }},
-    {sa:"Candra",col:"#e8eaf6", lon:function(){ return mo; }},
-    {sa:"Rāhu",  col:"#9f8fe0", lon:function(){ return ra; }},
-    {sa:"Ketu",  col:"#d59a72", lon:function(){ return ke; }}
+    {sa:moTgraha("Sun"), col:"#f0b847", lon:function(){ return su; }},
+    {sa:moTgraha("Moon"),col:"#e8eaf6", lon:function(){ return mo; }},
+    {sa:moTgraha("Rahu"),  col:"#9f8fe0", lon:function(){ return ra; }},
+    {sa:moTgraha("Ketu"),  col:"#d59a72", lon:function(){ return ke; }}
   ];
   /* Candra's true ecliptic latitude. Sūrya's is zero by definition — the ecliptic IS its
      path — and that is the whole reason this scene works: one body defines the plane, the
@@ -1270,7 +1270,7 @@ var MO_MORE=[
   /* Label the rails a quarter turn from the nodes — that is where the orbit stands
      furthest from the corridor, so the text never lands on a node glyph. */
   var labLon=far(ra+90)?ra+270:ra+90, cl=proj(labLon,MO_SOLZONE);
-  moText("shadow corridor ±"+MO_SOLZONE+"°",cl[0],cl[1]-UT*0.026,U*0.018,P.gold,"center",600);
+  moText(moP("shadowCorr",MO_SOLZONE),cl[0],cl[1]-UT*0.026,U*0.018,P.gold,"center",600);
   ring(zero,P.line,3.5,0.30,1,null);                      /* the ecliptic itself */
   /* ---- the zodiac band ---------------------------------------------------- */
   var RI=R*1.045, RM=R*1.10, RO=R*1.155;
@@ -1303,7 +1303,7 @@ var MO_MORE=[
          the spokes together and the names overprint each other */
       if(MO.opt.labels && !far(rl+15)){
         var rq=proj(rl+15,0,RO+R*0.055);
-        moText((typeof MO_RA12!=="undefined"?MO_RA12[rs]:String(rs+1)),
+        moText(moTrasi(rs),
           rq[0],rq[1],U*0.0165,P.dim,"center",500);
       }
     }
@@ -1366,13 +1366,13 @@ var MO_MORE=[
   var hit=near&&Math.abs(near.ms-ms)<43200000;            /* within half a day of a real one */
   var line1, line2, col;
   if(syz>6){
-    line1="no new or full moon now";
-    line2="Candra is "+syz.toFixed(0)+"° from lining up — nothing can happen between them";
+    line1=moP("noSyzygy");
+    line2=moP("fromLining",syz.toFixed(0));
     col=P.dim;
   } else if(hit){
     line1=(near.type||"").charAt(0).toUpperCase()+(near.type||"").slice(1)+" "+
           (near.kind==="solar"?"solar":"lunar")+" eclipse";
-    line2="Candra is only "+Math.abs(blat).toFixed(2)+"° off the ecliptic — inside the corridor";
+    line2=moP("insideCorr",Math.abs(blat).toFixed(2));
     col=P.gold;
   } else if(Math.abs(blat)<=zoneNow){
     line1=(isNew?"new moon, in the corridor":"full moon, in the corridor");
@@ -1394,7 +1394,7 @@ var MO_MORE=[
   var ty=cy+R*ringF*kY+R*Math.sin(MO_INCL*Math.PI/180)*ex*kZ+UT*0.085;
   moText(line1,cx,ty,U*0.034,col,"center",700);
   moText(line2,cx,ty+UT*0.040,U*0.023,P.dim,"center",500);
-  moText("latitude shown ×"+ex+" — at true scale the gap is too fine to see",
+  moText(moP("latTimes",ex),
     cx,ty+UT*0.074,U*0.019,P.dim,"center",500);
   /* Where each of the four stands in longitude, in words. The band shows it; this
      says it, because four labels crowded onto a tilted ellipse collide — Surya and
@@ -1461,15 +1461,15 @@ var MO_MORE=[
   var px=x0+(x1-x0)*p;
   c.strokeStyle=P.gold; c.lineWidth=2.5;
   c.beginPath(); c.moveTo(px,sy-amp*1.25); c.lineTo(px,sy+amp*1.25); c.stroke();
-  moText("Candra's latitude across the span — the gold marks are the eclipses",
+  moText(moP("latAcross"),
     cx,sy+amp*1.95,U*0.019,P.dim,"center",500);
   /* distance to the NEARER node, not to Rāhu: when Candra sits by Ketu the Rāhu figure
      reads 174°, which says the opposite of what the picture shows */
   var dR=Math.abs(((mo-ra)%360+360)%360); if(dR>180) dR=360-dR;
   var dK=Math.abs(((mo-ke)%360+360)%360); if(dK>180) dK=360-dK;
-  return {ms:ms, sub:"Candra "+(blat>=0?"+":"")+blat.toFixed(2)+"° · "+
-          syz.toFixed(0)+"° from "+(isNew?"new":"full")+" moon · "+
-          Math.min(dR,dK).toFixed(0)+"° from "+(dR<=dK?"Rāhu":"Ketu")};
+  return {ms:ms, sub:moP("latOff",moTgraha("Moon"),(blat>=0?"+":"")+blat.toFixed(2))+" · "+
+          (isNew?moP("fromNewMoon",syz.toFixed(0)):moP("fromFullMoon",syz.toFixed(0)))+" · "+
+          moP("fromNode",Math.min(dR,dK).toFixed(0),(dR<=dK?moTgraha("Rahu"):moTgraha("Ketu")))};
  }},
 
 {key:"eclipseseason", label:"Eclipse seasons", title:"Why eclipses come in seasons",
@@ -1567,9 +1567,9 @@ var MO_MORE=[
     moText(txt,cx,cy-S.w*0.006,S.w*0.030,flash.kind==="solar"?P.gold:"#c89078","center",700);
     c.globalAlpha=1;
   } else {
-    moText(season?"eclipse season":"no eclipse possible",cx,cy-S.w*0.012,S.w*0.034,
+    moText(season?moP("eclSeason"):moP("noEclPoss"),cx,cy-S.w*0.012,S.w*0.034,
       season?P.gold:P.dim,"center",700);
-    moText(dSun.toFixed(1)+"° from the node",cx,cy+S.w*0.028,S.w*0.026,P.dim,"center",500);
+    moText(moP("degFromNode",dSun.toFixed(1)),cx,cy+S.w*0.028,S.w*0.026,P.dim,"center",500);
   }
   /* the strip of the whole span */
   var sy=st.capY-st.h*0.035, x0=S.w*0.08, x1=S.w*0.92;
@@ -1584,14 +1584,13 @@ var MO_MORE=[
   var px=x0+(x1-x0)*p;
   c.strokeStyle=P.gold; c.lineWidth=2.5;
   c.beginPath(); c.moveTo(px,sy-S.w*0.024); c.lineTo(px,sy+S.w*0.024); c.stroke();
-  moText("☉ above the line · ☾ below",x0,sy+S.w*0.042,S.w*0.019,P.dim,"left",500);
+  moText(moP("aboveBelow"),x0,sy+S.w*0.042,S.w*0.019,P.dim,"left",500);
   var moved=null;
   if(ra0!=null){ moved=((ra0-ra)%360+360)%360; if(moved>180) moved-=360; }
-  moText("the nodes retreat 19.3° a year — this axis has moved "+
-    (moved==null?"—":Math.abs(moved).toFixed(0)+"°")+" so far",
+  moText(moP("nodesRetreat","19.3",(moved==null?"\u2014":Math.abs(moved).toFixed(0))),
     cx,cy+R*1.10,S.w*0.024,P.dim,"center",500);
-  return {ms:ms, sub:done+" of "+E.length+" eclipses · Sūrya "+dSun.toFixed(1)+"° from "+
-          (Math.abs(((su-ra)%360+360)%360)<90||Math.abs(((su-ra)%360+360)%360)>270?"Rāhu":"Ketu")};
+  return {ms:ms, sub:moP("eclCount",done,E.length,dSun.toFixed(1))+" "+
+          (Math.abs(((su-ra)%360+360)%360)<90||Math.abs(((su-ra)%360+360)%360)>270?moTgraha("Rahu"):moTgraha("Ketu"))};
  }},
 {key:"eclipse", label:"Eclipses ahead", title:"Eclipses only happen at the nodes",
  sub:"every one of them within a few degrees of Rāhu or Ketu",
@@ -1642,8 +1641,8 @@ var MO_MORE=[
     c.beginPath(); c.arc(cx,cy,rp,0,6.2832); c.stroke(); c.globalAlpha=1;
     c.fillStyle="rgba(16,20,34,0.94)";
     c.beginPath(); c.arc(cx,cy,ru,0,6.2832); c.fill();
-    moText("umbra",cx,cy+ru*0.62,S.w*0.021,P.dim,"center",500);
-    moText("penumbra",cx,cy+rp*0.80,S.w*0.020,P.dim,"center",500);
+    moText(moP("umbra"),cx,cy+ru*0.62,S.w*0.021,P.dim,"center",500);
+    moText(moP("penumbra"),cx,cy+rp*0.80,S.w*0.020,P.dim,"center",500);
     var my = (x.type==="total") ? cy
            : (x.type==="partial") ? cy-(ru-mr2*0.55)
            : cy-(ru+mr2*0.85);                       // penumbral: never touches the umbra
@@ -1661,17 +1660,17 @@ var MO_MORE=[
   /* which rāśi and nakṣatra it lands in, and how far from the node */
   var ty=cy+R*(x.kind==="solar"?1.45:2.25);
   var label=(x.type||"").charAt(0).toUpperCase()+(x.type||"").slice(1);
-  moSerif(label+" "+(x.kind==="solar"?"solar":"lunar")+" eclipse",cx,st.y+st.h*0.09,S.w*0.052,P.ink);
+  moSerif(moP("eclTitle",moTeclKind(label),x.kind==="solar"?moT("solar"):moT("lunar")),cx,st.y+st.h*0.09,S.w*0.052,P.ink);
   moText(moFmtDate(x.ms)+" · "+new Date(x.ms).toISOString().slice(11,16)+" UTC",
     cx,st.y+st.h*0.145,S.w*0.028,P.gold,"center",600);
   if(x.lon!=null){
     var nk=null; try{ nk=nakOf(x.lon); }catch(e){}
-    moText((x.kind==="solar"?"Sūrya":"Candra")+" in "+SA[Math.floor(x.lon/30)%12]+" "+skyDM(x.lon)+
-      (nk?("  ·  "+nk.name+" pāda "+nk.pada):""),
+    moText(moP("candraIn",(x.kind==="solar"?moTgraha("Sun"):moTgraha("Moon")),moTrasi(Math.floor(x.lon/30)%12),skyDM(x.lon))+
+      (nk?("  ·  "+moNakName(x.lon)+" "+moP("padaN",nk.pada)):""),
       cx,st.capY-st.h*0.13,S.w*0.026,P.dim,"center",500);
   }
   if(x.node!=null)
-    moText(x.node.toFixed(1)+"° from "+x.which,cx,st.capY-st.h*0.08,S.w*0.034,
+    moText(moP("degFromWhich",x.node.toFixed(1),x.which),cx,st.capY-st.h*0.08,S.w*0.034,
       x.node<12?P.benefic:P.dim,"center",700);
   /* the strip of everything coming */
   var sy=st.capY-st.h*0.030, x0=S.w*0.08, x1=S.w*0.92;
@@ -1685,7 +1684,7 @@ var MO_MORE=[
     c.globalAlpha=1;
     if(k===idx) moText(ev.kind==="solar"?"☉":"☾",ex,sy-S.w*0.030,S.w*0.024,col,"center",700);
   });
-  return {ms:null, sub:(idx+1)+" of "+n+" ahead · the geometry is schematic, the timing is computed"};
+  return {ms:null, sub:moP("eclAhead",idx+1,n)};
  }},
 
 /* ------------------------------------------------------------- 11. combustion */
@@ -1745,13 +1744,13 @@ var MO_MORE=[
     if(it.comb){ c.globalAlpha=.45; }
     moGlyph(q[0],q[1],S.w*0.033,it.en,P,!it.comb);
     c.globalAlpha=1;
-    if(it.comb) moText("astaṅgata",q[0],q[1]+S.w*0.052,S.w*0.019,P.gold,"center",600);
+    if(it.comb) moText(moP("astangata"),q[0],q[1]+S.w*0.052,S.w*0.019,P.gold,"center",600);
     else moText(Math.abs(it.rel).toFixed(0)+"°",q[0],q[1]+S.w*0.050,S.w*0.020,P.dim,"center",500);
   });
-  moText("the dashed lines are each graha's own orb — 17° for Maṅgala, 10° for Śukra",
+  moText(moP("orbNote2"),
     cx,cy+st.h*0.45,S.w*0.024,P.dim,"center",500);
-  return {ms:ms, sub: burnt.length ? ("combust: "+burnt.map(function(x){return MO_FULL[x];}).join(", "))
-                                   : "nothing combust at this moment"};
+  return {ms:ms, sub: burnt.length ? moP("combustList",burnt.map(function(x){return moTgraha(x);}).join(", "))
+                                   : moP("nothingCombust")};
  }},
 
 /* --------------------------------------------------------------- 12. dignity */
@@ -1777,7 +1776,7 @@ var MO_MORE=[
     moText(moSign(s),cx+Math.cos(am)*R*0.93,cy-Math.sin(am)*R*0.93,
       S.w*(MO.opt.symbols?0.032:0.023),P.ink,"center",600);
     if(dg!=="neutral"&&dg!=="friend")
-      moText(dg==="moolatrikona"?"mūlatrikoṇa":dg,
+      moText(moTdignity(dg),
         cx+Math.cos(am)*R*0.79,cy-Math.sin(am)*R*0.79,S.w*0.018,COL[dg],"center",700);
   }
   c.strokeStyle=P.line; c.lineWidth=2.5;
@@ -1789,8 +1788,8 @@ var MO_MORE=[
   c.strokeStyle=COL[dgNow]; c.lineWidth=3; c.globalAlpha=.6;
   c.beginPath(); c.moveTo(cx,cy); c.lineTo(gx,gy); c.stroke(); c.globalAlpha=1;
   moGlyph(gx,gy,S.w*0.044,en,P,true);
-  moSerif(dgNow==="moolatrikona"?"mūlatrikoṇa":dgNow,cx,cy+st.h*0.42,S.w*0.052,COL[dgNow]);
-  return {ms:ms, sub:MO_FULL[en]+" in "+SA[sg]+" "+skyDM(L)};
+  moSerif(moTdignity(dgNow),cx,cy+st.h*0.42,S.w*0.052,COL[dgNow]);
+  return {ms:ms, sub:moTgraha(en)+" in "+moTrasi(sg)+" "+skyDM(L)};
  }},
 
 /* -------------------------------------------------------------- 13. sade sati */
@@ -1819,7 +1818,7 @@ var MO_MORE=[
     moText(moSign(s),cx+Math.cos(am)*R*0.93,cy-Math.sin(am)*R*0.93,
       S.w*(MO.opt.symbols?0.032:0.023),P.dim,"center",600);
     if(rel===11||rel===0||rel===1)
-      moText(["rising","peak","setting"][rel===11?0:(rel===0?1:2)],
+      moText([moP("rising"),moP("peak"),moP("setting")][rel===11?0:(rel===0?1:2)],
         cx+Math.cos(am)*R*0.80,cy-Math.sin(am)*R*0.80,S.w*0.019,P.malefic,"center",700);
   }
   c.strokeStyle=P.line; c.lineWidth=2.5;
@@ -1827,16 +1826,16 @@ var MO_MORE=[
   var ma=(180-moonSid)*Math.PI/180;
   moGlowDot(cx+Math.cos(ma)*R*0.56,cy-Math.sin(ma)*R*0.56,S.w*0.034,"#e8eaf6","#ffffff");
   moText(moG("Moon"),cx+Math.cos(ma)*R*0.56,cy-Math.sin(ma)*R*0.56,S.w*0.024,"#2a2f45","center",800);
-  moText("natal Candra",cx+Math.cos(ma)*R*0.40,cy-Math.sin(ma)*R*0.40,S.w*0.020,P.dim,"center",500);
+  moText(moP("natalCandra"),cx+Math.cos(ma)*R*0.40,cy-Math.sin(ma)*R*0.40,S.w*0.020,P.dim,"center",500);
   var sa2=(180-sa)*Math.PI/180;
   moGlyph(cx+Math.cos(sa2)*R*0.86,cy-Math.sin(sa2)*R*0.86,S.w*0.040,"Saturn",P,true);
   var age=(ms-b)/31556952000;
-  moSerif(inSS?"Sade Sati":(dhaiya?"Dhaiyā":"clear"),cx,cy+st.h*0.42,S.w*0.054,
+  moSerif(inSS?moP("sadeSati"):(dhaiya?moP("dhaiya"):moP("clear")),cx,cy+st.h*0.42,S.w*0.054,
     inSS?P.malefic:(dhaiya?P.gold:P.benefic));
-  moText("age "+age.toFixed(0),cx,cy-st.h*0.45,S.w*0.034,P.ink,"center",700);
-  return {ms:ms, sub:"Śani in "+SA[Math.floor(sa/30)%12]+" · "+
-          (inSS?(["rising","peak","setting"][phase===11?0:(phase===0?1:2)]+" phase")
-               :(dhaiya?("Dhaiyā — the "+(phase+1)+"th from Candra"):"not over the Moon"))};
+  moText(moP("age",age.toFixed(0)),cx,cy-st.h*0.45,S.w*0.034,P.ink,"center",700);
+  return {ms:ms, sub:moP("saniIn",moTrasi(Math.floor(sa/30)%12),
+          (inSS?moP("phasePost",[moP("rising"),moP("peak"),moP("setting")][phase===11?0:(phase===0?1:2)])
+               :(dhaiya?moP("dhaiyaFrom",phase+1):moP("notOverMoon"))))};
  }}
 ];
 MO_SCENES=MO_SCENES.concat(MO_MORE);
