@@ -1,122 +1,130 @@
 {
- "index": {
-  "title": "{{BRAND}} — Vedic Astrology from Bṛhat Parāśara Horā Śāstra",
-  "h1": "Vedic astrology, from the source",
-  "sub": "{{BRAND}} — {{GLOSS}} — is a source-grounded curriculum for Brihat Parashara Hora Shastra, from first principles to chart synthesis.",
-  "layout": "onecol",
-  "has_aside": false,
-  "desc": "A source-grounded Vedic astrology curriculum built on Bṛhat Parāśara Horā Śāstra, with a free chart engine that computes Ṣaḍbala, Aṣṭakavarga and sixteen divisional charts in your browser."
- },
- "grahas": {
-  "title": "The Nine Grahas — {{BRAND}} (BPHS)",
-  "h1": "The Nine Grahas",
-  "sub": "Full profiles of the Sun through Ketu, the natural benefics and malefics, and the working classifications.",
-  "layout": "",
-  "has_aside": true,
-  "desc": "The nine grahas of Vedic astrology — their natural significations, benefic and malefic character, dignities and karakatvas, as Bṛhat Parāśara Horā Śāstra describes them."
- },
- "dignity": {
-  "title": "Planetary Dignity &amp; Relationships — {{BRAND}} (BPHS)",
-  "h1": "Planetary Dignity & Relationships",
-  "sub": "Exaltation, debilitation, Moolatrikona and own sign; the three tiers of friendship; combustion, war and retrogression; and the nodes.",
-  "layout": "",
-  "has_aside": true,
-  "desc": "Exaltation, debilitation, moolatrikona, own sign and the friendship tables — how a graha's strength is graded by the sign it stands in, with the BPHS rules set out in full."
- },
- "rashis": {
-  "title": "The Twelve Rashis — {{BRAND}} (BPHS)",
-  "h1": "The Twelve Rashis",
-  "sub": "Every sign profiled, plus the modality, element, parity, rising-type, fertility and Kalapurusha classifications that drive later technique.",
-  "layout": "",
-  "has_aside": true,
-  "desc": "The twelve rāśis: element, mode, gender, lord, body part and the classical descriptions from Bṛhat Parāśara Horā Śāstra, with how each shapes a graha placed in it."
- },
- "bhavas": {
-  "title": "The Twelve Bhavas — {{BRAND}} (BPHS)",
-  "h1": "The Twelve Bhavas",
-  "sub": "House significations and karakas in depth, functional classes, bhava-lord placements with a worked case, house strength, and how a house prospers or breaks.",
-  "layout": "",
-  "has_aside": true,
-  "desc": "The twelve bhāvas and what each governs, with the BPHS significations, the bhāva lord's role, and how kendra, trikona, dusthāna and upachaya classify them."
- },
- "lagna": {
-  "title": "Lagna &amp; Special Ascendants — {{BRAND}} (BPHS)",
-  "h1": "Lagna & Special Ascendants",
-  "sub": "The rising point that anchors the chart, the twelve ascendant temperaments, and the computed Bhava, Hora, Ghatika, Arudha, Sree and Prana ascendants.",
-  "layout": "",
-  "has_aside": true,
-  "desc": "The lagna — the point of the ecliptic rising in the east — how it is computed, why it moves a degree every four minutes, and why rāśis take unequal times to rise."
- },
- "vargas": {
-  "title": "Shodasha Vargas — {{BRAND}} (BPHS)",
-  "h1": "Shodasha Vargas",
-  "sub": "All sixteen divisional charts, how to read a varga, and the significance of each of the twelve houses within every chart that is read as a chart.",
-  "layout": "",
-  "has_aside": true,
-  "desc": "The sixteen divisional charts of BPHS — Horā, Drekkāṇa, Navāṃśa, Daśāṃśa and the rest — how each is computed and what each refines in the rāśi chart."
- },
- "aspects": {
-  "title": "Aspects — Graha &amp; Rashi Drishti — {{BRAND}} (BPHS)",
-  "h1": "Aspects — Graha & Rashi Drishti",
-  "sub": "Planetary aspects with the graded glances and Virupa values, sign aspects in full, aspects on houses, and when to use which system.",
-  "layout": "",
-  "has_aside": true,
-  "desc": "Graha dṛṣṭi and rāśi dṛṣṭi: the seventh-house aspect every graha casts, the special aspects of Maṅgala, Guru and Śani, and how the two aspect systems differ."
- },
- "strength": {
-  "title": "Strength — Shadbala, Bhava Bala &amp; Ishta/Kashta — {{BRAND}} (BPHS)",
-  "h1": "Strength — Shadbala, Bhava Bala & Ishta/Kashta",
-  "sub": "Every Shadbala component and its sub-parts and minimums, house strength, benefic vs difficult potency, and Vimsopaka divisional strength.",
-  "layout": "",
-  "has_aside": true,
-  "desc": "Ṣaḍbala in full: sthāna, dig, kāla, cheṣṭā, naisargika and dṛk bala, with Iṣṭa and Kaṣṭa, Viṃśopaka and the required rūpa thresholds, worked step by step."
- },
- "special-points": {
-  "title": "Arudhas, Argala, Karakas &amp; Karakamsa — {{BRAND}} (BPHS)",
-  "h1": "Arudhas, Argala, Karakas & Karakamsa",
-  "sub": "Image-points and how to read the Arudha Lagna and Upapada, interventions, both karaka schemes, and the Karakamsa lagna.",
-  "layout": "",
-  "has_aside": true,
-  "desc": "Arudha padas, Upapada, Argala, the Chara Karakas and Karakāṃśa — the special points of BPHS and Jaimini-adjacent technique, with how each is derived."
- },
- "yogas": {
-  "title": "Yogas — the full catalogue — {{BRAND}} (BPHS)",
-  "h1": "Yogas — the full catalogue",
-  "sub": "Yogakaraka, the five Mahapurusha yogas, lunar and solar yogas, the 32 Nabhasa yogas, Raja and Dhana yogas, Parivartana, Vipareeta and Neechabhanga, and the arishta and penury combinations.",
-  "layout": "",
-  "has_aside": true,
-  "desc": "Rāja yogas, Dhana yogas, the Nābhasa yogas and the lunar and solar combinations of BPHS — formation, classical effect, and the cancellation and timing that decide them."
- },
- "avasthas-longevity": {
-  "title": "Avasthas, Longevity &amp; Maraka — {{BRAND}} (BPHS)",
-  "h1": "Avasthas, Longevity & Maraka",
-  "sub": "The five avastha schemes, and the longevity methods and Maraka doctrine — presented academically, with care.",
-  "layout": "",
-  "has_aside": true,
-  "desc": "Bālādi and the other avasthās, with the BPHS longevity and māraka chapters treated as historical doctrine rather than prediction."
- },
- "dashas": {
-  "title": "Dashas — {{BRAND}} (BPHS)",
-  "h1": "Dashas",
-  "sub": "Vimshottari with worked balance-at-birth and sub-period examples, the conditional nakshatra dashas, and the rasi (sign) dashas of BPHS.",
-  "layout": "",
-  "has_aside": true,
-  "desc": "Viṃśottarī daśā from first principles — the nakṣatra lords, the 120-year cycle, balance at birth, and antardaśā arithmetic, with the other BPHS daśā systems."
- },
- "ashtakavarga": {
-  "title": "Ashtakavarga — {{BRAND}} (BPHS)",
-  "h1": "Ashtakavarga",
-  "sub": "Benefic-point rules, Bhinna- and Sarvashtakavarga with reading thresholds, kakshas, the three shodhanas, and transit interpretation.",
-  "layout": "",
-  "has_aside": true,
-  "desc": "Aṣṭakavarga worked in full: the bindus each graha contributes, Trikoṇa and Ekādhipatya śodhana, and Sarvāṣṭakavarga with the 337 total that must hold."
- },
- "now": {
-  "title": "Hindu time now — the pañcāṅga for this moment — {{BRAND}}",
-  "h1": "Hindu time, now",
-  "sub": "The five limbs of the day as they stand, for the place you choose — computed in your browser, with no birth chart needed.",
-  "layout": "",
-  "has_aside": true,
-  "desc": "The current Hindu date and time for any place: tithi, nakṣatra, yoga, karaṇa and vāra with their end-times, the lunar month in both reckonings, sunrise and sunset, and the later-tradition divisions of the day."
- }
+  "index": {
+    "title": "{{BRAND}} — Vedic Astrology from Bṛhat Parāśara Horā Śāstra",
+    "h1": "Vedic astrology, from the source",
+    "sub": "{{BRAND}} — {{GLOSS}} — is a source-grounded curriculum for Brihat Parashara Hora Shastra, from first principles to chart synthesis.",
+    "layout": "onecol",
+    "has_aside": false,
+    "desc": "A source-grounded Vedic astrology curriculum built on Bṛhat Parāśara Horā Śāstra, with a free chart engine that computes Ṣaḍbala, Aṣṭakavarga and sixteen divisional charts in your browser."
+  },
+  "grahas": {
+    "title": "The Nine Grahas — {{BRAND}} (BPHS)",
+    "h1": "The Nine Grahas",
+    "sub": "Full profiles of the Sun through Ketu, the natural benefics and malefics, and the working classifications.",
+    "layout": "",
+    "has_aside": true,
+    "desc": "The nine grahas of Vedic astrology — their natural significations, benefic and malefic character, dignities and karakatvas, as Bṛhat Parāśara Horā Śāstra describes them."
+  },
+  "dignity": {
+    "title": "Planetary Dignity &amp; Relationships — {{BRAND}} (BPHS)",
+    "h1": "Planetary Dignity & Relationships",
+    "sub": "Exaltation, debilitation, Moolatrikona and own sign; the three tiers of friendship; combustion, war and retrogression; and the nodes.",
+    "layout": "",
+    "has_aside": true,
+    "desc": "Exaltation, debilitation, moolatrikona, own sign and the friendship tables — how a graha's strength is graded by the sign it stands in, with the BPHS rules set out in full."
+  },
+  "rashis": {
+    "title": "The Twelve Rashis — {{BRAND}} (BPHS)",
+    "h1": "The Twelve Rashis",
+    "sub": "Every sign profiled, plus the modality, element, parity, rising-type, fertility and Kalapurusha classifications that drive later technique.",
+    "layout": "",
+    "has_aside": true,
+    "desc": "The twelve rāśis: element, mode, gender, lord, body part and the classical descriptions from Bṛhat Parāśara Horā Śāstra, with how each shapes a graha placed in it."
+  },
+  "bhavas": {
+    "title": "The Twelve Bhavas — {{BRAND}} (BPHS)",
+    "h1": "The Twelve Bhavas",
+    "sub": "House significations and karakas in depth, functional classes, bhava-lord placements with a worked case, house strength, and how a house prospers or breaks.",
+    "layout": "",
+    "has_aside": true,
+    "desc": "The twelve bhāvas and what each governs, with the BPHS significations, the bhāva lord's role, and how kendra, trikona, dusthāna and upachaya classify them."
+  },
+  "lagna": {
+    "title": "Lagna &amp; Special Ascendants — {{BRAND}} (BPHS)",
+    "h1": "Lagna & Special Ascendants",
+    "sub": "The rising point that anchors the chart, the twelve ascendant temperaments, and the computed Bhava, Hora, Ghatika, Arudha, Sree and Prana ascendants.",
+    "layout": "",
+    "has_aside": true,
+    "desc": "The lagna — the point of the ecliptic rising in the east — how it is computed, why it moves a degree every four minutes, and why rāśis take unequal times to rise."
+  },
+  "vargas": {
+    "title": "Shodasha Vargas — {{BRAND}} (BPHS)",
+    "h1": "Shodasha Vargas",
+    "sub": "All sixteen divisional charts, how to read a varga, and the significance of each of the twelve houses within every chart that is read as a chart.",
+    "layout": "",
+    "has_aside": true,
+    "desc": "The sixteen divisional charts of BPHS — Horā, Drekkāṇa, Navāṃśa, Daśāṃśa and the rest — how each is computed and what each refines in the rāśi chart."
+  },
+  "aspects": {
+    "title": "Aspects — Graha &amp; Rashi Drishti — {{BRAND}} (BPHS)",
+    "h1": "Aspects — Graha & Rashi Drishti",
+    "sub": "Planetary aspects with the graded glances and Virupa values, sign aspects in full, aspects on houses, and when to use which system.",
+    "layout": "",
+    "has_aside": true,
+    "desc": "Graha dṛṣṭi and rāśi dṛṣṭi: the seventh-house aspect every graha casts, the special aspects of Maṅgala, Guru and Śani, and how the two aspect systems differ."
+  },
+  "strength": {
+    "title": "Strength — Shadbala, Bhava Bala &amp; Ishta/Kashta — {{BRAND}} (BPHS)",
+    "h1": "Strength — Shadbala, Bhava Bala & Ishta/Kashta",
+    "sub": "Every Shadbala component and its sub-parts and minimums, house strength, benefic vs difficult potency, and Vimsopaka divisional strength.",
+    "layout": "",
+    "has_aside": true,
+    "desc": "Ṣaḍbala in full: sthāna, dig, kāla, cheṣṭā, naisargika and dṛk bala, with Iṣṭa and Kaṣṭa, Viṃśopaka and the required rūpa thresholds, worked step by step."
+  },
+  "special-points": {
+    "title": "Arudhas, Argala, Karakas &amp; Karakamsa — {{BRAND}} (BPHS)",
+    "h1": "Arudhas, Argala, Karakas & Karakamsa",
+    "sub": "Image-points and how to read the Arudha Lagna and Upapada, interventions, both karaka schemes, and the Karakamsa lagna.",
+    "layout": "",
+    "has_aside": true,
+    "desc": "Arudha padas, Upapada, Argala, the Chara Karakas and Karakāṃśa — the special points of BPHS and Jaimini-adjacent technique, with how each is derived."
+  },
+  "yogas": {
+    "title": "Yogas — the full catalogue — {{BRAND}} (BPHS)",
+    "h1": "Yogas — the full catalogue",
+    "sub": "Yogakaraka, the five Mahapurusha yogas, lunar and solar yogas, the 32 Nabhasa yogas, Raja and Dhana yogas, Parivartana, Vipareeta and Neechabhanga, and the arishta and penury combinations.",
+    "layout": "",
+    "has_aside": true,
+    "desc": "Rāja yogas, Dhana yogas, the Nābhasa yogas and the lunar and solar combinations of BPHS — formation, classical effect, and the cancellation and timing that decide them."
+  },
+  "avasthas-longevity": {
+    "title": "Avasthas, Longevity &amp; Maraka — {{BRAND}} (BPHS)",
+    "h1": "Avasthas, Longevity & Maraka",
+    "sub": "The five avastha schemes, and the longevity methods and Maraka doctrine — presented academically, with care.",
+    "layout": "",
+    "has_aside": true,
+    "desc": "Bālādi and the other avasthās, with the BPHS longevity and māraka chapters treated as historical doctrine rather than prediction."
+  },
+  "dashas": {
+    "title": "Dashas — {{BRAND}} (BPHS)",
+    "h1": "Dashas",
+    "sub": "Vimshottari with worked balance-at-birth and sub-period examples, the conditional nakshatra dashas, and the rasi (sign) dashas of BPHS.",
+    "layout": "",
+    "has_aside": true,
+    "desc": "Viṃśottarī daśā from first principles — the nakṣatra lords, the 120-year cycle, balance at birth, and antardaśā arithmetic, with the other BPHS daśā systems."
+  },
+  "ashtakavarga": {
+    "title": "Ashtakavarga — {{BRAND}} (BPHS)",
+    "h1": "Ashtakavarga",
+    "sub": "Benefic-point rules, Bhinna- and Sarvashtakavarga with reading thresholds, kakshas, the three shodhanas, and transit interpretation.",
+    "layout": "",
+    "has_aside": true,
+    "desc": "Aṣṭakavarga worked in full: the bindus each graha contributes, Trikoṇa and Ekādhipatya śodhana, and Sarvāṣṭakavarga with the 337 total that must hold."
+  },
+  "now": {
+    "title": "Hindu time now — the pañcāṅga for this moment — {{BRAND}}",
+    "h1": "Hindu time, now",
+    "sub": "The five limbs of the day as they stand, for the place you choose — computed in your browser, with no birth chart needed.",
+    "layout": "",
+    "has_aside": true,
+    "desc": "The current Hindu date and time for any place: tithi, nakṣatra, yoga, karaṇa and vāra with their end-times, the lunar month in both reckonings, sunrise and sunset, and the later-tradition divisions of the day."
+  },
+  "404": {
+    "title": "Page not found — {{BRAND}}",
+    "desc": "That address is not on this site. Links to the chart builder, the pañcāṅga for now, and the main reference pages.",
+    "h1": "Page not found",
+    "sub": "That address is not on this site — here is where the links usually point.",
+    "layout": "onecol",
+    "has_aside": false
+  }
 }

@@ -176,6 +176,48 @@ def build_kundli():
     print("  build id %s" % stamp)
     return shell
 
+def build_pwa(built):
+    """The manifest and the service worker.
+
+    Both are generated rather than kept as files, for one reason: the service
+    worker's cache name has to carry a fingerprint of everything else in the
+    build. A new build then writes a new cache and deletes the old one on
+    activate, so bytes from a previous build cannot be served by this one even in
+    principle. Hand-maintaining that version string is how a site ends up stuck
+    on an old build — which has happened to this one, in iOS Safari, for days.
+
+    The stamp covers every other built file, so it is computed here, after they
+    exist, rather than from the kundli shell alone."""
+    stamp = build_stamp([t for n, t in sorted(built.items())])
+    sw = read(SRC, "js", "sw.js").replace("{{STAMP}}", stamp)
+    if "{{STAMP}}" in sw or stamp not in sw:
+        raise SystemExit("the service worker did not take the build stamp")
+    manifest = {
+        "name": BRAND["name"] + " — " + BRAND["tagline"],
+        "short_name": BRAND["name"],
+        "description": BRAND["tagline"] +
+                       ", computed in your own browser. Nothing is sent anywhere.",
+        "start_url": "./index.html",
+        "scope": "./",
+        "display": "standalone",
+        "background_color": "#fbfaf7",
+        "theme_color": BRAND["navy"],
+        "icons": [
+            {"src": "assets/brand/favicon.svg", "sizes": "any", "type": "image/svg+xml"},
+            {"src": "assets/brand/icon-192.png", "sizes": "192x192", "type": "image/png"},
+            {"src": "assets/brand/icon-512.png", "sizes": "512x512", "type": "image/png"},
+            {"src": "assets/brand/icon-512.png", "sizes": "512x512", "type": "image/png",
+             "purpose": "maskable"}
+        ],
+        "shortcuts": [
+            {"name": "Build a chart", "url": "./kundli.html"},
+            {"name": "Hindu time now", "url": "./now.html"}
+        ]
+    }
+    return {"sw.js": sw,
+            "manifest.webmanifest": json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"}
+
+
 def nav_html(href):
     """The site nav, with `href` marked current. One source for every page.
 
@@ -227,6 +269,16 @@ def build_adopted():
         h = text.find("</head>")
         if h < 0:
             raise SystemExit("adopted page %s has no </head>" % name)
+        # These pages carried no icon and no manifest, so they showed a blank tab
+        # and sat outside the installed app. Three lines, shared from here so they
+        # cannot drift from what the built pages declare.
+        if "rel=\"manifest\"" not in text:
+            text = (text[:h] +
+                    '<link rel="icon" href="favicon.ico" sizes="any">\n'
+                    '<link rel="apple-touch-icon" href="assets/brand/icon-180.png">\n'
+                    '<link rel="manifest" href="manifest.webmanifest">\n' +
+                    text[h:])
+            h = text.find("</head>")
         m = re.compile(r"<body\b[^>]*>").search(text, h)
         if not m:
             raise SystemExit("adopted page %s has no <body> after </head>" % name)
@@ -356,6 +408,8 @@ def main():
     built.update(build_pages())
     built.update(build_shared())
     built.update(build_adopted())
+    # last, because its cache key is a fingerprint of everything above it
+    built.update(build_pwa(built))
     syntax_check(built)
 
     if "--check" in args:

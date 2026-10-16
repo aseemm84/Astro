@@ -1,0 +1,43 @@
+{
+  "name": "Nirayana — Vedic astrology from Bṛhat Parāśara Horā Śāstra",
+  "short_name": "Nirayana",
+  "description": "Vedic astrology from Bṛhat Parāśara Horā Śāstra, computed in your own browser. Nothing is sent anywhere.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#fbfaf7",
+  "theme_color": "#1d2340",
+  "icons": [
+    {
+      "src": "assets/brand/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "assets/brand/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/brand/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "assets/brand/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Build a chart",
+      "url": "./kundli.html"
+    },
+    {
+      "name": "Hindu time now",
+      "url": "./now.html"
+    }
+  ]
+}

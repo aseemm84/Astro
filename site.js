@@ -318,3 +318,20 @@ else boot();
   s.src="now.js"; s.defer=true;
   document.head.appendChild(s);
 })();
+
+/* The service worker, so the hosted site works offline the way a local copy
+   already does, and a repeat visit does not re-fetch 200 KB of engine.
+   Registered here rather than in each page's head: one place, every page.
+
+   Only over http(s). A service worker cannot be registered from file://, and
+   attempting it throws — which matters because opening the site from Finder is a
+   supported way to use it, not an edge case. Registration failure of any kind is
+   swallowed: a reader whose browser refuses workers should get the site, not an
+   error, since every page already works without one. */
+(function(){
+  if(!("serviceWorker" in navigator)) return;
+  if(location.protocol!=="http:" && location.protocol!=="https:") return;
+  window.addEventListener("load",function(){
+    navigator.serviceWorker.register("sw.js").catch(function(){});
+  });
+})();

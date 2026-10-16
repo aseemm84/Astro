@@ -18,3 +18,4 @@
 <meta name="color-scheme" content="light">
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2213%22%20fill%3D%22%231d2340%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2212.5%22%20fill%3D%22none%22%20stroke%3D%22%23c9a24b%22%20stroke-width%3D%223%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%227.5%22%20fill%3D%22%23edc968%22%2F%3E%3Cpath%20d%3D%22M46.8%2020.6A19%2019%200%200%201%2051%2032%22%20fill%3D%22none%22%20stroke%3D%22%23e7d19a%22%20stroke-width%3D%225%22%2F%3E%3Cpath%20d%3D%22M32%2013.5v3.4M32%2047.1v3.4M13.5%2032h3.4M47.1%2032h3.4%22%20stroke%3D%22%23c9a24b%22%20stroke-width%3D%222.6%22%2F%3E%3C%2Fsvg%3E">
 <link rel="apple-touch-icon" href="assets/brand/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest">
