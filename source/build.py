@@ -23,6 +23,10 @@ import os, re, json, sys, difflib, shutil, tempfile, subprocess
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SRC  = os.path.join(ROOT, "src")
 VEND = os.path.join(ROOT, "vendor")
+# The repository root, which is also where the built site is served from. Only
+# cities.json is read from here: it is data the site serves directly rather than
+# source the build transforms, so it lives beside the output in one copy.
+SITE = os.path.dirname(ROOT) if os.path.basename(ROOT) == "source" else ROOT
 
 def read(*p):
     with open(os.path.join(*p), encoding="utf-8") as f:
@@ -152,13 +156,9 @@ def build_kundli():
     # The kundli page's nav came from a hand-written list in its own shell, so
     # adding a page to _nav.json left it behind — which is how now.html ended up
     # reachable from every page except the busiest one. One source now.
-    nav = json.load(open(os.path.join(SRC, "pages", "_nav.json"), encoding="utf-8"))
-    navhtml = "".join('<a href="%s"%s>%s</a>' %
-                      (h, ' class="active"' if h == "kundli.html" else "", label)
-                      for h, label in nav)
     if "{{NAV}}" not in shell:
         raise SystemExit("token {{NAV}} missing from the kundli shell")
-    shell = shell.replace("{{NAV}}", navhtml)
+    shell = shell.replace("{{NAV}}", nav_html("kundli.html"))
     shell = brandify(shell).replace("<!--LOGO-->", logo_mark())
     parts = [("<!--CSS-->", read(SRC, "css", "app.css"), "style"),
              ("<!--JS0-->", read(VEND, "astronomy.browser.min.js"), "script"),
@@ -175,6 +175,68 @@ def build_kundli():
         shell = shell.replace(tok, "<%s>%s</%s>" % (tag, brandify(body), tag))
     print("  build id %s" % stamp)
     return shell
+
+def nav_html(href):
+    """The site nav, with `href` marked current. One source for every page.
+
+    Built in three places before this existed, which is how now.html came to be
+    reachable from every page except the chart page — the busiest one. A page
+    gains a nav entry on one edit to _nav.json and no other."""
+    nav = json.load(open(os.path.join(SRC, "pages", "_nav.json"), encoding="utf-8"))
+    return "".join('<a href="%s"%s>%s</a>' %
+                   (h, ' class="active"' if h == href else "", label)
+                   for h, label in nav)
+
+
+def build_adopted():
+    """The four pages that were written as standalone documents.
+
+    dashboard.html, the two 108-pāda references and the technical report each
+    carry their own styles and their own masthead, and were never part of this
+    build. Two consequences, both found by measurement rather than by reading:
+
+      * None of them had any site navigation at all. 108-nakshatra-padas.html is
+        the last entry in _nav.json, so it is reachable from every page on the
+        site — and once a reader arrived there, there was no link out of it. Four
+        pages, no way back.
+
+      * Their scripts — a megabyte of inline JavaScript on the dashboard alone —
+        were never parse-checked, because the build had never seen these files.
+
+    They are adopted rather than rewritten. Converting them onto the _shell.html
+    pipeline would mean reflowing four large hand-built documents to gain a
+    header they already have; injecting a self-contained strip after <body> gains
+    the navigation and costs nothing else. They keep their own styling, keep
+    working as single files, and now come under the parse gate and --check."""
+    chrome = read(SRC, "adopted", "_chrome.html")
+    out = {}
+    for name in sorted(os.listdir(os.path.join(SRC, "adopted"))):
+        if name.startswith("_") or not name.endswith(".html"):
+            continue
+        text = read(SRC, "adopted", name)
+        strip = chrome.replace("{{NAV}}", nav_html(name))
+        # Find the opening <body> tag by searching AFTER </head>, not from the
+        # start of the file. The dashboard inlines Apache ECharts, whose minified
+        # source contains the literal string "<body" — so searching from the top
+        # found that one and spliced a nav strip into the middle of a megabyte of
+        # JavaScript. It produced a page that still looked plausible in the build
+        # log, and only the parse gate noticed. Hence also the assertion: the real
+        # <body> follows </head> closely, and anything else means this heuristic
+        # has met a document it does not understand and should stop rather than
+        # guess.
+        h = text.find("</head>")
+        if h < 0:
+            raise SystemExit("adopted page %s has no </head>" % name)
+        m = re.compile(r"<body\b[^>]*>").search(text, h)
+        if not m:
+            raise SystemExit("adopted page %s has no <body> after </head>" % name)
+        if m.start() - (h + 7) > 200:
+            raise SystemExit("adopted page %s: <body> is %d chars after </head>, "
+                             "which is too far to trust" % (name, m.start() - h - 7))
+        i = m.end()
+        out[name] = brandify(text[:i] + "\n" + strip + text[i:])
+    return out
+
 
 def build_shared():
     """Files the reference pages reference rather than inline.
@@ -194,6 +256,16 @@ def build_shared():
         # now.html's own script. Referenced rather than inlined for the same reason
         # site.js is: it is wanted on one page and the rest should not carry it.
         "now.js":    brandify(read(SRC, "js", "now.js")),
+        # cities.js is cities.json with sixteen characters in front of it. The chart
+        # page fetches the .json; on file:// fetch is blocked, so it falls back to
+        # loading the .js, which is the same data as a script assignment. That made
+        # it a derived file maintained by hand: update the .json, forget the .js, and
+        # the offline path silently serves stale cities with nothing to notice. So
+        # the build derives it. cities.json stays at the repo root as the one copy of
+        # the data — it is served directly, and duplicating three megabytes into
+        # source/ to satisfy a convention would be a worse trade than reading it
+        # from where it is served.
+        "cities.js": "window.__CITIES=" + read(SITE, "cities.json").strip() + ";\n",
     }
 
 def build_pages():
@@ -201,12 +273,9 @@ def build_pages():
     css    = read(SRC, "css", "pages.css")
     footer = read(SRC, "pages", "_footer.html")
     meta   = json.load(open(os.path.join(SRC, "pages", "_meta.json"), encoding="utf-8"))
-    nav    = json.load(open(os.path.join(SRC, "pages", "_nav.json"), encoding="utf-8"))
     out = {}
     for name, m in meta.items():
         href = "index.html" if name == "index" else name + ".html"
-        navhtml = "".join('<a href="%s"%s>%s</a>' %
-                          (h, ' class="active"' if h == href else "", label) for h, label in nav)
         body = read(SRC, "pages", name + ".html")
         aside = ""
         if m["has_aside"]:
@@ -219,7 +288,7 @@ def build_pages():
                      shell.replace("{{CSS}}", css).replace("{{TITLE}}", brandify(m["title"]))
                           .replace("{{HEAD}}", head_meta(m["desc"], href, brandify(m["title"])))
                           .replace("{{H1}}", m["h1"]).replace("{{SUB}}", m["sub"])
-                          .replace("{{NAV}}", navhtml)
+                          .replace("{{NAV}}", nav_html(href))
                           .replace("{{LAYOUT}}", (" " + m["layout"]).rstrip())
                           .replace("{{ASIDE}}", aside).replace("{{MAIN}}", brandify(body))
                           .replace("{{FOOTER}}", footer)
@@ -286,6 +355,7 @@ def main():
     built = {"kundli.html": build_kundli()}
     built.update(build_pages())
     built.update(build_shared())
+    built.update(build_adopted())
     syntax_check(built)
 
     if "--check" in args:

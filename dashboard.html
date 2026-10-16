@@ -403,6 +403,65 @@ tr.dtrow-now td{background:color-mix(in srgb,var(--gold) 14%,transparent)}
 </style>
 </head>
 <body>
+<!-- The nav strip injected into the adopted pages.
+
+     WHY IT IS SELF-CONTAINED. These four pages were written as standalone
+     documents: each carries its own <style> with its own custom properties, and
+     none of them loads app.css. Making them depend on the site stylesheet to get
+     a nav would mean either shipping app.css into four pages that already style
+     themselves, or hoping their variable names happen to agree with it. So the
+     strip brings its own colours, falling back on the page's own --ink / --line /
+     --muted where they exist, and brings its own four-line toggle rather than
+     site.js. It then works on a page whose styling it knows nothing about, and
+     offline, which is the point of these pages existing as single files at all.
+
+     <a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="kundli.html">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a> is replaced by build.py from pages/_nav.json, so these pages gain a
+     nav entry on the same edit every other page does. -->
+<style>
+  .adchrome{position:sticky; top:0; z-index:40; background:var(--bg,#fbfaf7);
+    border-bottom:1px solid var(--line,#e2ded3); font-size:13px;
+    font-family:var(--sans,system-ui,-apple-system,"Segoe UI",sans-serif)}
+  .adchrome-in{display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    padding:8px clamp(12px,3vw,28px); max-width:1400px; margin:0 auto}
+  .adchrome a{color:var(--muted,#6b6a62); text-decoration:none; padding:3px 0;
+    border-bottom:1px solid transparent; white-space:nowrap}
+  .adchrome a:hover{color:var(--ink,#23222b); border-bottom-color:currentColor}
+  .adchrome a.active{color:var(--ink,#23222b); border-bottom-color:currentColor}
+  .adchrome .adhome{font-weight:600; color:var(--ink,#23222b)}
+  .adchrome-links{display:flex; gap:14px; flex-wrap:wrap; align-items:center}
+  .adchrome-btn{display:none; margin-left:auto; background:none; cursor:pointer;
+    border:1px solid var(--line,#e2ded3); border-radius:6px; padding:4px 10px;
+    color:var(--ink,#23222b); font:inherit}
+  /* The phone is where a missing nav actually strands somebody, so the strip
+     collapses rather than wrapping into eight lines of links. */
+  @media (max-width:860px){
+    .adchrome-btn{display:block}
+    .adchrome-links{display:none; width:100%; flex-direction:column;
+      gap:2px; padding:6px 0 10px}
+    .adchrome-links a{padding:7px 0}
+    .adchrome.open .adchrome-links{display:flex}
+  }
+  @media print{ .adchrome{display:none} }
+</style>
+<nav class="adchrome" id="adchrome" aria-label="Site">
+  <div class="adchrome-in">
+    <a class="adhome" href="index.html">Nirayana</a>
+    <button class="adchrome-btn" type="button" aria-expanded="false"
+            aria-controls="adchrome-links">Menu</button>
+    <div class="adchrome-links" id="adchrome-links"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="kundli.html">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></div>
+  </div>
+</nav>
+<script>
+(function(){
+  var n=document.getElementById("adchrome"); if(!n) return;
+  var b=n.querySelector(".adchrome-btn"); if(!b) return;
+  b.addEventListener("click",function(){
+    var open=n.classList.toggle("open");
+    b.setAttribute("aria-expanded",open?"true":"false");
+  });
+})();
+</script>
+
 <script id="kundali-data" type="application/json">null</script>
 <div id="app"></div>
 <input type="file" id="filepick" accept=".json,application/json" hidden>

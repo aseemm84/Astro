@@ -56,7 +56,11 @@ catch {
   }
 }
 
-const browser = await chromium.launch();
+/* CHROME_PATH lets a machine whose playwright package and browser download are
+   out of step point at the browser it actually has, rather than being told to
+   re-download one. Unset, playwright finds its own. */
+const browser = await chromium.launch(
+  process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {});
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 
 /* Any uncaught error in the page is a failure even if every check passes: the
