@@ -46,7 +46,15 @@ def report_bundle():
     stray = sorted(found - set(order))
     if stray:
         raise SystemExit("report modules not listed in _order.json: %s" % stray)
-    return "".join(read(d, n) for n in order)
+    bundle = "".join(read(d, n) for n in order)
+    # Two modules declaring the same function is legal in one concatenated scope and
+    # silently resolves to the last one, which is how a context bar came to read a
+    # sky scene's moWhere(). Nothing throws, so the build has to be what notices.
+    names = re.findall(r"^function\s+([A-Za-z_$][\w$]*)\s*\(", bundle, re.M)
+    dupes = sorted({n for n in names if names.count(n) > 1})
+    if dupes:
+        raise SystemExit("function declared more than once in the report bundle: %s" % dupes)
+    return bundle
 
 # ---------------------------------------------------------------------------
 # The brand, in one place.

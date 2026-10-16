@@ -49,7 +49,7 @@ var MO={
        /* Every scene that covers a stretch of time reads its span from here, so days,
           months and years are available wherever a span means anything at all. */
        spanN:12, spanU:"y"},
-  cap:{title:"", sub:"", logo:true, handle:"@learnhoro", date:true},
+  cap:{title:"", sub:"", logo:true, handle:"@learnhoro", date:true, ctx:true},
   fps:0, _fpsT:0, _fpsN:0
 };
 function moPal(){ return MO_PALS[MO.pal]||MO_PALS.midnight; }
@@ -201,6 +201,7 @@ function moFmtDate(ms){
    that makes a frame look like it came from somewhere rather than from a browser.
    --------------------------------------------------------------------------- */
 function moCaption(dateMs,sub){
+  MO._lastMs=dateMs;
   var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
   MO._rawType=true;
   var y0=st.capY;
@@ -224,6 +225,9 @@ function moCaption(dateMs,sub){
   if(s2) rows.push({t:s2, f:small, col:P.dim, w:500});
   if(MO.cap.date && dateMs!=null)
     rows.push({t:moFmtDate(dateMs), f:small*1.05, col:P.gold, w:700});
+  /* when and where, in the rows the scene asked for */
+  moContextRows(dateMs).forEach(function(t){
+    rows.push({t:t, f:small*0.86, col:P.dim, w:500}); });
 
   var footH=st.capH*0.30;                       /* the logo and handle sit here */
   var avail=st.capH-footH-U*0.014;

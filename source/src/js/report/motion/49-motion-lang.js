@@ -545,15 +545,18 @@ function moTeclKind(w){
    "Shukla"). Map by position rather than by spelling where we can, and fall back to
    what arrived so a name we have not met still shows. */
 function moTtithiName(n){
-  if(!moLangHi()) return n;
   var i=MO_TITHI_ROMAN.indexOf(String(n));
-  return i>=0 ? MO_STR.tithi.hi[i] : (String(n)==="Amavasya"?moTcol(MO_STR.amavasya):n);
+  /* English mode is not a pass-through: the engine writes "Dashami" and the rest of
+     this site writes "Daśamī". Mapping both columns keeps one romanisation on screen
+     instead of two. */
+  if(i>=0) return (moLangHi()?MO_STR.tithi.hi:MO_STR.tithi.en)[i];
+  if(String(n)==="Amavasya") return moTcol(MO_STR.amavasya);
+  return n;
 }
 var MO_TITHI_ROMAN=["Pratipada","Dvitiya","Tritiya","Chaturthi","Panchami","Shashthi",
   "Saptami","Ashtami","Navami","Dashami","Ekadashi","Dvadashi","Trayodashi",
   "Chaturdashi","Purnima"];
 function moTpaksha(p){
-  if(!moLangHi()) return p;
   return /kri|kṛ/i.test(p) ? moTcol(MO_STR.krishna) : moTcol(MO_STR.shukla);
 }
 function moTdignity(d){
@@ -585,12 +588,18 @@ var MO_YOGA_HI=["विष्कम्भ","प्रीति","आयुष्
 var MO_KAR_HI={Bava:"बव",Balava:"बालव",Kaulava:"कौलव",Taitila:"तैतिल",Gara:"गर",
  Vanija:"वणिज",Vishti:"विष्टि",Shakuni:"शकुनि",Chatushpada:"चतुष्पद",Naga:"नाग",
  Kimstughna:"किंस्तुघ्न"};
+var MO_YOGA_EN=["Viṣkambha","Prīti","Āyuṣmān","Saubhāgya","Śobhana","Atigaṇḍa",
+ "Sukarmā","Dhṛti","Śūla","Gaṇḍa","Vṛddhi","Dhruva","Vyāghāta","Harṣaṇa","Vajra",
+ "Siddhi","Vyatīpāta","Varīyān","Parigha","Śiva","Siddha","Sādhya","Śubha","Śukla",
+ "Brahmā","Indra","Vaidhṛti"];
 function moTyoga(n){
-  if(!moLangHi()) return n;
   var i=(typeof YOGAN!=="undefined")?YOGAN.indexOf(String(n)):-1;
-  return i>=0?MO_YOGA_HI[i]:n;
+  return i>=0?(moLangHi()?MO_YOGA_HI[i]:MO_YOGA_EN[i]):n;
 }
-function moTkarana(n){ return moLangHi()?(MO_KAR_HI[String(n)]||n):n; }
+var MO_KAR_EN={Bava:"Bava",Balava:"Bālava",Kaulava:"Kaulava",Taitila:"Taitila",
+ Gara:"Gara",Vanija:"Vaṇija",Vishti:"Viṣṭi",Shakuni:"Śakuni",
+ Chatushpada:"Catuṣpada",Naga:"Nāga",Kimstughna:"Kiṃstughna"};
+function moTkarana(n){ var t=moLangHi()?MO_KAR_HI:MO_KAR_EN; return t[String(n)]||n; }
 
 var MO_PHR5={
 nakOfN:     {en:"nakṣatra {0} of {1}", hi:"{1} में से {0} नक्षत्र"},
@@ -607,12 +616,17 @@ marsNote:   {en:"the dark markings and the polar caps that a small telescope sho
 };
 for(var _k5 in MO_PHR5) MO_PHR[_k5]=MO_PHR5[_k5];
 /* ṛtu and ayana, keyed by the engine's romanisation */
-var MO_RITU_HI={Vasanta:"वसन्त",Grishma:"ग्रीष्म",Varsha:"वर्षा",Sharad:"शरद",
-  Hemanta:"हेमन्त",Shishira:"शिशिर"};
-function moTritu(n){ return moLangHi()?(MO_RITU_HI[n]||n):n; }
+var MO_RITU={en:{Vasanta:"Vasanta",Grishma:"Grīṣma",Varsha:"Varṣā",Sharad:"Śarad",
+  Hemanta:"Hemanta",Shishira:"Śiśira"},
+  hi:{Vasanta:"वसन्त",Grishma:"ग्रीष्म",Varsha:"वर्षा",Sharad:"शरद",
+  Hemanta:"हेमन्त",Shishira:"शिशिर"}};
+/* Both columns are mapped, English included: the engine writes "Shishira" and the
+   rest of the site writes "Śiśira". One romanisation on screen, not two. */
+function moTritu(n){ var t=moLangHi()?MO_RITU.hi:MO_RITU.en; return t[n]||n; }
 function moTayana(n){
-  if(!moLangHi()) return n;
-  return /dak/i.test(n)?"दक्षिणायन":(/utt/i.test(n)?"उत्तरायण":n);
+  if(/dak/i.test(n)) return moLangHi()?"दक्षिणायन":"Dakṣiṇāyana";
+  if(/utt/i.test(n)) return moLangHi()?"उत्तरायण":"Uttarāyaṇa";
+  return n;
 }
 
 var MO_PHR6={

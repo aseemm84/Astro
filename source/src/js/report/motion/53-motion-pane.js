@@ -28,7 +28,8 @@ var MO_TOGGLES=[
 var MO_CAPS=[
   {k:"logo",  label:"Logo"},
   {k:"date",  label:"Date"},
-  {k:"handle",label:"Handle"}
+  {k:"handle",label:"Handle"},
+  {k:"ctx",   label:"When & where"}
 ];
 function motionPane(D,J){
   if(!J||!J.input) return "";
@@ -404,6 +405,7 @@ function moPaneRefresh(){
 }
 
 window.__moDraw=function(){ if(MO.cv) moDraw(); };
+window.__moCtxRows=function(){ var r=null; try{ r=moDraw(); }catch(e){} return moContextRows(MO._lastMs||Date.now()); };
 window.__moMount=moMount;
 
 /* ---------------------------------------------------------------- handlers --- */
