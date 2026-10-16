@@ -1,3 +1,40 @@
+/* ===== Which scenes need a birth chart ====================================
+   Measured by inspecting every scene for MO.D and MO.J references, not guessed.
+   Fifteen of the twenty-four touch neither: they are about the sky, not about a
+   person, and they were gated behind a cast chart only because the Motion tab
+   happens to live inside the chart report.
+
+   The other nine stay gated, and the gate is this list rather than "does it throw".
+   Several of them draw perfectly well with no chart — and draw something stale or
+   empty while doing it, which is worse than refusing, and is exactly the class of
+   fault that survives a release unnoticed.
+
+   Three are irreducibly natal: the sky at a birth moment, Vimsottari running from
+   the natal Moon, and Sani measured against that Moon. The other six could be
+   adapted by substituting here-and-now for birth, which is a later pass and needs
+   the frame to say it is a transit chart and not the reader's own. */
+var MO_NEEDS_CHART={
+  birthsky:1,   /* its subject is one person's birth moment */
+  dasha:1,      /* Vimsottari runs from the natal Moon; there is no daśā without one */
+  sadesati:1,   /* Śani's passage is measured against the natal Moon */
+  gochara:1,    /* draws the natal chart inside the transiting sky */
+  frames:1,     /* anchored to the birth moment and place */
+  lagna:1,      /* adaptable to here-and-now later */
+  bhava:1,      /* needs the chart's houses and vargas */
+  rashi:1,      /* places the reader's grahas on the strip */
+  nakfull:1     /* the same */
+};
+function moHasChart(){ return !!(MO.J && MO.J.input); }
+function moSceneAvailable(k){ return moHasChart() || !MO_NEEDS_CHART[k]; }
+/* Why a scene is unavailable, said rather than implied — a refusal that explains
+   itself is a different thing from a disabled button. */
+function moWhyChart(k){
+  if(k==="dasha")    return moP("needDasha");
+  if(k==="sadesati") return moP("needSadesati");
+  if(k==="birthsky") return moP("needBirthsky");
+  return moP("needChart");
+}
+
 /* ===== Motion — how long a loop takes, and where it spends the time ========
 
    TWO KNOBS, NOT THREE. The panel used to carry Span, Length and Speed. Span says

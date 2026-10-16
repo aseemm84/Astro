@@ -835,6 +835,18 @@ html.navlock,html.navlock body{overflow:hidden}
 .inchart-ask{font-size:13px;color:var(--muted);background:var(--soft);
   border:1px dashed var(--line);border-radius:9px;padding:9px 13px;margin:0 0 18px;max-width:84ch}
 @media print{.inchart-ask,.inchart-f,.navbar{display:none}.inchart{break-inside:avoid}}
+
+/* --- the sky, without a chart -------------------------------------------- */
+.k-sky{margin:18px 0 6px;display:flex;flex-wrap:wrap;gap:10px;align-items:baseline}
+.k-skynote{flex:1 1 20em;min-width:16em;font-size:13px;line-height:1.5;color:#5a5f78}
+#k-skyout:not(:empty){margin:14px 0 24px}
+/* A scene that needs the chart is shown, not hidden: a reader should be able to
+   see what is there and read why it is out of reach, which a missing button
+   cannot tell them. */
+.kreport .moscene.locked{opacity:.45;cursor:not-allowed}
+.kreport .moscene.locked span{font-style:italic}
+.kreport .monochart{margin:0 0 10px;font-size:13px;color:var(--dim,#6a7090)}
+@media (prefers-color-scheme:dark){.k-skynote{color:#9aa0bd}}
 </style></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Build a Kundli</h1><p class="sub">How a birth chart is cast in the sidereal zodiac — and a tool that computes a full chart in your browser and links each planet into the padas reference.</p></header><nav class="site"><a href="index.html">Home</a><a href="kundli.html" class="active">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#cast">Cast a chart now</a><a href="#what">What a kundli is</a><a href="#need">What you need</a><a href="#how">How a chart is cast</a><a href="#read">How to read what comes back</a><a href="#limits">Accuracy, attribution & limits</a></aside><main><p class="lead">A <b>kundli</b> (janma-kundali) is a birth chart: a map of the sky at the exact moment and place of birth, projected onto the twelve bhavas counted from the Lagna. Enter the birth details and the whole chart is computed below, in this browser. Everything after it explains what a chart is and how it is cast.</p><h2 id="cast">Cast a chart now</h2><p>Everything is computed <b>in your browser</b> — nothing is sent anywhere, and the page works offline.</p>
 <div id="k-inputs">
 <div class="k-form">
@@ -899,6 +911,11 @@ html.navlock,html.navlock body{overflow:hidden}
   <p class="k-chipnote" id="k-chipnote" hidden></p>
 </div>
 <div class="k-status" id="k-status"></div>
+<!-- Fifteen of the animations need no birth data at all: they are about the sky,
+     not about a person. Until now they sat behind a cast chart only because the
+     Motion tab happens to live inside the chart report. This opens them. -->
+<div class="k-sky" id="k-sky"><button type="button" class="k-btn sec" id="k-skygo">Watch the sky &mdash; no birth data needed</button><span class="k-skynote">Fifteen of the animations are about the sky rather than about you: the eclipses, the tilt of the Moon&rsquo;s path, the pa&ntilde;c&amacr;&ndash;a&#7749;ga, the phases. The nine that read your chart stay behind the form above, and each says why.</span></div>
+<div id="k-skyout"></div>
 <div id="k-out"></div>
 <details class="k-raw" id="k-rawwrap" style="display:none"><summary>Show the full raw API response (advanced)</summary><div class="k-rawbar"><button type="button" class="k-btn sec" id="k-copy">Copy JSON</button><span class="k-copymsg" id="k-copymsg"></span></div><pre id="k-raw"></pre></details>
 <details class="k-raw" id="k-adv"><summary>Advanced &middot; proxy URL (use if the direct call is blocked)</summary><div style="margin-top:8px"><label for="k-proxy" style="display:block;font-size:12px;font-weight:600;color:#4a4e68;margin-bottom:4px">Proxy endpoint URL</label><input type="url" id="k-proxy" placeholder="https://your-worker.workers.dev" style="width:100%;max-width:540px;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px"><p class="k-note">Only needed when the chart source is set to the external service, which requires a CORS proxy. The built-in engine does not use this. Stored only in this browser.</p></div></details>
@@ -7477,6 +7494,17 @@ eclPartial: {en:"Partial", hi:"आंशिक"},
 eclAnnular: {en:"Annular", hi:"वलयाकार"},
 eclPenumbral:{en:"Penumbral", hi:"उपच्छाया"},
 circumpolar:{en:"circumpolar", hi:"ध्रुवीय"},
+needChart:  {en:"needs your chart", hi:"आपकी कुण्डली चाहिए"},
+needDasha:  {en:"daśā runs from the Moon at birth, so this one needs your chart",
+             hi:"दशा जन्म के चन्द्र से चलती है, इसलिए इसके लिए कुण्डली चाहिए"},
+needSadesati:{en:"Śani is measured against the Moon at birth, so this one needs your chart",
+             hi:"शनि को जन्म के चन्द्र से नापा जाता है, इसलिए इसके लिए कुण्डली चाहिए"},
+needBirthsky:{en:"this is the sky at one birth moment, so it needs your chart",
+             hi:"यह एक जन्म-क्षण का आकाश है, इसलिए इसके लिए कुण्डली चाहिए"},
+watchSky:   {en:"Watch the sky", hi:"आकाश देखें"},
+noChartYet: {en:"No chart cast. Fifteen of these need none — they are about the sky, not about you.",
+             hi:"अभी कोई कुण्डली नहीं। इनमें से पन्द्रह को कुण्डली चाहिए ही नहीं — ये आकाश के विषय में हैं, आपके नहीं।"},
+pickPlace:  {en:"Place", hi:"स्थान"},
 starAt:     {en:"magnitude {0}   ·   {1}° sidereal   ·   {2}° latitude",
              hi:"कान्तिमान {0}   ·   निरयन {1}°   ·   शर {2}°"}
 };
@@ -7751,6 +7779,43 @@ function moContextRows(dateMs){
   } else if(out.length) rows.push(out.join("  ·  "));
   return rows;
 }
+/* ===== Which scenes need a birth chart ====================================
+   Measured by inspecting every scene for MO.D and MO.J references, not guessed.
+   Fifteen of the twenty-four touch neither: they are about the sky, not about a
+   person, and they were gated behind a cast chart only because the Motion tab
+   happens to live inside the chart report.
+
+   The other nine stay gated, and the gate is this list rather than "does it throw".
+   Several of them draw perfectly well with no chart — and draw something stale or
+   empty while doing it, which is worse than refusing, and is exactly the class of
+   fault that survives a release unnoticed.
+
+   Three are irreducibly natal: the sky at a birth moment, Vimsottari running from
+   the natal Moon, and Sani measured against that Moon. The other six could be
+   adapted by substituting here-and-now for birth, which is a later pass and needs
+   the frame to say it is a transit chart and not the reader's own. */
+var MO_NEEDS_CHART={
+  birthsky:1,   /* its subject is one person's birth moment */
+  dasha:1,      /* Vimsottari runs from the natal Moon; there is no daśā without one */
+  sadesati:1,   /* Śani's passage is measured against the natal Moon */
+  gochara:1,    /* draws the natal chart inside the transiting sky */
+  frames:1,     /* anchored to the birth moment and place */
+  lagna:1,      /* adaptable to here-and-now later */
+  bhava:1,      /* needs the chart's houses and vargas */
+  rashi:1,      /* places the reader's grahas on the strip */
+  nakfull:1     /* the same */
+};
+function moHasChart(){ return !!(MO.J && MO.J.input); }
+function moSceneAvailable(k){ return moHasChart() || !MO_NEEDS_CHART[k]; }
+/* Why a scene is unavailable, said rather than implied — a refusal that explains
+   itself is a different thing from a disabled button. */
+function moWhyChart(k){
+  if(k==="dasha")    return moP("needDasha");
+  if(k==="sadesati") return moP("needSadesati");
+  if(k==="birthsky") return moP("needBirthsky");
+  return moP("needChart");
+}
+
 /* ===== Motion — how long a loop takes, and where it spends the time ========
 
    TWO KNOBS, NOT THREE. The panel used to carry Span, Length and Speed. Span says
@@ -12870,8 +12935,10 @@ var MO_CAPS=[
   {k:"ctx",   label:"When & where"}
 ];
 function motionPane(D,J){
-  if(!J||!J.input) return "";
-  MO.D=D; MO.J=J; MO.p=0; MO.playing=false; MO.scene="retro"; MO.ratio="9:16";
+  /* No chart is a valid state now, not a reason to render nothing: fifteen of the
+     scenes are about the sky rather than about a person. The nine that are not stay
+     gated, and say why. */
+  MO.D=D||null; MO.J=(J&&J.input)?J:null; MO.p=0; MO.playing=false; MO.scene="retro"; MO.ratio="9:16";
   MO.pal="midnight"; MO.studio=false;
   MO.opt.subject="Mars"; MO.opt.exag=40; MO.opt.symbols=false;
   MO.opt.spanN=12; MO.opt.spanU="y"; MO.speed=1;
@@ -12895,9 +12962,13 @@ function moPaneHTML(){
     'and screen-record. <b>Studio mode</b> hides the whole site so the recording is clean. The '+
     '<b>export</b> button hands you the numbers behind whichever scene is running, as a spreadsheet.</p>'+
 
+    (moHasChart()?"":'<p class="monochart">'+esc(moT("noChartYet"))+'</p>')+
     '<div class="moscenes">'+MO_SCENES.map(function(s){
-      return '<button type="button" class="moscene'+(s.key==="retro"?" on":"")+'" data-moscene="'+s.key+
-        '"><b>'+esc(moSceneWords(s).label)+'</b><span>'+esc(moSceneWords(s).sub)+'</span></button>'; }).join("")+'</div>'+
+      var ok=moSceneAvailable(s.key);
+      return '<button type="button" class="moscene'+(s.key===MO.scene?" on":"")+
+        (ok?"":" locked")+'" data-moscene="'+s.key+'"'+(ok?"":' disabled')+
+        '><b>'+esc(moSceneWords(s).label)+'</b><span>'+
+        esc(ok?moSceneWords(s).sub:moWhyChart(s.key))+'</span></button>'; }).join("")+'</div>'+
 
     '<div class="mowrap" id="mowrap">'+
       '<div class="mostage" id="mostage"><canvas id="mocanvas" width="1080" height="1920" role="img" aria-label="Animated diagram. The written explanation is below it."></canvas></div>'+
@@ -12957,6 +13028,14 @@ function moPaneHTML(){
           '<button type="button" class="skyv" data-mopre="slow">slow</button></span>'+
         '</div>')+
 
+        (moHasChart()?"":
+        moBand("where","Where","the place these are drawn for",
+        '<div class="morow"><span class="molab">'+esc(moT("pickPlace"))+'</span>'+
+          '<select id="moplacesel" class="skysel">'+moPlaceOptions()+'</select>'+
+          '<span class="mohint">sunrise, the lagna and the Hindu date all depend on '+
+          'where you are standing; with no chart cast there is nothing to take the '+
+          'place from, so choose one</span>'+
+        '</div>'))+
         moBand("look","Look","shape, colour and the drawing itself",
         /* Language sits in Look because that is what it changes: the frame's own
            words. It governs the canvas, this panel's labels and what the exports
@@ -13246,6 +13325,19 @@ function moPaneRefresh(){
   if(wasPlaying) moPlay(true);
 }
 
+/* The place options, from the form's own city list. */
+function moPlaceOptions(){
+  var L=window.__kcities||[], cur=-1;
+  try{ L.forEach(function(c,i){ if(c.n===window.__kplace) cur=i; }); }catch(e){}
+  if(cur<0 && L.length){
+    cur=0;
+    window.__kplace=L[0].n; window.__kwhereLat=L[0].lat;
+    window.__kwhereLon=L[0].lon; window.__kwhereTz=L[0].tz;
+  }
+  return L.map(function(c,i){
+    return '<option value="'+i+'"'+(i===cur?" selected":"")+'>'+esc(c.n)+'</option>';
+  }).join("");
+}
 window.__moDraw=function(){ if(MO.cv) moDraw(); };
 window.__moPaceLabel=function(){ MO_CACHE={}; return moPaceLabel(); };
 window.__moPaceReport=function(){ return moPaceReport(); };
@@ -13253,6 +13345,9 @@ window.__moPaceStep=function(p,dt){ return moPaceStep(p,dt); };
 window.__moEvents=function(){ return moEvents(); };
 window.__moCtxRows=function(){ var r=null; try{ r=moDraw(); }catch(e){} return moContextRows(MO._lastMs||Date.now()); };
 window.__moMount=moMount;
+/* ui.js is a separate script from this bundle, so the no-chart entry point on the
+   page cannot see a closure function. This is the one export it needs. */
+window.motionPane=motionPane;
 
 /* ---------------------------------------------------------------- handlers --- */
 document.addEventListener("click",function(ev){
@@ -13402,6 +13497,12 @@ document.addEventListener("input",function(ev){
 });
 document.addEventListener("change",function(ev){
   var t2=ev.target; if(!t2) return;
+  if(t2.id==="moplacesel"){
+    var c=(window.__kcities||[])[+t2.value];
+    if(c){ window.__kplace=c.n; window.__kwhereLat=c.lat;
+           window.__kwhereLon=c.lon; window.__kwhereTz=c.tz; }
+    MO_CACHE={}; moDraw(); return;
+  }
   if(t2.id==="mospeed"){ MO.speed=+t2.value; moDurRead(); return; }
   if(t2.id==="mospanu"){ MO.opt.spanU=t2.value; MO.p=0; MO_CACHE={}; moDurRead(); moDraw(); return; }
   if(t2.id==="movarga"){ MO.opt.varga=+t2.value||0; MO.p=0; MO_CACHE={};
@@ -14594,6 +14695,34 @@ window.buildKundliReport=function(J){
   try{var _sv=localStorage.getItem("kundli_proxy"); if(_sv&&proxyEl) proxyEl.value=_sv;}catch(e){}
   if(proxyEl) proxyEl.addEventListener("change",function(){try{localStorage.setItem("kundli_proxy",(proxyEl.value||"").trim());}catch(e){}});
   function endpoint(){return (proxyEl&&proxyEl.value&&proxyEl.value.trim())||API;}
+  /* The short city list, published for the motion pane. With no chart cast there
+     is nothing to take a place from, and sunrise, the lagna and the Hindu date all
+     need one; this is the same list the form offers, not a second one that could
+     drift from it. */
+  window.__kcities=CITIES.filter(function(c){ return c.lat!=null; });
+
+  /* "Watch the sky" — the motion pane with no chart behind it. The same pane and
+     the same scenes; it simply renders in the state where MO.J is null, which the
+     pane now treats as valid rather than as a reason to draw nothing. */
+  var SKY_OPEN="Watch the sky \u2014 no birth data needed";
+  (function(){
+    var btn=$("k-skygo"), host=$("k-skyout");
+    if(!btn||!host) return;
+    btn.addEventListener("click",function(){
+      if(host.innerHTML){ host.innerHTML=""; btn.textContent=SKY_OPEN; return; }
+      try{
+        host.innerHTML='<div class="kreport"><div class="kpane" data-kpane="motion">'+
+                       window.motionPane(null,null)+'</div></div>';
+        if(window.__moMount) window.__moMount();
+        btn.textContent="Hide the sky";
+        host.scrollIntoView({behavior:"smooth",block:"start"});
+      }catch(e){
+        host.innerHTML='<p class="k-note">The animations could not start: '+
+                       String(e&&e.message||e)+'</p>';
+      }
+    });
+  })();
+
   var citySel=$("k-city");
   CITIES.forEach(function(c,i){var o=document.createElement("option");o.value=i;o.textContent=c.n;citySel.appendChild(o);});
   citySel.addEventListener("change",function(){var c=CITIES[+citySel.value]; if(c&&c.lat!=null){$("k-lat").value=c.lat;$("k-lon").value=c.lon;$("k-tz").value=c.tz;window.__kplace=c.n;}});
@@ -15172,6 +15301,13 @@ window.buildKundliReport=function(J){
     chip.hidden=false;
     document.body.classList.add("kcast");
     document.body.classList.remove("kedit");
+    /* Close the no-chart sky panel. It was built in the state where MO.J is null,
+       so it would keep nine scenes locked against a chart that now exists — and,
+       worse, a second #mocanvas would sit on the page, which breaks every lookup
+       by id for both panes. The chart report has its own Motion tab with nothing
+       locked, so there is nothing to keep open. */
+    var sky=$("k-skyout"), skyb=$("k-skygo");
+    if(sky && sky.innerHTML){ sky.innerHTML=""; if(skyb) skyb.textContent=SKY_OPEN; }
   }
   function chipEdit(){
     document.body.classList.add("kedit");
@@ -15425,4 +15561,4 @@ window.buildKundliReport=function(J){
   }
 })();
 </script>
-<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-16.e5df6ae</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer></body></html>
+<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-16.b6a90c4</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer></body></html>

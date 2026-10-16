@@ -816,3 +816,15 @@ html.navlock,html.navlock body{overflow:hidden}
 .inchart-ask{font-size:13px;color:var(--muted);background:var(--soft);
   border:1px dashed var(--line);border-radius:9px;padding:9px 13px;margin:0 0 18px;max-width:84ch}
 @media print{.inchart-ask,.inchart-f,.navbar{display:none}.inchart{break-inside:avoid}}
+
+/* --- the sky, without a chart -------------------------------------------- */
+.k-sky{margin:18px 0 6px;display:flex;flex-wrap:wrap;gap:10px;align-items:baseline}
+.k-skynote{flex:1 1 20em;min-width:16em;font-size:13px;line-height:1.5;color:#5a5f78}
+#k-skyout:not(:empty){margin:14px 0 24px}
+/* A scene that needs the chart is shown, not hidden: a reader should be able to
+   see what is there and read why it is out of reach, which a missing button
+   cannot tell them. */
+.kreport .moscene.locked{opacity:.45;cursor:not-allowed}
+.kreport .moscene.locked span{font-style:italic}
+.kreport .monochart{margin:0 0 10px;font-size:13px;color:var(--dim,#6a7090)}
+@media (prefers-color-scheme:dark){.k-skynote{color:#9aa0bd}}

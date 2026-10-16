@@ -62,6 +62,11 @@
   <p class="k-chipnote" id="k-chipnote" hidden></p>
 </div>
 <div class="k-status" id="k-status"></div>
+<!-- Fifteen of the animations need no birth data at all: they are about the sky,
+     not about a person. Until now they sat behind a cast chart only because the
+     Motion tab happens to live inside the chart report. This opens them. -->
+<div class="k-sky" id="k-sky"><button type="button" class="k-btn sec" id="k-skygo">Watch the sky &mdash; no birth data needed</button><span class="k-skynote">Fifteen of the animations are about the sky rather than about you: the eclipses, the tilt of the Moon&rsquo;s path, the pa&ntilde;c&amacr;&ndash;a&#7749;ga, the phases. The nine that read your chart stay behind the form above, and each says why.</span></div>
+<div id="k-skyout"></div>
 <div id="k-out"></div>
 <details class="k-raw" id="k-rawwrap" style="display:none"><summary>Show the full raw API response (advanced)</summary><div class="k-rawbar"><button type="button" class="k-btn sec" id="k-copy">Copy JSON</button><span class="k-copymsg" id="k-copymsg"></span></div><pre id="k-raw"></pre></details>
 <details class="k-raw" id="k-adv"><summary>Advanced &middot; proxy URL (use if the direct call is blocked)</summary><div style="margin-top:8px"><label for="k-proxy" style="display:block;font-size:12px;font-weight:600;color:#4a4e68;margin-bottom:4px">Proxy endpoint URL</label><input type="url" id="k-proxy" placeholder="https://your-worker.workers.dev" style="width:100%;max-width:540px;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px"><p class="k-note">Only needed when the chart source is set to the external service, which requires a CORS proxy. The built-in engine does not use this. Stored only in this browser.</p></div></details>

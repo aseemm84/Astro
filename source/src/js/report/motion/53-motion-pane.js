@@ -32,8 +32,10 @@ var MO_CAPS=[
   {k:"ctx",   label:"When & where"}
 ];
 function motionPane(D,J){
-  if(!J||!J.input) return "";
-  MO.D=D; MO.J=J; MO.p=0; MO.playing=false; MO.scene="retro"; MO.ratio="9:16";
+  /* No chart is a valid state now, not a reason to render nothing: fifteen of the
+     scenes are about the sky rather than about a person. The nine that are not stay
+     gated, and say why. */
+  MO.D=D||null; MO.J=(J&&J.input)?J:null; MO.p=0; MO.playing=false; MO.scene="retro"; MO.ratio="9:16";
   MO.pal="midnight"; MO.studio=false;
   MO.opt.subject="Mars"; MO.opt.exag=40; MO.opt.symbols=false;
   MO.opt.spanN=12; MO.opt.spanU="y"; MO.speed=1;
@@ -57,9 +59,13 @@ function moPaneHTML(){
     'and screen-record. <b>Studio mode</b> hides the whole site so the recording is clean. The '+
     '<b>export</b> button hands you the numbers behind whichever scene is running, as a spreadsheet.</p>'+
 
+    (moHasChart()?"":'<p class="monochart">'+esc(moT("noChartYet"))+'</p>')+
     '<div class="moscenes">'+MO_SCENES.map(function(s){
-      return '<button type="button" class="moscene'+(s.key==="retro"?" on":"")+'" data-moscene="'+s.key+
-        '"><b>'+esc(moSceneWords(s).label)+'</b><span>'+esc(moSceneWords(s).sub)+'</span></button>'; }).join("")+'</div>'+
+      var ok=moSceneAvailable(s.key);
+      return '<button type="button" class="moscene'+(s.key===MO.scene?" on":"")+
+        (ok?"":" locked")+'" data-moscene="'+s.key+'"'+(ok?"":' disabled')+
+        '><b>'+esc(moSceneWords(s).label)+'</b><span>'+
+        esc(ok?moSceneWords(s).sub:moWhyChart(s.key))+'</span></button>'; }).join("")+'</div>'+
 
     '<div class="mowrap" id="mowrap">'+
       '<div class="mostage" id="mostage"><canvas id="mocanvas" width="1080" height="1920" role="img" aria-label="Animated diagram. The written explanation is below it."></canvas></div>'+
@@ -119,6 +125,14 @@ function moPaneHTML(){
           '<button type="button" class="skyv" data-mopre="slow">slow</button></span>'+
         '</div>')+
 
+        (moHasChart()?"":
+        moBand("where","Where","the place these are drawn for",
+        '<div class="morow"><span class="molab">'+esc(moT("pickPlace"))+'</span>'+
+          '<select id="moplacesel" class="skysel">'+moPlaceOptions()+'</select>'+
+          '<span class="mohint">sunrise, the lagna and the Hindu date all depend on '+
+          'where you are standing; with no chart cast there is nothing to take the '+
+          'place from, so choose one</span>'+
+        '</div>'))+
         moBand("look","Look","shape, colour and the drawing itself",
         /* Language sits in Look because that is what it changes: the frame's own
            words. It governs the canvas, this panel's labels and what the exports
@@ -408,6 +422,19 @@ function moPaneRefresh(){
   if(wasPlaying) moPlay(true);
 }
 
+/* The place options, from the form's own city list. */
+function moPlaceOptions(){
+  var L=window.__kcities||[], cur=-1;
+  try{ L.forEach(function(c,i){ if(c.n===window.__kplace) cur=i; }); }catch(e){}
+  if(cur<0 && L.length){
+    cur=0;
+    window.__kplace=L[0].n; window.__kwhereLat=L[0].lat;
+    window.__kwhereLon=L[0].lon; window.__kwhereTz=L[0].tz;
+  }
+  return L.map(function(c,i){
+    return '<option value="'+i+'"'+(i===cur?" selected":"")+'>'+esc(c.n)+'</option>';
+  }).join("");
+}
 window.__moDraw=function(){ if(MO.cv) moDraw(); };
 window.__moPaceLabel=function(){ MO_CACHE={}; return moPaceLabel(); };
 window.__moPaceReport=function(){ return moPaceReport(); };
@@ -415,6 +442,9 @@ window.__moPaceStep=function(p,dt){ return moPaceStep(p,dt); };
 window.__moEvents=function(){ return moEvents(); };
 window.__moCtxRows=function(){ var r=null; try{ r=moDraw(); }catch(e){} return moContextRows(MO._lastMs||Date.now()); };
 window.__moMount=moMount;
+/* ui.js is a separate script from this bundle, so the no-chart entry point on the
+   page cannot see a closure function. This is the one export it needs. */
+window.motionPane=motionPane;
 
 /* ---------------------------------------------------------------- handlers --- */
 document.addEventListener("click",function(ev){
@@ -564,6 +594,12 @@ document.addEventListener("input",function(ev){
 });
 document.addEventListener("change",function(ev){
   var t2=ev.target; if(!t2) return;
+  if(t2.id==="moplacesel"){
+    var c=(window.__kcities||[])[+t2.value];
+    if(c){ window.__kplace=c.n; window.__kwhereLat=c.lat;
+           window.__kwhereLon=c.lon; window.__kwhereTz=c.tz; }
+    MO_CACHE={}; moDraw(); return;
+  }
   if(t2.id==="mospeed"){ MO.speed=+t2.value; moDurRead(); return; }
   if(t2.id==="mospanu"){ MO.opt.spanU=t2.value; MO.p=0; MO_CACHE={}; moDurRead(); moDraw(); return; }
   if(t2.id==="movarga"){ MO.opt.varga=+t2.value||0; MO.p=0; MO_CACHE={};

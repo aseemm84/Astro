@@ -37,6 +37,34 @@
   try{var _sv=localStorage.getItem("kundli_proxy"); if(_sv&&proxyEl) proxyEl.value=_sv;}catch(e){}
   if(proxyEl) proxyEl.addEventListener("change",function(){try{localStorage.setItem("kundli_proxy",(proxyEl.value||"").trim());}catch(e){}});
   function endpoint(){return (proxyEl&&proxyEl.value&&proxyEl.value.trim())||API;}
+  /* The short city list, published for the motion pane. With no chart cast there
+     is nothing to take a place from, and sunrise, the lagna and the Hindu date all
+     need one; this is the same list the form offers, not a second one that could
+     drift from it. */
+  window.__kcities=CITIES.filter(function(c){ return c.lat!=null; });
+
+  /* "Watch the sky" — the motion pane with no chart behind it. The same pane and
+     the same scenes; it simply renders in the state where MO.J is null, which the
+     pane now treats as valid rather than as a reason to draw nothing. */
+  var SKY_OPEN="Watch the sky \u2014 no birth data needed";
+  (function(){
+    var btn=$("k-skygo"), host=$("k-skyout");
+    if(!btn||!host) return;
+    btn.addEventListener("click",function(){
+      if(host.innerHTML){ host.innerHTML=""; btn.textContent=SKY_OPEN; return; }
+      try{
+        host.innerHTML='<div class="kreport"><div class="kpane" data-kpane="motion">'+
+                       window.motionPane(null,null)+'</div></div>';
+        if(window.__moMount) window.__moMount();
+        btn.textContent="Hide the sky";
+        host.scrollIntoView({behavior:"smooth",block:"start"});
+      }catch(e){
+        host.innerHTML='<p class="k-note">The animations could not start: '+
+                       String(e&&e.message||e)+'</p>';
+      }
+    });
+  })();
+
   var citySel=$("k-city");
   CITIES.forEach(function(c,i){var o=document.createElement("option");o.value=i;o.textContent=c.n;citySel.appendChild(o);});
   citySel.addEventListener("change",function(){var c=CITIES[+citySel.value]; if(c&&c.lat!=null){$("k-lat").value=c.lat;$("k-lon").value=c.lon;$("k-tz").value=c.tz;window.__kplace=c.n;}});
@@ -615,6 +643,13 @@
     chip.hidden=false;
     document.body.classList.add("kcast");
     document.body.classList.remove("kedit");
+    /* Close the no-chart sky panel. It was built in the state where MO.J is null,
+       so it would keep nine scenes locked against a chart that now exists — and,
+       worse, a second #mocanvas would sit on the page, which breaks every lookup
+       by id for both panes. The chart report has its own Motion tab with nothing
+       locked, so there is nothing to keep open. */
+    var sky=$("k-skyout"), skyb=$("k-skygo");
+    if(sky && sky.innerHTML){ sky.innerHTML=""; if(skyb) skyb.textContent=SKY_OPEN; }
   }
   function chipEdit(){
     document.body.classList.add("kedit");
