@@ -308,6 +308,13 @@ def build_shared():
         # now.html's own script. Referenced rather than inlined for the same reason
         # site.js is: it is wanted on one page and the rest should not carry it.
         "now.js":    brandify(read(SRC, "js", "now.js")),
+        # The shared day object: now.html and calendar.html are two views of it.
+        # Written once because two implementations of "which day is this" would
+        # eventually disagree, and for a calendar that is the only thing that
+        # matters. festivals.js extends the same window.NP, so they ship as one
+        # file and a page cannot load half of the pair.
+        "panchanga.js": brandify(read(SRC, "js", "panchanga.js") + "\n" +
+                                 read(SRC, "js", "festivals.js")),
         # cities.js is cities.json with sixteen characters in front of it. The chart
         # page fetches the .json; on file:// fetch is blocked, so it falls back to
         # loading the .js, which is the same data as a script assignment. That made
