@@ -90,12 +90,26 @@
   function sidAt(name,ms){
     try{ return window.__kSidAt(name,new Date(ms)); }catch(e){ return null; }
   }
-  function riseSet(ms,P,dir){
+  /* The sunrise convention, held here and passed into every search, so the whole
+     page dates its day one way. Changing it re-dates everything downstream — the
+     vāra, the ghaṭī count, which tithi is "today's" — which is why it is a stated
+     setting rather than a buried constant. Read from storage so a reader who
+     prefers their own almanac's convention is not asked twice. */
+  var RISE_CONV="limb";
+  try{
+    var rc=localStorage.getItem("nirayana.riseconv");
+    if(rc==="limb"||rc==="centre"||rc==="geom") RISE_CONV=rc;
+  }catch(e){}
+  function convLabel(){
     try{
-      var obs=new Astronomy.Observer(P.lat,P.lon,0);
-      var r=Astronomy.SearchRiseSet(Astronomy.Body.Sun,obs,dir,new Date(ms),2);
-      return r?r.date.getTime():null;
-    }catch(e){ return null; }
+      var C=window.__kRiseConv(), i;
+      for(i=0;i<C.list.length;i++) if(C.list[i].key===RISE_CONV) return C.list[i].label;
+    }catch(e){}
+    return RISE_CONV;
+  }
+  function riseSet(ms,P,dir){
+    try{ return window.__kRiseSet("Sun",P.lat,P.lon,ms,2,dir,RISE_CONV); }
+    catch(e){ return null; }
   }
   /* The sunrise that opened the day this instant belongs to. A Hindu day runs
      sunrise to sunrise, so an instant at 02:00 belongs to YESTERDAY's day. */
@@ -160,7 +174,10 @@
       vara:VARA_EN[(Math.floor(vJd+1.5)%7+7)%7],
       varaSa:VARA_SA[(Math.floor(vJd+1.5)%7+7)%7],
       masa:ms2, sunDeg:su, moonDeg:mo,
-      elongation:(((mo-su)%360)+360)%360
+      elongation:(((mo-su)%360)+360)%360,
+      /* carried on the day object rather than read from a global, so a consumer
+         that stores or compares days knows which convention dated them */
+      riseConv:RISE_CONV, riseConvLabel:convLabel()
     };
   }
   /* --- one romanisation ----------------------------------------------------
@@ -331,6 +348,7 @@
 
   function render(){
     var host=$("nowgrid"); if(!host) return;
+    fillConv();
     var D=nowDay(Date.now(),PLACE);
     if(!D){ host.innerHTML='<p class="nownote">Positions could not be computed.</p>'; return; }
     var tz=PLACE.tz, now=D.ms;
@@ -352,8 +370,12 @@
       card("Māsa", sa(D.masa.amanta),
            "amānta &middot; pūrṇimānta "+sa(D.masa.purnimanta))+
       card("Ṛtu &amp; ayana", sa(D.masa.ritu), sa(D.masa.ayana))+
+      /* The convention is named on the card itself, not only in the control.
+         Sunrise is the hinge every other figure here turns on, so a reader
+         comparing this against a printed pañcāṅga needs to see which definition
+         produced the number without hunting for a setting. */
       card("Sunrise", clock(D.sunrise,tz),
-           "sunset "+clock(D.sunset,tz))+
+           "sunset "+clock(D.sunset,tz)+" &middot; "+esc(D.riseConvLabel))+
       card("Hindu clock", hc?(hc.gh+" gh "+String(hc.pala).padStart(2,"0")+" pl"):"—",
            hc?("of 60 ghaṭī, counted from sunrise &middot; "+
                Math.round(hc.f*100)+"% through the day"):"")+
@@ -464,6 +486,25 @@
     var sp=$("nowspan");
     if(sp) sp.addEventListener("change",function(){
       SPAN_DAYS=+sp.value||3; render(); });
+    /* The sunrise convention. Built from the engine's own list rather than
+       restated here, so adding a convention is one edit in one file. The engine
+       may not have loaded yet when the controls are built, so the options are
+       filled in on first render too. */
+    var sc=$("nowconv");
+    if(sc) sc.addEventListener("change",function(){
+      RISE_CONV=sc.value;
+      try{ localStorage.setItem("nirayana.riseconv",RISE_CONV); }catch(e){}
+      render();
+    });
+  }
+  var convFilled=false;
+  function fillConv(){
+    var sc=$("nowconv");
+    if(!sc||convFilled) return;
+    var C; try{ C=window.__kRiseConv(); }catch(e){ return; }
+    sc.innerHTML=C.list.map(function(c){
+      return '<option value="'+c.key+'">'+esc(c.label)+'</option>'; }).join("");
+    sc.value=RISE_CONV; convFilled=true;
   }
 
   function start(){

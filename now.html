@@ -356,7 +356,9 @@ html.navlock,html.navlock body{overflow:hidden}
     <option value="7">7 days either side</option>
     <option value="15">15 days either side</option>
   </select>
-  <span class="nowhint">Everything is computed in this browser from the same engine the chart pages use &mdash; nothing is sent anywhere, and the page works offline. Sunrise, and therefore the whole day, depends on the place.</span>
+  <span class="nowlab"><label for="nowconv">Sunrise is</label></span>
+  <select id="nowconv" class="nowsel"></select>
+  <span class="nowhint">Everything is computed in this browser from the same engine the chart pages use &mdash; nothing is sent anywhere, and the page works offline. Sunrise, and therefore the whole day, depends on the place &mdash; and on which definition of sunrise you pick. The default is the one the printed almanacs use: the Sun&rsquo;s <b>upper limb</b> touching the horizon, with the standard 34&prime; allowance for refraction. Taking the centre of the disc instead puts sunrise about a minute later; dropping refraction too puts it about four minutes later. Four minutes is enough to move a day label when a tithi ends inside that window, which is why it is shown rather than assumed.</span>
 </div>
 
 <div class="nowhead" id="nowhead"></div>

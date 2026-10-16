@@ -2132,12 +2132,66 @@ function declOf(name,date){
   var eq=Astronomy.Equator(Astronomy.Body[BODY[name]],date,new Astronomy.Observer(0,0,0),true,true);
   return eq.dec;
 }
-function sunriseSunset(date,lat,lon){
-  var obs=new Astronomy.Observer(lat,lon,0);
+/* ===== the sunrise convention =============================================
+   Everything dated in this project hangs off sunrise. The tithi running AT
+   sunrise names the day, so the convention chosen here decides festival dates,
+   the vāra, the ghaṭikā count and the daśā boundaries that follow from them.
+   It was previously implicit — whatever Astronomy.SearchRiseSet happens to do —
+   which is a poor state for a number that moves a day label.
+
+   MEASURED, NOT ASSUMED. SearchRiseSet places the Sun's geometric centre at
+   −0.8339° at the moment it calls sunrise, which is the classical almanac
+   convention: the upper limb touching the horizon, with 34′ of standard
+   refraction, using the true semidiameter of the day rather than a mean. That
+   is the same convention a printed pañcāṅga and the dṛk-gaṇita almanacs use for
+   sūryodaya, so it stays the default — but it is now named on screen and can be
+   changed, because the alternatives are defensible and the differences are not
+   negligible:
+
+     upper limb + refraction  −(34′ + semidiameter)   the default, ≈ −0.834°
+     centre + refraction      −34′                    74 s later at 28.8°N
+     geometric centre          0°                     232 s later
+
+   Four minutes is small, and it is not nothing: a tithi boundary falling inside
+   that window labels the day differently. Measured over 730 days at 28.8°N, the
+   geometric convention moves the tithi-at-sunrise on 2 of them and the centre
+   convention on none — about one day a year, which is precisely the sort of
+   discrepancy a reader comparing this against their own pañcāṅga would otherwise
+   have no way to account for. Sunset moves by the same amount the other way.
+
+   ONE TRAP, for anything that iterates days. Do not search forward from UTC
+   midnight. At longitudes where sunrise falls near 00:00 UTC — the whole of India
+   in summer — midnight sits between two conventions' answers for the same
+   morning, and the search returns sunrises 24 hours apart for a 4-minute
+   difference in definition. Anchor on local noon, or walk forward from well
+   before, as dayStart() on the now page does. This was found by a measurement
+   disagreeing with its own arithmetic by thirteen-fold; nothing threw.
+
+   Refraction is a real atmosphere and 34′ is a convention about it, not a
+   measurement of it; temperature and pressure move the true value by minutes.
+   The default is the one the almanacs agree on, not the one that is "correct". */
+var K_RISE_CONV={
+  limb:   {alt:null,    label:"upper limb, 34′ refraction"},
+  centre: {alt:-0.5667, label:"centre of disc, 34′ refraction"},
+  geom:   {alt:0,       label:"geometric centre, no refraction"}
+};
+var K_RISE_DEFAULT="limb";
+/* One search, one convention, used by the chart report, the now page and the
+   calendar alike. `dir` is +1 for rise and −1 for set. Null where there is none
+   to find — a polar day has no sunrise and a fiction is worse than a gap. */
+function kRiseSet(body,lat,lon,fromDate,days,dir,conv){
+  var obs=new Astronomy.Observer(lat,lon,0), r;
+  var C=K_RISE_CONV[conv||K_RISE_DEFAULT]||K_RISE_CONV[K_RISE_DEFAULT];
+  try{
+    if(C.alt==null) r=Astronomy.SearchRiseSet(Astronomy.Body[body],obs,dir,fromDate,days);
+    else r=Astronomy.SearchAltitude(Astronomy.Body[body],obs,dir,fromDate,days,C.alt);
+  }catch(e){ return null; }
+  return r?r.date:null;
+}
+function sunriseSunset(date,lat,lon,conv){
   var d0=new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth(),date.getUTCDate(),0,0,0));
-  var r=Astronomy.SearchRiseSet(Astronomy.Body.Sun,obs,+1,d0,2);
-  var s=Astronomy.SearchRiseSet(Astronomy.Body.Sun,obs,-1,d0,2);
-  return {rise:r?r.date:null, set:s?s.date:null};
+  return {rise:kRiseSet("Sun",lat,lon,d0,2,+1,conv),
+          set: kRiseSet("Sun",lat,lon,d0,2,-1,conv)};
 }
 /* cheshta kendra: arc from the planet's seeghrocca (Sun's mean longitude for outer planets,
    the planet's own heliocentric longitude for Mercury and Venus) */
@@ -2184,6 +2238,19 @@ window.__kPanchang=function(sunSid,moonSid,jd){ return panchang(sunSid,moonSid,j
 window.__kMasa=function(sunSid,moonSid,ayan){ return masaOf(sunSid,moonSid,ayan); };
 window.__kNak=function(deg){ return nak(deg); };
 window.__kJD=function(ms){ return ms/86400000+2440587.5; };
+/* The sunrise convention, shared rather than reimplemented. The now page and the
+   calendar date their days with the same function the chart report does, so the
+   two can never drift into disagreeing about which day it is. */
+window.__kRiseSet=function(body,lat,lon,fromMs,days,dir,conv){
+  var d=kRiseSet(body,lat,lon,new Date(fromMs),days,dir,conv);
+  return d?d.getTime():null;
+};
+window.__kRiseConv=function(){
+  var out={def:K_RISE_DEFAULT, list:[]};
+  for(var k in K_RISE_CONV) if(K_RISE_CONV.hasOwnProperty(k))
+    out.list.push({key:k, label:K_RISE_CONV[k].label, alt:K_RISE_CONV[k].alt});
+  return out;
+};
 window.__kAsc=function(inp,offMin){
   var ut=inp.hour+inp.minute/60+(offMin||0)/60-inp.tzHours;
   var jd=jdFromUTC(inp.year,inp.month,inp.day,ut);
@@ -7712,19 +7779,19 @@ function moClockAt(ms,tz){
 /* Sunrise before the given instant, as an absolute ms, for the ghaṭikā count. Null
    where it cannot be found — inside a polar day or night there is no sunrise to
    count from, and saying nothing is better than counting from a fiction. */
+/* Routed through the engine's shared convention rather than calling
+   SearchRiseSet directly. The ghaṭikā shown on an animation and the ghaṭī shown
+   on the now page are then the same count by construction; two call sites each
+   picking their own rise definition is how a one-pala disagreement between two
+   parts of the same site would appear and never be noticed. */
 function moSunriseBefore(ms,W){
   if(!W) return null;
   try{
-    var obs=new Astronomy.Observer(W.lat,W.lon,0);
-    var r=Astronomy.SearchRiseSet(Astronomy.Body.Sun,obs,+1,
-          new Date(ms-26*3600000),2);
-    if(!r) return null;
-    var t=r.date.getTime();
+    var t=window.__kRiseSet("Sun",W.lat,W.lon,ms-26*3600000,2,+1);
+    if(t==null) return null;
     if(t>ms){
-      r=Astronomy.SearchRiseSet(Astronomy.Body.Sun,obs,+1,
-          new Date(ms-50*3600000),2);
-      if(!r) return null;
-      t=r.date.getTime();
+      t=window.__kRiseSet("Sun",W.lat,W.lon,ms-50*3600000,2,+1);
+      if(t==null) return null;
     }
     return t<=ms?t:null;
   }catch(e){ return null; }
@@ -15574,4 +15641,4 @@ window.buildKundliReport=function(J){
   }
 })();
 </script>
-<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-16.6f158de</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>
+<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-16.384fe70</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>

@@ -82,19 +82,19 @@ function moClockAt(ms,tz){
 /* Sunrise before the given instant, as an absolute ms, for the ghaṭikā count. Null
    where it cannot be found — inside a polar day or night there is no sunrise to
    count from, and saying nothing is better than counting from a fiction. */
+/* Routed through the engine's shared convention rather than calling
+   SearchRiseSet directly. The ghaṭikā shown on an animation and the ghaṭī shown
+   on the now page are then the same count by construction; two call sites each
+   picking their own rise definition is how a one-pala disagreement between two
+   parts of the same site would appear and never be noticed. */
 function moSunriseBefore(ms,W){
   if(!W) return null;
   try{
-    var obs=new Astronomy.Observer(W.lat,W.lon,0);
-    var r=Astronomy.SearchRiseSet(Astronomy.Body.Sun,obs,+1,
-          new Date(ms-26*3600000),2);
-    if(!r) return null;
-    var t=r.date.getTime();
+    var t=window.__kRiseSet("Sun",W.lat,W.lon,ms-26*3600000,2,+1);
+    if(t==null) return null;
     if(t>ms){
-      r=Astronomy.SearchRiseSet(Astronomy.Body.Sun,obs,+1,
-          new Date(ms-50*3600000),2);
-      if(!r) return null;
-      t=r.date.getTime();
+      t=window.__kRiseSet("Sun",W.lat,W.lon,ms-50*3600000,2,+1);
+      if(t==null) return null;
     }
     return t<=ms?t:null;
   }catch(e){ return null; }

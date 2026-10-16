@@ -950,12 +950,66 @@ function declOf(name,date){
   var eq=Astronomy.Equator(Astronomy.Body[BODY[name]],date,new Astronomy.Observer(0,0,0),true,true);
   return eq.dec;
 }
-function sunriseSunset(date,lat,lon){
-  var obs=new Astronomy.Observer(lat,lon,0);
+/* ===== the sunrise convention =============================================
+   Everything dated in this project hangs off sunrise. The tithi running AT
+   sunrise names the day, so the convention chosen here decides festival dates,
+   the vāra, the ghaṭikā count and the daśā boundaries that follow from them.
+   It was previously implicit — whatever Astronomy.SearchRiseSet happens to do —
+   which is a poor state for a number that moves a day label.
+
+   MEASURED, NOT ASSUMED. SearchRiseSet places the Sun's geometric centre at
+   −0.8339° at the moment it calls sunrise, which is the classical almanac
+   convention: the upper limb touching the horizon, with 34′ of standard
+   refraction, using the true semidiameter of the day rather than a mean. That
+   is the same convention a printed pañcāṅga and the dṛk-gaṇita almanacs use for
+   sūryodaya, so it stays the default — but it is now named on screen and can be
+   changed, because the alternatives are defensible and the differences are not
+   negligible:
+
+     upper limb + refraction  −(34′ + semidiameter)   the default, ≈ −0.834°
+     centre + refraction      −34′                    74 s later at 28.8°N
+     geometric centre          0°                     232 s later
+
+   Four minutes is small, and it is not nothing: a tithi boundary falling inside
+   that window labels the day differently. Measured over 730 days at 28.8°N, the
+   geometric convention moves the tithi-at-sunrise on 2 of them and the centre
+   convention on none — about one day a year, which is precisely the sort of
+   discrepancy a reader comparing this against their own pañcāṅga would otherwise
+   have no way to account for. Sunset moves by the same amount the other way.
+
+   ONE TRAP, for anything that iterates days. Do not search forward from UTC
+   midnight. At longitudes where sunrise falls near 00:00 UTC — the whole of India
+   in summer — midnight sits between two conventions' answers for the same
+   morning, and the search returns sunrises 24 hours apart for a 4-minute
+   difference in definition. Anchor on local noon, or walk forward from well
+   before, as dayStart() on the now page does. This was found by a measurement
+   disagreeing with its own arithmetic by thirteen-fold; nothing threw.
+
+   Refraction is a real atmosphere and 34′ is a convention about it, not a
+   measurement of it; temperature and pressure move the true value by minutes.
+   The default is the one the almanacs agree on, not the one that is "correct". */
+var K_RISE_CONV={
+  limb:   {alt:null,    label:"upper limb, 34′ refraction"},
+  centre: {alt:-0.5667, label:"centre of disc, 34′ refraction"},
+  geom:   {alt:0,       label:"geometric centre, no refraction"}
+};
+var K_RISE_DEFAULT="limb";
+/* One search, one convention, used by the chart report, the now page and the
+   calendar alike. `dir` is +1 for rise and −1 for set. Null where there is none
+   to find — a polar day has no sunrise and a fiction is worse than a gap. */
+function kRiseSet(body,lat,lon,fromDate,days,dir,conv){
+  var obs=new Astronomy.Observer(lat,lon,0), r;
+  var C=K_RISE_CONV[conv||K_RISE_DEFAULT]||K_RISE_CONV[K_RISE_DEFAULT];
+  try{
+    if(C.alt==null) r=Astronomy.SearchRiseSet(Astronomy.Body[body],obs,dir,fromDate,days);
+    else r=Astronomy.SearchAltitude(Astronomy.Body[body],obs,dir,fromDate,days,C.alt);
+  }catch(e){ return null; }
+  return r?r.date:null;
+}
+function sunriseSunset(date,lat,lon,conv){
   var d0=new Date(Date.UTC(date.getUTCFullYear(),date.getUTCMonth(),date.getUTCDate(),0,0,0));
-  var r=Astronomy.SearchRiseSet(Astronomy.Body.Sun,obs,+1,d0,2);
-  var s=Astronomy.SearchRiseSet(Astronomy.Body.Sun,obs,-1,d0,2);
-  return {rise:r?r.date:null, set:s?s.date:null};
+  return {rise:kRiseSet("Sun",lat,lon,d0,2,+1,conv),
+          set: kRiseSet("Sun",lat,lon,d0,2,-1,conv)};
 }
 /* cheshta kendra: arc from the planet's seeghrocca (Sun's mean longitude for outer planets,
    the planet's own heliocentric longitude for Mercury and Venus) */
@@ -1002,6 +1056,19 @@ window.__kPanchang=function(sunSid,moonSid,jd){ return panchang(sunSid,moonSid,j
 window.__kMasa=function(sunSid,moonSid,ayan){ return masaOf(sunSid,moonSid,ayan); };
 window.__kNak=function(deg){ return nak(deg); };
 window.__kJD=function(ms){ return ms/86400000+2440587.5; };
+/* The sunrise convention, shared rather than reimplemented. The now page and the
+   calendar date their days with the same function the chart report does, so the
+   two can never drift into disagreeing about which day it is. */
+window.__kRiseSet=function(body,lat,lon,fromMs,days,dir,conv){
+  var d=kRiseSet(body,lat,lon,new Date(fromMs),days,dir,conv);
+  return d?d.getTime():null;
+};
+window.__kRiseConv=function(){
+  var out={def:K_RISE_DEFAULT, list:[]};
+  for(var k in K_RISE_CONV) if(K_RISE_CONV.hasOwnProperty(k))
+    out.list.push({key:k, label:K_RISE_CONV[k].label, alt:K_RISE_CONV[k].alt});
+  return out;
+};
 window.__kAsc=function(inp,offMin){
   var ut=inp.hour+inp.minute/60+(offMin||0)/60-inp.tzHours;
   var jd=jdFromUTC(inp.year,inp.month,inp.day,ut);

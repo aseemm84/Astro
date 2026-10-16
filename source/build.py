@@ -18,7 +18,7 @@ Everything is inlined, so each output file is self-contained and works offline.
 --check is the guard rail. After a refactor that is *supposed* to change nothing
 it must report "identical to the current output".
 """
-import os, re, json, sys, difflib
+import os, re, json, sys, difflib, shutil, tempfile, subprocess
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SRC  = os.path.join(ROOT, "src")
@@ -226,6 +226,57 @@ def build_pages():
                           .replace("<!--LOGO-->", logo_mark()))
     return out
 
+def syntax_check(built):
+    """Parse every emitted script, and every script inlined into a page.
+
+    The build concatenates text; it has never read it. A stray `*/` inside a
+    comment block closes it early and turns the remaining prose into code, which
+    is a syntax error in a 200 KB file that the build reported as a clean write.
+    That happened, and `--check` could not see it either: the output was
+    byte-identical to the previous broken output.
+
+    So: hand each script to node for a parse-only pass. node is a build-machine
+    dependency, not a site dependency — if it is absent the build says so and
+    carries on rather than refusing, because the site itself needs no toolchain.
+    """
+    node = shutil.which("node")
+    if not node:
+        print("  (node not found — scripts not parse-checked)")
+        return True
+    jobs = []
+    for name, text in sorted(built.items()):
+        if name.endswith(".js"):
+            jobs.append((name, text))
+        else:
+            # the pages inline their script; pull each block out and check it as
+            # its own unit, which is also how the browser will parse it
+            for i, m in enumerate(re.finditer(r"<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>",
+                                              text, re.S)):
+                body = m.group(1)
+                if body.strip():
+                    jobs.append(("%s <script #%d>" % (name, i + 1), body))
+    bad = []
+    for label, body in jobs:
+        with tempfile.NamedTemporaryFile("w", suffix=".js", delete=False,
+                                         encoding="utf-8") as f:
+            f.write(body); path = f.name
+        try:
+            p = subprocess.run([node, "--check", path], capture_output=True, text=True)
+            if p.returncode:
+                err = [l for l in p.stderr.splitlines() if l.strip()]
+                bad.append((label, err[:4]))
+        finally:
+            os.unlink(path)
+    if bad:
+        for label, err in bad:
+            print("  SYNTAX   %s" % label)
+            for line in err:
+                print("      " + line[:160])
+        raise SystemExit("%d script(s) do not parse" % len(bad))
+    print("  parsed   %d script(s), no syntax errors" % len(jobs))
+    return True
+
+
 def main():
     args = sys.argv[1:]
     # Default to the repository root — the folder holding this script — so a clone
@@ -235,6 +286,7 @@ def main():
     built = {"kundli.html": build_kundli()}
     built.update(build_pages())
     built.update(build_shared())
+    syntax_check(built)
 
     if "--check" in args:
         ok = True
