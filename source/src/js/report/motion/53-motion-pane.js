@@ -176,7 +176,7 @@ function moPaneHTML(){
           MO_CAPS.map(function(t){
             return '<button type="button" class="skyv'+(MO.cap[t.k]?" on":"")+'" data-mocap="'+t.k+
               '">'+esc(t.label)+'</button>'; }).join("")+
-          '<input type="text" id="mohandle" class="motext mohandle" value="@learnhoro" maxlength="30">'+
+          '<input type="text" id="mohandle" class="motext mohandle" value="@Nirayana.Soft" maxlength="30">'+
         '</div>')+
 
         moBand("out","Take it away","record it, or take the numbers",

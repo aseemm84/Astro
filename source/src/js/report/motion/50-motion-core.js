@@ -49,7 +49,7 @@ var MO={
        /* Every scene that covers a stretch of time reads its span from here, so days,
           months and years are available wherever a span means anything at all. */
        spanN:12, spanU:"y"},
-  cap:{title:"", sub:"", logo:true, handle:"@learnhoro", date:true, ctx:true},
+  cap:{title:"", sub:"", logo:true, handle:"@Nirayana.Soft", date:true, ctx:true},
   fps:0, _fpsT:0, _fpsN:0
 };
 function moPal(){ return MO_PALS[MO.pal]||MO_PALS.midnight; }

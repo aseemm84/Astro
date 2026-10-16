@@ -72,7 +72,9 @@ def report_bundle():
 #     between two files; rename one and the handoff fails with no error.
 #   * "LearnHoro built-in engine" in engine.js, matched by substring in
 #     99-main.js — a contract between producer and consumer.
-#   * "@learnhoro" is a social handle, which is the user's to change, not ours.
+#   * The social handle is the user's to change, not ours. Changed to
+#     "@Nirayana.Soft" on request, 16 Oct 2026; it lives in MO.cap.handle and in
+#     the panel input that shows it, and nothing matches on it.
 # Those stay as they are on purpose, and each carries a comment saying so.
 # ---------------------------------------------------------------------------
 BRAND = {
