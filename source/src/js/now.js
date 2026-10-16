@@ -288,6 +288,36 @@
     var h=Math.floor(mins/60), m=mins%60;
     return clock(end,tz)+" · in "+(h?(h+" h "):"")+m+" m";
   }
+  /* --- the Hindu clock ----------------------------------------------------
+     A day of sixty ghaṭīs from sunrise, each of sixty palas — the reckoning a
+     printed pañcāṅga writes its end-times in, where "17.1" is 17 ghaṭīs and 1
+     pala after sunrise. It is shown beside the 24-hour clock rather than instead
+     of it: the civil time is what a reader sets a watch by, and the ghaṭī is what
+     the almanac counts in, and neither translates the other at a glance.
+
+     Also the muhūrta — the day's thirty equal parts, two ghaṭīs each. Thirty
+     muhūrtas span sunrise to sunrise, so the figure is a position in the Hindu
+     day and not in the civil one. */
+  var MUHURTA=["Rudra","Āhi","Mitra","Pitṛ","Vasu","Vārāha","Viśvedeva","Vidhi",
+    "Satamukhī","Puruhūta","Vāhinī","Naktanakarā","Varuṇa","Aryaman","Bhaga",
+    "Girīśa","Ajapāda","Ahir Budhnya","Puṣya","Aśvinī","Yama","Agni","Vidhātṛ",
+    "Kaṇḍa","Aditi","Jīva/Amṛta","Viṣṇu","Dyumadgadyuti","Brahma","Samudram"];
+  function hinduClock(D){
+    if(D.sunrise==null) return null;
+    /* the length of THIS Hindu day, not of a mean one: sunrise to sunrise varies
+       through the year and a mean figure drifts minutes away by midwinter */
+    var len=(D.nextSunrise!=null && D.nextSunrise>D.sunrise)
+            ? (D.nextSunrise-D.sunrise) : 86400000;
+    var f=(D.ms-D.sunrise)/len;
+    if(f<0||f>1.02) return null;
+    var g=f*60, gh=Math.floor(g), pl=Math.floor((g-gh)*60);
+    var mi=Math.min(29,Math.floor(f*30));
+    return {gh:gh, pala:pl, f:f,
+            muhurta:MUHURTA[mi], mi:mi+1,
+            /* each muhūrta is a thirtieth of this day */
+            mFrom:D.sunrise+len*mi/30, mTo:D.sunrise+len*(mi+1)/30};
+  }
+
   function ghatika(ms,sr){
     if(sr==null) return "—";
     var g=(ms-sr)/86400000*60;
@@ -304,7 +334,7 @@
     var D=nowDay(Date.now(),PLACE);
     if(!D){ host.innerHTML='<p class="nownote">Positions could not be computed.</p>'; return; }
     var tz=PLACE.tz, now=D.ms;
-    var hora=horaNow(D), rk=rahuKala(D), ch=choghadiya(D);
+    var hora=horaNow(D), rk=rahuKala(D), ch=choghadiya(D), hc=hinduClock(D);
 
     function card(title,big,sub,cls){
       return '<div class="nowcard'+(cls?(" "+cls):"")+'"><b>'+title+'</b>'+
@@ -323,7 +353,12 @@
            "amānta &middot; pūrṇimānta "+sa(D.masa.purnimanta))+
       card("Ṛtu &amp; ayana", sa(D.masa.ritu), sa(D.masa.ayana))+
       card("Sunrise", clock(D.sunrise,tz),
-           "sunset "+clock(D.sunset,tz)+" &middot; "+ghatika(now,D.sunrise)+" so far");
+           "sunset "+clock(D.sunset,tz))+
+      card("Hindu clock", hc?(hc.gh+" gh "+String(hc.pala).padStart(2,"0")+" pl"):"—",
+           hc?("of 60 ghaṭī, counted from sunrise &middot; "+
+               Math.round(hc.f*100)+"% through the day"):"")+
+      card("Muhūrta", hc?hc.muhurta:"—",
+           hc?(hc.mi+" of 30 &middot; "+clock(hc.mFrom,tz)+" – "+clock(hc.mTo,tz)):"");
 
     var later=$("nowlater");
     if(later) later.innerHTML=
@@ -338,6 +373,8 @@
     var head=$("nowhead");
     if(head) head.innerHTML=
       '<span class="nowclock">'+clockS(now,tz)+'</span>'+
+      (hc?('<span class="nowhindu" title="ghaṭī and pala counted from sunrise">'+
+           hc.gh+'<i>gh</i> '+String(hc.pala).padStart(2,"0")+'<i>pl</i></span>'):"")+
       '<span class="nowplace">'+esc(PLACE.n)+
         (PLACE.saved?' <i>(from your saved chart)</i>':"")+
         ' &middot; UTC'+(tz<0?"-":"+")+String(Math.floor(Math.abs(tz))).padStart(2,"0")+":"+

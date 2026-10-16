@@ -149,6 +149,16 @@ def build_kundli():
     shell = shell.replace("<!--HEAD-->",
                           head_meta(kdesc, "kundli.html",
                                     "Build a Vedic birth chart — " + BRAND["name"]))
+    # The kundli page's nav came from a hand-written list in its own shell, so
+    # adding a page to _nav.json left it behind — which is how now.html ended up
+    # reachable from every page except the busiest one. One source now.
+    nav = json.load(open(os.path.join(SRC, "pages", "_nav.json"), encoding="utf-8"))
+    navhtml = "".join('<a href="%s"%s>%s</a>' %
+                      (h, ' class="active"' if h == "kundli.html" else "", label)
+                      for h, label in nav)
+    if "{{NAV}}" not in shell:
+        raise SystemExit("token {{NAV}} missing from the kundli shell")
+    shell = shell.replace("{{NAV}}", navhtml)
     shell = brandify(shell).replace("<!--LOGO-->", logo_mark())
     parts = [("<!--CSS-->", read(SRC, "css", "app.css"), "style"),
              ("<!--JS0-->", read(VEND, "astronomy.browser.min.js"), "script"),

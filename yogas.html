@@ -319,6 +319,12 @@ html.navlock,html.navlock body{overflow:hidden}
 .nowhead{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;margin:16px 0 4px}
 .nowclock{font-size:40px;font-weight:700;letter-spacing:-.01em;
   font-variant-numeric:tabular-nums;line-height:1}
+/* The Hindu clock sits beside the civil one, smaller and in the gold, so the two
+   read as one line of time in two reckonings rather than as two competing clocks. */
+.nowhindu{font-size:24px;font-weight:600;color:var(--gold,#9a7a28);
+  font-variant-numeric:tabular-nums;line-height:1}
+.nowhindu i{font-style:normal;font-size:.55em;font-weight:600;opacity:.75;
+  margin:0 .15em 0 .05em}
 .nowplace{font-size:14px;color:#5a5f78}
 .nowdate{font-size:14px;font-weight:600;color:var(--gold,#9a7a28)}
 .nowgrid{display:grid;gap:10px;margin:12px 0 6px;
