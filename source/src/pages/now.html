@@ -1,0 +1,33 @@
+<p class="lead">This is the Hindu time <b>right now</b>, for the place you choose: the five limbs of the day with the moment each one ends, the lunar month in both reckonings, the season and the half-year, sunrise and sunset &mdash; and, kept separate because they are later tradition rather than BPHS, the divisions of the daylight that practice uses. Nothing here needs a birth chart.</p>
+
+<div class="nowbar">
+  <span class="nowlab"><label for="nowplace">Place</label></span>
+  <select id="nowplace" class="nowsel"></select>
+  <span class="nowlab"><label for="nowspan">Strip spans</label></span>
+  <select id="nowspan" class="nowsel">
+    <option value="1">1 day either side</option>
+    <option value="3" selected>3 days either side</option>
+    <option value="7">7 days either side</option>
+    <option value="15">15 days either side</option>
+  </select>
+  <span class="nowhint">Everything is computed in this browser from the same engine the chart pages use &mdash; nothing is sent anywhere, and the page works offline. Sunrise, and therefore the whole day, depends on the place.</span>
+</div>
+
+<div class="nowhead" id="nowhead"></div>
+
+<h2 id="pancanga">The five limbs, and the month</h2>
+<div class="nowgrid" id="nowgrid"><p class="nownote">Computing&hellip;</p></div>
+
+<h2 id="strip">The tithi either side of now</h2>
+<p>A tithi is not a day. It is the Moon pulling twelve degrees further from the Sun, and because the Moon&rsquo;s speed varies by about fifteen per cent over a month, a tithi runs anywhere from about nineteen hours to about twenty-six. So it drifts against the clock: one can span two sunrises, and one can be skipped entirely. The strip shows the run of them around the present moment, with each band numbered within its pak&#7779;a.</p>
+<canvas id="nowstrip" class="nowstrip" role="img" aria-label="The run of tithis either side of the present moment."></canvas>
+
+<h2 id="later">Divisions of the daylight</h2>
+<div class="note"><b>Later tradition.</b> Hor&amacr;, chogha&#7693;iy&amacr; and r&amacr;hu k&amacr;la are not in B&#7771;hat Par&amacr;&#347;ara Hor&amacr; &#346;&amacr;stra. They are widely used in practice and they are shown here for that reason, kept apart from the classical material above rather than mixed into it &mdash; the same separation this site keeps between verse, translator commentary and modern practice.</div>
+<div class="nowgrid" id="nowlater"></div>
+<p class="k-note">All three cut the span between sunrise and sunset &mdash; or sunrise to sunrise, for the hor&amacr; &mdash; into equal parts and assign each part to a graha by weekday. Conventions differ: some traditions divide day and night separately into twelve unequal hours each, where this page uses the commoner twenty-four equal parts from sunrise. Where a published pa&ntilde;c&amacr;&#7749;ga differs from this page on r&amacr;hu k&amacr;la, the convention is usually the reason.</p>
+
+<h2 id="why">Why the day begins at sunrise</h2>
+<p>A civil day begins at midnight by agreement. A Hindu day begins at <b>sunrise</b>, and that is not a convention but the thing itself: the v&amacr;ra turns there, and the tithi running <i>at sunrise</i> is the one that names the day, whatever happens later. An instant at two in the morning therefore belongs to the previous day&rsquo;s reckoning, which is why a birth before sunrise carries the earlier weekday.</p>
+<p>This is also why the place matters so much. Sunrise in Delhi and sunrise in Abu Dhabi are not the same moment, so the same instant can fall on different Hindu days in the two cities &mdash; and an observance fixed to a tithi at sunrise can fall on different civil dates. A pa&ntilde;c&amacr;&#7749;ga is only valid for the place it was computed for.</p>
+<p class="src"><span>Source</span> The five limbs and the lunar month follow BPHS and standard sidereal computation; see <a href="dashas.html">Dashas</a> for the nak&#7779;atra scheme and <a href="kundli.html">Build a Kundli</a> to cast a full chart. The hor&amacr;, chogha&#7693;iy&amacr; and r&amacr;hu k&amacr;la divisions are later tradition, as marked above.</p>

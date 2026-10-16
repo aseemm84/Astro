@@ -285,3 +285,37 @@ html.navlock,html.navlock body{overflow:hidden}
 .inchart-ask{font-size:13px;color:var(--muted);background:var(--soft);
   border:1px dashed var(--line);border-radius:9px;padding:9px 13px;margin:0 0 18px;max-width:84ch}
 @media print{.inchart-ask,.inchart-f,.navbar{display:none}.inchart{break-inside:avoid}}
+
+/* ===== now.html ==========================================================
+   A clock page: the numbers are the content, so they are set large and the
+   labels small, and the cards wrap to one column on a phone without the figures
+   shrinking with them. */
+.nowbar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;
+  margin:18px 0 10px;padding:12px 14px;border:1px solid var(--line);
+  border-radius:12px;background:var(--card,#fff)}
+.nowlab{font-size:12px;font-weight:700;letter-spacing:.02em;color:#5a5f78}
+.nowsel{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--line);
+  border-radius:8px;background:transparent;color:inherit;max-width:100%}
+.nowhint{flex:1 1 18em;min-width:14em;font-size:12px;line-height:1.5;color:#6a7090}
+.nowhead{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;margin:16px 0 4px}
+.nowclock{font-size:40px;font-weight:700;letter-spacing:-.01em;
+  font-variant-numeric:tabular-nums;line-height:1}
+.nowplace{font-size:14px;color:#5a5f78}
+.nowdate{font-size:14px;font-weight:600;color:var(--gold,#9a7a28)}
+.nowgrid{display:grid;gap:10px;margin:12px 0 6px;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.nowcard{border:1px solid var(--line);border-radius:12px;padding:12px 13px;
+  background:var(--card,#fff);display:flex;flex-direction:column;gap:3px}
+.nowcard b{font-size:11px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:#6a7090}
+.nowbig{font-size:21px;font-weight:600;line-height:1.25}
+.nowsub{font-size:12.5px;color:#5a5f78;line-height:1.45}
+.nowcard.nowlt{border-style:dashed}
+.nowstrip{width:100%;display:block;margin:10px 0 4px}
+.nownote{font-size:14px;color:#6a7090}
+@media (max-width:520px){ .nowclock{font-size:32px} }
+@media (prefers-color-scheme:dark){
+  .nowbar,.nowcard{background:rgba(255,255,255,.03)}
+  .nowhint,.nowplace,.nowsub,.nownote{color:#9aa0bd}
+  .nowcard b{color:#9aa0bd}
+}

@@ -308,3 +308,13 @@ function boot(){ try{ navInit(); }catch(e){}
 if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",boot);
 else boot();
 })();
+
+/* now.html carries its own script. It is injected from here rather than from a
+   second <script> in the shared shell, because every other page would then pay a
+   request for a file it never uses. */
+(function(){
+  if(!document.getElementById("nowgrid")) return;
+  var s=document.createElement("script");
+  s.src="now.js"; s.defer=true;
+  document.head.appendChild(s);
+})();

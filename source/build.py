@@ -181,6 +181,9 @@ def build_shared():
         "engine.js": (read(VEND, "astronomy.browser.min.js") + "\n" +
                       brandify(read(SRC, "js", "engine.js"))),
         "site.js":   brandify(read(SRC, "js", "site.js")),
+        # now.html's own script. Referenced rather than inlined for the same reason
+        # site.js is: it is wanted on one page and the rest should not carry it.
+        "now.js":    brandify(read(SRC, "js", "now.js")),
     }
 
 def build_pages():

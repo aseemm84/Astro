@@ -110,5 +110,13 @@
   "layout": "",
   "has_aside": true,
   "desc": "Aṣṭakavarga worked in full: the bindus each graha contributes, Trikoṇa and Ekādhipatya śodhana, and Sarvāṣṭakavarga with the 337 total that must hold."
+ },
+ "now": {
+  "title": "Hindu time now — the pañcāṅga for this moment — {{BRAND}}",
+  "h1": "Hindu time, now",
+  "sub": "The five limbs of the day as they stand, for the place you choose — computed in your browser, with no birth chart needed.",
+  "layout": "",
+  "has_aside": true,
+  "desc": "The current Hindu date and time for any place: tithi, nakṣatra, yoga, karaṇa and vāra with their end-times, the lunar month in both reckonings, sunrise and sunset, and the later-tradition divisions of the day."
  }
 }

@@ -1250,6 +1250,19 @@ try{ window.__AVT=AVT; window.__ayan=ayanamsa;
      window.__ayanModes=AYAN_MODES; window.__setAyan=setAyanamsaMode;
      window.__ayanFor=ayanamsaFor; }catch(e){}
 /* sidereal lagna for the birth input shifted by offMin minutes — used by the birth-time check */
+/* The pañcāṅga primitives, exposed for pages outside the report bundle. now.html
+   and the calendar both need the tithi, the māsa and the ṛtu at an arbitrary
+   instant, and they must be the engine's own: a second implementation is free to
+   drift, and a calendar that disagreed with the chart report about which tithi it
+   is would be worse than no calendar.
+
+   These sit HERE, beside the other window.__k exports, because this file is wrapped
+   in an IIFE — appended at the end of the file they are outside it and cannot see
+   a single one of the functions they call. */
+window.__kPanchang=function(sunSid,moonSid,jd){ return panchang(sunSid,moonSid,jd); };
+window.__kMasa=function(sunSid,moonSid,ayan){ return masaOf(sunSid,moonSid,ayan); };
+window.__kNak=function(deg){ return nak(deg); };
+window.__kJD=function(ms){ return ms/86400000+2440587.5; };
 window.__kAsc=function(inp,offMin){
   var ut=inp.hour+inp.minute/60+(offMin||0)/60-inp.tzHours;
   var jd=jdFromUTC(inp.year,inp.month,inp.day,ut);
