@@ -85,15 +85,28 @@ function moPaneHTML(){
              speed and shown read-only, because three knobs for two degrees of
              freedom is what made "1/8 speed for 12 months" ambiguous. */
           '<span class="molab">Speed</span>'+
-          '<select id="mospeed" class="skysel">'+
-            /* Down to a tenth. The slow end is for study rather than for export:
-               a 60 s loop at 1/10 runs ten minutes, which on a twelve-step walk is
-               about fifty seconds on each bhava - long enough to read the words and
-               look back at the wheel before it moves on. The fast end is unchanged. */
-            [[0.1,"\u2152\u00d7"],[0.2,"\u2155\u00d7"],[0.25,"\u00bc\u00d7"],[0.5,"\u00bd\u00d7"],
-             [1,"1\u00d7"],[2,"2\u00d7"],[4,"4\u00d7"]]
-            .map(function(s){ return '<option value="'+s[0]+'"'+(s[0]===MO.speed?" selected":"")+'>'+s[1]+'</option>'; }).join("")+
-          '</select>'+
+          /* A continuous slider, not a list of seven. The dropdown offered
+             1/10 to 4x in fixed steps, and anything between them was simply
+             unavailable — which is a strange limitation on a control whose
+             whole job is "a bit slower than that".
+
+             The ends are chosen rather than picked. The slow end is exactly
+             MO_SPEED_MIN, the floor the pacing maths already clamps to, so the
+             control offers precisely what the engine honours and never a value
+             it would silently ignore — this project has been bitten by a
+             silent clamp hiding a whole option before. The fast end is 16x,
+             where the SHORTEST span is the binding case: a one-day loop runs
+             0.8 s, about 45 frames, which is a flick-through but still shows
+             motion. At 32x it is 22 frames, which is a flicker.
+
+             Logarithmic, because speed is perceived in ratios: the step from
+             1/2 to 1 should feel like the step from 1 to 2. 400 steps across
+             the range makes each arrow-key press about 1.5%, and the familiar
+             values snap so they stay easy to land on exactly. */
+          '<input type="range" id="mospeed" class="mospeedbar" min="0" max="400" '+
+            'step="1" value="'+moSpeedPos(MO.speed)+'" '+
+            'aria-label="Speed" aria-valuetext="'+esc(moSpeedLabel(MO.speed))+'">'+
+          '<span class="moval mospeedv" id="mospeedv">'+esc(moSpeedLabel(MO.speed))+'</span>'+
           '<span class="moval modurv" id="modurv">'+esc(moPaceLabel())+'</span>'+
           '<button type="button" class="skyv'+(MO_PACE.hold?" on":"")+
             '" data-mohold="1" title="Slow down at every new moon, full moon and '+
@@ -615,12 +628,24 @@ document.addEventListener("input",function(ev){
 });
 document.addEventListener("change",function(ev){
   var t2=ev.target; if(!t2) return;
-  if(t2.id==="mospeed"){ MO.speed=+t2.value; moDurRead(); return; }
   if(t2.id==="mospanu"){ MO.opt.spanU=t2.value; MO.p=0; MO_CACHE={}; moDurRead(); moDraw(); return; }
   if(t2.id==="movarga"){ MO.opt.varga=+t2.value||0; MO.p=0; MO_CACHE={};
     moSceneOpts(); moDraw(); return; }
   if(t2.id==="morpin"){ MO.opt.rpin=+t2.value; MO.p=0; MO_CACHE={}; moDraw(); return; }
   if(t2.id==="monpin"){ MO.opt.npin=+t2.value; MO.p=0; MO_CACHE={}; moDraw(); return; }
+});
+/* The slider reports while it is being dragged, not only when let go, so the
+   derived duration beside it tracks the handle. */
+document.addEventListener("input",function(ev){
+  var t3=ev.target; if(!t3) return;
+  if(t3.id==="mospeed"){
+    MO.speed=moSpeedAt(+t3.value);
+    var lab=moSpeedLabel(MO.speed);
+    var el=document.getElementById("mospeedv"); if(el) el.textContent=lab;
+    t3.setAttribute("aria-valuetext",lab);
+    moDurRead();
+    return;
+  }
 });
 document.addEventListener("keydown",function(ev){
   if(ev.key==="Escape" && MO.studio){ moStudio(false); return; }
@@ -664,3 +689,48 @@ window.__moCapture=function(){
   moText=ot; moSerif=os;
   return {err:err, type:out};
 };
+
+/* ===== the speed slider's scale ===========================================
+   Speed is perceived in ratios, so the slider is logarithmic: equal distances
+   along it are equal multiples, and the step from 1/2 to 1 feels like the step
+   from 1 to 2. A linear scale would spend three quarters of its length between
+   4x and 16x and crush everything slower than 1x into the first few pixels.
+
+   The ends are MO_SPEED_MIN and 16. The low end is the engine's own clamp, so
+   the control cannot offer a speed the pacing maths would quietly ignore. */
+var MO_SPEED_MAX=16, MO_SPEED_STEPS=400;
+function moSpeedAt(pos){
+  var t=Math.min(1,Math.max(0,pos/MO_SPEED_STEPS));
+  return moSpeedSnap(MO_SPEED_MIN*Math.pow(MO_SPEED_MAX/MO_SPEED_MIN,t));
+}
+function moSpeedPos(v){
+  v=Math.min(MO_SPEED_MAX,Math.max(MO_SPEED_MIN,v||1));
+  var t=Math.log(v/MO_SPEED_MIN)/Math.log(MO_SPEED_MAX/MO_SPEED_MIN);
+  return Math.round(t*MO_SPEED_STEPS);
+}
+/* Every position on the slider lands on a value that can be written down.
+
+   Continuous does not have to mean arbitrary. A free log scale gives 0.106x
+   and 6.94x, which are ugly in the panel and worse in an exported frame's
+   caption, where the speed is part of what the picture claims about itself.
+   So the scale snaps to a grid dense enough to feel continuous and clean
+   enough to read: below 1x, exact reciprocals — 1/50 through 1/2, forty-nine
+   stops, which is how slow motion is spoken about anyway; above 1x, tenths,
+   which is another hundred and fifty. Two hundred stops under four hundred
+   slider positions, so dragging feels smooth and every stop is a number a
+   person would say out loud. */
+function moSpeedSnap(v){
+  if(v<1){
+    var n=Math.round(1/v);
+    n=Math.min(Math.round(1/MO_SPEED_MIN),Math.max(2,n));
+    return 1/n;
+  }
+  return Math.min(MO_SPEED_MAX,Math.round(v*10)/10);
+}
+function moSpeedLabel(v){
+  if(v>=1){
+    var r=Math.round(v*10)/10;
+    return (r===Math.round(r)?String(Math.round(r)):r.toFixed(1))+"\u00d7";
+  }
+  return "1/"+Math.round(1/v)+"\u00d7";
+}

@@ -828,3 +828,11 @@ html.navlock,html.navlock body{overflow:hidden}
 .kreport .moscene.locked span{font-style:italic}
 .kreport .monochart{margin:0 0 10px;font-size:13px;color:var(--dim,#6a7090)}
 @media (prefers-color-scheme:dark){.k-skynote{color:#9aa0bd}}
+
+/* The speed slider. Sized to sit in the same row the dropdown occupied, so the
+   band's layout is unchanged; the value reads out beside it because a bare
+   handle on a log scale tells you nothing about where you are. */
+.kreport .mospeedbar{flex:1 1 130px;min-width:96px;max-width:210px;
+  accent-color:var(--gold,#c9a24b);height:20px;margin:0}
+.kreport .mospeedv{min-width:4.4em;font-variant-numeric:tabular-nums;
+  text-align:right;font-weight:600}
