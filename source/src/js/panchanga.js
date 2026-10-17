@@ -658,6 +658,131 @@
              from: a, to: b, window: which, w: w };
   };
 
+  /* ===== what is happening in the sky =======================================
+     Stations, ingresses and syzygies in a window. This is the input to the
+     studio page: the question "what is worth saying about today" has an answer
+     only if something can enumerate what the sky is actually doing, and
+     everything here is read off the same ephemeris the chart report uses rather
+     than from a table someone typed.
+
+     Deliberately NOT a list of what any of it means. These are events; the
+     interpretation is a separate and much more careful business. */
+  var GRAHA = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn",
+               "Rahu", "Ketu"];
+  NP.GRAHA = GRAHA;
+  var GRAHA_SA = { Sun: "Sūrya", Moon: "Candra", Mars: "Maṅgala",
+    Mercury: "Budha", Jupiter: "Guru", Venus: "Śukra", Saturn: "Śani",
+    Rahu: "Rāhu", Ketu: "Ketu" };
+  NP.grahaSa = function (n) { return GRAHA_SA[n] || n; };
+
+  /* Apparent motion, by finite difference. A graha is retrograde when its
+     sidereal longitude is decreasing; the nodes always are. An hour is a long
+     enough baseline to be free of rounding and short enough that a station is
+     located to within a few minutes by bisection. */
+  function speedOf(name, ms) {
+    var a = sidAt(name, ms - 1800000), b = sidAt(name, ms + 1800000);
+    if (a == null || b == null) return null;
+    var d = b - a;
+    while (d > 180) d -= 360;
+    while (d < -180) d += 360;
+    return d;                       /* degrees per hour, signed */
+  }
+  NP.isRetro = function (name, ms) {
+    var v = speedOf(name, ms);
+    return v == null ? null : v < 0;
+  };
+
+  /* Every station, ingress and syzygy between two instants.
+     `step` is the sampling interval; a station is then bisected to the minute.
+     Rahu and Ketu are skipped for stations, being always retrograde, and the
+     Moon for ingresses, which it makes thirteen of a month and which would
+     drown everything else. */
+  NP.scanEvents = function (fromMs, toMs, opts) {
+    opts = opts || {};
+    var out = [];
+    var step = opts.step || 6 * 3600000;
+    var want = opts.bodies || GRAHA;
+
+    want.forEach(function (g) {
+      var prevSign = null, prevRetro = null;
+      for (var t = fromMs; t <= toMs; t += step) {
+        var lon = sidAt(g, t);
+        if (lon == null) continue;
+        var sign = Math.floor((((lon % 360) + 360) % 360) / 30);
+
+        if (prevSign != null && sign !== prevSign && !(g === "Moon" && !opts.moonIngress)) {
+          var at = bisect(fromMs, t - step, t, function (m) {
+            var L = sidAt(g, m);
+            return L == null ? null : Math.floor((((L % 360) + 360) % 360) / 30);
+          });
+          if (at != null)
+            out.push({ kind: "ingress", graha: g, sign: sign, ms: at,
+                       from: prevSign });
+        }
+        prevSign = sign;
+
+        if (g !== "Rahu" && g !== "Ketu" && g !== "Sun" && g !== "Moon") {
+          var retro = NP.isRetro(g, t);
+          if (prevRetro != null && retro != null && retro !== prevRetro) {
+            var st = bisect(fromMs, t - step, t, function (m) {
+              return NP.isRetro(g, m);
+            });
+            if (st != null)
+              out.push({ kind: retro ? "retrograde" : "direct", graha: g, ms: st,
+                         sign: Math.floor((((sidAt(g, st) % 360) + 360) % 360) / 30) });
+          }
+          prevRetro = retro;
+        }
+      }
+    });
+
+    /* new and full moons, from the same elongation the proof strip uses */
+    if (opts.syzygy !== false) {
+      var prevE = null;
+      for (var u = fromMs; u <= toMs; u += Math.min(step, 6 * 3600000)) {
+        var s = sidAt("Sun", u), m2 = sidAt("Moon", u);
+        if (s == null || m2 == null) { prevE = null; continue; }
+        var e = (((m2 - s) % 360) + 360) % 360;
+        if (prevE != null) {
+          var tgt = null;
+          if (prevE > e) tgt = 0; else if (prevE < 180 && e >= 180) tgt = 180;
+          if (tgt != null) {
+            var at2 = bisectAngle(u - Math.min(step, 6 * 3600000), u, tgt);
+            if (at2 != null)
+              out.push({ kind: tgt === 0 ? "newmoon" : "fullmoon", ms: at2 });
+          }
+        }
+        prevE = e;
+      }
+    }
+    out.sort(function (a, b) { return a.ms - b.ms; });
+    return out;
+  };
+  function bisect(floorMs, lo, hi, f) {
+    var v0 = f(lo);
+    if (v0 == null) return null;
+    for (var i = 0; i < 44 && hi - lo > 30000; i++) {
+      var mid = (lo + hi) / 2, v = f(mid);
+      if (v == null) return null;
+      if (v === v0) lo = mid; else hi = mid;
+    }
+    return (lo + hi) / 2;
+  }
+  function bisectAngle(lo, hi, tgt) {
+    function el(m) {
+      var s = sidAt("Sun", m), x = sidAt("Moon", m);
+      return (s == null || x == null) ? null : (((x - s) % 360) + 360) % 360;
+    }
+    for (var i = 0; i < 44 && hi - lo > 30000; i++) {
+      var mid = (lo + hi) / 2, e = el(mid);
+      if (e == null) return null;
+      var d = ((e - tgt) % 360 + 360) % 360;
+      if (d > 180) d -= 360;
+      if (d < 0) lo = mid; else hi = mid;
+    }
+    return (lo + hi) / 2;
+  }
+
   /* ===== later tradition ===================================================
      Horā, choghaḍiyā, rāhu kāla and the ghaṭī clock. NOT BPHS — these are later
      practice, and they are kept in their own section so a view can label them

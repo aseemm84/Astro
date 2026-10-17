@@ -329,6 +329,14 @@ else boot();
   document.head.appendChild(s);
 })();
 
+/* studio.html, on the same bargain: nobody who never opens it pays for it. */
+(function(){
+  if(!document.getElementById("stcards")) return;
+  var s=document.createElement("script");
+  s.src="studio.js"; s.defer=true;
+  document.head.appendChild(s);
+})();
+
 /* The service worker, so the hosted site works offline the way a local copy
    already does, and a repeat visit does not re-fetch 200 KB of engine.
    Registered here rather than in each page's head: one place, every page.

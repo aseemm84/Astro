@@ -1,0 +1,706 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Studio — what to post today — Nirayana</title><meta name="description" content="Given a date and a place, what is actually happening in the sky that is worth posting about — with the caption and the image, every figure computed in your browser rather than looked up.">
+<link rel="canonical" href="https://aseemm84.github.io/Astro/studio.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Nirayana">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="Studio — what to post today — Nirayana">
+<meta property="og:description" content="Given a date and a place, what is actually happening in the sky that is worth posting about — with the caption and the image, every figure computed in your browser rather than looked up.">
+<meta property="og:url" content="https://aseemm84.github.io/Astro/studio.html">
+<meta property="og:image" content="https://aseemm84.github.io/Astro/assets/og-nirayana.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Nirayana — a Vedic astrology reference and chart engine">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Studio — what to post today — Nirayana">
+<meta name="twitter:description" content="Given a date and a place, what is actually happening in the sky that is worth posting about — with the caption and the image, every figure computed in your browser rather than looked up.">
+<meta name="twitter:image" content="https://aseemm84.github.io/Astro/assets/og-nirayana.png">
+<meta name="theme-color" content="#1d2340">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2213%22%20fill%3D%22%231d2340%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2212.5%22%20fill%3D%22none%22%20stroke%3D%22%23c9a24b%22%20stroke-width%3D%223%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%227.5%22%20fill%3D%22%23edc968%22%2F%3E%3Cpath%20d%3D%22M46.8%2020.6A19%2019%200%200%201%2051%2032%22%20fill%3D%22none%22%20stroke%3D%22%23e7d19a%22%20stroke-width%3D%225%22%2F%3E%3Cpath%20d%3D%22M32%2013.5v3.4M32%2047.1v3.4M13.5%2032h3.4M47.1%2032h3.4%22%20stroke%3D%22%23c9a24b%22%20stroke-width%3D%222.6%22%2F%3E%3C%2Fsvg%3E">
+<link rel="apple-touch-icon" href="assets/brand/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest"><style>
+:root{--night:#191d33;--night2:#252a49;--gold:#c9a24b;--gold-soft:#e7d19a;--paper:#fbfbfd;--ink:#20233a;--muted:#6c7089;--line:#e7e7f0;--soft:#f4f4fb;--serif:"Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+*{box-sizing:border-box}html,body{margin:0}html{scroll-behavior:smooth}body{font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.62}
+.masthead{background:radial-gradient(1px 1px at 18% 30%,#fff 40%,transparent 41%),radial-gradient(1px 1px at 42% 66%,#fff 40%,transparent 41%),radial-gradient(1.4px 1.4px at 70% 24%,#fff 40%,transparent 41%),radial-gradient(1px 1px at 86% 60%,#fff 40%,transparent 41%),radial-gradient(1px 1px at 55% 40%,#fff 40%,transparent 41%),radial-gradient(1200px 300px at 80% -40%,#33406f 0%,transparent 60%),linear-gradient(160deg,var(--night),var(--night2));color:#f3f2ec;padding:30px clamp(16px,5vw,64px) 26px;border-bottom:3px solid var(--gold)}
+.masthead .eyebrow{letter-spacing:.14em;text-transform:uppercase;font-size:11px;color:var(--gold-soft);margin:0 0 8px}
+.masthead h1{font-family:var(--serif);font-weight:600;font-size:clamp(26px,4.4vw,42px);margin:0 0 6px;line-height:1.1;color:#fff}
+.masthead p.sub{font-family:var(--serif);font-style:italic;font-size:clamp(15px,2vw,19px);color:#cdd0e4;margin:0;max-width:74ch}
+nav.site{position:sticky;top:0;z-index:30;background:rgba(25,29,51,.97);backdrop-filter:blur(6px);border-bottom:1px solid #333a5e;padding:8px clamp(10px,5vw,64px);display:flex;flex-wrap:wrap;gap:2px 4px}
+nav.site a{color:#c7cbe4;text-decoration:none;font-size:12.5px;padding:5px 9px;border-radius:7px;white-space:nowrap}
+nav.site a:hover{background:#2c3358;color:#fff}nav.site a.active{background:var(--gold);color:#231c07;font-weight:600}
+.layout{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:0;padding:0 clamp(16px,4vw,40px)}
+@media(min-width:1000px){.layout{grid-template-columns:230px 1fr;gap:34px}.layout.onecol{grid-template-columns:1fr}}
+aside.onpage{display:none}
+@media(min-width:1000px){aside.onpage{display:block;position:sticky;top:52px;align-self:start;height:calc(100vh - 60px);overflow:auto;padding:26px 0 40px;font-size:13px}}
+aside.onpage b{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:block;margin:0 0 8px}
+aside.onpage a{display:block;color:#4a4e68;text-decoration:none;padding:3px 10px;border-left:2px solid var(--line);line-height:1.35;margin:1px 0}
+aside.onpage a:hover{color:var(--gold);border-left-color:var(--gold)}
+main{padding:26px 0 64px;min-width:0}
+h2{font-family:var(--serif);font-weight:600;font-size:25px;margin:38px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--gold);color:#1b1e33;scroll-margin-top:56px}
+h2:first-of-type{margin-top:6px}
+h3{font-family:var(--serif);font-weight:600;font-size:19px;margin:22px 0 6px;color:#2a2e4a}
+p{margin:0 0 12px;max-width:80ch}p.lead{font-size:17px;color:#3a3e58;max-width:82ch}
+.term{background:var(--soft);border-left:3px solid var(--gold);padding:8px 12px;border-radius:0 7px 7px 0;margin:0 0 10px;max-width:82ch}
+.term b{font-family:var(--serif);font-size:16px}
+.src{font-size:12.5px;color:var(--muted);background:#f7f6ef;border:1px solid #ece7d4;border-radius:7px;padding:6px 11px;margin:2px 0 14px;max-width:84ch}
+.src span{font-weight:700;color:#8a6d1f;text-transform:uppercase;letter-spacing:.05em;font-size:10.5px;margin-right:6px}
+.note{background:#eef2f7;border:1px solid #dbe3ee;border-left:3px solid #6f86b0;border-radius:0 7px 7px 0;padding:9px 13px;margin:2px 0 14px;font-size:14px;max-width:84ch}
+.mine{background:#f0f6f1;border:1px solid #d8e7db;border-left:3px solid #4f8c5f;border-radius:0 7px 7px 0;padding:9px 13px;margin:2px 0 14px;font-size:14px;max-width:84ch}
+.ex{background:#fbf6e8;border:1px solid #ecdcae;border-left:3px solid var(--gold);border-radius:0 7px 7px 0;padding:9px 13px;margin:2px 0 14px;font-size:14px;max-width:84ch}
+.caution{background:#fbeeee;border:1px solid #ecc1c1;border-left:3px solid #b45252;border-radius:0 7px 7px 0;padding:10px 13px;margin:8px 0 16px;font-size:14px;max-width:84ch}
+ul,ol{margin:0 0 12px;padding-left:22px;max-width:82ch}li{margin:3px 0}
+.tw{overflow-x:auto;margin:0 0 16px}
+table.tbl{border-collapse:collapse;width:100%;font-size:13.5px;min-width:520px}
+table.tbl th{background:var(--night);color:#eef0fb;text-align:left;font-weight:600;font-size:12px;padding:8px 10px;border-bottom:2px solid var(--gold);vertical-align:bottom}
+table.tbl td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.tbl tr:nth-child(even) td{background:var(--soft)}
+table.tbl td b{color:#1b1e33}
+.crux td{background:#fbf6e8 !important}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin:14px 0}
+.card{display:block;text-decoration:none;color:inherit;background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px 16px;transition:border-color .15s,transform .15s}
+.card:hover{border-color:var(--gold);transform:translateY(-2px)}
+.card .n{font-size:11px;color:var(--muted)}.card h3{margin:2px 0 5px;font-size:17px;color:#1b1e33}.card p{font-size:13px;color:#4a4e68;margin:0}
+.card.tool{background:linear-gradient(160deg,#20264a,#2b3358);border-color:#39406a}.card.tool h3,.card.tool .n{color:#fff}.card.tool p{color:#c9cce4}
+footer{border-top:1px solid var(--line);background:#f5f5fb;color:var(--muted);font-size:12.5px;padding:24px clamp(16px,5vw,64px) 46px}
+footer .wrap{max-width:100ch;margin:0 auto}footer b{color:#454963}footer p{margin:0 0 8px;max-width:none}
+a{color:#2b5fa5}a:hover{color:var(--gold)}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:1px 8px;border-radius:999px;background:var(--soft);color:#4a4e68;margin-left:5px}
+.k-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0}
+.k-form label{display:block;font-size:12px;font-weight:600;color:#4a4e68;margin:0 0 4px}
+.k-form input,.k-form select{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;background:#fdfdff;color:var(--ink)}
+.k-full{grid-column:1/-1}
+.k-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0 4px}
+.k-btn{background:var(--night);color:#fff;border:0;border-radius:9px;padding:10px 18px;font:inherit;font-weight:600;font-size:14px;cursor:pointer}
+.k-btn:hover{background:#2b3358}.k-btn.sec{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.k-btn:disabled{opacity:.55;cursor:default}
+.k-status{font-size:13px;margin:6px 0;min-height:1.1em;color:var(--muted)}
+.k-err{background:#fbeeee;border:1px solid #ecc1c1;border-left:3px solid #b45252;border-radius:0 8px 8px 0;padding:10px 13px;font-size:13.5px;margin:8px 0;max-width:84ch}
+.k-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:12px 0}
+.k-card{background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+.k-card .lab{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.k-card .val{font-family:var(--serif);font-size:18px;color:#1b1e33;margin-top:2px;line-height:1.2}
+.k-card .sub{font-size:12px;color:#4a4e68;margin-top:2px}
+.k-retro{color:#b45252;font-weight:700}
+.k-deg{font-variant-numeric:tabular-nums;color:var(--muted);font-size:12px}
+details.k-raw{margin:14px 0}details.k-raw summary{cursor:pointer;font-size:13px;color:#2b5fa5}
+details.k-raw pre,pre.k-code{background:#0f1223;color:#d9dcf2;padding:12px;border-radius:10px;overflow:auto;font-size:11.5px;line-height:1.5;max-width:100%}
+code.k-inline{background:#f0f0f6;padding:1px 5px;border-radius:5px;font-size:12.5px}
+.k-rawbar{display:flex;align-items:center;gap:10px;margin:8px 0}
+.k-copymsg{font-size:12px;color:#4f8c5f;min-height:1em}
+.k-searchrow{display:flex;gap:8px}
+.k-searchrow input{flex:1;min-width:0}
+.k-results{margin:6px 0 0}
+.k-results button{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 10px;margin:4px 0;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
+.k-results button:hover{border-color:var(--gold);background:#fdfbf4}
+.k-results button b{font-weight:600}
+.k-results button span{color:var(--muted);font-size:12px;margin-left:6px}
+.k-results .k-rmsg{font-size:12.5px;color:var(--muted);padding:4px 0}
+.kreport{margin:14px 0}
+.kreport .ksec{margin:26px 0 0}
+.kreport .kh{font-size:17px;margin:0 0 4px;padding-bottom:6px;border-bottom:2px solid #cdbf9a;font-family:var(--serif);font-weight:600}
+.kreport .kh span{float:right;font-size:11px;color:var(--muted);font-weight:400;padding-top:7px}
+.kreport .ksub{font-size:13.5px;margin:16px 0 4px;color:#3a4060;font-weight:600}
+.kreport .knote{font-size:13px;color:var(--muted);margin:6px 0 8px;max-width:76ch}
+.kreport .klegend{font-size:11px;color:var(--muted);margin:6px 0 0}
+.kreport .kmut{color:var(--muted)}
+.kreport .kthin{font-weight:400}
+.kreport .kcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:12px 0}
+.kreport .kcard{border:1px solid var(--line);background:#fff;padding:9px 11px;border-left:3px solid var(--gold);border-radius:0 6px 6px 0}
+.kreport .kcard .k{font-size:10.5px;color:var(--muted);display:block}
+.kreport .kcard .v{font-size:16px;font-weight:600;margin-top:1px;line-height:1.25;font-family:var(--serif);display:block}
+.kreport .kcard .s{font-size:11.5px;color:#4a4e68;margin-top:1px;display:block}
+.kreport .kcharts{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;margin:12px 0}
+.kreport .kchartfig{margin:0}
+.kreport .kchartfig figcaption{font-size:12px;margin-bottom:6px}
+.kreport .kchartfig figcaption span{color:var(--muted);margin-left:6px}
+.kreport .kchartsvg{width:100%;height:auto;display:block}
+.kreport .kchartsvg .hn{font:600 9px system-ui,sans-serif;fill:#a89a72;text-anchor:middle}
+.kreport .kchartsvg .hs{font:600 10px system-ui,sans-serif;fill:#6f6a5c;text-anchor:middle}
+.kreport .kchartsvg .hp{font:700 12px system-ui,sans-serif;fill:#1d2340;text-anchor:middle}
+.kreport .kchartsvg .ss{font:600 9.5px system-ui,sans-serif;fill:#8b8368}
+.kreport .kchartsvg .sh{font:600 9.5px system-ui,sans-serif;fill:#b08a2e;text-anchor:end}
+.kreport .kchartsvg .sp{font:700 12px system-ui,sans-serif;fill:#1d2340;text-anchor:middle}
+.kreport .kchartsvg .slag{font:600 8.5px system-ui,sans-serif;fill:#b08a2e;text-anchor:middle}
+.kreport .kwsvg{width:100%;height:auto;display:block;margin:8px 0}
+.kreport .kwsvg .ax{font:600 9.5px system-ui,sans-serif;fill:#6f6a5c;text-anchor:middle}
+.kreport .kwsvg .axs{font:400 8px system-ui,sans-serif;fill:#9a917a;text-anchor:middle}
+.kreport .kwsvg .bv{font:700 10px system-ui,sans-serif;fill:#1d2340;text-anchor:middle}
+.kreport .kwsvg .tl{font:700 10px system-ui,sans-serif;fill:#fff;text-anchor:middle}
+.kreport .kwsvg .ty{font:400 8.5px system-ui,sans-serif;fill:#6f6a5c;text-anchor:middle}
+.kreport .kwsvg .now{font:700 9px system-ui,sans-serif;fill:#a1493a;text-anchor:middle}
+.kreport table.ktbl{border-collapse:collapse;width:100%;font-size:12.3px;font-variant-numeric:tabular-nums;margin:8px 0 4px;display:table}
+.kreport table.ktbl th{background:var(--night);color:#f2eee0;text-align:left;padding:6px 7px;font-weight:600;font-size:10.5px;border-bottom:2px solid var(--gold);white-space:nowrap}
+.kreport table.ktbl td{padding:5px 7px;border-bottom:1px solid var(--line);vertical-align:top}
+.kreport table.ktbl tbody tr:nth-child(even) td{background:var(--soft)}
+.kreport table.ktbl tr.khl td{background:#f7f0dc}
+.kreport table.ktbl td.knum{text-align:right}
+.kreport table.ktbl td.kb{text-align:center;font-weight:600}
+.kreport table.ktbl td.kbsav{background:var(--night);color:#f2eee0}
+.kreport .ktwrap{overflow-x:auto;margin:8px 0}
+.kreport .kchip{display:inline-block;font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:3px;letter-spacing:.04em}
+.kreport .kprow{display:grid;grid-template-columns:112px 1fr 38px 180px;gap:9px;align-items:center;margin:4px 0;font-size:11.5px}
+.kreport .kplab b{margin-left:5px}
+.kreport .kpbar{background:#e6dfcb;height:10px;border-radius:2px;overflow:hidden}
+.kreport .kpbar span{display:block;height:100%;background:linear-gradient(90deg,#b08a2e,#1c6b46)}
+.kreport .kppct{text-align:right;color:var(--muted)}
+.kreport .kpdate{color:var(--muted)}
+.kreport .kbox{border:1px solid #dbe3ee;border-left:3px solid #6f86b0;background:#eef2f7;padding:9px 12px;font-size:12.5px;margin:10px 0;max-width:82ch;border-radius:0 6px 6px 0}
+.kreport .kbox.kwarn{border-left-color:#b45252;background:#fbeeee}
+.kreport .kbox b{display:block;margin-bottom:2px}
+@media(max-width:700px){.kreport .kprow{grid-template-columns:96px 1fr 34px}.kreport .kpdate{display:none}}
+.kreport .kvgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin:12px 0}
+.kreport .kvgrid .kchartfig figcaption{font-size:11px}
+.kreport .kvgrid .kchartsvg .hp{font-size:13px}
+.kreport .kvgrid .kchartsvg .hs{font-size:9.5px}
+.kreport .katoggle{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 10px;font-size:12px}
+.kreport .kanote{background:#f2f6f2;border:1px solid #d8e5db;border-left:3px solid #4f8c5f;border-radius:0 7px 7px 0;padding:10px 13px;margin:12px 0 4px;font-size:13px;line-height:1.55;max-width:84ch}
+.kreport .kanote b:first-child{display:block;margin-bottom:3px;color:#2f6b45;font-size:11px;letter-spacing:.03em;text-transform:uppercase}
+.kreport .kanote .kmore{display:none}
+.kreport.kdetail .kanote .kmore{display:inline}
+.kreport .kasrc{display:block;margin-top:6px;font-size:11px;color:var(--muted)}
+.kreport .kasrc a{color:#2b5fa5;text-decoration:none}
+.kreport .kasrc a:hover{color:var(--gold)}
+.kreport .kname{font-family:var(--serif);font-size:22px;font-weight:600;color:var(--night);margin:2px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.kreport .kbasics{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
+.kreport table.kkv td.kk{color:var(--muted);width:46%}
+.kreport table.kkv th{display:none}
+.kreport .ksudnote{align-self:center}
+.kreport .kchartsvg .sc-h{font:600 8.5px system-ui,sans-serif;fill:#a89a72;text-anchor:middle}
+.kreport .kchartsvg .sc-p{font:700 10px system-ui,sans-serif;fill:#1d2340;text-anchor:middle}
+.kreport .kchartsvg .sc-c{font:16px serif;fill:#a1493a;text-anchor:middle}
+@media print{
+  nav.site,aside.onpage,.k-form,.k-actions,.k-status,.katoggle,details.k-raw,#k-searchnote,.k-results,header.masthead p.sub{display:none!important}
+  body{background:#fff}
+  .kreport .kmore{display:inline!important}
+  .kreport .ksec{break-inside:avoid;page-break-inside:avoid}
+  .kreport .kchartfig,.kreport .kanote,.kreport table{break-inside:avoid;page-break-inside:avoid}
+  .kreport .kvgrid{grid-template-columns:repeat(4,1fr)}
+  a{text-decoration:none;color:#000}
+}
+.kreport .katoggle{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 10px;font-size:12px}
+.kreport .kanote{background:#f2f6f2;border:1px solid #d8e5db;border-left:3px solid #4f8c5f;border-radius:0 7px 7px 0;padding:10px 13px;margin:12px 0 4px;font-size:13px;line-height:1.55;max-width:84ch}
+.kreport .kanote b:first-child{display:block;margin-bottom:3px;color:#2f6b45;font-size:11px;letter-spacing:.03em;text-transform:uppercase}
+.kreport .kanote .kmore{display:none}
+.kreport.kdetail .kanote .kmore{display:inline}
+.kreport .kasrc{display:block;margin-top:6px;font-size:11px;color:var(--muted)}
+.kreport .kasrc a{color:#2b5fa5;text-decoration:none}
+.kreport .kasrc a:hover{color:var(--gold)}
+
+@media(max-width:820px){
+  nav.site{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none;padding-left:12px;padding-right:12px;
+    -webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);
+            mask-image:linear-gradient(90deg,#000 88%,transparent)}
+  nav.site::-webkit-scrollbar{display:none}
+  nav.site a{flex:0 0 auto;white-space:nowrap}
+}
+.lhbrand{display:inline-block;vertical-align:-0.22em;margin-right:12px}
+.lhbrand .lhmark{width:1.55em;height:1.18em}
+svg.lhmark .lhink{stroke:currentColor}
+svg.lhmark .lhorb{stroke:#c9a24b;fill:#c9a24b}
+svg.lhmark .lhorb ellipse{fill:none}
+/* --- brand lockup: inline vector mark + the name as real text ---------------
+   The mark used to be a 12 KB base64 JPEG pasted into both shells and the print
+   module. It is now one SVG on disk, inlined by the build, and the wordmark is
+   text rather than a picture of text, so it stays crisp, themes with the page and
+   is readable by a screen reader. */
+.masthead .lhbrand{display:inline-flex;align-items:center;gap:15px;text-decoration:none;
+  color:inherit;margin:0 0 14px}
+.masthead .lhmarkwrap{display:block;width:clamp(52px,11vw,74px);flex:0 0 auto}
+.masthead .lhmark{display:block;width:100%;height:auto}
+.masthead .lhword{display:flex;flex-direction:column;line-height:1}
+.masthead .lhname{font-family:var(--serif);font-size:clamp(27px,6.4vw,37px);font-weight:600;
+  color:#dcb866;letter-spacing:.012em}
+.masthead .lhdeva{font-size:clamp(15px,3.4vw,20px);color:#c9a24b;opacity:.9;margin-top:4px;
+  font-family:"Noto Sans Devanagari","Nirmala UI",system-ui,sans-serif}
+.masthead .lhbrand:hover .lhname{color:#edc968}
+@media print{.masthead .lhbrand{display:none}}
+
+/* The landing hero: say what the thing does, show that it does it, and give one
+   way in. Before this the page opened with a paragraph and seventeen equal
+   navigation links, so a visitor had no way to tell there was an engine here. */
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:30px;align-items:center;margin:4px 0 26px}
+.hero-copy .lead{margin-top:0}
+.hero-do{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:16px 0 14px}
+.k-btn.big{display:inline-block;text-decoration:none;font-size:16px;padding:13px 26px;
+  background:linear-gradient(160deg,#2b3358,#1d2340);box-shadow:0 2px 10px rgba(29,35,64,.22)}
+.k-btn.big:hover{background:linear-gradient(160deg,#39406a,#262d52)}
+.hero-free{font-size:12.5px;color:var(--muted)}
+.hero-pts{margin:0;padding-left:18px}
+.hero-pts li{font-size:13.5px;line-height:1.55;color:#4a4e68;margin-bottom:5px}
+.hero-pts li b{color:var(--ink)}
+.hero-shot{margin:0}
+.hero-shot img{width:100%;height:auto;border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 6px 22px rgba(29,35,64,.13)}
+.hero-shot figcaption{font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.45}
+@media (max-width:820px){
+  .hero{grid-template-columns:1fr;gap:20px}
+  .hero-shot{order:-1}
+  .hero-shot img{max-width:360px;display:block;margin:0 auto}
+}
+
+/* ===== navigation that fits the screen ======================================
+   Sixteen links in a horizontal scroller hid 883px of themselves on a phone.
+   Wide screens keep the row; narrow ones get a button and a panel. */
+.navbar{display:none}
+html.navlock,html.navlock body{overflow:hidden}
+@media(max-width:1000px){
+  .navbar{display:block;position:sticky;top:0;z-index:31;
+    background:linear-gradient(160deg,var(--night),var(--night2));
+    border-bottom:1px solid #333a5e}
+  .navtoggle{display:flex;align-items:center;gap:11px;width:100%;
+    padding:11px clamp(12px,4vw,24px);background:none;border:0;cursor:pointer;
+    font:inherit;color:#f0eee6;text-align:left}
+  .navtoggle-i{display:inline-flex;flex-direction:column;gap:3.5px;flex:0 0 auto}
+  .navtoggle-i i{display:block;width:17px;height:2px;background:var(--gold);border-radius:2px}
+  .navtoggle-t{flex:1;font-size:14.5px;font-weight:600;letter-spacing:.01em}
+  .navtoggle-c{color:var(--gold);font-size:12px;transition:transform .18s}
+  .navtoggle[aria-expanded="true"] .navtoggle-c{transform:rotate(180deg)}
+  nav.site{display:none;position:sticky;top:44px;z-index:30;
+    flex-wrap:wrap;overflow:visible;padding:8px clamp(12px,4vw,24px) 14px;
+    -webkit-mask-image:none;mask-image:none;
+    max-height:calc(100vh - 44px);overflow-y:auto}
+  nav.site.open{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+  nav.site a{white-space:normal;padding:10px 11px;font-size:13.5px;border-radius:8px}
+  nav.site a.active{background:var(--gold);color:#231c07}
+}
+/* two columns even on a small phone: sixteen single-file items is a long scroll,
+   and the labels wrap rather than truncate */
+@media(max-width:340px){ nav.site.open{grid-template-columns:1fr} }
+
+/* ---- section links where the sidebar is hidden --------------------------- */
+.onpage-m{display:none}
+@media(max-width:999px){
+  .onpage-m{display:block;margin:0 0 18px;border:1px solid var(--line);
+    border-left:3px solid var(--gold);border-radius:4px 10px 10px 4px;background:#fff}
+  .onpage-m>summary{list-style:none;cursor:pointer;padding:10px 14px;
+    font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+  .onpage-m>summary::-webkit-details-marker{display:none}
+  .onpage-m>summary span{font-weight:400;letter-spacing:0;text-transform:none;font-size:12px}
+  .onpage-m>summary::after{content:"\25be";color:var(--gold);margin-left:8px}
+  .onpage-m[open]>summary::after{content:"\25b4"}
+  .onpage-m-list{padding:2px 10px 10px;display:flex;flex-direction:column}
+  .onpage-m-list a{display:block;padding:7px 10px;color:#4a4e68;text-decoration:none;
+    font-size:14px;border-left:2px solid var(--line);line-height:1.3}
+  .onpage-m-list a:hover{color:var(--gold);border-left-color:var(--gold)}
+}
+
+/* ===== your own chart, on a reference page ==================================
+   A rule is easier to hold once you have seen it land somewhere. These state
+   what your chart contains and stop there; the page around them carries the
+   interpretation. */
+.inchart{margin:0 0 20px;border:1px solid #d8e7db;border-left:3px solid #4f8c5f;
+  border-radius:0 10px 10px 0;background:#f4faf5;padding:13px 16px;max-width:84ch}
+.inchart h4{margin:0 0 8px;font-family:var(--serif);font-size:16px;color:#1f4f33}
+.inchart h4 span{font-family:var(--sans);font-size:12.5px;color:#5c7a66;font-weight:400}
+.inchart ul{margin:0;padding-left:18px;max-width:none}
+.inchart li{font-size:13.5px;line-height:1.55;margin:0 0 5px;color:#33493b}
+.inchart li b{color:#15351f}
+.inchart-f{margin:10px 0 0;font-size:11.5px;line-height:1.5;color:#6a8271;max-width:none}
+.inchart-f a{color:#2b5fa5}
+.inchart-x{font:inherit;font-size:11.5px;color:#6a8271;background:none;border:0;
+  border-bottom:1px dotted #9db3a3;padding:0;cursor:pointer;margin-left:2px}
+.inchart-x:hover{color:#1f4f33;border-bottom-color:#1f4f33}
+.inchart-ask{font-size:13px;color:var(--muted);background:var(--soft);
+  border:1px dashed var(--line);border-radius:9px;padding:9px 13px;margin:0 0 18px;max-width:84ch}
+@media print{.inchart-ask,.inchart-f,.navbar{display:none}.inchart{break-inside:avoid}}
+
+/* ===== now.html ==========================================================
+   A clock page: the numbers are the content, so they are set large and the
+   labels small, and the cards wrap to one column on a phone without the figures
+   shrinking with them. */
+.nowbar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;
+  margin:18px 0 10px;padding:12px 14px;border:1px solid var(--line);
+  border-radius:12px;background:var(--card,#fff)}
+.nowlab{font-size:12px;font-weight:700;letter-spacing:.02em;color:#5a5f78}
+.nowsel{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--line);
+  border-radius:8px;background:transparent;color:inherit;max-width:100%}
+.nowhint{flex:1 1 18em;min-width:14em;font-size:12px;line-height:1.5;color:#6a7090}
+.nowhead{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;margin:16px 0 4px}
+.nowclock{font-size:40px;font-weight:700;letter-spacing:-.01em;
+  font-variant-numeric:tabular-nums;line-height:1}
+/* The Hindu clock sits beside the civil one, smaller and in the gold, so the two
+   read as one line of time in two reckonings rather than as two competing clocks. */
+.nowhindu{font-size:24px;font-weight:600;color:var(--gold,#9a7a28);
+  font-variant-numeric:tabular-nums;line-height:1}
+.nowhindu i{font-style:normal;font-size:.55em;font-weight:600;opacity:.75;
+  margin:0 .15em 0 .05em}
+.nowplace{font-size:14px;color:#5a5f78}
+.nowdate{font-size:14px;font-weight:600;color:var(--gold,#9a7a28)}
+.nowgrid{display:grid;gap:10px;margin:12px 0 6px;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.nowcard{border:1px solid var(--line);border-radius:12px;padding:12px 13px;
+  background:var(--card,#fff);display:flex;flex-direction:column;gap:3px}
+.nowcard b{font-size:11px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:#6a7090}
+.nowbig{font-size:21px;font-weight:600;line-height:1.25}
+.nowsub{font-size:12.5px;color:#5a5f78;line-height:1.45}
+.nowcard.nowlt{border-style:dashed}
+.nowstrip{width:100%;display:block;margin:10px 0 4px}
+.nownote{font-size:14px;color:#6a7090}
+@media (max-width:520px){ .nowclock{font-size:32px} }
+@media (prefers-color-scheme:dark){
+  .nowbar,.nowcard{background:rgba(255,255,255,.03)}
+  .nowhint,.nowplace,.nowsub,.nownote{color:#9aa0bd}
+  .nowcard b{color:#9aa0bd}
+}
+
+/* ===== calendar.html =====================================================
+   The grid is solar and the content is lunisolar, so the layout has to carry
+   markers for the three mismatches rather than smoothing them away: a cell can
+   hold a second tithi (upari), a lunar month boundary is drawn as a rule BETWEEN
+   cells rather than inside one, and the year view exists because an intercalary
+   month has no cell at all in a Gregorian grid. */
+.cbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;
+  border:1px solid var(--line);border-radius:12px;padding:10px 13px;
+  margin:14px 0 8px;background:var(--soft)}
+.cbar2{background:transparent}
+.cbargroup{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.clab{font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);font-weight:700}
+.csel{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);
+  border-radius:8px;background:#fff;color:var(--ink);max-width:min(42ch,70vw)}
+.cnum{width:7.5em}
+.cvbtn{font:inherit;font-size:13px;padding:5px 12px;border:1px solid var(--line);
+  border-radius:8px;background:#fff;color:var(--ink);cursor:pointer}
+.cvbtn:hover{border-color:var(--gold)}
+.cvbtn.on{background:var(--night);color:#fff;border-color:var(--night)}
+.clayerbox{border:1px solid var(--line);border-radius:12px;padding:8px 13px;
+  margin:0 0 10px;font-size:13px}
+.clayerbox summary{cursor:pointer;font-weight:600}
+.clayerlist{display:grid;gap:2px 16px;margin:8px 0 4px;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.clayer{display:flex;gap:7px;align-items:center;font-size:13px}
+.clayer.cbase{color:var(--muted)}
+.clayer i{font-style:normal;font-size:10px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--muted);border:1px solid var(--line);
+  border-radius:4px;padding:0 4px}
+.cplacenote{font-size:13px;color:var(--muted);margin:4px 0 10px}
+.cheadbar{margin:6px 0 10px}
+.cnav{display:flex;gap:8px;align-items:center}
+.cnav button{font:inherit;font-size:17px;line-height:1;padding:4px 11px;
+  border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer}
+.cnav button.csec{font-size:13px}
+.cnav button:hover{border-color:var(--gold)}
+.clabel{display:flex;flex-direction:column;line-height:1.25;margin:0 6px}
+.clabel b{font-family:var(--serif);font-size:20px}
+.clabel i{font-style:normal;font-size:12px;color:var(--muted)}
+
+/* --- the month grid --- */
+.cgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));
+  gap:1px;background:var(--line);border:1px solid var(--line);
+  border-radius:12px;overflow:hidden}
+.chead{background:var(--night);color:#cdd0e4;font-size:11px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;text-align:center;padding:6px 2px}
+.ccell{background:#fff;min-height:104px;padding:5px 6px 7px;display:flex;
+  flex-direction:column;gap:1px;cursor:pointer;position:relative}
+.ccell:hover{background:#fcfbf6}
+.ccell:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+.ccell.cempty{background:var(--soft);cursor:default;min-height:0}
+.cdate{font-family:var(--serif);font-size:17px;font-weight:600;line-height:1.1}
+.cmoon{position:absolute;top:6px;right:6px}
+/* The lunar month boundary is a rule across the grid: it is a boundary BETWEEN
+   cells, so it is drawn on the cell edge rather than as a badge inside one. */
+.ccell.cmonthstart{box-shadow:inset 3px 0 0 var(--gold)}
+.ccell.cfull{background:#fffdf4}
+.ccell.cnew{background:#f7f7fa}
+.ccell.csel{background:#f3f0e4;box-shadow:inset 0 0 0 2px var(--gold)}
+.ctithi{font-size:12px;line-height:1.3;margin-top:2px}
+.ctithi i{font-style:normal;font-weight:700;color:var(--gold);margin-right:3px}
+.cnak{font-size:11.5px;color:#4a4e68;line-height:1.3}
+.cmin{font-size:10.5px;color:var(--muted);line-height:1.3}
+.cends{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+/* The doubled tithi, marked the way printed almanacs mark it. */
+.cupari{font-size:10.5px;color:#7a5c12;background:#fdf6e3;border-radius:4px;
+  padding:0 3px;line-height:1.35}
+.cupari i{font-style:italic}
+.csank{font-size:10.5px;color:#1d4f6b;background:#eaf4f9;border-radius:4px;
+  padding:0 3px}
+.cadhika{font-size:10px;letter-spacing:.05em;text-transform:uppercase;
+  font-weight:700;color:#7a3b12;background:#fcefe6;border-radius:4px;
+  padding:0 4px;align-self:flex-start}
+.cfestname{font-size:11px;font-weight:600;color:#6b4a00;line-height:1.3}
+.cfestname.cminor{font-weight:400;color:var(--muted)}
+.cfestname.ccontested::after{content:" *";color:#a1493a}
+.cfestname i{font-style:normal;font-size:9.5px;text-transform:uppercase;
+  letter-spacing:.04em;color:#a1493a;border:1px solid #e3c8c2;border-radius:3px;
+  padding:0 3px;margin-left:3px}
+.cwarn{position:absolute;bottom:5px;right:7px;color:#a1493a;font-weight:700}
+
+/* --- the almanac row --- */
+.calm{width:100%;border-collapse:collapse;font-size:12.5px}
+.calm th{background:var(--night);color:#cdd0e4;font-size:10.5px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;text-align:left;padding:6px 7px;
+  position:sticky;top:0}
+.calm td{border-bottom:1px solid var(--line);padding:5px 7px;vertical-align:top}
+.calm tr:hover td{background:#fcfbf6}
+.calm small{color:var(--muted);font-variant-numeric:tabular-nums}
+.calm td i{font-style:normal;font-weight:700;color:var(--gold)}
+.calm td b{font-weight:600;color:#7a5c12}
+
+/* --- the day detail --- */
+.cdetail{border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  margin:0 0 14px}
+.cdhead{display:flex;gap:14px;align-items:center;padding:13px 15px;
+  background:var(--night);color:#f3f2ec}
+.cdhead h3{font-family:var(--serif);font-size:22px;margin:0;color:#fff}
+.cdhead p{margin:2px 0 0;font-size:13px;color:#cdd0e4}
+.cdrow{display:grid;grid-template-columns:minmax(110px,150px) 1fr;gap:12px;
+  padding:8px 15px;border-top:1px solid var(--line);font-size:14px}
+.cdrow b{font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted);padding-top:3px}
+.cdrow span{display:flex;flex-direction:column}
+.cdrow i{font-style:normal;font-size:12.5px;color:var(--muted);line-height:1.5}
+.csub{font-family:var(--serif);font-size:19px;margin:18px 0 8px}
+.cfestbox{border:1px solid var(--line);border-left:3px solid var(--gold);
+  border-radius:0 10px 10px 0;padding:10px 13px;margin:0 0 9px;font-size:13.5px}
+.cfestbox.ccon{border-left-color:#a1493a}
+.cfestbox b{font-size:15px}
+.cfestbox p{margin:5px 0 0;line-height:1.55}
+.cfestbox .csrc{font-size:12px;color:var(--muted);margin-top:6px}
+.ctag{display:inline-block;font-size:10.5px;letter-spacing:.03em;
+  text-transform:uppercase;font-weight:700;color:#7a3b12;background:#fcefe6;
+  border-radius:4px;padding:1px 6px;margin-left:7px}
+.ctag.ctagwarn{color:#1d4f6b;background:#eaf4f9;text-transform:none;
+  letter-spacing:0;font-weight:400}
+
+/* --- the year view --- */
+.cyear{border:1px solid var(--line);border-radius:12px;padding:9px 11px;
+  background:#fff;overflow-x:auto}
+.cyrow{display:flex;gap:9px;align-items:center;margin:0 0 3px}
+.cymon{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted);width:3.1em;flex:0 0 auto;cursor:pointer}
+.cymon:hover{color:var(--gold)}
+.cystrip{display:flex;gap:1px;flex:1 1 auto;min-width:420px}
+.cyd{flex:1 1 0;height:17px;background:var(--soft);border-radius:2px;
+  cursor:pointer;min-width:5px}
+.cyd:hover{outline:1px solid var(--gold)}
+.cyd.cyfull{background:var(--gold-soft)}
+.cyd.cynew{background:#4a4e68}
+.cyd.cysank{background:#9fc6db}
+.cyd.cybound{box-shadow:inset 2px 0 0 var(--gold)}
+.cyd.cyadhika{background:#fcefe6}
+.ckey{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;
+  font-size:12px;color:var(--muted);margin:8px 0 0}
+.ckey .cyd{flex:0 0 auto;width:15px;cursor:default}
+.cadhikanote{border-left:3px solid var(--gold);padding-left:11px}
+.cnote{font-size:13px;color:var(--muted);line-height:1.6}
+.crange{border-left:3px solid #a1493a;padding-left:11px}
+
+@media (max-width:700px){
+  /* On a phone the seven-column grid is unreadable, so the month becomes a
+     list of days — the same cells, stacked, keeping every marker. */
+  .cgrid{grid-template-columns:1fr;border-radius:10px}
+  .chead{display:none}
+  .ccell{min-height:0;flex-direction:row;flex-wrap:wrap;gap:4px 10px;
+    align-items:baseline;padding:8px 10px}
+  .ccell.cempty{display:none}
+  .cdate{width:1.8em}
+  .cmoon{position:static;order:-1}
+  .ccell.cmonthstart{box-shadow:inset 0 3px 0 var(--gold)}
+  .calm{font-size:11.5px}
+  .calm th:nth-child(5),.calm td:nth-child(5),
+  .calm th:nth-child(6),.calm td:nth-child(6){display:none}
+  .cdrow{grid-template-columns:1fr;gap:1px}
+}
+@media print{
+  /* A month that prints on one page is a real feature: the printed wall
+     calendar is the form this information has actually taken for fifty years. */
+  .cbar,.clayerbox,.cnav button,.sitenav,nav.site,aside.onpage{display:none}
+  .cgrid{break-inside:avoid}
+  .ccell{min-height:86px}
+  .calm th{position:static;background:#fff;color:#000;border-bottom:2px solid #000}
+}
+@media (prefers-color-scheme:dark){
+  .cbar,.cyear,.csel,.cvbtn,.cnav button{background:rgba(255,255,255,.04)}
+  .ccell{background:#1b1f36}
+  .ccell:hover{background:#232842}
+  .ccell.cempty{background:rgba(255,255,255,.02)}
+  .ccell.cfull{background:#232136}
+  .ccell.cnew{background:#15182a}
+  .ccell.csel{background:#2a2a40}
+  .cnak{color:#b9bedb}
+  .cnote,.cplacenote,.clabel i,.cdrow b,.cdrow i,.calm small{color:#9aa0bd}
+  .calm tr:hover td{background:rgba(255,255,255,.03)}
+  .cupari{background:#2e2714;color:#e7d19a}
+  .csank{background:#15293a;color:#9fc6db}
+  .cadhika{background:#33210f;color:#e8b98e}
+  .cfestname{color:#e7d19a}
+}
+
+/* The export row, and a printed month that is actually one page.
+   The first attempt hid the controls and left the reference prose in place, so
+   a month printed as fourteen A4 sheets. The prose is wrapped in .cprose for
+   exactly this reason: on paper the calendar is the artefact and the essay is
+   not. */
+.cexport{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:12px 0 6px}
+.cexport .cnote{flex:1 1 32ch;min-width:0}
+.cprintonly{display:none}
+@media print{
+  /* Measured, not guessed: in print media the page came to 956 px against about
+     740 usable on A4 landscape, and the masthead and the navigation header
+     accounted for 227 px of it. The .cprintonly line replaces both — it names
+     the month, the place and the sunrise convention, which is everything a
+     printed sheet needs in order to be checkable. */
+  .cprose,.cexport,.cplacenote,.lead,.clayerbox,.cbar,footer,
+  .cnav,header.masthead,.masthead{display:none !important}
+  .cprintonly{display:block;margin:0 0 5px;font-size:11.5px;color:#000;
+    border-bottom:1px solid #999;padding-bottom:3px}
+  .cheadbar{margin:0 0 5px}
+  main>h1,main>p.sub{display:none}
+  /* The sidebar is hidden on paper but its 230 px column was still reserved, so
+     every cell lost a fifth of its width and the text wrapped into extra lines.
+     That, not the row height, was why one month printed on three sheets and
+     another on one. */
+  .layout{grid-template-columns:1fr !important;gap:0 !important;
+    padding:0 !important;max-width:none}
+  .cgrid{font-size:9.5px}
+  /* No minimum height on paper: a 31-day month starting on a Friday needs six
+     rows where February needs four, and a fixed row height is what made the
+     same sheet print on one page or three depending on the month. Rows take the
+     height their content needs and no more. */
+  .ccell{min-height:0;padding:2px 4px;gap:0}
+  .cdate{font-size:13px}
+  .ctithi{font-size:9px}.cnak{font-size:8.5px}.cmin,.cends{font-size:8px}
+  .cfestname{font-size:8.5px}
+  .cmoon{width:11px;height:11px}
+  @page{size:A4 landscape;margin:9mm}
+}
+
+}
+
+/* The shared place picker (NPlaces.picker). One control on three pages, so one
+   block of styling rather than three that drift. The results sit in the flow
+   rather than floating: a popover would need positioning against bars that
+   wrap at three widths, and pushing the content down is the simpler honest
+   behaviour on a control that is dismissed as soon as it is used. */
+.nppick{position:relative;display:flex;flex-wrap:wrap;gap:4px;min-width:min(26ch,100%)}
+.npfind{font:inherit;font-size:13px;padding:5px 9px;border:1px solid var(--line,#e7e7f0);
+  border-radius:8px;background:#fff;color:var(--ink,#20233a);width:100%;min-width:0}
+.npfind::placeholder{color:var(--ink,#20233a);opacity:.85}
+.npfind:focus{outline:2px solid var(--gold,#c9a24b);outline-offset:1px}
+.npres{flex-basis:100%;display:flex;flex-direction:column;gap:2px;
+  max-height:min(50vh,340px);overflow:auto;margin:2px 0 0}
+.npres[hidden]{display:none}
+.npres button{font:inherit;text-align:left;background:#fff;cursor:pointer;
+  border:1px solid var(--line,#e7e7f0);border-radius:8px;padding:5px 9px;
+  display:flex;flex-direction:column;line-height:1.3}
+.npres button:hover,.npres button:focus-visible{border-color:var(--gold,#c9a24b);
+  background:#fcfbf6}
+.npres button b{font-size:13px;font-weight:600}
+.npres button span{font-size:11.5px;color:var(--muted,#6c7089);
+  font-variant-numeric:tabular-nums}
+.npmsg{font-size:12px;color:var(--muted,#6c7089);margin:2px 0 3px;padding:0 2px}
+@media print{ .npres{display:none !important} }
+@media (prefers-color-scheme:dark){
+  .npfind,.npres button{background:rgba(255,255,255,.04);color:#e8e9f3}
+  .npres button:hover{background:rgba(255,255,255,.08)}
+}
+
+/* ===== studio.html =======================================================
+   Cards, because each one is a decision: post this, or scroll on. They are
+   wide and few rather than small and many — a caption has to be readable in
+   place or it will be copied unread. */
+.stbar{display:flex;flex-wrap:wrap;gap:9px 16px;align-items:center;
+  border:1px solid var(--line);border-radius:12px;padding:10px 13px;
+  margin:14px 0 10px;background:var(--soft)}
+.stlab{font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);font-weight:700}
+.stsel{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);
+  border-radius:8px;background:#fff;color:var(--ink)}
+.stbar .nppick{min-width:min(24ch,100%);flex:0 1 26ch}
+.stcards{display:grid;gap:14px;margin:10px 0 6px}
+.stcard{border:1px solid var(--line);border-left:3px solid var(--gold);
+  border-radius:0 12px 12px 0;padding:14px 16px;background:var(--card,#fff)}
+.stcard header{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.stcard h3{font-family:var(--serif);font-size:21px;margin:0;line-height:1.25}
+.strank{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:#7a5c12;background:#fdf6e3;border-radius:5px;padding:2px 7px;flex:0 0 auto}
+.stbody{margin:8px 0 0;line-height:1.6;font-size:14.5px}
+.stfacts{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:3px;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.stfacts li{font-size:13px;color:#4a4e68;border-left:2px solid var(--line);
+  padding-left:9px;font-variant-numeric:tabular-nums}
+.sttags{margin:10px 0 0;font-size:12px;color:var(--muted);word-break:break-word}
+.stact{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}
+.stbtn{font:inherit;font-size:13px;padding:6px 13px;border-radius:8px;
+  border:1px solid var(--night);background:var(--night);color:#fff;cursor:pointer;
+  text-decoration:none;display:inline-block}
+.stbtn.sec{background:#fff;color:var(--ink);border-color:var(--line)}
+.stbtn.sec:hover{border-color:var(--gold)}
+.stmsg{font-size:12.5px;color:var(--muted)}
+.stcopybox{width:100%;min-height:9em;margin:8px 0 0;font:inherit;font-size:12.5px;
+  border:1px solid var(--line);border-radius:8px;padding:8px}
+.stpreview{margin:10px 0;text-align:center}
+.stpreview img{max-width:min(340px,80vw);height:auto;border-radius:10px;
+  border:1px solid var(--line);box-shadow:0 6px 24px rgba(20,26,51,.18)}
+table.stahead{width:100%;border-collapse:collapse;font-size:13.5px}
+table.stahead td{border-bottom:1px solid var(--line);padding:5px 8px}
+table.stahead td:nth-child(2){font-variant-numeric:tabular-nums;color:var(--muted)}
+table.stahead td:nth-child(4){color:var(--muted);text-align:right}
+table.stahead tr:hover td{background:#fcfbf6}
+.stnote{font-size:13.5px;color:var(--muted)}
+@media (max-width:620px){
+  .stcard h3{font-size:18px}
+  .stfacts{grid-template-columns:1fr}
+}
+@media (prefers-color-scheme:dark){
+  .stbar,.stsel,.stbtn.sec{background:rgba(255,255,255,.04);color:#e8e9f3}
+  .stcard{background:rgba(255,255,255,.03)}
+  .stfacts li{color:#b9bedb}
+  .strank{background:#2e2714;color:#e7d19a}
+  table.stahead tr:hover td{background:rgba(255,255,255,.03)}
+}
+</style></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Studio</h1><p class="sub">What is worth posting today — the caption, the numbers behind it, and the image.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html" class="active">Studio</a><a href="kundli.html">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#today">What is worth posting</a><a href="#ahead">Coming up</a><a href="#how">How this works, and what it will not do</a><a href="#animate">Turning one into a video</a><a href="#place">Why the place is on this page too</a></aside><main><p class="lead">Every other page here answers a question you brought. This one asks it: <b>given today and a place, what is actually happening in the sky that is worth saying something about</b> &mdash; and then hands you the caption and the image. The hard part of posting regularly is never making a picture. It is deciding what to make a picture <i>of</i>, every day, without repeating yourself and without making anything up.</p>
+
+<div class="stbar">
+  <span class="stlab"><label for="stdate">Date</label></span>
+  <input id="stdate" class="stsel" type="date">
+  <span class="stlab"><label for="stplace">Place</label></span>
+  <div id="stplace" class="nppick"></div>
+  <span class="stlab"><label for="stlang">Language</label></span>
+  <select id="stlang" class="stsel">
+    <option value="en">English</option>
+    <option value="hi">हिन्दी</option>
+  </select>
+  <span class="stlab"><label for="stratio">Image</label></span>
+  <select id="stratio" class="stsel"></select>
+  <span class="stlab"><label for="sthorizon">Look ahead</label></span>
+  <select id="sthorizon" class="stsel">
+    <option value="5">5 days</option>
+    <option value="10" selected>10 days</option>
+    <option value="21">21 days</option>
+    <option value="45">45 days</option>
+  </select>
+</div>
+
+<div id="stpreview" class="stpreview" hidden></div>
+
+<h2 id="today">What is worth posting</h2>
+<div id="stcards" class="stcards"><p class="stnote">Reading the sky&hellip;</p></div>
+
+<h2 id="ahead">Coming up</h2>
+<p>Stations, sign ingresses and syzygies in the window you chose, so a week can be planned in one sitting rather than discovered each morning. Times are for the place above.</p>
+<div id="stahead"></div>
+
+<h2 id="how">How this works, and what it will not do</h2>
+
+<p>Every figure in every caption is computed at the moment it is written, from the same ephemeris the chart engine uses, the same festival rules the calendar applies, and the same pañcāṅga the <a href="now.html">now page</a> prints. Nothing comes from a stored table, so nothing can go stale &mdash; and the caption and the image cannot contradict each other, because both are built from one day object.</p>
+
+<p><b>It writes no predictions.</b> Not &ldquo;Mercury retrograde will disrupt your communication&rdquo;. This site does not make deterministic claims about anyone's life, and a caption is not exempt from that for being short. What it writes is what is <i>happening</i>, and what the tradition says the thing <i>is</i>: the rule, the exact span, the number, and the distinction people usually get wrong. Retrograde motion is the clearest example &mdash; it is a line-of-sight effect of two bodies passing, not a planet reversing, and saying so is both more accurate and more interesting than a forecast.</p>
+
+<p>The ordering is by how rare the event is and how close: a festival or a station outranks an ordinary Tuesday, and the daily pañcāṅga sits at the bottom as the thing that is always true and always postable. Where a festival rule is one that published almanacs apply differently, the caption says so rather than asserting a single answer &mdash; the same discipline the <a href="calendar.html">calendar</a> keeps.</p>
+
+<p>The image is deliberately plain: a headline, the numbers under it, the place, the handle. The content is the thing nobody else has, so the design stays out of its way.</p>
+
+<h2 id="animate">Turning one into a video</h2>
+
+<p>Several of these cards offer <b>Animate this</b>, which opens the matching scene on the <a href="kundli.html">chart page</a> &mdash; the retrograde loop for a station, the orrery for an ingress, the tithi wheel for a syzygy. From there, <b>Record this loop</b> writes a video file.</p>
+
+<p>That recorder is not a screen capture. The playhead is advanced by an exact increment per frame, drawn, and handed to the encoder one frame at a time, so the result is constant frame rate however fast or slow the machine happened to be drawing. Nothing is uploaded and no toolchain is involved. The <b>Reels guides</b> switch shows where Instagram will cover the frame with its own caption and buttons, and <b>Safe layout</b> lifts everything clear of that strip.</p>
+
+<h2 id="place">Why the place is on this page too</h2>
+
+<p>Sunrise decides which day a tithi names, and sunrise depends on where you are standing. Two cities can honestly disagree about which day an ekādaśī falls on. Station and ingress times shift with the clock too. So the place is a control here exactly as it is everywhere else on this site, and the caption states which place its numbers were computed for &mdash; because a figure without a place is not a figure.</p>
+</main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p><b>How the numbers are worked out:</b> <a href="kundli-technical-report.html">the chart engine, in detail</a> &mdash; the ephemeris, the ayanāṃśa modes, the sunrise convention and what each divisional chart is computed from.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>

@@ -1,0 +1,51 @@
+<p class="lead">Every other page here answers a question you brought. This one asks it: <b>given today and a place, what is actually happening in the sky that is worth saying something about</b> &mdash; and then hands you the caption and the image. The hard part of posting regularly is never making a picture. It is deciding what to make a picture <i>of</i>, every day, without repeating yourself and without making anything up.</p>
+
+<div class="stbar">
+  <span class="stlab"><label for="stdate">Date</label></span>
+  <input id="stdate" class="stsel" type="date">
+  <span class="stlab"><label for="stplace">Place</label></span>
+  <div id="stplace" class="nppick"></div>
+  <span class="stlab"><label for="stlang">Language</label></span>
+  <select id="stlang" class="stsel">
+    <option value="en">English</option>
+    <option value="hi">हिन्दी</option>
+  </select>
+  <span class="stlab"><label for="stratio">Image</label></span>
+  <select id="stratio" class="stsel"></select>
+  <span class="stlab"><label for="sthorizon">Look ahead</label></span>
+  <select id="sthorizon" class="stsel">
+    <option value="5">5 days</option>
+    <option value="10" selected>10 days</option>
+    <option value="21">21 days</option>
+    <option value="45">45 days</option>
+  </select>
+</div>
+
+<div id="stpreview" class="stpreview" hidden></div>
+
+<h2 id="today">What is worth posting</h2>
+<div id="stcards" class="stcards"><p class="stnote">Reading the sky&hellip;</p></div>
+
+<h2 id="ahead">Coming up</h2>
+<p>Stations, sign ingresses and syzygies in the window you chose, so a week can be planned in one sitting rather than discovered each morning. Times are for the place above.</p>
+<div id="stahead"></div>
+
+<h2 id="how">How this works, and what it will not do</h2>
+
+<p>Every figure in every caption is computed at the moment it is written, from the same ephemeris the chart engine uses, the same festival rules the calendar applies, and the same pañcāṅga the <a href="now.html">now page</a> prints. Nothing comes from a stored table, so nothing can go stale &mdash; and the caption and the image cannot contradict each other, because both are built from one day object.</p>
+
+<p><b>It writes no predictions.</b> Not &ldquo;Mercury retrograde will disrupt your communication&rdquo;. This site does not make deterministic claims about anyone's life, and a caption is not exempt from that for being short. What it writes is what is <i>happening</i>, and what the tradition says the thing <i>is</i>: the rule, the exact span, the number, and the distinction people usually get wrong. Retrograde motion is the clearest example &mdash; it is a line-of-sight effect of two bodies passing, not a planet reversing, and saying so is both more accurate and more interesting than a forecast.</p>
+
+<p>The ordering is by how rare the event is and how close: a festival or a station outranks an ordinary Tuesday, and the daily pañcāṅga sits at the bottom as the thing that is always true and always postable. Where a festival rule is one that published almanacs apply differently, the caption says so rather than asserting a single answer &mdash; the same discipline the <a href="calendar.html">calendar</a> keeps.</p>
+
+<p>The image is deliberately plain: a headline, the numbers under it, the place, the handle. The content is the thing nobody else has, so the design stays out of its way.</p>
+
+<h2 id="animate">Turning one into a video</h2>
+
+<p>Several of these cards offer <b>Animate this</b>, which opens the matching scene on the <a href="kundli.html">chart page</a> &mdash; the retrograde loop for a station, the orrery for an ingress, the tithi wheel for a syzygy. From there, <b>Record this loop</b> writes a video file.</p>
+
+<p>That recorder is not a screen capture. The playhead is advanced by an exact increment per frame, drawn, and handed to the encoder one frame at a time, so the result is constant frame rate however fast or slow the machine happened to be drawing. Nothing is uploaded and no toolchain is involved. The <b>Reels guides</b> switch shows where Instagram will cover the frame with its own caption and buttons, and <b>Safe layout</b> lifts everything clear of that strip.</p>
+
+<h2 id="place">Why the place is on this page too</h2>
+
+<p>Sunrise decides which day a tithi names, and sunrise depends on where you are standing. Two cities can honestly disagree about which day an ekādaśī falls on. Station and ingress times shift with the clock too. So the place is a control here exactly as it is everywhere else on this site, and the caption states which place its numbers were computed for &mdash; because a figure without a place is not a figure.</p>

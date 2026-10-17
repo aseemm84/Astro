@@ -127,6 +127,14 @@
     "layout": "",
     "has_aside": true
   },
+  "studio": {
+    "title": "Studio — what to post today — {{BRAND}}",
+    "desc": "Given a date and a place, what is actually happening in the sky that is worth posting about — with the caption and the image, every figure computed in your browser rather than looked up.",
+    "h1": "Studio",
+    "sub": "What is worth posting today — the caption, the numbers behind it, and the image.",
+    "layout": "",
+    "has_aside": true
+  },
   "404": {
     "title": "Page not found — {{BRAND}}",
     "desc": "That address is not on this site. Links to the chart builder, the pañcāṅga for now, and the main reference pages.",

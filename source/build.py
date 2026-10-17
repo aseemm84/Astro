@@ -322,6 +322,9 @@ def build_shared():
         # a second copy of "which city is this and what is its offset". Lazy: the
         # 3 MB of rows are fetched only when somebody actually searches.
         "places.js": brandify(read(SRC, "js", "places.js")),
+        # studio.html's own script: what is worth posting today, the caption and
+        # the image. Loaded only on that page, like now.js and calendar.js.
+        "studio.js": brandify(read(SRC, "js", "studio.js")),
         "panchanga.js": brandify(read(SRC, "js", "panchanga.js") + "\n" +
                                  read(SRC, "js", "festivals.js")),
         # cities.js is cities.json with sixteen characters in front of it. The chart
