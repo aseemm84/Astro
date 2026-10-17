@@ -59,7 +59,7 @@ function moPaneHTML(){
     'and screen-record. <b>Studio mode</b> hides the whole site so the recording is clean. The '+
     '<b>export</b> button hands you the numbers behind whichever scene is running, as a spreadsheet.</p>'+
 
-    (moHasChart()?"":'<p class="monochart">'+esc(moT("noChartYet"))+'</p>')+
+    (moHasChart()?"":'<p class="monochart">'+esc(moP("noChartYet"))+'</p>')+
     '<div class="moscenes">'+MO_SCENES.map(function(s){
       var ok=moSceneAvailable(s.key);
       return '<button type="button" class="moscene'+(s.key===MO.scene?" on":"")+
@@ -127,8 +127,8 @@ function moPaneHTML(){
 
         (moHasChart()?"":
         moBand("where","Where","the place these are drawn for",
-        '<div class="morow"><span class="molab">'+esc(moT("pickPlace"))+'</span>'+
-          '<select id="moplacesel" class="skysel">'+moPlaceOptions()+'</select>'+
+        '<div class="morow"><span class="molab">'+esc(moP("pickPlace"))+'</span>'+
+          '<div id="moplacesel" class="nppick"></div>'+
           '<span class="mohint">sunrise, the lagna and the Hindu date all depend on '+
           'where you are standing; with no chart cast there is nothing to take the '+
           'place from, so choose one</span>'+
@@ -396,7 +396,7 @@ function moSceneOpts(){
 }
 function moMount(){
   var cv=document.getElementById("mocanvas"); if(!cv) return false;
-  MO.cv=cv; moResize(); moLogo(); moSceneOpts();
+  MO.cv=cv; moResize(); moLogo(); moSceneOpts(); moPlaceMount();
   if(MO__LOGO && !MO__LOGO.complete) MO__LOGO.onload=function(){ moDraw(); };
   moDraw(); return true;
 }
@@ -422,18 +422,39 @@ function moPaneRefresh(){
   if(wasPlaying) moPlay(true);
 }
 
-/* The place options, from the form's own city list. */
-function moPlaceOptions(){
-  var L=window.__kcities||[], cur=-1;
-  try{ L.forEach(function(c,i){ if(c.n===window.__kplace) cur=i; }); }catch(e){}
-  if(cur<0 && L.length){
-    cur=0;
-    window.__kplace=L[0].n; window.__kwhereLat=L[0].lat;
-    window.__kwhereLon=L[0].lon; window.__kwhereTz=L[0].tz;
+/* The place these chart-free scenes are drawn for.
+
+   This was a dropdown over a short list, which is the wrong shape when the
+   whole town database is one lazy fetch away: a reader whose town was not among
+   the nineteen had no way to say so, and sunrise, the lagna and the Hindu date
+   all follow from the place. The shared picker from places.js is used instead —
+   the same control the now page and the calendar use, so the three cannot drift.
+
+   Mounted rather than returned as markup, because the picker builds its own
+   elements and binds its own handlers. */
+function moPlaceMount(){
+  var host=document.getElementById("moplacesel");
+  if(!host || !window.NPlaces || host.dataset.npdone) return;
+  var L=window.__kcities||[];
+  var cur=null;
+  try{
+    L.forEach(function(c){ if(c.n===window.__kplace) cur=c; });
+  }catch(e){}
+  if(!cur && L.length){
+    cur=L[0];
+    window.__kplace=cur.n; window.__kwhereLat=cur.lat;
+    window.__kwhereLon=cur.lon; window.__kwhereTz=cur.tz;
   }
-  return L.map(function(c,i){
-    return '<option value="'+i+'"'+(i===cur?" selected":"")+'>'+esc(c.n)+'</option>';
-  }).join("");
+  host.dataset.npdone="1";
+  window.NPlaces.picker({
+    host:host, value:cur, quick:L, label:moP("pickPlace"),
+    refMs:function(){ return MO._lastMs||Date.now(); },
+    onPick:function(p){
+      window.__kplace=p.n; window.__kwhereLat=p.lat;
+      window.__kwhereLon=p.lon; window.__kwhereTz=p.tz;
+      MO_CACHE={}; moDraw();
+    }
+  });
 }
 window.__moDraw=function(){ if(MO.cv) moDraw(); };
 window.__moPaceLabel=function(){ MO_CACHE={}; return moPaceLabel(); };
@@ -594,12 +615,6 @@ document.addEventListener("input",function(ev){
 });
 document.addEventListener("change",function(ev){
   var t2=ev.target; if(!t2) return;
-  if(t2.id==="moplacesel"){
-    var c=(window.__kcities||[])[+t2.value];
-    if(c){ window.__kplace=c.n; window.__kwhereLat=c.lat;
-           window.__kwhereLon=c.lon; window.__kwhereTz=c.tz; }
-    MO_CACHE={}; moDraw(); return;
-  }
   if(t2.id==="mospeed"){ MO.speed=+t2.value; moDurRead(); return; }
   if(t2.id==="mospanu"){ MO.opt.spanU=t2.value; MO.p=0; MO_CACHE={}; moDurRead(); moDraw(); return; }
   if(t2.id==="movarga"){ MO.opt.varga=+t2.value||0; MO.p=0; MO_CACHE={};

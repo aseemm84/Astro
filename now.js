@@ -73,7 +73,14 @@
       engineWanted=true;
       var s=document.createElement("script");
       s.src="engine.js";
-      s.onload=function(){ engineReady=true; fn(); };
+      s.onload=function(){
+        /* places.js is small and carries the shared picker; the three-megabyte
+           town file behind it is still only fetched if somebody searches. */
+        var q=document.createElement("script");
+        q.src="places.js";
+        q.onload=q.onerror=function(){ engineReady=true; fn(); };
+        document.head.appendChild(q);
+      };
       s.onerror=function(){
         var h=$("nowgrid");
         if(h) h.innerHTML='<p class="nownote">The engine could not be loaded, so '+
@@ -474,14 +481,20 @@
 
   /* --- wiring --------------------------------------------------------------- */
   function buildControls(){
+    /* The shared place picker rather than a dropdown over nineteen cities:
+       the whole town database is available, and a reader whose town is not on
+       a short list had no way to say so. Same control as the calendar and the
+       chart page's sky panel. */
     var sel=$("nowplace");
-    if(sel){
+    if(sel && window.NPlaces){
       var sv=savedPlace();
-      var list=sv?[sv].concat(PLACES):PLACES;
-      sel.innerHTML=list.map(function(p,i){
-        return '<option value="'+i+'">'+esc(p.n)+'</option>'; }).join("");
-      PLACE=list[0]; sel.value="0";
-      sel.addEventListener("change",function(){ PLACE=list[+sel.value]||PLACE; render(); });
+      var quick=(sv?[sv]:[]).concat(PLACES);
+      PLACE=sv||PLACES[2];
+      window.NPlaces.picker({
+        host:sel, value:PLACE, quick:quick, label:"Place",
+        refMs:function(){ return Date.now(); },
+        onPick:function(p){ PLACE=p; render(); }
+      });
     }
     var sp=$("nowspan");
     if(sp) sp.addEventListener("change",function(){
@@ -509,8 +522,12 @@
 
   function start(){
     if(!$("nowgrid")) return;
-    buildControls();
+    /* The controls are built AFTER the scripts land, not before: the place
+       picker comes from places.js, so building them first left window.NPlaces
+       undefined and the picker silently absent — the control was simply not
+       there, with nothing thrown and nothing logged. */
     withEngine(function(){
+      buildControls();
       render();
       if(tickTimer) clearInterval(tickTimer);
       /* A second is the right cadence: the clock moves every second and everything

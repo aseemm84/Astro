@@ -127,5 +127,146 @@
     } catch (e) { return null; }
   };
 
+  /* ===== the picker ========================================================
+     One place-picking control, used by the chart page's sky panel, the now
+     page and the calendar. There were three different ones, all of them a
+     dropdown over a short list — which is the wrong shape once a 44,426-town
+     database is sitting right there: a reader whose town is not among the
+     nineteen had no way to say so.
+
+     Search-first, but not search-only. The short list stays as what the field
+     offers before you type, because it is instant, it needs no three-megabyte
+     download, and the likely answers are on it. Typing two letters reaches the
+     whole database. A reader who never types pays nothing for the file.
+
+     opts: {host, value, quick, refMs, onPick, label}
+       host   — the element to render into
+       value  — the place currently in use, shown as the field's resting state
+       quick  — the short list offered before anything is typed
+       refMs  — () => instant the UTC offset should be resolved for
+       onPick — place => {}, called with {n, lat, lon, tz, zone, found}
+  */
+  NPL.picker = function (opts) {
+    var host = opts.host;
+    if (!host) return null;
+    var refMs = opts.refMs || function () { return Date.now(); };
+    var seq = 0, timer = null;
+
+    host.innerHTML =
+      '<input class="npfind" type="search" autocomplete="off" ' +
+      'aria-label="' + (opts.label || "Place") + '" spellcheck="false">' +
+      '<div class="npres" role="listbox" hidden></div>';
+    var inp = host.querySelector(".npfind"), res = host.querySelector(".npres");
+
+    function esc(s) {
+      return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+        return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c];
+      });
+    }
+    function setValue(p) {
+      inp.value = "";
+      inp.placeholder = p ? p.n : "Search for a place…";
+      inp.title = p ? ("Computed for " + p.n + " — type to change") : "";
+    }
+    function close() { res.hidden = true; res.innerHTML = ""; }
+    function msg(t) { res.hidden = false; res.innerHTML = '<p class="npmsg">' + t + "</p>"; }
+
+    function offer(items, how) {
+      if (!items.length) { close(); return; }
+      res.hidden = false;
+      res.innerHTML =
+        (how ? '<p class="npmsg">' + how + "</p>" : "") +
+        items.map(function (p, i) {
+          var off = p.tz != null ? p.tz
+                  : NPL.offsetAt(p.zone, refMs());
+          return '<button type="button" role="option" data-npi="' + i + '">' +
+            "<b>" + esc(p.n) + "</b><span>" +
+            (p.lat != null ? p.lat.toFixed(2) + "°, " + p.lon.toFixed(2) + "° " : "") +
+            (p.zone ? "· " + esc(p.zone) + " " : "") +
+            (off == null ? "" : "· UTC" + (off >= 0 ? "+" : "") + off) +
+            "</span></button>";
+        }).join("");
+      res.querySelectorAll("[data-npi]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          var p = items[+b.getAttribute("data-npi")];
+          var off = p.tz != null ? p.tz : NPL.offsetAt(p.zone, refMs());
+          if (off == null) {
+            /* A place whose zone this browser cannot resolve is refused rather
+               than given a guessed offset: a wrong offset moves sunrise, and
+               sunrise is what names the day. */
+            msg("The time zone for " + esc(p.n) + " could not be resolved in " +
+                "this browser, so its sunrise cannot be computed. Try a " +
+                "nearby town.");
+            return;
+          }
+          var out = { n: p.n, lat: p.lat, lon: p.lon, tz: off,
+                      zone: p.zone || null, found: !!p.found };
+          setValue(out); close();
+          if (opts.onPick) opts.onPick(out);
+        });
+      });
+    }
+    function showQuick() {
+      var q = (opts.quick || []).slice(0, 12);
+      offer(q, q.length ? "Nearby and common places — or type to search " +
+                          "44,426 towns" : "");
+    }
+    function run() {
+      var q = (inp.value || "").trim(), mine = ++seq;
+      if (q.length === 0) { showQuick(); return; }
+      if (q.length < 2) { msg("Type at least two letters."); return; }
+      if (!NPL.loaded()) msg("Loading the town list once…");
+      NPL.load().then(function (db) {
+        if (mine !== seq) return;              /* a later keystroke has won */
+        var hits = NPL.search(db, q, 9).map(function (ix) {
+          var p = NPL.place(db, ix); p.found = true; p.tz = null; return p;
+        });
+        if (!hits.length) {
+          msg("No match for &ldquo;" + esc(q) + "&rdquo;. Try another spelling, " +
+              "or a larger town nearby.");
+          return;
+        }
+        offer(hits, "");
+      }).catch(function (e) {
+        if (mine !== seq) return;
+        msg("The town list could not be loaded (" + esc(e.message) + "). " +
+            "Make sure <code>cities.json</code> and <code>cities.js</code> " +
+            "sit beside this page.");
+      });
+    }
+    inp.addEventListener("input", function () {
+      clearTimeout(timer); timer = setTimeout(run, 180);
+    });
+    inp.addEventListener("focus", function () { if (!inp.value) showQuick(); });
+    inp.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") { inp.value = ""; close(); inp.blur(); }
+      if (e.key === "Enter") { e.preventDefault(); clearTimeout(timer); run(); }
+    });
+    /* Dismiss on a press outside, bound to MOUSEDOWN rather than click.
+
+       It has to be mousedown because opening the list changes the layout. The
+       sequence on a real mouse click is: mousedown → focus → the list renders →
+       the row grows → the input moves out from under the pointer → the eventual
+       click event is dispatched at the original coordinates, which are now over
+       the container rather than the input. A click-bound handler therefore sees
+       a target outside the host and closes the list it had just opened, so the
+       control did nothing at all for mouse users while working perfectly from
+       the keyboard. At mousedown the layout has not moved yet.
+
+       The listener removes itself once its host leaves the document, so a pane
+       that rebuilds itself does not leave a trail of handlers behind holding
+       detached elements. */
+    function onDown(e) {
+      if (!document.contains(host)) {
+        document.removeEventListener("mousedown", onDown, true);
+        return;
+      }
+      if (!host.contains(e.target)) close();
+    }
+    document.addEventListener("mousedown", onDown, true);
+    setValue(opts.value || null);
+    return { set: setValue, close: close, input: inp };
+  };
+
   window.NPlaces = NPL;
 })();

@@ -95,59 +95,14 @@
   }
   function showResults(html){ $("k-results").innerHTML=html; }
   // --- offline city search: loads ./cities.json once, then searches locally ---
-  var CITYDB=null, CITYLOADING=null;
-  function foldStr(s){ return s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim(); }
-  function loadCities(){
-    if(CITYDB) return Promise.resolve(CITYDB);
-    if(CITYLOADING) return CITYLOADING;
-    /* Two ways in, and the second is the one that matters for a local copy.
-       fetch() is blocked on file:// — the page's origin is "null" and the browser
-       refuses the read — so a copy opened straight from Finder could never load
-       the city list, however correctly it sat beside the page. A <script> tag is
-       not subject to that rule. So: try fetch first, because over http it is the
-       cheaper path and needs no global; fall back to loading cities.js, which
-       assigns the same data to window.__CITIES. Both files hold the same rows. */
-    CITYLOADING=fetch("cities.json").then(function(r){
-      if(!r.ok) throw new Error("HTTP "+r.status);
-      return r.json();
-    }).catch(function(){ return loadCitiesByScript(); }).then(function(d){
-      d.c.forEach(function(row){ row[8]=foldStr(row[0]); });
-      CITYDB=d; return d;
-    });
-    return CITYLOADING;
-  }
-  function loadCitiesByScript(){
-    return new Promise(function(res,rej){
-      if(window.__CITIES) return res(window.__CITIES);
-      var s=document.createElement("script");
-      s.src="cities.js";
-      s.onload=function(){ window.__CITIES?res(window.__CITIES)
-                                           :rej(new Error("cities.js loaded but held no data")); };
-      s.onerror=function(){ rej(new Error("neither cities.json nor cities.js could be read")); };
-      document.head.appendChild(s);
-    });
-  }
-  function searchCities(db,q,limit){
-    var f=foldStr(q); if(f.length<2) return [];
-    var exact=[],prefix=[],sub=[],alias=[];
-    for(var i=0;i<db.c.length;i++){
-      var r=db.c[i], n=r[8];
-      if(n===f){ exact.push(i); }
-      else if(n.indexOf(f)===0){ prefix.push(i); }
-      else if(n.indexOf(f)>0){ sub.push(i); }
-      else {
-        var al=r[7];
-        for(var j=0;j<al.length;j++){ if(al[j]===f||al[j].indexOf(f)===0){ alias.push(i); break; } }
-      }
-      if(exact.length+prefix.length>limit*3 && i>4000) break;   // rows are population-ordered
-    }
-    return exact.concat(prefix,alias,sub).slice(0,limit);
-  }
-  function cityLabel(db,r){
-    var parts=[r[0]]; var a=db.adm[r[5]]; if(a) parts.push(a);
-    parts.push(db.ccn[r[4]]||db.cc[r[4]]);
-    return parts.join(", ");
-  }
+  /* The city list, the search and the labels now live in places.js, shared with
+     the motion pane's place picker, the now page and the calendar. They were
+     four separate implementations of "which city is this"; the offset is
+     load-bearing in all four, so one copy is the only safe number of copies. */
+  function loadCities(){ return window.NPlaces.load(); }
+  function searchCities(db,q,limit){ return window.NPlaces.search(db,q,limit); }
+  function foldStr(s){ return window.NPlaces.fold(s); }
+  function cityLabel(db,r){ return window.NPlaces.label(db,r); }
   async function citySearch(){
     var q=($("k-search").value||"").trim();
     if(q.length<2){ showResults('<div class="k-rmsg">Type at least two letters.</div>'); return; }

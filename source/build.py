@@ -164,7 +164,11 @@ def build_kundli():
              ("<!--JS0-->", read(VEND, "astronomy.browser.min.js"), "script"),
              ("<!--JS1-->", read(SRC, "js", "engine.js"), "script"),
              ("<!--JS2-->", report_bundle(), "script"),
-             ("<!--JS3-->", read(SRC, "js", "ui.js"), "script")]
+             # places.js before ui.js: the form's city search and the motion
+             # pane's place picker are the same code now, and the bundle must
+             # define it before either uses it.
+             ("<!--JS3-->", read(SRC, "js", "places.js") + "\n" +
+                            read(SRC, "js", "ui.js"), "script")]
     stamp = build_stamp([shell] + [b for _, b, _ in parts])
     if "<!--BUILD-->" in shell:
         shell = shell.replace("<!--BUILD-->", stamp)
@@ -359,6 +363,69 @@ def build_pages():
                           .replace("<!--LOGO-->", logo_mark()))
     return out
 
+def lang_key_check(src_dir):
+    """Every moT()/moP() key must exist in the table its accessor reads.
+
+    moT reads MO_STR.ui and moP reads MO_PHR; both fall back to RETURNING THE KEY
+    when they miss. So a key filed in the wrong table does not throw, does not
+    warn, and simply prints its own name on screen — which is how the sky panel
+    came to label its place control "pickPlace" for every reader, in both
+    languages, for as long as that control existed.
+
+    A miss is indistinguishable from a working string at runtime, so the build
+    has to be what notices."""
+    lang = read(src_dir, "js", "report", "motion", "49-motion-lang.js")
+
+    def block(pat):
+        m = re.search(pat, lang)
+        if not m:
+            return ""
+        buf = lang[m.end():]
+        d, j = 1, 0
+        while j < len(buf) and d > 0:
+            if buf[j] == "{":
+                d += 1
+            elif buf[j] == "}":
+                d -= 1
+            j += 1
+        return buf[:j]
+
+    def keys(body):
+        return set(re.findall(r"(?m)^\s*([A-Za-z_$][\w$]*)\s*:", body))
+
+    ui = keys(block(r"\nui:\{"))
+    phr = set()
+    for v in ["MO_PHR", "MO_PHR2", "MO_PHR3", "MO_PHR4", "MO_PHR5", "MO_PHR6"]:
+        phr |= keys(block(r"var %s=\{" % v))
+    if not ui or not phr:
+        raise SystemExit("the language tables could not be read for checking")
+
+    bad = []
+    d = os.path.join(src_dir, "js", "report", "motion")
+    for name in sorted(os.listdir(d)):
+        if not name.endswith(".js"):
+            continue
+        body = read(d, name)
+        for m in re.finditer(r'\bmoT\(\s*"([^"]+)"', body):
+            if m.group(1) not in ui:
+                bad.append("moT(\"%s\") in %s — %s" % (
+                    m.group(1), name,
+                    "that key is in MO_PHR; use moP" if m.group(1) in phr
+                    else "that key is in neither table"))
+        for m in re.finditer(r'\bmoP\(\s*"([^"]+)"', body):
+            if m.group(1) not in phr:
+                bad.append("moP(\"%s\") in %s — %s" % (
+                    m.group(1), name,
+                    "that key is in MO_STR.ui; use moT" if m.group(1) in ui
+                    else "that key is in neither table"))
+    if bad:
+        for b in bad:
+            print("  LANGKEY  " + b)
+        raise SystemExit("%d language key(s) resolve to nothing" % len(bad))
+    print("  checked  %d ui + %d phrase keys, every moT/moP call resolves" %
+          (len(ui), len(phr)))
+
+
 def syntax_check(built):
     """Parse every emitted script, and every script inlined into a page.
 
@@ -422,6 +489,7 @@ def main():
     built.update(build_adopted())
     # last, because its cache key is a fingerprint of everything above it
     built.update(build_pwa(built))
+    lang_key_check(SRC)
     syntax_check(built)
 
     if "--check" in args:

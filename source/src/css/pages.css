@@ -548,25 +548,32 @@ html.navlock,html.navlock body{overflow:hidden}
   @page{size:A4 landscape;margin:9mm}
 }
 
-/* The place search. The results sit in the bar's flow rather than as a floating
-   popover: a popover would need positioning against a wrapping flex row that
-   reflows at three widths, and the bar is short enough that pushing the rest
-   down is the simpler honest behaviour. */
-.cfind{min-width:20ch}
-.cfindres{flex-basis:100%;display:flex;flex-direction:column;gap:2px;
-  margin:2px 0 0;max-height:min(46vh,320px);overflow:auto}
-.cfindres[hidden]{display:none}
-.cfindres button{font:inherit;text-align:left;background:#fff;cursor:pointer;
-  border:1px solid var(--line);border-radius:8px;padding:5px 9px;
+}
+
+/* The shared place picker (NPlaces.picker). One control on three pages, so one
+   block of styling rather than three that drift. The results sit in the flow
+   rather than floating: a popover would need positioning against bars that
+   wrap at three widths, and pushing the content down is the simpler honest
+   behaviour on a control that is dismissed as soon as it is used. */
+.nppick{position:relative;display:flex;flex-wrap:wrap;gap:4px;min-width:min(26ch,100%)}
+.npfind{font:inherit;font-size:13px;padding:5px 9px;border:1px solid var(--line,#e7e7f0);
+  border-radius:8px;background:#fff;color:var(--ink,#20233a);width:100%;min-width:0}
+.npfind::placeholder{color:var(--ink,#20233a);opacity:.85}
+.npfind:focus{outline:2px solid var(--gold,#c9a24b);outline-offset:1px}
+.npres{flex-basis:100%;display:flex;flex-direction:column;gap:2px;
+  max-height:min(50vh,340px);overflow:auto;margin:2px 0 0}
+.npres[hidden]{display:none}
+.npres button{font:inherit;text-align:left;background:#fff;cursor:pointer;
+  border:1px solid var(--line,#e7e7f0);border-radius:8px;padding:5px 9px;
   display:flex;flex-direction:column;line-height:1.3}
-.cfindres button:hover,.cfindres button:focus-visible{border-color:var(--gold);
+.npres button:hover,.npres button:focus-visible{border-color:var(--gold,#c9a24b);
   background:#fcfbf6}
-.cfindres button b{font-size:13px;font-weight:600}
-.cfindres button span{font-size:11.5px;color:var(--muted);
+.npres button b{font-size:13px;font-weight:600}
+.npres button span{font-size:11.5px;color:var(--muted,#6c7089);
   font-variant-numeric:tabular-nums}
-.cfindmsg{font-size:12.5px;color:var(--muted);padding:3px 2px}
-@media print{ .cfindres{display:none !important} }
+.npmsg{font-size:12px;color:var(--muted,#6c7089);margin:2px 0 3px;padding:0 2px}
+@media print{ .npres{display:none !important} }
 @media (prefers-color-scheme:dark){
-  .cfindres button{background:rgba(255,255,255,.04)}
-  .cfindres button:hover{background:rgba(255,255,255,.08)}
+  .npfind,.npres button{background:rgba(255,255,255,.04);color:#e8e9f3}
+  .npres button:hover{background:rgba(255,255,255,.08)}
 }
