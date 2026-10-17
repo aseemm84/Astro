@@ -51,6 +51,7 @@
   "motion/54-motion-bodies.js",
   "motion/55-motion-sky-scenes.js",
   "motion/57-motion-teaching.js",
+  "motion/58-motion-capture.js",
   "motion/56-motion-guide.js",
   "motion/53-motion-pane.js",
   "export/42-json-export.js",

@@ -198,7 +198,29 @@ function moPaneHTML(){
           '<button type="button" class="k-btn sec" id="moxls">Export data (.xlsx)</button>'+
           '<button type="button" class="k-btn sec" id="mopng">Save this frame (.png)</button>'+
           '<span class="moxlsmsg" id="moxlsmsg"></span>'+
-        '</div>')+
+        '</div>'+
+        /* Video, and the guides that decide where the words can safely go. The
+           recording is not a screen capture: the playhead is stepped by an exact
+           frame each time and the frame pushed to the encoder, so the file is
+           constant frame rate however slowly the machine drew it. */
+        '<div class="morow">'+
+          '<button type="button" class="k-btn" id="movid">Record this loop</button>'+
+          '<button type="button" class="k-btn sec" id="movidstop" hidden>Stop</button>'+
+          '<span class="molab">fps</span>'+
+          '<select id="movidfps" class="skysel">'+
+            [24,25,30,60].map(function(f){ return '<option value="'+f+'"'+
+              (f===MO_CAP.fps?" selected":"")+'>'+f+'</option>'; }).join("")+
+          '</select>'+
+          '<button type="button" class="skyv'+(MO.guides?" on":"")+'" id="moguides" '+
+            'aria-pressed="'+(MO.guides?"true":"false")+'" '+
+            'title="Show where Instagram will draw its own caption, handle and '+
+            'buttons over the frame">Reels guides</button>'+
+          '<button type="button" class="skyv'+(MO.safeLayout?" on":"")+'" id="mosafe" '+
+            'aria-pressed="'+(MO.safeLayout?"true":"false")+'" '+
+            'title="Lift the whole frame clear of the strip Instagram covers with '+
+            'its caption and handle">Safe layout</button>'+
+        '</div>'+
+        '<div class="morow"><span class="moxlsmsg" id="movidmsg"></span></div>')+
         /* The reading note sits below every control, so the controls stay within reach of
            the frame and the note reads as a footnote to the scene rather than a preamble
            you scroll past to get to Play. */
@@ -546,6 +568,20 @@ document.addEventListener("click",function(ev){
   if(t.id==="mostudio"){ moStudio(!MO.studio); return; }
   if(t.id==="moexit"){ moStudio(false); return; }
   if(t.id==="moxls"){ moExport(); return; }
+  if(t.id==="movid"){ moRecordLoop(); return; }
+  if(t.id==="movidstop"){ MO_CAP.cancel=true; return; }
+  if(t.id==="mosafe"){
+    MO.safeLayout=!MO.safeLayout;
+    t.className="skyv"+(MO.safeLayout?" on":"");
+    t.setAttribute("aria-pressed",MO.safeLayout?"true":"false");
+    MO_CACHE={}; moDraw(); return;
+  }
+  if(t.id==="moguides"){
+    MO.guides=!MO.guides;
+    t.className="skyv"+(MO.guides?" on":"");
+    t.setAttribute("aria-pressed",MO.guides?"true":"false");
+    moDraw(); return;
+  }
   if(t.id==="mopng"){
     try{
       var nm=(MO.J&&MO.J.input&&MO.J.input.name)||"chart";
@@ -628,6 +664,7 @@ document.addEventListener("input",function(ev){
 });
 document.addEventListener("change",function(ev){
   var t2=ev.target; if(!t2) return;
+  if(t2.id==="movidfps"){ MO_CAP.fps=+t2.value||30; return; }
   if(t2.id==="mospanu"){ MO.opt.spanU=t2.value; MO.p=0; MO_CACHE={}; moDurRead(); moDraw(); return; }
   if(t2.id==="movarga"){ MO.opt.varga=+t2.value||0; MO.p=0; MO_CACHE={};
     moSceneOpts(); moDraw(); return; }

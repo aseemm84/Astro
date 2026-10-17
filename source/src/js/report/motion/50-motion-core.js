@@ -37,7 +37,7 @@ var MO_BEN={Jupiter:1,Venus:1,Mercury:1,Moon:1};
 
 var MO={
   cv:null, ctx:null, D:null, J:null,
-  ratio:"9:16", scene:"retro", pal:"midnight", dur:15,
+  ratio:"9:16", scene:"retro", pal:"midnight", dur:15, guides:false, safeLayout:false,
   p:0, playing:false, raf:null, last:null, studio:false,
   show:{Sun:true,Moon:true,Mars:true,Mercury:true,Jupiter:true,Venus:true,Saturn:true,Rahu:true,Ketu:true},
   speed:1,                 // multiplies the loop length, live, without resetting
@@ -118,9 +118,18 @@ function moSerif(s,x,y,size,col,align){
 function moStage(){
   var S=moSize();
   var capH = MO.ratio==="16:9" ? S.h*0.17 : S.h*0.19;
-  var H=S.h-capH;
-  return {x:0, y:0, w:S.w, h:H, cx:S.w/2, cy:H/2, capY:S.h-capH, capH:capH,
-          R:Math.min(S.w*0.455, H*0.455)};
+  /* Reels-safe layout, off by default so nothing already made changes.
+
+     Turning the guides on makes an awkward thing obvious: the caption band sits
+     exactly where Instagram draws its own caption and handle, so the title of
+     every scene is covered in the feed. With this on, the band and the stage
+     are lifted clear of that strip. It is a layout for one destination, which
+     is why it is a switch and not the new default — on a wide frame for a
+     screen, there is nothing to avoid. */
+  var lift = (MO.safeLayout && MO.ratio!=="16:9") ? S.h*MO_SAFE.bottom : 0;
+  var H=S.h-capH-lift;
+  return {x:0, y:0, w:S.w, h:H, cx:S.w/2, cy:H/2, capY:S.h-capH-lift, capH:capH,
+          lift:lift, R:Math.min(S.w*0.455, H*0.455)};
 }
 
 /* Shared crowding fix, the same rule the ecliptic wheel uses: a glyph never slides
@@ -291,6 +300,9 @@ function moDraw(){
   try{ info=sc.draw(MO.p); }catch(e){ moErr(e); }
   MO.ctx.restore();
   moCaption(info&&info.ms, info&&info.sub);
+  /* Last, over everything, so a guide can never be mistaken for content — and
+     forced off during a capture, which is what makes it a guide. */
+  try{ moDrawGuides(); }catch(e){}
 }
 function moErr(e){
   var S=moSize();
