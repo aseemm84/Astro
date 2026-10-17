@@ -313,6 +313,7 @@ def build_shared():
         # eventually disagree, and for a calendar that is the only thing that
         # matters. festivals.js extends the same window.NP, so they ship as one
         # file and a page cannot load half of the pair.
+        "calendar.js": brandify(read(SRC, "js", "calendar.js")),
         "panchanga.js": brandify(read(SRC, "js", "panchanga.js") + "\n" +
                                  read(SRC, "js", "festivals.js")),
         # cities.js is cities.json with sixteen characters in front of it. The chart

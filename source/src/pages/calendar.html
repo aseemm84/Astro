@@ -1,0 +1,95 @@
+<p class="lead">A full pañcāṅga calendar for any month between <b>1800 and 2200</b>, computed in your browser for the place you choose. Four views over the same day: a <b>month grid</b> with the moon's phase on every cell, the traditional <b>almanac row</b> a printed pañcāṅga uses, a <b>day detail</b> that shows the rule behind every festival it names, and a <b>year view</b> &mdash; the only one that can show an intercalary month, because a month grid has no cell for a month the Gregorian year does not contain.</p>
+
+<div class="cbar">
+  <div class="cbargroup">
+    <span class="clab"><label for="cplace">Place</label></span>
+    <select id="cplace" class="csel"></select>
+    <span class="clab"><label for="cmonthin">Month</label></span>
+    <select id="cmonthin" class="csel"></select>
+    <span class="clab"><label for="cyearin">Year</label></span>
+    <input id="cyearin" class="csel cnum" type="number" step="1">
+  </div>
+  <div class="cbargroup">
+    <button type="button" data-cview="month" class="cvbtn">Month</button>
+    <button type="button" data-cview="almanac" class="cvbtn">Almanac</button>
+    <button type="button" data-cview="day" class="cvbtn">Day</button>
+    <button type="button" data-cview="year" class="cvbtn">Year</button>
+  </div>
+</div>
+
+<div class="cbar cbar2">
+  <div class="cbargroup">
+    <span class="clab"><label for="cpreset">Detail</label></span>
+    <select id="cpreset" class="csel">
+      <option value="minimal">Minimal</option>
+      <option value="standard">Standard</option>
+      <option value="almanac">Almanac</option>
+      <option value="everything">Everything</option>
+    </select>
+    <span class="clab"><label for="creck">Months counted</label></span>
+    <select id="creck" class="csel">
+      <option value="purnimanta">Pūrṇimānta (full moon ends the month)</option>
+      <option value="amanta">Amānta (new moon ends the month)</option>
+    </select>
+    <span class="clab"><label for="cera">Era</label></span>
+    <select id="cera" class="csel">
+      <option value="vikrama">Vikrama Saṃvat</option>
+      <option value="saka">Śaka Saṃvat</option>
+    </select>
+    <span class="clab"><label for="cendfmt">End times</label></span>
+    <select id="cendfmt" class="csel">
+      <option value="clock">24-hour clock</option>
+      <option value="ghatika">Ghaṭī from sunrise</option>
+    </select>
+    <span class="clab"><label for="cconv">Sunrise is</label></span>
+    <select id="cconv" class="csel"></select>
+  </div>
+</div>
+
+<details class="clayerbox">
+  <summary>Layers &mdash; what each cell shows</summary>
+  <div id="clayers" class="clayerlist"></div>
+  <p class="cnote">The first three cannot be turned off: without them a cell is not a pañcāṅga. Changing any of the others puts the Detail control into &ldquo;Custom&rdquo;, because a preset that no longer describes the screen is worse than no preset. The view you build is carried in the address bar, so you can send someone the calendar you are looking at rather than a description of it.</p>
+</details>
+
+<p class="cplacenote" id="cplacenote"></p>
+<div id="chead" class="cheadbar"></div>
+<div id="cbody" class="cbody"><p class="cnote">Computing&hellip;</p></div>
+
+<h2 id="reading">How to read it</h2>
+
+<p>Three things in this calendar are not mistakes, and a trained reader looks for all three.</p>
+
+<p><b>A tithi can name two days.</b> A tithi is a 12&deg; span of the Moon's elongation from the Sun, not a day, and it runs about 23&frac12; hours on average &mdash; but anywhere from about 22 to 26, because the Moon's speed varies by some 15% over a month. A long one can therefore cover two sunrises, and since the tithi running at sunrise names the day, both days carry it. The second is marked <b>upari</b>, which is the notation printed almanacs already use; inventing one here would have been worse. This is also why two consecutive days can both be ekādaśī, and why smārta and vaiṣṇava observance can fall a day apart.</p>
+
+<p><b>A tithi can name no day at all.</b> A short tithi that begins after one sunrise and ends before the next never names a day &mdash; <i>tithi kṣaya</i>. The gap is left visible rather than closed up. It has real consequences: Caitra śukla pratipadā covers no sunrise in 2026, so Ugādi that year falls on the day whose sunrise carries the following tithi.</p>
+
+<p><b>A lunar month can be inserted or lost.</b> A lunar month containing no solar ingress is <i>adhika</i>, intercalary: it takes the name of the month that follows, the first of the pair is adhika and the second <i>śuddha</i>, and the month-specific festivals fall in the śuddha one. Rarer still, a month containing two ingresses is <i>kṣaya</i> &mdash; roughly once in 141 years &mdash; and regional traditions handle it differently enough that this page flags it instead of choosing between them. Neither can be drawn in a month grid, which is what the year view is for.</p>
+
+<h2 id="reckoning">Two ways of counting months, and why both are here</h2>
+
+<p>There is no single Hindu calendar. The month can be taken to end at the full moon (<b>pūrṇimānta</b>, the northern convention) or at the new moon (<b>amānta</b>, used in Maharashtra, Gujarat and the south). For the bright fortnight the two agree; for the dark fortnight the pūrṇimānta name runs one month ahead. The same day is Śrāvaṇa kṛṣṇa aṣṭamī in one and Bhādrapada kṛṣṇa aṣṭamī in the other &mdash; and that day is Janmāṣṭamī either way.</p>
+
+<p>The control above changes the <b>names you see</b>. It does not change the festival dates, and that is deliberate: most festivals are computed on the <b>amānta</b> month even in pūrṇimānta regions, so this page evaluates every festival rule against the amānta month whatever you have chosen to display. Tying the two together would hand wrong festival dates to exactly the readers the pūrṇimānta default is for. In the day view the rule is written out, so you can see which month a given festival was judged against.</p>
+
+<h2 id="rules">Festivals are rules, not dates</h2>
+
+<p>Dīvālī is not the eighth of November. It is the amāvāsyā of the Kārtika reckoning, observed at <i>pradoṣa</i> &mdash; the evening twilight &mdash; and when that amāvāsyā straddles two evenings, published pañcāṅgas disagree with one another and all of them have a case. So this calendar stores rules and shows them: the day view prints the rule beside the date, marks the rules that almanacs apply differently, and flags the days where the answer is close enough that another almanac may reasonably differ.</p>
+
+<p>A third of these rules are not fixed to sunrise at all, and that is not a refinement &mdash; it is the rule. Mahāśivarātri is the caturdaśī prevailing at <i>niśīta</i>, the middle of the night: in each of 2024, 2025 and 2026 that day reads <i>trayodaśī</i> at sunrise, so testing at sunrise is a day late every time. Vijayadaśamī is judged at <i>aparāhna</i>, the fourth of the five parts of the daytime. Karvā Cauth is judged across the span from sunrise to moonrise, because no single moment names it three years running &mdash; the caturthī covers moonrise but not sunrise in 2024, sunrise but not moonrise in 2025, and both in 2026.</p>
+
+<p>Every rule here was checked against published dates for 2024, 2025 and 2026 and accepted only where all three years agreed. Festivals whose rule could not be stated and attributed are left out: a plausible date with nothing behind it cannot be checked, which makes it worse than an absent one. Regional sets are not here yet, and when they come they will be labelled as such rather than folded into a national list.</p>
+
+<h2 id="place">Why the place matters more than it looks</h2>
+
+<p>Every figure on this page descends from sunrise, so all of them depend on where you are. This is not a technicality: whether a given sunrise falls inside the ekādaśī tithi genuinely differs between Indian cities, so two correct almanacs for two cities name different observance days. Kalnirnay, which sells something like twenty million copies a year, is computed for Mumbai sunrise and is a Mumbai calendar wherever it is read. Here the place is a control, which is the honest version of the same thing.</p>
+
+<p>The sunrise convention is a control too, and it is the most consequential setting on the page. The default is the one the printed almanacs use &mdash; the Sun's upper limb touching the horizon with the standard 34&prime; allowance for refraction. Taking the centre of the disc instead moves sunrise about a minute later and the geometric centre about four; over 730 days at 28.8&deg;N the geometric convention moves the tithi-at-sunrise on two of them. About one day a year, which is small and is not nothing.</p>
+
+<h2 id="limits">What this does not do</h2>
+
+<p>The range is <b>1800 to 2200</b> and dates outside it are refused rather than answered. The ayanāṃśa polynomials in this engine were fitted to Swiss Ephemeris across exactly that window and verified against it; outside it the drift is undefined, and a calendar that answers anyway is worse than one that says it cannot. The navigation stops at the boundary instead of running past it.</p>
+
+<p>Purely solar calendars &mdash; Tamil, Bengali, Malayalam &mdash; are a different system rather than a variant of this one, and are not here. Half of one would be worse than none. Muhūrta beyond rāhu kāla, the choghaḍiyā and the horā is also absent, and what is here is marked as later tradition rather than BPHS, which is the separation the rest of this site keeps between verse, commentary and modern practice.</p>
+
+<p>For the festival dates themselves there is no internal check possible: a festival date is a convention, not a theorem. Tithi, nakṣatra, yoga, karaṇa, māsa and saṃvat all check against the astronomy, but a festival can only be compared against a published almanac. <a href="https://www.drikpanchang.com/">Drik Panchang</a> is the dṛk-gaṇita reference used here &mdash; named so that disagreements can be attributed rather than puzzled over. Where this page and that one differ, the difference is usually a convention and occasionally a mistake, and the day view gives you the rule so you can tell which.</p>

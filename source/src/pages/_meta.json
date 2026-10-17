@@ -119,6 +119,14 @@
     "has_aside": true,
     "desc": "The current Hindu date and time for any place: tithi, nakṣatra, yoga, karaṇa and vāra with their end-times, the lunar month in both reckonings, sunrise and sunset, and the later-tradition divisions of the day."
   },
+  "calendar": {
+    "title": "Pañcāṅga calendar — any month, 1800–2200 — {{BRAND}}",
+    "desc": "A full Hindu calendar for any month between 1800 and 2200, computed in your browser for the place you choose: month grid with moon phases, the traditional almanac row, a day detail showing the rule behind every festival, and a year view that shows intercalary months.",
+    "h1": "Pañcāṅga calendar",
+    "sub": "Any month from 1800 to 2200, for the place you choose — with the rule behind every festival shown beside it.",
+    "layout": "",
+    "has_aside": true
+  },
   "404": {
     "title": "Page not found — {{BRAND}}",
     "desc": "That address is not on this site. Links to the chart builder, the pañcāṅga for now, and the main reference pages.",

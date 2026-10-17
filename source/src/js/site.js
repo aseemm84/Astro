@@ -319,6 +319,16 @@ else boot();
   document.head.appendChild(s);
 })();
 
+/* calendar.html likewise. It pulls in panchanga.js and engine.js itself once it
+   knows it is wanted, so a reader who never opens the calendar never pays for
+   either — which is the same bargain the chart engine already makes. */
+(function(){
+  if(!document.getElementById("cbody")) return;
+  var s=document.createElement("script");
+  s.src="calendar.js"; s.defer=true;
+  document.head.appendChild(s);
+})();
+
 /* The service worker, so the hosted site works offline the way a local copy
    already does, and a repeat visit does not re-fetch 200 KB of engine.
    Registered here rather than in each page's head: one place, every page.

@@ -345,7 +345,190 @@ html.navlock,html.navlock body{overflow:hidden}
   .nowhint,.nowplace,.nowsub,.nownote{color:#9aa0bd}
   .nowcard b{color:#9aa0bd}
 }
-</style></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Hindu time, now</h1><p class="sub">The five limbs of the day as they stand, for the place you choose — computed in your browser, with no birth chart needed.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html" class="active">Hindu time now</a><a href="kundli.html">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#pancanga">The five limbs, and the month</a><a href="#strip">The tithi either side of now</a><a href="#later">Divisions of the daylight</a><a href="#why">Why the day begins at sunrise</a></aside><main><p class="lead">This is the Hindu time <b>right now</b>, for the place you choose: the five limbs of the day with the moment each one ends, the lunar month in both reckonings, the season and the half-year, sunrise and sunset &mdash; and, kept separate because they are later tradition rather than BPHS, the divisions of the daylight that practice uses. Nothing here needs a birth chart.</p>
+
+/* ===== calendar.html =====================================================
+   The grid is solar and the content is lunisolar, so the layout has to carry
+   markers for the three mismatches rather than smoothing them away: a cell can
+   hold a second tithi (upari), a lunar month boundary is drawn as a rule BETWEEN
+   cells rather than inside one, and the year view exists because an intercalary
+   month has no cell at all in a Gregorian grid. */
+.cbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;
+  border:1px solid var(--line);border-radius:12px;padding:10px 13px;
+  margin:14px 0 8px;background:var(--soft)}
+.cbar2{background:transparent}
+.cbargroup{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.clab{font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);font-weight:700}
+.csel{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);
+  border-radius:8px;background:#fff;color:var(--ink);max-width:min(42ch,70vw)}
+.cnum{width:7.5em}
+.cvbtn{font:inherit;font-size:13px;padding:5px 12px;border:1px solid var(--line);
+  border-radius:8px;background:#fff;color:var(--ink);cursor:pointer}
+.cvbtn:hover{border-color:var(--gold)}
+.cvbtn.on{background:var(--night);color:#fff;border-color:var(--night)}
+.clayerbox{border:1px solid var(--line);border-radius:12px;padding:8px 13px;
+  margin:0 0 10px;font-size:13px}
+.clayerbox summary{cursor:pointer;font-weight:600}
+.clayerlist{display:grid;gap:2px 16px;margin:8px 0 4px;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.clayer{display:flex;gap:7px;align-items:center;font-size:13px}
+.clayer.cbase{color:var(--muted)}
+.clayer i{font-style:normal;font-size:10px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--muted);border:1px solid var(--line);
+  border-radius:4px;padding:0 4px}
+.cplacenote{font-size:13px;color:var(--muted);margin:4px 0 10px}
+.cheadbar{margin:6px 0 10px}
+.cnav{display:flex;gap:8px;align-items:center}
+.cnav button{font:inherit;font-size:17px;line-height:1;padding:4px 11px;
+  border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer}
+.cnav button.csec{font-size:13px}
+.cnav button:hover{border-color:var(--gold)}
+.clabel{display:flex;flex-direction:column;line-height:1.25;margin:0 6px}
+.clabel b{font-family:var(--serif);font-size:20px}
+.clabel i{font-style:normal;font-size:12px;color:var(--muted)}
+
+/* --- the month grid --- */
+.cgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));
+  gap:1px;background:var(--line);border:1px solid var(--line);
+  border-radius:12px;overflow:hidden}
+.chead{background:var(--night);color:#cdd0e4;font-size:11px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;text-align:center;padding:6px 2px}
+.ccell{background:#fff;min-height:104px;padding:5px 6px 7px;display:flex;
+  flex-direction:column;gap:1px;cursor:pointer;position:relative}
+.ccell:hover{background:#fcfbf6}
+.ccell:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+.ccell.cempty{background:var(--soft);cursor:default;min-height:0}
+.cdate{font-family:var(--serif);font-size:17px;font-weight:600;line-height:1.1}
+.cmoon{position:absolute;top:6px;right:6px}
+/* The lunar month boundary is a rule across the grid: it is a boundary BETWEEN
+   cells, so it is drawn on the cell edge rather than as a badge inside one. */
+.ccell.cmonthstart{box-shadow:inset 3px 0 0 var(--gold)}
+.ccell.cfull{background:#fffdf4}
+.ccell.cnew{background:#f7f7fa}
+.ccell.csel{background:#f3f0e4;box-shadow:inset 0 0 0 2px var(--gold)}
+.ctithi{font-size:12px;line-height:1.3;margin-top:2px}
+.ctithi i{font-style:normal;font-weight:700;color:var(--gold);margin-right:3px}
+.cnak{font-size:11.5px;color:#4a4e68;line-height:1.3}
+.cmin{font-size:10.5px;color:var(--muted);line-height:1.3}
+.cends{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+/* The doubled tithi, marked the way printed almanacs mark it. */
+.cupari{font-size:10.5px;color:#7a5c12;background:#fdf6e3;border-radius:4px;
+  padding:0 3px;line-height:1.35}
+.cupari i{font-style:italic}
+.csank{font-size:10.5px;color:#1d4f6b;background:#eaf4f9;border-radius:4px;
+  padding:0 3px}
+.cadhika{font-size:10px;letter-spacing:.05em;text-transform:uppercase;
+  font-weight:700;color:#7a3b12;background:#fcefe6;border-radius:4px;
+  padding:0 4px;align-self:flex-start}
+.cfestname{font-size:11px;font-weight:600;color:#6b4a00;line-height:1.3}
+.cfestname.cminor{font-weight:400;color:var(--muted)}
+.cfestname.ccontested::after{content:" *";color:#a1493a}
+.cfestname i{font-style:normal;font-size:9.5px;text-transform:uppercase;
+  letter-spacing:.04em;color:#a1493a;border:1px solid #e3c8c2;border-radius:3px;
+  padding:0 3px;margin-left:3px}
+.cwarn{position:absolute;bottom:5px;right:7px;color:#a1493a;font-weight:700}
+
+/* --- the almanac row --- */
+.calm{width:100%;border-collapse:collapse;font-size:12.5px}
+.calm th{background:var(--night);color:#cdd0e4;font-size:10.5px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;text-align:left;padding:6px 7px;
+  position:sticky;top:0}
+.calm td{border-bottom:1px solid var(--line);padding:5px 7px;vertical-align:top}
+.calm tr:hover td{background:#fcfbf6}
+.calm small{color:var(--muted);font-variant-numeric:tabular-nums}
+.calm td i{font-style:normal;font-weight:700;color:var(--gold)}
+.calm td b{font-weight:600;color:#7a5c12}
+
+/* --- the day detail --- */
+.cdetail{border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  margin:0 0 14px}
+.cdhead{display:flex;gap:14px;align-items:center;padding:13px 15px;
+  background:var(--night);color:#f3f2ec}
+.cdhead h3{font-family:var(--serif);font-size:22px;margin:0;color:#fff}
+.cdhead p{margin:2px 0 0;font-size:13px;color:#cdd0e4}
+.cdrow{display:grid;grid-template-columns:minmax(110px,150px) 1fr;gap:12px;
+  padding:8px 15px;border-top:1px solid var(--line);font-size:14px}
+.cdrow b{font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted);padding-top:3px}
+.cdrow span{display:flex;flex-direction:column}
+.cdrow i{font-style:normal;font-size:12.5px;color:var(--muted);line-height:1.5}
+.csub{font-family:var(--serif);font-size:19px;margin:18px 0 8px}
+.cfestbox{border:1px solid var(--line);border-left:3px solid var(--gold);
+  border-radius:0 10px 10px 0;padding:10px 13px;margin:0 0 9px;font-size:13.5px}
+.cfestbox.ccon{border-left-color:#a1493a}
+.cfestbox b{font-size:15px}
+.cfestbox p{margin:5px 0 0;line-height:1.55}
+.cfestbox .csrc{font-size:12px;color:var(--muted);margin-top:6px}
+.ctag{display:inline-block;font-size:10.5px;letter-spacing:.03em;
+  text-transform:uppercase;font-weight:700;color:#7a3b12;background:#fcefe6;
+  border-radius:4px;padding:1px 6px;margin-left:7px}
+.ctag.ctagwarn{color:#1d4f6b;background:#eaf4f9;text-transform:none;
+  letter-spacing:0;font-weight:400}
+
+/* --- the year view --- */
+.cyear{border:1px solid var(--line);border-radius:12px;padding:9px 11px;
+  background:#fff;overflow-x:auto}
+.cyrow{display:flex;gap:9px;align-items:center;margin:0 0 3px}
+.cymon{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted);width:3.1em;flex:0 0 auto;cursor:pointer}
+.cymon:hover{color:var(--gold)}
+.cystrip{display:flex;gap:1px;flex:1 1 auto;min-width:420px}
+.cyd{flex:1 1 0;height:17px;background:var(--soft);border-radius:2px;
+  cursor:pointer;min-width:5px}
+.cyd:hover{outline:1px solid var(--gold)}
+.cyd.cyfull{background:var(--gold-soft)}
+.cyd.cynew{background:#4a4e68}
+.cyd.cysank{background:#9fc6db}
+.cyd.cybound{box-shadow:inset 2px 0 0 var(--gold)}
+.cyd.cyadhika{background:#fcefe6}
+.ckey{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;
+  font-size:12px;color:var(--muted);margin:8px 0 0}
+.ckey .cyd{flex:0 0 auto;width:15px;cursor:default}
+.cadhikanote{border-left:3px solid var(--gold);padding-left:11px}
+.cnote{font-size:13px;color:var(--muted);line-height:1.6}
+.crange{border-left:3px solid #a1493a;padding-left:11px}
+
+@media (max-width:700px){
+  /* On a phone the seven-column grid is unreadable, so the month becomes a
+     list of days — the same cells, stacked, keeping every marker. */
+  .cgrid{grid-template-columns:1fr;border-radius:10px}
+  .chead{display:none}
+  .ccell{min-height:0;flex-direction:row;flex-wrap:wrap;gap:4px 10px;
+    align-items:baseline;padding:8px 10px}
+  .ccell.cempty{display:none}
+  .cdate{width:1.8em}
+  .cmoon{position:static;order:-1}
+  .ccell.cmonthstart{box-shadow:inset 0 3px 0 var(--gold)}
+  .calm{font-size:11.5px}
+  .calm th:nth-child(5),.calm td:nth-child(5),
+  .calm th:nth-child(6),.calm td:nth-child(6){display:none}
+  .cdrow{grid-template-columns:1fr;gap:1px}
+}
+@media print{
+  /* A month that prints on one page is a real feature: the printed wall
+     calendar is the form this information has actually taken for fifty years. */
+  .cbar,.clayerbox,.cnav button,.sitenav,nav.site,aside.onpage{display:none}
+  .cgrid{break-inside:avoid}
+  .ccell{min-height:86px}
+  .calm th{position:static;background:#fff;color:#000;border-bottom:2px solid #000}
+}
+@media (prefers-color-scheme:dark){
+  .cbar,.cyear,.csel,.cvbtn,.cnav button{background:rgba(255,255,255,.04)}
+  .ccell{background:#1b1f36}
+  .ccell:hover{background:#232842}
+  .ccell.cempty{background:rgba(255,255,255,.02)}
+  .ccell.cfull{background:#232136}
+  .ccell.cnew{background:#15182a}
+  .ccell.csel{background:#2a2a40}
+  .cnak{color:#b9bedb}
+  .cnote,.cplacenote,.clabel i,.cdrow b,.cdrow i,.calm small{color:#9aa0bd}
+  .calm tr:hover td{background:rgba(255,255,255,.03)}
+  .cupari{background:#2e2714;color:#e7d19a}
+  .csank{background:#15293a;color:#9fc6db}
+  .cadhika{background:#33210f;color:#e8b98e}
+  .cfestname{color:#e7d19a}
+}
+</style></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Hindu time, now</h1><p class="sub">The five limbs of the day as they stand, for the place you choose — computed in your browser, with no birth chart needed.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html" class="active">Hindu time now</a><a href="calendar.html">Calendar</a><a href="kundli.html">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#pancanga">The five limbs, and the month</a><a href="#strip">The tithi either side of now</a><a href="#later">Divisions of the daylight</a><a href="#why">Why the day begins at sunrise</a></aside><main><p class="lead">This is the Hindu time <b>right now</b>, for the place you choose: the five limbs of the day with the moment each one ends, the lunar month in both reckonings, the season and the half-year, sunrise and sunset &mdash; and, kept separate because they are later tradition rather than BPHS, the divisions of the daylight that practice uses. Nothing here needs a birth chart.</p>
 
 <div class="nowbar">
   <span class="nowlab"><label for="nowplace">Place</label></span>
