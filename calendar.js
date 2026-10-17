@@ -483,6 +483,13 @@
       '<button id="cnext" type="button" aria-label="Next">›</button>' +
       '<button id="ctoday" type="button" class="csec">Today</button>' +
       "</div>";
+    /* A printed sheet has no controls and no place note, so it has to name
+       itself: the month, the place, and the sunrise convention everything on it
+       descends from. Without this a print-out is a grid of numbers that cannot
+       be checked against anything. */
+    el.innerHTML += '<p class="cprintonly">' + esc(label) + " · " + esc(sub) +
+      " · computed for " + esc(S.place.n) + " · sunrise taken as " +
+      esc(NP.convLabel()) + "</p>";
     $("cprev").addEventListener("click", function () { step(-1); });
     $("cnext").addEventListener("click", function () { step(+1); });
     $("ctoday").addEventListener("click", function () { today(); render(); });
@@ -569,6 +576,10 @@
       }).join("");
       mo.addEventListener("change", function () { S.m = +mo.value; render(); });
     }
+    var pb = $("cprint");
+    if (pb) pb.addEventListener("click", function () { window.print(); });
+    var ib = $("cics");
+    if (ib) ib.addEventListener("click", downloadIcs);
     document.querySelectorAll("[data-cview]").forEach(function (b) {
       b.addEventListener("click", function () {
         S.view = b.getAttribute("data-cview");
@@ -602,6 +613,151 @@
       });
     });
   }
+
+  /* --- the .ics export ---------------------------------------------------
+     The festivals of the year on screen, as an iCalendar file built in this
+     browser like everything else here — no service, nothing sent anywhere.
+
+     All-day events (VALUE=DATE), because a festival names a DAY and giving it a
+     clock time would be a precision the rule does not have. Each event carries
+     its rule in the description, and the contested ones say so there too: a
+     calendar entry that has travelled into somebody's phone has left this page
+     behind, so it has to carry its own caveat rather than rely on one.
+
+     The UID is derived from the festival key, the date and the place, so
+     re-importing a later export updates the same entries instead of duplicating
+     them — and the place is in there because the same festival genuinely falls
+     on different days in different cities. */
+  function icsEscape(s) {
+    return String(s).replace(/\\/g, "\\\\").replace(/;/g, "\\;")
+                    .replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+  }
+  /* iCalendar folds content lines at 75 OCTETS, not 75 characters — and this
+     text is full of ā, ṣ, ṅ and ′, each of which is two or three octets in
+     UTF-8. A fold that counts characters therefore emits lines that are still
+     over the limit: counting them found 141 such lines in a year's export,
+     every one of them from the transliteration. A split must also never land
+     inside a multi-byte character, or the file is not valid UTF-8 at all.
+
+     So the measurement is in octets and the cut is taken at a character
+     boundary below the limit. Continuation lines begin with one space, which is
+     itself an octet of the 75. */
+  function octets(s) {
+    var n = 0;
+    for (var i = 0; i < s.length; i++) {
+      var c = s.codePointAt(i);
+      if (c > 0xffff) { n += 4; i++; }
+      else if (c > 0x7ff) n += 3;
+      else if (c > 0x7f) n += 2;
+      else n += 1;
+    }
+    return n;
+  }
+  function icsFold(line) {
+    if (octets(line) <= 75) return line;
+    var out = [], s = line, first = true;
+    while (s.length) {
+      var limit = first ? 75 : 74;          /* the leading space costs one */
+      if (octets(s) <= limit) { out.push((first ? "" : " ") + s); break; }
+      var take = 0, n = 0;
+      while (take < s.length) {
+        var c = s.codePointAt(take), w = c > 0xffff ? 4 : c > 0x7ff ? 3 : c > 0x7f ? 2 : 1;
+        var step = c > 0xffff ? 2 : 1;
+        if (n + w > limit) break;
+        n += w; take += step;
+      }
+      if (take === 0) take = 1;             /* never loop forever */
+      out.push((first ? "" : " ") + s.slice(0, take));
+      s = s.slice(take);
+      first = false;
+    }
+    return out.join("\r\n");
+  }
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+  function buildIcs() {
+    var y = S.y, lines = [
+      "BEGIN:VCALENDAR", "VERSION:2.0",
+      "PRODID:-//Nirayana//Pancanga calendar//EN", "CALSCALE:GREGORIAN",
+      "METHOD:PUBLISH",
+      icsFold("X-WR-CALNAME:" + icsEscape("Pañcāṅga " + y + " — " + S.place.n)),
+      icsFold("X-WR-CALDESC:" + icsEscape(
+        "Festival days computed for " + S.place.n + ". Sunrise is " +
+        NP.convLabel() + ", and every date here follows from it — a Hindu " +
+        "calendar is valid only for the place it was computed for. Each entry " +
+        "carries the rule it was derived from."))
+    ];
+    var stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+Z$/, "Z");
+    var n = 0;
+    for (var m = 1; m <= 12; m++) {
+      var dim = new Date(Date.UTC(y, m, 0)).getUTCDate();
+      for (var d = 1; d <= dim; d++) {
+        var D = NP.dayOfDate(y, m, d, S.place, { ends: true, month: true });
+        if (!D || !D.at) continue;
+        var F = NP.festivalsOn(D, { minor: L("minor") });
+        F.forEach(function (f) {
+          if (f.informational) return;
+          var date = y + pad(m) + pad(d);
+          var next = new Date(Date.UTC(y, m - 1, d + 1));
+          var desc = f.rule +
+            (f.note ? "\n\n" + f.note : "") +
+            "\n\nSource: " + f.source +
+            (f.when && f.when !== "sunrise" && f.when !== "relative"
+              ? "\nQualifying window: " + f.when : "") +
+            (f.contested
+              ? "\n\nPublished almanacs apply this rule differently, so other " +
+                "calendars may place this on a neighbouring day."
+              : "") +
+            (f.close ? "\n\nClose: " + f.closeWhy : "") +
+            "\n\nComputed for " + S.place.n + "; sunrise taken as " +
+            NP.convLabel() + ".";
+          lines.push("BEGIN:VEVENT");
+          lines.push(icsFold("UID:" + f.key + "-" + date + "-" +
+                     S.place.n.replace(/[^A-Za-z0-9]/g, "") + "@nirayana"));
+          lines.push("DTSTAMP:" + stamp);
+          lines.push("DTSTART;VALUE=DATE:" + date);
+          lines.push("DTEND;VALUE=DATE:" + next.getUTCFullYear() +
+                     pad(next.getUTCMonth() + 1) + pad(next.getUTCDate()));
+          lines.push(icsFold("SUMMARY:" + icsEscape(
+            f.name + (f.contested ? " (rule varies)" : ""))));
+          lines.push(icsFold("DESCRIPTION:" + icsEscape(desc)));
+          lines.push("TRANSP:TRANSPARENT");
+          lines.push("END:VEVENT");
+          n++;
+        });
+      }
+    }
+    lines.push("END:VCALENDAR");
+    return { text: lines.join("\r\n") + "\r\n", n: n };
+  }
+  function downloadIcs() {
+    var btn = $("cics"), was = btn ? btn.textContent : "";
+    if (btn) { btn.disabled = true; btn.textContent = "Computing the year…"; }
+    /* Yielded to the paint first, so the button's own label actually changes
+       before a second of synchronous astronomy begins. */
+    setTimeout(function () {
+      var r;
+      try { r = buildIcs(); }
+      catch (e) {
+        if (btn) { btn.disabled = false; btn.textContent = was; }
+        return;
+      }
+      var blob = new Blob([r.text], { type: "text/calendar;charset=utf-8" });
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "pancanga-" + S.y + "-" +
+        S.place.n.replace(/[^A-Za-z0-9]+/g, "-").toLowerCase() + ".ics";
+      document.body.appendChild(a); a.click();
+      setTimeout(function () {
+        URL.revokeObjectURL(a.href); a.remove();
+      }, 1000);
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = r.n + " events for " + S.y;
+        setTimeout(function () { btn.textContent = was; }, 4000);
+      }
+    }, 30);
+  }
+  window.__calIcs = buildIcs;
 
   /* --- the permalink -----------------------------------------------------
      A configured month in the fragment, so a reader can send someone the view
