@@ -649,3 +649,17 @@ saturnNote: {en:"the rings open and close over fifteen years as the tilt turns t
              hi:"वलय पन्द्रह वर्षों में खुलते और बन्द होते हैं, जैसे-जैसे झुकाव हमारी ओर मुड़ता है"}
 };
 for(var _k6 in MO_PHR6) MO_PHR[_k6]=MO_PHR6[_k6];
+
+/* ---- phrases for the three content scenes (speeds, nakwalk, sunarc) ---- */
+var MO_PHR7={
+spanSoFar:  {en:"{0} so far", hi:"अब तक {0}"},
+daysWord:   {en:"days", hi:"दिन"},
+monthsWord: {en:"months", hi:"मास"},
+yearsWord:  {en:"years", hi:"वर्ष"},
+lapsWord:   {en:"laps", hi:"चक्कर"},
+padaOf:     {en:"pāda {0} of 4", hi:"पाद {0} / 4"},
+nakSpan:    {en:"13°20′ each · about one a day", hi:"प्रत्येक 13°20′ · लगभग एक प्रतिदिन"},
+riseSetAt:  {en:"sunrise {0}   ·   sunset {1}", hi:"सूर्योदय {0}   ·   सूर्यास्त {1}"},
+dayLengthIs:{en:"{0} hours of daylight", hi:"{0} घण्टे का दिनमान"}
+};
+for(var _k7 in MO_PHR7) MO_PHR[_k7]=MO_PHR7[_k7];

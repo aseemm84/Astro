@@ -383,9 +383,11 @@
          produced the number without hunting for a setting. */
       card("Sunrise", clock(D.sunrise,tz),
            "sunset "+clock(D.sunset,tz)+" &middot; "+esc(D.riseConvLabel))+
-      card("Hindu clock", hc?(hc.gh+" gh "+String(hc.pala).padStart(2,"0")+" pl"):"—",
-           hc?("of 60 ghaṭī, counted from sunrise &middot; "+
-               Math.round(hc.f*100)+"% through the day"):"")+
+      card("Hindu clock",
+           hc?(hc.gh+":"+String(hc.pala).padStart(2,"0")+":"+
+               String(hc.vipala).padStart(2,"0")):"—",
+           hc?("ghaṭī : pala : vipala &middot; sixty of each, counted from "+
+               "sunrise &middot; "+Math.round(hc.f*100)+"% through the day"):"")+
       card("Muhūrta", hc?hc.muhurta:"—",
            hc?(hc.mi+" of 30 &middot; "+clock(hc.mFrom,tz)+" – "+clock(hc.mTo,tz)):"");
 
@@ -402,8 +404,10 @@
     var head=$("nowhead");
     if(head) head.innerHTML=
       '<span class="nowclock">'+clockS(now,tz)+'</span>'+
-      (hc?('<span class="nowhindu" title="ghaṭī and pala counted from sunrise">'+
-           hc.gh+'<i>gh</i> '+String(hc.pala).padStart(2,"0")+'<i>pl</i></span>'):"")+
+      (hc?('<span class="nowhindu" title="ghaṭī : pala : vipala, counted from '+
+           'sunrise — sixty of each, exactly as hours, minutes and seconds are">'+
+           hc.gh+":"+String(hc.pala).padStart(2,"0")+":"+
+           String(hc.vipala).padStart(2,"0")+'<i>gh:pl:vp</i></span>'):"")+
       '<span class="nowplace">'+esc(PLACE.n)+
         (PLACE.saved?' <i>(from your saved chart)</i>':"")+
         ' &middot; UTC'+(tz<0?"-":"+")+String(Math.floor(Math.abs(tz))).padStart(2,"0")+":"+
@@ -530,9 +534,11 @@
       buildControls();
       render();
       if(tickTimer) clearInterval(tickTimer);
-      /* A second is the right cadence: the clock moves every second and everything
-         else is recomputed cheaply enough that there is no reason to stagger it. */
-      tickTimer=setInterval(render,1000);
+      /* A vipala is 0.4 s, so a one-second tick would visibly skip counts on the
+         Hindu clock. Sampling faster than the smallest unit shown is the cheap
+         fix; everything else on the page is recomputed cheaply enough that there
+         is no reason to stagger it. */
+      tickTimer=setInterval(render,250);
     });
     window.addEventListener("resize",function(){
       if(engineReady) render();

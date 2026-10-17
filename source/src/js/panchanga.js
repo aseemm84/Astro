@@ -857,10 +857,32 @@
             ? (D.nextSunrise - D.sunrise) : 86400000;
     var f = (D.ms - D.sunrise) / len;
     if (f < 0 || f > 1.02) return null;
-    var g = f * 60, gh = Math.floor(g), pl = Math.floor((g - gh) * 60);
+    /* The division is sixty all the way down — 60 ghaṭī to the day, 60 pala to
+       the ghaṭī, 60 vipala to the pala — so ghaṭī:pala:vipala maps exactly onto
+       hours:minutes:seconds and can be read the same way. The units are simply
+       bigger: a ghaṭī is 24 minutes, a pala 24 seconds, and a vipala 0.4 of a
+       second, which is why this ticks about two and a half times a second
+       rather than once.
+
+       And it is measured against THIS day's sunrise-to-sunrise length, not a
+       mean 24 hours, so a vipala is very slightly longer on some days than
+       others — which is correct, and is the whole difference between a Hindu
+       clock and a clock with Sanskrit labels on it. */
+    var g = f * 60, gh = Math.floor(g);
+    var pTot = (g - gh) * 60, pl = Math.floor(pTot);
+    var vp = Math.floor((pTot - pl) * 60);
     var mi = Math.min(29, Math.floor(f * 30));
-    return { gh: gh, pala: pl, f: f, muhurta: MUHURTA[mi], mi: mi + 1,
+    return { gh: gh, pala: pl, vipala: vp, f: f,
+             vipalaMs: len / 216000,          /* 60*60*60 */
+             muhurta: MUHURTA[mi], mi: mi + 1,
              mFrom: D.sunrise + len * mi / 30, mTo: D.sunrise + len * (mi + 1) / 30 };
+  };
+  /* "31:07:44" — padded like a clock, because that is how it is meant to be
+     read at a glance. */
+  NP.hinduClockText = function (hc) {
+    if (!hc) return "—";
+    function p2(n) { return (n < 10 ? "0" : "") + n; }
+    return p2(hc.gh) + ":" + p2(hc.pala) + ":" + p2(hc.vipala);
   };
   /* The ghaṭī.pala of an arbitrary instant within a day — what the almanac row
      prints for an end-time when the reader has asked for ghaṭikās rather than

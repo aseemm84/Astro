@@ -498,6 +498,10 @@ window.__moPaceStep=function(p,dt){ return moPaceStep(p,dt); };
 window.__moEvents=function(){ return moEvents(); };
 window.__moCtxRows=function(){ var r=null; try{ r=moDraw(); }catch(e){} return moContextRows(MO._lastMs||Date.now()); };
 window.__moMount=moMount;
+/* ui.js applies a recommended speed from the address; the mapping from a
+   speed to a slider position lives here, so it is exported rather than
+   reimplemented there. */
+window.__moSpeedPos=moSpeedPos;
 /* ui.js is a separate script from this bundle, so the no-chart entry point on the
    page cannot see a closure function. This is the one export it needs. */
 window.motionPane=motionPane;

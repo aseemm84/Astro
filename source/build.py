@@ -397,9 +397,14 @@ def lang_key_check(src_dir):
         return set(re.findall(r"(?m)^\s*([A-Za-z_$][\w$]*)\s*:", body))
 
     ui = keys(block(r"\nui:\{"))
+    # The phrase tables are DISCOVERED, not listed. A hardcoded list of
+    # MO_PHR..MO_PHR6 meant that adding MO_PHR7 made every one of its keys look
+    # missing — the guard reporting a fault in the thing that had just been
+    # done correctly, which is worse than no guard because it trains you to
+    # ignore it.
     phr = set()
-    for v in ["MO_PHR", "MO_PHR2", "MO_PHR3", "MO_PHR4", "MO_PHR5", "MO_PHR6"]:
-        phr |= keys(block(r"var %s=\{" % v))
+    for name in sorted(set(re.findall(r"var\s+(MO_PHR\w*)\s*=\s*\{", lang))):
+        phr |= keys(block(r"var %s\s*=\s*\{" % re.escape(name)))
     if not ui or not phr:
         raise SystemExit("the language tables could not be read for checking")
 

@@ -104,6 +104,95 @@
     return n === 0 ? "today" : n === 1 ? "tomorrow" : "in " + n + " days";
   }
 
+  /* ===== which animation, and set to what =================================
+     A scene name alone is not a recommendation. The same scene is unreadable at
+     one span and obvious at another: a retrograde loop needs months on screen
+     before the loop exists at all, while a tithi wheel over a year is a blur.
+     So each idea carries the settings that make its scene say the thing it was
+     chosen to say, the reason is shown next to the button, and the link APPLIES
+     them — because telling someone to set five controls themselves turns one
+     click into five, and most people will not bother.
+
+     Only chart-free scenes appear here. The Studio is used without a birth
+     chart, and a scene it cannot open is a scene it cannot recommend. */
+  var REC = {
+    station: { scene: "retro", span: "9m", speed: "1/6", ratio: "9:16", safe: 1,
+      why: { en: "The retrograde loop only exists across months — nine of them " +
+                 "put the whole arc on screen, and a sixth speed is slow enough " +
+                 "to follow the turn without losing the viewer.",
+             hi: "वक्री चाप महीनों में ही बनता है — नौ मास पूरा चाप दिखाते हैं, " +
+                 "और 1/6 गति मोड़ को पढ़ने भर की धीमी है।" } },
+    ingress: { scene: "orrery", span: "12m", speed: "1/4", ratio: "9:16", safe: 1,
+      why: { en: "A year of the orrery shows the graha crossing the sign " +
+                 "boundary in the context of everything else moving, which is " +
+                 "what makes an ingress look like an event rather than a date.",
+             hi: "एक वर्ष का ओरेरी राशि-संक्रमण को शेष गतियों के सन्दर्भ में " +
+                 "दिखाता है — तभी प्रवेश घटना लगता है, केवल तिथि नहीं।" } },
+    syzygy: { scene: "tithi", span: "1m", speed: "1/8", ratio: "9:16", safe: 1,
+      why: { en: "One lunar month is exactly one full cycle of the wheel, so the " +
+                 "loop closes where it began — and an eighth speed holds each " +
+                 "tithi on screen long enough to read its name.",
+             hi: "एक चान्द्र मास चक्र का पूरा एक फेरा है, इसलिए लूप वहीं बन्द " +
+                 "होता है जहाँ खुला था; 1/8 गति हर तिथि का नाम पढ़ने देती है।" } },
+    sankranti: { scene: "sun", span: "12m", speed: "1/6", ratio: "9:16", safe: 1,
+      why: { en: "The Sun scene over a year shows the sidereal sign changing " +
+                 "under a body that never goes retrograde and never has a " +
+                 "phase — the cleanest way to show a purely solar event.",
+             hi: "वर्ष भर का सूर्य दृश्य निरयन राशि बदलते दिखाता है — वह ग्रह " +
+                 "जो न वक्री होता है न जिसकी कला होती है।" } },
+    festival: { scene: "panchanga", span: "1m", speed: "1/10", ratio: "9:16", safe: 1,
+      why: { en: "The pañcāṅga scene names all five limbs as they turn, so the " +
+                 "rule behind the festival is visible rather than asserted. A " +
+                 "tenth speed is slow enough to read every one.",
+             hi: "पंचांग दृश्य पाँचों अंग नाम सहित दिखाता है, जिससे पर्व का " +
+                 "नियम दिखता है, केवल कहा नहीं जाता। 1/10 गति सब पढ़ने देती है।" } },
+    nakshatra: { scene: "nakwalk", span: "1m", speed: "1/8", ratio: "9:16", safe: 1,
+      why: { en: "The nakṣatra walk steps the Moon through all twenty-seven in " +
+                 "one month, with the four pādas drawn inside the lit one — " +
+                 "which is the whole structure Viṃśottarī rests on.",
+             hi: "नक्षत्र-भ्रमण एक मास में चन्द्र को सत्ताईसों में घुमाता है, " +
+                 "और चार पाद भी दिखाता है — विंशोत्तरी इसी पर टिकी है।" } },
+    tithi: { scene: "tithi", span: "1m", speed: "1/10", ratio: "9:16", safe: 1,
+      why: { en: "One month of the tithi wheel shows the uneven lengths that " +
+                 "cause a doubled tithi in the first place.",
+             hi: "एक मास का तिथि-चक्र उन असमान अवधियों को दिखाता है जिनसे " +
+                 "उपरि तिथि बनती है।" } },
+    panchanga: { scene: "panchanga", span: "1m", speed: "1/10", ratio: "9:16", safe: 1,
+      why: { en: "A month of the pañcāṅga scene is the standard daily post: all " +
+                 "five limbs turning, named, at a speed that can be read.",
+             hi: "एक मास का पंचांग दृश्य नित्य पोस्ट के लिए है — पाँचों अंग, " +
+                 "नाम सहित, पढ़ने योग्य गति पर।" } },
+    speeds: { scene: "speeds", span: "12y", speed: "1/4", ratio: "9:16", safe: 1,
+      why: { en: "Twelve years is long enough for Śani to show barely a third of " +
+                 "a lap while the Moon runs a hundred and fifty — which is the " +
+                 "argument the scene exists to make.",
+             hi: "बारह वर्ष में शनि एक तिहाई चक्कर भी नहीं करता जबकि चन्द्र " +
+                 "डेढ़ सौ — यही इस दृश्य का कथन है।" } },
+    sunarc: { scene: "sunarc", span: "12m", speed: "1/4", ratio: "9:16", safe: 1,
+      why: { en: "A year of sunrises for this exact place. It looks almost flat " +
+                 "near the equator and dramatic far from it, which is why a " +
+                 "pañcāṅga is only valid where it was made.",
+             hi: "इसी स्थान के वर्ष भर के सूर्योदय। भूमध्य के पास लगभग सपाट, " +
+                 "दूर नाटकीय — इसीलिए पंचांग स्थान-सापेक्ष है।" } }
+  };
+  var SCENE_NAME = { retro: "Retrograde loop", orrery: "Orrery",
+    tithi: "Tithi wheel", sun: "Sūrya", panchanga: "Pañcāṅga",
+    nakwalk: "Nakṣatra walk", speeds: "Graha speeds",
+    sunarc: "Sunrise through the year", nakshatra: "Nakṣatra ring" };
+  function sceneName(k) { return SCENE_NAME[k] || k; }
+  function moLang(o) { return (hi() && o.hi) ? o.hi : o.en; }
+  function recLink(r) {
+    return "kundli.html#sky=" + encodeURIComponent(r.scene) +
+           "&span=" + r.span + "&speed=" + encodeURIComponent(r.speed) +
+           "&ratio=" + encodeURIComponent(r.ratio) + (r.safe ? "&safe=1" : "");
+  }
+  function recLabel(r) {
+    return (hi() ? "सेटिंग: " : "Set to ") + r.span.replace("m", " months")
+             .replace("y", " years").replace("d", " days").replace("w", " weeks") +
+           " · " + r.speed + "× · " + r.ratio +
+           (r.safe ? (hi() ? " · सेफ़ लेआउट" : " · safe layout") : "");
+  }
+
   /* ===== the ideas =========================================================
      Each is {key, rank, hook, body, facts[], tags[]}. `rank` orders them: how
      rare the thing is, and how close. A station is worth more than an ordinary
@@ -130,6 +219,7 @@
           lbl("Rule") + ": " + f.rule
         ],
         tags: ["festival", f.key],
+        rec: REC.festival,
         headline: f.name,
         sub: D.at.tithi.paksha + " " + D.at.tithi.name
       });
@@ -165,10 +255,10 @@
             lbl("Computed for") + ": " + S.place.n
           ],
           tags: ["retrograde", e.graha.toLowerCase()],
+          rec: REC.station,
           headline: graha(e.graha) + (hi() ? (turning ? " वक्री" : " मार्गी")
                                            : (turning ? " turns retrograde" : " turns direct")),
-          sub: dateAt(e.ms) + " · " + clockAt(e.ms) + " · " + rashi(e.sign),
-          scene: "retro"
+          sub: dateAt(e.ms) + " · " + clockAt(e.ms) + " · " + rashi(e.sign)
         });
       }
       /* The Sun's ingress and the saṅkrānti are one event under two names, and
@@ -197,9 +287,9 @@
             lbl("Zodiac") + ": sidereal, Lahiri ayanāṃśa"
           ],
           tags: ["ingress", e.graha.toLowerCase()],
+          rec: REC.ingress,
           headline: graha(e.graha) + " → " + rashi(e.sign),
-          sub: dateAt(e.ms) + " · " + clockAt(e.ms),
-          scene: "orrery"
+          sub: dateAt(e.ms) + " · " + clockAt(e.ms)
         });
       }
       if (e.kind === "newmoon" || e.kind === "fullmoon") {
@@ -224,9 +314,9 @@
             lbl("Computed for") + ": " + S.place.n
           ],
           tags: [full ? "purnima" : "amavasya", "tithi"],
+          rec: REC.syzygy,
           headline: full ? (hi() ? "पूर्णिमा" : "Pūrṇimā") : (hi() ? "अमावस्या" : "Amāvāsyā"),
-          sub: dateAt(e.ms) + " · " + clockAt(e.ms),
-          scene: "tithi"
+          sub: dateAt(e.ms) + " · " + clockAt(e.ms)
         });
       }
     });
@@ -251,9 +341,9 @@
           lbl("Zodiac") + ": sidereal, Lahiri ayanāṃśa"
         ],
         tags: ["sankranti"],
+        rec: REC.sankranti,
         headline: rashi(D.sankranti.sign) + (hi() ? " संक्रान्ति" : " Saṅkrānti"),
-        sub: clockAt(D.sankranti.ms),
-        scene: "sun"
+        sub: clockAt(D.sankranti.ms)
       });
     }
 
@@ -280,9 +370,10 @@
           lbl("Māsa") + ": " + masaBoth(D) + " (amānta)"
         ],
         tags: ["tithi", "panchang"],
+        rec: REC.tithi,
         headline: hi() ? "दो तिथियाँ, एक दिन" : "Two tithis, one day",
         sub: D.at.tithi.name + " + " + D.at.tithi.upari.name + " upari",
-        scene: "tithi"
+        rec: REC.tithi
       });
     }
 
@@ -311,10 +402,11 @@
         lbl("Māsa") + ": " + masaBoth(D) + " (amānta)"
       ],
       tags: ["nakshatra", "panchang"],
+      rec: REC.nakshatra,
       headline: D.at.nak.name,
       sub: (hi() ? "पाद " : "pāda ") + D.at.nak.pada + " · " +
            NP.grahaSa(NAK_LORD[ni]),
-      scene: "nakshatra"
+      rec: REC.nakshatra
     });
 
     /* --- and the pañcāṅga itself, which is always true and always postable --- */
@@ -342,9 +434,58 @@
         lbl("Sunrise") + ": " + clockAt(D.sunrise) + " · " + S.place.n
       ],
       tags: ["panchang", "vedicastrology"],
+      rec: REC.panchanga,
       headline: D.at.tithi.paksha + " " + D.at.tithi.name,
       sub: D.at.nak.name + " · " + D.vara,
-      scene: "panchanga"
+      rec: REC.panchanga
+    });
+
+    /* Two evergreens, ranked below everything that is actually happening.
+       They exist so a quiet week still has something worth making — and both
+       teach a thing that is true on any date, which is what evergreen means. */
+    out.push({
+      key: "speeds", rank: 20,
+      hook: hi() ? "शनि को तीस वर्ष क्यों लगते हैं"
+                 : "Why Śani takes thirty years",
+      body: hi()
+        ? ("नवों ग्रह एक ही पथ पर, अपनी-अपनी वास्तविक गति से। बारह वर्ष में " +
+           "चन्द्र लगभग डेढ़ सौ चक्कर लगाता है और शनि एक तिहाई भी नहीं। " +
+           "तालिका यह तथ्य बताती है; दौड़ यह दिखाती है।")
+        : ("Nine grahas on one track, each at its own true rate. Over twelve " +
+           "years the Moon runs about a hundred and fifty laps while Saturn " +
+           "has not finished a third of one. Everyone has read the periods; " +
+           "almost nobody has watched them happen at the same time."),
+      facts: [
+        lbl("Sidereal periods") + ": Moon 27.3 d · Sun 365.3 d · Jupiter 11.9 y · Saturn 29.5 y",
+        lbl("Māsa") + ": " + masaBoth(D) + " (amānta)",
+        lbl("Zodiac") + ": sidereal, Lahiri ayanāṃśa"
+      ],
+      tags: ["grahas", "jyotish"],
+      headline: hi() ? "शनि को तीस वर्ष क्यों" : "Why Śani takes thirty years",
+      sub: hi() ? "नौ ग्रह, एक पथ" : "nine grahas, one track",
+      rec: REC.speeds
+    });
+    out.push({
+      key: "sunarc", rank: 18,
+      hook: hi() ? ("वर्ष भर सूर्योदय कैसे बदलता है — " + S.place.n)
+                 : ("What sunrise does over a year in " + S.place.n),
+      body: hi()
+        ? ("पंचांग का प्रत्येक अंक सूर्योदय से निकलता है, और सूर्योदय स्थान पर " +
+           "निर्भर है। भूमध्य के पास वक्र लगभग सपाट रहता है, दूर नाटकीय — " +
+           "इसीलिए पंचांग उसी स्थान के लिए मान्य है जिसके लिए बना है।")
+        : ("Every figure in a pañcāṅga descends from sunrise, and sunrise " +
+           "depends on where you stand. The curve is nearly flat near the " +
+           "equator and dramatic far from it — which is the whole reason a " +
+           "pañcāṅga is only valid for the place it was computed for."),
+      facts: [
+        lbl("Sunrise") + ": " + clockAt(D.sunrise) + " · " + S.place.n,
+        lbl("Sunset") + ": " + clockAt(D.sunset),
+        lbl("Convention") + ": " + D.riseConvLabel
+      ],
+      tags: ["sunrise", "panchang"],
+      headline: hi() ? "सूर्योदय, वर्ष भर" : "Sunrise, across a year",
+      sub: S.place.n,
+      rec: REC.sunarc
     });
 
     out.sort(function (a, b) { return b.rank - a.rank; });
@@ -578,12 +719,16 @@
           '<div class="stact">' +
             '<button type="button" class="stbtn" data-stcopy="' + i + '">Copy caption</button>' +
             '<button type="button" class="stbtn sec" data-stimg="' + i + '">Make the image</button>' +
-            (idea.scene ? '<a class="stbtn sec" href="kundli.html#sky=' +
-              encodeURIComponent(idea.scene) + '" title="Opens the matching ' +
-              'animation with this scene selected; record it to a video from ' +
-              'there">Animate &amp; record this</a>' : "") +
+            (idea.rec ? '<a class="stbtn sec" href="' + recLink(idea.rec) +
+              '">Animate &amp; record this</a>' : "") +
             '<span class="stmsg" id="stmsg' + i + '"></span>' +
-          "</div></article>";
+          "</div>" +
+          (idea.rec ? '<p class="strec"><b>' + esc(sceneName(idea.rec.scene)) +
+            "</b> &mdash; " + esc(moLang(idea.rec.why)) +
+            '<span class="strecset">' + esc(recLabel(idea.rec)) +
+            " &mdash; " + (hi() ? "लिंक यही लगा देता है" :
+              "the link applies all of it") + "</span></p>" : "") +
+          "</article>";
       }).join("");
 
       host.querySelectorAll("[data-stcopy]").forEach(function (b) {

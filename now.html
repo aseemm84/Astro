@@ -652,6 +652,34 @@ table.stahead tr:hover td{background:#fcfbf6}
   .strank{background:#2e2714;color:#e7d19a}
   table.stahead tr:hover td{background:rgba(255,255,255,.03)}
 }
+
+/* The running clock. Civil time and Hindu time side by side, both ticking, so
+   the relationship between them is visible rather than asserted: the vipala
+   column moves two and a half times a second against the civil seconds, which
+   is what a sixtieth of a sixtieth of a sixtieth of a day looks like. */
+.cclock{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:baseline;
+  border:1px solid var(--line);border-radius:12px;padding:9px 14px;
+  margin:4px 0 10px;background:var(--soft)}
+.cclock .cck{display:flex;flex-direction:column;gap:1px}
+.cclock b{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--muted);font-weight:700}
+.cclock .cckv{font-size:26px;font-weight:600;line-height:1.05;
+  font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.cclock .cckh{color:var(--gold,#c9a24b)}
+.cclock .cckn{font-size:12px;color:var(--muted);align-self:flex-end;
+  padding-bottom:3px;max-width:46ch;line-height:1.45}
+.cclock .cckunit{font-size:.52em;font-weight:600;opacity:.72;margin-left:.12em}
+@media (max-width:620px){ .cclock .cckv{font-size:22px} }
+@media (prefers-color-scheme:dark){ .cclock{background:rgba(255,255,255,.04)} }
+.strec{margin:10px 0 0;padding:9px 12px;border-radius:9px;background:var(--soft);
+  font-size:13px;line-height:1.55;color:#4a4e68}
+.strec b{color:var(--ink)}
+.strecset{display:block;margin-top:4px;font-size:12px;color:var(--muted);
+  font-variant-numeric:tabular-nums}
+@media (prefers-color-scheme:dark){
+  .strec{background:rgba(255,255,255,.05);color:#b9bedb}
+  .strec b{color:#e8e9f3}
+}
 </style></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Hindu time, now</h1><p class="sub">The five limbs of the day as they stand, for the place you choose — computed in your browser, with no birth chart needed.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html" class="active">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="kundli.html">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#pancanga">The five limbs, and the month</a><a href="#strip">The tithi either side of now</a><a href="#later">Divisions of the daylight</a><a href="#why">Why the day begins at sunrise</a></aside><main><p class="lead">This is the Hindu time <b>right now</b>, for the place you choose: the five limbs of the day with the moment each one ends, the lunar month in both reckonings, the season and the half-year, sunrise and sunset &mdash; and, kept separate because they are later tradition rather than BPHS, the divisions of the daylight that practice uses. Nothing here needs a birth chart.</p>
 
 <div class="nowbar">

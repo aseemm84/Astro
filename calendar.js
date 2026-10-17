@@ -534,7 +534,9 @@
       window.NPlaces.picker({
         host: sel, value: S.place, quick: quick, label: "Place",
         refMs: refMs,
-        onPick: function (p) { S.place = p; NP.cacheClear(); render(); }
+        onPick: function (p) {
+          S.place = p; NP.cacheClear(); clockDay = null; render(); tickClock();
+        }
       });
     }
 
@@ -544,7 +546,9 @@
         return '<option value="' + c.key + '">' + esc(c.label) + "</option>";
       }).join("");
       cv.value = NP.conv();
-      cv.addEventListener("change", function () { NP.setConv(cv.value); render(); });
+      cv.addEventListener("change", function () {
+        NP.setConv(cv.value); clockDay = null; render(); tickClock();
+      });
     }
     var rk = $("creck");
     if (rk) { rk.value = S.reckoning;
@@ -861,6 +865,61 @@
     writeHash();
   }
 
+  /* ===== the running clock ==================================================
+     Civil 24-hour time and Hindu time side by side, both ticking.
+
+     Ghaṭī : pala : vipala is sixty all the way down, exactly as hours : minutes
+     : seconds are, so it can be read the same way — the units are simply
+     bigger. A ghaṭī is 24 minutes, a pala 24 seconds, a vipala 0.4 of a second.
+     Putting the two clocks next to each other and letting both run is the only
+     way to make that relationship obvious: the vipala column moves two and a
+     half times for every civil second.
+
+     The interval is 160 ms rather than a vipala's 400, because a clock that
+     ticks on exactly the period it displays will visibly skip a count whenever
+     the timer drifts. Sampling faster than the thing you are showing is the
+     cheap fix, and at this cost it does not matter. */
+  var clockTimer = null, clockDay = null, clockDayKey = "";
+  function tickClock() {
+    var host = $("cclock");
+    if (!host || !NP) return;
+    var now = Date.now();
+    /* The day object is rebuilt only when the Hindu day actually turns, not
+       every tick: it costs a sunrise search and this runs six times a second. */
+    var key = S.place.n + "|" + NP.conv() + "|" + Math.floor(now / 60000);
+    if (!clockDay || clockDayKey.split("|")[0] !== S.place.n ||
+        (clockDay.nextSunrise != null && now >= clockDay.nextSunrise) ||
+        now < clockDay.sunrise) {
+      clockDay = NP.day(now, S.place, {});
+      clockDayKey = key;
+    }
+    if (!clockDay) { host.hidden = true; return; }
+    var hc = NP.hinduClock({ ms: now, sunrise: clockDay.sunrise,
+                             nextSunrise: clockDay.nextSunrise });
+    var tz = S.place.tz, d = new Date(now + tz * 3600000);
+    function p2(n) { return (n < 10 ? "0" : "") + n; }
+    var civil = p2(d.getUTCHours()) + ":" + p2(d.getUTCMinutes()) + ":" +
+                p2(d.getUTCSeconds());
+    host.hidden = false;
+    host.innerHTML =
+      '<div class="cck"><b>24-hour clock</b>' +
+        '<span class="cckv">' + civil + "</span></div>" +
+      '<div class="cck"><b>Hindu clock · ghaṭī : pala : vipala</b>' +
+        '<span class="cckv cckh">' + (hc ? NP.hinduClockText(hc) : "—") +
+        '<i class="cckunit">gh : pl : vp</i></span></div>' +
+      '<span class="cckn">Counted from sunrise at ' +
+        clock(clockDay.sunrise, tz) + ", " + esc(S.place.n) +
+        ". Sixty ghaṭī to the day, sixty pala to the ghaṭī, sixty vipala to the " +
+        "pala — so a vipala is " +
+        (hc ? (hc.vipalaMs / 1000).toFixed(3) : "0.400") +
+        " s and runs faster than the second beside it.</span>";
+  }
+  function startClock() {
+    if (clockTimer) clearInterval(clockTimer);
+    tickClock();
+    clockTimer = setInterval(tickClock, 160);
+  }
+
   /* --- boot --------------------------------------------------------------- */
   function haveEngine() {
     return !!(window.NP && window.__kSidAt && window.__kPanchang);
@@ -893,6 +952,7 @@
     today();
     buildControls();
     readHash();
+    startClock();
     render();
   }
   if (document.readyState === "loading")

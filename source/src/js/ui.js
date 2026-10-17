@@ -50,7 +50,40 @@
   (function(){
     var btn=$("k-skygo"), host=$("k-skyout");
     if(!btn||!host) return;
-    function openSky(scene){
+    /* Settings carried alongside the scene, so a recommendation can be APPLIED
+       rather than merely described. The Studio knows that a retrograde loop
+       wants nine months at a sixth speed; telling the reader to go and set that
+       themselves turns one click into five and most people will not bother. */
+    function applySky(q){
+      function set(id,val,evt){
+        var el=document.getElementById(id);
+        if(!el||val==null) return;
+        el.value=val;
+        el.dispatchEvent(new Event(evt||"change",{bubbles:true}));
+      }
+      if(q.span){
+        var m=/^(\d+)([dwmy])$/.exec(q.span);
+        if(m){ set("mospann",m[1]); set("mospanu",m[2]); }
+      }
+      if(q.speed){
+        var v=/^1\/(\d+)$/.test(q.speed) ? 1/parseFloat(q.speed.split("/")[1])
+                                          : parseFloat(q.speed);
+        if(isFinite(v) && window.__moSpeedPos){
+          var sl=document.getElementById("mospeed");
+          if(sl){ sl.value=window.__moSpeedPos(v); 
+                  sl.dispatchEvent(new Event("input",{bubbles:true})); }
+        }
+      }
+      if(q.ratio){
+        var rb=document.querySelector('[data-moratio="'+q.ratio+'"]');
+        if(rb) rb.click();
+      }
+      if(q.safe==="1"){
+        var sb=document.getElementById("mosafe");
+        if(sb && sb.getAttribute("aria-pressed")!=="true") sb.click();
+      }
+    }
+    function openSky(scene,q){
       if(host.innerHTML && !scene){ host.innerHTML=""; btn.textContent=SKY_OPEN; return; }
       try{
         if(!host.innerHTML){
@@ -70,6 +103,7 @@
           /* Arriving from the Studio means arriving at a panel full of controls
              with one specific intention. Saying where the video is beats leaving
              it to be found. */
+          if(q) applySky(q);
           if(!host.querySelector(".k-skyarrive")){
             var note=document.createElement("p");
             note.className="k-note k-skyarrive";
@@ -87,7 +121,7 @@
                        String(e&&e.message||e)+'</p>';
       }
     }
-    btn.addEventListener("click",function(){ openSky(null); });
+    btn.addEventListener("click",function(){ openSky(null,null); });
     window.__kOpenSky=openSky;
 
     /* #sky=<scene> in the address, which is how the Studio page hands a scene
@@ -100,9 +134,14 @@
       var m=/(?:^|&)sky=([A-Za-z0-9_-]+)/.exec(h);
       if(!m) return;
       var scene=decodeURIComponent(m[1]);
+      var q={};
+      h.split("&").forEach(function(kv){
+        var i=kv.indexOf("=");
+        if(i>0) q[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1));
+      });
       function go(){
         if(!window.motionPane){ setTimeout(go,80); return; }
-        openSky(scene);
+        openSky(scene,q);
       }
       if(document.readyState==="loading")
         document.addEventListener("DOMContentLoaded",function(){ setTimeout(go,60); });
