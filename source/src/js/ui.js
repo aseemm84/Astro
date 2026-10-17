@@ -50,19 +50,64 @@
   (function(){
     var btn=$("k-skygo"), host=$("k-skyout");
     if(!btn||!host) return;
-    btn.addEventListener("click",function(){
-      if(host.innerHTML){ host.innerHTML=""; btn.textContent=SKY_OPEN; return; }
+    function openSky(scene){
+      if(host.innerHTML && !scene){ host.innerHTML=""; btn.textContent=SKY_OPEN; return; }
       try{
-        host.innerHTML='<div class="kreport"><div class="kpane" data-kpane="motion">'+
-                       window.motionPane(null,null)+'</div></div>';
-        if(window.__moMount) window.__moMount();
-        btn.textContent="Hide the sky";
+        if(!host.innerHTML){
+          host.innerHTML='<div class="kreport"><div class="kpane" data-kpane="motion">'+
+                         window.motionPane(null,null)+'</div></div>';
+          if(window.__moMount) window.__moMount();
+          btn.textContent="Hide the sky";
+        }
+        /* A scene asked for by name — the Studio page's "Animate this" sends one
+           in the fragment. Selected by clicking the chip it belongs to rather
+           than by poking MO.scene, so every side effect the chip handler has
+           (the playhead reset, the derived duration, the scene's own options)
+           happens exactly as it does for a reader who clicked it. */
+        if(scene){
+          var chip=host.querySelector('[data-moscene="'+scene+'"]');
+          if(chip) chip.click();
+          /* Arriving from the Studio means arriving at a panel full of controls
+             with one specific intention. Saying where the video is beats leaving
+             it to be found. */
+          if(!host.querySelector(".k-skyarrive")){
+            var note=document.createElement("p");
+            note.className="k-note k-skyarrive";
+            note.innerHTML='<b>Scene ready.</b> For a Reel: turn on '+
+              '<b>Safe layout</b> so nothing sits where Instagram draws its own '+
+              'caption, then press <b>Record this loop</b> &mdash; the file '+
+              'downloads when it finishes. <b>Reels guides</b> shows you the '+
+              'covered strips. Use Safari if you want H.264/MP4 straight out.';
+            host.insertBefore(note,host.firstChild);
+          }
+        }
         host.scrollIntoView({behavior:"smooth",block:"start"});
       }catch(e){
         host.innerHTML='<p class="k-note">The animations could not start: '+
                        String(e&&e.message||e)+'</p>';
       }
-    });
+    }
+    btn.addEventListener("click",function(){ openSky(null); });
+    window.__kOpenSky=openSky;
+
+    /* #sky=<scene> in the address, which is how the Studio page hands a scene
+       over. It has to run BEFORE the chart-hash reader, which does not recognise
+       this shape and would clear the fragment — which is exactly what happened:
+       the link arrived, the hash was wiped, and the reader was left looking at
+       the birth-data form wondering what was supposed to happen. */
+    (function(){
+      var h=(location.hash||"").replace(/^#/,"");
+      var m=/(?:^|&)sky=([A-Za-z0-9_-]+)/.exec(h);
+      if(!m) return;
+      var scene=decodeURIComponent(m[1]);
+      function go(){
+        if(!window.motionPane){ setTimeout(go,80); return; }
+        openSky(scene);
+      }
+      if(document.readyState==="loading")
+        document.addEventListener("DOMContentLoaded",function(){ setTimeout(go,60); });
+      else setTimeout(go,60);
+    })();
   })();
 
   var citySel=$("k-city");

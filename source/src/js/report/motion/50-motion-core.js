@@ -227,7 +227,16 @@ function moCaption(dateMs,sub){
      on top of one another. Type is now keyed to the frame's short side, and if
      the rows still do not fit they are scaled down together until they do. */
   var U=Math.min(S.w,S.h);
+  /* With the safe layout on, the band is clear of the caption strip but its
+     RIGHT edge — where the handle sits — was still under the like/comment/share
+     column, which runs down the side above the caption. Measuring the strips
+     showed the bottom one emptied by a factor of ninety and the right one
+     untouched, so the padding on that side has to grow too. Only on the right,
+     and only when the layout is asked for, because this is a fact about one
+     platform's furniture and not about typography. */
   var pad=S.w*0.07, big=U*0.054, small=U*0.027;
+  var padR = (MO.safeLayout && MO.ratio!=="16:9")
+           ? Math.max(pad, S.w*MO_SAFE.right + S.w*0.02) : pad;
   var rows=[];
   rows.push({t:MO.cap.title||moSceneWords(moSceneOf(MO.scene)).title, f:big, col:P.ink, serif:true});
   var s2=MO.cap.sub||sub||moSceneWords(moSceneOf(MO.scene)).sub;
@@ -259,7 +268,7 @@ function moCaption(dateMs,sub){
     try{ c.drawImage(MO__LOGO,pad,fy-lh/2,lw,lh); }catch(e){}
   }
   if(MO.cap.handle)
-    moText(MO.cap.handle,S.w-pad,fy,small*0.95,P.dim,"right",600);
+    moText(MO.cap.handle,S.w-padR,fy,small*0.95,P.dim,"right",600);
   MO._rawType=false;
 }
 

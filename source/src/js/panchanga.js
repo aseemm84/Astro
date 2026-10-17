@@ -255,6 +255,25 @@
   var MASA = ["Caitra", "Vaiśākha", "Jyeṣṭha", "Āṣāḍha", "Śrāvaṇa", "Bhādrapada",
     "Āśvina", "Kārtika", "Mārgaśīrṣa", "Pauṣa", "Māgha", "Phālguna"];
   var RITU = ["Vasanta", "Grīṣma", "Varṣā", "Śarad", "Hemanta", "Śiśira"];
+  /* The lunar months in Devanāgarī, by the same index. The transliteration is
+     what a Latin-reading student needs; the Devanāgarī is what the month is
+     actually called, and on a card meant for an Indian audience it is the form
+     that reads at a glance. */
+  var MASA_HI = ["चैत्र", "वैशाख", "ज्येष्ठ", "आषाढ़", "श्रावण", "भाद्रपद",
+    "आश्विन", "कार्तिक", "मार्गशीर्ष", "पौष", "माघ", "फाल्गुन"];
+  var TITHI_HI = ["प्रतिपदा", "द्वितीया", "तृतीया", "चतुर्थी", "पंचमी", "षष्ठी",
+    "सप्तमी", "अष्टमी", "नवमी", "दशमी", "एकादशी", "द्वादशी", "त्रयोदशी",
+    "चतुर्दशी", "पूर्णिमा"];
+  var TITHI_K_HI = TITHI_HI.slice(0, 14).concat(["अमावस्या"]);
+  var PAKSHA_HI = { "śukla": "शुक्ल", "kṛṣṇa": "कृष्ण" };
+  NP.masaHi = function (engineName) {
+    var i = NP.masaIdx(engineName);
+    return i < 0 ? "" : MASA_HI[i];
+  };
+  NP.tithiHi = function (i) {
+    return i < 15 ? TITHI_HI[i] : TITHI_K_HI[i - 15];
+  };
+  NP.pakshaHi = function (p) { return PAKSHA_HI[p] || p; };
   NP.NAMES = { tithi: TITHI, tithiK: TITHI_K, nak: NAK, yoga: YOGA,
                karana: karanaName, vara: VARA, varaEn: VARA_EN, masa: MASA,
                ritu: RITU };

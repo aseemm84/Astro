@@ -72,6 +72,9 @@
   function hi() { return S.lang === "hi"; }
   function rashi(i) { return hi() ? RASHI_HI[i] : RASHI[i]; }
   function graha(n) { return hi() ? (GRAHA_HI[n] || n) : NP.grahaSa(n); }
+  function eraOf(D) {
+    return D.samvat.vikrama + (hi() ? " विक्रम संवत्" : " Vikrama Saṃvat");
+  }
   function dayMs() {
     return Date.UTC(S.date.y, S.date.m - 1, S.date.d, 12, 0, 0) -
            (S.place.tz || 0) * 3600000;
@@ -123,7 +126,7 @@
                             "other calendars may place it a day either side." : "")),
         facts: [
           lbl("Tithi") + ": " + D.at.tithi.paksha + " " + D.at.tithi.name,
-          lbl("Māsa") + ": " + D.masa.amantaIAST + " (amānta)",
+          lbl("Māsa") + ": " + masaBoth(D) + " (amānta)",
           lbl("Rule") + ": " + f.rule
         ],
         tags: ["festival", f.key],
@@ -216,6 +219,7 @@
                "days, and sometimes covers none at all."),
           facts: [
             lbl("Exact") + ": " + dateAt(e.ms) + " " + clockAt(e.ms),
+            lbl("Māsa") + ": " + masaBoth(D) + " (amānta)",
             lbl("Elongation") + ": " + (full ? "180°" : "0°"),
             lbl("Computed for") + ": " + S.place.n
           ],
@@ -272,7 +276,8 @@
           lbl("First") + ": " + D.at.tithi.name + " → " + clockAt(D.at.tithi.ends),
           lbl("Then") + ": " + D.at.tithi.upari.name + " (upari) → " +
             clockAt(D.at.tithi.upari.ends),
-          lbl("Why") + ": the Moon's speed varies ~15% over a month"
+          lbl("Why") + ": the Moon's speed varies ~15% over a month",
+          lbl("Māsa") + ": " + masaBoth(D) + " (amānta)"
         ],
         tags: ["tithi", "panchang"],
         headline: hi() ? "दो तिथियाँ, एक दिन" : "Two tithis, one day",
@@ -302,7 +307,8 @@
         lbl("Nakṣatra") + ": " + D.at.nak.name + " · pāda " + D.at.nak.pada,
         lbl("Lord") + ": " + NP.grahaSa(NAK_LORD[ni]),
         lbl("Deity") + ": " + NAK_DEITY[ni],
-        lbl("Ends") + ": " + clockAt(D.at.nak.ends)
+        lbl("Ends") + ": " + clockAt(D.at.nak.ends),
+        lbl("Māsa") + ": " + masaBoth(D) + " (amānta)"
       ],
       tags: ["nakshatra", "panchang"],
       headline: D.at.nak.name,
@@ -327,7 +333,8 @@
            "a pañcāṅga is only valid for the place it was computed for: two " +
            "cities can genuinely disagree about which day an ekādaśī falls on."),
       facts: [
-        lbl("Tithi") + ": " + D.at.tithi.paksha + " " + D.at.tithi.name,
+        lbl("Tithi") + ": " + tithiBoth(D),
+        lbl("Māsa") + ": " + masaBoth(D) + " · " + eraOf(D),
         lbl("Nakṣatra") + ": " + D.at.nak.name + " pāda " + D.at.nak.pada,
         lbl("Yoga") + ": " + D.at.yoga.name,
         lbl("Karaṇa") + ": " + D.at.karana.name,
@@ -343,6 +350,21 @@
     out.sort(function (a, b) { return b.rank - a.rank; });
     return out;
   }
+  /* The lunar month, named both ways. On a card for an Indian audience the
+     Devanāgarī is what reads at a glance; the transliteration is what a
+     Latin-reading student needs. Showing one without the other serves half the
+     readers, so both go on, and in Hindi the Devanāgarī leads. */
+  function masaBoth(D) {
+    var iast = D.masa.amantaIAST, dev = NP.masaHi(D.masa.amanta);
+    if (!dev) return iast;
+    return hi() ? (dev + " (" + iast + ")") : (iast + " · " + dev);
+  }
+  function tithiBoth(D) {
+    var en = D.at.tithi.paksha + " " + D.at.tithi.name;
+    var dev = NP.pakshaHi(D.at.tithi.paksha) + " " + NP.tithiHi(D.at.tithi.i);
+    return hi() ? (dev + " (" + en + ")") : (en + " · " + dev);
+  }
+
   function lbl(en) {
     var H = { Tithi: "तिथि", "Māsa": "मास", Rule: "नियम", Station: "स्थिर",
       Sign: "राशि", "Computed for": "गणना", Enters: "प्रवेश", When: "समय",
@@ -455,7 +477,7 @@
       c.font = "500 " + Math.round(W * 0.040) + "px " + SANS;
       subLines = wrap(c, subText, W - pad * 2).slice(0, 2);
     }
-    var maxFacts = S.ratio === "1:1" ? 4 : 6;
+    var maxFacts = S.ratio === "1:1" ? 5 : 7;
     /* A fact whose value is already the headline is a line spent saying the
        same thing twice, which on a card this size is a line that could have
        carried something else. */
@@ -557,7 +579,9 @@
             '<button type="button" class="stbtn" data-stcopy="' + i + '">Copy caption</button>' +
             '<button type="button" class="stbtn sec" data-stimg="' + i + '">Make the image</button>' +
             (idea.scene ? '<a class="stbtn sec" href="kundli.html#sky=' +
-              encodeURIComponent(idea.scene) + '">Animate this</a>' : "") +
+              encodeURIComponent(idea.scene) + '" title="Opens the matching ' +
+              'animation with this scene selected; record it to a video from ' +
+              'there">Animate &amp; record this</a>' : "") +
             '<span class="stmsg" id="stmsg' + i + '"></span>' +
           "</div></article>";
       }).join("");

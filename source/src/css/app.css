@@ -836,3 +836,5 @@ html.navlock,html.navlock body{overflow:hidden}
   accent-color:var(--gold,#c9a24b);height:20px;margin:0}
 .kreport .mospeedv{min-width:4.4em;font-variant-numeric:tabular-nums;
   text-align:right;font-weight:600}
+.k-skyarrive{border-left:3px solid var(--gold,#c9a24b);padding:8px 0 8px 12px;
+  margin:0 0 10px;background:rgba(201,162,75,.07);border-radius:0 8px 8px 0}

@@ -856,6 +856,8 @@ html.navlock,html.navlock body{overflow:hidden}
   accent-color:var(--gold,#c9a24b);height:20px;margin:0}
 .kreport .mospeedv{min-width:4.4em;font-variant-numeric:tabular-nums;
   text-align:right;font-weight:600}
+.k-skyarrive{border-left:3px solid var(--gold,#c9a24b);padding:8px 0 8px 12px;
+  margin:0 0 10px;background:rgba(201,162,75,.07);border-radius:0 8px 8px 0}
 </style></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Build a Kundli</h1><p class="sub">How a birth chart is cast in the sidereal zodiac — and a tool that computes a full chart in your browser and links each planet into the padas reference.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="kundli.html" class="active">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#cast">Cast a chart now</a><a href="#what">What a kundli is</a><a href="#need">What you need</a><a href="#how">How a chart is cast</a><a href="#read">How to read what comes back</a><a href="#limits">Accuracy, attribution & limits</a></aside><main><p class="lead">A <b>kundli</b> (janma-kundali) is a birth chart: a map of the sky at the exact moment and place of birth, projected onto the twelve bhavas counted from the Lagna. Enter the birth details and the whole chart is computed below, in this browser. Everything after it explains what a chart is and how it is cast.</p><h2 id="cast">Cast a chart now</h2><p>Everything is computed <b>in your browser</b> — nothing is sent anywhere, and the page works offline.</p>
 <div id="k-inputs">
 <div class="k-form">
@@ -8310,7 +8312,16 @@ function moCaption(dateMs,sub){
      on top of one another. Type is now keyed to the frame's short side, and if
      the rows still do not fit they are scaled down together until they do. */
   var U=Math.min(S.w,S.h);
+  /* With the safe layout on, the band is clear of the caption strip but its
+     RIGHT edge — where the handle sits — was still under the like/comment/share
+     column, which runs down the side above the caption. Measuring the strips
+     showed the bottom one emptied by a factor of ninety and the right one
+     untouched, so the padding on that side has to grow too. Only on the right,
+     and only when the layout is asked for, because this is a fact about one
+     platform's furniture and not about typography. */
   var pad=S.w*0.07, big=U*0.054, small=U*0.027;
+  var padR = (MO.safeLayout && MO.ratio!=="16:9")
+           ? Math.max(pad, S.w*MO_SAFE.right + S.w*0.02) : pad;
   var rows=[];
   rows.push({t:MO.cap.title||moSceneWords(moSceneOf(MO.scene)).title, f:big, col:P.ink, serif:true});
   var s2=MO.cap.sub||sub||moSceneWords(moSceneOf(MO.scene)).sub;
@@ -8342,7 +8353,7 @@ function moCaption(dateMs,sub){
     try{ c.drawImage(MO__LOGO,pad,fy-lh/2,lw,lh); }catch(e){}
   }
   if(MO.cap.handle)
-    moText(MO.cap.handle,S.w-pad,fy,small*0.95,P.dim,"right",600);
+    moText(MO.cap.handle,S.w-padR,fy,small*0.95,P.dim,"right",600);
   MO._rawType=false;
 }
 
@@ -15445,19 +15456,64 @@ window.buildKundliReport=function(J){
   (function(){
     var btn=$("k-skygo"), host=$("k-skyout");
     if(!btn||!host) return;
-    btn.addEventListener("click",function(){
-      if(host.innerHTML){ host.innerHTML=""; btn.textContent=SKY_OPEN; return; }
+    function openSky(scene){
+      if(host.innerHTML && !scene){ host.innerHTML=""; btn.textContent=SKY_OPEN; return; }
       try{
-        host.innerHTML='<div class="kreport"><div class="kpane" data-kpane="motion">'+
-                       window.motionPane(null,null)+'</div></div>';
-        if(window.__moMount) window.__moMount();
-        btn.textContent="Hide the sky";
+        if(!host.innerHTML){
+          host.innerHTML='<div class="kreport"><div class="kpane" data-kpane="motion">'+
+                         window.motionPane(null,null)+'</div></div>';
+          if(window.__moMount) window.__moMount();
+          btn.textContent="Hide the sky";
+        }
+        /* A scene asked for by name — the Studio page's "Animate this" sends one
+           in the fragment. Selected by clicking the chip it belongs to rather
+           than by poking MO.scene, so every side effect the chip handler has
+           (the playhead reset, the derived duration, the scene's own options)
+           happens exactly as it does for a reader who clicked it. */
+        if(scene){
+          var chip=host.querySelector('[data-moscene="'+scene+'"]');
+          if(chip) chip.click();
+          /* Arriving from the Studio means arriving at a panel full of controls
+             with one specific intention. Saying where the video is beats leaving
+             it to be found. */
+          if(!host.querySelector(".k-skyarrive")){
+            var note=document.createElement("p");
+            note.className="k-note k-skyarrive";
+            note.innerHTML='<b>Scene ready.</b> For a Reel: turn on '+
+              '<b>Safe layout</b> so nothing sits where Instagram draws its own '+
+              'caption, then press <b>Record this loop</b> &mdash; the file '+
+              'downloads when it finishes. <b>Reels guides</b> shows you the '+
+              'covered strips. Use Safari if you want H.264/MP4 straight out.';
+            host.insertBefore(note,host.firstChild);
+          }
+        }
         host.scrollIntoView({behavior:"smooth",block:"start"});
       }catch(e){
         host.innerHTML='<p class="k-note">The animations could not start: '+
                        String(e&&e.message||e)+'</p>';
       }
-    });
+    }
+    btn.addEventListener("click",function(){ openSky(null); });
+    window.__kOpenSky=openSky;
+
+    /* #sky=<scene> in the address, which is how the Studio page hands a scene
+       over. It has to run BEFORE the chart-hash reader, which does not recognise
+       this shape and would clear the fragment — which is exactly what happened:
+       the link arrived, the hash was wiped, and the reader was left looking at
+       the birth-data form wondering what was supposed to happen. */
+    (function(){
+      var h=(location.hash||"").replace(/^#/,"");
+      var m=/(?:^|&)sky=([A-Za-z0-9_-]+)/.exec(h);
+      if(!m) return;
+      var scene=decodeURIComponent(m[1]);
+      function go(){
+        if(!window.motionPane){ setTimeout(go,80); return; }
+        openSky(scene);
+      }
+      if(document.readyState==="loading")
+        document.addEventListener("DOMContentLoaded",function(){ setTimeout(go,60); });
+      else setTimeout(go,60);
+    })();
   })();
 
   var citySel=$("k-city");
@@ -16253,4 +16309,4 @@ window.buildKundliReport=function(J){
   }
 })();
 </script>
-<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-17.3d6a4e1</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>
+<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-17.15ac27d</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>
