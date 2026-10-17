@@ -567,12 +567,38 @@ html.navlock,html.navlock body{overflow:hidden}
   .cmoon{width:11px;height:11px}
   @page{size:A4 landscape;margin:9mm}
 }
+
+/* The place search. The results sit in the bar's flow rather than as a floating
+   popover: a popover would need positioning against a wrapping flex row that
+   reflows at three widths, and the bar is short enough that pushing the rest
+   down is the simpler honest behaviour. */
+.cfind{min-width:20ch}
+.cfindres{flex-basis:100%;display:flex;flex-direction:column;gap:2px;
+  margin:2px 0 0;max-height:min(46vh,320px);overflow:auto}
+.cfindres[hidden]{display:none}
+.cfindres button{font:inherit;text-align:left;background:#fff;cursor:pointer;
+  border:1px solid var(--line);border-radius:8px;padding:5px 9px;
+  display:flex;flex-direction:column;line-height:1.3}
+.cfindres button:hover,.cfindres button:focus-visible{border-color:var(--gold);
+  background:#fcfbf6}
+.cfindres button b{font-size:13px;font-weight:600}
+.cfindres button span{font-size:11.5px;color:var(--muted);
+  font-variant-numeric:tabular-nums}
+.cfindmsg{font-size:12.5px;color:var(--muted);padding:3px 2px}
+@media print{ .cfindres{display:none !important} }
+@media (prefers-color-scheme:dark){
+  .cfindres button{background:rgba(255,255,255,.04)}
+  .cfindres button:hover{background:rgba(255,255,255,.08)}
+}
 </style></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Pañcāṅga calendar</h1><p class="sub">Any month from 1800 to 2200, for the place you choose — with the rule behind every festival shown beside it.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html" class="active">Calendar</a><a href="kundli.html">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#reading">How to read it</a><a href="#reckoning">Two ways of counting months, and why both are here</a><a href="#rules">Festivals are rules, not dates</a><a href="#place">Why the place matters more than it looks</a><a href="#limits">What this does not do</a></aside><main><p class="lead">A full pañcāṅga calendar for any month between <b>1800 and 2200</b>, computed in your browser for the place you choose. Four views over the same day: a <b>month grid</b> with the moon's phase on every cell, the traditional <b>almanac row</b> a printed pañcāṅga uses, a <b>day detail</b> that shows the rule behind every festival it names, and a <b>year view</b> &mdash; the only one that can show an intercalary month, because a month grid has no cell for a month the Gregorian year does not contain.</p>
 
 <div class="cbar">
   <div class="cbargroup">
     <span class="clab"><label for="cplace">Place</label></span>
     <select id="cplace" class="csel"></select>
+    <input id="cfind" class="csel cfind" type="search" autocomplete="off"
+           placeholder="or search 44,426 towns…" aria-label="Search for a place">
+    <div id="cfindres" class="cfindres" role="listbox" hidden></div>
     <span class="clab"><label for="cmonthin">Month</label></span>
     <select id="cmonthin" class="csel"></select>
     <span class="clab"><label for="cyearin">Year</label></span>

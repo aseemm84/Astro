@@ -83,6 +83,14 @@
   }
   function L(k) { return !!S.layers[k]; }
 
+  /* The instant a time-zone offset should be resolved for: the middle of the
+     month being viewed, not the present moment. A place picked while looking at
+     January and then carried to July would otherwise carry January's offset
+     through the summer, and every sunrise with it. */
+  function refMs() {
+    return Date.UTC(S.y || 2026, (S.m || 1) - 1, 15, 12, 0, 0);
+  }
+
   /* --- formatting --------------------------------------------------------- */
   function esc(s) {
     return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
@@ -526,14 +534,106 @@
          option. The first version assigned list[0] here and so quietly overrode
          the default set moments earlier, which showed up as a Delhi default
          rendering an Abu Dhabi calendar. */
+      if (S.place && S.place.found) list.found = S.place;
       var want = S.place || sv || NP.PLACES[2];
       var at = 0;
       for (var j = 0; j < list.length; j++) if (list[j].n === want.n) at = j;
       S.place = list[at]; sel.value = String(at);
       sel.addEventListener("change", function () {
-        S.place = list[+sel.value] || S.place; NP.cacheClear(); render();
+        /* "found" is the place chosen from the town search, which is not an
+           index into the short list. */
+        S.place = (sel.value === "found" && list.found) ? list.found
+                                                       : (list[+sel.value] || S.place);
+        NP.cacheClear(); render();
       });
     }
+    /* --- the place search ------------------------------------------------
+       The short list stays, because it is instant and covers most readers; the
+       search reaches the whole 44,426-town file, loaded only when somebody
+       actually types. The page claims a Hindu calendar is valid only for the
+       place it was computed for, and offering nineteen places while saying so
+       was the weakest part of that claim.
+
+       The offset is resolved from the IANA zone FOR THE DATE ON SCREEN, not
+       stored — which matters here more than on the chart page, because the
+       calendar walks a whole month or year. A place chosen while looking at
+       January and then carried to July would otherwise be an hour out all
+       summer, and every sunrise with it. */
+    var fi = $("cfind"), fr = $("cfindres"), findTimer = null, findSeq = 0;
+    function findMsg(t) {
+      fr.hidden = false;
+      fr.innerHTML = '<p class="cfindmsg">' + t + "</p>";
+    }
+    function runFind() {
+      var q = (fi.value || "").trim(), seq = ++findSeq;
+      if (q.length < 2) { fr.hidden = true; fr.innerHTML = ""; return; }
+      if (!window.NPlaces) { findMsg("The place list is not available."); return; }
+      if (!window.NPlaces.loaded()) findMsg("Loading the town list once…");
+      window.NPlaces.load().then(function (db) {
+        if (seq !== findSeq) return;            /* a later keystroke has won */
+        var hits = window.NPlaces.search(db, q, 9);
+        if (!hits.length) {
+          findMsg("No match for &ldquo;" + esc(q) + "&rdquo;. Try a different " +
+                  "spelling, or a larger town nearby.");
+          return;
+        }
+        fr.hidden = false;
+        fr.innerHTML = hits.map(function (ix, pos) {
+          var pl = window.NPlaces.place(db, ix);
+          var off = window.NPlaces.offsetAt(pl.zone, refMs());
+          return '<button type="button" role="option" data-cfi="' + pos + '">' +
+            "<b>" + esc(pl.n) + "</b><span>" +
+            pl.lat.toFixed(3) + "°, " + pl.lon.toFixed(3) + "° · " +
+            esc(pl.zone) +
+            (off == null ? "" : " · UTC" + (off >= 0 ? "+" : "") + off) +
+            "</span></button>";
+        }).join("");
+        var chosen = hits.map(function (ix) { return window.NPlaces.place(db, ix); });
+        fr.querySelectorAll("[data-cfi]").forEach(function (b) {
+          b.addEventListener("click", function () {
+            var pl = chosen[+b.getAttribute("data-cfi")];
+            var off = window.NPlaces.offsetAt(pl.zone, refMs());
+            if (off == null) {
+              findMsg("The time zone for " + esc(pl.n) + " could not be " +
+                      "resolved in this browser, so its sunrise cannot be " +
+                      "computed. Pick a nearby town instead.");
+              return;
+            }
+            S.place = { n: pl.n, lat: pl.lat, lon: pl.lon, tz: off,
+                        zone: pl.zone, found: true };
+            /* The chosen place joins the select so it can be returned to, and
+               so the control never shows a city other than the one in use. */
+            var opt = document.createElement("option");
+            opt.textContent = pl.n; opt.value = "found";
+            var sel2 = $("cplace");
+            if (sel2) {
+              var old = sel2.querySelector('[value="found"]');
+              if (old) old.remove();
+              sel2.appendChild(opt); sel2.value = "found";
+            }
+            list.found = S.place;
+            fi.value = ""; fr.hidden = true; fr.innerHTML = "";
+            NP.cacheClear(); render();
+          });
+        });
+      }).catch(function (e) {
+        if (seq !== findSeq) return;
+        findMsg("The town list could not be loaded (" + esc(e.message) +
+                "). Make sure <code>cities.json</code> and " +
+                "<code>cities.js</code> sit beside this page.");
+      });
+    }
+    if (fi && fr) {
+      fi.addEventListener("input", function () {
+        clearTimeout(findTimer);
+        findTimer = setTimeout(runFind, 180);
+      });
+      fi.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") { fi.value = ""; fr.hidden = true; fr.innerHTML = ""; }
+        if (e.key === "Enter") { e.preventDefault(); clearTimeout(findTimer); runFind(); }
+      });
+    }
+
     var cv = $("cconv");
     if (cv) {
       cv.innerHTML = NP.convList().map(function (c) {
@@ -765,9 +865,20 @@
   function writeHash() {
     var on = LAYERS.filter(function (l) { return !l.base && S.layers[l.k]; })
                    .map(function (l) { return l.k; });
+    /* A place chosen from the town search is not in the short list, so the name
+       alone cannot restore it — the first version wrote the name and a reload
+       silently fell back to the default city, which is the same quiet
+       substitution the range rule exists to prevent, applied to a place. So a
+       found place carries its own coordinates and offset, and a link to it then
+       works for a reader who never loads the town file at all. */
     var h = ["v=" + S.view, "y=" + S.y, "m=" + S.m, (S.d ? "d=" + S.d : ""),
              "r=" + S.reckoning, "e=" + S.era, "f=" + S.endFmt,
-             "p=" + S.place.n, "l=" + on.join(",")].filter(Boolean).join("&");
+             "p=" + encodeURIComponent(S.place.n),
+             (S.place.found
+               ? "pl=" + S.place.lat.toFixed(4) + "," + S.place.lon.toFixed(4) +
+                 "," + S.place.tz + (S.place.zone ? "," + S.place.zone : "")
+               : ""),
+             "l=" + on.join(",")].filter(Boolean).join("&");
     try { history.replaceState(null, "", "#" + h); } catch (e) {}
   }
   function readHash() {
@@ -796,7 +907,15 @@
       S.preset = "custom";
       LAYERS.forEach(function (l) { S.layers[l.k] = l.base || on.indexOf(l.k) >= 0; });
     }
-    if (q.p) {
+    if (q.pl) {
+      /* a searched place, carried whole */
+      var bits = q.pl.split(",");
+      var la = parseFloat(bits[0]), lo = parseFloat(bits[1]), tz = parseFloat(bits[2]);
+      if (isFinite(la) && isFinite(lo) && isFinite(tz))
+        S.place = { n: q.p || (la.toFixed(3) + "°, " + lo.toFixed(3) + "°"),
+                    lat: la, lon: lo, tz: tz,
+                    zone: bits[3] || null, found: true };
+    } else if (q.p) {
       var all = NP.PLACES.concat(NP.savedPlace() ? [NP.savedPlace()] : []);
       for (var i = 0; i < all.length; i++) if (all[i].n === q.p) S.place = all[i];
     }
@@ -847,6 +966,7 @@
     var need = [];
     if (!window.__kSidAt) need.push("engine.js");
     if (!window.NP) need.push("panchanga.js");
+    if (!window.NPlaces) need.push("places.js");
     var left = need.length;
     if (!left) return go();
     need.forEach(function (src) {
@@ -871,8 +991,14 @@
     readHash();
     var sel = $("cplace");
     if (sel && S.place) {
-      for (var i = 0; i < sel.options.length; i++)
-        if (sel.options[i].text === S.place.n) sel.value = String(i);
+      if (S.place.found) {
+        var o = document.createElement("option");
+        o.textContent = S.place.n; o.value = "found";
+        sel.appendChild(o); sel.value = "found";
+      } else {
+        for (var i = 0; i < sel.options.length; i++)
+          if (sel.options[i].text === S.place.n) sel.value = String(i);
+      }
     }
     render();
   }

@@ -314,6 +314,10 @@ def build_shared():
         # matters. festivals.js extends the same window.NP, so they ship as one
         # file and a page cannot load half of the pair.
         "calendar.js": brandify(read(SRC, "js", "calendar.js")),
+        # The city list, loading and search, shared so the calendar does not grow
+        # a second copy of "which city is this and what is its offset". Lazy: the
+        # 3 MB of rows are fetched only when somebody actually searches.
+        "places.js": brandify(read(SRC, "js", "places.js")),
         "panchanga.js": brandify(read(SRC, "js", "panchanga.js") + "\n" +
                                  read(SRC, "js", "festivals.js")),
         # cities.js is cities.json with sixteen characters in front of it. The chart
