@@ -45,7 +45,7 @@ let fails = 0;
 const say = (ok, line) => { if (!ok) fails++; console.log(`  ${ok ? "ok  " : "FAIL"} ${line}`); };
 
 await page.waitForFunction(
-  () => document.querySelectorAll("#streels .strcard").length > 0 &&
+  () => document.querySelectorAll("#streels .strcard").length >= 5 &&
         document.querySelectorAll("#stcrows .stcrow").length > 0,
   null, { timeout: 45000 }).catch(() => {});
 
@@ -59,7 +59,10 @@ const strip = await page.evaluate(() => {
     open: c.querySelector("[data-stropen]")?.getAttribute("href") || ""
   }));
 });
-say(strip.length === 5, `five reels mounted (${strip.length})`);
+/* The strip grows as scenes are added, so the check is that every entry is
+   wired and none is half-built — not that there are exactly five of them. */
+say(strip.length >= 5 && strip.every(s => s.title && s.rec && s.open),
+  `${strip.length} reels mounted, each with a title and both links`);
 strip.forEach(s => {
   const q = new URLSearchParams(s.rec.split("#")[1] || "");
   const ok = q.get("rec") === "1" && q.get("safe") === "1" &&

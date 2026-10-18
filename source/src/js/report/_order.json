@@ -55,6 +55,7 @@
   "motion/58-motion-capture.js",
   "motion/59-motion-content.js",
   "motion/60-motion-reels.js",
+  "motion/62-motion-deeptime.js",
   "motion/56-motion-guide.js",
   "motion/53-motion-pane.js",
   "export/42-json-export.js",

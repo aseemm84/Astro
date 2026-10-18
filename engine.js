@@ -1317,6 +1317,26 @@ window.__kPanchang=function(sunSid,moonSid,jd){ return panchang(sunSid,moonSid,j
 window.__kMasa=function(sunSid,moonSid,ayan){ return masaOf(sunSid,moonSid,ayan); };
 window.__kNak=function(deg){ return nak(deg); };
 window.__kJD=function(ms){ return ms/86400000+2440587.5; };
+/* Geocentric distance in kilometres, and equatorial coordinates of date.
+
+   Both come straight out of the vendored ephemeris and neither was exposed,
+   so anything wanting the Moon's distance (perigee, apogee, the apparent size
+   that makes a "supermoon") or a body's right ascension and declination (the
+   tilt of the crescent, solar declination, the shadow of a gnomon) had to
+   either reach inside this file or re-derive what is already computed here. */
+window.__kDist=function(name,ms){
+  try{
+    var v=Astronomy.GeoVector(Astronomy.Body[BODY[name]],new Date(ms),true);
+    return Math.sqrt(v.x*v.x+v.y*v.y+v.z*v.z)*149597870.7;
+  }catch(e){ return null; }
+};
+window.__kEquator=function(name,ms,lat,lon){
+  try{
+    var obs=new Astronomy.Observer(lat||0,lon||0,0);
+    var eq=Astronomy.Equator(Astronomy.Body[BODY[name]],new Date(ms),obs,true,true);
+    return {ra:eq.ra, dec:eq.dec, dist:eq.dist*149597870.7};
+  }catch(e){ return null; }
+};
 /* The sunrise convention, shared rather than reimplemented. The now page and the
    calendar date their days with the same function the chart report does, so the
    two can never drift into disagreeing about which day it is. */

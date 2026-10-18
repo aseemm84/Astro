@@ -700,6 +700,16 @@ venusAstanga:{en:"within astaṅgata — too close to the Sun to be seen",
               hi:"अस्तङ्गत — सूर्य के इतने निकट कि दिखाई न दे"},
 venusPetals: {en:"five returns, eight years", hi:"पाँच पुनरागमन, आठ वर्ष"},
 dayNOf:      {en:"day {0} of {1}", hi:"दिन {0} / {1}"},
-zeroShadow:  {en:"no shadow at all on {0}", hi:"{0} को छाया बिल्कुल नहीं"}
+zeroShadow:  {en:"no shadow at all on {0}", hi:"{0} को छाया बिल्कुल नहीं"},
+precNote:    {en:"\u00b1 about {0} years at this end \u2014 the aya\u1e43\u015b\u0101 model is fitted to the modern era",
+              hi:"इस छोर पर लगभग \u00b1{0} वर्ष \u2014 अयनांश प्रतिरूप आधुनिक युग के लिए बना है"},
+kaliYearIs:  {en:"{0} Kali years elapsed \u2014 the {1}th is running",
+              hi:"{0} कलि वर्ष बीते \u2014 {1}वाँ चल रहा है"},
+aharganaIs:  {en:"ahargaṇa {0} days since the Kali epoch",
+              hi:"कलि आरम्भ से अहर्गण {0} दिन"},
+kalpaCloses: {en:"14 manvantaras + 15 sandhis = one kalpa, exactly",
+              hi:"14 मन्वन्तर + 15 सन्धि = ठीक एक कल्प"},
+definitional:{en:"these figures are definitions, not measurements",
+              hi:"ये संख्याएँ परिभाषाएँ हैं, माप नहीं"}
 };
 for(var _k8 in MO_PHR8) MO_PHR[_k8]=MO_PHR8[_k8];

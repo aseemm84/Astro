@@ -775,6 +775,37 @@
       }
     }
     out.sort(function (a, b) { return a.ms - b.ms; });
+    /* Heliacal setting and rising, for the grahas whose disappearance is a
+       thing people plan around. Venus and Jupiter astaṅgata is when weddings
+       and the other saṃskāras are traditionally paused across much of India,
+       so it belongs on a calendar beside the ingresses rather than only inside
+       a chart. Off unless asked for, because it is a day-stepped scan on top
+       of a six-hourly one and most callers do not want to pay for it. */
+    if (opts.asta) {
+      (opts.astaBodies || ["Venus", "Jupiter", "Mercury", "Mars", "Saturn"])
+        .forEach(function (g) {
+          var r = NP.astaWindows(g, fromMs, toMs);
+          if (!r) return;
+          r.windows.forEach(function (w) {
+            if (w.from != null)
+              out.push({ kind: "asta", graha: g, ms: w.from, orb: r.orb,
+                         ends: w.to, src: "classical" });
+            if (w.to != null)
+              out.push({ kind: "udaya", graha: g, ms: w.to, orb: r.orb,
+                         src: "classical" });
+          });
+        });
+    }
+    /* Perigee and apogee. A full Moon within a day or so of perigee is what
+       the popular press calls a supermoon; the threshold is somebody's
+       convention, so the distance is always carried and the label is only
+       attached when the caller supplies the convention. */
+    if (opts.lunarDistance) {
+      NP.lunarExtremes(fromMs, toMs).forEach(function (e) {
+        out.push({ kind: e.kind, ms: e.ms, km: e.km, src: "astronomy" });
+      });
+    }
+    out.sort(function (a, b) { return a.ms - b.ms; });
     return out;
   };
   function bisect(floorMs, lo, hi, f) {
@@ -1036,6 +1067,233 @@
       prev = cur;
     }
     return { days: out, src: "astronomy" };
+  };
+
+  /* ===== Vedic time, from the kalpa down ====================================
+
+     WHY THESE NUMBERS CAN BE TRUSTED. Every figure below is DEFINITIONAL, not
+     measured, and the definitions close on each other: four yugas in the ratio
+     4:3:2:1 make a mahāyuga, seventy-one mahāyugas a manvantara, fourteen
+     manvantaras plus fifteen sandhis of a kṛta-yuga each make a kalpa, and a
+     kalpa is Brahmā's day. That last identity is the check — 14 × 306,720,000
+     + 15 × 1,728,000 comes to exactly 4,320,000,000 — and the test suite
+     asserts it rather than trusting that the constants were typed correctly.
+     A table that checks against itself is worth more than a table copied
+     carefully, because careful copying is exactly what fails silently. */
+  var YUGA = { krita: 1728000, treta: 1296000, dvapara: 864000, kali: 432000 };
+  var MAHAYUGA = YUGA.krita + YUGA.treta + YUGA.dvapara + YUGA.kali;  /* 4,320,000 */
+  var MANVANTARA = 71 * MAHAYUGA;                                      /* 306,720,000 */
+  var SANDHI = YUGA.krita;
+  var KALPA = 14 * MANVANTARA + 15 * SANDHI;                           /* 4,320,000,000 */
+  NP.YUGA = YUGA;
+  NP.TIME_SCALE = {
+    kali: YUGA.kali, dvapara: YUGA.dvapara, treta: YUGA.treta, krita: YUGA.krita,
+    mahayuga: MAHAYUGA, manvantara: MANVANTARA, kalpa: KALPA,
+    brahmaDay: KALPA, brahmaYear: KALPA * 2 * 360, brahmaLife: KALPA * 2 * 360 * 100
+  };
+
+  /* The Kali epoch: Ujjain mean midnight ending 17 February 3102 BCE, which is
+     Julian Day 588465.5. This is the zero of the ahargana ("heap of days") that
+     every siddhānta reckons from, and it is a convention of those texts rather
+     than an astronomical event — so it is stated, not derived. The check that
+     it is right is that the elapsed Kali year it produces for today matches the
+     year printed in any pañcāṅga, and the test asserts that. */
+  var KALI_JD0 = 588465.5;
+  /* For the record, and because it is the figure people check: JD 588465.5 is
+     18 February of astronomical year −3101 IN THE JULIAN CALENDAR, which is
+     3102 BCE. Converted into the proleptic Gregorian calendar the same instant
+     reads 23 January, because the two calendars are 25 days apart that far
+     back. Both are correct and they are not the same date; quoting one as the
+     other is how this epoch is usually got wrong. */
+  NP.KALI_EPOCH = { jd: 588465.5, julian: "18 February 3102 BCE",
+                    gregorian: "23 January 3102 BCE (proleptic)" };
+  /* The sidereal year the siddhāntas use, in the same tradition's own figure.
+     Sūrya Siddhānta's year is 365.258756 days — longer than the modern value,
+     which is why a siddhāntic Kali year number drifts slowly from one computed
+     with a modern constant. Both are given, and which is which is labelled. */
+  var SID_YEAR_SS = 365.258756, SID_YEAR_MOD = 365.256363;
+
+  NP.vedicTime = function (ms) {
+    var jd = window.__kJD(ms);
+    var ahargana = jd - KALI_JD0;
+    var elapsedSS = ahargana / SID_YEAR_SS, elapsedMod = ahargana / SID_YEAR_MOD;
+    /* Position inside the current Kali yuga, and inside the structures above it.
+       The current kalpa is counted as the 51st year of the second half of
+       Brahmā's life in the usual reckoning, but that count is a statement of
+       purāṇic chronology rather than a computation, so it is not asserted here
+       — what is given is where we stand inside the kali, the mahāyuga and the
+       manvantara, each of which follows from the definitions alone. */
+    var intoKali = elapsedSS;
+    var intoMahayuga = YUGA.krita + YUGA.treta + YUGA.dvapara + intoKali;
+    /* ELAPSED or CURRENT — the ambiguity that makes two almanacs disagree by
+       one. 5127 years have gone by, so we stand in the 5128th. Both are given
+       under names that cannot be confused, because "Kali year 5127" alone is
+       the kind of figure that gets copied into a caption and then argued with
+       in the comments. */
+    return {
+      ahargana: ahargana,
+      kaliElapsed: Math.floor(elapsedSS),
+      kaliCurrent: Math.floor(elapsedSS) + 1,
+      kaliElapsedModern: Math.floor(elapsedMod),
+      kaliYear: Math.floor(elapsedSS) + 1,     /* kept: the running year */
+      intoKali: intoKali, kaliLen: YUGA.kali,
+      intoMahayuga: intoMahayuga, mahayugaLen: MAHAYUGA,
+      manvantara: 7,                       /* Vaivasvata, the seventh — purāṇic */
+      manvantaraSrc: "purāṇic tradition",
+      scale: NP.TIME_SCALE,
+      yearModel: { siddhantic: SID_YEAR_SS, modern: SID_YEAR_MOD },
+      src: "siddhānta"
+    };
+  };
+
+  /* ===== heliacal setting and rising (asta / moudhya) ======================
+     A graha within its own orb of the Sun is lost in the glare. The orbs are
+     the ones this project already uses for combustion in the chart report, so
+     the calendar and the chart cannot disagree about what is combust. Found by
+     bisecting the elongation against the orb, not by assuming a duration. */
+  var ASTA_ORB = { Moon: 12, Mars: 17, Mercury: 14, Jupiter: 11, Venus: 10, Saturn: 16 };
+  NP.ASTA_ORB = ASTA_ORB;
+  function elongAt(name, ms) {
+    var a = sidAt(name, ms), b = sidAt("Sun", ms);
+    if (a == null || b == null) return null;
+    var d = Math.abs(((a - b) % 360 + 360) % 360);
+    return d > 180 ? 360 - d : d;
+  }
+  NP.elongationOf = elongAt;
+  NP.astaWindows = function (name, fromMs, toMs) {
+    var orb = ASTA_ORB[name];
+    if (orb == null) return null;
+    var step = 86400000, out = [], inside = null;
+    var prev = elongAt(name, fromMs);
+    if (prev == null) return null;
+    var wasIn = prev < orb;
+    if (wasIn) inside = { from: null, fromClipped: true };
+    for (var t = fromMs + step; t <= toMs; t += step) {
+      var e = elongAt(name, t);
+      if (e == null) continue;
+      var isIn = e < orb;
+      if (isIn !== wasIn) {
+        var lo = t - step, hi = t;
+        for (var k = 0; k < 24; k++) {
+          var mid = (lo + hi) / 2, v = elongAt(name, mid);
+          if (v == null) break;
+          if ((v < orb) === wasIn) lo = mid; else hi = mid;
+        }
+        if (isIn) inside = { from: hi, fromClipped: false };
+        else if (inside) { inside.to = hi; out.push(inside); inside = null; }
+      }
+      wasIn = isIn;
+    }
+    if (inside) { inside.to = null; inside.toClipped = true; out.push(inside); }
+    return { graha: name, orb: orb, windows: out, src: "classical" };
+  };
+
+  /* ===== the Moon's distance, and what a "supermoon" is =====================
+     Perigee and apogee found by bracketing the minimum and maximum of the
+     geocentric distance, which is a real extremum rather than a threshold —
+     so the figure does not depend on anyone's definition. The popular
+     "supermoon" label does depend on a definition, so the threshold is stated
+     as a field rather than baked in, and the distance is always given. */
+  NP.moonDistance = function (ms) {
+    try { return window.__kDist("Moon", ms); } catch (e) { return null; }
+  };
+  NP.lunarExtremes = function (fromMs, toMs) {
+    var step = 6 * 3600000, out = [];
+    var a = NP.moonDistance(fromMs - step), b = NP.moonDistance(fromMs);
+    if (a == null || b == null) return out;
+    for (var t = fromMs + step; t <= toMs; t += step) {
+      var c = NP.moonDistance(t);
+      if (c == null) continue;
+      if ((b < a && b < c) || (b > a && b > c)) {
+        /* refine by golden-free ternary search on the bracketing interval */
+        var lo = t - 2 * step, hi = t, min = b < a;
+        for (var k = 0; k < 40; k++) {
+          var m1 = lo + (hi - lo) / 3, m2 = hi - (hi - lo) / 3;
+          var v1 = NP.moonDistance(m1), v2 = NP.moonDistance(m2);
+          if (v1 == null || v2 == null) break;
+          if (min ? (v1 < v2) : (v1 > v2)) hi = m2; else lo = m1;
+        }
+        var at = (lo + hi) / 2;
+        out.push({ ms: at, km: NP.moonDistance(at), kind: min ? "perigee" : "apogee" });
+      }
+      a = b; b = c;
+    }
+    return out;
+  };
+
+  /* ===== which way the crescent leans =======================================
+     Two angles, and they are not the same one:
+
+       the position angle of the bright limb, measured on the sky from celestial
+       north — a property of where the Sun and Moon are, and the same for every
+       observer; and
+
+       the parallactic angle, which is how much celestial north is itself tilted
+       from the observer's vertical at that moment — a property of WHERE AND WHEN
+       you stand.
+
+     What a person actually sees, the tilt of the crescent against the horizon,
+     is the first minus the second. A card that draws the Moon without this gets
+     the crescent's lean wrong everywhere except by accident, and in the tropics
+     it is wrong by enough to notice: near the equator the crescent lies on its
+     back like a boat and in Britain it stands on its side. */
+  NP.brightLimb = function (ms, P) {
+    var R = Math.PI / 180;
+    var s = window.__kEquator ? window.__kEquator("Sun", ms, 0, 0) : null;
+    var m = window.__kEquator ? window.__kEquator("Moon", ms, 0, 0) : null;
+    if (!s || !m) return null;
+    var ar = s.ra * 15 * R, am = m.ra * 15 * R;
+    var ds = s.dec * R, dm = m.dec * R;
+    var dA = ar - am;
+    var chi = Math.atan2(Math.cos(ds) * Math.sin(dA),
+                         Math.sin(ds) * Math.cos(dm) -
+                         Math.cos(ds) * Math.sin(dm) * Math.cos(dA));
+    var out = { limbPA: ((chi / R) % 360 + 360) % 360, src: "astronomy" };
+    if (P && P.lat != null) {
+      var jd = window.__kJD(ms);
+      var T = (jd - 2451545.0) / 36525.0;
+      var gst = 280.46061837 + 360.98564736629 * (jd - 2451545.0) + 0.000387933 * T * T;
+      var lst = ((gst + P.lon) % 360 + 360) % 360;
+      var H = (lst - m.ra * 15) * R, phi = P.lat * R;
+      var q = Math.atan2(Math.sin(H),
+                         Math.tan(phi) * Math.cos(dm) - Math.sin(dm) * Math.cos(H));
+      out.parallactic = ((q / R) % 360 + 360) % 360;
+      out.tilt = ((out.limbPA - out.parallactic) % 360 + 360) % 360;
+    }
+    return out;
+  };
+
+  /* ===== the same day, read twice ===========================================
+     A pañcāṅga names the day by the tithi running AT SUNRISE. A chart is cast
+     for the minute of birth. Those are different questions and they routinely
+     give different answers, which is the single most common reason somebody
+     says their nakṣatra "does not match the calendar". Both, side by side,
+     with a flag when they differ, settles it. */
+  NP.atMoment = function (D, atMs) {
+    if (!D) return null;
+    var ti = tithiIdx(atMs), nk = nakIdx(atMs), yg = yogaIdx(atMs), kr = karanaIdx(atMs);
+    var su = sidAt("Sun", atMs), mo = sidAt("Moon", atMs);
+    var at = {
+      ms: atMs,
+      tithi: { i: ti, n: (ti % 15) + 1, paksha: ti < 15 ? "śukla" : "kṛṣṇa",
+               name: ti < 15 ? TITHI[ti] : TITHI_K[ti - 15] },
+      nak: { i: nk, name: NAK[nk],
+             pada: Math.floor(((((mo % 360) + 360) % 360) % (40 / 3)) / (10 / 3)) + 1 },
+      yoga: { i: yg, name: YOGA[yg] },
+      karana: { i: kr, name: karanaName(kr) },
+      elongation: (su == null || mo == null) ? null : (((mo - su) % 360) + 360) % 360
+    };
+    at.illumination = at.elongation == null ? null
+                    : (1 - Math.cos(at.elongation * Math.PI / 180)) / 2;
+    return {
+      atSunrise: D.at, atMoment: at,
+      differs: {
+        tithi: at.tithi.i !== D.at.tithi.i,
+        nak:   at.nak.i   !== D.at.nak.i,
+        yoga:  at.yoga.i  !== D.at.yoga.i,
+        karana: at.karana.i !== D.at.karana.i
+      }
+    };
   };
 
   window.NP = NP;
