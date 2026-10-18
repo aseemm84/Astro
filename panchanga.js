@@ -898,6 +898,146 @@
     return gh + "." + (vg < 10 ? "0" + vg : vg);
   };
 
+  /* ===== later tradition, kept labelled =====================================
+
+     WHAT PROVENANCE MEANS HERE. This project's whole claim is that it tells you
+     which book a rule is from. Everything below is a real rule that real
+     almanacs print, and NONE of it is Parāśara: Tāra Bala and Brahma Muhūrta
+     are muhūrta and pañcāṅga practice, the shadow is siddhānta. So each carries
+     a `src` field, and every surface that prints one of these prints the label
+     beside it. Asserting them as BPHS would be the single worst thing this
+     site could do, because being able to trust the attribution is the only
+     reason to read it rather than any of a hundred other pañcāṅga sites.
+
+     WHAT IS DELIBERATELY ABSENT. Varjyam, Amṛta Kāla and the Puṣkara degrees
+     were asked for and are not here. Each needs a classical lookup table —
+     ghaṭī offsets per nakṣatra, degrees per rāśi — and the almanacs do not all
+     print the same numbers. A table recalled rather than read is a fabricated
+     citation wearing a number, which is worse than an absent feature. They go
+     in when the table can be taken from a source and cited. */
+
+  /* The nine-fold Tāra Bala, counted from the natal nakṣatra to the day's.
+     Pure modular arithmetic — no table, which is why it is here and Varjyam is
+     not. The cycle of nine repeats three times across the twenty-seven. */
+  var TARA = [
+    { n: "Janma",        good: false, note: "the birth star itself — mixed, and classically avoided for new undertakings" },
+    { n: "Sampat",       good: true,  note: "wealth" },
+    { n: "Vipat",        good: false, note: "danger, loss" },
+    { n: "Kṣema",        good: true,  note: "well-being" },
+    { n: "Pratyari",     good: false, note: "obstruction" },
+    { n: "Sādhaka",      good: true,  note: "accomplishment" },
+    { n: "Vadha",        good: false, note: "also called Naidhana — the hardest of the nine" },
+    { n: "Mitra",        good: true,  note: "friend" },
+    { n: "Ati-Mitra",    good: true,  note: "also called Parama Mitra — the best of the nine" }
+  ];
+  var TARA_HI = ["जन्म", "सम्पत्", "विपत्", "क्षेम", "प्रत्यरि", "साधक",
+                 "वध", "मित्र", "अति-मित्र"];
+  NP.TARA = TARA;
+  NP.taraHi = function (i) { return TARA_HI[i] || ""; };
+
+  /* Tāra Bala for one natal nakṣatra on one day. Both indices are 0-based. */
+  NP.taraBala = function (todayNak, natalNak) {
+    if (todayNak == null || natalNak == null) return null;
+    var k = (((todayNak - natalNak) % 27) + 27) % 27;
+    var i = k % 9;
+    return { i: i, count: k + 1, cycle: Math.floor(k / 9) + 1,
+             name: TARA[i].n, good: TARA[i].good, note: TARA[i].note,
+             src: "tradition" };
+  };
+
+  /* Chandra Bala: which house the day's Moon sign falls in, counted from the
+     natal Moon sign. The eighth is Chandrāṣṭama, which almanacs mark. */
+  NP.chandraBala = function (todaySign, natalSign) {
+    if (todaySign == null || natalSign == null) return null;
+    var h = ((((todaySign - natalSign) % 12) + 12) % 12) + 1;
+    return { house: h, ashtama: h === 8,
+             good: [1, 3, 6, 7, 10, 11].indexOf(h) >= 0,
+             src: "tradition" };
+  };
+
+  /* Every one of the twenty-seven, for one day. This is the grid an almanac
+     prints and nobody computes for themselves: it needs no birth chart, only a
+     birth star, which is the one thing most people do know. */
+  NP.taraGrid = function (D) {
+    if (!D || !D.at) return null;
+    var today = D.at.nak.i, sign = Math.floor((D.moonDeg % 360) / 30);
+    var rows = [];
+    for (var n = 0; n < 27; n++) {
+      var t = NP.taraBala(today, n);
+      rows.push({ nak: n, name: NAK[n], tara: t,
+                  /* Chandrāṣṭama belongs to the Moon SIGN, so it is reported
+                     for the sign this nakṣatra falls in rather than per star —
+                     a nakṣatra can straddle two signs, and the grid says which
+                     one it used instead of quietly picking. */
+                  sign: Math.floor(n * (40 / 3) / 30),
+                  ashtama: ((((sign - Math.floor(n * (40 / 3) / 30)) % 12) + 12) % 12) + 1 === 8 });
+    }
+    return { today: today, todayName: NAK[today], moonSign: sign,
+             rows: rows, src: "tradition" };
+  };
+
+  /* Brahma Muhūrta: the fourteenth of the fifteen muhūrtas of the night — so
+     it begins TWO muhūrtas before sunrise and ends one before it.
+
+     Two muhūrtas, not two ghaṭīs. A muhūrta is a thirtieth of the ahorātra and
+     a ghaṭī a sixtieth, so a muhūrta is two ghaṭīs and the window opens four
+     ghaṭīs out. The request this was built from said "96 minutes (exact 2
+     ghaṭīs)", which is its own contradiction — 2 ghaṭīs is 48 minutes — and
+     taking the ghaṭī half of it literally put the start at 48 minutes before
+     sunrise, half an hour late, with the duration still correct so nothing
+     looked wrong. The measured check is what caught it.
+
+     Both units are read off the length of THIS day rather than fixed at 24 and
+     48 minutes, because at a high latitude in June they are not the same
+     thing. */
+  NP.brahmaMuhurta = function (D) {
+    if (!D || D.sunrise == null) return null;
+    var ahoratra = (D.nextSunrise != null) ? (D.nextSunrise - D.sunrise) : 86400000;
+    var muhurta = ahoratra / 30;
+    return { from: D.sunrise - 2 * muhurta, to: D.sunrise - muhurta,
+             muhurtaMs: muhurta, src: "tradition" };
+  };
+
+  /* Zero-shadow days: the two dates a year when the noon Sun stands in the
+     zenith and a vertical stick casts none. Only between the tropics, which is
+     why the function returns an empty list rather than a wrong answer outside
+     them. Found by bisecting the noon solar declination against the latitude
+     rather than from a formula, so it needs no table either. */
+  NP.zeroShadowDays = function (P, year) {
+    if (!P || Math.abs(P.lat) > 23.4393) return { days: [], why: "outside the tropics", src: "astronomy" };
+    function decAtNoon(ms) {
+      var sr = riseSet(ms, P, +1);
+      if (sr == null) return null;
+      var noon = sr + 6 * 3600000;
+      var jd = window.__kJD(noon), ayan = 0;
+      try { ayan = window.__ayanFor ? window.__ayanFor("lahiri", jd) : 0; } catch (e) {}
+      var sid = sidAt("Sun", noon);
+      if (sid == null) return null;
+      var trop = ((sid + ayan) % 360 + 360) % 360, R = Math.PI / 180;
+      var eps = 23.439291 - 0.0130042 * ((jd - 2451545) / 36525);
+      return Math.asin(Math.sin(eps * R) * Math.sin(trop * R)) / R;
+    }
+    var t0 = Date.UTC(year, 0, 1) - (P.tz || 0) * 3600000, out = [];
+    var prev = decAtNoon(t0) - P.lat, d;
+    for (d = 1; d <= 365; d++) {
+      var ms = t0 + d * 86400000;
+      var cur = decAtNoon(ms);
+      if (cur == null) { prev = null; continue; }
+      cur -= P.lat;
+      if (prev != null && ((prev < 0) !== (cur < 0))) {
+        var lo = ms - 86400000, hi = ms;
+        for (var k = 0; k < 18; k++) {
+          var mid = (lo + hi) / 2, v = decAtNoon(mid);
+          if (v == null) break;
+          if (((v - P.lat) < 0) === (prev < 0)) lo = mid; else hi = mid;
+        }
+        out.push(hi);
+      }
+      prev = cur;
+    }
+    return { days: out, src: "astronomy" };
+  };
+
   window.NP = NP;
 })();
 

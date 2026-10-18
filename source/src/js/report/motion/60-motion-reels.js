@@ -514,7 +514,48 @@ MO_REELS.push({
         rows.push(row);
         if (L != null && (best == null || L < best.L)) best = row;
       }
+      /* The two days a year the noon Sun stands in the zenith and the stick
+         casts nothing at all. Only between the tropics — outside them the
+         declination never reaches the latitude, and the honest answer is an
+         empty list rather than a nearest approach dressed up as a hit.
+
+         Found by bisecting the Sun's declination against the latitude at a
+         fixed instant each day. Noon is not needed: the declination moves by
+         under half a degree a day, so the crossing fixes the DATE, which is
+         all a date is. Doing it properly at local noon would cost 365 rise
+         searches for an answer that would not change. */
+      var zsd = [];
+      if (Math.abs(W.lat) <= 23.4393) {
+        var R = Math.PI / 180;
+        function decAt(ms) {
+          var jd = ms / 86400000 + 2440587.5, ay = 23.9;
+          try { if (window.__ayanFor) ay = window.__ayanFor("lahiri", jd); } catch (e) {}
+          var sid = moSidAt("Sun", ms);
+          if (sid == null) return null;
+          var trop = ((sid + ay) % 360 + 360) % 360;
+          var eps = 23.439291 - 0.0130042 * ((jd - 2451545) / 36525);
+          return Math.asin(Math.sin(eps * R) * Math.sin(trop * R)) / R;
+        }
+        var y0 = new Date(t0 + (W.tz || 0) * 3600000).getUTCFullYear();
+        var base = Date.UTC(y0, 0, 1) + 6 * 3600000, prev = null;
+        for (var dd = 0; dd <= 365; dd++) {
+          var dv = decAt(base + dd * 86400000);
+          if (dv == null) { prev = null; continue; }
+          dv -= W.lat;
+          if (prev != null && (prev < 0) !== (dv < 0)) {
+            var lo = base + (dd - 1) * 86400000, hi = base + dd * 86400000;
+            for (var kk = 0; kk < 16; kk++) {
+              var mid = (lo + hi) / 2, mv = decAt(mid);
+              if (mv == null) break;
+              if (((mv - W.lat) < 0) === (prev < 0)) lo = mid; else hi = mid;
+            }
+            zsd.push(hi);
+          }
+          prev = dv;
+        }
+      }
       return { sr: sr, ss: ss, rows: rows, best: best, N: rows.length - 1,
+               zsd: zsd, year: new Date(t0 + (W.tz || 0) * 3600000).getUTCFullYear(),
                aksha: 12 * Math.tan(W.lat * Math.PI / 180) };
     });
     if (!M) { moText(moT("noPlace"), st.cx, st.cy, U * 0.03, P.dim, "center"); return {}; }
@@ -595,7 +636,14 @@ MO_REELS.push({
              st.cx, st.y + st.h * 0.885, U * 0.021, P.gold, "center", 600);
     moText(moP("akshabha", M.aksha.toFixed(1)), st.cx, st.y + st.h * 0.928,
            U * 0.020, P.ink, "center", 500);
-    moText(moP("siddhantaNot"), st.cx, st.y + st.h * 0.968, U * 0.0165,
+    /* The two days this stick casts nothing at all — the fact on this frame
+       most likely to make somebody go outside and check. */
+    if (M.zsd && M.zsd.length)
+      moText(moP("zeroShadow", M.zsd.map(function (z) {
+               return moDateShort(z, W.tz).replace(/ \d{4}$/, ""); }).join("  \u00b7  ")),
+             st.cx, st.y + st.h * 0.955, U * 0.0185, P.gold, "center", 600);
+    moText(moP("siddhantaNot"), st.cx,
+           st.y + st.h * (M.zsd && M.zsd.length ? 0.988 : 0.968), U * 0.0165,
            P.dim, "center", 500);
     return { ms: at.ms };
   }

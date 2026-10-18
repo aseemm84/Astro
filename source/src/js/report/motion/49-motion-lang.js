@@ -699,6 +699,7 @@ venusEvening:{en:"evening star — setting after the Sun", hi:"सन्ध्�
 venusAstanga:{en:"within astaṅgata — too close to the Sun to be seen",
               hi:"अस्तङ्गत — सूर्य के इतने निकट कि दिखाई न दे"},
 venusPetals: {en:"five returns, eight years", hi:"पाँच पुनरागमन, आठ वर्ष"},
-dayNOf:      {en:"day {0} of {1}", hi:"दिन {0} / {1}"}
+dayNOf:      {en:"day {0} of {1}", hi:"दिन {0} / {1}"},
+zeroShadow:  {en:"no shadow at all on {0}", hi:"{0} को छाया बिल्कुल नहीं"}
 };
 for(var _k8 in MO_PHR8) MO_PHR[_k8]=MO_PHR8[_k8];

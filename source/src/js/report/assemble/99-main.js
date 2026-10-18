@@ -203,6 +203,7 @@ window.buildKundliReport=function(J){
     H.push(sec("Current sky",D.asof?"as of "+esc(D.asof.slice(0,10)):"",tb));
     H.push(sec("Gochara","transits read from the natal Moon",gocharaSection(D)));
     H.push(sec("Kakṣā transit","the finest ashtakavarga layer",kakshaSection(D)));}
+  H.push(sec("Derived points","four the chart already contained \u2014 and whose they are",derivedPointsSection(D)));
   H.push(sec("Sade Sati timeline","Saturn over the Moon, past and future",sadeSatiSection(D)));
   H.push(sec("Ingress & retrograde","the next two years",ingressSection(D)));
   H.push(sec("Eclipses","upcoming, placed in this chart",eclipseSection(D)));

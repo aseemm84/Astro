@@ -724,6 +724,37 @@
             { type: "sub", text: "one line of context" }
           ];
         } },
+      { key: "tarabala", name: "Tāra Bala today",
+        blurb: "Which birth stars have an easy day and which a hard one, from " +
+               "today's Moon. This is the card people check for themselves and " +
+               "send to somebody else, which is the whole reason it is here. " +
+               "Muhūrta tradition, not BPHS — and the card says so.",
+        make: function () {
+          var G = null;
+          try { G = window.NP && D ? window.NP.taraGrid(D) : null; } catch (e) {}
+          if (!G) return [{ type: "headline", text: "Tāra Bala" }];
+          /* The nine tāras in groups of three stars each. Listing all 27 would
+             not fit and would not be read; the hard ones and the best one are
+             what anybody actually looks for. */
+          function starsIn(name) {
+            return G.rows.filter(function (r) { return r.tara && r.tara.name === name; })
+                         .map(function (r) { return r.name; }).join(", ");
+          }
+          var hard = ["Vipat", "Pratyari", "Vadha"];
+          var facts = [];
+          hard.forEach(function (n) { facts.push(n + ": " + starsIn(n)); });
+          facts.push("Ati-Mitra: " + starsIn("Ati-Mitra"));
+          facts.push("Janma: " + starsIn("Janma"));
+          return [
+            { type: "kicker", text: dateline.toUpperCase() },
+            { type: "headline", text: "Tāra Bala today" },
+            { type: "sub", text: "counted from the Moon in " + G.todayName },
+            { type: "rule" },
+            { type: "facts", text: facts.join("\n") },
+            { type: "pill", text: hi ? "मुहूर्त परम्परा — बृ.पा.हो.शा. नहीं"
+                                     : "muhūrta tradition, not BPHS" }
+          ];
+        } },
       { key: "blank", name: "Empty",
         blurb: "Nothing but the frame and the foot. Build it slot by slot.",
         make: function () { return [{ type: "headline", text: "" }]; } }

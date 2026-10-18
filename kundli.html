@@ -4328,6 +4328,148 @@ function ishtaKashtaSection(D,J){
     'stress them. Read alongside dignity and Ṣaḍbala, never alone.</div>';
 }
 
+/* ===== Four points this chart already contains =============================
+
+   Each of these is one line of arithmetic on longitudes the report has had all
+   along. None of them needed new astronomy; they needed someone to divide by
+   two and name the result.
+
+   WHAT THEY ARE, AND WHOSE THEY ARE. This is the part that matters more than
+   the arithmetic, and the part a feature request will not tell you:
+
+     Bhṛgu Bindu   — the midpoint from Rāhu to the Moon. LATER TRADITION. It is
+                     not in Parāśara. It is widely taught and widely useful and
+                     it is still not Parāśara, and a reader deciding how much
+                     weight to give it is entitled to know which.
+     Yogi, Avayogi — Sun + Moon + 93°20′, and the point 186°40′ on from it, with
+                     the nakṣatra lords of each. LATER TRADITION, same note.
+     64th navāṃśa  — the navāṃśa 210° on from the Moon and from the lagna.
+     22nd drekkāṇa — the drekkāṇa 210° on from the lagna.
+                     These two are commonly cited as Parāśara's. The verse was
+                     NOT located in the uploaded Santhanam OCR, which is poor in
+                     the relevant chapters, so they are labelled as classical
+                     and attributed with that caveat rather than given a chapter
+                     number this project cannot stand behind. Fabricating the
+                     citation would be worse than lacking it.
+
+   WHAT IS NOT HERE. Puṣkara navāṃśa and Puṣkara bhāga were asked for and are
+   absent. Both need a lookup table — which navāṃśas, which degrees — and the
+   sources do not all print the same one. A table recalled from memory is a
+   fabricated citation with a number on it. They go in when the table can be
+   read from a source and cited to it.
+
+   TONE. The 64th navāṃśa and the 22nd drekkāṇa belong to the ariṣṭa literature,
+   which is about danger and death. They are reported here as positions and as
+   what the tradition says they ARE, with no prediction attached to them and no
+   suggestion that a transit over one means anything will happen. */
+
+var DP_SRC = {
+  bphs:      { label: "BPHS", cls: "dpb" },
+  classical: { label: "classical", cls: "dpc" },
+  tradition: { label: "later tradition", cls: "dpt" },
+  astronomy: { label: "astronomy", cls: "dpa" }
+};
+function dpTag(k) {
+  var s = DP_SRC[k] || DP_SRC.tradition;
+  return '<span class="dptag ' + s.cls + '">' + esc(s.label) + "</span>";
+}
+function dpNorm(x) { return ((x % 360) + 360) % 360; }
+/* a longitude written the way a chart writes one: 12° Siṃha 24′ */
+function dpDeg(lon) {
+  var L = dpNorm(lon), s = Math.floor(L / 30), d = L - s * 30;
+  var deg = Math.floor(d), min = Math.round((d - deg) * 60);
+  if (min === 60) { min = 0; deg++; }
+  return deg + "° " + SA[s] + " " + (min < 10 ? "0" : "") + min + "′";
+}
+
+/* The midpoint from Rāhu FORWARD to the Moon — not the shorter arc between
+   them. Those are the same point only when the two are less than 180° apart,
+   and taking the near midpoint silently puts the result 180° out for about
+   half of all charts. Going forward from Rāhu by half the forward distance is
+   the definition, and it is unambiguous. */
+function dpBhriguBindu(moon, rahu) {
+  return dpNorm(rahu + dpNorm(moon - rahu) / 2);
+}
+function dpYogiPoint(sun, moon) { return dpNorm(sun + moon + 93 + 20 / 60); }
+
+function derivedPointsSection(D) {
+  if (!D || !D.P || !D.P.Moon || !D.P.Sun) return "";
+  var moon = D.P.Moon.sid, sun = D.P.Sun.sid;
+  var rahu = D.P.Rahu ? D.P.Rahu.sid : null;
+  var lag = (D.lagna && D.lagna.sidereal_deg != null) ? D.lagna.sidereal_deg : null;
+  var rows = [];
+
+  if (rahu != null) {
+    var bb = dpBhriguBindu(moon, rahu);
+    rows.push({
+      t: "Bhṛgu Bindu", src: "tradition", v: dpDeg(bb),
+      nak: nakOf ? nakOf(bb) : null,
+      w: "The midpoint of the arc running forward from Rāhu to the Moon. Later " +
+         "tradition treats it as a point transits are felt over; it is not a " +
+         "Parāśara concept and the report does not weigh it as one."
+    });
+  }
+
+  var yp = dpYogiPoint(sun, moon);
+  var av = dpNorm(yp + 186 + 40 / 60);
+  var ynak = nakOf ? nakOf(yp) : null, anak = nakOf ? nakOf(av) : null;
+  rows.push({
+    t: "Yogi point", src: "tradition", v: dpDeg(yp), nak: ynak,
+    w: "Sun plus Moon plus 93°20′. The lord of the nakṣatra it falls in is " +
+       "called the Yogi planet" +
+       (ynak && ynak.lord ? " — here " + esc(ynak.lord) : "") + "."
+  });
+  rows.push({
+    t: "Avayogi point", src: "tradition", v: dpDeg(av), nak: anak,
+    w: "186°40′ on from the Yogi point — six nakṣatras away. Its nakṣatra " +
+       "lord is the Avayogi" + (anak && anak.lord ? " — here " + esc(anak.lord) : "") + "."
+  });
+
+  if (lag != null) {
+    rows.push({
+      t: "64th navāṃśa from the lagna", src: "classical", v: dpDeg(lag + 210),
+      nak: nakOf ? nakOf(dpNorm(lag + 210)) : null,
+      w: "210° on from the lagna, which is the fourth sign of the navāṃśa " +
+         "reckoned from the lagna's own. The ariṣṭa literature names it a " +
+         "sensitive degree. It is a position, not a forecast."
+    });
+    rows.push({
+      t: "22nd drekkāṇa from the lagna", src: "classical", v: dpDeg(lag + 210),
+      nak: null,
+      w: "The same 210°, read as a drekkāṇa rather than a navāṃśa — the " +
+         "eighth drekkāṇa counted from the lagna's. Reported for completeness; " +
+         "the two coincide in degree and differ in what is read off it."
+    });
+  }
+  rows.push({
+    t: "64th navāṃśa from the Moon", src: "classical", v: dpDeg(moon + 210),
+    nak: nakOf ? nakOf(dpNorm(moon + 210)) : null,
+    w: "The same rule applied from the natal Moon instead of the lagna."
+  });
+
+  var h = '<p class="knote">Four points the chart already contained, each one ' +
+    'arithmetic on longitudes above. <b>None of these is Parāśara’s.</b> ' +
+    'Bhṛgu Bindu and the Yogi pair are later tradition; the 64th navāṃśa and ' +
+    '22nd drekkāṇa are classical and usually attributed to BPHS, but the verse ' +
+    'was not found in the uploaded translation, so they are not cited to a ' +
+    'chapter here. The tag on each row says which.</p>';
+  h += '<table class="ktable dptable"><thead><tr><th>Point</th><th>Source</th>' +
+       "<th>Longitude</th><th>Nakṣatra</th></tr></thead><tbody>";
+  rows.forEach(function (r) {
+    h += "<tr><td><b>" + esc(r.t) + "</b></td><td>" + dpTag(r.src) + "</td>" +
+         '<td class="knum">' + esc(r.v) + "</td><td>" +
+         (r.nak ? esc(r.nak.name + (r.nak.lord ? " · " + r.nak.lord : "")) : "—") +
+         "</td></tr>";
+    h += '<tr class="dpwhy"><td colspan="4">' + r.w + "</td></tr>";
+  });
+  h += "</tbody></table>";
+  h += '<p class="knote">No transit over any of these is flagged as an event, ' +
+       'and nothing here is read as a prediction. The 64th navāṃśa and the 22nd ' +
+       'drekkāṇa come from the literature on ariṣṭa, which is about danger; ' +
+       'this report gives their positions and what the tradition says they are, ' +
+       'and stops there.</p>';
+  return h;
+}
 /* ===== Confident-eight batch ===== */
 function chartFromSign(D,base,title,sub,extraLabel){
   var occ={};
@@ -7756,7 +7898,8 @@ venusEvening:{en:"evening star — setting after the Sun", hi:"सन्ध्�
 venusAstanga:{en:"within astaṅgata — too close to the Sun to be seen",
               hi:"अस्तङ्गत — सूर्य के इतने निकट कि दिखाई न दे"},
 venusPetals: {en:"five returns, eight years", hi:"पाँच पुनरागमन, आठ वर्ष"},
-dayNOf:      {en:"day {0} of {1}", hi:"दिन {0} / {1}"}
+dayNOf:      {en:"day {0} of {1}", hi:"दिन {0} / {1}"},
+zeroShadow:  {en:"no shadow at all on {0}", hi:"{0} को छाया बिल्कुल नहीं"}
 };
 for(var _k8 in MO_PHR8) MO_PHR[_k8]=MO_PHR8[_k8];
 /* ===== Motion — the context bar ===========================================
@@ -13990,7 +14133,48 @@ MO_REELS.push({
         rows.push(row);
         if (L != null && (best == null || L < best.L)) best = row;
       }
+      /* The two days a year the noon Sun stands in the zenith and the stick
+         casts nothing at all. Only between the tropics — outside them the
+         declination never reaches the latitude, and the honest answer is an
+         empty list rather than a nearest approach dressed up as a hit.
+
+         Found by bisecting the Sun's declination against the latitude at a
+         fixed instant each day. Noon is not needed: the declination moves by
+         under half a degree a day, so the crossing fixes the DATE, which is
+         all a date is. Doing it properly at local noon would cost 365 rise
+         searches for an answer that would not change. */
+      var zsd = [];
+      if (Math.abs(W.lat) <= 23.4393) {
+        var R = Math.PI / 180;
+        function decAt(ms) {
+          var jd = ms / 86400000 + 2440587.5, ay = 23.9;
+          try { if (window.__ayanFor) ay = window.__ayanFor("lahiri", jd); } catch (e) {}
+          var sid = moSidAt("Sun", ms);
+          if (sid == null) return null;
+          var trop = ((sid + ay) % 360 + 360) % 360;
+          var eps = 23.439291 - 0.0130042 * ((jd - 2451545) / 36525);
+          return Math.asin(Math.sin(eps * R) * Math.sin(trop * R)) / R;
+        }
+        var y0 = new Date(t0 + (W.tz || 0) * 3600000).getUTCFullYear();
+        var base = Date.UTC(y0, 0, 1) + 6 * 3600000, prev = null;
+        for (var dd = 0; dd <= 365; dd++) {
+          var dv = decAt(base + dd * 86400000);
+          if (dv == null) { prev = null; continue; }
+          dv -= W.lat;
+          if (prev != null && (prev < 0) !== (dv < 0)) {
+            var lo = base + (dd - 1) * 86400000, hi = base + dd * 86400000;
+            for (var kk = 0; kk < 16; kk++) {
+              var mid = (lo + hi) / 2, mv = decAt(mid);
+              if (mv == null) break;
+              if (((mv - W.lat) < 0) === (prev < 0)) lo = mid; else hi = mid;
+            }
+            zsd.push(hi);
+          }
+          prev = dv;
+        }
+      }
       return { sr: sr, ss: ss, rows: rows, best: best, N: rows.length - 1,
+               zsd: zsd, year: new Date(t0 + (W.tz || 0) * 3600000).getUTCFullYear(),
                aksha: 12 * Math.tan(W.lat * Math.PI / 180) };
     });
     if (!M) { moText(moT("noPlace"), st.cx, st.cy, U * 0.03, P.dim, "center"); return {}; }
@@ -14071,7 +14255,14 @@ MO_REELS.push({
              st.cx, st.y + st.h * 0.885, U * 0.021, P.gold, "center", 600);
     moText(moP("akshabha", M.aksha.toFixed(1)), st.cx, st.y + st.h * 0.928,
            U * 0.020, P.ink, "center", 500);
-    moText(moP("siddhantaNot"), st.cx, st.y + st.h * 0.968, U * 0.0165,
+    /* The two days this stick casts nothing at all — the fact on this frame
+       most likely to make somebody go outside and check. */
+    if (M.zsd && M.zsd.length)
+      moText(moP("zeroShadow", M.zsd.map(function (z) {
+               return moDateShort(z, W.tz).replace(/ \d{4}$/, ""); }).join("  \u00b7  ")),
+             st.cx, st.y + st.h * 0.955, U * 0.0185, P.gold, "center", 600);
+    moText(moP("siddhantaNot"), st.cx,
+           st.y + st.h * (M.zsd && M.zsd.length ? 0.988 : 0.968), U * 0.0165,
            P.dim, "center", 500);
     return { ms: at.ms };
   }
@@ -16468,6 +16659,7 @@ window.buildKundliReport=function(J){
     H.push(sec("Current sky",D.asof?"as of "+esc(D.asof.slice(0,10)):"",tb));
     H.push(sec("Gochara","transits read from the natal Moon",gocharaSection(D)));
     H.push(sec("Kakṣā transit","the finest ashtakavarga layer",kakshaSection(D)));}
+  H.push(sec("Derived points","four the chart already contained \u2014 and whose they are",derivedPointsSection(D)));
   H.push(sec("Sade Sati timeline","Saturn over the Moon, past and future",sadeSatiSection(D)));
   H.push(sec("Ingress & retrograde","the next two years",ingressSection(D)));
   H.push(sec("Eclipses","upcoming, placed in this chart",eclipseSection(D)));
@@ -17792,4 +17984,4 @@ window.buildKundliReport=function(J){
   }
 })();
 </script>
-<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-18.46d414e</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>
+<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-18.4d7e104</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>
