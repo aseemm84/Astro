@@ -561,6 +561,93 @@
     return { w: W, h: H, used: need, room: room, scale: S.u / W };
   };
 
+  /* ===== a ZIP file, written here =========================================
+
+     A carousel is eight images and a caption file. Handing those over as eight
+     separate downloads means eight prompts, and Chrome stops obliging after
+     the first few; handing them over as one archive means one click and a
+     folder. There is no library to do that, and there will not be: this site
+     loads nothing from anywhere.
+
+     So: a minimal ZIP writer. Entries are STORED, not deflated — a PNG is
+     already compressed and deflating it again would cost code and save
+     nothing. That leaves the format almost trivial: a local header before each
+     file, a central directory after them all, and a CRC-32 of each payload.
+
+     The CRC table is built once on first use rather than written out, because
+     256 constants typed by hand is 256 chances to be wrong, and the whole file
+     is worthless if one of them is. Verified by writing an archive here and
+     opening it with a real unzip implementation. */
+  var CRC_T = null;
+  function crc32(buf) {
+    if (!CRC_T) {
+      CRC_T = new Int32Array(256);
+      for (var n = 0; n < 256; n++) {
+        var c = n;
+        for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        CRC_T[n] = c;
+      }
+    }
+    var crc = -1;
+    for (var i = 0; i < buf.length; i++) crc = (crc >>> 8) ^ CRC_T[(crc ^ buf[i]) & 0xFF];
+    return (crc ^ -1) >>> 0;
+  }
+  function dosTime(d) {
+    return ((d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1)) & 0xFFFF;
+  }
+  function dosDate(d) {
+    return (((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate()) & 0xFFFF;
+  }
+  /* files: [{name, data: Uint8Array}] → Blob */
+  NCard.zip = function (files) {
+    var parts = [], central = [], offset = 0, now = new Date();
+    var enc = new TextEncoder();
+    files.forEach(function (f) {
+      var name = enc.encode(f.name), data = f.data;
+      var crc = crc32(data), t = dosTime(now), dt = dosDate(now);
+      var lh = new DataView(new ArrayBuffer(30));
+      lh.setUint32(0, 0x04034b50, true);     /* local file header */
+      lh.setUint16(4, 20, true);             /* version needed */
+      lh.setUint16(6, 0x0800, true);         /* UTF-8 names */
+      lh.setUint16(8, 0, true);              /* stored */
+      lh.setUint16(10, t, true); lh.setUint16(12, dt, true);
+      lh.setUint32(14, crc, true);
+      lh.setUint32(18, data.length, true); lh.setUint32(22, data.length, true);
+      lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
+      parts.push(new Uint8Array(lh.buffer), name, data);
+
+      var cd = new DataView(new ArrayBuffer(46));
+      cd.setUint32(0, 0x02014b50, true);     /* central directory header */
+      cd.setUint16(4, 20, true); cd.setUint16(6, 20, true);
+      cd.setUint16(8, 0x0800, true); cd.setUint16(10, 0, true);
+      cd.setUint16(12, t, true); cd.setUint16(14, dt, true);
+      cd.setUint32(16, crc, true);
+      cd.setUint32(20, data.length, true); cd.setUint32(24, data.length, true);
+      cd.setUint16(28, name.length, true);
+      cd.setUint32(42, offset, true);
+      central.push(new Uint8Array(cd.buffer), name);
+      offset += 30 + name.length + data.length;
+    });
+    var cdSize = central.reduce(function (a, b) { return a + b.length; }, 0);
+    var end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054b50, true);      /* end of central directory */
+    end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+    end.setUint32(12, cdSize, true); end.setUint32(16, offset, true);
+    return new Blob(parts.concat(central, [new Uint8Array(end.buffer)]),
+                    { type: "application/zip" });
+  };
+  /* a canvas as raw PNG bytes, for the archive */
+  NCard.pngBytes = function (cv) {
+    return new Promise(function (res) {
+      cv.toBlob(function (b) {
+        if (!b) return res(null);
+        var r = new FileReader();
+        r.onload = function () { res(new Uint8Array(r.result)); };
+        r.readAsArrayBuffer(b);
+      }, "image/png");
+    });
+  };
+
   window.NCard = NCard;
 
   /* ======================================================================== */
@@ -645,7 +732,15 @@
   /* ===== the composer ====================================================== */
   /* ======================================================================== */
 
-  var C = { ratio: "4:5", safe: false, slots: [], ctx: {} };
+  /* A carousel is the format that earns saves, so the composer holds SLIDES
+     and `slots` is simply whichever one is being edited. Keeping `slots` as a
+     live reference into `slides` rather than an index means every function
+     that edits a card carries on working unchanged. */
+  var C = { ratio: "4:5", safe: false, slides: [[]], slide: 0, slots: [], ctx: {} };
+  function useSlide(i) {
+    C.slide = Math.max(0, Math.min(C.slides.length - 1, i));
+    C.slots = C.slides[C.slide];
+  }
 
   /* Recipes write slots. They are a starting point, not a cage: everything a
      recipe produces can then be edited, reordered or thrown away, which is the
@@ -700,7 +795,10 @@
                 "Sunrise: " + hhmm(D.sunrise),
                 "Sunset: " + hhmm(D.sunset)
               ].join("\n") : "" },
-            { type: "pill", text: D ? ("Vikrama " + D.samvat) : "" }
+            /* .vikrama, not the object — samvat() returns the Vikrama and
+               Śaka years together with a note, and concatenating the whole
+               thing printed "Vikrama [object Object]" on the card. */
+            { type: "pill", text: D ? ("Vikrama " + D.samvat.vikrama) : "" }
           ];
         } },
       { key: "teach", name: "One rule, explained",
@@ -792,9 +890,12 @@
                    ">" + RATIOS[k].label + "</option>"; }).join("") +
         "</select>" +
         '<label class="stchk"><input type="checkbox" id="stcsafe"> Keep Instagram’s strips clear</label>' +
-        '<button type="button" class="stbtn" id="stcsave">Download the card</button>' +
+        '<button type="button" class="stbtn" id="stcsave">Download this slide</button>' +
+        '<button type="button" class="stbtn sec" id="stczip">Download all slides (.zip)</button>' +
+        '<button type="button" class="stbtn sec" id="stcall">All three shapes (.zip)</button>' +
         '<span class="stmsg" id="stcmsg"></span>' +
       "</div>" +
+      '<div class="stslides" id="stcslides"></div>' +
       '<p class="stnote" id="stcblurb"></p>' +
       '<div class="stclayout">' +
         '<div class="stcslots"><div id="stcrows"></div>' +
@@ -810,7 +911,7 @@
     function pickRecipe() {
       var k = $("stcrecipe").value;
       var r = RS.filter(function (x) { return x.key === k; })[0] || RS[0];
-      C.slots = r.make();
+      C.slides = [r.make()]; useSlide(0);
       /* A recipe that was designed tall says so and gets the shape it was
          designed for. The sky card wants the wheel across the top half and a
          pañcāṅga block under it, which is a 9:16 idea; offered on a 4:5 card it
@@ -821,7 +922,41 @@
         if (rs && rs.value !== r.ratio) rs.value = r.ratio;
       }
       $("stcblurb").textContent = r.blurb;
-      rows(); draw();
+      slideBar(); rows(); draw();
+    }
+
+    function slideBar() {
+      var h = '<span class="stlab">Slides</span>';
+      C.slides.forEach(function (_, i) {
+        h += '<button type="button" class="stslide' + (i === C.slide ? " on" : "") +
+             '" data-slide="' + i + '">' + (i + 1) + "</button>";
+      });
+      h += '<button type="button" class="stslide add" id="stcaddslide" ' +
+           'title="Add a slide">+</button>';
+      if (C.slides.length > 1)
+        h += '<button type="button" class="stslide rm" id="stcdelslide" ' +
+             'title="Remove this slide">\u00d7</button>';
+      h += '<span class="stnote">' + C.slides.length +
+           (C.slides.length === 1 ? " slide \u2014 add more for a carousel"
+                                  : " slides \u2014 Instagram takes up to 10") + "</span>";
+      $("stcslides").innerHTML = h;
+      $("stcslides").querySelectorAll("[data-slide]").forEach(function (b) {
+        b.addEventListener("click", function () {
+          useSlide(+b.getAttribute("data-slide")); slideBar(); rows(); draw();
+        });
+      });
+      $("stcaddslide").addEventListener("click", function () {
+        /* A new slide starts from the current one rather than blank: a
+           carousel is a set, and every slide after the first is usually the
+           previous one with its text changed. */
+        C.slides.splice(C.slide + 1, 0,
+          C.slots.map(function (x) { var y = {}; for (var k in x) y[k] = x[k]; return y; }));
+        useSlide(C.slide + 1); slideBar(); rows(); draw();
+      });
+      var del = $("stcdelslide");
+      if (del) del.addEventListener("click", function () {
+        C.slides.splice(C.slide, 1); useSlide(C.slide); slideBar(); rows(); draw();
+      });
     }
 
     function rows() {
@@ -912,6 +1047,70 @@
       });
     }
 
+    /* Render one slide at one shape, off-screen, at full export size. */
+    function renderSlide(slots, ratio) {
+      var cv = document.createElement("canvas");
+      NCard.render(cv, { ratio: ratio, slots: slots, safe: C.safe,
+                         place: S.place.n, hi: S.lang === "hi", ctx: C.ctx });
+      return cv;
+    }
+    function stamp() {
+      var d = S.date;
+      return d.y + "-" + String(d.m).padStart(2, "0") + "-" + String(d.d).padStart(2, "0");
+    }
+    function saveBlob(blob, name) {
+      var a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      document.body.appendChild(a); a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+    }
+    /* Everything in one archive rather than one download per image. Chrome
+       stops granting automatic downloads after the first few, so a nine-slide
+       carousel handed over as nine files arrives as three. */
+    function zipOut(entries, name, msg) {
+      var m = $("stcmsg");
+      if (m) m.textContent = "building\u2026";
+      NCard.mark(function () {
+        var jobs = entries.map(function (e) {
+          return NCard.pngBytes(e.cv).then(function (d) {
+            return { name: e.name, data: d };
+          });
+        });
+        Promise.all(jobs).then(function (files) {
+          files = files.filter(function (f) { return f.data; });
+          if (msg) {
+            var enc = new TextEncoder();
+            files.push({ name: "captions.txt", data: enc.encode(msg) });
+          }
+          var z = NCard.zip(files);
+          saveBlob(z, name);
+          if (m) {
+            m.textContent = files.length + " files \u00b7 " +
+                            Math.round(z.size / 1048576 * 10) / 10 + " MB";
+            setTimeout(function () { m.textContent = ""; }, 6000);
+          }
+        });
+      });
+    }
+
+    $("stczip").addEventListener("click", function () {
+      zipOut(C.slides.map(function (sl, i) {
+        return { name: String(i + 1).padStart(2, "0") + "-slide." + "png",
+                 cv: renderSlide(sl, C.ratio) };
+      }), "nirayana-carousel-" + stamp() + "-" + C.ratio.replace(":", "x") + ".zip");
+    });
+    $("stcall").addEventListener("click", function () {
+      var out = [];
+      Object.keys(RATIOS).forEach(function (r) {
+        C.slides.forEach(function (sl, i) {
+          out.push({ name: r.replace(":", "x") + "/" + String(i + 1).padStart(2, "0") + "-slide.png",
+                     cv: renderSlide(sl, r) });
+        });
+      });
+      zipOut(out, "nirayana-card-" + stamp() + "-all-shapes.zip");
+    });
+
     $("stcrecipe").addEventListener("change", pickRecipe);
     $("stcratio").addEventListener("change", draw);
     $("stcsafe").addEventListener("change", draw);
@@ -929,7 +1128,9 @@
           if (!b) { $("stcmsg").textContent = "the image could not be made"; return; }
           var a = document.createElement("a");
           a.href = URL.createObjectURL(b);
-          a.download = "nirayana-card-" + C.ratio.replace(":", "x") + ".png";
+          a.download = "nirayana-card-" + stamp() + "-" +
+                       (C.slides.length > 1 ? String(C.slide + 1).padStart(2, "0") + "-" : "") +
+                       C.ratio.replace(":", "x") + ".png";
           document.body.appendChild(a); a.click();
           setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
           $("stcmsg").textContent = Math.round(b.size / 1024) + " KB";
@@ -938,8 +1139,245 @@
       });
     });
 
+    /* The pack builds slides and then needs this composer to show them, but it
+       is defined after this function runs. Publishing the two entry points it
+       needs is cheaper and clearer than hoisting the whole composer. */
+    useSlideExternal = function () { useSlide(0); };
+    rebuildComposer = function () { slideBar(); rows(); draw(); };
+
     pickRecipe();
   }
+
+  /* ======================================================================== */
+  /* ===== the pack, and the month ========================================== */
+  /* ======================================================================== */
+
+  /* ONE CLICK, ONE DAY'S POSTING. The Studio could already say what was worth
+     posting and draw a card for it. What it could not do was hand over the
+     finished set, and the gap between "here is a good idea" and "here is the
+     folder you drag into Instagram" is where a posting habit dies.
+
+     The pack is a carousel built from what the day actually holds — the
+     pañcāṅga, the best ideas the ranker found, the tāra bala grid — plus the
+     captions in a text file and the reel settings written down. All of it in
+     one archive, all of it computed, nothing from a template. */
+  function packSlides(D, S, ideas) {
+    var P = S.place, hi = S.lang === "hi";
+    function hhmm(ms) {
+      if (ms == null) return "\u2014";
+      var d = new Date(ms + (P.tz || 0) * 3600000);
+      return String(d.getUTCHours()).padStart(2, "0") + ":" +
+             String(d.getUTCMinutes()).padStart(2, "0");
+    }
+    var dateline = fmtDate(D.sunrise, P.tz);
+    var tithi = (D.at.tithi.paksha === "śukla" ? "Śukla " : "Kṛṣṇa ") + D.at.tithi.name;
+    var masa = D.masa.amantaIAST || D.masa.amanta;
+    var out = [];
+
+    /* 1 — the cover: the day, named */
+    out.push({ name: "cover", slots: [
+      { type: "kicker", text: (hi ? "निरयन" : "NIRAYANA") + " \u00b7 " + dateline.toUpperCase() },
+      { type: "headline", text: tithi },
+      { type: "moon", text: masa + " \u00b7 " + D.vara },
+      { type: "rule" },
+      { type: "facts", text: [
+          "Nakṣatra: " + D.at.nak.name + " pāda " + D.at.nak.pada,
+          "Yoga: " + D.at.yoga.name,
+          "Sunrise: " + hhmm(D.sunrise),
+          "Sunset: " + hhmm(D.sunset)
+        ].join("\n") },
+      { type: "pill", text: hi ? ("विक्रम " + D.samvat.vikrama)
+                             : ("Vikrama " + D.samvat.vikrama) }
+    ] });
+
+    /* 2 — the sky at midday, as a wheel */
+    out.push({ name: "sky", slots: [
+      { type: "wheel", size: "0.42" },
+      { type: "kicker", text: (hi ? "मध्याह्न का आकाश" : "THE SKY AT MIDDAY") },
+      { type: "headline", text: hi ? "आज का आकाश" : "Today's sky" },
+      { type: "sub", text: P.n },
+      { type: "rule" },
+      { type: "facts", text: "Lagna at midday: computed in the browser\n" +
+          "Moon: " + D.at.nak.name + "\nTithi: " + tithi }
+    ] });
+
+    /* 3 — the best idea the ranker found, as its own card */
+    if (ideas && ideas.length) {
+      var top = ideas[0];
+      out.push({ name: "today", slots: [
+        { type: "kicker", text: hi ? "आज क्या ख़ास है" : "WORTH SAYING TODAY" },
+        { type: "headline", text: top.headline || top.hook },
+        { type: "sub", text: top.sub || "" },
+        { type: "rule" },
+        { type: "facts", text: (top.facts || []).slice(0, 5).join("\n") }
+      ] });
+    }
+
+    /* 4 — tāra bala, the slide people send to each other */
+    var G = null;
+    try { G = window.NP.taraGrid(D); } catch (e) {}
+    if (G) {
+      function starsIn(n) {
+        return G.rows.filter(function (r) { return r.tara && r.tara.name === n; })
+                     .map(function (r) { return r.name; }).join(", ");
+      }
+      out.push({ name: "tarabala", slots: [
+        { type: "kicker", text: dateline.toUpperCase() },
+        { type: "headline", text: hi ? "तारा बल" : "Tāra Bala today" },
+        { type: "sub", text: (hi ? "चन्द्र " : "counted from the Moon in ") + G.todayName },
+        { type: "rule" },
+        { type: "facts", text: ["Vipat", "Pratyari", "Vadha", "Ati-Mitra"]
+            .map(function (n) { return n + ": " + starsIn(n); }).join("\n") },
+        { type: "pill", text: hi ? "मुहूर्त परम्परा" : "muhūrta tradition, not BPHS" }
+      ] });
+    }
+    return out;
+  }
+
+  function packCaptions(D, S, ideas) {
+    var L = [];
+    L.push("NIRAYANA \u2014 " + fmtDate(D.sunrise, S.place.tz) + " \u00b7 " + S.place.n);
+    L.push("");
+    L.push("SLIDE 1 \u2014 the day");
+    L.push((D.at.tithi.paksha === "śukla" ? "Śukla " : "Kṛṣṇa ") + D.at.tithi.name +
+           " \u00b7 " + (D.masa.amantaIAST || D.masa.amanta) + " \u00b7 " + D.vara);
+    L.push("");
+    (ideas || []).slice(0, 3).forEach(function (idea, i) {
+      L.push("IDEA " + (i + 1) + " \u2014 " + idea.hook);
+      try { L.push(window.__stCaption(i)); } catch (e) {
+        (idea.facts || []).forEach(function (f) { L.push("\u2022 " + f); });
+      }
+      L.push("");
+    });
+    L.push("REELS \u2014 open the Studio and use the strip; each link carries its own");
+    L.push("span, speed, shape, safe layout and this place, and starts recording.");
+    L.push("");
+    L.push("Every figure above was computed in the browser for " + S.place.n + ".");
+    L.push("Nothing was sent anywhere. @Nirayana.Soft");
+    return L.join("\n");
+  }
+
+  function mountPack(S, D) {
+    var host = $("stpack"); if (!host) return;
+    host.innerHTML =
+      '<div class="stcbar">' +
+        '<button type="button" class="stbtn" id="stpackgo">Build today\u2019s pack (.zip)</button>' +
+        '<span class="stlab">Shape</span>' +
+        '<select id="stpackratio" class="stsel">' +
+          Object.keys(RATIOS).map(function (k) {
+            return '<option value="' + k + '"' + (k === "4:5" ? " selected" : "") +
+                   ">" + RATIOS[k].label + "</option>"; }).join("") +
+        "</select>" +
+        '<label class="stchk"><input type="checkbox" id="stpacksafe"> Keep Instagram\u2019s strips clear</label>' +
+        '<button type="button" class="stbtn sec" id="stpackedit">Open it in the composer</button>' +
+        '<span class="stmsg" id="stpackmsg"></span>' +
+      "</div>" +
+      '<div id="stplan" class="stplan"></div>';
+
+    function build(toComposer) {
+      var ideas = window.__stIdeas || [];
+      var slides = packSlides(D, S, ideas);
+      if (toComposer) {
+        C.slides = slides.map(function (x) { return x.slots; });
+        useSlideExternal();
+        var sel = $("stcrecipe"); if (sel) sel.value = "blank";
+        $("stcblurb").textContent = "Today's pack, opened for editing \u2014 " +
+          slides.length + " slides, every one computed for " + S.place.n + ".";
+        rebuildComposer();
+        host.scrollIntoView ? $("stcompose").scrollIntoView({ behavior: "smooth", block: "start" }) : 0;
+        return;
+      }
+      var ratio = $("stpackratio").value, safe = $("stpacksafe").checked;
+      var msg = $("stpackmsg");
+      msg.textContent = "building\u2026";
+      NCard.mark(function () {
+        var jobs = slides.map(function (sl, i) {
+          var cv = document.createElement("canvas");
+          NCard.render(cv, { ratio: ratio, slots: sl.slots, safe: safe,
+                             place: S.place.n, hi: S.lang === "hi", ctx: C.ctx });
+          return NCard.pngBytes(cv).then(function (d) {
+            return { name: String(i + 1).padStart(2, "0") + "-" + sl.name + ".png", data: d };
+          });
+        });
+        Promise.all(jobs).then(function (files) {
+          files = files.filter(function (f) { return f.data; });
+          files.push({ name: "captions.txt",
+                       data: new TextEncoder().encode(packCaptions(D, S, ideas)) });
+          var z = NCard.zip(files);
+          var d = S.date;
+          var a = document.createElement("a");
+          a.href = URL.createObjectURL(z);
+          a.download = "nirayana-pack-" + d.y + "-" + String(d.m).padStart(2, "0") +
+                       "-" + String(d.d).padStart(2, "0") + ".zip";
+          document.body.appendChild(a); a.click();
+          setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+          msg.textContent = files.length + " files \u00b7 " +
+                            Math.round(z.size / 1048576 * 10) / 10 + " MB";
+          setTimeout(function () { msg.textContent = ""; }, 6000);
+        });
+      });
+    }
+    /* The pack's slides are checkable as text before they are drawn, which is
+       the only place a canvas card can be checked at all. */
+    window.__ncPackSlides = function () { return packSlides(D, S, window.__stIdeas || []); };
+    $("stpackgo").addEventListener("click", function () { build(false); });
+    $("stpackedit").addEventListener("click", function () { build(true); });
+    drawPlan(S);
+  }
+
+  /* THE MONTH AHEAD. The ranker already decides what is worth posting on a
+     given day; run it forward and the question "what do I post on the 14th"
+     has an answer before the 14th. Computed on demand rather than on load,
+     because thirty days of ephemeris is a second of work and most visits to
+     this page do not want it. */
+  function drawPlan(S) {
+    var host = $("stplan"); if (!host) return;
+    host.innerHTML = '<button type="button" class="stbtn sec" id="stplango">' +
+      "Plan the next 30 days</button>" +
+      '<p class="stnote">What the ranker would pick for each day, so a month ' +
+      "can be scheduled in one sitting. Each row opens that day in the Studio.</p>";
+    $("stplango").addEventListener("click", function () {
+      host.innerHTML = '<p class="stnote">Reading thirty days of sky\u2026</p>';
+      setTimeout(function () {
+        var rows = [], NP = window.NP;
+        for (var i = 0; i < 30; i++) {
+          var base = new Date(Date.UTC(S.date.y, S.date.m - 1, S.date.d) + i * 86400000);
+          var D = NP.dayOfDate(base.getUTCFullYear(), base.getUTCMonth() + 1,
+                               base.getUTCDate(), S.place, { ends: true, month: true });
+          if (!D) continue;
+          var ev = [];
+          try { ev = NP.scanEvents(D.sunrise - 86400000, D.sunrise + 86400000, {}); } catch (e) {}
+          var ideas = [];
+          try { ideas = window.__stIdeasFor ? window.__stIdeasFor(D, ev) : []; } catch (e) {}
+          var best = ideas[0];
+          rows.push({
+            d: base, D: D,
+            tithi: (D.at.tithi.paksha === "śukla" ? "Śu " : "Kṛ ") + D.at.tithi.name,
+            nak: D.at.nak.name,
+            hook: best ? best.hook : "pañcāṅga of the day",
+            scene: best && best.rec ? best.rec.scene : null
+          });
+        }
+        host.innerHTML = '<table class="stahead stplantab"><tbody>' + rows.map(function (r) {
+          var ds = r.d.getUTCDate() + " " +
+            ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][r.d.getUTCMonth()];
+          var wd = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][r.d.getUTCDay()];
+          return '<tr><td class="stpd">' + esc(wd + " " + ds) + "</td>" +
+                 "<td>" + esc(r.tithi) + "</td><td>" + esc(r.nak) + "</td>" +
+                 '<td class="stph">' + esc(r.hook) + "</td>" +
+                 "<td>" + (r.scene ? '<a class="stbtn sec" href="' +
+                    reelLink({ scene: r.scene, span: "1y", speed: "1", secs: 0 },
+                             S.place, "9:16") + '">reel</a>' : "") + "</td></tr>";
+        }).join("") + "</tbody></table>" +
+        '<p class="stnote">' + rows.length + " days planned for " + esc(S.place.n) +
+        ". The hook is what the ranker would lead with; change the date above to " +
+        "build that day's pack.</p>";
+      }, 30);
+    });
+  }
+
+  /* Hooks the pack uses to drive the composer that was built before it. */
+  var useSlideExternal = function () {}, rebuildComposer = function () {};
 
   /* ===== start ============================================================= */
   /* Driven by the Studio's own state and redrawn when it changes, so the place
@@ -962,6 +1400,7 @@
     }
     mountReels(S);
     mountComposer(S, D);
+    if (D) mountPack(S, D);
   }
   window.__ncRefresh = go;
 

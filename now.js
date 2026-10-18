@@ -334,9 +334,22 @@
             ? (D.nextSunrise-D.sunrise) : 86400000;
     var f=(D.ms-D.sunrise)/len;
     if(f<0||f>1.02) return null;
-    var g=f*60, gh=Math.floor(g), pl=Math.floor((g-gh)*60);
+    /* Sixty all the way down, exactly as hours : minutes : seconds are — which
+       is the point, and why the vipala column is worth showing: it ticks two
+       and a half times a second against the civil seconds beside it.
+
+       This page keeps its own clock because it does not load panchanga.js; NP
+       has an identical one. Two copies is how the vipala came to be printed
+       here before it was computed here — the display was updated and this
+       function was not, so the page showed "31:38:undefined" to every reader
+       and nothing threw. The page smoke test now reads the rendered text of
+       every page and fails on exactly that. */
+    var g=f*60, gh=Math.floor(g);
+    var pTot=(g-gh)*60, pl=Math.floor(pTot);
+    var vp=Math.floor((pTot-pl)*60);
     var mi=Math.min(29,Math.floor(f*30));
-    return {gh:gh, pala:pl, f:f,
+    return {gh:gh, pala:pl, vipala:vp, f:f,
+            vipalaMs:len/216000,            /* 60*60*60 of them in a day */
             muhurta:MUHURTA[mi], mi:mi+1,
             /* each muhūrta is a thirtieth of this day */
             mFrom:D.sunrise+len*mi/30, mTo:D.sunrise+len*(mi+1)/30};

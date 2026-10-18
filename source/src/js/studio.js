@@ -99,9 +99,30 @@
     return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
   }
   function daysBetween(a, b) { return Math.round((localDay(b) - localDay(a)) / 86400000); }
+  /* How far off, in words — INCLUDING backwards.
+
+     The ranker is handed two days of events from before the date on screen, so
+     that something which happened yesterday can still be the best thing to post
+     about today. But this function only knew how to count forward, so those
+     came out as "in -1 days" and went straight into a hook. The month planner
+     is what made it visible; it had been on the live page all along, on any day
+     following an ingress or a station.
+
+     Clamping to zero would have been the smaller change and the wrong one: an
+     ingress that happened yesterday is worth saying so about, and calling it
+     "today" is simply false. Hindi needs care here — कल is both yesterday and
+     tomorrow — so the past takes बीते कल, which is not ambiguous. */
   function whenWord(n) {
-    if (hi()) return n === 0 ? "आज" : n === 1 ? "कल" : n + " दिन में";
-    return n === 0 ? "today" : n === 1 ? "tomorrow" : "in " + n + " days";
+    if (hi()) {
+      if (n === 0) return "आज";
+      if (n === 1) return "कल";
+      if (n === -1) return "बीते कल";
+      return n > 0 ? (n + " दिन में") : ((-n) + " दिन पहले");
+    }
+    if (n === 0) return "today";
+    if (n === 1) return "tomorrow";
+    if (n === -1) return "yesterday";
+    return n > 0 ? ("in " + n + " days") : (-n + " days ago");
   }
 
   /* ===== which animation, and set to what =================================
@@ -824,7 +845,7 @@
             : (e.kind === "fullmoon" ? (hi() ? "पूर्णिमा" : "Pūrṇimā")
                                      : (hi() ? "अमावस्या" : "Amāvāsyā"));
       return "<tr><td>" + esc(dateAt(e.ms)) + "</td><td>" + esc(clockAt(e.ms)) +
-        "</td><td>" + esc(what) + "</td><td>" + esc(whenWord(Math.max(0, n))) +
+        "</td><td>" + esc(what) + "</td><td>" + esc(whenWord(n)) +
         "</td></tr>";
     }).join("") + "</tbody></table>";
   }
@@ -901,6 +922,9 @@
 
   window.__stState = function () { return S; };
   window.__stRender = render;
+  /* The month planner ranks days other than the one on screen, so the ranker
+     itself is published rather than only its output for today. */
+  window.__stIdeasFor = function (D, events) { return ideasFor(D, events || []); };
   window.__stCaption = function (i) {
     return captionOf(window.__stIdeas[i], window.__stDay);
   };

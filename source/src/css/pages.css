@@ -736,3 +736,24 @@ table.dptable td{vertical-align:top}
   .dptag.dpt{background:#1d2138;color:#b9c0e6;border-color:#313859}
   .dptag.dpa{background:#152632;color:#a8cde2;border-color:#24404f}
 }
+
+/* The carousel strip and the month plan. Both are lists of things to act on,
+   so they borrow the Studio's existing chrome rather than inventing more. */
+.stslides{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 9px}
+.stslide{font:inherit;font-size:13px;font-weight:700;min-width:30px;height:28px;
+  border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);
+  cursor:pointer;padding:0 8px}
+.stslide.on{background:var(--night);color:#fff;border-color:var(--night)}
+.stslide:hover{border-color:var(--gold)}
+.stslide.add{color:var(--gold);font-size:16px;line-height:1}
+.stslide.rm{color:#a4503c}
+.stslides .stnote{margin:0 0 0 6px;font-size:12px}
+.stpack{margin:10px 0 6px}
+.stplan{margin:8px 0 0}
+table.stplantab td{font-size:13px;vertical-align:top}
+table.stplantab td.stpd{white-space:nowrap;font-weight:600}
+table.stplantab td.stph{color:var(--ink)}
+@media (prefers-color-scheme:dark){
+  .stslide{background:rgba(255,255,255,.04);color:#e8e9f3}
+  .stslide.on{background:#e7d19a;color:#1b1f33;border-color:#e7d19a}
+}
