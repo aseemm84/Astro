@@ -61,13 +61,15 @@ const errs = [];
 page.on("pageerror", e => errs.push(String(e)));
 await page.goto(`${base}/kundli.html`, { waitUntil: "load" });
 await page.waitForFunction(
-  () => window.__moReelKeys && window.__moDeepKeys, { timeout: 30000 });
+  () => window.__moReelKeys && window.__moDeepKeys && window.__moGlassKeys,
+  { timeout: 30000 });
 
 /* Both families: the day-dynamic five and the deep-time pair. Listing them
    from the page rather than here means a scene added to either file is
    probed without anyone remembering to add it. */
 const keys = want.length ? want : await page.evaluate(
-  () => (window.__moReelKeys || []).concat(window.__moDeepKeys || []));
+  () => (window.__moReelKeys || []).concat(window.__moDeepKeys || [],
+                                           window.__moGlassKeys || []));
 console.log(`probing ${keys.length} scene(s) at 1080x1920\n`);
 
 let bad = 0;

@@ -710,6 +710,20 @@ aharganaIs:  {en:"ahargaṇa {0} days since the Kali epoch",
 kalpaCloses: {en:"14 manvantaras + 15 sandhis = one kalpa, exactly",
               hi:"14 मन्वन्तर + 15 सन्धि = ठीक एक कल्प"},
 definitional:{en:"these figures are definitions, not measurements",
-              hi:"ये संख्याएँ परिभाषाएँ हैं, माप नहीं"}
+              hi:"ये संख्याएँ परिभाषाएँ हैं, माप नहीं"},
+fourOfFive:  {en:"every number below is the division that produced it",
+              hi:"नीचे हर संख्या के साथ वह भाग दिया है जिससे वह निकली"},
+entersAt:    {en:"enters {0} at {1}", hi:"{0} में प्रवेश {1}"},
+nakWorking:  {en:"Moon {0}\u00b0 \u00f7 13\u00b020\u2032 = {1}",
+              hi:"चन्द्र {0}\u00b0 \u00f7 13\u00b020\u2032 = {1}"},
+goldBand:    {en:"the gold band is the Sun-to-Moon angle \u2014 each 12\u00b0 is one tithi",
+              hi:"स्वर्ण पट्टी सूर्य से चन्द्र का कोण है \u2014 हर 12\u00b0 एक तिथि"},
+rosePair:    {en:"Earth and {0}, {1} years", hi:"पृथ्वी और {0}, {1} वर्ष"},
+roseMeets:   {en:"they draw level {0} times in that span",
+              hi:"इस अवधि में {0} बार आमने-सामने"},
+roseYearOf:  {en:"year {0} of {1}", hi:"वर्ष {0} / {1}"},
+roseWhy:     {en:"{0} meetings, so {0} petals", hi:"{0} मिलन, इसलिए {0} पंखुड़ियाँ"},
+heliocentric:{en:"Sun at the centre \u2014 both orbits are the real ones",
+              hi:"केन्द्र में सूर्य \u2014 दोनों कक्षाएँ वास्तविक"}
 };
 for(var _k8 in MO_PHR8) MO_PHR[_k8]=MO_PHR8[_k8];

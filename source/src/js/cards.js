@@ -497,6 +497,52 @@
         return h + S.u * 0.030;
       }
     },
+    working: {
+      label: "The working", hint: "the arithmetic behind each pañcāṅga value",
+      fields: [],
+      run: function (c, S, s, draw) {
+        /* THE SLOT THAT MAKES A CARD WORTH KEEPING. Every other pañcāṅga card
+           on the internet states the tithi. This one states the subtraction
+           that produced it, with the two longitudes it came from. The numbers
+           were always in the day object; nothing here is new arithmetic, only
+           arithmetic that was being thrown away after use. */
+        var L = S.ctx.limbs;
+        if (!L) {
+          if (draw) {
+            c.font = "500 " + Math.round(S.u * 0.026) + "px " + SANS;
+            c.fillStyle = PAL.dim;
+            c.fillText("(the working needs the day's longitudes)", S.pad, S.y + S.u * 0.04);
+          }
+          return S.u * 0.07;
+        }
+        var rows = [
+          ["TITHI", L.tithi.name, L.tithi.work + " = " + L.tithi.v.toFixed(2), PAL.gold],
+          ["KARAṆA", L.karana.name, L.karana.work + " = " + L.karana.v.toFixed(2), PAL.ben],
+          ["NAKṢATRA", L.nak.name + " pāda " + L.nak.pada,
+           L.nak.work + " = " + L.nak.v.toFixed(2), PAL.pale],
+          ["YOGA", L.yoga.name, L.yoga.work + " = " + L.yoga.v.toFixed(2), PAL.mal]
+        ];
+        var f = Math.round(S.u * 0.030), fs = Math.round(S.u * 0.0225);
+        var h = rows.length * (f * 1.15 + fs * 1.5);
+        if (draw) {
+          var y = S.y;
+          rows.forEach(function (r) {
+            y += f * 1.00;
+            c.font = "700 " + Math.round(S.u * 0.019) + "px " + SANS;
+            c.fillStyle = r[3];
+            c.fillText(r[0], S.pad, y);
+            var lw = c.measureText(r[0] + "   ").width;
+            c.font = "600 " + f + "px " + SANS; c.fillStyle = PAL.ink;
+            c.fillText(r[1], S.pad + lw, y);
+            y += fs * 1.35;
+            c.font = "500 " + fs + "px " + SANS; c.fillStyle = PAL.dim;
+            c.fillText(r[2], S.pad, y);
+            y += fs * 0.15;
+          });
+        }
+        return h;
+      }
+    },
     space: {
       label: "Gap", hint: "breathing room",
       fields: [["size", "Height", "0.05"]],
@@ -675,6 +721,18 @@
       title: "Why the Moon is late every day",
       why: "Thirty moonrises from today, each with the Moon's real phase on it, drifting later down the frame. The one day a month the Moon does not rise at all is the moment the chain visibly breaks.",
       post: "The drift is never the same two days running — that is the hook." },
+    { scene: "fiverings", span: "3d", speed: "1", secs: 15,
+      title: "The five, with the working",
+      why: "Tithi, karaṇa, nakṣatra and yoga are all divisions of the same two numbers, and the frame prints the division beside each one. Nobody else shows the subtraction, and it is the only thing that turns a pañcāṅga card into a reason to follow the account.",
+      post: "Pin this. It is the clearest statement of what the site is for." },
+    { scene: "necklace", span: "27d", speed: "1", secs: 21,
+      title: "The Moon's necklace",
+      why: "Twenty-seven beads and the Moon walking them, with the gold band showing the Sun-to-Moon angle that every 12° of is one tithi. It names the hour the next nakṣatra begins at your place.",
+      post: "The one people check against their own birth star." },
+    { scene: "orbitrose", span: "8y", speed: "1.5", secs: 22,
+      title: "The orbit rose",
+      why: "The literal construction: Sun at the centre, Earth and one planet on their real orbits, a line drawn between them every few days. Venus gives five petals because the two draw level five times in eight years — and the frame counts the meetings rather than quoting the number.",
+      post: "Change the planet and the figure changes. Saturn is the strangest." },
     { scene: "solstice", span: "100y", speed: "1.5", secs: 26,
       title: "Where the solstice used to stand",
       why: "Five thousand years of precession against the twenty-seven nakṣatras. It computes the era the Vedāṅga Jyotiṣa describes rather than quoting it — and prints the uncertainty, because a quadratic ayanāṃśa run back to 3500 BCE is worth about a century either way.",
@@ -830,6 +888,21 @@
             { type: "sub", text: "one line of context" }
           ];
         } },
+      { key: "working", name: "Show the working",
+        blurb: "The five limbs with the arithmetic that produced each one — the " +
+               "two longitudes, the division, the number. Every other pañcāṅga " +
+               "card states the tithi; this one shows where it came from, which " +
+               "is the reason to follow the account.",
+        make: function () {
+          return [
+            { type: "kicker", text: (hi ? "निरयन" : "NIRAYANA") + " · " + dateline.toUpperCase() },
+            { type: "headline", text: hi ? "गणित सामने" : "Show the working" },
+            { type: "sub", text: hi ? "चार अंग दो ही संख्याओं से निकलते हैं"
+                                    : "four of the five come from two numbers" },
+            { type: "rule" },
+            { type: "working" }
+          ];
+        } },
       { key: "tarabala", name: "Tāra Bala today",
         blurb: "Which birth stars have an easy day and which a hard one, from " +
                "today's Moon. This is the card people check for themselves and " +
@@ -866,6 +939,28 @@
         make: function () { return [{ type: "headline", text: "" }]; } }
     ];
   }
+
+  /* The five limbs with their working, from a day object. Mirrors the motion
+     bundle's mgLimbs — the two cannot share code because panchanga.js does not
+     load on the chart page, so the test asserts they agree instead. */
+  function limbsOf(D) {
+    if (!D || D.sunDeg == null || D.moonDeg == null) return null;
+    function n(x) { return ((x % 360) + 360) % 360; }
+    var su = n(D.sunDeg), mo = n(D.moonDeg);
+    var el = n(mo - su), sum = n(mo + su);
+    var ti = el / 12, ki = el / 6, ni = mo / (40 / 3), yi = sum / (40 / 3);
+    return {
+      sun: su, moon: mo, elong: el,
+      tithi: { v: ti, name: (D.at.tithi.paksha === "śukla" ? "Śukla " : "Kṛṣṇa ") + D.at.tithi.name,
+               work: "(Moon " + mo.toFixed(2) + "° − Sun " + su.toFixed(2) + "°) ÷ 12°" },
+      karana: { v: ki, name: D.at.karana.name, work: el.toFixed(2) + "° ÷ 6°" },
+      nak: { v: ni, name: D.at.nak.name, pada: D.at.nak.pada,
+             work: "Moon " + mo.toFixed(2) + "° ÷ 13°20′" },
+      yoga: { v: yi, name: D.at.yoga.name,
+              work: "(Sun + Moon" + (su + mo >= 360 ? " − 360°" : "") + ") ÷ 13°20′" }
+    };
+  }
+  try { window.__ncLimbsOf = limbsOf; } catch (e) {}
 
   function fmtDate(ms, tz) {
     var d = new Date(ms + (tz || 0) * 3600000);
@@ -1395,6 +1490,10 @@
     C.ctx.hi = S.lang === "hi";
     if (D) {
       C.ctx.elong = D.elongation;
+      /* The same five divisions the glassbox scenes print, computed here from
+         the day's own sunrise longitudes so a card and a frame cannot
+         disagree about the arithmetic they both show. */
+      C.ctx.limbs = limbsOf(D);
       C.ctx.sky = NCard.sky(D.sunrise + (D.sunset != null
         ? (D.sunset - D.sunrise) / 2 : 6 * 3600000), S.place);
     }

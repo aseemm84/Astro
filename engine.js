@@ -1330,6 +1330,25 @@ window.__kDist=function(name,ms){
     return Math.sqrt(v.x*v.x+v.y*v.y+v.z*v.z)*149597870.7;
   }catch(e){ return null; }
 };
+/* Heliocentric ecliptic longitude and radius, which is what a Sun-centred
+   drawing needs and what every other export here cannot give: everything else
+   in this file is geocentric, because a chart is cast from the Earth. The
+   orbit figures — the Venus rose and its relatives — are the one place the
+   real heliocentric geometry is the subject rather than a step on the way. */
+window.__kHelio=function(name,ms){
+  try{
+    /* BODY maps the GRAHAS, and Earth is not one — a chart is cast from it,
+       never of it. A Sun-centred drawing needs it like any other planet, so the
+       name falls through when the map has no entry. Without this the rose drew
+       nothing at all and the scene reported a thrown error, which looks on a
+       canvas exactly like a scene that is still loading. */
+    var key=BODY[name]||name;
+    var v=Astronomy.HelioVector(Astronomy.Body[key],new Date(ms));
+    var e=Astronomy.Ecliptic(v);
+    return {lon:norm(e.elon), lat:e.elat,
+            r:Math.sqrt(v.x*v.x+v.y*v.y+v.z*v.z)};
+  }catch(e){ return null; }
+};
 window.__kEquator=function(name,ms,lat,lon){
   try{
     var obs=new Astronomy.Observer(lat||0,lon||0,0);

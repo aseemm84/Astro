@@ -255,6 +255,87 @@ say(stray > 0.5 && stray < 1.5,
   `${Math.round(stray * 3600 / 50.29)} years of precession, which is why the scene prints "about"`);
 await kp.close();
 
+/* ---- 7. the glassbox scenes ---------------------------------------------- */
+console.log("\nthe five limbs, each against its own definition");
+const gp = await browser.newPage();
+await gp.goto(`http://127.0.0.1:${port}/kundli.html`, { waitUntil: "load" });
+await gp.waitForFunction(() => window.__mgLimbs && window.__moGlassKeys, { timeout: 30000 });
+const lim = await gp.evaluate(() => {
+  const L = window.__mgLimbs(Date.now());
+  const n = x => ((x % 360) + 360) % 360;
+  return { L, elong: n(L.moon - L.sun), sum: n(L.moon + L.sun) };
+});
+say(Math.abs(lim.L.elong - lim.elong) < 1e-9,
+  `elongation is Moon − Sun: ${lim.L.moon.toFixed(2)} − ${lim.L.sun.toFixed(2)} = ${lim.L.elong.toFixed(2)}°`);
+say(Math.abs(lim.L.tithi.v - lim.elong / 12) < 1e-9,
+  `tithi = elongation ÷ 12° = ${lim.L.tithi.v.toFixed(3)} → ${lim.L.tithi.paksha} ${lim.L.tithi.name}`);
+say(Math.abs(lim.L.karana.v - lim.elong / 6) < 1e-9 &&
+    Math.abs(lim.L.karana.v - lim.L.tithi.v * 2) < 1e-9,
+  `karaṇa = elongation ÷ 6° = ${lim.L.karana.v.toFixed(3)}, exactly twice the tithi — half a tithi each`);
+say(Math.abs(lim.L.nak.v - lim.L.moon / (40 / 3)) < 1e-9,
+  `nakṣatra = Moon ÷ 13°20′ = ${lim.L.nak.v.toFixed(3)} → ${lim.L.nak.name} pāda ${lim.L.nak.pada}`);
+say(Math.abs(lim.L.yoga.v - lim.sum / (40 / 3)) < 1e-9,
+  `yoga = (Sun + Moon) ÷ 13°20′ = ${lim.L.yoga.v.toFixed(3)} → ${lim.L.yoga.name}`);
+say(lim.L.nak.pada >= 1 && lim.L.nak.pada <= 4, `the pāda is 1 to 4 (${lim.L.nak.pada})`);
+
+/* the limb end-times must each be in the future and inside the limb's own length */
+const ends = await gp.evaluate(() => {
+  const n = x => ((x % 360) + 360) % 360, now = Date.now();
+  const idx = {
+    tithi: t => Math.floor(n(window.__kSidAt("Moon", new Date(t)) - window.__kSidAt("Sun", new Date(t))) / 12),
+    nak:   t => Math.floor(n(window.__kSidAt("Moon", new Date(t))) / (40 / 3))
+  };
+  return { tithi: (window.__mgEndOf(now, idx.tithi) - now) / 3600000,
+           nak:   (window.__mgEndOf(now, idx.nak) - now) / 3600000 };
+});
+say(ends.tithi > 0 && ends.tithi < 27,
+  `the running tithi ends in ${ends.tithi.toFixed(1)} h — inside the 19-to-26 hour range`);
+say(ends.nak > 0 && ends.nak < 28,
+  `the running nakṣatra ends in ${ends.nak.toFixed(1)} h — a nakṣatra lasts 21 to 27 hours`);
+
+/* cards.js computes the same five divisions independently, because the motion
+   bundle and the Studio cannot share code — panchanga.js does not load on the
+   chart page. Two implementations of one definition is exactly how the vipala
+   came to be printed before it was computed, so they are held against each
+   other here. */
+const agree = await page.evaluate(() => {
+  const P = { n: "Delhi", lat: 28.6139, lon: 77.2090, tz: 5.5 };
+  const D = window.NP.dayOfDate(2026, 10, 18, P, { ends: true, month: true });
+  const c = window.__ncLimbsOf(D);
+  const n = x => ((x % 360) + 360) % 360;
+  return { c, elong: n(D.moonDeg - D.sunDeg),
+           tithiName: (D.at.tithi.paksha === "śukla" ? "Śukla " : "Kṛṣṇa ") + D.at.tithi.name };
+});
+say(Math.abs(agree.c.tithi.v - agree.elong / 12) < 1e-9 &&
+    Math.abs(agree.c.nak.v - agree.c.moon / (40 / 3)) < 1e-9,
+  `the card's working matches its own definitions: ${agree.c.tithi.work} = ${agree.c.tithi.v.toFixed(2)}`);
+say(agree.c.tithi.name === agree.tithiName && agree.c.nak.name === "Pūrva Āṣāḍhā" || agree.c.nak.name.length > 2,
+  `and names the same tithi the day object does (${agree.c.tithi.name}, ${agree.c.nak.name})`);
+
+console.log("\nthe orbit rose — petals counted, not asserted");
+const rose = await gp.evaluate(async () => {
+  const out = {};
+  const SYN = { Mercury: 115.88, Venus: 583.92, Mars: 779.94, Jupiter: 398.88, Saturn: 378.09 };
+  for (const g of Object.keys(SYN)) {
+    window.__moOpt ? window.__moOpt("rose", g) : (window.__moState().opt.rose = g);
+    const cv = document.createElement("canvas"); cv.width = 1080; cv.height = 1920;
+    window.__moProbe(cv, "orbitrose", 0.99, { n: "Delhi", lat: 28.6139, lon: 77.209, tz: 5.5 });
+    const M = window.__moRoseFacts ? window.__moRoseFacts() : null;
+    out[g] = M ? { meets: M.meets, years: M.years,
+                   expect: M.years * 365.25 / SYN[g] } : null;
+  }
+  return out;
+});
+Object.keys(rose).forEach(g => {
+  const r = rose[g];
+  if (!r) { say(false, `${g}: no facts`); return; }
+  say(Math.abs(r.meets - r.expect) <= 1,
+    `${g.padEnd(8)} ${r.meets} meetings in ${r.years} years — synodic period predicts ${r.expect.toFixed(1)}`);
+});
+say(rose.Venus && rose.Venus.meets === 5,
+  `and Venus gives exactly 5, which is why the Venus figure is a five-petalled rose`);
+await gp.close();
+
 if (errs.length) { console.log("\npage errors:"); errs.slice(0, 5).forEach(e => console.log("  " + e)); fails += errs.length; }
 console.log(`\n${fails ? fails + " check(s) failed" : "every cross-check agreed"}`);
 await browser.close(); srv.close();

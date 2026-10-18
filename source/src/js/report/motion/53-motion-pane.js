@@ -287,7 +287,13 @@ function moSceneOpts(){
   }catch(e){}
   var host=document.getElementById("moscopts"); if(!host) return;
   var k=MO.scene, h="";
-  if(k==="retro"||k==="drishti"){
+  if(k==="orbitrose"){
+    h='<span class="molab">Planet</span>'+
+      ["Mercury","Venus","Mars","Jupiter","Saturn"].map(function(en){
+        return '<button type="button" class="skyv'+
+          (((MO.opt.rose||"Venus")===en)?" on":"")+
+          '" data-morose="'+en+'">'+esc(MO_FULL[en])+'</button>'; }).join("");
+  } else if(k==="retro"||k==="drishti"){
     h='<span class="molab">Graha</span>'+
       (k==="drishti"?MO_NAMES:["Mercury","Venus","Mars","Jupiter","Saturn"]).map(function(en){
         return '<button type="button" class="skyv'+(MO.opt.subject===en?" on":"")+
@@ -680,6 +686,11 @@ document.addEventListener("click",function(ev){
     [].forEach.call(document.querySelectorAll("[data-moratio]"),function(b){
       b.className="skyv"+(b.getAttribute("data-moratio")===r?" on":""); });
     moResize(); moDraw(); return; }
+  var ro=t.getAttribute("data-morose");
+  if(ro){ MO.opt.rose=ro; MO_CACHE={}; MO.p=0;
+    [].forEach.call(document.querySelectorAll("[data-morose]"),function(b){
+      b.className="skyv"+(b.getAttribute("data-morose")===ro?" on":""); });
+    moDraw(); return; }
   var pa=t.getAttribute("data-mopal");
   if(pa){ MO.pal=pa;
     [].forEach.call(document.querySelectorAll("[data-mopal]"),function(b){
