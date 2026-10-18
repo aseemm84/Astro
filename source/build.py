@@ -325,6 +325,12 @@ def build_shared():
         # studio.html's own script: what is worth posting today, the caption and
         # the image. Loaded only on that page, like now.js and calendar.js.
         "studio.js": brandify(read(SRC, "js", "studio.js")),
+        # The reel strip and the card composer. A separate file from studio.js
+        # because it is a separate concern and because the Studio's own card
+        # keeps working if this one fails to load; it rides on that page because
+        # the date, the place, the language and the ratio are already there, and
+        # three copies of those controls would be three things to keep in step.
+        "cards.js": brandify(read(SRC, "js", "cards.js")),
         "panchanga.js": brandify(read(SRC, "js", "panchanga.js") + "\n" +
                                  read(SRC, "js", "festivals.js")),
         # cities.js is cities.json with sixteen characters in front of it. The chart
@@ -365,6 +371,44 @@ def build_pages():
                           .replace("{{FOOTER}}", footer)
                           .replace("<!--LOGO-->", logo_mark()))
     return out
+
+def window_export_check(built):
+    """No two files may export the same window.__name.
+
+    The bundles are concatenated into one scope, so a second
+    `window.__x = ...` silently replaces the first. Nothing throws: callers of
+    the shape that survived keep working and callers of the other get undefined
+    back from fields that look like they should be there. That is how a panel
+    reported `span=undefined` while the span it was actually using was correct.
+
+    Checked on the BUILT files rather than the sources, because the fault only
+    exists once they are concatenated, and because a name may legitimately
+    appear in two bundles that never load together.
+    """
+    bad = []
+    for name, text in built.items():
+        if not (name.endswith(".html") or name.endswith(".js")):
+            continue
+        seen = {}
+        # Only TOP-LEVEL assignments of a FUNCTION. `window.__kplace = p.n`
+        # inside a click handler is data being written, not an export being
+        # defined, and a page may legitimately write it from several places;
+        # flagging those would bury the real fault in noise. An export is
+        # written unindented, at the top level of a concatenated file, and its
+        # right-hand side is a function.
+        for m in re.finditer(
+                r"(?m)^window\.(__[A-Za-z_$][\w$]*)\s*=\s*(?:function\b|\(|[A-Za-z_$][\w$]*\s*;)",
+                text):
+            seen[m.group(1)] = seen.get(m.group(1), 0) + 1
+        for k, n in sorted(seen.items()):
+            if n > 1:
+                bad.append("%s: window.%s exported %d times" % (name, k, n))
+    if bad:
+        raise SystemExit("the same window export defined twice in one scope "
+                         "(the later one silently wins):\n  " +
+                         "\n  ".join(bad))
+    print("  checked  no window.__export is assigned twice in one bundle")
+
 
 def lang_key_check(src_dir):
     """Every moT()/moP() key must exist in the table its accessor reads.
@@ -499,6 +543,7 @@ def main():
     built.update(build_pwa(built))
     lang_key_check(SRC)
     syntax_check(built)
+    window_export_check(built)
 
     if "--check" in args:
         ok = True

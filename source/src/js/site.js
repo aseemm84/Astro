@@ -329,12 +329,17 @@ else boot();
   document.head.appendChild(s);
 })();
 
-/* studio.html, on the same bargain: nobody who never opens it pays for it. */
+/* studio.html, on the same bargain: nobody who never opens it pays for it.
+   cards.js carries the reel strip and the composer; it waits for studio.js to
+   publish its state rather than being sequenced here, so a slow load of one
+   cannot leave the other half-built. */
 (function(){
   if(!document.getElementById("stcards")) return;
-  var s=document.createElement("script");
-  s.src="studio.js"; s.defer=true;
-  document.head.appendChild(s);
+  ["studio.js","cards.js"].forEach(function(src){
+    var s=document.createElement("script");
+    s.src=src; s.defer=true;
+    document.head.appendChild(s);
+  });
 })();
 
 /* The service worker, so the hosted site works offline the way a local copy

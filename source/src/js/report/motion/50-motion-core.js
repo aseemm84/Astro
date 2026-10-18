@@ -107,6 +107,23 @@ function moText(s,x,y,size,col,align,weight){
   c.font=(weight||600)+" "+size+"px "+'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
   c.fillText(s,x,y);
 }
+/* The point size at which a caption row finally fits the band's width.
+
+   The band scaled its rows to fit the available HEIGHT and never looked at the
+   width, so a subtitle longer than the frame simply ran off both edges — it is
+   centred, so it loses the same number of words at each end, which is the one
+   failure mode that reads as deliberate. Scenes are written by people who have
+   just read the sentence they wrote; the band has to be what notices. */
+function moFitWidth(s,size,maxW,serif,weight){
+  var c=MO.ctx, f=size*moTypeK();
+  for(var i=0;i<18;i++){
+    c.font=serif ? '600 '+f+'px "Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif'
+                 : (weight||600)+" "+f+"px "+'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
+    if(c.measureText(s).width<=maxW) break;
+    f*=0.95;
+  }
+  return f/moTypeK();
+}
 function moSerif(s,x,y,size,col,align){
   size*=moTypeK();
   var c=MO.ctx;
@@ -201,8 +218,21 @@ function moNakIdx(lon){ return Math.min(26,Math.floor(((lon%360)+360)%360/(40/3)
 function moNakName(lon){ return moTnak(moNakIdx(lon)); }
 function moG(en){ return MO.opt.symbols?(MO_SYM[en]||moTgl(en)):moTgl(en); }
 function moSign(i){ var k=((i%12)+12)%12; return MO.opt.symbols?MO_RSYM[k]:moTrasi(k); }
+/* The date AT THE PLACE the frame is about, not at Greenwich.
+
+   This read UTC, which is invisible almost everywhere and wrong in exactly the
+   place it matters: an instant shortly after local midnight in Delhi is still
+   the previous day in UTC, so a frame built from a moonrise at 02:42 was dated
+   the day before the row it came from. Every scene that returns an instant near
+   a local midnight had the same one-day error, and it is the reels — which
+   return a sunrise, a moonrise, a night — that meet it most often.
+
+   moPlace() is the chart's place when there is a chart and the viewer's when
+   there is not, which is the same place the rest of the frame is drawn for. */
 function moFmtDate(ms){
-  var d=new Date(ms);
+  var tz=0;
+  try{ var W=moPlace(); if(W) tz=W.tz||0; }catch(e){}
+  var d=new Date(ms+tz*3600000);
   return String(d.getUTCDate()).padStart(2,"0")+" "+MON[d.getUTCMonth()+1]+" "+d.getUTCFullYear();
 }
 /* ---------------------------------------------------------------------------
@@ -252,8 +282,9 @@ function moCaption(dateMs,sub){
   var need=0; rows.forEach(function(r){ need+=r.f*1.34; });
   var k=Math.min(1, need>0?avail/need:1);
   var y=y0+U*0.012;
+  var maxW=S.w-pad-padR;
   rows.forEach(function(r){
-    var f=r.f*k;
+    var f=moFitWidth(r.t,r.f*k,maxW,r.serif,r.w||500);
     y+=f*0.74;
     if(r.serif) moSerif(r.t,S.w/2,y,f,r.col,"center");
     else moText(r.t,S.w/2,y,f,r.col,"center",r.w||500);

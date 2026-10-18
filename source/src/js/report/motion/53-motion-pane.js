@@ -475,6 +475,14 @@ function moPlaceMount(){
   try{
     L.forEach(function(c){ if(c.n===window.__kplace) cur=c; });
   }catch(e){}
+  /* A place already set on the window — by the Studio handing one over in the
+     link, or by a chart — is the place the reader asked for, even when it is
+     not one of the built-in cities. Falling through to L[0] here meant a reel
+     about "the sky tonight" arrived set to the first city in the list and
+     quietly answered for somewhere the reader had never mentioned. */
+  if(!cur && window.__kwhereLat!=null)
+    cur={n:window.__kplace||"", lat:window.__kwhereLat,
+         lon:window.__kwhereLon, tz:window.__kwhereTz||0};
   if(!cur && L.length){
     cur=L[0];
     window.__kplace=cur.n; window.__kwhereLat=cur.lat;
@@ -497,6 +505,73 @@ window.__moPaceReport=function(){ return moPaceReport(); };
 window.__moPaceStep=function(p,dt){ return moPaceStep(p,dt); };
 window.__moEvents=function(){ return moEvents(); };
 window.__moCtxRows=function(){ var r=null; try{ r=moDraw(); }catch(e){} return moContextRows(MO._lastMs||Date.now()); };
+/* Apply a set of settings to the panel, whatever controls happen to exist.
+
+   The Studio's links carried span, speed, ratio and the safe layout, and the
+   reader on the other end was given the scene with none of them: applySky set
+   them by finding the controls and dispatching events, and the span control is
+   only rendered for the scenes that have a span ROW — which the five reel
+   scenes do not, because their windows are intrinsic. So #mospann was absent,
+   the span stayed at its twelve-year default, the speed slider stayed where it
+   was, and a reel advertised as twelve seconds recorded for sixty-eight. It
+   threw nothing: a missing element is a no-op, and the only way to notice was
+   to record one and read the length off the panel afterwards.
+
+   Setting the state and then re-syncing whichever controls exist is the way
+   round that cannot be defeated by a control not being on screen. */
+function moApplySettings(q){
+  var changed=false;
+  if(q.span){
+    var m=/^(\d+)([hdwmy])$/.exec(q.span);
+    if(m){
+      var n=Math.max(1,Math.min(999,+m[1]||1));
+      var u=m[2]==="w" ? "d" : m[2];          /* weeks are days, in this model */
+      MO.opt.spanN = m[2]==="w" ? n*7 : n;
+      MO.opt.spanU = u;
+      changed=true;
+    }
+  }
+  if(q.speed!=null){
+    var v=/^1\/(\d+)$/.test(q.speed) ? 1/parseFloat(String(q.speed).split("/")[1])
+                                      : parseFloat(q.speed);
+    if(isFinite(v)&&v>0){ MO.speed=Math.max(MO_SPEED_MIN,v); changed=true; }
+  }
+  if(q.ratio && MO_RATIOS[q.ratio] && q.ratio!==MO.ratio){
+    MO.ratio=q.ratio; changed=true;
+    try{ moResize(); }catch(e){}
+  }
+  if(q.safe==="1" && !MO.safeLayout){ MO.safeLayout=true; changed=true; }
+  if(!changed) return false;
+  MO.p=0; MO_CACHE={};
+  try{ moSyncControls(); }catch(e){}
+  try{ moDraw(); }catch(e){}
+  return true;
+}
+/* Whatever is on screen, brought back into agreement with MO. */
+function moSyncControls(){
+  var el=document.getElementById("mospann"); if(el) el.value=MO.opt.spanN;
+  var eu=document.getElementById("mospanu"); if(eu) eu.value=MO.opt.spanU;
+  var sl=document.getElementById("mospeed");
+  if(sl && window.__moSpeedPos){ try{ sl.value=window.__moSpeedPos(MO.speed); }catch(e){} }
+  var sp=document.getElementById("mospeedlab");
+  if(sp){ try{ sp.textContent=moSpeedLabel(MO.speed); }catch(e){} }
+  [].forEach.call(document.querySelectorAll("[data-moratio]"),function(b){
+    b.className="skyv"+(b.getAttribute("data-moratio")===MO.ratio?" on":""); });
+  var sb=document.getElementById("mosafe");
+  if(sb){ sb.className="skyv"+(MO.safeLayout?" on":"");
+          sb.setAttribute("aria-pressed",MO.safeLayout?"true":"false"); }
+  var d=document.getElementById("modur");
+  if(d && typeof moPaceLabel==="function"){ try{ d.textContent=moPaceLabel(); }catch(e){} }
+}
+window.__moApply=moApplySettings;
+/* The derived length, so a caller can check it got what it asked for. */
+window.__moDurSecs=function(){ try{ return moPaceReport().dur; }catch(e){ return null; } };
+/* No __moState here: one is already exported further down this same file, and
+   in one concatenated scope the later assignment simply wins. A second export
+   under the same name looks like it works — the fields the two shapes share
+   read correctly and the rest come back undefined, which is how this was
+   found, from a panel reporting span=undefined while the span it was actually
+   using was right. The build now refuses a duplicate. */
 window.__moMount=moMount;
 /* ui.js applies a recommended speed from the address; the mapping from a
    speed to a slider position lives here, so it is exported rather than
@@ -708,7 +783,12 @@ window.__moSet=function(k,v){
   else if(k==="p") MO.p=v; else MO.opt[k]=v;
   MO_CACHE={}; return MO[k]!==undefined?MO[k]:MO.opt[k];
 };
-window.__moDraw=function(){ moDraw(); };
+/* __moDraw is exported once, near the top of this file, WITH its guard. A
+   second unguarded copy here used to win — same name, same scope, later line —
+   so a caller redrawing before the canvas existed got a throw where the
+   guarded version would have done nothing. Found by the build's duplicate
+   check, not by anyone using the site, because every caller happened to call
+   it late enough for the difference not to show. */
 window.__moSpan=function(){ return moSpanMs(); };
 window.__moSidAt=function(n,ms){ return moSidAt(n,ms); };
 window.__moMetrics=function(){

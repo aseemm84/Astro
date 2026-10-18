@@ -55,17 +55,24 @@
        wants nine months at a sixth speed; telling the reader to go and set that
        themselves turns one click into five and most people will not bother. */
     function applySky(q){
+      /* The panel applies these itself when it can: the controls for some of
+         them are not rendered for every scene, and setting a control that is
+         not there is a silent no-op rather than an error. */
+      var applied=false;
+      if(window.__moApply){
+        try{ applied=!!window.__moApply(q); }catch(e){}
+      }
       function set(id,val,evt){
         var el=document.getElementById(id);
         if(!el||val==null) return;
         el.value=val;
         el.dispatchEvent(new Event(evt||"change",{bubbles:true}));
       }
-      if(q.span){
+      if(!applied && q.span){
         var m=/^(\d+)([dwmy])$/.exec(q.span);
         if(m){ set("mospann",m[1]); set("mospanu",m[2]); }
       }
-      if(q.speed){
+      if(!applied && q.speed){
         var v=/^1\/(\d+)$/.test(q.speed) ? 1/parseFloat(q.speed.split("/")[1])
                                           : parseFloat(q.speed);
         if(isFinite(v) && window.__moSpeedPos){
@@ -74,13 +81,29 @@
                   sl.dispatchEvent(new Event("input",{bubbles:true})); }
         }
       }
-      if(q.ratio){
+      if(!applied && q.ratio){
         var rb=document.querySelector('[data-moratio="'+q.ratio+'"]');
         if(rb) rb.click();
       }
-      if(q.safe==="1"){
+      if(!applied && q.safe==="1"){
         var sb=document.getElementById("mosafe");
         if(sb && sb.getAttribute("aria-pressed")!=="true") sb.click();
+      }
+      /* rec=1 — the Reels strip's one click.
+
+         Recording needs no user gesture (the capture is of a canvas this page
+         owns), and the download at the end is a single same-origin blob, which
+         browsers allow. It is deliberately LAST and on a timer: every setting
+         above dispatches an event that redraws, and starting the recorder
+         before those have landed would capture the scene at whatever span and
+         ratio the panel happened to open with. If the browser does refuse the
+         automatic download, the recorder still writes its own message with the
+         file, so nothing is lost — it just takes a second click. */
+      if(q.rec==="1"){
+        setTimeout(function(){
+          var rb=document.getElementById("movid");
+          if(rb) rb.click();
+        },900);
       }
     }
     function openSky(scene,q){
@@ -139,6 +162,22 @@
         var i=kv.indexOf("=");
         if(i>0) q[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1));
       });
+      /* The place travels with the link, and is set BEFORE the pane mounts.
+
+         Four of the five reels are about a place — tonight's sky, today's
+         shadow, this month's moonrises — so a link that carries the scene and
+         not the place arrives correct in every respect except the only one the
+         reader chose. Set after mounting it would be too late: the pane picks
+         its place as it builds, and the scene would draw once for the wrong
+         city before anything corrected it. */
+      if(q.place){
+        var pp=q.place.split("|");
+        if(pp.length>=4 && isFinite(+pp[1]) && isFinite(+pp[2])){
+          window.__kplace=pp[0];
+          window.__kwhereLat=+pp[1]; window.__kwhereLon=+pp[2];
+          window.__kwhereTz=+pp[3]||0;
+        }
+      }
       function go(){
         if(!window.motionPane){ setTimeout(go,80); return; }
         openSky(scene,q);

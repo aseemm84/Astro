@@ -653,6 +653,61 @@ table.stahead tr:hover td{background:#fcfbf6}
   table.stahead tr:hover td{background:rgba(255,255,255,.03)}
 }
 
+/* ===== the reel strip and the card composer =============================
+   Both sit on the Studio page and both reuse its controls, so they also reuse
+   its type and its chrome: a new visual language for a second half of the same
+   page would read as a second site. The composer is the only thing here that
+   needs a layout of its own — slots on the left and a live card on the right,
+   collapsing to one column when there is not room for two. */
+.streels{display:grid;gap:12px;margin:10px 0 6px}
+.strcard{border:1px solid var(--line);border-left:3px solid var(--gold);
+  border-radius:0 12px 12px 0;padding:13px 16px;background:var(--card,#fff)}
+.strcard header{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.strcard h3{font-family:var(--serif);font-size:20px;margin:0;line-height:1.25;flex:1 1 auto}
+.strcard p{margin:7px 0 0;font-size:14px;line-height:1.6}
+.strno{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--gold);
+  flex:0 0 auto;min-width:1.2em}
+.strsec{font-size:11px;font-weight:700;letter-spacing:.06em;color:#7a5c12;
+  background:#fdf6e3;border-radius:5px;padding:2px 7px;flex:0 0 auto}
+.strpost{color:var(--muted);font-size:13px !important;font-style:italic}
+
+.stcompose{margin:10px 0 6px}
+.stcbar{display:flex;flex-wrap:wrap;gap:9px 14px;align-items:center;
+  border:1px solid var(--line);border-radius:12px;padding:10px 13px;
+  margin:0 0 8px;background:var(--soft)}
+.stchk{font-size:12.5px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.stclayout{display:grid;gap:16px;grid-template-columns:minmax(0,1fr) minmax(0,300px);
+  align-items:start}
+.stcslots{display:grid;gap:9px;min-width:0}
+.stcrow{border:1px solid var(--line);border-radius:10px;padding:9px 11px;
+  background:var(--card,#fff);display:grid;gap:6px}
+.stchead{display:flex;align-items:center;gap:8px}
+.stchead b{font-size:12px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted);flex:1 1 auto}
+.stcmove{display:flex;gap:4px}
+.stcmove button{font:inherit;font-size:13px;line-height:1;width:26px;height:24px;
+  border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);
+  cursor:pointer}
+.stcmove button:hover{border-color:var(--gold)}
+.stcrow input,.stcrow textarea{font:inherit;font-size:13.5px;padding:6px 8px;
+  border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);
+  width:100%;box-sizing:border-box;resize:vertical}
+.stcadd{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.stcadd .stsel{flex:1 1 18ch;min-width:0}
+.stcprev{position:sticky;top:12px}
+.stcprev canvas{width:100%;height:auto;border-radius:10px;
+  border:1px solid var(--line);box-shadow:0 6px 24px rgba(20,26,51,.18);display:block}
+@media (max-width:760px){
+  .stclayout{grid-template-columns:1fr}
+  .stcprev{position:static;max-width:320px;margin:0 auto}
+}
+@media (prefers-color-scheme:dark){
+  .strcard,.stcrow{background:rgba(255,255,255,.03)}
+  .strsec{background:#2e2714;color:#e7d19a}
+  .stcbar,.stcrow input,.stcrow textarea,.stcmove button{
+    background:rgba(255,255,255,.04);color:#e8e9f3}
+}
+
 /* The running clock. Civil time and Hindu time side by side, both ticking, so
    the relationship between them is visible rather than asserted: the vipala
    column moves two and a half times a second against the civil seconds, which

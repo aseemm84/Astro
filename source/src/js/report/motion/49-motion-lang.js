@@ -663,3 +663,42 @@ riseSetAt:  {en:"sunrise {0}   ·   sunset {1}", hi:"सूर्योदय {0
 dayLengthIs:{en:"{0} hours of daylight", hi:"{0} घण्टे का दिनमान"}
 };
 for(var _k7 in MO_PHR7) MO_PHR[_k7]=MO_PHR7[_k7];
+
+/* --- the reel scenes ----------------------------------------------------
+   The five day-dynamic animations. Their sentences are here with the rest
+   because a reader in Hindi should not meet an English frame halfway through
+   a reel, and because the register of a caption is easier to keep consistent
+   when every caption in the project sits in one file. */
+var MO_PHR8={
+tithiRuns:   {en:"tithi {0} · {1}", hi:"तिथि {0} · {1}"},
+tithiHours:  {en:"{0} hours long", hi:"{0} घण्टे लम्बी"},
+twoSunrises: {en:"two sunrises inside it", hi:"भीतर दो सूर्योदय"},
+noSunrise:   {en:"no sunrise inside it", hi:"भीतर कोई सूर्योदय नहीं"},
+adhikaIs:    {en:"adhika — this tithi names two days", hi:"अधिका — यह तिथि दो दिन का नाम बनती है"},
+kshayaIs:    {en:"kṣaya — this tithi names no day at all", hi:"क्षया — यह तिथि किसी दिन का नाम नहीं बनती"},
+sunriseRule: {en:"the tithi at sunrise is the tithi of the day",
+              hi:"सूर्योदय की तिथि ही उस दिन की तिथि है"},
+aboveNow:    {en:"{0} above the horizon now", hi:"इस समय {0} क्षितिज के ऊपर"},
+noneAbove:   {en:"nothing above the horizon", hi:"क्षितिज के ऊपर कुछ नहीं"},
+nightFrom:   {en:"sunset {0} → sunrise {1}", hi:"सूर्यास्त {0} → सूर्योदय {1}"},
+riseSetTon:  {en:"{0} rises {1}", hi:"{0} उदय {1}"},
+gnomonIs:    {en:"a stick of 12 aṅgulas", hi:"बारह अङ्गुल का शङ्कु"},
+shadowNow:   {en:"shadow {0} aṅgulas", hi:"छाया {0} अङ्गुल"},
+shadowNoon:  {en:"shortest today: {0} aṅgulas", hi:"आज सबसे छोटी: {0} अङ्गुल"},
+akshabha:    {en:"akṣabhā here: {0} aṅgulas", hi:"यहाँ अक्षभा: {0} अङ्गुल"},
+sunDown:     {en:"the Sun is down — no shadow", hi:"सूर्य अस्त — छाया नहीं"},
+siddhantaNot:{en:"the gnomon is siddhānta, not BPHS",
+              hi:"शङ्कु सिद्धान्त का विषय है, बृ.पा.हो.शा. का नहीं"},
+moonRiseOn:  {en:"moonrise {0}", hi:"चन्द्रोदय {0}"},
+driftIs:     {en:"{0} minutes later than yesterday", hi:"कल से {0} मिनट देर"},
+driftAvg:    {en:"about {0} minutes a day on average", hi:"औसतन लगभग {0} मिनट प्रतिदिन"},
+noMoonrise:  {en:"the Moon does not rise this day here", hi:"इस दिन यहाँ चन्द्रोदय नहीं"},
+venusElong:  {en:"{0}° from the Sun", hi:"सूर्य से {0}°"},
+venusMorning:{en:"morning star — rising before the Sun", hi:"प्रभात का तारा — सूर्य से पहले उदय"},
+venusEvening:{en:"evening star — setting after the Sun", hi:"सन्ध्या का तारा — सूर्य के बाद अस्त"},
+venusAstanga:{en:"within astaṅgata — too close to the Sun to be seen",
+              hi:"अस्तङ्गत — सूर्य के इतने निकट कि दिखाई न दे"},
+venusPetals: {en:"five returns, eight years", hi:"पाँच पुनरागमन, आठ वर्ष"},
+dayNOf:      {en:"day {0} of {1}", hi:"दिन {0} / {1}"}
+};
+for(var _k8 in MO_PHR8) MO_PHR[_k8]=MO_PHR8[_k8];

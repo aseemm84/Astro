@@ -745,6 +745,11 @@
         });
       });
       drawAhead(events, D);
+      /* The reel strip and the composer read this page's state, so they are
+         rebuilt whenever it changes — otherwise a reader who changes the place
+         gets new cards above and reel links still pointing at the old city,
+         which is the kind of inconsistency nothing on screen would reveal. */
+      try { if (window.__ncRefresh) window.__ncRefresh(); } catch (e) {}
     }, 30);
   }
   function copy(txt, msg) {
