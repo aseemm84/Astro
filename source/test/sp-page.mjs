@@ -49,7 +49,7 @@ async function run(withChart) {
   await pg.goto(`${base}/studio-pro.html`,{waitUntil:"load"});
   await pg.waitForFunction(()=>window.__spUI && window.__spUI.nodeCount()>0,
                            {timeout:30000});
-  const r = await pg.evaluate(() => {
+  let r = await pg.evaluate(() => {
     const out={};
     out.nodes=window.__spUI.nodeCount();
     out.chips=document.querySelectorAll(".spchip").length;
@@ -127,8 +127,63 @@ async function run(withChart) {
     const middle = snap().lit;
     out.dipWorks = boundary < middle;
     out.dipAt = [boundary, middle];
-    return out;
+    /* the live strip: tiles exist, they are actually drawing, they move,
+       and a re-roll genuinely changes one of them */
+    out.poolSize = window.__spUI.poolSize();
+    out.tiles = document.querySelectorAll(".sptile").length;
+    const strip = document.getElementById("sp-strip");
+    out.stripScrollable = strip ? strip.scrollWidth > strip.clientWidth : false;
+    const tileLit = () => {
+      let lit = 0, hash = 0;
+      [].slice.call(document.querySelectorAll(".sptile canvas")).slice(0,4)
+        .forEach(cv => {
+          const d = cv.getContext("2d").getImageData(0,0,cv.width,cv.height).data;
+          for (let i=0;i<d.length;i+=4*53){ const v=d[i]+d[i+1]+d[i+2];
+            hash=(hash*31+v)|0; if(v>170) lit++; }
+        });
+      return {lit, hash};
+    };
+    out.beforeSpecs = window.__spUI.stripSpecs();
+    return {out, tileLit:true};
   });
+  /* measured outside evaluate so real animation frames can elapse */
+  const first = await pg.evaluate(() => {
+    let lit=0,hash=0;
+    [].slice.call(document.querySelectorAll(".sptile canvas")).slice(0,4)
+      .forEach(cv=>{ const d=cv.getContext("2d").getImageData(0,0,cv.width,cv.height).data;
+        for(let i=0;i<d.length;i+=4*53){const v=d[i]+d[i+1]+d[i+2];
+          hash=(hash*31+v)|0; if(v>170) lit++;} });
+    return {lit,hash};
+  });
+  /* The strip only draws while it is on screen — that is the point of it.
+     A test measuring it from the top of a 720px page measures the guard, not
+     the strip, so put it in view first the way a reader would. */
+  await pg.evaluate(() => {
+    const s = document.getElementById("sp-strip");
+    if (s) s.scrollIntoView({ block: "center" });
+  });
+  await pg.waitForTimeout(1500);
+  const second = await pg.evaluate(() => {
+    let lit=0,hash=0;
+    [].slice.call(document.querySelectorAll(".sptile canvas")).slice(0,4)
+      .forEach(cv=>{ const d=cv.getContext("2d").getImageData(0,0,cv.width,cv.height).data;
+        for(let i=0;i<d.length;i+=4*53){const v=d[i]+d[i+1]+d[i+2];
+          hash=(hash*31+v)|0; if(v>170) lit++;} });
+    const strip=document.getElementById("sp-strip");
+    return {lit,hash,scroll:strip?strip.scrollLeft:0,
+            diag:window.__spUI.strip()};
+  });
+  const rolled = await pg.evaluate(() => {
+    const before = window.__spUI.stripSpecs().join("|");
+    for (let i=0;i<6;i++) window.__spUI.rollStrip();
+    return {before, after: window.__spUI.stripSpecs().join("|")};
+  });
+  const r2 = r.out || r;
+  r2.tileLitFirst = first.lit; r2.tileMoved = first.hash !== second.hash;
+  r2.stripScrolled = second.scroll > 0;
+  r2.rollChanged = rolled.before !== rolled.after;
+  r2.diag = second.diag;
+  r = r2;
   const html = await pg.content();
   r.navHasLink = html.indexOf('studio-pro.html') >= 0;
   r.errs = errs.slice(0,5);
@@ -151,6 +206,13 @@ function show(tag, r) {
   console.log(`    awkward 5-node mixture → composer "${r.mixComposer}", ` +
               `${r.mixMissing} reported as unusable, ${r.mixOptions} views offered, lit ${r.mixLit}`);
   console.log(`    "what is not here" list: ${r.absent} entries`);
+  console.log(`    strip: ${r.tiles} tiles from a pool of ${r.poolSize}, ` +
+              `lit ${r.tileLitFirst}, animating ${r.tileMoved}, ` +
+              `scrolling ${r.stripScrolled}, re-roll changes it ${r.rollChanged}`);
+  if (r.diag) console.log(`      loop running ${r.diag.raf}, hidden ${r.diag.hidden}, ` +
+    `paused ${r.diag.paused}, broken [${r.diag.broken}], last error: ${r.diag.lastError}\n` +
+    `      ticks ${r.diag.ticks}, renders ${r.diag.renders}, ` +
+    `skipped offscreen ${r.diag.offscreen}, rect ${r.diag.rect}`);
   console.log(`    storyboard: ${r.shotCount} shots, ${r.shotRows} rows, total ${r.total}s, ` +
               `indices at 10/45/85% = [${r.storyIdx}], ${r.storyDistinct}/3 distinct pictures, ` +
               `dip darkens: ${r.dipWorks} (${r.dipAt && r.dipAt.join(" vs ")})`);
@@ -175,7 +237,15 @@ const checks=[
   ["the storyboard takes shots and lists them", A.shotCount===3 && A.shotRows===3],
   ["the storyboard advances through its shots",
    A.storyIdx && A.storyIdx[0]===0 && A.storyIdx[2]===2 && A.storyDistinct===3],
-  ["the cut between shots dips to black", A.dipWorks===true]
+  ["the cut between shots dips to black", A.dipWorks===true],
+  ["the strip builds tiles from an available pool", A.tiles>=12 && A.poolSize>=12],
+  ["the strip's tiles are actually drawing", A.tileLitFirst>200],
+  ["the strip's tiles animate", A.tileMoved===true],
+  ["the strip scrolls itself", A.stripScrolled===true],
+  ["a re-roll changes what is on offer", A.rollChanged===true],
+  ["with no chart the pool still has something", B.poolSize>=8 && B.tiles>=12],
+  ["with no chart the strip still draws and moves",
+   B.tileLitFirst>200 && B.tileMoved===true]
 ];
 console.log("");
 let bad=0;

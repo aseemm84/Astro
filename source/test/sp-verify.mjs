@@ -61,7 +61,7 @@ const R = await pg.evaluate(() => {
   };
   const KINDS={lon:"lon",lonset:"lonset",scalar:"scalar",sset:"sset",lanes:"lanes",
                edges:"edges",span:"span",spanset:"spanset",series:"series",grid:"grid",
-               houses:"houses",houseset:"houseset"};
+               houses:"houses",houseset:"houseset",almanac:"almanac"};
   const rows=[], byDom={};
   let nullWith=0, nullWithout=0, roleMismatch=[], shapeBad=[];
   for (const n of window.SPNodes.all()) {

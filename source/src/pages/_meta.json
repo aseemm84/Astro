@@ -140,7 +140,7 @@
     "desc": "Every quantity the engines compute, published as a shape, and a set of composers that draw any combination of them. Pick one node or eight; the stage finds a way to draw them, and says what it could not use.",
     "h1": "Studio Pro",
     "sub": "Every calculation as a clickable node. Combine any of them; the stage composes the animation.",
-    "layout": "wide",
+    "layout": "onecol wide",
     "has_aside": false
   },
   "404": {

@@ -979,6 +979,89 @@
   });
 
   /* =======================================================================
+     THE ALMANAC LEAF — the whole day packaged for the ornate card.
+
+     One node rather than nine, because the card is a composition: it wants
+     the five limbs AND the month AND the saṃvat AND the sunrise together or
+     not at all, and a reader who had to select nine chips to get one card
+     would reasonably give up.
+     ======================================================================= */
+  var MONTH_EN = ["January", "February", "March", "April", "May", "June",
+                  "July", "August", "September", "October", "November", "December"];
+  function hm(ms, tz) {
+    if (ms == null) return null;
+    var d = new Date(ms + (tz || 0) * 3600000);
+    return ("0" + d.getUTCHours()).slice(-2) + ":" + ("0" + d.getUTCMinutes()).slice(-2);
+  }
+  add("day.almanac", "panchanga", "The almanac leaf",
+      "the whole day as one ornate card — the five limbs, the month, the " +
+      "saṃvat, the sunrise and the Moon", ["almanac"], function (C) {
+    var D = C.day;
+    if (!D || !D.at) return null;
+    var tz = C.place.tz || 0;
+    /* the four end times need the bisected day; ask for it once */
+    var E = D;
+    if (D.at.tithi.ends == null) {
+      try { E = window.NP.day(C.when, C.place, { ends: true }) || D; } catch (e) {}
+    }
+    var g = D.gregorian || {};
+    var mr = null, msd = null;
+    try {
+      mr = window.__kRiseSet("Moon", C.place.lat, C.place.lon, D.sunrise - 6 * 3600000, 2, +1);
+      msd = window.__kRiseSet("Moon", C.place.lat, C.place.lon, D.sunrise - 6 * 3600000, 2, -1);
+    } catch (e) {}
+    var pk = E.at.tithi.paksha || "";
+    var sv = D.samvat || {};
+    function ends(t) { return t == null ? null : "ends " + hm(t, tz); }
+    return {
+      kind: "almanac",
+      label: "almanac leaf",
+      elongation: D.elongation,
+      dateLine: (g.d || "") + " " + (MONTH_EN[(g.m || 1) - 1] || "") + " " + (g.y || ""),
+      subLine: [D.vara, (D.masa && D.masa.amantaIAST) + " " + pk,
+                (sv.vikrama ? sv.vikrama + " Vikrama" : null),
+                C.place.name].filter(Boolean).join("  \u00b7  ")
+               .replace(/ {2}\u00b7 {2}([^\u00b7]*)$/, "  |  $1"),
+      rows: [
+        { cols: [
+          { icon: "lotus", label: "TITHI",
+            value: pk + " " + E.at.tithi.name,
+            detail: [ends(E.at.tithi.ends), E.at.tithi.n + " of 15"]
+                      .filter(Boolean).join("  \u00b7  ") },
+          { icon: "star", label: "NAK\u1e62ATRA", value: E.at.nak.name,
+            detail: ["p\u0101da " + E.at.nak.pada, ends(E.at.nak.ends)]
+                      .filter(Boolean).join("  \u00b7  ") } ] },
+        { cols: [
+          { icon: "om", label: "YOGA", value: E.at.yoga.name,
+            detail: ends(E.at.yoga.ends) },
+          { icon: "orbit", label: "KARA\u1e46A", value: E.at.karana.name,
+            detail: ends(E.at.karana.ends) } ] },
+        { cols: [
+          { icon: "saturn", label: "M\u0100SA",
+            value: (D.masa && D.masa.amantaIAST) || "",
+            detail: "p\u016br\u1e47im\u0101nta " +
+                    ((D.masa && D.masa.purnimantaIAST) || "") +
+                    "  \u00b7  am\u0101nta " + ((D.masa && D.masa.amantaIAST) || "") },
+          { icon: "planet", label: "\u1e5aTU & AYANA",
+            value: (D.masa && D.masa.ritu) || "",
+            detail: (D.masa && D.masa.ayana) || "" } ] },
+        { cols: [
+          { icon: "seal", label: "SA\u1e42VAT",
+            value: (sv.vikrama ? sv.vikrama + " Vikrama" : ""),
+            detail: sv.note ? sv.note.slice(0, 62) : null,
+            detail2: sv.note && sv.note.length > 62 ? sv.note.slice(62) : null } ] },
+        { cols: [
+          { icon: "sunrise", label: "SUNRISE", value: hm(D.sunrise, tz) || "",
+            detail: "sunset " + (hm(D.sunset, tz) || "") + "  \u00b7  " +
+                    (D.riseConvLabel || "upper limb") },
+          { icon: "moon", label: "MOON",
+            value: mr != null ? "rise " + hm(mr, tz) : "no rise today",
+            detail: msd != null ? "set " + hm(msd, tz) : null } ] }
+      ]
+    };
+  });
+
+  /* =======================================================================
      TRANSIT — the live sky, and the live sky against the natal one
      ======================================================================= */
   add("tr.all", "transit", "Transiting grahas", "the sky at this instant",

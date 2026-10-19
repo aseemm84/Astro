@@ -979,6 +979,89 @@
   });
 
   /* =======================================================================
+     THE ALMANAC LEAF — the whole day packaged for the ornate card.
+
+     One node rather than nine, because the card is a composition: it wants
+     the five limbs AND the month AND the saṃvat AND the sunrise together or
+     not at all, and a reader who had to select nine chips to get one card
+     would reasonably give up.
+     ======================================================================= */
+  var MONTH_EN = ["January", "February", "March", "April", "May", "June",
+                  "July", "August", "September", "October", "November", "December"];
+  function hm(ms, tz) {
+    if (ms == null) return null;
+    var d = new Date(ms + (tz || 0) * 3600000);
+    return ("0" + d.getUTCHours()).slice(-2) + ":" + ("0" + d.getUTCMinutes()).slice(-2);
+  }
+  add("day.almanac", "panchanga", "The almanac leaf",
+      "the whole day as one ornate card — the five limbs, the month, the " +
+      "saṃvat, the sunrise and the Moon", ["almanac"], function (C) {
+    var D = C.day;
+    if (!D || !D.at) return null;
+    var tz = C.place.tz || 0;
+    /* the four end times need the bisected day; ask for it once */
+    var E = D;
+    if (D.at.tithi.ends == null) {
+      try { E = window.NP.day(C.when, C.place, { ends: true }) || D; } catch (e) {}
+    }
+    var g = D.gregorian || {};
+    var mr = null, msd = null;
+    try {
+      mr = window.__kRiseSet("Moon", C.place.lat, C.place.lon, D.sunrise - 6 * 3600000, 2, +1);
+      msd = window.__kRiseSet("Moon", C.place.lat, C.place.lon, D.sunrise - 6 * 3600000, 2, -1);
+    } catch (e) {}
+    var pk = E.at.tithi.paksha || "";
+    var sv = D.samvat || {};
+    function ends(t) { return t == null ? null : "ends " + hm(t, tz); }
+    return {
+      kind: "almanac",
+      label: "almanac leaf",
+      elongation: D.elongation,
+      dateLine: (g.d || "") + " " + (MONTH_EN[(g.m || 1) - 1] || "") + " " + (g.y || ""),
+      subLine: [D.vara, (D.masa && D.masa.amantaIAST) + " " + pk,
+                (sv.vikrama ? sv.vikrama + " Vikrama" : null),
+                C.place.name].filter(Boolean).join("  \u00b7  ")
+               .replace(/ {2}\u00b7 {2}([^\u00b7]*)$/, "  |  $1"),
+      rows: [
+        { cols: [
+          { icon: "lotus", label: "TITHI",
+            value: pk + " " + E.at.tithi.name,
+            detail: [ends(E.at.tithi.ends), E.at.tithi.n + " of 15"]
+                      .filter(Boolean).join("  \u00b7  ") },
+          { icon: "star", label: "NAK\u1e62ATRA", value: E.at.nak.name,
+            detail: ["p\u0101da " + E.at.nak.pada, ends(E.at.nak.ends)]
+                      .filter(Boolean).join("  \u00b7  ") } ] },
+        { cols: [
+          { icon: "om", label: "YOGA", value: E.at.yoga.name,
+            detail: ends(E.at.yoga.ends) },
+          { icon: "orbit", label: "KARA\u1e46A", value: E.at.karana.name,
+            detail: ends(E.at.karana.ends) } ] },
+        { cols: [
+          { icon: "saturn", label: "M\u0100SA",
+            value: (D.masa && D.masa.amantaIAST) || "",
+            detail: "p\u016br\u1e47im\u0101nta " +
+                    ((D.masa && D.masa.purnimantaIAST) || "") +
+                    "  \u00b7  am\u0101nta " + ((D.masa && D.masa.amantaIAST) || "") },
+          { icon: "planet", label: "\u1e5aTU & AYANA",
+            value: (D.masa && D.masa.ritu) || "",
+            detail: (D.masa && D.masa.ayana) || "" } ] },
+        { cols: [
+          { icon: "seal", label: "SA\u1e42VAT",
+            value: (sv.vikrama ? sv.vikrama + " Vikrama" : ""),
+            detail: sv.note ? sv.note.slice(0, 62) : null,
+            detail2: sv.note && sv.note.length > 62 ? sv.note.slice(62) : null } ] },
+        { cols: [
+          { icon: "sunrise", label: "SUNRISE", value: hm(D.sunrise, tz) || "",
+            detail: "sunset " + (hm(D.sunset, tz) || "") + "  \u00b7  " +
+                    (D.riseConvLabel || "upper limb") },
+          { icon: "moon", label: "MOON",
+            value: mr != null ? "rise " + hm(mr, tz) : "no rise today",
+            detail: msd != null ? "set " + hm(msd, tz) : null } ] }
+      ]
+    };
+  });
+
+  /* =======================================================================
      TRANSIT — the live sky, and the live sky against the natal one
      ======================================================================= */
   add("tr.all", "transit", "Transiting grahas", "the sky at this instant",
@@ -1077,6 +1160,551 @@
   };
 })();
 
+/* ===== The almanac card — an ornate pañcāṅga leaf =========================
+
+   Everything else this studio draws is a diagram: a ring, a bar, a spiral.
+   This one is a PAGE — the printed almanac leaf, with a foliated arch over
+   it, scroll-work in the corners, a sun medallion on the crown and the day's
+   five limbs set in two columns. It is the only thing here whose job is to be
+   beautiful first and legible second, because it is the card somebody keeps.
+
+   DRAWN, NOT PLACED. There is no image file behind any of this. The arch is a
+   half-ellipse with cusped foils computed along it; the corner flourishes are
+   logarithmic spirals with leaves hung off them; the rosettes, the dividers
+   and the nine row icons are all paths. That matters for a reason beyond
+   tidiness: the card has to compose itself for any date, any place and any
+   shape of frame, and a decorated PNG cannot stretch from 4:5 to 9:16 without
+   tearing.
+
+   THE ANIMATION, and what each part of it is for:
+
+     the sun on the crown breathes and its corona turns, which gives the card
+       a heartbeat without moving anything a reader is trying to read;
+
+     a band of light sweeps down the leaf once per cycle and lifts each row
+       into gold as it crosses it. This is the only part that is really doing
+       work: it walks the eye down the five limbs in order, which is the order
+       a pañcāṅga is read in, and it means a ten-second reel teaches the
+       sequence rather than showing a static poster for ten seconds;
+
+     sparks catch and fade on the gold work, seeded so they do not shimmer at
+       random between frames;
+
+     and the whole leaf drifts a fraction of a percent, because a perfectly
+       still frame reads as a photograph of a card rather than a card. */
+
+(function () {
+  "use strict";
+
+  var SERIF = '"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif';
+  var SANS = 'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif';
+  var DEVA = '"Noto Sans Devanagari","Nirmala UI","Mangal",system-ui,sans-serif';
+  var R2 = Math.PI / 180;
+
+  /* The leaf has its own palette. The studio's four are for diagrams on a
+     dark field; this is a printed page, and the two things it needs — aged
+     paper and leaf gold — are not in those. A light studio palette flips the
+     leaf to a true paper version rather than forcing navy onto parchment. */
+  function inks(P) {
+    var light = (P.bg.charCodeAt(1) > 55);   /* a pale background */
+    return light ? {
+      paper: "#ece0c4", edge: "#c9b98e", panel: "#f7f1e2", panel2: "#efe6d2",
+      rule: "#a8842f", gold: "#8a6a1e", goldHi: "#a86f0c", ink: "#4a4232",
+      dim: "#857a5e", star: "#8a7d5c", glow: "#b08a2c", dark: false
+    } : {
+      paper: "#e9ddbf", edge: "#cbb98e", panel: "#0d1430", panel2: "#161f45",
+      /* ink and goldHi were #f6f0dd and #fff0c2 — a warm white and a slightly
+         warmer white. The sweep lifted each row from one to the other and
+         nothing visibly happened. A row at rest is now quiet parchment and a
+         row in the light is unmistakably gold. */
+      rule: "#c9a24b", gold: "#dcb871", goldHi: "#ffd27a", ink: "#ded5bd",
+      dim: "#9d9276", star: "#ffe9b0", glow: "#ffcf72", dark: true
+    };
+  }
+  function rr(c, x, y, w, h, r) {
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.arcTo(x + w, y, x + w, y + h, r);
+    c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r);
+    c.arcTo(x, y, x + w, y, r);
+    c.closePath();
+  }
+
+  /* A foliated arch: a half-ellipse with n cusps riding on it. Sampled rather
+     than built from arcs, because the cusps have to sit ON the ellipse and
+     the join between an arc and its neighbour is where a hand-built arch goes
+     visibly wrong. */
+  function archPath(c, cx, baseY, halfW, hgt, foils, bite) {
+    var N = 420;
+    c.beginPath();
+    for (var i = 0; i <= N; i++) {
+      var t = i / N;                       /* 0 = left spring, 1 = right */
+      var a = Math.PI * (1 - t);           /* π → 0 across the top */
+      var scallop = Math.abs(Math.sin(foils * Math.PI * t));
+      var rad = 1 - bite * scallop;
+      var x = cx + Math.cos(a) * halfW * rad;
+      var y = baseY - Math.sin(a) * hgt * rad;
+      if (i === 0) c.moveTo(x, y); else c.lineTo(x, y);
+    }
+  }
+
+  /* A corner scroll: a spiral with leaves. Four of these, mirrored, is what
+     reads as "illuminated" without a single imported glyph. */
+  function flourish(c, x, y, s, flipX, flipY, I, alpha) {
+    c.save();
+    c.translate(x, y);
+    c.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+    c.globalAlpha = alpha;
+    c.strokeStyle = I.rule;
+    c.lineWidth = Math.max(1, s * 0.022);
+    c.lineCap = "round";
+    /* The corner itself: two strokes running along the panel edges that turn
+       inward and meet. Without them the scroll floated in the corner like a
+       sticker; with them it is a corner piece. */
+    c.beginPath();
+    c.moveTo(s * 1.55, 0);
+    c.lineTo(s * 0.34, 0);
+    c.bezierCurveTo(s * 0.12, 0, 0, s * 0.12, 0, s * 0.34);
+    c.lineTo(0, s * 1.55);
+    c.stroke();
+    /* the vine inside it */
+    c.beginPath();
+    c.moveTo(s * 1.20, s * 0.14);
+    c.bezierCurveTo(s * 0.62, s * 0.16, s * 0.30, s * 0.34, s * 0.26, s * 0.76);
+    c.stroke();
+    c.beginPath();
+    c.moveTo(s * 0.14, s * 1.20);
+    c.bezierCurveTo(s * 0.16, s * 0.62, s * 0.34, s * 0.30, s * 0.76, s * 0.26);
+    c.stroke();
+    /* the scroll at the elbow */
+    c.beginPath();
+    for (var i = 0; i <= 90; i++) {
+      var t = i / 90, th = t * Math.PI * 2.6;
+      var r = s * 0.26 * Math.exp(-0.40 * th);
+      var sx = s * 0.52 + Math.cos(th + 2.3) * r;
+      var sy = s * 0.52 + Math.sin(th + 2.3) * r;
+      if (i === 0) c.moveTo(sx, sy); else c.lineTo(sx, sy);
+    }
+    c.stroke();
+    /* two small leaves on the vine, not three floating ones */
+    [[0.74, 0.22, 0.5], [0.22, 0.74, 1.07]].forEach(function (L) {
+      c.beginPath();
+      c.ellipse(s * L[0], s * L[1], s * 0.105, s * 0.042, L[2], 0, Math.PI * 2);
+      c.stroke();
+    });
+    c.restore();
+  }
+
+  function rosette(c, cx, cy, r, n, I, alpha) {
+    c.save();
+    c.globalAlpha = alpha;
+    c.strokeStyle = I.rule;
+    c.lineWidth = Math.max(1, r * 0.09);
+    for (var i = 0; i < n; i++) {
+      var a = (i / n) * Math.PI * 2;
+      c.beginPath();
+      c.ellipse(cx + Math.cos(a) * r * 0.46, cy + Math.sin(a) * r * 0.46,
+                r * 0.46, r * 0.20, a, 0, Math.PI * 2);
+      c.stroke();
+    }
+    c.beginPath(); c.arc(cx, cy, r * 0.17, 0, Math.PI * 2); c.stroke();
+    c.restore();
+  }
+
+  /* the sun on the crown: a disc, a corona that turns, and a pulse */
+  function sunMedallion(c, cx, cy, r, t, I) {
+    c.save();
+    /* the rim */
+    c.fillStyle = I.dark ? "#121a3c" : "#e8dcbd";
+    c.beginPath(); c.arc(cx, cy, r * 1.30, 0, Math.PI * 2); c.fill();
+    c.strokeStyle = I.rule; c.lineWidth = Math.max(1.5, r * 0.055);
+    c.beginPath(); c.arc(cx, cy, r * 1.30, 0, Math.PI * 2); c.stroke();
+    /* the corona, turning */
+    var puls = 0.5 + 0.5 * Math.sin(t * Math.PI * 2);
+    c.save();
+    c.translate(cx, cy);
+    c.rotate(t * Math.PI * 0.6);
+    c.globalCompositeOperation = "lighter";
+    for (var i = 0; i < 24; i++) {
+      var a = i / 24 * Math.PI * 2;
+      var len = r * (1.02 + 0.22 * (i % 2 ? 1 : 0.55) * (0.6 + 0.4 * puls));
+      c.strokeStyle = I.glow;
+      c.globalAlpha = 0.30 + 0.28 * puls;
+      c.lineWidth = Math.max(1, r * 0.055);
+      c.beginPath();
+      c.moveTo(Math.cos(a) * r * 0.86, Math.sin(a) * r * 0.86);
+      c.lineTo(Math.cos(a) * len, Math.sin(a) * len);
+      c.stroke();
+    }
+    c.restore();
+    /* the disc */
+    var g = c.createRadialGradient(cx - r * 0.2, cy - r * 0.2, r * 0.1, cx, cy, r);
+    g.addColorStop(0, "#fff3cf");
+    g.addColorStop(0.45, "#f2a73a");
+    g.addColorStop(1, "#b5451a");
+    c.fillStyle = g;
+    c.beginPath(); c.arc(cx, cy, r * (0.82 + 0.03 * puls), 0, Math.PI * 2); c.fill();
+    c.restore();
+  }
+
+  /* the Moon at the day's real elongation */
+  function moonDisc(c, cx, cy, r, elong, I) {
+    c.save();
+    c.fillStyle = I.dark ? "#1a2347" : "#ddd2b4";
+    c.beginPath(); c.arc(cx, cy, r, 0, Math.PI * 2); c.fill();
+    var ph = (((elong % 360) + 360) % 360) / 360;
+    var k = Math.cos(ph * Math.PI * 2);        /* +1 new, −1 full */
+    c.save();
+    c.beginPath(); c.arc(cx, cy, r, 0, Math.PI * 2); c.clip();
+    c.fillStyle = "#f3e7c4";
+    c.beginPath();
+    /* lit limb: a half disc plus an ellipse whose width is the terminator */
+    var waxing = ph < 0.5;
+    c.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2, !waxing);
+    c.ellipse(cx, cy, r * Math.abs(k), r, 0, Math.PI / 2, -Math.PI / 2,
+              waxing === (k > 0));
+    c.fill();
+    c.restore();
+    c.strokeStyle = I.rule; c.lineWidth = Math.max(1.2, r * 0.07);
+    c.beginPath(); c.arc(cx, cy, r, 0, Math.PI * 2); c.stroke();
+    c.restore();
+  }
+
+  /* --- the nine row icons, all paths ------------------------------------- */
+  function icon(c, kind, x, y, s, col) {
+    c.save();
+    c.translate(x, y);
+    c.strokeStyle = col; c.fillStyle = col;
+    c.lineWidth = Math.max(1, s * 0.07);
+    c.lineJoin = "round"; c.lineCap = "round";
+    var i, a;
+    if (kind === "lotus") {
+      for (i = -2; i <= 2; i++) {
+        c.save(); c.rotate(i * 0.42);
+        c.beginPath();
+        c.ellipse(0, -s * 0.34, s * 0.16, s * 0.40, 0, 0, Math.PI * 2);
+        c.stroke(); c.restore();
+      }
+      c.beginPath(); c.moveTo(-s * 0.55, s * 0.12);
+      c.quadraticCurveTo(0, s * 0.42, s * 0.55, s * 0.12); c.stroke();
+    } else if (kind === "star") {
+      c.beginPath();
+      for (i = 0; i < 16; i++) {
+        a = i / 16 * Math.PI * 2;
+        var r = (i % 2 ? s * 0.22 : s * 0.62);
+        var px = Math.cos(a - Math.PI / 2) * r, py = Math.sin(a - Math.PI / 2) * r;
+        if (i === 0) c.moveTo(px, py); else c.lineTo(px, py);
+      }
+      c.closePath(); c.stroke();
+    } else if (kind === "om") {
+      c.font = "600 " + Math.round(s * 1.18) + "px " + DEVA;
+      c.textAlign = "center"; c.textBaseline = "middle";
+      c.fillText("ॐ", 0, 0);
+    } else if (kind === "orbit") {
+      c.beginPath(); c.arc(0, 0, s * 0.30, 0, Math.PI * 2); c.stroke();
+      c.beginPath(); c.ellipse(0, 0, s * 0.62, s * 0.30, -0.4, 0, Math.PI * 2); c.stroke();
+      c.beginPath(); c.arc(s * 0.50, -s * 0.20, s * 0.09, 0, Math.PI * 2); c.fill();
+    } else if (kind === "saturn") {
+      c.beginPath(); c.arc(0, 0, s * 0.34, 0, Math.PI * 2); c.stroke();
+      c.beginPath(); c.ellipse(0, 0, s * 0.64, s * 0.20, -0.42, 0, Math.PI * 2); c.stroke();
+    } else if (kind === "planet") {
+      c.beginPath(); c.arc(0, 0, s * 0.45, 0, Math.PI * 2); c.stroke();
+      c.beginPath(); c.ellipse(0, 0, s * 0.45, s * 0.17, 0, 0, Math.PI * 2); c.stroke();
+      c.beginPath(); c.ellipse(0, 0, s * 0.17, s * 0.45, 0, 0, Math.PI * 2); c.stroke();
+    } else if (kind === "seal") {
+      c.save(); c.rotate(Math.PI / 4);
+      c.strokeRect(-s * 0.42, -s * 0.42, s * 0.84, s * 0.84); c.restore();
+      c.strokeRect(-s * 0.42, -s * 0.42, s * 0.84, s * 0.84);
+      for (i = 0; i < 8; i++) {
+        a = i / 8 * Math.PI * 2;
+        c.beginPath();
+        c.ellipse(Math.cos(a) * s * 0.17, Math.sin(a) * s * 0.17,
+                  s * 0.17, s * 0.08, a, 0, Math.PI * 2);
+        c.stroke();
+      }
+    } else if (kind === "sunrise") {
+      c.beginPath(); c.arc(0, s * 0.10, s * 0.32, Math.PI, 0); c.stroke();
+      c.beginPath(); c.moveTo(-s * 0.62, s * 0.12); c.lineTo(s * 0.62, s * 0.12); c.stroke();
+      for (i = -2; i <= 2; i++) {
+        a = -Math.PI / 2 + i * 0.55;
+        c.beginPath();
+        c.moveTo(Math.cos(a) * s * 0.44, s * 0.10 + Math.sin(a) * s * 0.44);
+        c.lineTo(Math.cos(a) * s * 0.62, s * 0.10 + Math.sin(a) * s * 0.62);
+        c.stroke();
+      }
+    } else if (kind === "moon") {
+      c.beginPath(); c.arc(0, 0, s * 0.46, 0, Math.PI * 2); c.stroke();
+      c.beginPath();
+      c.arc(0, 0, s * 0.46, Math.PI / 2, -Math.PI / 2);
+      c.ellipse(0, 0, s * 0.18, s * 0.46, 0, -Math.PI / 2, Math.PI / 2, true);
+      c.fill();
+    }
+    c.restore();
+  }
+
+  /* deterministic sparks, so they do not jitter between frames */
+  function sparks(c, W, H, t, I, n) {
+    var seed = 991;
+    function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+    c.save();
+    c.globalCompositeOperation = "lighter";
+    for (var i = 0; i < n; i++) {
+      var x = rnd() * W, y = rnd() * H, ph = rnd(), sz = 0.4 + rnd() * 0.8;
+      var k = Math.sin((t + ph) * Math.PI * 2);
+      if (k <= 0) continue;
+      var a = k * k * 0.85, s = sz * W * 0.006 * (0.6 + 0.6 * k);
+      c.globalAlpha = a; c.strokeStyle = I.star;
+      c.lineWidth = Math.max(0.8, W * 0.0013);
+      c.beginPath();
+      c.moveTo(x - s, y); c.lineTo(x + s, y);
+      c.moveTo(x, y - s); c.lineTo(x, y + s);
+      c.stroke();
+    }
+    c.restore();
+  }
+
+  /* ---- the card ---------------------------------------------------------- */
+  /* A is the packaged day; see the almanac node in sp-nodes.js. */
+  function draw(c, W, H, A, p, P, opts) {
+    opts = opts || {};
+    var I = inks(P);
+    var U = W;
+
+    /* the drift: a fraction of a percent, which is the difference between a
+       card and a photograph of a card */
+    var dz = 1 + 0.010 * (0.5 - 0.5 * Math.cos(p * Math.PI * 2));
+    var dy = H * 0.004 * Math.sin(p * Math.PI * 2);
+    c.save();
+    c.translate(W / 2, H / 2); c.scale(dz, dz); c.translate(-W / 2, -H / 2 + dy);
+
+    /* 1 — the paper */
+    c.fillStyle = I.paper; c.fillRect(-W, -H, W * 3, H * 3);
+    var vg = c.createRadialGradient(W / 2, H / 2, W * 0.1, W / 2, H / 2, W * 0.95);
+    vg.addColorStop(0, "rgba(0,0,0,0)");
+    vg.addColorStop(1, I.dark ? "rgba(40,28,8,0.30)" : "rgba(90,70,30,0.18)");
+    c.fillStyle = vg; c.fillRect(0, 0, W, H);
+
+    /* 2 — the panel */
+    var m = W * 0.052, pr = W * 0.030;
+    var px = m, py = m * (H / W) * 0.62, pw = W - m * 2, ph = H - py * 2;
+    c.save();
+    rr(c, px, py, pw, ph, pr);
+    var pg = c.createLinearGradient(0, py, 0, py + ph);
+    pg.addColorStop(0, I.panel); pg.addColorStop(1, I.panel2);
+    c.fillStyle = pg; c.fill();
+    c.restore();
+
+    /* 3 — the faint sky inside it */
+    c.save();
+    rr(c, px, py, pw, ph, pr); c.clip();
+    var seed = 7717;
+    function rnd() { seed = (seed * 1103515245 + 12345) & 0x7fffffff; return seed / 0x7fffffff; }
+    c.globalAlpha = I.dark ? 0.55 : 0.25;
+    for (var i = 0; i < 170; i++) {
+      c.fillStyle = I.star;
+      c.globalAlpha = (I.dark ? 0.18 : 0.10) + rnd() * 0.35;
+      var sx = px + rnd() * pw, sy = py + rnd() * ph, sr = rnd() * W * 0.0022 + W * 0.0006;
+      c.beginPath(); c.arc(sx, sy, sr, 0, Math.PI * 2); c.fill();
+    }
+    /* constellation arcs — the printed star-chart under the text */
+    c.globalAlpha = I.dark ? 0.085 : 0.06;
+    c.strokeStyle = I.rule; c.lineWidth = Math.max(1, W * 0.0012);
+    for (var k = 0; k < 7; k++) {
+      var ccx = px + rnd() * pw, ccy = py + rnd() * ph, crr = pw * (0.12 + rnd() * 0.38);
+      c.beginPath(); c.arc(ccx, ccy, crr, rnd() * 6, rnd() * 6 + 2); c.stroke();
+    }
+    c.restore();
+
+    /* 4 — the gold double rule */
+    c.save();
+    c.strokeStyle = I.rule;
+    c.globalAlpha = 0.95; c.lineWidth = Math.max(2, W * 0.0040);
+    rr(c, px, py, pw, ph, pr); c.stroke();
+    c.globalAlpha = 0.55; c.lineWidth = Math.max(1, W * 0.0018);
+    rr(c, px + W * 0.012, py + W * 0.012, pw - W * 0.024, ph - W * 0.024, pr * 0.8);
+    c.stroke();
+    c.restore();
+
+    /* 5 — the arch and the corner scrolls.
+
+       The first cut drew the arch at a tenth of the panel height in a thin
+       half-transparent line and it simply could not be seen: the card read as
+       a plain box with text in it. An arch is the whole reason the head looks
+       like a leaf from an almanac rather than a slide, so it is drawn heavy,
+       it springs from the panel's own sides, and the head sits INSIDE it. */
+    /* Taller and narrower than the first cut, which spanned the whole panel
+       at a sixth of its height and read as a shallow dish. And the crown is
+       placed from the PANEL TOP rather than from the apex, because an apex
+       computed from a height is free to walk off the top of the frame — which
+       is exactly what it did, clipping the sun's corona at every ratio. */
+    /* The arch has to ENCLOSE the head, not cross it. Deriving the base from
+       the apex put the springing line below the date, so the curve ran
+       straight through "19 October 2026". Both ends are fixed instead: the
+       apex sits where the crown sits, the springing line sits just above the
+       divider, and the height is whatever that leaves. The crown straddles
+       the panel's top edge, which is where it belongs on a printed leaf. */
+    var archBase = py + ph * 0.212;
+    var sunCy = py + ph * 0.045, sunR = W * 0.048;
+    var archTop = archBase - sunCy;
+    c.save();
+    /* a wash under the arch, so the head reads as a recessed niche */
+    archPath(c, W / 2, archBase, pw * 0.430, archTop, 9, 0.105);
+    c.lineTo(px + pw * 0.030, py + W * 0.012);
+    c.lineTo(px + pw * 0.970, py + W * 0.012);
+    c.closePath();
+    c.fillStyle = I.dark ? "rgba(255,221,150,0.045)" : "rgba(120,92,28,0.055)";
+    c.fill();
+    c.strokeStyle = I.rule; c.globalAlpha = 1;
+    c.lineWidth = Math.max(2.4, W * 0.0046);
+    archPath(c, W / 2, archBase, pw * 0.430, archTop, 9, 0.105);
+    c.stroke();
+    c.globalAlpha = 0.62; c.lineWidth = Math.max(1.2, W * 0.0022);
+    archPath(c, W / 2, archBase - W * 0.017, pw * 0.396, archTop * 0.900, 9, 0.105);
+    c.stroke();
+    c.restore();
+    var fs = pw * 0.105, fo = W * 0.030;
+    flourish(c, px + fo, py + fo, fs, false, false, I, 0.60);
+    flourish(c, px + pw - fo, py + fo, fs, true, false, I, 0.60);
+    flourish(c, px + fo, py + ph - fo, fs, false, true, I, 0.60);
+    flourish(c, px + pw - fo, py + ph - fo, fs, true, true, I, 0.60);
+
+    /* 6 — the crown, sitting on the apex rather than off the top edge */
+    sunMedallion(c, W / 2, sunCy, sunR, p, I);
+
+    /* ---- type ----------------------------------------------------------- */
+    function txt(s, x, y, size, col, align, weight, font) {
+      if (s == null || s === "") return;
+      c.fillStyle = col; c.textAlign = align || "center"; c.textBaseline = "middle";
+      c.font = (weight || 600) + " " + Math.round(size) + "px " + (font || SANS);
+      c.fillText(String(s), x, y);
+    }
+    function fit(s, size, maxW, weight, font) {
+      var f = size;
+      for (var z = 0; z < 22; z++) {
+        c.font = (weight || 600) + " " + Math.round(f) + "px " + (font || SANS);
+        if (c.measureText(String(s)).width <= maxW) break;
+        f *= 0.95;
+      }
+      return f;
+    }
+    function txtFit(s, x, y, size, col, align, weight, maxW, font) {
+      txt(s, x, y, fit(s, size, maxW, weight, font), col, align, weight, font);
+    }
+
+    txt("Nirayana — निरयन", W / 2, py + ph * 0.072,
+        U * 0.027, I.gold, "center", 500, SERIF);
+
+    /* the moon disc and the date share a line */
+    var dateY = py + ph * 0.118;
+    moonDisc(c, px + pw * 0.175, dateY, W * 0.052, A.elongation, I);
+    txtFit(A.dateLine, W / 2 + pw * 0.055, dateY, U * 0.078, I.goldHi, "center",
+           600, pw * 0.66, SERIF);
+    txtFit(A.subLine, W / 2 + pw * 0.055, dateY + ph * 0.040, U * 0.0245,
+           I.gold, "center", 500, pw * 0.70, SERIF);
+
+    /* the divider under the head */
+    function divider(y, big) {
+      c.save();
+      c.strokeStyle = I.rule; c.globalAlpha = big ? 0.85 : 0.55;
+      c.lineWidth = Math.max(1, W * (big ? 0.0022 : 0.0014));
+      var x0 = px + pw * 0.055, x1 = px + pw * 0.945, gap = pw * (big ? 0.085 : 0.030);
+      c.beginPath();
+      c.moveTo(x0, y); c.lineTo(W / 2 - gap, y);
+      c.moveTo(W / 2 + gap, y); c.lineTo(x1, y);
+      c.stroke();
+      if (big) {
+        c.beginPath();
+        c.moveTo(W / 2 - gap * 0.55, y); c.lineTo(W / 2 - gap * 0.18, y);
+        c.moveTo(W / 2 + gap * 0.18, y); c.lineTo(W / 2 + gap * 0.55, y);
+        c.stroke();
+      }
+      /* the star at the centre */
+      c.globalAlpha = 0.95; c.fillStyle = I.rule;
+      var s4 = W * (big ? 0.013 : 0.009);
+      c.beginPath();
+      c.moveTo(W / 2, y - s4); c.lineTo(W / 2 + s4 * 0.34, y);
+      c.lineTo(W / 2, y + s4); c.lineTo(W / 2 - s4 * 0.34, y);
+      c.closePath(); c.fill();
+      c.beginPath();
+      c.moveTo(W / 2 - s4, y); c.lineTo(W / 2, y - s4 * 0.34);
+      c.lineTo(W / 2 + s4, y); c.lineTo(W / 2, y + s4 * 0.34);
+      c.closePath(); c.fill();
+      c.restore();
+    }
+    divider(py + ph * 0.234, true);
+
+    /* ---- the rows -------------------------------------------------------
+       The sweep lifts a row into gold as it crosses. Its position is the
+       playhead, held at each row a moment longer than the gaps between them
+       so the eye has time — a linear sweep across five rows reads as a wipe
+       rather than as reading. */
+    var top = py + ph * 0.256, bottom = py + ph * 0.952;
+    var rows = A.rows;
+    var band = (bottom - top) / rows.length;
+    var sweepY = top + (bottom - top) * ((p * 1.18) % 1);
+
+    rows.forEach(function (row, ri) {
+      var y = top + band * ri;
+      if (ri > 0) divider(y, false);
+      var cy = y + band * 0.50;
+      /* The window was six tenths of a row and squared, which left the
+         brightest row at a third of full and nothing ever looked lit. It is a
+         whole row wide now and eased rather than squared, so exactly one row
+         is unmistakably in the light at any moment and the next is coming up. */
+      var hot = Math.max(0, 1 - Math.abs(cy - sweepY) / (band * 1.00));
+      hot = hot * hot * (3 - 2 * hot);
+      var cols = row.cols;
+      cols.forEach(function (col, ci) {
+        var full = cols.length === 1;
+        var cx = full ? px + pw * 0.14 : px + pw * (ci === 0 ? 0.135 : 0.555);
+        var wid = full ? pw * 0.80 : pw * 0.335;
+        var ix = cx - pw * 0.065;
+        icon(c, col.icon, ix, cy - band * 0.02, U * 0.030,
+             hot > 0.3 ? I.goldHi : I.rule);
+        txt(col.label, cx, cy - band * 0.235, U * 0.0235,
+            hot > 0.3 ? I.goldHi : I.dim, "left", 600, SERIF);
+        c.save();
+        if (hot > 0.3 && I.dark) {
+          c.shadowColor = "rgba(255,200,110," + (0.75 * hot).toFixed(2) + ")";
+          c.shadowBlur = U * 0.022 * hot;
+        }
+        txtFit(col.value, cx, cy - band * 0.055, U * 0.049,
+               hot > 0.3 ? I.goldHi : I.ink, "left", 600, wid, SERIF);
+        c.restore();
+        if (col.detail)
+          txtFit(col.detail, cx, cy + band * (col.detail2 ? 0.130 : 0.175),
+                 U * 0.0230, hot > 0.4 ? I.gold : I.dim, "left", 500,
+                 full ? pw * 0.80 : wid * 1.08, SERIF);
+        if (col.detail2)
+          txtFit(col.detail2, cx, cy + band * 0.265, U * 0.0230,
+                 hot > 0.4 ? I.gold : I.dim, "left", 500, pw * 0.80, SERIF);
+      });
+      /* the light itself, over the row it is on */
+      if (hot > 0.02) {
+        c.save();
+        c.globalCompositeOperation = "lighter";
+        var lg = c.createLinearGradient(px, 0, px + pw, 0);
+        lg.addColorStop(0, "rgba(255,210,120,0)");
+        lg.addColorStop(0.5, "rgba(255,221,150," + (0.60 * hot).toFixed(3) + ")");
+        lg.addColorStop(1, "rgba(255,210,120,0)");
+        c.fillStyle = lg;
+        c.fillRect(px, cy - band * 0.46, pw, band * 0.085);
+        c.restore();
+      }
+    });
+
+    /* 7 — the sparks, last so they sit on top of the gold */
+    sparks(c, W, H, p, I, 46);
+
+    if (opts.foot)
+      txt(opts.foot, W / 2, py + ph * 0.985, U * 0.020, I.dim, "center", 500, SERIF);
+    c.restore();
+  }
+
+  window.SPAlmanac = { draw: draw, inks: inks };
+})();
+
 /* ===== Studio Pro — the stage, and the composers =========================
 
    HOW A SELECTION BECOMES A PICTURE. The registry hands this file values with
@@ -1136,7 +1764,7 @@
   var R2 = Math.PI / 180;
 
   var S = {
-    pal: "midnight", ratio: "9:16", safe: true, speed: 1, p: 0,
+    pal: "midnight", ratio: "9:16", safe: true, speed: 1, p: 0, tile: false,
     ctx: null, cv: null, W: 1080, H: 1920, U: 1080,
     headline: "", sub: "", handle: "@Nirayana.Soft"
   };
@@ -1219,6 +1847,13 @@
   }
   function captionBand(title, sub) {
     var c = S.ctx, P = pal(), st = stage();
+    if (S.tile) {
+      /* one line, no rule, no handle: a thumbnail wants to say what it is
+         and nothing else */
+      txtFit(title || "", S.W / 2, st.bandY + st.bandH * 0.42,
+             S.W * 0.054, P.ink, "center", 700, S.W * 0.90);
+      return;
+    }
     c.save();
     c.strokeStyle = P.gold; c.globalAlpha = 0.6;
     c.lineWidth = Math.max(1.5, S.W * 0.0018);
@@ -1230,7 +1865,7 @@
     txt(S.handle, S.W - st.side, st.bandY + st.bandH * 0.86, S.W * 0.021, P.dim, "right", 500);
   }
   function safeGuides() {
-    if (!S.safe) return;
+    if (!S.safe || S.tile) return;
     var c = S.ctx, P = pal();
     c.save();
     c.strokeStyle = P.gold; c.globalAlpha = 0.14;
@@ -2221,6 +2856,20 @@
              P.dim, "center", 500, st.w * 0.9);
     });
 
+  /* --- the almanac leaf ------------------------------------------------- *
+     Its own composer because it is its own thing: a printed page rather than
+     a diagram, drawn edge to edge rather than inside the stage box, and so
+     it ignores the stage's margins and takes the whole frame. */
+  composer("almanac", "The almanac leaf",
+    "the day as an ornate pañcāṅga card, with the light walking down the limbs",
+    function (bag) {
+      return (count(bag, "almanac") === 1 && all(bag) === 1) ? 2 : -1;
+    },
+    function (bag, p) {
+      window.SPAlmanac.draw(S.ctx, S.W, S.H, bag.almanac[0].v, p, pal(),
+                            { foot: S.handle });
+    });
+
   /* --- 12. the catch-all: panels ---------------------------------------- *
      Always scores, so there is no selection that draws nothing. It splits the
      stage and runs the best single-group composer in each panel. */
@@ -2361,6 +3010,11 @@
       safeGuides();
       return { composer: null, missing: B.missing, options: [] };
     }
+    /* The leaf is a whole page: it paints its own paper to the frame's edge
+       and carries its own foot, so the stage's background, stars and caption
+       band would all be drawing over or under a finished card. */
+    var ownsFrame = chosen.key === "almanac";
+    if (ownsFrame) { background(); }
     try { chosen.draw(B.bag, p, st, C); }
     catch (e) {
       txt("this combination could not be drawn", st.cx, st.cy, S.U * 0.026,
@@ -2371,7 +3025,13 @@
     /* What the chosen view could not take is returned to the page, not
        swallowed: a studio that silently drops half a selection teaches its
        user nothing about why the picture looks wrong. */
-    captionBand(S.headline || chosen.label, S.sub || chosen.blurb);
+    if (!ownsFrame) captionBand(S.headline || chosen.label, S.sub || chosen.blurb);
+    else if (S.headline) {
+      /* a headline the user typed still belongs on the leaf, set in its own
+         gold rather than in the diagram band's */
+      txt(S.headline, S.W / 2, S.H * 0.045, S.U * 0.034,
+          pal().gold, "center", 700);
+    }
     safeGuides();
     return { composer: chosen.key, label: chosen.label, missing: B.missing,
              options: options(B.bag) };
@@ -2491,8 +3151,36 @@
     });
   }
 
+  /* Render a composition into SOMEBODY ELSE'S canvas at an arbitrary size.
+
+     The stage is a singleton — one canvas, one size — because the director
+     stage is one thing. The sample strip needs a dozen small pictures a
+     second from the same composers, and standing up a second stage would be
+     a second set of composers to keep in step. So the singleton is lent out:
+     its canvas, size and chrome flags are swapped, the composition is drawn,
+     and everything is put back. Every composer sizes from S.U, so a tile is
+     the same picture at a smaller scale rather than a cropped one.
+
+     The flags matter: a thumbnail has no business reserving Instagram's
+     strips or drawing guide rectangles, and its caption band would be two
+     unreadable lines, so all three stand down for the duration. */
+  function renderTo(cv, w, h, sel, C, p, force) {
+    var keep = { cv: S.cv, ctx: S.ctx, W: S.W, H: S.H, U: S.U,
+                 safe: S.safe, head: S.headline, sub: S.sub, tile: S.tile };
+    if (cv.width !== w) cv.width = w;
+    if (cv.height !== h) cv.height = h;
+    S.cv = cv; S.ctx = cv.getContext("2d");
+    S.W = w; S.H = h; S.U = w; S.safe = false; S.tile = true;
+    S.headline = ""; S.sub = "";
+    var out = null;
+    try { out = render(sel, C, p, force); } catch (e) { out = null; }
+    S.cv = keep.cv; S.ctx = keep.ctx; S.W = keep.W; S.H = keep.H; S.U = keep.U;
+    S.safe = keep.safe; S.headline = keep.head; S.sub = keep.sub; S.tile = keep.tile;
+    return out;
+  }
+
   window.SPStage = {
-    S: S, PALS: PALS, RATIOS: RATIOS, SAFE: SAFE,
+    S: S, PALS: PALS, RATIOS: RATIOS, SAFE: SAFE, renderTo: renderTo,
     attach: function (canvas) {
       S.cv = canvas; S.ctx = canvas.getContext("2d");
       this.resize();
@@ -2807,6 +3495,227 @@
     refreshViews(); refreshNotes();
   }
 
+  /* ===== the sample strip ================================================
+     A row of live compositions across the top, scrolling, each one actually
+     being drawn right now from the same composers and the same day's data as
+     the stage below — not a gallery of recorded gifs.
+
+     WHY A CURATED POOL rather than random selections. The sampler in the test
+     suite proves that ANY combination draws; it also shows that most random
+     combinations land on Layers, which at thumbnail size is three small
+     panels and reads as noise. A strip is an advertisement for what the page
+     can do, so it draws from combinations chosen to look like something at
+     120 pixels wide, and re-rolls them so the strip is never the same twice.
+
+     WHY TILES ARE DRAWN IN A ROUND ROBIN. Twenty canvases at sixty frames a
+     second is a page that heats a phone. Two tiles per frame gives each one
+     about six frames a second, which for a thumbnail is motion; the loop
+     stops entirely when the strip scrolls out of view or the tab is hidden,
+     because a strip nobody is looking at should cost nothing. */
+
+  var STRIP = {
+    tiles: [], live: 0, raf: null, cursor: 0, scroll: 0,
+    paused: false, lastRoll: 0, seen: 0
+  };
+  /* Each entry is a selection that is worth looking at small. `need` lists the
+     nodes that must resolve for it to be offered at all, so a visitor with no
+     birth chart is shown the dozen that work from the sky and the day alone
+     rather than a row of empty frames. */
+  var POOL = [
+    { sel: ["day.almanac"], label: "Today's leaf" },
+    { sel: ["sky.all"], label: "The nine" },
+    { sel: ["sky.lon.Sūrya", "sky.lon.Candra"], label: "Sun to Moon" },
+    { sel: ["sky.lon.Candra", "geo.naks"], label: "Into the nakṣatra" },
+    { sel: ["sky.lon.Candra", "geo.d60"], label: "Down to the ṣaṣṭyāṃśa" },
+    { sel: ["geo.rashis", "geo.naks", "geo.padas"], label: "Three divisions" },
+    { sel: ["pan.horas"], label: "The day's horās" },
+    { sel: ["pan.choghadiya"], label: "Choghaḍiyā" },
+    { sel: ["pan.fiveLimbs"], label: "The five limbs" },
+    { sel: ["pan.tara"], label: "Tāra Bala" },
+    { sel: ["tr.all"], label: "The sky now" },
+    { sel: ["tr.track.Maṅgala"], label: "Maṅgala over a year" },
+    { sel: ["tr.elongSeries"], label: "Elongation over time" },
+    { sel: ["sky.lon.Sūrya", "geo.rashis"], label: "Sūrya in its rāśi" },
+    { sel: ["geo.kakshya"], label: "The kakṣyā lanes" },
+    /* these need a stored chart */
+    { sel: ["chart.d1"], force: "kundliN", label: "North Indian" },
+    { sel: ["chart.d1"], force: "kundliS", label: "South Indian" },
+    { sel: ["chart.sudarshana"], label: "Sudarśana" },
+    { sel: ["varga.kundli.D9"], force: "kundliN", label: "Navāṃśa" },
+    { sel: ["varga.kundli.D10"], force: "kundliS", label: "Daśāṃśa" },
+    { sel: ["bala.total_rupa"], label: "Ṣaḍbala" },
+    { sel: ["bala.vsRequired"], label: "Against the minimum" },
+    { sel: ["av.grid"], label: "Aṣṭakavarga" },
+    { sel: ["av.sav"], label: "Sarvāṣṭakavarga" },
+    { sel: ["dasha.gears"], label: "Daśā gears" },
+    { sel: ["dasha.maha"], label: "The nine periods" },
+    { sel: ["rel.drishti"], label: "Graha dṛṣṭi" },
+    { sel: ["rel.dispositor"], label: "Dispositors" },
+    { sel: ["tr.relations"], label: "Transits to natal" },
+    { sel: ["jai.arudhas"], label: "Arūḍha padas" },
+    { sel: ["varga.vargottama"], label: "Vargottama" },
+    { sel: ["bala.avastha"], label: "Avasthās" }
+  ];
+  function poolAvailable() {
+    return POOL.filter(function (e) {
+      return e.sel.every(function (id) {
+        var n = window.SPNodes.byId(id);
+        return n && !!window.SPNodes.resolve(n, C);
+      });
+    });
+  }
+  function pickSpec(avail, avoid) {
+    for (var t = 0; t < 24; t++) {
+      var e = avail[Math.floor(Math.random() * avail.length)];
+      if (!e) return null;
+      if (avoid.indexOf(e.label) < 0) return e;
+    }
+    return avail[0] || null;
+  }
+  var TILE_W = 252, TILE_H = 448;      /* the bitmap; CSS halves it */
+
+  function buildStrip() {
+    var host = $("sp-strip"); if (!host) return;
+    var avail = poolAvailable();
+    host.innerHTML = "";
+    STRIP.tiles = [];
+    if (avail.length < 3) {
+      host.appendChild(el("p", "spmuted", "Nothing to sample yet."));
+      return;
+    }
+    STRIP.live = Math.min(10, avail.length);
+    var used = [];
+    for (var i = 0; i < STRIP.live; i++) {
+      var spec = pickSpec(avail, used);
+      used.push(spec.label);
+      STRIP.tiles.push(mkTile(host, spec, i));
+    }
+    /* A second run of the same tiles makes the scroll loop seamlessly. They
+       are not rendered twice: each copy is blitted from its original, which
+       costs one drawImage and keeps the loop exactly identical rather than
+       merely similar. */
+    for (var j = 0; j < STRIP.live; j++)
+      STRIP.tiles.push(mkTile(host, STRIP.tiles[j].spec, j, STRIP.tiles[j]));
+    STRIP.lastRoll = Date.now();
+    startStrip();
+  }
+  function mkTile(host, spec, idx, mirrorOf) {
+    var fig = el("figure", "sptile");
+    var cv = document.createElement("canvas");
+    cv.width = TILE_W; cv.height = TILE_H;
+    cv.setAttribute("role", "img");
+    cv.setAttribute("aria-label", spec.label);
+    var cap = el("figcaption", null, spec.label);
+    fig.appendChild(cv); fig.appendChild(cap);
+    fig.title = "Open this on the stage";
+    fig.tabIndex = 0;
+    function open() {
+      SEL = spec.sel.slice(); FORCE = spec.force || null; STORY = false;
+      var tb = $("sp-storytoggle"); if (tb) tb.checked = false;
+      refreshWall(); refreshTray(); draw();
+      var box = $("sp-stagebox");
+      if (box && box.scrollIntoView) box.scrollIntoView({ behavior: "smooth", block: "center" });
+      flash("Loaded “" + spec.label + "” onto the stage.");
+    }
+    fig.addEventListener("click", open);
+    fig.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
+    host.appendChild(fig);
+    return { fig: fig, cv: cv, cap: cap, spec: spec, idx: idx,
+             mirrorOf: mirrorOf || null, p: Math.random() };
+  }
+
+  function startStrip() {
+    if (STRIP.raf) return;
+    var last = 0;
+    function frame(ts) {
+      STRIP.raf = requestAnimationFrame(frame);
+      STRIP.ticks = (STRIP.ticks || 0) + 1;
+      if (document.hidden || STRIP.paused || !STRIP.tiles.length) return;
+      var host = $("sp-strip"); if (!host) return;
+      /* Only work while the strip is on screen. This is the whole reason the
+         loop is cheap, and it is also why the strip looked dead the first
+         time it was measured: on a short viewport the masthead, the nav and a
+         three-line banner had pushed it past the fold, so it was correctly
+         doing nothing. The counters stay because a render loop that decides
+         to skip needs to be able to say so. */
+      var r = host.getBoundingClientRect();
+      STRIP.rect = Math.round(r.top) + ".." + Math.round(r.bottom) +
+                   " in " + window.innerHeight;
+      if (r.bottom < -40 || r.top > window.innerHeight + 40) {
+        STRIP.offscreen = (STRIP.offscreen || 0) + 1; return;
+      }
+      if (ts - last < 28) return;            /* cap the whole loop near 35fps */
+      last = ts;
+
+      /* two originals per frame, round robin */
+      for (var k = 0; k < 2 && STRIP.live; k++) {
+        var t = STRIP.tiles[STRIP.cursor % STRIP.live];
+        STRIP.cursor++;
+        if (!t || t.broken) continue;
+        STRIP.renders = (STRIP.renders || 0) + 1;
+        t.p = (t.p + 0.013) % 1;
+        /* A swallowed exception in a render loop is the worst kind: the strip
+           simply stays dark and nothing anywhere says why. It is recorded, and
+           a tile that has thrown is dropped from the rotation rather than
+           retried sixty times a second. */
+        try {
+          window.SPStage.renderTo(t.cv, TILE_W, TILE_H, t.spec.sel, C,
+                                  t.p, t.spec.force || null);
+        } catch (e) {
+          STRIP.lastError = t.spec.label + ": " + (e && e.message || e);
+          t.broken = true;
+        }
+        var mirror = STRIP.tiles[t.idx + STRIP.live];
+        if (mirror) {
+          try {
+            var mc = mirror.cv.getContext("2d");
+            mc.clearRect(0, 0, TILE_W, TILE_H);
+            mc.drawImage(t.cv, 0, 0);
+          } catch (e) {}
+        }
+      }
+
+      /* the scroll, and its seamless wrap at the halfway point */
+      if (!STRIP.dragging) {
+        host.scrollLeft += 0.55;
+        var half = host.scrollWidth / 2;
+        if (half > 10 && host.scrollLeft >= half) host.scrollLeft -= half;
+      }
+
+      /* re-roll a tile that nobody can see, so the strip is never twice the
+         same without anything ever changing in front of a reader */
+      if (Date.now() - STRIP.lastRoll > 6500) {
+        STRIP.lastRoll = Date.now();
+        rollOne(host);
+      }
+    }
+    STRIP.raf = requestAnimationFrame(frame);
+  }
+  function rollOne(host) {
+    var avail = poolAvailable();
+    if (avail.length < 4 || !STRIP.live) return;
+    var hostR = host.getBoundingClientRect();
+    var used = STRIP.tiles.slice(0, STRIP.live).map(function (t) { return t.spec.label; });
+    /* find an original that is off screen */
+    for (var i = 0; i < STRIP.live; i++) {
+      var t = STRIP.tiles[(STRIP.seen + i) % STRIP.live];
+      var r = t.fig.getBoundingClientRect();
+      if (r.right > hostR.left - 20 && r.left < hostR.right + 20) continue;
+      var spec = pickSpec(avail, used);
+      if (!spec) return;
+      t.spec = spec;
+      t.cap.textContent = spec.label;
+      t.cv.setAttribute("aria-label", spec.label);
+      t.p = 0;
+      var m = STRIP.tiles[t.idx + STRIP.live];
+      if (m) { m.spec = spec; m.cap.textContent = spec.label;
+               m.cv.setAttribute("aria-label", spec.label); }
+      STRIP.seen = (STRIP.seen + i + 1) % STRIP.live;
+      return;
+    }
+  }
+
   /* ---- the storyboard ---------------------------------------------------- */
   function shotLabel(sh) {
     if (sh.label) return sh.label;
@@ -3008,10 +3917,9 @@
         (C.birth && C.birth.name ? " — " + C.birth.name : "") +
         ". Everything on the wall is available.";
       else {
-        mode.textContent = "No birth chart stored in this browser, so the " +
-          "chart-only nodes are greyed. Everything about the sky, the day and " +
-          "the divisions still works. Build a chart on the Kundli page to " +
-          "unlock the rest.";
+        mode.textContent = "No chart stored here — the sky, the day and the " +
+          "divisions all work; chart-only chips are greyed. Build one on the " +
+          "Kundli page to unlock them.";
         mode.className = "spnote warn";
       }
     }
@@ -3079,6 +3987,20 @@
     var span = $("sp-span");
     if (span) span.addEventListener("change", function () {
       C = buildContext(C.when); draw(); });
+    /* the strip: pause on hover so a tile can be read, and on drag so it can
+       be scrubbed by hand */
+    var strip = $("sp-strip");
+    if (strip) {
+      strip.addEventListener("mouseenter", function () { STRIP.paused = true; });
+      strip.addEventListener("mouseleave", function () { STRIP.paused = false; });
+      strip.addEventListener("pointerdown", function () { STRIP.dragging = true; });
+      window.addEventListener("pointerup", function () { STRIP.dragging = false; });
+      strip.addEventListener("touchstart", function () { STRIP.paused = true; },
+                             { passive: true });
+    }
+    var sh = $("sp-shuffle");
+    if (sh) sh.addEventListener("click", function () { buildStrip(); });
+
     $("sp-addshot") && $("sp-addshot").addEventListener("click", addShot);
     var tog = $("sp-storytoggle");
     if (tog) tog.addEventListener("change", function () {
@@ -3099,6 +4021,7 @@
 
     window.addEventListener("resize", function () { fitPreview(); });
     draw();
+    buildStrip();
   }
 
   if (document.readyState === "loading")
@@ -3116,7 +4039,19 @@
       shots: function () { return SHOTS.slice(); },
       addShot: function () { addShot(); return SHOTS.length; },
       setStory: function (on) { STORY = on; refreshShots(); draw(); return STORY; },
-      nodeCount: function () { return window.SPNodes.all().length; }
+      nodeCount: function () { return window.SPNodes.all().length; },
+      strip: function () { return { live: STRIP.live, tiles: STRIP.tiles.length,
+        raf: !!STRIP.raf, paused: STRIP.paused, hidden: document.hidden,
+        lastError: STRIP.lastError || null,
+        ticks: STRIP.ticks || 0, renders: STRIP.renders || 0,
+        offscreen: STRIP.offscreen || 0, rect: STRIP.rect || null,
+        broken: STRIP.tiles.filter(function (t) { return t.broken; })
+                  .map(function (t) { return t.spec.label; }) }; },
+      stripSpecs: function () {
+        return STRIP.tiles.slice(0, STRIP.live).map(function (t) {
+          return t.spec.label; }); },
+      rollStrip: function () { rollOne($("sp-strip")); return this.stripSpecs(); },
+      poolSize: function () { return poolAvailable().length; }
     };
   } catch (e) {}
 })();

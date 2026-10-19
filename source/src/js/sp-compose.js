@@ -57,7 +57,7 @@
   var R2 = Math.PI / 180;
 
   var S = {
-    pal: "midnight", ratio: "9:16", safe: true, speed: 1, p: 0,
+    pal: "midnight", ratio: "9:16", safe: true, speed: 1, p: 0, tile: false,
     ctx: null, cv: null, W: 1080, H: 1920, U: 1080,
     headline: "", sub: "", handle: "@Nirayana.Soft"
   };
@@ -140,6 +140,13 @@
   }
   function captionBand(title, sub) {
     var c = S.ctx, P = pal(), st = stage();
+    if (S.tile) {
+      /* one line, no rule, no handle: a thumbnail wants to say what it is
+         and nothing else */
+      txtFit(title || "", S.W / 2, st.bandY + st.bandH * 0.42,
+             S.W * 0.054, P.ink, "center", 700, S.W * 0.90);
+      return;
+    }
     c.save();
     c.strokeStyle = P.gold; c.globalAlpha = 0.6;
     c.lineWidth = Math.max(1.5, S.W * 0.0018);
@@ -151,7 +158,7 @@
     txt(S.handle, S.W - st.side, st.bandY + st.bandH * 0.86, S.W * 0.021, P.dim, "right", 500);
   }
   function safeGuides() {
-    if (!S.safe) return;
+    if (!S.safe || S.tile) return;
     var c = S.ctx, P = pal();
     c.save();
     c.strokeStyle = P.gold; c.globalAlpha = 0.14;
@@ -1142,6 +1149,20 @@
              P.dim, "center", 500, st.w * 0.9);
     });
 
+  /* --- the almanac leaf ------------------------------------------------- *
+     Its own composer because it is its own thing: a printed page rather than
+     a diagram, drawn edge to edge rather than inside the stage box, and so
+     it ignores the stage's margins and takes the whole frame. */
+  composer("almanac", "The almanac leaf",
+    "the day as an ornate pañcāṅga card, with the light walking down the limbs",
+    function (bag) {
+      return (count(bag, "almanac") === 1 && all(bag) === 1) ? 2 : -1;
+    },
+    function (bag, p) {
+      window.SPAlmanac.draw(S.ctx, S.W, S.H, bag.almanac[0].v, p, pal(),
+                            { foot: S.handle });
+    });
+
   /* --- 12. the catch-all: panels ---------------------------------------- *
      Always scores, so there is no selection that draws nothing. It splits the
      stage and runs the best single-group composer in each panel. */
@@ -1282,6 +1303,11 @@
       safeGuides();
       return { composer: null, missing: B.missing, options: [] };
     }
+    /* The leaf is a whole page: it paints its own paper to the frame's edge
+       and carries its own foot, so the stage's background, stars and caption
+       band would all be drawing over or under a finished card. */
+    var ownsFrame = chosen.key === "almanac";
+    if (ownsFrame) { background(); }
     try { chosen.draw(B.bag, p, st, C); }
     catch (e) {
       txt("this combination could not be drawn", st.cx, st.cy, S.U * 0.026,
@@ -1292,7 +1318,13 @@
     /* What the chosen view could not take is returned to the page, not
        swallowed: a studio that silently drops half a selection teaches its
        user nothing about why the picture looks wrong. */
-    captionBand(S.headline || chosen.label, S.sub || chosen.blurb);
+    if (!ownsFrame) captionBand(S.headline || chosen.label, S.sub || chosen.blurb);
+    else if (S.headline) {
+      /* a headline the user typed still belongs on the leaf, set in its own
+         gold rather than in the diagram band's */
+      txt(S.headline, S.W / 2, S.H * 0.045, S.U * 0.034,
+          pal().gold, "center", 700);
+    }
     safeGuides();
     return { composer: chosen.key, label: chosen.label, missing: B.missing,
              options: options(B.bag) };
@@ -1412,8 +1444,36 @@
     });
   }
 
+  /* Render a composition into SOMEBODY ELSE'S canvas at an arbitrary size.
+
+     The stage is a singleton — one canvas, one size — because the director
+     stage is one thing. The sample strip needs a dozen small pictures a
+     second from the same composers, and standing up a second stage would be
+     a second set of composers to keep in step. So the singleton is lent out:
+     its canvas, size and chrome flags are swapped, the composition is drawn,
+     and everything is put back. Every composer sizes from S.U, so a tile is
+     the same picture at a smaller scale rather than a cropped one.
+
+     The flags matter: a thumbnail has no business reserving Instagram's
+     strips or drawing guide rectangles, and its caption band would be two
+     unreadable lines, so all three stand down for the duration. */
+  function renderTo(cv, w, h, sel, C, p, force) {
+    var keep = { cv: S.cv, ctx: S.ctx, W: S.W, H: S.H, U: S.U,
+                 safe: S.safe, head: S.headline, sub: S.sub, tile: S.tile };
+    if (cv.width !== w) cv.width = w;
+    if (cv.height !== h) cv.height = h;
+    S.cv = cv; S.ctx = cv.getContext("2d");
+    S.W = w; S.H = h; S.U = w; S.safe = false; S.tile = true;
+    S.headline = ""; S.sub = "";
+    var out = null;
+    try { out = render(sel, C, p, force); } catch (e) { out = null; }
+    S.cv = keep.cv; S.ctx = keep.ctx; S.W = keep.W; S.H = keep.H; S.U = keep.U;
+    S.safe = keep.safe; S.headline = keep.head; S.sub = keep.sub; S.tile = keep.tile;
+    return out;
+  }
+
   window.SPStage = {
-    S: S, PALS: PALS, RATIOS: RATIOS, SAFE: SAFE,
+    S: S, PALS: PALS, RATIOS: RATIOS, SAFE: SAFE, renderTo: renderTo,
     attach: function (canvas) {
       S.cv = canvas; S.ctx = canvas.getContext("2d");
       this.resize();

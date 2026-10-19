@@ -136,6 +136,7 @@ const R = await pg.evaluate(() => {
     kundliN:["chart.d1"],
     kundliS:["chart.d1"],
     sudarshana:["chart.sudarshana"],
+    almanac:["day.almanac"],
     layers:["sky.all","bala.total","pan.horas"]
   };
   const delib={};

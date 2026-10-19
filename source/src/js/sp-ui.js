@@ -295,6 +295,227 @@
     refreshViews(); refreshNotes();
   }
 
+  /* ===== the sample strip ================================================
+     A row of live compositions across the top, scrolling, each one actually
+     being drawn right now from the same composers and the same day's data as
+     the stage below — not a gallery of recorded gifs.
+
+     WHY A CURATED POOL rather than random selections. The sampler in the test
+     suite proves that ANY combination draws; it also shows that most random
+     combinations land on Layers, which at thumbnail size is three small
+     panels and reads as noise. A strip is an advertisement for what the page
+     can do, so it draws from combinations chosen to look like something at
+     120 pixels wide, and re-rolls them so the strip is never the same twice.
+
+     WHY TILES ARE DRAWN IN A ROUND ROBIN. Twenty canvases at sixty frames a
+     second is a page that heats a phone. Two tiles per frame gives each one
+     about six frames a second, which for a thumbnail is motion; the loop
+     stops entirely when the strip scrolls out of view or the tab is hidden,
+     because a strip nobody is looking at should cost nothing. */
+
+  var STRIP = {
+    tiles: [], live: 0, raf: null, cursor: 0, scroll: 0,
+    paused: false, lastRoll: 0, seen: 0
+  };
+  /* Each entry is a selection that is worth looking at small. `need` lists the
+     nodes that must resolve for it to be offered at all, so a visitor with no
+     birth chart is shown the dozen that work from the sky and the day alone
+     rather than a row of empty frames. */
+  var POOL = [
+    { sel: ["day.almanac"], label: "Today's leaf" },
+    { sel: ["sky.all"], label: "The nine" },
+    { sel: ["sky.lon.Sūrya", "sky.lon.Candra"], label: "Sun to Moon" },
+    { sel: ["sky.lon.Candra", "geo.naks"], label: "Into the nakṣatra" },
+    { sel: ["sky.lon.Candra", "geo.d60"], label: "Down to the ṣaṣṭyāṃśa" },
+    { sel: ["geo.rashis", "geo.naks", "geo.padas"], label: "Three divisions" },
+    { sel: ["pan.horas"], label: "The day's horās" },
+    { sel: ["pan.choghadiya"], label: "Choghaḍiyā" },
+    { sel: ["pan.fiveLimbs"], label: "The five limbs" },
+    { sel: ["pan.tara"], label: "Tāra Bala" },
+    { sel: ["tr.all"], label: "The sky now" },
+    { sel: ["tr.track.Maṅgala"], label: "Maṅgala over a year" },
+    { sel: ["tr.elongSeries"], label: "Elongation over time" },
+    { sel: ["sky.lon.Sūrya", "geo.rashis"], label: "Sūrya in its rāśi" },
+    { sel: ["geo.kakshya"], label: "The kakṣyā lanes" },
+    /* these need a stored chart */
+    { sel: ["chart.d1"], force: "kundliN", label: "North Indian" },
+    { sel: ["chart.d1"], force: "kundliS", label: "South Indian" },
+    { sel: ["chart.sudarshana"], label: "Sudarśana" },
+    { sel: ["varga.kundli.D9"], force: "kundliN", label: "Navāṃśa" },
+    { sel: ["varga.kundli.D10"], force: "kundliS", label: "Daśāṃśa" },
+    { sel: ["bala.total_rupa"], label: "Ṣaḍbala" },
+    { sel: ["bala.vsRequired"], label: "Against the minimum" },
+    { sel: ["av.grid"], label: "Aṣṭakavarga" },
+    { sel: ["av.sav"], label: "Sarvāṣṭakavarga" },
+    { sel: ["dasha.gears"], label: "Daśā gears" },
+    { sel: ["dasha.maha"], label: "The nine periods" },
+    { sel: ["rel.drishti"], label: "Graha dṛṣṭi" },
+    { sel: ["rel.dispositor"], label: "Dispositors" },
+    { sel: ["tr.relations"], label: "Transits to natal" },
+    { sel: ["jai.arudhas"], label: "Arūḍha padas" },
+    { sel: ["varga.vargottama"], label: "Vargottama" },
+    { sel: ["bala.avastha"], label: "Avasthās" }
+  ];
+  function poolAvailable() {
+    return POOL.filter(function (e) {
+      return e.sel.every(function (id) {
+        var n = window.SPNodes.byId(id);
+        return n && !!window.SPNodes.resolve(n, C);
+      });
+    });
+  }
+  function pickSpec(avail, avoid) {
+    for (var t = 0; t < 24; t++) {
+      var e = avail[Math.floor(Math.random() * avail.length)];
+      if (!e) return null;
+      if (avoid.indexOf(e.label) < 0) return e;
+    }
+    return avail[0] || null;
+  }
+  var TILE_W = 252, TILE_H = 448;      /* the bitmap; CSS halves it */
+
+  function buildStrip() {
+    var host = $("sp-strip"); if (!host) return;
+    var avail = poolAvailable();
+    host.innerHTML = "";
+    STRIP.tiles = [];
+    if (avail.length < 3) {
+      host.appendChild(el("p", "spmuted", "Nothing to sample yet."));
+      return;
+    }
+    STRIP.live = Math.min(10, avail.length);
+    var used = [];
+    for (var i = 0; i < STRIP.live; i++) {
+      var spec = pickSpec(avail, used);
+      used.push(spec.label);
+      STRIP.tiles.push(mkTile(host, spec, i));
+    }
+    /* A second run of the same tiles makes the scroll loop seamlessly. They
+       are not rendered twice: each copy is blitted from its original, which
+       costs one drawImage and keeps the loop exactly identical rather than
+       merely similar. */
+    for (var j = 0; j < STRIP.live; j++)
+      STRIP.tiles.push(mkTile(host, STRIP.tiles[j].spec, j, STRIP.tiles[j]));
+    STRIP.lastRoll = Date.now();
+    startStrip();
+  }
+  function mkTile(host, spec, idx, mirrorOf) {
+    var fig = el("figure", "sptile");
+    var cv = document.createElement("canvas");
+    cv.width = TILE_W; cv.height = TILE_H;
+    cv.setAttribute("role", "img");
+    cv.setAttribute("aria-label", spec.label);
+    var cap = el("figcaption", null, spec.label);
+    fig.appendChild(cv); fig.appendChild(cap);
+    fig.title = "Open this on the stage";
+    fig.tabIndex = 0;
+    function open() {
+      SEL = spec.sel.slice(); FORCE = spec.force || null; STORY = false;
+      var tb = $("sp-storytoggle"); if (tb) tb.checked = false;
+      refreshWall(); refreshTray(); draw();
+      var box = $("sp-stagebox");
+      if (box && box.scrollIntoView) box.scrollIntoView({ behavior: "smooth", block: "center" });
+      flash("Loaded “" + spec.label + "” onto the stage.");
+    }
+    fig.addEventListener("click", open);
+    fig.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } });
+    host.appendChild(fig);
+    return { fig: fig, cv: cv, cap: cap, spec: spec, idx: idx,
+             mirrorOf: mirrorOf || null, p: Math.random() };
+  }
+
+  function startStrip() {
+    if (STRIP.raf) return;
+    var last = 0;
+    function frame(ts) {
+      STRIP.raf = requestAnimationFrame(frame);
+      STRIP.ticks = (STRIP.ticks || 0) + 1;
+      if (document.hidden || STRIP.paused || !STRIP.tiles.length) return;
+      var host = $("sp-strip"); if (!host) return;
+      /* Only work while the strip is on screen. This is the whole reason the
+         loop is cheap, and it is also why the strip looked dead the first
+         time it was measured: on a short viewport the masthead, the nav and a
+         three-line banner had pushed it past the fold, so it was correctly
+         doing nothing. The counters stay because a render loop that decides
+         to skip needs to be able to say so. */
+      var r = host.getBoundingClientRect();
+      STRIP.rect = Math.round(r.top) + ".." + Math.round(r.bottom) +
+                   " in " + window.innerHeight;
+      if (r.bottom < -40 || r.top > window.innerHeight + 40) {
+        STRIP.offscreen = (STRIP.offscreen || 0) + 1; return;
+      }
+      if (ts - last < 28) return;            /* cap the whole loop near 35fps */
+      last = ts;
+
+      /* two originals per frame, round robin */
+      for (var k = 0; k < 2 && STRIP.live; k++) {
+        var t = STRIP.tiles[STRIP.cursor % STRIP.live];
+        STRIP.cursor++;
+        if (!t || t.broken) continue;
+        STRIP.renders = (STRIP.renders || 0) + 1;
+        t.p = (t.p + 0.013) % 1;
+        /* A swallowed exception in a render loop is the worst kind: the strip
+           simply stays dark and nothing anywhere says why. It is recorded, and
+           a tile that has thrown is dropped from the rotation rather than
+           retried sixty times a second. */
+        try {
+          window.SPStage.renderTo(t.cv, TILE_W, TILE_H, t.spec.sel, C,
+                                  t.p, t.spec.force || null);
+        } catch (e) {
+          STRIP.lastError = t.spec.label + ": " + (e && e.message || e);
+          t.broken = true;
+        }
+        var mirror = STRIP.tiles[t.idx + STRIP.live];
+        if (mirror) {
+          try {
+            var mc = mirror.cv.getContext("2d");
+            mc.clearRect(0, 0, TILE_W, TILE_H);
+            mc.drawImage(t.cv, 0, 0);
+          } catch (e) {}
+        }
+      }
+
+      /* the scroll, and its seamless wrap at the halfway point */
+      if (!STRIP.dragging) {
+        host.scrollLeft += 0.55;
+        var half = host.scrollWidth / 2;
+        if (half > 10 && host.scrollLeft >= half) host.scrollLeft -= half;
+      }
+
+      /* re-roll a tile that nobody can see, so the strip is never twice the
+         same without anything ever changing in front of a reader */
+      if (Date.now() - STRIP.lastRoll > 6500) {
+        STRIP.lastRoll = Date.now();
+        rollOne(host);
+      }
+    }
+    STRIP.raf = requestAnimationFrame(frame);
+  }
+  function rollOne(host) {
+    var avail = poolAvailable();
+    if (avail.length < 4 || !STRIP.live) return;
+    var hostR = host.getBoundingClientRect();
+    var used = STRIP.tiles.slice(0, STRIP.live).map(function (t) { return t.spec.label; });
+    /* find an original that is off screen */
+    for (var i = 0; i < STRIP.live; i++) {
+      var t = STRIP.tiles[(STRIP.seen + i) % STRIP.live];
+      var r = t.fig.getBoundingClientRect();
+      if (r.right > hostR.left - 20 && r.left < hostR.right + 20) continue;
+      var spec = pickSpec(avail, used);
+      if (!spec) return;
+      t.spec = spec;
+      t.cap.textContent = spec.label;
+      t.cv.setAttribute("aria-label", spec.label);
+      t.p = 0;
+      var m = STRIP.tiles[t.idx + STRIP.live];
+      if (m) { m.spec = spec; m.cap.textContent = spec.label;
+               m.cv.setAttribute("aria-label", spec.label); }
+      STRIP.seen = (STRIP.seen + i + 1) % STRIP.live;
+      return;
+    }
+  }
+
   /* ---- the storyboard ---------------------------------------------------- */
   function shotLabel(sh) {
     if (sh.label) return sh.label;
@@ -496,10 +717,9 @@
         (C.birth && C.birth.name ? " — " + C.birth.name : "") +
         ". Everything on the wall is available.";
       else {
-        mode.textContent = "No birth chart stored in this browser, so the " +
-          "chart-only nodes are greyed. Everything about the sky, the day and " +
-          "the divisions still works. Build a chart on the Kundli page to " +
-          "unlock the rest.";
+        mode.textContent = "No chart stored here — the sky, the day and the " +
+          "divisions all work; chart-only chips are greyed. Build one on the " +
+          "Kundli page to unlock them.";
         mode.className = "spnote warn";
       }
     }
@@ -567,6 +787,20 @@
     var span = $("sp-span");
     if (span) span.addEventListener("change", function () {
       C = buildContext(C.when); draw(); });
+    /* the strip: pause on hover so a tile can be read, and on drag so it can
+       be scrubbed by hand */
+    var strip = $("sp-strip");
+    if (strip) {
+      strip.addEventListener("mouseenter", function () { STRIP.paused = true; });
+      strip.addEventListener("mouseleave", function () { STRIP.paused = false; });
+      strip.addEventListener("pointerdown", function () { STRIP.dragging = true; });
+      window.addEventListener("pointerup", function () { STRIP.dragging = false; });
+      strip.addEventListener("touchstart", function () { STRIP.paused = true; },
+                             { passive: true });
+    }
+    var sh = $("sp-shuffle");
+    if (sh) sh.addEventListener("click", function () { buildStrip(); });
+
     $("sp-addshot") && $("sp-addshot").addEventListener("click", addShot);
     var tog = $("sp-storytoggle");
     if (tog) tog.addEventListener("change", function () {
@@ -587,6 +821,7 @@
 
     window.addEventListener("resize", function () { fitPreview(); });
     draw();
+    buildStrip();
   }
 
   if (document.readyState === "loading")
@@ -604,7 +839,19 @@
       shots: function () { return SHOTS.slice(); },
       addShot: function () { addShot(); return SHOTS.length; },
       setStory: function (on) { STORY = on; refreshShots(); draw(); return STORY; },
-      nodeCount: function () { return window.SPNodes.all().length; }
+      nodeCount: function () { return window.SPNodes.all().length; },
+      strip: function () { return { live: STRIP.live, tiles: STRIP.tiles.length,
+        raf: !!STRIP.raf, paused: STRIP.paused, hidden: document.hidden,
+        lastError: STRIP.lastError || null,
+        ticks: STRIP.ticks || 0, renders: STRIP.renders || 0,
+        offscreen: STRIP.offscreen || 0, rect: STRIP.rect || null,
+        broken: STRIP.tiles.filter(function (t) { return t.broken; })
+                  .map(function (t) { return t.spec.label; }) }; },
+      stripSpecs: function () {
+        return STRIP.tiles.slice(0, STRIP.live).map(function (t) {
+          return t.spec.label; }); },
+      rollStrip: function () { rollOne($("sp-strip")); return this.stripSpecs(); },
+      poolSize: function () { return poolAvailable().length; }
     };
   } catch (e) {}
 })();

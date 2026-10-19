@@ -336,6 +336,7 @@ def build_shared():
         # because they are three concerns; one asset because a page that loaded
         # half of them would be a page with a command wall and nothing behind it.
         "studio-pro.js": brandify(read(SRC, "js", "sp-nodes.js") + "\n" +
+                                  read(SRC, "js", "sp-almanac.js") + "\n" +
                                   read(SRC, "js", "sp-compose.js") + "\n" +
                                   read(SRC, "js", "sp-ui.js")),
         "panchanga.js": brandify(read(SRC, "js", "panchanga.js") + "\n" +
