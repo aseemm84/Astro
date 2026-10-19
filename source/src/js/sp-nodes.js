@@ -1139,15 +1139,37 @@
       why: "computed on the chart page, not carried in the portable chart object this page reads; re-deriving them here would be a second implementation free to disagree with the first" }
   ];
 
+  var RC = { key: null, map: {} };
+
   window.SPNodes = {
     all: function () { return N.slice(); },
     byId: function (id) {
       for (var i = 0; i < N.length; i++) if (N[i].id === id) return N[i];
       return null;
     },
+    /* RESOLVED VALUES ARE CACHED PER CONTEXT, not per frame.
+
+       A node's value depends only on the context — the chart, the moment, the
+       place, the span — and never on the playhead, so re-deriving it sixty
+       times a second computes the same number sixty times. Auto mode already
+       paid that; Director multiplies it by the number of layers, and some
+       nodes are not cheap (a transit track over a century is thousands of
+       ephemeris evaluations). The key is every field of the context a node is
+       allowed to read, so changing the place or the moment invalidates
+       everything, and nothing else does. */
     resolve: function (node, C) {
-      try { return node.get(C); } catch (e) { return null; }
+      if (!node) return null;
+      var k = C ? (C.when + "|" + (C.place && C.place.n) + "|" +
+                   (C.place && C.place.lat) + "," + (C.place && C.place.lon) + "|" +
+                   C.spanDays + "|" + (C.J ? 1 : 0)) : "none";
+      if (RC.key !== k) { RC.key = k; RC.map = {}; }
+      if (RC.map.hasOwnProperty(node.id)) return RC.map[node.id];
+      var v;
+      try { v = node.get(C); } catch (e) { v = null; }
+      RC.map[node.id] = v;
+      return v;
     },
+    cacheClear: function () { RC.key = null; RC.map = {}; },
     domains: function () {
       var seen = [];
       N.forEach(function (n) { if (seen.indexOf(n.dom) < 0) seen.push(n.dom); });

@@ -857,6 +857,122 @@ table.stplantab td.stph{color:var(--ink)}
   border:1px solid var(--line);border-radius:7px;background:var(--soft);color:var(--ink)}
 .spflash{margin:2px 0 0;font-size:.8rem;color:var(--gold)}
 
+/* ===== Director mode =====================================================
+   The panel is dense on purpose: a layer has roughly thirty properties and a
+   pro tool that asks for four clicks to reach any of them is a tool nobody
+   finishes a card in. So the fields are small and close, and the touch rules
+   at the bottom of this block put them back to 44px on a phone, where close
+   together is the one thing they must not be. */
+.spmode{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0 2px}
+.spdmode{font-size:.74rem;color:var(--muted);margin-left:4px}
+
+.sptimewrap{margin:8px 0 4px;border:1px solid var(--line);border-radius:9px;
+  background:#fff;padding:8px 10px}
+.sptimehead h3{margin:0 0 2px;font-size:.88rem}
+.sptimehead p{margin:0 0 7px;font-size:.73rem;color:var(--muted);line-height:1.45}
+.sptimeline{display:flex;flex-direction:column;gap:3px}
+.spdtrow{display:flex;align-items:center;gap:7px}
+.spdtrow.on .spdtname{color:#5a4512;font-weight:600}
+.spdtname{flex:0 0 92px;font-size:.71rem;color:var(--muted);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.spdtlane{position:relative;flex:1;height:17px;background:var(--soft);
+  border-radius:4px;border:1px solid var(--line);min-width:0}
+.spdtbar{position:absolute;top:1px;bottom:1px;background:var(--night);
+  border-radius:3px;cursor:grab;overflow:hidden;touch-action:none}
+.spdtrow.on .spdtbar{background:var(--gold)}
+.spdtbar.off{opacity:.3}
+.spdtbar i{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.34)}
+.spdte{left:0}
+.spdtx{right:0}
+.spdtruler .spdtlane{height:9px;background:none;border:none}
+.spdtick{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+
+.spdpresets{display:flex;flex-direction:column;gap:5px;margin:0 0 9px}
+.spdrow{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:0 0 5px}
+.spdlab{font-size:.71rem;color:var(--muted);flex:0 0 76px}
+.spdsuf{font-size:.71rem;color:var(--muted);font-variant-numeric:tabular-nums;
+  min-width:30px}
+.spdrow input[type=number],.spdrow input[type=text],.spdrow select{font:inherit;
+  font-size:.8rem;padding:4px 6px;border:1px solid var(--line);border-radius:6px;
+  background:var(--soft);color:var(--ink);flex:1;min-width:0}
+.spdrow input[type=color]{width:46px;height:28px;padding:0;border:1px solid var(--line);
+  border-radius:6px;background:none}
+.spdrange{flex:1;min-width:0;height:22px;touch-action:pan-x}
+.spdsec{margin:12px 0 5px;font-size:.78rem;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);
+  padding-bottom:3px}
+.spdhint{margin:1px 0 7px;font-size:.71rem;color:var(--muted);line-height:1.45}
+.spdempty{margin:4px 0;font-size:.75rem;color:var(--muted);font-style:italic}
+
+.spdstack{display:flex;flex-direction:column;gap:3px;max-height:290px;
+  overflow-y:auto;padding-right:2px}
+.spdlayer{display:flex;align-items:center;gap:2px;border:1px solid var(--line);
+  border-radius:7px;background:#fff;padding:2px 3px}
+.spdlayer.on{border-color:var(--gold);background:#fdf8ea}
+.spdlayer.off{opacity:.55}
+.spdeye,.spdmv{font:inherit;font-size:.78rem;line-height:1;min-width:24px;
+  padding:5px 4px;border:1px solid transparent;border-radius:5px;background:none;
+  color:var(--muted);cursor:pointer}
+.spdeye:hover,.spdmv:hover{border-color:var(--line);background:var(--soft);
+  color:var(--ink)}
+.spdx:hover{border-color:#e0b4ad;background:#fdf1ef;color:#9a3c2a}
+.spdname{flex:1;min-width:0;text-align:left;font:inherit;font-size:.78rem;
+  background:none;border:none;cursor:pointer;padding:4px 3px;color:var(--ink);
+  display:flex;align-items:baseline;gap:5px}
+.spdkind{font-size:.63rem;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--gold);flex:0 0 auto}
+.spdtitle{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.spdwin{font-size:.65rem;color:var(--muted);font-variant-numeric:tabular-nums;
+  margin-left:auto;flex:0 0 auto}
+.spdadd{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0 0}
+.spdadd .spbtn{font-size:.76rem;padding:5px 9px}
+
+.spdinsp{border:1px solid var(--line);border-radius:9px;background:#fff;
+  padding:8px 10px}
+.spdhead{display:flex;align-items:baseline;gap:6px;margin:0 0 6px;
+  padding-bottom:5px;border-bottom:1px solid var(--line)}
+.spdhead b{font-size:.86rem}
+.spdsel{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 6px}
+.spchip.sm{font-size:.72rem;padding:3px 7px}
+.spdgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:0 0 4px}
+.spdcell{display:flex;flex-direction:column;gap:2px;font-size:.66rem;
+  color:var(--muted)}
+.spdcell.to{color:#2f7d55}
+.spdcell input{font:inherit;font-size:.76rem;padding:4px 3px;text-align:center;
+  border:1px solid var(--line);border-radius:5px;background:var(--soft);
+  color:var(--ink);width:100%;min-width:0}
+.spdtok{margin:2px 0 7px;font-size:.7rem;color:var(--muted);line-height:1.7}
+.spdtokb{font:inherit;font-size:.68rem;padding:1px 5px;margin:0 2px 0 0;
+  border:1px solid var(--line);border-radius:4px;background:var(--soft);
+  color:#5a4512;cursor:pointer}
+.spdtokb:hover{border-color:var(--gold)}
+.spdwarn{margin:8px 0 0;padding-left:17px;font-size:.73rem;color:var(--muted);
+  line-height:1.5}
+.spdwarn li.bad{color:#9a3c2a}
+.spdlib{margin:0 0 6px}
+.spdname-in{flex:1;min-width:0}
+.spdsaved{display:flex;flex-direction:column;gap:3px;margin:6px 0 0}
+.spdsrow{display:flex;align-items:center;gap:3px}
+.spdsrow .spchip{flex:1;text-align:left}
+@media (pointer:coarse){
+  .spdeye,.spdmv{min-width:38px;min-height:38px}
+  .spdrow input[type=number],.spdrow input[type=text],.spdrow select,
+  .spdcell input{min-height:40px}
+  .spdrange{height:38px}
+  /* The timeline bar is a drag target, not a readout: a bar is dragged to
+     retime a layer and its ends are dragged to trim it. At 26 the lane left a
+     22px bar, which is half a fingertip — tall enough to read and too short
+     to grab, the worst of both. 42 leaves a 38px bar. */
+  .spdtlane{height:42px}
+  .spdtname{flex:0 0 76px}
+  .spdname{padding:9px 4px}
+}
+.spdeye,.spdmv,.spdname,.spdtokb,.spdtbar{touch-action:manipulation}
+/* The canvas swallows touch only while layers are draggable. In Auto mode a
+   finger on the frame has to scroll the page, which is most of what a finger
+   on a phone is for; the class is put on by the Director panel. */
+.spdragging#sp-canvas{touch-action:none}
+
 .sptray{display:flex;flex-direction:column;gap:6px}
 .sprow{display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid var(--line);
   border-radius:9px;background:var(--soft)}

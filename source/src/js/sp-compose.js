@@ -124,6 +124,25 @@
     return out.length;
   }
 
+  /* Breaking a string into rows WITHOUT drawing it, so a caller that needs to
+     know how tall a block will be before it places it does not have to draw
+     the block off-screen to find out. wrap() above draws as it goes and is
+     centred at weight 500 by choice — that is the diagram caption, and the
+     two are kept separate rather than one being bent into the other. */
+  function wrapLines(s, size, maxW, lines, weight) {
+    var c = S.ctx, words = String(s == null ? "" : s).split(/\s+/);
+    var row = "", out = [];
+    c.font = (weight || 500) + " " + Math.round(size) + "px " + SANS;
+    for (var i = 0; i < words.length; i++) {
+      var t = row ? row + " " + words[i] : words[i];
+      if (c.measureText(t).width > maxW && row) { out.push(row); row = words[i]; }
+      else row = t;
+      if (out.length >= lines) break;
+    }
+    if (row && out.length < lines) out.push(row);
+    return out;
+  }
+
   /* ---- the frame --------------------------------------------------------- */
   function stage() {
     var topPad = S.safe ? S.H * SAFE.top : S.H * 0.045;
@@ -1385,7 +1404,16 @@
     if (!shots || !shots.length) return render([], C, p, null);
     var cur = shotAt(shots, p);
     if (!cur) return render([], C, p, null);
-    var out = render(cur.shot.sel || [], C, cur.local, cur.shot.force || null, true);
+    /* a shot is either an Auto selection or a whole Director document; the
+       storyboard does not care which, which is what makes a reel able to cut
+       from a hand-built scene to a one-click one */
+    var out;
+    if (cur.shot.doc && window.SPDirector)
+      out = window.SPDirector.withDoc(cur.shot.doc, function () {
+        return window.SPDirector.render(C, cur.local, true);
+      });
+    else
+      out = render(cur.shot.sel || [], C, cur.local, cur.shot.force || null, true);
     /* the dip: a quarter-second at each join, strongest at the boundary */
     var dipFor = 0.22;
     var into = cur.local * cur.len, left = cur.len - into;
@@ -1436,6 +1464,27 @@
 
   /* `sel` is either a selection (one shot) or an array of shots, in which
      case `seconds` is ignored and the storyboard's own total is used. */
+  /* ---- one definition of "the frame at p" --------------------------------
+
+     There are now three things a frame can be — an Auto composition, a
+     storyboard of them, or a Director document — and four callers that need
+     one: the preview, the playback loop, the recorder and the still export.
+     If each caller chose for itself, the first divergence would be a reel
+     that records the picture the preview was not showing, which is the worst
+     class of bug this page could have: invisible until someone posts it.
+
+     So the choice is made once, here, and every caller asks this.
+
+     The precedence: a storyboard being played wins, because it sequences
+     shots and a shot may itself be a Director document; otherwise Director
+     mode wins if it is on; otherwise Auto. */
+  function frameAt(sel, C, p, forceKey, shots, quiet) {
+    if (shots && shots.length) return renderStory(shots, C, p);
+    if (window.SPDirector && window.SPDirector.on())
+      return window.SPDirector.render(C, p, quiet);
+    return render(sel, C, p, forceKey, quiet);
+  }
+
   function record(sel, C, seconds, fps, forceKey, onFrame) {
     var shots = (sel && sel.length && typeof sel[0] === "object" && sel[0].sel)
       ? sel : null;
@@ -1473,8 +1522,7 @@
       function step() {
         if (job.cancel || i > total) { try { rec.stop(); } catch (e) {} return; }
         S.p = i / total;
-        if (shots) renderStory(shots, C, S.p);
-        else render(sel, C, S.p, forceKey);
+        frameAt(shots ? [] : sel, C, S.p, forceKey, shots, true);
         try { track.requestFrame(); } catch (e) {}
         if (onFrame) onFrame(i / total);
         i++;
@@ -1514,8 +1562,47 @@
     return out;
   }
 
+  /* ---- what Director mode borrows ---------------------------------------
+
+     Director draws the same fifteen composers into rectangles the user places
+     rather than into the one stage rect, and that is possible only because a
+     composer has never been told where it sits: it is handed a rect and a
+     playhead and sizes everything from them. So Director needs no composers
+     of its own, and a composer written for Auto mode arrives in Director able
+     to be placed, timed and animated without being touched.
+
+     The alternative — a second drawing layer for free composition — would
+     have been a second set of pictures free to disagree with the first, which
+     is the same trap the recorder and the Viṃśottarī are held out of. */
+  function drawInto(bag, p, st, C, forceKey) {
+    var K = null;
+    if (forceKey) {
+      COMPOSERS.forEach(function (Q) {
+        if (Q.key !== forceKey) return;
+        var s = -1;
+        try { s = Q.score(bag); } catch (e) {}
+        if (s > 0) K = withScore(Q, s);
+      });
+    }
+    if (!K) K = pick(bag);
+    if (!K) return null;
+    try { K.draw(bag, p, st, C); }
+    catch (e) { return { key: K.key, label: K.label, error: String(e && e.message || e) }; }
+    return { key: K.key, label: K.label, blurb: K.blurb };
+  }
+
   window.SPStage = {
     S: S, PALS: PALS, RATIOS: RATIOS, SAFE: SAFE, renderTo: renderTo,
+    /* the private helpers Director composes with — one implementation of
+       text fitting, one star field, one caption band, one set of guides */
+    kit: {
+      pal: pal, txt: txt, txtFit: txtFit, wrap: wrap, wrapLines: wrapLines,
+      fit: fit, norm: norm,
+      background: background, stars: stars, captionBand: captionBand,
+      safeGuides: safeGuides, stage: stage, drawInto: drawInto,
+      ringTicks: ringTicks, marker: marker, arcBand: arcBand,
+      placeWords: placeWords, SANS: SANS, grow: grow
+    },
     attach: function (canvas) {
       S.cv = canvas; S.ctx = canvas.getContext("2d");
       this.resize();
@@ -1535,7 +1622,7 @@
       S.quality = 1; this.resize();
       try { return fn(); } finally { S.quality = q; this.resize(); }
     },
-    render: render, renderStory: renderStory, record: record,
+    render: render, renderStory: renderStory, record: record, frameAt: frameAt,
     isRecording: isRecording, cancelRecording: cancelRecording,
     storyTotal: storyTotal, shotAt: shotAt, options: options, bagOf: bagOf,
     composers: function () { return COMPOSERS.map(function (K) {

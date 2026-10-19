@@ -341,19 +341,28 @@
 
      So the frame path draws the canvas and does nothing else, and the panels
      are synced only when the composition actually changes. */
+  function shotsNow() { return (STORY && SHOTS.length) ? SHOTS : null; }
   function drawFrame() {
     if (!window.SPStage || !C) return;
-    LAST = (STORY && SHOTS.length)
-      ? window.SPStage.renderStory(SHOTS, C, window.SPStage.S.p)
-      : window.SPStage.render(SEL, C, window.SPStage.S.p, FORCE, true);
+    LAST = window.SPStage.frameAt(SEL, C, window.SPStage.S.p, FORCE,
+                                 shotsNow(), true);
+    /* The editing handles. Drawn after the frame and only here — the recorder
+       and the still export call frameAt themselves and never this, which is
+       why a gold dashed rectangle cannot end up in anything saved. */
+    if (window.SPDirUI) window.SPDirUI.overlay(window.SPStage.S.p);
   }
   function draw() {
     if (!window.SPStage || !C) return;
-    LAST = (STORY && SHOTS.length)
-      ? window.SPStage.renderStory(SHOTS, C, window.SPStage.S.p)
-      : window.SPStage.render(SEL, C, window.SPStage.S.p, FORCE);
+    LAST = window.SPStage.frameAt(SEL, C, window.SPStage.S.p, FORCE,
+                                 shotsNow(), false);
+    if (window.SPDirUI) window.SPDirUI.overlay(window.SPStage.S.p);
     fitPreview();
-    refreshViews(); refreshNotes();
+    /* In Director mode the composer switcher and the fit notes describe a
+       choice the user has taken over, so they stand down rather than
+       contradict the layer they are no longer about. */
+    if (!(window.SPDirector && window.SPDirector.on())) {
+      refreshViews(); refreshNotes();
+    }
   }
 
   /* ===== the sample strip ================================================
@@ -580,11 +589,26 @@
   /* ---- the storyboard ---------------------------------------------------- */
   function shotLabel(sh) {
     if (sh.label) return sh.label;
-    var names = sh.sel.map(function (id) {
+    if (sh.doc) return (sh.name || "Scene") + " — " +
+      (sh.doc.layers || []).length + " layers";
+    var names = (sh.sel || []).map(function (id) {
       var n = window.SPNodes.byId(id); return n ? n.label : id; });
     return names.slice(0, 3).join(" + ") + (names.length > 3 ? " +" + (names.length - 3) : "");
   }
   function addShot() {
+    /* In Director mode the shot is the whole document, not the selection:
+       what the user has composed is what they mean by "this shot", and a
+       storyboard that quietly recorded the Auto reading of the same nodes
+       instead would be the worst kind of surprise. */
+    if (window.SPDirector && window.SPDirector.on()) {
+      var d = window.SPDirector.snapshot();
+      if (!d.layers.length) { flash("This document has no layers yet."); return; }
+      SHOTS.push({ doc: d, sel: [], seconds: 5,
+                   name: d.name || ("Scene " + (SHOTS.length + 1)) });
+      refreshShots(); draw(); saveState();
+      flash("Added the composition as shot " + SHOTS.length + ".");
+      return;
+    }
     if (!SEL.length) { flash("Select something first, then add it as a shot."); return; }
     SHOTS.push({ sel: SEL.slice(), force: FORCE, seconds: 5 });
     STORY = true;
@@ -638,8 +662,22 @@
       /* clicking the row loads that shot back into the wall for editing */
       t.style.cursor = "pointer";
       t.addEventListener("click", function () {
-        SEL = sh.sel.slice(); FORCE = sh.force || null; STORY = false;
+        STORY = false;
         var tb2 = $("sp-storytoggle"); if (tb2) tb2.checked = false;
+        /* a Director shot opens back into Director with its own layers, an
+           Auto shot back onto the wall — editing a shot means getting the
+           thing you made, in the mode you made it in */
+        if (sh.doc && window.SPDirector) {
+          window.SPDirector.newDoc(sh.doc);
+          window.SPDirector.setOn(true);
+          if (window.SPDirUI) window.SPDirUI.refresh(true);
+        } else {
+          SEL = (sh.sel || []).slice(); FORCE = sh.force || null;
+          if (window.SPDirector && window.SPDirector.on()) {
+            window.SPDirector.setOn(false);
+            if (window.SPDirUI) window.SPDirUI.refresh(true);
+          }
+        }
         refreshWall(); refreshTray(); refreshShots(); draw(); });
       host.appendChild(row);
     });
@@ -676,6 +714,9 @@
     }
     FORCE = null;
     refreshWall(); refreshTray(); draw();
+    /* the Director inspector offers "set this layer to the wall selection",
+       so it is stale the moment the wall changes */
+    if (window.SPDirUI) window.SPDirUI.refresh();
     saveState();
   }
   function flash(msg) {
@@ -754,7 +795,11 @@
         sel: SEL, ratio: window.SPStage.S.ratio, pal: window.SPStage.S.pal,
         safe: window.SPStage.S.safe, head: window.SPStage.S.headline,
         sub: window.SPStage.S.sub, shots: SHOTS, story: STORY,
-        place: PLACE }));
+        place: PLACE,
+        /* the working document, so an afternoon of layer work is not lost to
+           a reload; the named library is separate and explicit */
+        dir: (window.SPDirector && window.SPDirector.on())
+               ? window.SPDirector.snapshot() : null }));
     } catch (e) {}
   }
   function loadState() {
@@ -771,8 +816,12 @@
       if (o.place && o.place.lat != null) PLACE = asPlace(o.place);
       if (o.shots && o.shots.length) {
         SHOTS = o.shots.filter(function (sh) {
-          return sh && sh.sel && sh.sel.length; });
+          return sh && ((sh.sel && sh.sel.length) || sh.doc); });
         STORY = !!o.story && SHOTS.length > 0;
+      }
+      if (o.dir && o.dir.layers && o.dir.layers.length && window.SPDirector) {
+        window.SPDirector.newDoc(o.dir);
+        window.SPDirector.setOn(true);
       }
     } catch (e) {}
   }
@@ -780,9 +829,11 @@
   /* ---- export ------------------------------------------------------------ */
   function savePng() {
     var cv = $("sp-canvas");
-    /* the preview is deliberately low-resolution; a saved frame is not */
+    /* the preview is deliberately low-resolution; a saved frame is not — and
+       it goes through frameAt, so what is saved is whatever mode is showing
+       rather than always the Auto composition */
     window.SPStage.withFullSize(function () {
-      window.SPStage.render(SEL, C, window.SPStage.S.p, FORCE);
+      window.SPStage.frameAt(SEL, C, window.SPStage.S.p, FORCE, shotsNow(), true);
     });
     cv.toBlob(function (b) {
       var u = URL.createObjectURL(b), a = document.createElement("a");
@@ -962,6 +1013,7 @@
         var t = Date.parse(when.value);
         C = buildContext(isFinite(t) ? t : Date.now());
         refreshWall(); refreshTray(); draw();
+        if (window.SPDirUI) window.SPDirUI.refresh();
       });
     }
     var span = $("sp-span");
@@ -991,6 +1043,28 @@
       SHOTS = []; STORY = false; refreshShots(); draw(); saveState(); });
     $("sp-png") && $("sp-png").addEventListener("click", savePng);
     $("sp-rec") && $("sp-rec").addEventListener("click", saveVideo);
+
+    /* DIRECTOR MODE. The panel is handed the few things it cannot work out
+       for itself — what is selected on the wall, which context to resolve
+       against, how long the reel is, and how to ask for a redraw. It is given
+       functions rather than values because every one of them changes while
+       the panel is open, and a panel holding a stale copy of the context
+       would resolve nodes against last week. */
+    if (window.SPDirUI) {
+      window.SPDirUI.mount({
+        draw: draw,
+        drawFrame: drawFrame,
+        ctx: function () { return C; },
+        sel: function () { return SEL.slice(); },
+        force: function () { return FORCE; },
+        headline: function () { return window.SPStage.S.headline; },
+        subline: function () { return window.SPStage.S.sub; },
+        duration: function () { return DUR; },
+        lastReport: function () { return LAST; },
+        save: saveState,
+        flash: flash
+      });
+    }
 
     /* the list of what is deliberately missing */
     var ab = $("sp-absent");
@@ -1039,7 +1113,40 @@
       pickPlace: function (p) { return applyPlace(p); },
       placeInputs: function () {
         var h = $("sp-place");
-        return h ? h.querySelectorAll("input").length : 0; }
+        return h ? h.querySelectorAll("input").length : 0; },
+      /* Director: drive the mode and the document without a mouse, and read
+         back what the frame path actually did */
+      dir: function () { return window.SPDirector; },
+      dirOn: function () { return !!(window.SPDirector && window.SPDirector.on()); },
+      take: function (how) {
+        var b = $(how === "split" ? "sp-takesplit"
+               : how === "solo" ? "sp-takesolo"
+               : how === "blank" ? "sp-takeblank" : "sp-takeone");
+        if (b) b.click();
+        return window.SPDirector ? window.SPDirector.doc() : null;
+      },
+      setAuto: function () {
+        var bs = document.querySelectorAll("#sp-modebar .spv");
+        if (bs.length) bs[0].click();
+        return !!(window.SPDirector && window.SPDirector.on());
+      },
+      /* the frame as the EXPORT path makes it — frameAt with no overlay, which
+         is what savePng and the recorder call */
+      exportFrame: function (p) {
+        window.SPStage.S.p = p == null ? window.SPStage.S.p : p;
+        return window.SPStage.frameAt(SEL, C, window.SPStage.S.p, FORCE,
+                                      shotsNow(), true);
+      },
+      /* the frame as the SCREEN makes it — the same, plus the handles */
+      screenFrame: function (p) {
+        if (p != null) window.SPStage.S.p = p;
+        drawFrame();
+        return LAST;
+      },
+      refreshDir: function (deep) {
+        if (window.SPDirUI) window.SPDirUI.refresh(deep); },
+      duration: function () { return DUR; },
+      playing: function () { return PLAY; }
     };
   } catch (e) {}
 })();

@@ -1139,15 +1139,37 @@
       why: "computed on the chart page, not carried in the portable chart object this page reads; re-deriving them here would be a second implementation free to disagree with the first" }
   ];
 
+  var RC = { key: null, map: {} };
+
   window.SPNodes = {
     all: function () { return N.slice(); },
     byId: function (id) {
       for (var i = 0; i < N.length; i++) if (N[i].id === id) return N[i];
       return null;
     },
+    /* RESOLVED VALUES ARE CACHED PER CONTEXT, not per frame.
+
+       A node's value depends only on the context — the chart, the moment, the
+       place, the span — and never on the playhead, so re-deriving it sixty
+       times a second computes the same number sixty times. Auto mode already
+       paid that; Director multiplies it by the number of layers, and some
+       nodes are not cheap (a transit track over a century is thousands of
+       ephemeris evaluations). The key is every field of the context a node is
+       allowed to read, so changing the place or the moment invalidates
+       everything, and nothing else does. */
     resolve: function (node, C) {
-      try { return node.get(C); } catch (e) { return null; }
+      if (!node) return null;
+      var k = C ? (C.when + "|" + (C.place && C.place.n) + "|" +
+                   (C.place && C.place.lat) + "," + (C.place && C.place.lon) + "|" +
+                   C.spanDays + "|" + (C.J ? 1 : 0)) : "none";
+      if (RC.key !== k) { RC.key = k; RC.map = {}; }
+      if (RC.map.hasOwnProperty(node.id)) return RC.map[node.id];
+      var v;
+      try { v = node.get(C); } catch (e) { v = null; }
+      RC.map[node.id] = v;
+      return v;
     },
+    cacheClear: function () { RC.key = null; RC.map = {}; },
     domains: function () {
       var seen = [];
       N.forEach(function (n) { if (seen.indexOf(n.dom) < 0) seen.push(n.dom); });
@@ -1874,6 +1896,25 @@
     if (row && out.length < lines) out.push(row);
     out.forEach(function (r, i) { txt(r, x, y + i * (lh || size * 1.35), size, col, "center", 500); });
     return out.length;
+  }
+
+  /* Breaking a string into rows WITHOUT drawing it, so a caller that needs to
+     know how tall a block will be before it places it does not have to draw
+     the block off-screen to find out. wrap() above draws as it goes and is
+     centred at weight 500 by choice — that is the diagram caption, and the
+     two are kept separate rather than one being bent into the other. */
+  function wrapLines(s, size, maxW, lines, weight) {
+    var c = S.ctx, words = String(s == null ? "" : s).split(/\s+/);
+    var row = "", out = [];
+    c.font = (weight || 500) + " " + Math.round(size) + "px " + SANS;
+    for (var i = 0; i < words.length; i++) {
+      var t = row ? row + " " + words[i] : words[i];
+      if (c.measureText(t).width > maxW && row) { out.push(row); row = words[i]; }
+      else row = t;
+      if (out.length >= lines) break;
+    }
+    if (row && out.length < lines) out.push(row);
+    return out;
   }
 
   /* ---- the frame --------------------------------------------------------- */
@@ -3137,7 +3178,16 @@
     if (!shots || !shots.length) return render([], C, p, null);
     var cur = shotAt(shots, p);
     if (!cur) return render([], C, p, null);
-    var out = render(cur.shot.sel || [], C, cur.local, cur.shot.force || null, true);
+    /* a shot is either an Auto selection or a whole Director document; the
+       storyboard does not care which, which is what makes a reel able to cut
+       from a hand-built scene to a one-click one */
+    var out;
+    if (cur.shot.doc && window.SPDirector)
+      out = window.SPDirector.withDoc(cur.shot.doc, function () {
+        return window.SPDirector.render(C, cur.local, true);
+      });
+    else
+      out = render(cur.shot.sel || [], C, cur.local, cur.shot.force || null, true);
     /* the dip: a quarter-second at each join, strongest at the boundary */
     var dipFor = 0.22;
     var into = cur.local * cur.len, left = cur.len - into;
@@ -3188,6 +3238,27 @@
 
   /* `sel` is either a selection (one shot) or an array of shots, in which
      case `seconds` is ignored and the storyboard's own total is used. */
+  /* ---- one definition of "the frame at p" --------------------------------
+
+     There are now three things a frame can be — an Auto composition, a
+     storyboard of them, or a Director document — and four callers that need
+     one: the preview, the playback loop, the recorder and the still export.
+     If each caller chose for itself, the first divergence would be a reel
+     that records the picture the preview was not showing, which is the worst
+     class of bug this page could have: invisible until someone posts it.
+
+     So the choice is made once, here, and every caller asks this.
+
+     The precedence: a storyboard being played wins, because it sequences
+     shots and a shot may itself be a Director document; otherwise Director
+     mode wins if it is on; otherwise Auto. */
+  function frameAt(sel, C, p, forceKey, shots, quiet) {
+    if (shots && shots.length) return renderStory(shots, C, p);
+    if (window.SPDirector && window.SPDirector.on())
+      return window.SPDirector.render(C, p, quiet);
+    return render(sel, C, p, forceKey, quiet);
+  }
+
   function record(sel, C, seconds, fps, forceKey, onFrame) {
     var shots = (sel && sel.length && typeof sel[0] === "object" && sel[0].sel)
       ? sel : null;
@@ -3225,8 +3296,7 @@
       function step() {
         if (job.cancel || i > total) { try { rec.stop(); } catch (e) {} return; }
         S.p = i / total;
-        if (shots) renderStory(shots, C, S.p);
-        else render(sel, C, S.p, forceKey);
+        frameAt(shots ? [] : sel, C, S.p, forceKey, shots, true);
         try { track.requestFrame(); } catch (e) {}
         if (onFrame) onFrame(i / total);
         i++;
@@ -3266,8 +3336,47 @@
     return out;
   }
 
+  /* ---- what Director mode borrows ---------------------------------------
+
+     Director draws the same fifteen composers into rectangles the user places
+     rather than into the one stage rect, and that is possible only because a
+     composer has never been told where it sits: it is handed a rect and a
+     playhead and sizes everything from them. So Director needs no composers
+     of its own, and a composer written for Auto mode arrives in Director able
+     to be placed, timed and animated without being touched.
+
+     The alternative — a second drawing layer for free composition — would
+     have been a second set of pictures free to disagree with the first, which
+     is the same trap the recorder and the Viṃśottarī are held out of. */
+  function drawInto(bag, p, st, C, forceKey) {
+    var K = null;
+    if (forceKey) {
+      COMPOSERS.forEach(function (Q) {
+        if (Q.key !== forceKey) return;
+        var s = -1;
+        try { s = Q.score(bag); } catch (e) {}
+        if (s > 0) K = withScore(Q, s);
+      });
+    }
+    if (!K) K = pick(bag);
+    if (!K) return null;
+    try { K.draw(bag, p, st, C); }
+    catch (e) { return { key: K.key, label: K.label, error: String(e && e.message || e) }; }
+    return { key: K.key, label: K.label, blurb: K.blurb };
+  }
+
   window.SPStage = {
     S: S, PALS: PALS, RATIOS: RATIOS, SAFE: SAFE, renderTo: renderTo,
+    /* the private helpers Director composes with — one implementation of
+       text fitting, one star field, one caption band, one set of guides */
+    kit: {
+      pal: pal, txt: txt, txtFit: txtFit, wrap: wrap, wrapLines: wrapLines,
+      fit: fit, norm: norm,
+      background: background, stars: stars, captionBand: captionBand,
+      safeGuides: safeGuides, stage: stage, drawInto: drawInto,
+      ringTicks: ringTicks, marker: marker, arcBand: arcBand,
+      placeWords: placeWords, SANS: SANS, grow: grow
+    },
     attach: function (canvas) {
       S.cv = canvas; S.ctx = canvas.getContext("2d");
       this.resize();
@@ -3287,11 +3396,1895 @@
       S.quality = 1; this.resize();
       try { return fn(); } finally { S.quality = q; this.resize(); }
     },
-    render: render, renderStory: renderStory, record: record,
+    render: render, renderStory: renderStory, record: record, frameAt: frameAt,
     isRecording: isRecording, cancelRecording: cancelRecording,
     storyTotal: storyTotal, shotAt: shotAt, options: options, bagOf: bagOf,
     composers: function () { return COMPOSERS.map(function (K) {
       return { key: K.key, label: K.label, blurb: K.blurb }; }); }
+  };
+})();
+
+/* ===== Studio Pro — Director mode =========================================
+
+   WHAT THIS IS, AND WHY IT IS A SECOND MODE RATHER THAN A REPLACEMENT.
+
+   Auto mode answers "what is the best picture of this selection?" and it
+   answers it well, which is exactly why it cannot also be the pro tool. Its
+   whole method is to decide: it scores the composers, picks the winner, lays
+   it in the one stage rect, and times it against the one playhead. Every one
+   of those decisions is the right default and none of them is negotiable, so
+   a user who wants the Moon's track small in the corner, the ṣaḍbala bars
+   full-bleed behind it, a line of their own text entering at four seconds and
+   the whole thing drifting — cannot get there by arguing with the scorer.
+
+   Director mode takes the same composition apart into LAYERS and hands every
+   one of those decisions over. A layer is:
+
+     what   — a group of selected nodes and which composer draws them, or a
+              piece of text, a rule, a wash, the caption band, the stamp
+     where  — a rectangle in fractions of the frame, with an optional second
+              rectangle it travels to, so a move, a zoom or a pan is just
+              two rects and an easing
+     when   — a window [t0,t1] of the reel, so layers sequence against each
+              other rather than all starting at zero
+     how    — an entry, an exit, a continuous idle motion, an easing, an
+              opacity, a rotation, and which clock the composer inside sees
+
+   Nothing here draws astronomy. Every picture is still one of the fifteen
+   composers, because a composer has never known where it sits: it is handed a
+   rect and a playhead and sizes everything from them. That is the whole
+   reason this mode is a few hundred lines and not a rewrite, and it is why a
+   composer added for Auto mode arrives in Director already placeable,
+   already timeable, already animatable.
+
+   THE DOCUMENT IS DATA. A composition is a plain object that serialises to
+   JSON, which is what makes it saveable, re-openable, shareable as text and
+   testable. The test suite builds documents, renders them and asserts the
+   frames differ — a thing that was impossible to assert about Auto mode,
+   where the arrangement was implicit in the code.
+
+   WHAT IT COSTS PER FRAME. Director renders N layers where Auto rendered one,
+   so the cost is the honest sum of the layers rather than a fixed price. Two
+   things keep that from undoing the performance work: node values are cached
+   per context in the registry, so a node read by three layers is derived
+   once; and nothing in this file touches the DOM. The handles are drawn by a
+   separate overlay pass that the UI calls after rendering and the recorder
+   never calls, which is also why they cannot end up in an export. */
+
+(function () {
+  "use strict";
+
+  function K() { return window.SPStage.kit; }
+  function S() { return window.SPStage.S; }
+  function clamp(v, a, b) { return v < a ? a : (v > b ? b : v); }
+  function lerp(a, b, f) { return a + (b - a) * f; }
+
+  /* ---- easing ------------------------------------------------------------
+     Five, not fifty. Each one is a different intention — arrive evenly,
+     arrive softly, leave softly, settle, overshoot — and a list of twenty
+     named curves is a list in which nobody can tell two of them apart. */
+  var EASE = {
+    linear: { label: "Linear", f: function (f) { return f; } },
+    smooth: { label: "Smooth", f: function (f) { return f * f * (3 - 2 * f); } },
+    "in":   { label: "Ease in", f: function (f) { return f * f; } },
+    out:    { label: "Ease out", f: function (f) { return 1 - (1 - f) * (1 - f); } },
+    back:   { label: "Overshoot", f: function (f) {
+      var c = 1.70158; var g = f - 1;
+      return 1 + (c + 1) * g * g * g + c * g * g; } }
+  };
+  function ease(f, key) { return (EASE[key] || EASE.smooth).f(clamp(f, 0, 1)); }
+
+  /* ---- motion ------------------------------------------------------------
+     An entry, an exit and an idle each return a contribution to one
+     transform, and the three are composed. Keeping them as contributions
+     rather than as three separate draws is what lets a layer rise in, drift
+     through and fade out without the three fighting over the canvas state. */
+  function T0() {
+    return { dx: 0, dy: 0, sx: 1, sy: 1, rot: 0, a: 1, clip: null, cp: null };
+  }
+  var ENTER = {
+    none:   { label: "Appear", f: function () {} },
+    fade:   { label: "Fade in", f: function (T, f) { T.a *= f; } },
+    rise:   { label: "Rise", f: function (T, f) { T.a *= f; T.dy += (1 - f) * 0.10; } },
+    drop:   { label: "Drop", f: function (T, f) { T.a *= f; T.dy -= (1 - f) * 0.10; } },
+    slideL: { label: "In from left", f: function (T, f) { T.a *= Math.min(1, f * 2); T.dx -= (1 - f) * 0.35; } },
+    slideR: { label: "In from right", f: function (T, f) { T.a *= Math.min(1, f * 2); T.dx += (1 - f) * 0.35; } },
+    pop:    { label: "Pop", f: function (T, f) { T.a *= f; T.sx *= 0.80 + 0.20 * f; T.sy *= 0.80 + 0.20 * f; } },
+    zoom:   { label: "Zoom in", f: function (T, f) { T.a *= Math.min(1, f * 1.6); T.sx *= 1.35 - 0.35 * f; T.sy *= 1.35 - 0.35 * f; } },
+    wipeUp: { label: "Wipe up", f: function (T, f) { T.clip = { x: 0, y: 1 - f, w: 1, h: f }; } },
+    wipeL:  { label: "Wipe across", f: function (T, f) { T.clip = { x: 0, y: 0, w: f, h: 1 }; } },
+    iris:   { label: "Iris", f: function (T, f) { T.cp = f; } },
+    turn:   { label: "Turn in", f: function (T, f) { T.a *= f; T.rot += (1 - f) * -14; } },
+    /* the composer's own build-up IS the entry — nothing is transformed, and
+       the clock handling below feeds it a rising p */
+    draw:   { label: "Draw itself", f: function () {} }
+  };
+  var EXIT = {
+    none:    { label: "Stay", f: function () {} },
+    fade:    { label: "Fade out", f: function (T, f) { T.a *= 1 - f; } },
+    sink:    { label: "Sink", f: function (T, f) { T.a *= 1 - f; T.dy += f * 0.10; } },
+    lift:    { label: "Lift", f: function (T, f) { T.a *= 1 - f; T.dy -= f * 0.10; } },
+    slideL:  { label: "Out to left", f: function (T, f) { T.a *= 1 - f * f; T.dx -= f * 0.35; } },
+    slideR:  { label: "Out to right", f: function (T, f) { T.a *= 1 - f * f; T.dx += f * 0.35; } },
+    shrink:  { label: "Shrink", f: function (T, f) { T.a *= 1 - f; T.sx *= 1 - 0.22 * f; T.sy *= 1 - 0.22 * f; } },
+    pullBack:{ label: "Pull back", f: function (T, f) { T.a *= 1 - f; T.sx *= 1 + 0.30 * f; T.sy *= 1 + 0.30 * f; } },
+    wipeDown:{ label: "Wipe away", f: function (T, f) { T.clip = { x: 0, y: 0, w: 1, h: 1 - f }; } }
+  };
+  /* Idle motions run on the reel clock, not the layer's, so two layers with
+     different windows still drift in step — the thing that makes a frame feel
+     like one scene rather than several animations sharing a canvas. */
+  var IDLE = {
+    none:  { label: "Still", f: function () {} },
+    drift: { label: "Drift", f: function (T, a, p) {
+      T.dx += Math.sin(p * Math.PI * 2) * 0.012 * a;
+      T.dy += Math.cos(p * Math.PI * 2 * 0.7) * 0.010 * a; } },
+    bob:   { label: "Bob", f: function (T, a, p) {
+      T.dy += Math.sin(p * Math.PI * 4) * 0.011 * a; } },
+    sway:  { label: "Sway", f: function (T, a, p) {
+      T.rot += Math.sin(p * Math.PI * 2) * 2.2 * a; } },
+    spin:  { label: "Spin", f: function (T, a, p) { T.rot += p * 360 * a; } },
+    pulse: { label: "Breathe", f: function (T, a, p) {
+      var s = 1 + Math.sin(p * Math.PI * 4) * 0.035 * a;
+      T.sx *= s; T.sy *= s; } },
+    creep: { label: "Slow zoom", f: function (T, a, p) {
+      var s = 1 + p * 0.10 * a; T.sx *= s; T.sy *= s; } },
+    flicker: { label: "Shimmer", f: function (T, a, p) {
+      T.a *= 1 - Math.abs(Math.sin(p * Math.PI * 9)) * 0.14 * a; } }
+  };
+
+  /* ---- what a layer can be ---------------------------------------------- */
+  var KINDS = {
+    view:  "A composition — selected nodes drawn by a composer",
+    text:  "A line or paragraph of your own words",
+    rule:  "A hairline or a bar",
+    wash:  "A tint, a vignette or a panel behind other layers",
+    band:  "The caption band — headline over sub-line",
+    stamp: "The handle, the date and the place"
+  };
+  var COLS = ["ink", "gold", "dim", "ben", "mal", "line", "bg", "custom"];
+
+  function uid() {
+    uid.n = (uid.n || 0) + 1;
+    return "L" + uid.n + "_" + Math.floor(Math.random() * 1e6).toString(36);
+  }
+
+  function layer(o) {
+    o = o || {};
+    var L = {
+      id: o.id || uid(),
+      kind: o.kind || "view",
+      name: o.name || "",
+      hidden: !!o.hidden,
+      locked: !!o.locked,
+      /* view */
+      sel: (o.sel || []).slice(),
+      force: o.force || null,
+      /* text / rule / wash / band / stamp */
+      text: o.text || "",
+      size: o.size == null ? 0.030 : o.size,
+      align: o.align || "center",
+      valign: o.valign || "middle",
+      weight: o.weight == null ? 700 : o.weight,
+      col: o.col || "ink",
+      hex: o.hex || "#ffffff",
+      lines: o.lines == null ? 3 : o.lines,
+      sub: o.sub || "",
+      shape: o.shape || "flat",
+      /* where */
+      rect: o.rect ? { x: o.rect.x, y: o.rect.y, w: o.rect.w, h: o.rect.h }
+                   : { x: 0.10, y: 0.20, w: 0.80, h: 0.40 },
+      to: o.to ? { x: o.to.x, y: o.to.y, w: o.to.w, h: o.to.h } : null,
+      rot: o.rot || 0,
+      opacity: o.opacity == null ? 1 : o.opacity,
+      /* A composer sizes its diagram from the rect but writes its labels
+         wherever its own layout puts them, which in a small rect can be
+         outside it. That is right in Auto mode, where the rect is the whole
+         stage, and wrong the moment a user places two layers side by side and
+         one writes over the other. Off by default, because clipping a layer
+         that was not overflowing only costs a clip; on, it makes the
+         rectangle mean exactly what it looks like it means. */
+      clip: !!o.clip,
+      /* when — fractions of the reel */
+      t0: o.t0 == null ? 0 : o.t0,
+      t1: o.t1 == null ? 1 : o.t1,
+      /* how */
+      enter: { k: (o.enter && o.enter.k) || "fade",
+               len: (o.enter && o.enter.len) == null ? 0.25 : o.enter.len },
+      exit:  { k: (o.exit && o.exit.k) || "none",
+               len: (o.exit && o.exit.len) == null ? 0.20 : o.exit.len },
+      idle:  { k: (o.idle && o.idle.k) || "none",
+               amt: (o.idle && o.idle.amt) == null ? 1 : o.idle.amt },
+      ease: o.ease || "smooth",
+      /* which playhead the composer inside sees */
+      clock: o.clock || "layer",
+      at: o.at == null ? 1 : o.at,
+      cycles: o.cycles == null ? 1 : o.cycles
+    };
+    return L;
+  }
+
+  function doc(o) {
+    o = o || {};
+    return {
+      on: !!o.on,
+      name: o.name || "Untitled composition",
+      bg: { style: (o.bg && o.bg.style) || "gradient",
+            stars: o.bg ? !!o.bg.stars : true },
+      layers: (o.layers || []).map(layer)
+    };
+  }
+
+  var DOC = doc({ on: false });
+  var PICK = null;          /* the id of the layer being edited */
+
+  /* ---- grouping a selection into layers ----------------------------------
+
+     Taking control has to start from something that already looks like what
+     Auto drew, or the mode is a blank canvas pretending to be a studio. So
+     "split" groups the selection the way the Layers composer does — by the
+     shape each node declares, with a longitude riding along with the lanes or
+     edges it annotates — and gives each group its own layer. The user then
+     moves, retimes and restyles groups that were already drawn sensibly,
+     which is editing; starting from nothing is authoring from scratch, and
+     anyone who wants that can clear the stack in one click. */
+  var ORDER = ["almanac", "houses", "houseset", "grid", "lanes", "edges",
+               "spanset", "span", "series", "sset", "scalar", "lonset", "lon"];
+
+  function groupsOf(sel, C) {
+    var B = window.SPStage.bagOf(sel, C);
+    var bag = B.bag, groups = [];
+    var hasLanes = !!(bag.lanes && bag.lanes.length);
+    var hasEdges = !!(bag.edges && bag.edges.length);
+    ORDER.forEach(function (k) {
+      var items = bag[k];
+      if (!items || !items.length) return;
+      if (k === "lon" && (hasLanes || hasEdges)) return;
+      var ids = items.map(function (it) { return it.node.id; });
+      if ((k === "lanes" || k === "edges") && bag.lon)
+        ids = ids.concat(bag.lon.map(function (it) { return it.node.id; }));
+      groups.push({ kind: k, ids: ids,
+                    label: items.length === 1 ? items[0].node.label
+                                              : items.length + " × " + k });
+    });
+    return { groups: groups, missing: B.missing };
+  }
+
+  /* ---- the frame rectangles ---------------------------------------------- */
+  /* The stage rect as fractions, so a layer built here lands exactly where
+     Auto would have drawn it and the switch into Director does not move the
+     picture. */
+  function stageRect() {
+    var SA = window.SPStage.SAFE, safe = S().safe;
+    var top = safe ? SA.top : 0.045;
+    var bot = safe ? SA.bottom : 0.045;
+    var side = safe ? SA.right * 0.55 : 0.055;
+    var band = 0.115;
+    return { x: side, y: top, w: 1 - side * 2, h: 1 - top - bot - band };
+  }
+  function bandRect() {
+    var SA = window.SPStage.SAFE, safe = S().safe;
+    var bot = safe ? SA.bottom : 0.045;
+    var side = safe ? SA.right * 0.55 : 0.055;
+    return { x: side, y: 1 - bot - 0.115, w: 1 - side * 2, h: 0.105 };
+  }
+
+  /* ---- building a document ----------------------------------------------- */
+  /* `how`:
+       "single" — the whole selection as one layer, drawn as Auto drew it
+       "split"  — one layer per shape group
+       "solo"   — one layer per selected node, each drawn on its own
+     All three add the caption band and the stamp as layers, because the point
+     of the mode is that the chrome is editable too: a user who wants the
+     headline centred over the diagram rather than under it must be able to
+     pick it up and move it. */
+  function build(sel, C, force, how, headline, sub) {
+    var R = stageRect(), out = [], g;
+    sel = (sel || []).slice();
+
+    if (how === "solo") {
+      sel.forEach(function (id) {
+        var n = window.SPNodes.byId(id);
+        if (!n || !window.SPNodes.resolve(n, C)) return;
+        out.push({ sel: [id], label: n.label });
+      });
+    } else if (how === "split") {
+      g = groupsOf(sel, C);
+      g.groups.forEach(function (q) { out.push({ sel: q.ids, label: q.label }); });
+    } else {
+      if (sel.length) out.push({ sel: sel, force: force || null, label: "The composition" });
+    }
+    if (!out.length && sel.length)
+      out.push({ sel: sel, force: force || null, label: "The composition" });
+
+    var n = out.length, layers = [];
+    /* a wash behind everything, off by default in style but present so it is
+       one click from being a panel rather than a thing to go and find */
+    layers.push(layer({ kind: "wash", name: "Backdrop panel", hidden: true,
+                        shape: "panel", col: "line", opacity: 0.30,
+                        rect: { x: 0.05, y: 0.11, w: 0.90, h: 0.70 },
+                        enter: { k: "fade", len: 0.18 } }));
+
+    out.forEach(function (q, i) {
+      var r;
+      if (n === 1) r = R;
+      else if (n === 2)
+        r = { x: R.x, y: R.y + (R.h / 2) * i, w: R.w, h: R.h / 2 * 0.94 };
+      else {
+        var rows = Math.ceil(n / 2), col = i % 2, row = Math.floor(i / 2);
+        r = { x: R.x + (R.w / 2) * col, y: R.y + (R.h / rows) * row,
+              w: R.w / 2 * 0.95, h: R.h / rows * 0.94 };
+      }
+      layers.push(layer({
+        kind: "view", name: q.label, sel: q.sel, force: q.force || null, rect: r,
+        /* staggered, so a split composition reads as one thing assembling
+           rather than four things starting at once */
+        t0: n > 1 ? clamp(i * 0.12, 0, 0.5) : 0, t1: 1,
+        enter: { k: i % 2 ? "slideR" : "rise", len: n > 1 ? 0.22 : 0.30 },
+        exit: { k: "none", len: 0.2 },
+        idle: { k: "none", amt: 1 }, clock: "layer"
+      }));
+    });
+
+    var BR = bandRect();
+    layers.push(layer({
+      kind: "band", name: "Caption band",
+      text: headline || "", sub: sub || "",
+      rect: BR, t0: n > 1 ? 0.10 : 0.04, t1: 1,
+      enter: { k: "rise", len: 0.22 }, col: "gold"
+    }));
+    layers.push(layer({
+      kind: "stamp", name: "Stamp — handle and date",
+      rect: { x: 0.08, y: 1 - (S().safe ? window.SPStage.SAFE.bottom : 0.045) - 0.012,
+              w: 0.84, h: 0.040 },
+      size: 0.019, col: "dim", t0: 0.02, t1: 1,
+      enter: { k: "fade", len: 0.25 }
+    }));
+
+    DOC = doc({ on: true, name: "From " + (sel.length || 0) + " node(s)",
+                bg: { style: "gradient", stars: true }, layers: layers });
+    PICK = layers.length > 1 ? layers[1].id : layers[0].id;
+    return DOC;
+  }
+
+  /* ---- arrangement presets -----------------------------------------------
+     Not templates for the picture — templates for the GEOMETRY. They re-lay
+     the view layers that already exist and leave the text, the band and the
+     stamp where they are, so trying an arrangement costs one click and
+     nothing is lost by trying it. */
+  var ARRANGE = {
+    stack: { label: "Stack", f: function (views, R) {
+      var n = views.length;
+      views.forEach(function (L, i) {
+        L.rect = { x: R.x, y: R.y + (R.h / n) * i, w: R.w, h: R.h / n * 0.94 };
+      });
+    } },
+    grid: { label: "Grid", f: function (views, R) {
+      var n = views.length, cols = n <= 1 ? 1 : 2, rows = Math.ceil(n / cols);
+      views.forEach(function (L, i) {
+        var c = i % cols, r = Math.floor(i / cols);
+        L.rect = { x: R.x + (R.w / cols) * c, y: R.y + (R.h / rows) * r,
+                   w: R.w / cols * 0.95, h: R.h / rows * 0.94 };
+      });
+    } },
+    hero: { label: "Hero and strip", f: function (views, R) {
+      if (!views.length) return;
+      var rest = views.length - 1;
+      views[0].rect = { x: R.x, y: R.y, w: R.w, h: R.h * (rest ? 0.64 : 1) };
+      for (var i = 1; i < views.length; i++)
+        views[i].rect = { x: R.x + (R.w / rest) * (i - 1), y: R.y + R.h * 0.68,
+                          w: R.w / rest * 0.94, h: R.h * 0.32 };
+    } },
+    bleed: { label: "Full bleed", f: function (views) {
+      views.forEach(function (L) { L.rect = { x: 0, y: 0, w: 1, h: 1 }; });
+    } },
+    thirds: { label: "Upper third", f: function (views, R) {
+      var n = views.length;
+      views.forEach(function (L, i) {
+        L.rect = { x: R.x, y: R.y + (R.h * 0.62 / n) * i,
+                   w: R.w, h: R.h * 0.62 / n * 0.94 };
+      });
+    } },
+    corners: { label: "Scatter", f: function (views, R) {
+      var SP = [[0.00, 0.00], [0.50, 0.00], [0.00, 0.50], [0.50, 0.50]];
+      views.forEach(function (L, i) {
+        var s = SP[i % 4];
+        L.rect = { x: R.x + R.w * s[0], y: R.y + R.h * s[1],
+                   w: R.w * 0.48, h: R.h * 0.47 };
+      });
+    } },
+    centre: { label: "Centre all", f: function (views, R) {
+      views.forEach(function (L) {
+        L.rect = { x: R.x + R.w * 0.08, y: R.y + R.h * 0.10,
+                   w: R.w * 0.84, h: R.h * 0.78 };
+      });
+    } }
+  };
+  function arrange(key) {
+    var f = ARRANGE[key]; if (!f) return;
+    var views = DOC.layers.filter(function (L) { return L.kind === "view"; });
+    f.f(views, stageRect());
+  }
+
+  /* Sequencing presets — the time axis gets the same treatment as the space
+     one, because "they all start at zero" is the single most common reason a
+     multi-layer reel reads as a mess. */
+  var SEQUENCE = {
+    together: { label: "All at once", f: function (Ls) {
+      Ls.forEach(function (L) { L.t0 = 0; L.t1 = 1; }); } },
+    cascade: { label: "Cascade", f: function (Ls) {
+      Ls.forEach(function (L, i) {
+        L.t0 = clamp(i * (0.6 / Math.max(1, Ls.length)), 0, 0.7); L.t1 = 1; }); } },
+    relay: { label: "One at a time", f: function (Ls) {
+      var n = Ls.length || 1;
+      Ls.forEach(function (L, i) {
+        L.t0 = i / n; L.t1 = (i + 1) / n;
+        L.enter = { k: L.enter.k === "none" ? "fade" : L.enter.k, len: 0.30 };
+        L.exit = { k: "fade", len: 0.25 }; }); } },
+    overlap: { label: "Overlapping", f: function (Ls) {
+      var n = Ls.length || 1, w = Math.min(1, 1.8 / n);
+      Ls.forEach(function (L, i) {
+        L.t0 = clamp((i / n) * (1 - w * 0.4), 0, 0.9);
+        L.t1 = clamp(L.t0 + w, 0.1, 1);
+        L.exit = { k: "fade", len: 0.3 }; }); } }
+  };
+  function sequence(key) {
+    var f = SEQUENCE[key]; if (!f) return;
+    f.f(DOC.layers.filter(function (L) { return !L.hidden; }));
+  }
+
+  /* ---- text with the day in it -------------------------------------------
+     A studio whose text layers are only literal strings makes a card that is
+     out of date tomorrow. These resolve at render time from the same context
+     every node reads, so a saved composition reopened next week says next
+     week's tithi — and a token that cannot be resolved prints as itself
+     rather than as "undefined", so a typo in a token is visible on the frame
+     rather than silently blank. */
+  var TOKENS = {
+    "{date}": function (C) {
+      var g = C.day && C.day.gregorian;
+      if (!g) return new Date(C.when).toDateString();
+      var M = ["January", "February", "March", "April", "May", "June", "July",
+               "August", "September", "October", "November", "December"];
+      return g.d + " " + (M[(g.m || 1) - 1] || "") + " " + g.y;
+    },
+    "{place}": function (C) { return (C.place && C.place.n) || ""; },
+    "{vara}": function (C) { return (C.day && C.day.vara) || ""; },
+    "{tithi}": function (C) {
+      var a = C.day && C.day.at && C.day.at.tithi;
+      return a ? ((a.paksha ? a.paksha + " " : "") + a.name) : ""; },
+    "{naks}": function (C) {
+      var a = C.day && C.day.at && C.day.at.nak;
+      return a ? a.name + " pāda " + a.pada : ""; },
+    "{yoga}": function (C) {
+      var a = C.day && C.day.at && C.day.at.yoga; return a ? a.name : ""; },
+    "{karana}": function (C) {
+      var a = C.day && C.day.at && C.day.at.karana; return a ? a.name : ""; },
+    "{masa}": function (C) {
+      var m = C.day && C.day.masa; return m ? (m.amantaIAST || "") : ""; },
+    "{samvat}": function (C) {
+      var s = C.day && C.day.samvat;
+      return s && s.vikrama ? s.vikrama + " Vikrama" : ""; },
+    "{dasha}": function (C) {
+      try { var cm = window.SPNodes.currentMd(C); return cm ? cm.lord : ""; }
+      catch (e) { return ""; } },
+    "{handle}": function () { return S().handle || "@Nirayana.Soft"; }
+  };
+  function expand(s, C) {
+    if (!s) return "";
+    return String(s).replace(/\{[a-z]+\}/g, function (m) {
+      var f = TOKENS[m];
+      if (!f) return m;
+      var v = "";
+      try { v = f(C) || ""; } catch (e) { v = ""; }
+      return v || m;
+    });
+  }
+  function tokenList() {
+    var out = [];
+    for (var k in TOKENS) if (TOKENS.hasOwnProperty(k)) out.push(k);
+    return out;
+  }
+
+  /* ---- colour ------------------------------------------------------------ */
+  function colOf(L) {
+    var P = K().pal();
+    if (L.col === "custom") return L.hex || P.ink;
+    return P[L.col] || P.ink;
+  }
+
+  /* ---- the frame-owning composers ---------------------------------------
+     The almanac leaf paints a whole page to the frame's edge: it is a card,
+     not a diagram, and it has no notion of sitting inside a rectangle. In
+     Director it may be placed anywhere, so it is drawn once into a scratch
+     canvas at the layer rect's own aspect and blitted. The scratch canvas is
+     kept and reused, because allocating a 1080-wide canvas per frame is a
+     garbage-collection pause every second or so. */
+  var SCRATCH = null;
+  function leafInto(v, p, px, C) {
+    var w = Math.max(32, Math.round(px.w)), h = Math.max(32, Math.round(px.h));
+    if (!SCRATCH) SCRATCH = document.createElement("canvas");
+    if (SCRATCH.width !== w || SCRATCH.height !== h) {
+      SCRATCH.width = w; SCRATCH.height = h;
+    }
+    var c2 = SCRATCH.getContext("2d");
+    c2.clearRect(0, 0, w, h);
+    try { window.SPAlmanac.draw(c2, w, h, v, p, K().pal(), { foot: S().handle }); }
+    catch (e) { return; }
+    S().ctx.drawImage(SCRATCH, px.x, px.y, px.w, px.h);
+  }
+
+  /* ---- a layer's time and transform -------------------------------------- */
+  function windowU(L, p) {
+    var a = Math.min(L.t0, L.t1), b = Math.max(L.t0, L.t1);
+    if (b - a < 1e-4) return p >= a ? 1 : -1;
+    if (p < a - 1e-6 || p > b + 1e-6) return -1;
+    return clamp((p - a) / (b - a), 0, 1);
+  }
+  function transformOf(L, u, p) {
+    var T = T0();
+    var el = clamp(L.enter.len, 0, 1), xl = clamp(L.exit.len, 0, 1);
+    var ep = el > 0.001 ? clamp(u / el, 0, 1) : 1;
+    var xp = xl > 0.001 ? clamp((u - (1 - xl)) / xl, 0, 1) : 0;
+    var E = ENTER[L.enter.k] || ENTER.fade;
+    var X = EXIT[L.exit.k] || EXIT.none;
+    var I = IDLE[L.idle.k] || IDLE.none;
+    E.f(T, ease(ep, L.ease));
+    if (xp > 0) X.f(T, ease(xp, L.ease));
+    I.f(T, L.idle.amt == null ? 1 : L.idle.amt, p);
+    T.a *= clamp(L.opacity, 0, 1);
+    T.rot += L.rot || 0;
+    return T;
+  }
+  function rectAt(L, u) {
+    if (!L.to) return L.rect;
+    var f = ease(u, L.ease);
+    return { x: lerp(L.rect.x, L.to.x, f), y: lerp(L.rect.y, L.to.y, f),
+             w: lerp(L.rect.w, L.to.w, f), h: lerp(L.rect.h, L.to.h, f) };
+  }
+  /* which playhead the composer inside the layer is handed */
+  function innerP(L, u, p) {
+    if (L.clock === "reel") return p;
+    if (L.clock === "frozen") return clamp(L.at, 0, 1);
+    if (L.clock === "loop") {
+      var n = Math.max(1, L.cycles || 1);
+      return (u * n) % 1;
+    }
+    if (L.enter.k === "draw") {
+      /* the composer's own build-up is the entry, so it is stretched over the
+         entry length and then held */
+      var el = clamp(L.enter.len, 0.02, 1);
+      return clamp(u / el, 0, 1);
+    }
+    return u;
+  }
+
+  function pxOf(R) {
+    var s = S();
+    return { x: R.x * s.W, y: R.y * s.H, w: R.w * s.W, h: R.h * s.H };
+  }
+
+  /* ---- drawing one layer -------------------------------------------------- */
+  function drawLayer(L, C, p, report) {
+    if (L.hidden) return;
+    var u = windowU(L, p);
+    if (u < 0) return;
+    var s = S(), c = s.ctx;
+    var R = rectAt(L, u), T = transformOf(L, u, p);
+    if (T.a <= 0.002) return;
+    var px = pxOf(R);
+    var cx = px.x + px.w / 2, cy = px.y + px.h / 2;
+
+    c.save();
+    c.globalAlpha = T.a;
+    if (L.clip) {
+      /* the layer's own box, before any motion clip — applied first so a wipe
+         still wipes within it rather than against it */
+      c.beginPath();
+      c.rect(px.x, px.y, px.w, px.h);
+      c.clip();
+    }
+    if (T.clip) {
+      c.beginPath();
+      c.rect(px.x + T.clip.x * px.w, px.y + T.clip.y * px.h,
+             px.w * T.clip.w, px.h * T.clip.h);
+      c.clip();
+    }
+    if (T.cp != null) {
+      c.beginPath();
+      c.arc(cx, cy, Math.max(px.w, px.h) * 0.75 * T.cp, 0, Math.PI * 2);
+      c.clip();
+    }
+    c.translate(cx + T.dx * s.W, cy + T.dy * s.H);
+    if (T.rot) c.rotate(T.rot * Math.PI / 180);
+    if (T.sx !== 1 || T.sy !== 1) c.scale(T.sx, T.sy);
+    c.translate(-cx, -cy);
+
+    try { paint(L, C, innerP(L, u, p), px, report); }
+    catch (e) {
+      if (report) report.errors.push({ id: L.id, name: nameOf(L), why: String(e && e.message || e) });
+    }
+    c.restore();
+  }
+
+  function paint(L, C, ip, px, report) {
+    var s = S(), c = s.ctx, kit = K(), P = kit.pal();
+
+    if (L.kind === "view") {
+      var B = window.SPStage.bagOf(L.sel, C);
+      if (report && B.missing.length)
+        B.missing.forEach(function (m) {
+          report.missing.push({ layer: nameOf(L), label: m.label || m.id, why: m.why });
+        });
+      /* the leaf is its own page and is blitted; everything else is handed
+         the rect and draws into it */
+      if (B.bag.almanac && B.bag.almanac.length) {
+        leafInto(B.bag.almanac[0].v, ip, px, C);
+        if (report) report.used.push({ id: L.id, composer: "almanac" });
+        return;
+      }
+      var st = {
+        x: px.x, y: px.y, w: px.w, h: px.h,
+        cx: px.x + px.w / 2, cy: px.y + px.h / 2,
+        bandY: px.y + px.h * 0.88, bandH: px.h * 0.12, side: px.w * 0.05
+      };
+      var got = window.SPStage.kit.drawInto(B.bag, ip, st, C, L.force);
+      if (!got) {
+        if (report) report.empty.push({ id: L.id, name: nameOf(L),
+          why: L.sel.length ? "nothing in this layer resolves right now"
+                            : "this layer has no nodes in it" });
+        return;
+      }
+      if (got.error && report)
+        report.errors.push({ id: L.id, name: nameOf(L), why: got.error });
+      if (report) report.used.push({ id: L.id, composer: got.key, label: got.label });
+      return;
+    }
+
+    if (L.kind === "text") {
+      var str = expand(L.text, C);
+      if (!str) return;
+      var size = L.size * s.U;
+      var x = L.align === "left" ? px.x : (L.align === "right" ? px.x + px.w : px.x + px.w / 2);
+      var n = Math.max(1, L.lines || 1);
+      if (n === 1) {
+        kit.txtFit(str, x, px.y + px.h / 2, size, colOf(L), L.align, L.weight, px.w);
+      } else {
+        /* A block the user placed in a box must sit in that box, so the rows
+           are measured before any of them is drawn and the first one is
+           lifted by half of what the block will occupy. Measuring by drawing
+           it off-screen first would be two text passes a frame for a thing
+           arithmetic answers. */
+        var lh = size * 1.26;
+        var rows = kit.wrapLines(str, size, px.w, n, L.weight);
+        var used = Math.max(1, rows.length);
+        var top = L.valign === "top" ? px.y + size * 0.7
+                : (L.valign === "bottom" ? px.y + px.h - lh * (used - 0.7)
+                : px.y + px.h / 2 - lh * (used - 1) / 2);
+        for (var ri = 0; ri < rows.length; ri++)
+          kit.txt(rows[ri], x, top + ri * lh, size, colOf(L), L.align, L.weight);
+      }
+      return;
+    }
+
+    if (L.kind === "rule") {
+      c.save();
+      c.globalAlpha = c.globalAlpha * 0.95;
+      var col = colOf(L);
+      if (L.shape === "bar") {
+        c.fillStyle = col;
+        c.fillRect(px.x, px.y, px.w, Math.max(1, px.h));
+      } else if (L.shape === "double") {
+        c.strokeStyle = col; c.lineWidth = Math.max(1, s.U * 0.0016);
+        c.beginPath();
+        c.moveTo(px.x, px.y); c.lineTo(px.x + px.w, px.y);
+        c.moveTo(px.x, px.y + px.h); c.lineTo(px.x + px.w, px.y + px.h);
+        c.stroke();
+      } else if (L.shape === "frame") {
+        c.strokeStyle = col; c.lineWidth = Math.max(1, s.U * 0.0020);
+        c.strokeRect(px.x, px.y, px.w, px.h);
+      } else {
+        c.strokeStyle = col; c.lineWidth = Math.max(1, s.U * 0.0018);
+        c.beginPath();
+        c.moveTo(px.x, px.y + px.h / 2); c.lineTo(px.x + px.w, px.y + px.h / 2);
+        c.stroke();
+      }
+      c.restore();
+      return;
+    }
+
+    if (L.kind === "wash") {
+      var cl = colOf(L);
+      c.save();
+      if (L.shape === "vignette") {
+        var g = c.createRadialGradient(px.x + px.w / 2, px.y + px.h / 2,
+                 Math.min(px.w, px.h) * 0.20, px.x + px.w / 2, px.y + px.h / 2,
+                 Math.max(px.w, px.h) * 0.75);
+        g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, cl);
+        c.fillStyle = g; c.fillRect(px.x, px.y, px.w, px.h);
+      } else if (L.shape === "panel") {
+        c.fillStyle = cl;
+        roundRect(c, px.x, px.y, px.w, px.h, Math.min(px.w, px.h) * 0.045);
+        c.fill();
+        c.globalAlpha = c.globalAlpha * 0.8;
+        c.strokeStyle = P.gold; c.lineWidth = Math.max(1, s.U * 0.0014);
+        roundRect(c, px.x, px.y, px.w, px.h, Math.min(px.w, px.h) * 0.045);
+        c.stroke();
+      } else if (L.shape === "sweep") {
+        var g2 = c.createLinearGradient(px.x, px.y, px.x + px.w, px.y + px.h);
+        g2.addColorStop(0, cl); g2.addColorStop(1, "rgba(0,0,0,0)");
+        c.fillStyle = g2; c.fillRect(px.x, px.y, px.w, px.h);
+      } else if (L.shape === "disc") {
+        c.fillStyle = cl;
+        c.beginPath();
+        c.arc(px.x + px.w / 2, px.y + px.h / 2, Math.min(px.w, px.h) / 2, 0, Math.PI * 2);
+        c.fill();
+      } else {
+        c.fillStyle = cl; c.fillRect(px.x, px.y, px.w, px.h);
+      }
+      c.restore();
+      return;
+    }
+
+    if (L.kind === "band") {
+      var head = expand(L.text, C) || s.headline || "";
+      var sb = expand(L.sub, C) || s.sub || "";
+      if (!head && !sb) return;
+      c.save();
+      c.strokeStyle = P.gold; c.globalAlpha = c.globalAlpha * 0.55;
+      c.lineWidth = Math.max(1, s.U * 0.0016);
+      c.beginPath();
+      c.moveTo(px.x + px.w * 0.26, px.y); c.lineTo(px.x + px.w * 0.74, px.y);
+      c.stroke(); c.restore();
+      if (head)
+        kit.txtFit(head, px.x + px.w / 2, px.y + px.h * 0.36, s.U * 0.040,
+                   colOf(L), "center", 700, px.w * 0.96);
+      if (sb)
+        kit.txtFit(sb, px.x + px.w / 2, px.y + px.h * 0.76, s.U * 0.022,
+                   P.dim, "center", 500, px.w * 0.96);
+      return;
+    }
+
+    if (L.kind === "stamp") {
+      var left = expand(L.text || "{date}  ·  {place}", C);
+      kit.txtFit(left, px.x, px.y + px.h / 2, L.size * s.U, colOf(L),
+                 "left", 500, px.w * 0.62);
+      kit.txt(s.handle || "@Nirayana.Soft", px.x + px.w, px.y + px.h / 2,
+              L.size * s.U, P.gold, "right", 600);
+      return;
+    }
+  }
+
+  function roundRect(c, x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    c.beginPath();
+    c.moveTo(x + r, y);
+    c.arcTo(x + w, y, x + w, y + h, r);
+    c.arcTo(x + w, y + h, x, y + h, r);
+    c.arcTo(x, y + h, x, y, r);
+    c.arcTo(x, y, x + w, y, r);
+    c.closePath();
+  }
+
+  function nameOf(L) {
+    if (L.name) return L.name;
+    if (L.kind === "view") {
+      if (!L.sel.length) return "Empty view";
+      var n = window.SPNodes.byId(L.sel[0]);
+      return (n ? n.label : L.sel[0]) + (L.sel.length > 1 ? " +" + (L.sel.length - 1) : "");
+    }
+    return KINDS[L.kind] ? L.kind.charAt(0).toUpperCase() + L.kind.slice(1) : L.kind;
+  }
+
+  /* ---- the public render -------------------------------------------------- */
+  /* `quiet` has the same meaning as in Auto mode: skip the bookkeeping only
+     the side panels read. During playback the report is pure waste. */
+  function render(C, p, quiet) {
+    var s = S(), c = s.ctx, kit = K();
+    if (!c) return null;
+    var report = quiet ? null
+      : { used: [], missing: [], empty: [], errors: [], layers: DOC.layers.length };
+
+    /* the backdrop is the document's, not the stage's */
+    if (DOC.bg.style === "none") {
+      c.clearRect(0, 0, s.W, s.H);
+    } else if (DOC.bg.style === "flat") {
+      c.fillStyle = kit.pal().bg; c.fillRect(0, 0, s.W, s.H);
+    } else if (DOC.bg.style === "vignette") {
+      c.fillStyle = kit.pal().bg; c.fillRect(0, 0, s.W, s.H);
+      var g = c.createRadialGradient(s.W / 2, s.H * 0.42, s.W * 0.10,
+                                     s.W / 2, s.H * 0.42, s.W * 0.95);
+      g.addColorStop(0, kit.pal().bg2); g.addColorStop(1, kit.pal().bg);
+      c.fillStyle = g; c.fillRect(0, 0, s.W, s.H);
+    } else {
+      kit.background();
+    }
+    if (DOC.bg.stars && kit.pal().key !== "parchment") kit.stars();
+
+    for (var i = 0; i < DOC.layers.length; i++)
+      drawLayer(DOC.layers[i], C, p, report);
+
+    kit.safeGuides();
+    return report;
+  }
+
+  /* ---- the editing overlay ------------------------------------------------
+     Drawn by the page after rendering and never by the recorder, which is why
+     handles cannot appear in an export: the export path does not call this.
+     On canvas rather than as DOM boxes over the preview, because a DOM
+     overlay would have to be repositioned on every frame — exactly the forced
+     layout per frame that made the panel stop responding when the animation
+     ran. */
+  function overlay(p) {
+    var L = current(); if (!L) return;
+    var s = S(), c = s.ctx;
+    var u = windowU(L, p);
+    var R = rectAt(L, u < 0 ? 0 : u), px = pxOf(R);
+    var P = K().pal();
+    c.save();
+    c.setLineDash([Math.max(2, s.U * 0.008), Math.max(2, s.U * 0.006)]);
+    c.strokeStyle = u < 0 ? P.mal : P.gold;
+    c.lineWidth = Math.max(1, s.U * 0.0022);
+    c.globalAlpha = 0.95;
+    c.strokeRect(px.x, px.y, px.w, px.h);
+    c.setLineDash([]);
+    var hs = Math.max(6, s.U * 0.018);
+    HANDLES.forEach(function (h) {
+      var hx = px.x + px.w * h.fx, hy = px.y + px.h * h.fy;
+      c.fillStyle = P.gold;
+      c.fillRect(hx - hs / 2, hy - hs / 2, hs, hs);
+    });
+    if (L.to) {
+      var tp = pxOf(L.to);
+      c.setLineDash([Math.max(2, s.U * 0.004), Math.max(2, s.U * 0.008)]);
+      c.strokeStyle = P.ben; c.globalAlpha = 0.8;
+      c.strokeRect(tp.x, tp.y, tp.w, tp.h);
+      c.setLineDash([]);
+      c.beginPath();
+      c.moveTo(px.x + px.w / 2, px.y + px.h / 2);
+      c.lineTo(tp.x + tp.w / 2, tp.y + tp.h / 2);
+      c.stroke();
+    }
+    if (u < 0) {
+      c.globalAlpha = 1;
+      K().txt("not on screen at this moment", px.x + px.w / 2,
+              px.y + px.h / 2, s.U * 0.020, P.mal, "center", 600);
+    }
+    c.restore();
+  }
+
+  /* fx/fy are the handle's position in the rect; dx/dy which edges it moves */
+  var HANDLES = [
+    { k: "nw", fx: 0, fy: 0, l: 1, t: 1 }, { k: "n", fx: 0.5, fy: 0, t: 1 },
+    { k: "ne", fx: 1, fy: 0, r: 1, t: 1 }, { k: "e", fx: 1, fy: 0.5, r: 1 },
+    { k: "se", fx: 1, fy: 1, r: 1, b: 1 }, { k: "s", fx: 0.5, fy: 1, b: 1 },
+    { k: "sw", fx: 0, fy: 1, l: 1, b: 1 }, { k: "w", fx: 0, fy: 0.5, l: 1 }
+  ];
+
+  /* ---- hit testing, in frame fractions ----------------------------------- */
+  function hit(fx, fy, p, which) {
+    var L = current();
+    var tol = 0.032;
+    if (L && !L.locked) {
+      var u = windowU(L, p);
+      var R = which === "to" && L.to ? L.to : rectAt(L, u < 0 ? 0 : u);
+      for (var i = 0; i < HANDLES.length; i++) {
+        var h = HANDLES[i];
+        var hx = R.x + R.w * h.fx, hy = R.y + R.h * h.fy;
+        if (Math.abs(fx - hx) < tol && Math.abs(fy - hy) < tol)
+          return { id: L.id, mode: h.k, which: which || "rect" };
+      }
+      if (fx > R.x && fx < R.x + R.w && fy > R.y && fy < R.y + R.h)
+        return { id: L.id, mode: "move", which: which || "rect" };
+    }
+    /* topmost visible layer under the point, so clicking a picture selects it */
+    for (var j = DOC.layers.length - 1; j >= 0; j--) {
+      var Q = DOC.layers[j];
+      if (Q.hidden || Q.locked) continue;
+      if (windowU(Q, p) < 0) continue;
+      var r2 = rectAt(Q, windowU(Q, p));
+      if (fx > r2.x && fx < r2.x + r2.w && fy > r2.y && fy < r2.y + r2.h)
+        return { id: Q.id, mode: "pick", which: "rect" };
+    }
+    return null;
+  }
+  /* applies a drag; dx/dy are in frame fractions */
+  function dragTo(grab, startRect, dx, dy, snap) {
+    var L = byId(grab.id); if (!L || L.locked) return;
+    var h = null;
+    HANDLES.forEach(function (q) { if (q.k === grab.mode) h = q; });
+    var R = { x: startRect.x, y: startRect.y, w: startRect.w, h: startRect.h };
+    if (grab.mode === "move" || grab.mode === "pick") { R.x += dx; R.y += dy; }
+    else if (h) {
+      if (h.l) { R.x += dx; R.w -= dx; }
+      if (h.r) { R.w += dx; }
+      if (h.t) { R.y += dy; R.h -= dy; }
+      if (h.b) { R.h += dy; }
+    }
+    if (R.w < 0.04) R.w = 0.04;
+    if (R.h < 0.02) R.h = 0.02;
+    if (snap) {
+      var g = 1 / 24;
+      R.x = Math.round(R.x / g) * g; R.y = Math.round(R.y / g) * g;
+      R.w = Math.round(R.w / g) * g; R.h = Math.round(R.h / g) * g;
+    }
+    if (grab.which === "to") { L.to = R; } else { L.rect = R; }
+  }
+
+  /* ---- stack operations --------------------------------------------------- */
+  function byId(id) {
+    for (var i = 0; i < DOC.layers.length; i++)
+      if (DOC.layers[i].id === id) return DOC.layers[i];
+    return null;
+  }
+  function indexOf(id) {
+    for (var i = 0; i < DOC.layers.length; i++)
+      if (DOC.layers[i].id === id) return i;
+    return -1;
+  }
+  function current() { return byId(PICK); }
+  function add(o, where) {
+    var L = layer(o);
+    if (where === "bottom") DOC.layers.unshift(L);
+    else DOC.layers.push(L);
+    PICK = L.id;
+    return L;
+  }
+  function remove(id) {
+    var i = indexOf(id); if (i < 0) return;
+    DOC.layers.splice(i, 1);
+    if (PICK === id) PICK = DOC.layers.length ? DOC.layers[Math.min(i, DOC.layers.length - 1)].id : null;
+  }
+  function duplicate(id) {
+    var L = byId(id); if (!L) return null;
+    var copy = layer(JSON.parse(JSON.stringify(L)));
+    copy.id = uid();
+    copy.name = (L.name || nameOf(L)) + " copy";
+    /* offset, so the copy is visibly a second object rather than appearing to
+       have done nothing */
+    copy.rect = { x: clamp(L.rect.x + 0.03, 0, 0.96), y: clamp(L.rect.y + 0.03, 0, 0.96),
+                  w: L.rect.w, h: L.rect.h };
+    DOC.layers.splice(indexOf(id) + 1, 0, copy);
+    PICK = copy.id;
+    return copy;
+  }
+  function move(id, delta) {
+    var i = indexOf(id); if (i < 0) return;
+    var j = clamp(i + delta, 0, DOC.layers.length - 1);
+    if (j === i) return;
+    var L = DOC.layers.splice(i, 1)[0];
+    DOC.layers.splice(j, 0, L);
+  }
+
+  /* ---- saving ------------------------------------------------------------
+     A composition is JSON, so it saves as text. Compositions live under their
+     own key; nothing here touches the chart handoff key or the saved-chart
+     format marker, which are load-bearing elsewhere. */
+  var STORE = "nirayana.studio.compositions";
+  function readAll() {
+    try { return JSON.parse(localStorage.getItem(STORE) || "[]") || []; }
+    catch (e) { return []; }
+  }
+  function writeAll(list) {
+    try { localStorage.setItem(STORE, JSON.stringify(list)); return true; }
+    catch (e) { return false; }
+  }
+  function save(name) {
+    var list = readAll();
+    var d = JSON.parse(JSON.stringify(DOC));
+    d.name = name || DOC.name || "Untitled";
+    d.savedAt = Date.now();
+    var at = -1;
+    list.forEach(function (q, i) { if (q.name === d.name) at = i; });
+    if (at >= 0) list[at] = d; else list.push(d);
+    DOC.name = d.name;
+    return writeAll(list) ? d.name : null;
+  }
+  function load(name) {
+    var list = readAll(), found = null;
+    list.forEach(function (q) { if (q.name === name) found = q; });
+    if (!found) return false;
+    DOC = doc(found);
+    DOC.on = true;
+    DOC.name = found.name;
+    PICK = DOC.layers.length ? DOC.layers[DOC.layers.length - 1].id : null;
+    return true;
+  }
+  function drop(name) {
+    writeAll(readAll().filter(function (q) { return q.name !== name; }));
+  }
+
+  /* ---- the reel's own length, for sequencing ----------------------------- */
+  /* The last moment anything is on screen. A user who times a layer to end at
+     0.6 and nothing after it has left a third of the reel empty, and the page
+     should be able to say so. */
+  function lastUsed() {
+    var t = 0;
+    DOC.layers.forEach(function (L) {
+      if (L.hidden) return;
+      t = Math.max(t, Math.max(L.t0, L.t1));
+    });
+    return t;
+  }
+
+  window.SPDirector = {
+    EASE: EASE, ENTER: ENTER, EXIT: EXIT, IDLE: IDLE, KINDS: KINDS, COLS: COLS,
+    ARRANGE: ARRANGE, SEQUENCE: SEQUENCE,
+    doc: function () { return DOC; },
+    on: function () { return !!DOC.on; },
+    setOn: function (v) { DOC.on = !!v; },
+    layer: layer, newDoc: function (o) { DOC = doc(o || { on: true }); PICK = null; return DOC; },
+    build: build, groupsOf: groupsOf, arrange: arrange, sequence: sequence,
+    stageRect: stageRect, bandRect: bandRect,
+    render: render, overlay: overlay,
+    /* Render somebody else's document without disturbing the one being
+       edited — how a storyboard shot can be a Director scene. The swap is
+       synchronous and restored in a finally, so a composer that throws
+       mid-shot cannot leave the editor pointing at a saved document. */
+    withDoc: function (d, fn) {
+      var keep = DOC, keepPick = PICK;
+      DOC = doc(d); DOC.on = true;
+      try { return fn(); } finally { DOC = keep; PICK = keepPick; }
+    },
+    snapshot: function () { return JSON.parse(JSON.stringify(DOC)); },
+    hit: hit, dragTo: dragTo, HANDLES: HANDLES,
+    byId: byId, current: current, pick: function (id) { PICK = id; },
+    picked: function () { return PICK; },
+    add: add, remove: remove, duplicate: duplicate, move: move,
+    nameOf: nameOf, windowU: windowU, rectAt: rectAt, expand: expand,
+    tokens: tokenList, lastUsed: lastUsed,
+    save: save, load: load, drop: drop, saved: readAll
+  };
+})();
+
+/* ===== Studio Pro — the Director panel ====================================
+
+   The controls for the layer model: the stack, the inspector, the timeline,
+   the arrangement and sequencing presets, dragging on the canvas, and saving
+   a composition. Nothing here computes anything about the sky; it edits a
+   plain object and asks the page to redraw.
+
+   WHY THE PANEL IS REBUILT ON CHANGE AND NEVER ON A FRAME. This is the same
+   rule the whole page now lives under, and it is the reason it is worth
+   restating here rather than trusting it to be remembered: an innerHTML
+   rebuild invalidates style for the document, and a rebuild per frame on a
+   panel this size is what made pressing Play stop the buttons responding.
+   So: a handler changes the document and calls change(), which redraws the
+   canvas once and re-renders whatever part of the panel is now wrong. During
+   playback the panel is not touched at all — the inspector shows the
+   document, which playback does not alter.
+
+   WHY DRAGGING IS ON THE CANVAS AND NOT IN DOM BOXES. Handles as absolutely
+   positioned divs over the preview would have to be repositioned every frame
+   to track an animating layer, which is a write-then-read on layout sixty
+   times a second — the exact fault that was just fixed. They are drawn by the
+   Director's overlay pass instead, which the export and the recorder never
+   call, so they also cannot end up in a saved frame. */
+
+(function () {
+  "use strict";
+
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  var D = null;              /* window.SPDirector, once it exists */
+  var HOST = null;           /* hooks handed over by the page */
+  var DRAG = null;
+
+  function doc() { return D.doc(); }
+  function cur() { return D.current(); }
+
+  /* a change to the document: redraw, and re-sync the parts of the panel that
+     describe what changed */
+  function change(deep) {
+    HOST.draw();
+    if (deep) stack();
+    inspector();
+    timeline();
+    status();
+    if (HOST.save) HOST.save();
+  }
+
+  /* ---- small field builders ---------------------------------------------- */
+  function row(host, label) {
+    var r = el("div", "spdrow");
+    if (label) r.appendChild(el("span", "spdlab", label));
+    host.appendChild(r);
+    return r;
+  }
+  function sel(host, label, opts, value, onSet) {
+    var r = row(host, label), s = el("select");
+    opts.forEach(function (o) {
+      var op = el("option", null, o.label);
+      op.value = o.v;
+      if (String(o.v) === String(value)) op.selected = true;
+      s.appendChild(op);
+    });
+    s.addEventListener("change", function () { onSet(s.value); });
+    r.appendChild(s);
+    return s;
+  }
+  function num(host, label, value, min, max, step, onSet, suffix) {
+    var r = row(host, label), i = el("input");
+    i.type = "number"; i.value = value; i.min = min; i.max = max; i.step = step;
+    i.addEventListener("change", function () {
+      var v = parseFloat(i.value);
+      if (isNaN(v)) return;
+      onSet(Math.max(min, Math.min(max, v)));
+    });
+    r.appendChild(i);
+    if (suffix) r.appendChild(el("span", "spdsuf", suffix));
+    return i;
+  }
+  function range(host, label, value, min, max, step, onSet) {
+    var r = row(host, label), i = el("input");
+    i.type = "range"; i.value = value; i.min = min; i.max = max; i.step = step;
+    i.className = "spdrange";
+    var out = el("span", "spdsuf", String(value));
+    i.addEventListener("input", function () {
+      out.textContent = i.value;
+      onSet(parseFloat(i.value));
+    });
+    r.appendChild(i); r.appendChild(out);
+    return i;
+  }
+  function text(host, label, value, onSet, place) {
+    var r = row(host, label), i = el("input");
+    i.type = "text"; i.value = value || "";
+    if (place) i.placeholder = place;
+    i.addEventListener("input", function () { onSet(i.value); });
+    r.appendChild(i);
+    return i;
+  }
+  function btn(host, label, onClick, cls) {
+    var b = el("button", "spbtn" + (cls ? " " + cls : ""), label);
+    b.type = "button";
+    b.addEventListener("click", onClick);
+    host.appendChild(b);
+    return b;
+  }
+  function opts(map, order) {
+    var out = [];
+    (order || Object.keys(map)).forEach(function (k) {
+      if (!map.hasOwnProperty(k)) return;
+      out.push({ v: k, label: map[k].label || map[k] });
+    });
+    return out;
+  }
+
+  /* ---- the mode switch ---------------------------------------------------- */
+  function modeBar() {
+    var host = $("sp-modebar");
+    if (!host) return;
+    host.innerHTML = "";
+    var on = D.on();
+    var a = el("button", "spv" + (on ? "" : " on"), "Auto");
+    a.type = "button";
+    a.title = "The page decides the view, the arrangement and the timing.";
+    a.addEventListener("click", function () {
+      if (!D.on()) return;
+      D.setOn(false); sync(); change(true);
+      HOST.flash("Auto mode. The page is choosing again.");
+    });
+    var b = el("button", "spv" + (on ? " on" : ""), "Director");
+    b.type = "button";
+    b.title = "You decide: layers, placement, timing, motion.";
+    b.addEventListener("click", function () {
+      if (D.on()) return;
+      if (!doc().layers.length) takeControl("single");
+      else { D.setOn(true); sync(); change(true); }
+    });
+    host.appendChild(a); host.appendChild(b);
+    var note = el("span", "spdmode",
+      on ? "Director — the document below is what records."
+         : "Auto — the best fit for the selection is drawn.");
+    host.appendChild(note);
+  }
+
+  function takeControl(how) {
+    var C = HOST.ctx();
+    var s = HOST.sel();
+    if (!s.length && how !== "blank") {
+      HOST.flash("Pick something from the wall first — Director starts from a composition.");
+      return;
+    }
+    if (how === "blank") {
+      D.newDoc({ on: true, name: "Blank" });
+      D.setOn(true);
+    } else {
+      D.build(s, C, HOST.force(), how, HOST.headline(), HOST.subline());
+    }
+    sync();
+    change(true);
+    HOST.flash(how === "blank"
+      ? "Empty document. Add layers below."
+      : "Taken apart into " + doc().layers.length + " layers. Everything below is yours to move.");
+  }
+
+  /* ---- the layer stack ---------------------------------------------------- */
+  /* Painted top-of-stack first, because that is the order the eye reads a
+     layer list in every tool that has one, and the array is bottom-first. */
+  function stack() {
+    var host = $("sp-stack");
+    if (!host) return;
+    host.innerHTML = "";
+    var Ls = doc().layers;
+    if (!Ls.length) {
+      host.appendChild(el("p", "spdempty",
+        "No layers. Take a selection apart, or add one below."));
+      return;
+    }
+    var picked = D.picked();
+    for (var i = Ls.length - 1; i >= 0; i--) {
+      (function (L, idx) {
+        var r = el("div", "spdlayer" + (L.id === picked ? " on" : "") +
+                            (L.hidden ? " off" : ""));
+        var eye = el("button", "spdeye", L.hidden ? "◻" : "◼");
+        eye.type = "button";
+        eye.title = L.hidden ? "Hidden — click to show" : "Visible — click to hide";
+        eye.setAttribute("aria-label", eye.title);
+        eye.addEventListener("click", function (ev) {
+          ev.stopPropagation();
+          L.hidden = !L.hidden; change(true);
+        });
+        var nm = el("button", "spdname");
+        nm.type = "button";
+        nm.appendChild(el("span", "spdkind", L.kind));
+        nm.appendChild(el("span", "spdtitle", D.nameOf(L)));
+        var win = (L.t0 > 0.001 || L.t1 < 0.999)
+          ? Math.round(L.t0 * 100) + "–" + Math.round(L.t1 * 100) + "%" : "";
+        if (win) nm.appendChild(el("span", "spdwin", win));
+        nm.addEventListener("click", function () { D.pick(L.id); change(true); });
+        var up = el("button", "spdmv", "↑"); up.type = "button";
+        up.title = "Bring forward";
+        up.addEventListener("click", function (ev) {
+          ev.stopPropagation(); D.move(L.id, 1); change(true); });
+        var dn = el("button", "spdmv", "↓"); dn.type = "button";
+        dn.title = "Send back";
+        dn.addEventListener("click", function (ev) {
+          ev.stopPropagation(); D.move(L.id, -1); change(true); });
+        var cp = el("button", "spdmv", "⧉"); cp.type = "button";
+        cp.title = "Duplicate";
+        cp.addEventListener("click", function (ev) {
+          ev.stopPropagation(); D.duplicate(L.id); change(true); });
+        var x = el("button", "spdmv spdx", "×"); x.type = "button";
+        x.title = "Delete this layer";
+        x.addEventListener("click", function (ev) {
+          ev.stopPropagation(); D.remove(L.id); change(true); });
+        r.appendChild(eye); r.appendChild(nm);
+        r.appendChild(up); r.appendChild(dn); r.appendChild(cp); r.appendChild(x);
+        host.appendChild(r);
+      })(Ls[i], i);
+    }
+  }
+
+  /* ---- adding layers ------------------------------------------------------ */
+  function addBar() {
+    var host = $("sp-addbar");
+    if (!host) return;
+    host.innerHTML = "";
+    var R = D.stageRect();
+    btn(host, "+ View", function () {
+      var s = HOST.sel();
+      if (!s.length) { HOST.flash("Select nodes on the wall, then add them as a view layer."); return; }
+      D.add({ kind: "view", sel: s.slice(), force: HOST.force(),
+              rect: { x: R.x + R.w * 0.12, y: R.y + R.h * 0.12,
+                      w: R.w * 0.76, h: R.h * 0.76 },
+              enter: { k: "rise", len: 0.25 } });
+      change(true);
+      HOST.flash("Added the current selection as a view layer.");
+    });
+    btn(host, "+ Text", function () {
+      D.add({ kind: "text", text: "Your line here", size: 0.034, lines: 2,
+              col: "ink", rect: { x: 0.10, y: 0.18, w: 0.80, h: 0.10 },
+              enter: { k: "rise", len: 0.25 } });
+      change(true);
+    });
+    btn(host, "+ Rule", function () {
+      D.add({ kind: "rule", shape: "line", col: "gold",
+              rect: { x: 0.25, y: 0.30, w: 0.50, h: 0.004 },
+              enter: { k: "wipeL", len: 0.30 } });
+      change(true);
+    });
+    btn(host, "+ Wash", function () {
+      D.add({ kind: "wash", shape: "panel", col: "line", opacity: 0.35,
+              rect: { x: 0.08, y: 0.16, w: 0.84, h: 0.56 },
+              enter: { k: "fade", len: 0.2 } }, "bottom");
+      change(true);
+    });
+    btn(host, "+ Band", function () {
+      D.add({ kind: "band", col: "gold", rect: D.bandRect(),
+              enter: { k: "rise", len: 0.22 } });
+      change(true);
+    });
+    btn(host, "+ Stamp", function () {
+      D.add({ kind: "stamp", size: 0.019, col: "dim",
+              text: "{date}  ·  {place}",
+              rect: { x: 0.08, y: 0.93, w: 0.84, h: 0.04 } });
+      change(true);
+    });
+  }
+
+  /* ---- the inspector ------------------------------------------------------ */
+  function inspector() {
+    var host = $("sp-insp");
+    if (!host) return;
+    host.innerHTML = "";
+    var L = cur();
+    if (!L) {
+      host.appendChild(el("p", "spdempty",
+        "Pick a layer above, or click one on the frame."));
+      return;
+    }
+    var h = el("div", "spdhead");
+    h.appendChild(el("b", null, D.nameOf(L)));
+    h.appendChild(el("span", "spdkind", L.kind));
+    host.appendChild(h);
+
+    text(host, "Name", L.name, function (v) { L.name = v; change(true); },
+         D.nameOf(L));
+
+    /* --- what --- */
+    host.appendChild(el("h4", "spdsec", "What"));
+    if (L.kind === "view") {
+      var tray = el("div", "spdsel");
+      if (!L.sel.length) tray.appendChild(el("span", "spdempty", "no nodes"));
+      L.sel.forEach(function (id) {
+        var n = window.SPNodes.byId(id);
+        var c = el("button", "spchip sm", n ? n.label : id);
+        c.type = "button";
+        c.title = "Remove from this layer";
+        c.addEventListener("click", function () {
+          L.sel = L.sel.filter(function (q) { return q !== id; });
+          change(true);
+        });
+        tray.appendChild(c);
+      });
+      host.appendChild(tray);
+      var acts = el("div", "spdrow");
+      btn(acts, "Set to wall selection", function () {
+        var s = HOST.sel();
+        if (!s.length) { HOST.flash("Nothing is selected on the wall."); return; }
+        L.sel = s.slice(); L.force = HOST.force(); change(true);
+      });
+      btn(acts, "Add wall selection", function () {
+        var s = HOST.sel();
+        s.forEach(function (id) { if (L.sel.indexOf(id) < 0) L.sel.push(id); });
+        change(true);
+      });
+      host.appendChild(acts);
+      /* which composer draws this layer — the whole list, so the user can
+         insist, with what the matcher would have chosen marked */
+      var C = HOST.ctx();
+      var B = window.SPStage.bagOf(L.sel, C);
+      var fit = window.SPStage.options(B.bag);
+      var list = [{ v: "", label: "Best fit" + (fit.length ? " — " + fit[0].label : "") }];
+      window.SPStage.composers().forEach(function (K) {
+        var ok = false;
+        fit.forEach(function (f) { if (f.key === K.key) ok = true; });
+        list.push({ v: K.key, label: K.label + (ok ? "" : "  (cannot draw this)") });
+      });
+      sel(host, "Drawn as", list, L.force || "", function (v) {
+        L.force = v || null; change(true);
+      });
+    } else if (L.kind === "text" || L.kind === "band" || L.kind === "stamp") {
+      text(host, L.kind === "band" ? "Headline" : "Text", L.text,
+           function (v) { L.text = v; change(true); },
+           L.kind === "stamp" ? "{date}  ·  {place}" : "");
+      if (L.kind === "band")
+        text(host, "Sub-line", L.sub, function (v) { L.sub = v; change(true); });
+      var tk = el("p", "spdtok");
+      tk.appendChild(document.createTextNode("Tokens resolve when the frame is drawn: "));
+      D.tokens().forEach(function (t) {
+        var a = el("button", "spdtokb", t);
+        a.type = "button";
+        a.title = "Insert " + t;
+        a.addEventListener("click", function () {
+          L.text = (L.text || "") + t; change(true);
+        });
+        tk.appendChild(a);
+      });
+      host.appendChild(tk);
+      if (L.kind === "text") {
+        num(host, "Size", (L.size * 1000).toFixed(0), 8, 140, 1,
+            function (v) { L.size = v / 1000; change(); }, "‰ of width");
+        num(host, "Max lines", L.lines, 1, 8, 1, function (v) { L.lines = v; change(); });
+        sel(host, "Align", [{ v: "left", label: "Left" }, { v: "center", label: "Centre" },
+                            { v: "right", label: "Right" }], L.align,
+            function (v) { L.align = v; change(); });
+        sel(host, "Vertical", [{ v: "top", label: "Top" }, { v: "middle", label: "Middle" },
+                               { v: "bottom", label: "Bottom" }], L.valign,
+            function (v) { L.valign = v; change(); });
+        sel(host, "Weight", [{ v: 400, label: "Regular" }, { v: 500, label: "Medium" },
+                             { v: 600, label: "Semibold" }, { v: 700, label: "Bold" },
+                             { v: 800, label: "Heavy" }], L.weight,
+            function (v) { L.weight = +v; change(); });
+      }
+      if (L.kind === "stamp")
+        num(host, "Size", (L.size * 1000).toFixed(0), 8, 60, 1,
+            function (v) { L.size = v / 1000; change(); }, "‰ of width");
+    } else if (L.kind === "rule") {
+      sel(host, "Shape", [{ v: "line", label: "Hairline" }, { v: "bar", label: "Solid bar" },
+                          { v: "double", label: "Two rules" }, { v: "frame", label: "Box" }],
+          L.shape, function (v) { L.shape = v; change(true); });
+    } else if (L.kind === "wash") {
+      sel(host, "Shape", [{ v: "flat", label: "Flat fill" }, { v: "panel", label: "Panel" },
+                          { v: "vignette", label: "Vignette" }, { v: "sweep", label: "Gradient sweep" },
+                          { v: "disc", label: "Disc" }],
+          L.shape, function (v) { L.shape = v; change(true); });
+    }
+    if (L.kind !== "view") {
+      var cols = [];
+      D.COLS.forEach(function (k) {
+        cols.push({ v: k, label: k === "custom" ? "Custom…" : k });
+      });
+      sel(host, "Colour", cols, L.col, function (v) { L.col = v; change(true); });
+      if (L.col === "custom") {
+        var r = row(host, "Hex"), i = el("input");
+        i.type = "color"; i.value = L.hex;
+        i.addEventListener("input", function () { L.hex = i.value; change(); });
+        r.appendChild(i);
+      }
+    }
+
+    /* --- where --- */
+    host.appendChild(el("h4", "spdsec", "Where"));
+    var g = el("div", "spdgrid");
+    ["x", "y", "w", "h"].forEach(function (k) {
+      var lab = el("label", "spdcell");
+      lab.appendChild(el("span", null, k));
+      var i = el("input");
+      i.type = "number"; i.step = "0.5"; i.min = "-50"; i.max = "200";
+      i.value = (L.rect[k] * 100).toFixed(1);
+      i.addEventListener("change", function () {
+        var v = parseFloat(i.value);
+        if (!isNaN(v)) { L.rect[k] = v / 100; change(); }
+      });
+      lab.appendChild(i);
+      g.appendChild(lab);
+    });
+    host.appendChild(g);
+    host.appendChild(el("p", "spdhint",
+      "Per cent of the frame. Drag the layer on the frame itself — hold Shift to snap."));
+    var al = el("div", "spdrow");
+    al.appendChild(el("span", "spdlab", "Align"));
+    btn(al, "Centre ↔", function () {
+      L.rect.x = (1 - L.rect.w) / 2; change(); });
+    btn(al, "Centre ↕", function () {
+      L.rect.y = (1 - L.rect.h) / 2; change(); });
+    btn(al, "Fill the stage", function () {
+      var R = D.stageRect();
+      L.rect = { x: R.x, y: R.y, w: R.w, h: R.h }; change(); });
+    btn(al, "Fill the frame", function () {
+      L.rect = { x: 0, y: 0, w: 1, h: 1 }; change(); });
+    host.appendChild(al);
+    var cl = el("label", "spcheck"), cb = el("input");
+    cb.type = "checkbox"; cb.checked = !!L.clip;
+    cb.addEventListener("change", function () { L.clip = cb.checked; change(); });
+    cl.appendChild(cb);
+    cl.appendChild(document.createTextNode(
+      " clip to the box — nothing of this layer is drawn outside it"));
+    host.appendChild(cl);
+    range(host, "Rotation", L.rot, -180, 180, 1, function (v) { L.rot = v; change(); });
+    range(host, "Opacity", L.opacity, 0, 1, 0.01, function (v) { L.opacity = v; change(); });
+
+    var mv = el("div", "spdrow");
+    if (!L.to) {
+      btn(mv, "Add a move", function () {
+        L.to = { x: L.rect.x, y: L.rect.y - 0.08, w: L.rect.w, h: L.rect.h };
+        change(true);
+        HOST.flash("A second rectangle. The layer travels from the gold box to the green one.");
+      });
+    } else {
+      btn(mv, "Remove the move", function () { L.to = null; change(true); });
+      btn(mv, "Swap ends", function () {
+        var t = L.rect; L.rect = L.to; L.to = t; change();
+      });
+    }
+    host.appendChild(mv);
+    if (L.to) {
+      var g2 = el("div", "spdgrid");
+      ["x", "y", "w", "h"].forEach(function (k) {
+        var lab = el("label", "spdcell to");
+        lab.appendChild(el("span", null, "→" + k));
+        var i2 = el("input");
+        i2.type = "number"; i2.step = "0.5"; i2.min = "-50"; i2.max = "200";
+        i2.value = (L.to[k] * 100).toFixed(1);
+        i2.addEventListener("change", function () {
+          var v = parseFloat(i2.value);
+          if (!isNaN(v)) { L.to[k] = v / 100; change(); }
+        });
+        lab.appendChild(i2);
+        g2.appendChild(lab);
+      });
+      host.appendChild(g2);
+      host.appendChild(el("p", "spdhint",
+        "Hold Alt and drag on the frame to move the destination."));
+    }
+
+    /* --- when --- */
+    host.appendChild(el("h4", "spdsec", "When"));
+    var dur = HOST.duration();
+    range(host, "Starts", L.t0, 0, 1, 0.01, function (v) {
+      L.t0 = v; if (L.t1 < v) L.t1 = Math.min(1, v + 0.05); change(true); });
+    range(host, "Ends", L.t1, 0, 1, 0.01, function (v) {
+      L.t1 = v; if (L.t0 > v) L.t0 = Math.max(0, v - 0.05); change(true); });
+    host.appendChild(el("p", "spdhint",
+      "On screen from " + (L.t0 * dur).toFixed(1) + " s to " + (L.t1 * dur).toFixed(1) +
+      " s of " + dur.toFixed(0) + " s."));
+
+    /* --- how --- */
+    host.appendChild(el("h4", "spdsec", "How it moves"));
+    sel(host, "Entry", opts(D.ENTER), L.enter.k, function (v) {
+      L.enter.k = v; change(true); });
+    range(host, "Entry length", L.enter.len, 0, 1, 0.01,
+          function (v) { L.enter.len = v; change(); });
+    sel(host, "Exit", opts(D.EXIT), L.exit.k, function (v) { L.exit.k = v; change(true); });
+    range(host, "Exit length", L.exit.len, 0, 1, 0.01,
+          function (v) { L.exit.len = v; change(); });
+    sel(host, "All the while", opts(D.IDLE), L.idle.k, function (v) {
+      L.idle.k = v; change(true); });
+    range(host, "How much", L.idle.amt, 0, 3, 0.05,
+          function (v) { L.idle.amt = v; change(); });
+    sel(host, "Easing", opts(D.EASE), L.ease, function (v) { L.ease = v; change(); });
+
+    if (L.kind === "view") {
+      sel(host, "The drawing's own clock",
+          [{ v: "layer", label: "Runs over the layer's window" },
+           { v: "reel", label: "Runs over the whole reel" },
+           { v: "loop", label: "Loops inside the window" },
+           { v: "frozen", label: "Held at one instant" }],
+          L.clock, function (v) { L.clock = v; change(true); });
+      if (L.clock === "loop")
+        num(host, "Loops", L.cycles, 1, 20, 1, function (v) { L.cycles = v; change(); });
+      if (L.clock === "frozen")
+        range(host, "Held at", L.at, 0, 1, 0.01, function (v) { L.at = v; change(); });
+      host.appendChild(el("p", "spdhint",
+        "Every composer animates itself. This decides what it thinks the " +
+        "playhead is — so a diagram can finish building early and then sit " +
+        "still while the rest of the frame arrives."));
+    }
+
+    var lk = el("label", "spcheck"), ci = el("input");
+    ci.type = "checkbox"; ci.checked = !!L.locked;
+    ci.addEventListener("change", function () { L.locked = ci.checked; change(true); });
+    lk.appendChild(ci);
+    lk.appendChild(document.createTextNode(" locked — not picked up by dragging"));
+    host.appendChild(lk);
+  }
+
+  /* ---- the timeline ------------------------------------------------------- */
+  /* One bar per layer against the reel. It is the only place the whole
+     sequence is visible at once, which is what a user needs to see why two
+     layers collide. Clicking a bar picks the layer; dragging its body or its
+     ends retimes it. */
+  function timeline() {
+    var host = $("sp-timeline");
+    if (!host) return;
+    host.innerHTML = "";
+    var Ls = doc().layers;
+    if (!Ls.length) return;
+    var dur = HOST.duration();
+    var picked = D.picked();
+    for (var i = Ls.length - 1; i >= 0; i--) {
+      (function (L) {
+        var r = el("div", "spdtrow" + (L.id === picked ? " on" : ""));
+        var nm = el("span", "spdtname", D.nameOf(L));
+        var lane = el("div", "spdtlane");
+        var bar = el("div", "spdtbar" + (L.hidden ? " off" : ""));
+        var a = Math.min(L.t0, L.t1), b = Math.max(L.t0, L.t1);
+        bar.style.left = (a * 100) + "%";
+        bar.style.width = Math.max(1.5, (b - a) * 100) + "%";
+        bar.title = D.nameOf(L) + " — " + (a * dur).toFixed(1) + "s to " +
+                    (b * dur).toFixed(1) + "s";
+        /* the entry and exit, shaded inside the bar, so a reel that is all
+           entrance and no picture is visible as such */
+        if (L.enter.len > 0.01) {
+          var ei = el("i", "spdte");
+          ei.style.width = Math.min(100, L.enter.len * 100) + "%";
+          bar.appendChild(ei);
+        }
+        if (L.exit.len > 0.01) {
+          var xi = el("i", "spdtx");
+          xi.style.width = Math.min(100, L.exit.len * 100) + "%";
+          bar.appendChild(xi);
+        }
+        lane.appendChild(bar);
+        bar.addEventListener("pointerdown", function (ev) {
+          ev.preventDefault();
+          D.pick(L.id);
+          var rect = lane.getBoundingClientRect();
+          var at = (ev.clientX - rect.left) / Math.max(1, rect.width);
+          var edge = (at - a) / Math.max(0.001, b - a);
+          var mode = edge < 0.18 ? "a" : (edge > 0.82 ? "b" : "move");
+          var start = { a: a, b: b, at: at };
+          function mv(e2) {
+            var dx = (e2.clientX - rect.left) / Math.max(1, rect.width) - start.at;
+            if (mode === "move") {
+              var len = start.b - start.a;
+              L.t0 = Math.max(0, Math.min(1 - len, start.a + dx));
+              L.t1 = L.t0 + len;
+            } else if (mode === "a") {
+              L.t0 = Math.max(0, Math.min(start.b - 0.02, start.a + dx));
+            } else {
+              L.t1 = Math.min(1, Math.max(start.a + 0.02, start.b + dx));
+            }
+            HOST.draw();
+          }
+          function up() {
+            window.removeEventListener("pointermove", mv);
+            window.removeEventListener("pointerup", up);
+            change(true);
+          }
+          window.addEventListener("pointermove", mv);
+          window.addEventListener("pointerup", up);
+          change(true);
+        });
+        r.appendChild(nm); r.appendChild(lane);
+        host.appendChild(r);
+      })(Ls[i]);
+    }
+    var pl = el("div", "spdtrow spdtruler");
+    pl.appendChild(el("span", "spdtname", dur.toFixed(0) + " s"));
+    var lane2 = el("div", "spdtlane");
+    for (var t = 0; t <= 4; t++) {
+      var tick = el("i", "spdtick");
+      tick.style.left = (t * 25) + "%";
+      lane2.appendChild(tick);
+    }
+    pl.appendChild(lane2);
+    host.appendChild(pl);
+  }
+
+  /* ---- presets and document-level controls -------------------------------- */
+  function presets() {
+    var host = $("sp-presets");
+    if (!host) return;
+    host.innerHTML = "";
+    var r1 = el("div", "spdrow");
+    r1.appendChild(el("span", "spdlab", "Arrange"));
+    Object.keys(D.ARRANGE).forEach(function (k) {
+      btn(r1, D.ARRANGE[k].label, function () {
+        D.arrange(k); change(true);
+      });
+    });
+    host.appendChild(r1);
+    var r2 = el("div", "spdrow");
+    r2.appendChild(el("span", "spdlab", "Sequence"));
+    Object.keys(D.SEQUENCE).forEach(function (k) {
+      btn(r2, D.SEQUENCE[k].label, function () {
+        D.sequence(k); change(true);
+      });
+    });
+    host.appendChild(r2);
+    var r3 = el("div", "spdrow");
+    r3.appendChild(el("span", "spdlab", "Backdrop"));
+    [["gradient", "Gradient"], ["flat", "Flat"], ["vignette", "Vignette"],
+     ["none", "None"]].forEach(function (q) {
+      var b = el("button", "spv" + (doc().bg.style === q[0] ? " on" : ""), q[1]);
+      b.type = "button";
+      b.addEventListener("click", function () {
+        doc().bg.style = q[0]; change(true);
+      });
+      r3.appendChild(b);
+    });
+    var st = el("label", "spcheck"), si = el("input");
+    si.type = "checkbox"; si.checked = !!doc().bg.stars;
+    si.addEventListener("change", function () { doc().bg.stars = si.checked; change(); });
+    st.appendChild(si);
+    st.appendChild(document.createTextNode(" stars"));
+    r3.appendChild(st);
+    host.appendChild(r3);
+  }
+
+  function library() {
+    var host = $("sp-library");
+    if (!host) return;
+    host.innerHTML = "";
+    var r = el("div", "spdrow");
+    var nmi = el("input");
+    nmi.type = "text"; nmi.value = doc().name || "";
+    nmi.placeholder = "name this composition";
+    nmi.className = "spdname-in";
+    r.appendChild(nmi);
+    btn(r, "Save", function () {
+      var n = (nmi.value || "").trim();
+      if (!n) { HOST.flash("Give the composition a name first."); return; }
+      var ok = D.save(n);
+      HOST.flash(ok ? "Saved “" + ok + "” in this browser." :
+                 "Could not save — this browser is refusing to store anything.");
+      library();
+    });
+    host.appendChild(r);
+    var list = D.saved();
+    if (!list.length) {
+      host.appendChild(el("p", "spdhint",
+        "Saved compositions stay in this browser. Nothing is uploaded."));
+      return;
+    }
+    var ul = el("div", "spdsaved");
+    list.sort(function (a, b) { return (b.savedAt || 0) - (a.savedAt || 0); });
+    list.forEach(function (q) {
+      var r2 = el("div", "spdsrow");
+      var o = el("button", "spchip sm", q.name + "  ·  " +
+                 (q.layers || []).length + " layers");
+      o.type = "button";
+      o.addEventListener("click", function () {
+        if (D.load(q.name)) { sync(); change(true); HOST.flash("Opened “" + q.name + "”."); }
+      });
+      var x = el("button", "spdmv spdx", "×");
+      x.type = "button"; x.title = "Forget this composition";
+      x.addEventListener("click", function () { D.drop(q.name); library(); });
+      r2.appendChild(o); r2.appendChild(x);
+      ul.appendChild(r2);
+    });
+    host.appendChild(ul);
+  }
+
+  function status() {
+    var host = $("sp-dstat");
+    if (!host) return;
+    var rep = HOST.lastReport();
+    var bits = [];
+    var Ls = doc().layers;
+    var vis = Ls.filter(function (L) { return !L.hidden; }).length;
+    bits.push(Ls.length + " layer(s), " + vis + " visible");
+    var last = D.lastUsed();
+    if (last < 0.97)
+      bits.push("nothing on screen after " + Math.round(last * 100) + "% of the reel");
+    if (rep) {
+      if (rep.empty && rep.empty.length)
+        bits.push(rep.empty.length + " layer(s) drawing nothing");
+      if (rep.missing && rep.missing.length)
+        bits.push(rep.missing.length + " node(s) that do not resolve");
+      if (rep.errors && rep.errors.length)
+        bits.push(rep.errors.length + " layer(s) that threw");
+    }
+    host.textContent = bits.join("  ·  ");
+
+    var warn = $("sp-dwarn");
+    if (!warn) return;
+    warn.innerHTML = "";
+    if (!rep) return;
+    (rep.empty || []).forEach(function (q) {
+      warn.appendChild(el("li", null, q.name + " — " + q.why));
+    });
+    (rep.missing || []).forEach(function (q) {
+      warn.appendChild(el("li", null, q.layer + ": " + q.label + " — " + q.why));
+    });
+    (rep.errors || []).forEach(function (q) {
+      warn.appendChild(el("li", "bad", q.name + " — " + q.why));
+    });
+  }
+
+  /* ---- dragging on the frame ---------------------------------------------- */
+  /* Pointer coordinates come in CSS pixels of the displayed canvas, which is
+     a different size from the canvas's own pixels and a different size again
+     from the export. Everything in the document is a fraction of the frame,
+     so the conversion is done once here and nothing downstream has to know
+     what size anything is being previewed at. */
+  function frac(cv, ev) {
+    var r = cv.getBoundingClientRect();
+    return { x: (ev.clientX - r.left) / Math.max(1, r.width),
+             y: (ev.clientY - r.top) / Math.max(1, r.height) };
+  }
+  function bindCanvas(cv) {
+    cv.addEventListener("pointerdown", function (ev) {
+      if (!D.on()) return;
+      var f = frac(cv, ev);
+      var which = ev.altKey ? "to" : "rect";
+      var g = D.hit(f.x, f.y, window.SPStage.S.p, which);
+      if (!g) { return; }
+      ev.preventDefault();
+      if (g.id !== D.picked()) { D.pick(g.id); change(true); }
+      var L = D.byId(g.id);
+      if (!L) return;
+      var src = (g.which === "to" && L.to) ? L.to : L.rect;
+      DRAG = { grab: g, start: { x: src.x, y: src.y, w: src.w, h: src.h },
+               from: f, snap: ev.shiftKey };
+      try { cv.setPointerCapture(ev.pointerId); } catch (e) {}
+    });
+    cv.addEventListener("pointermove", function (ev) {
+      if (!DRAG) {
+        if (!D.on()) return;
+        /* the cursor tells the user what a press would do, which is the only
+           affordance a canvas can offer */
+        var f2 = frac(cv, ev);
+        var g2 = D.hit(f2.x, f2.y, window.SPStage.S.p, ev.altKey ? "to" : "rect");
+        cv.style.cursor = !g2 ? "default"
+          : (g2.mode === "move" ? "move"
+          : (g2.mode === "pick" ? "pointer"
+          : (g2.mode === "n" || g2.mode === "s" ? "ns-resize"
+          : (g2.mode === "e" || g2.mode === "w" ? "ew-resize"
+          : (g2.mode === "ne" || g2.mode === "sw" ? "nesw-resize" : "nwse-resize")))));
+        return;
+      }
+      ev.preventDefault();
+      var f = frac(cv, ev);
+      D.dragTo(DRAG.grab, DRAG.start, f.x - DRAG.from.x, f.y - DRAG.from.y,
+               ev.shiftKey || DRAG.snap);
+      /* the canvas only — the panel is synced on release, because retiming
+         the inspector's thirty fields at pointer rate is the forced layout
+         this page has already been bitten by once */
+      HOST.draw();
+    });
+    function end() {
+      if (!DRAG) return;
+      DRAG = null;
+      change(true);
+    }
+    cv.addEventListener("pointerup", end);
+    cv.addEventListener("pointercancel", end);
+    /* nudging with the keyboard, which is how anything is ever aligned
+       properly; the canvas is focusable for exactly this */
+    cv.setAttribute("tabindex", "0");
+    cv.addEventListener("keydown", function (ev) {
+      if (!D.on()) return;
+      var L = cur(); if (!L || L.locked) return;
+      var step = ev.shiftKey ? 0.05 : 0.005;
+      var k = ev.key, R = L.rect;
+      if (k === "ArrowLeft") R.x -= step;
+      else if (k === "ArrowRight") R.x += step;
+      else if (k === "ArrowUp") R.y -= step;
+      else if (k === "ArrowDown") R.y += step;
+      else if (k === "[") { R.w *= 0.96; R.h *= 0.96; }
+      else if (k === "]") { R.w /= 0.96; R.h /= 0.96; }
+      else if (k === "Delete" || k === "Backspace") { D.remove(L.id); change(true); ev.preventDefault(); return; }
+      else return;
+      ev.preventDefault();
+      change();
+    });
+  }
+
+  /* ---- showing and hiding the whole panel --------------------------------- */
+  function sync() {
+    var on = D.on();
+    var p = $("sp-dirpanel");
+    if (p) p.hidden = !on;
+    var t = $("sp-timewrap");
+    if (t) t.hidden = !on;
+    var a = $("sp-autoonly");
+    if (a) a.hidden = on;
+    /* a finger on the frame drags a layer in Director and scrolls the page in
+       Auto, which is what a finger on a phone is mostly for */
+    var cv = $("sp-canvas");
+    if (cv) cv.className = on ? "spdragging" : "";
+    modeBar();
+    presets();
+    addBar();
+    library();
+  }
+
+  window.SPDirUI = {
+    mount: function (hooks) {
+      D = window.SPDirector;
+      if (!D) return;
+      HOST = hooks;
+      var tc = $("sp-takeone");
+      if (tc) tc.addEventListener("click", function () { takeControl("single"); });
+      var ts = $("sp-takesplit");
+      if (ts) ts.addEventListener("click", function () { takeControl("split"); });
+      var to = $("sp-takesolo");
+      if (to) to.addEventListener("click", function () { takeControl("solo"); });
+      var tb = $("sp-takeblank");
+      if (tb) tb.addEventListener("click", function () { takeControl("blank"); });
+      var cv = $("sp-canvas");
+      if (cv) bindCanvas(cv);
+      sync();
+      stack(); inspector(); timeline(); status();
+    },
+    /* the page calls this after anything that changes what the panel should
+       say — a new place, a new moment, a new selection */
+    refresh: function (deep) {
+      if (!D || !HOST) return;
+      if (deep) sync();
+      stack(); inspector(); timeline(); status();
+    },
+    on: function () { return D && D.on(); },
+    overlay: function (p) { if (D && D.on()) D.overlay(p); }
   };
 })();
 
@@ -3638,19 +5631,28 @@
 
      So the frame path draws the canvas and does nothing else, and the panels
      are synced only when the composition actually changes. */
+  function shotsNow() { return (STORY && SHOTS.length) ? SHOTS : null; }
   function drawFrame() {
     if (!window.SPStage || !C) return;
-    LAST = (STORY && SHOTS.length)
-      ? window.SPStage.renderStory(SHOTS, C, window.SPStage.S.p)
-      : window.SPStage.render(SEL, C, window.SPStage.S.p, FORCE, true);
+    LAST = window.SPStage.frameAt(SEL, C, window.SPStage.S.p, FORCE,
+                                 shotsNow(), true);
+    /* The editing handles. Drawn after the frame and only here — the recorder
+       and the still export call frameAt themselves and never this, which is
+       why a gold dashed rectangle cannot end up in anything saved. */
+    if (window.SPDirUI) window.SPDirUI.overlay(window.SPStage.S.p);
   }
   function draw() {
     if (!window.SPStage || !C) return;
-    LAST = (STORY && SHOTS.length)
-      ? window.SPStage.renderStory(SHOTS, C, window.SPStage.S.p)
-      : window.SPStage.render(SEL, C, window.SPStage.S.p, FORCE);
+    LAST = window.SPStage.frameAt(SEL, C, window.SPStage.S.p, FORCE,
+                                 shotsNow(), false);
+    if (window.SPDirUI) window.SPDirUI.overlay(window.SPStage.S.p);
     fitPreview();
-    refreshViews(); refreshNotes();
+    /* In Director mode the composer switcher and the fit notes describe a
+       choice the user has taken over, so they stand down rather than
+       contradict the layer they are no longer about. */
+    if (!(window.SPDirector && window.SPDirector.on())) {
+      refreshViews(); refreshNotes();
+    }
   }
 
   /* ===== the sample strip ================================================
@@ -3877,11 +5879,26 @@
   /* ---- the storyboard ---------------------------------------------------- */
   function shotLabel(sh) {
     if (sh.label) return sh.label;
-    var names = sh.sel.map(function (id) {
+    if (sh.doc) return (sh.name || "Scene") + " — " +
+      (sh.doc.layers || []).length + " layers";
+    var names = (sh.sel || []).map(function (id) {
       var n = window.SPNodes.byId(id); return n ? n.label : id; });
     return names.slice(0, 3).join(" + ") + (names.length > 3 ? " +" + (names.length - 3) : "");
   }
   function addShot() {
+    /* In Director mode the shot is the whole document, not the selection:
+       what the user has composed is what they mean by "this shot", and a
+       storyboard that quietly recorded the Auto reading of the same nodes
+       instead would be the worst kind of surprise. */
+    if (window.SPDirector && window.SPDirector.on()) {
+      var d = window.SPDirector.snapshot();
+      if (!d.layers.length) { flash("This document has no layers yet."); return; }
+      SHOTS.push({ doc: d, sel: [], seconds: 5,
+                   name: d.name || ("Scene " + (SHOTS.length + 1)) });
+      refreshShots(); draw(); saveState();
+      flash("Added the composition as shot " + SHOTS.length + ".");
+      return;
+    }
     if (!SEL.length) { flash("Select something first, then add it as a shot."); return; }
     SHOTS.push({ sel: SEL.slice(), force: FORCE, seconds: 5 });
     STORY = true;
@@ -3935,8 +5952,22 @@
       /* clicking the row loads that shot back into the wall for editing */
       t.style.cursor = "pointer";
       t.addEventListener("click", function () {
-        SEL = sh.sel.slice(); FORCE = sh.force || null; STORY = false;
+        STORY = false;
         var tb2 = $("sp-storytoggle"); if (tb2) tb2.checked = false;
+        /* a Director shot opens back into Director with its own layers, an
+           Auto shot back onto the wall — editing a shot means getting the
+           thing you made, in the mode you made it in */
+        if (sh.doc && window.SPDirector) {
+          window.SPDirector.newDoc(sh.doc);
+          window.SPDirector.setOn(true);
+          if (window.SPDirUI) window.SPDirUI.refresh(true);
+        } else {
+          SEL = (sh.sel || []).slice(); FORCE = sh.force || null;
+          if (window.SPDirector && window.SPDirector.on()) {
+            window.SPDirector.setOn(false);
+            if (window.SPDirUI) window.SPDirUI.refresh(true);
+          }
+        }
         refreshWall(); refreshTray(); refreshShots(); draw(); });
       host.appendChild(row);
     });
@@ -3973,6 +6004,9 @@
     }
     FORCE = null;
     refreshWall(); refreshTray(); draw();
+    /* the Director inspector offers "set this layer to the wall selection",
+       so it is stale the moment the wall changes */
+    if (window.SPDirUI) window.SPDirUI.refresh();
     saveState();
   }
   function flash(msg) {
@@ -4051,7 +6085,11 @@
         sel: SEL, ratio: window.SPStage.S.ratio, pal: window.SPStage.S.pal,
         safe: window.SPStage.S.safe, head: window.SPStage.S.headline,
         sub: window.SPStage.S.sub, shots: SHOTS, story: STORY,
-        place: PLACE }));
+        place: PLACE,
+        /* the working document, so an afternoon of layer work is not lost to
+           a reload; the named library is separate and explicit */
+        dir: (window.SPDirector && window.SPDirector.on())
+               ? window.SPDirector.snapshot() : null }));
     } catch (e) {}
   }
   function loadState() {
@@ -4068,8 +6106,12 @@
       if (o.place && o.place.lat != null) PLACE = asPlace(o.place);
       if (o.shots && o.shots.length) {
         SHOTS = o.shots.filter(function (sh) {
-          return sh && sh.sel && sh.sel.length; });
+          return sh && ((sh.sel && sh.sel.length) || sh.doc); });
         STORY = !!o.story && SHOTS.length > 0;
+      }
+      if (o.dir && o.dir.layers && o.dir.layers.length && window.SPDirector) {
+        window.SPDirector.newDoc(o.dir);
+        window.SPDirector.setOn(true);
       }
     } catch (e) {}
   }
@@ -4077,9 +6119,11 @@
   /* ---- export ------------------------------------------------------------ */
   function savePng() {
     var cv = $("sp-canvas");
-    /* the preview is deliberately low-resolution; a saved frame is not */
+    /* the preview is deliberately low-resolution; a saved frame is not — and
+       it goes through frameAt, so what is saved is whatever mode is showing
+       rather than always the Auto composition */
     window.SPStage.withFullSize(function () {
-      window.SPStage.render(SEL, C, window.SPStage.S.p, FORCE);
+      window.SPStage.frameAt(SEL, C, window.SPStage.S.p, FORCE, shotsNow(), true);
     });
     cv.toBlob(function (b) {
       var u = URL.createObjectURL(b), a = document.createElement("a");
@@ -4259,6 +6303,7 @@
         var t = Date.parse(when.value);
         C = buildContext(isFinite(t) ? t : Date.now());
         refreshWall(); refreshTray(); draw();
+        if (window.SPDirUI) window.SPDirUI.refresh();
       });
     }
     var span = $("sp-span");
@@ -4288,6 +6333,28 @@
       SHOTS = []; STORY = false; refreshShots(); draw(); saveState(); });
     $("sp-png") && $("sp-png").addEventListener("click", savePng);
     $("sp-rec") && $("sp-rec").addEventListener("click", saveVideo);
+
+    /* DIRECTOR MODE. The panel is handed the few things it cannot work out
+       for itself — what is selected on the wall, which context to resolve
+       against, how long the reel is, and how to ask for a redraw. It is given
+       functions rather than values because every one of them changes while
+       the panel is open, and a panel holding a stale copy of the context
+       would resolve nodes against last week. */
+    if (window.SPDirUI) {
+      window.SPDirUI.mount({
+        draw: draw,
+        drawFrame: drawFrame,
+        ctx: function () { return C; },
+        sel: function () { return SEL.slice(); },
+        force: function () { return FORCE; },
+        headline: function () { return window.SPStage.S.headline; },
+        subline: function () { return window.SPStage.S.sub; },
+        duration: function () { return DUR; },
+        lastReport: function () { return LAST; },
+        save: saveState,
+        flash: flash
+      });
+    }
 
     /* the list of what is deliberately missing */
     var ab = $("sp-absent");
@@ -4336,7 +6403,40 @@
       pickPlace: function (p) { return applyPlace(p); },
       placeInputs: function () {
         var h = $("sp-place");
-        return h ? h.querySelectorAll("input").length : 0; }
+        return h ? h.querySelectorAll("input").length : 0; },
+      /* Director: drive the mode and the document without a mouse, and read
+         back what the frame path actually did */
+      dir: function () { return window.SPDirector; },
+      dirOn: function () { return !!(window.SPDirector && window.SPDirector.on()); },
+      take: function (how) {
+        var b = $(how === "split" ? "sp-takesplit"
+               : how === "solo" ? "sp-takesolo"
+               : how === "blank" ? "sp-takeblank" : "sp-takeone");
+        if (b) b.click();
+        return window.SPDirector ? window.SPDirector.doc() : null;
+      },
+      setAuto: function () {
+        var bs = document.querySelectorAll("#sp-modebar .spv");
+        if (bs.length) bs[0].click();
+        return !!(window.SPDirector && window.SPDirector.on());
+      },
+      /* the frame as the EXPORT path makes it — frameAt with no overlay, which
+         is what savePng and the recorder call */
+      exportFrame: function (p) {
+        window.SPStage.S.p = p == null ? window.SPStage.S.p : p;
+        return window.SPStage.frameAt(SEL, C, window.SPStage.S.p, FORCE,
+                                      shotsNow(), true);
+      },
+      /* the frame as the SCREEN makes it — the same, plus the handles */
+      screenFrame: function (p) {
+        if (p != null) window.SPStage.S.p = p;
+        drawFrame();
+        return LAST;
+      },
+      refreshDir: function (deep) {
+        if (window.SPDirUI) window.SPDirUI.refresh(deep); },
+      duration: function () { return DUR; },
+      playing: function () { return PLAY; }
     };
   } catch (e) {}
 })();

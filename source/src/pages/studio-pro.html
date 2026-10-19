@@ -38,6 +38,21 @@
               aria-label="The composed animation frame"></canvas>
     </div>
 
+    <!-- Auto decides; Director hands every decision over. The switch sits
+         directly under the frame because it changes what the frame IS, and a
+         control that changes everything belongs next to the everything. -->
+    <div class="spmode" id="sp-modebar"></div>
+
+    <div class="sptimewrap" id="sp-timewrap" hidden>
+      <div class="sptimehead">
+        <h3>The timeline</h3>
+        <p>One bar per layer against the length of the reel. Drag a bar to move
+           it, drag its ends to retime it. The darker shading at each end is
+           the entry and the exit.</p>
+      </div>
+      <div id="sp-timeline" class="sptimeline"></div>
+    </div>
+
     <div class="spctl">
       <!-- The scrubber gets its own row. Beside the button it sat nine pixels
            from it, and a fingertip is forty across: a tap aimed at Pause
@@ -118,14 +133,56 @@
     </div>
     <div id="sp-tray" class="sptray"></div>
 
-    <div class="sphead">
-      <h3>Views that fit this selection</h3>
-      <p>The stage picks the one that uses the most of what you chose. Pin a
-         different one if you want it drawn another way.</p>
-    </div>
-    <div id="sp-views" class="spviews"></div>
+    <div id="sp-autoonly">
+      <div class="sphead">
+        <h3>Views that fit this selection</h3>
+        <p>The stage picks the one that uses the most of what you chose. Pin a
+           different one if you want it drawn another way.</p>
+      </div>
+      <div id="sp-views" class="spviews"></div>
 
-    <div id="sp-notes" class="spnotes"></div>
+      <div id="sp-notes" class="spnotes"></div>
+
+      <div class="sphead">
+        <h3>Take control of it</h3>
+        <p>Auto is one picture, laid out and timed for you. Director breaks a
+           composition into layers you place, order, time and animate yourself
+           — the same composers, none of the decisions.</p>
+      </div>
+      <div class="sprow2">
+        <button type="button" id="sp-takeone" class="spbtn primary">Take control</button>
+        <button type="button" id="sp-takesplit" class="spbtn">Take apart</button>
+      </div>
+      <div class="sprow2">
+        <button type="button" id="sp-takesolo" class="spbtn">One layer per node</button>
+        <button type="button" id="sp-takeblank" class="spbtn">Start empty</button>
+      </div>
+      <p class="spdhint">“Take control” keeps the picture as Auto drew it and
+         hands you the parts. “Take apart” gives each kind of quantity its own
+         layer. Nothing is lost either way — Auto is one click back.</p>
+    </div>
+
+    <!-- ===== Director ============================================== -->
+    <div id="sp-dirpanel" hidden>
+      <div class="sphead">
+        <h3 id="director">The document</h3>
+        <p class="spstat" id="sp-dstat"></p>
+      </div>
+
+      <div id="sp-presets" class="spdpresets"></div>
+
+      <h4 class="spdsec">Layers — topmost first</h4>
+      <div id="sp-stack" class="spdstack"></div>
+      <div id="sp-addbar" class="spdadd"></div>
+
+      <h4 class="spdsec">The selected layer</h4>
+      <div id="sp-insp" class="spdinsp"></div>
+
+      <ul id="sp-dwarn" class="spdwarn"></ul>
+
+      <h4 class="spdsec">Saved compositions</h4>
+      <div id="sp-library" class="spdlib"></div>
+    </div>
 
     <div class="sphead">
       <h3>The storyboard</h3>
@@ -163,6 +220,39 @@ page can make is not the number of animations anyone wrote.</p>
 panels and draws each group with whatever fits it, so there is no combination
 that produces nothing. And whenever a view cannot use part of what you picked,
 <b>it says so on the page</b> rather than quietly dropping it.</p>
+
+<h3>Director mode</h3>
+
+<p>Auto mode answers one question — what is the best picture of this
+selection? — and it answers it by deciding: it scores the composers, picks the
+winner, lays it in the one stage rectangle and times it against the one
+playhead. Those are the right defaults and that is exactly why they cannot
+also be a pro tool, because none of them is negotiable.</p>
+
+<p>Director mode takes the same composition apart into <b>layers</b> and hands
+every one of those decisions over. A layer has a <b>what</b> — a group of
+nodes and the composer that draws them, or your own text, a rule, a wash, the
+caption band, the stamp; a <b>where</b> — a rectangle in the frame, and
+optionally a second rectangle it travels to, which is how a move, a pan or a
+zoom is expressed; a <b>when</b> — the stretch of the reel it is on screen for;
+and a <b>how</b> — an entry, an exit, a continuous motion, an easing, and which
+clock the drawing inside it believes.</p>
+
+<p>Nothing in Director draws astronomy of its own. Every picture is still one
+of the composers above, because a composer has never been told where it sits:
+it is handed a rectangle and a playhead and sizes everything from them. That
+is why placing a diagram in a corner, holding it still while a line of text
+arrives, and drifting the pair of them is a matter of four fields rather than a
+new animation — and why a composer added for Auto mode arrives in Director
+already placeable, already timeable, already animatable.</p>
+
+<p>A composition is a plain object. It saves as text in this browser, reopens,
+and can be dropped into the storyboard as one scene among several. Text layers
+may carry tokens — <code>{tithi}</code>, <code>{naks}</code>,
+<code>{date}</code>, <code>{dasha}</code> and the rest — which resolve when the
+frame is drawn rather than when it was typed, so a card saved today and
+reopened next month states next month's almanac instead of a stale copy of
+today's.</p>
 
 <h2 id="honest">What is not here</h2>
 

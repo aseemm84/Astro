@@ -857,6 +857,122 @@ table.stplantab td.stph{color:var(--ink)}
   border:1px solid var(--line);border-radius:7px;background:var(--soft);color:var(--ink)}
 .spflash{margin:2px 0 0;font-size:.8rem;color:var(--gold)}
 
+/* ===== Director mode =====================================================
+   The panel is dense on purpose: a layer has roughly thirty properties and a
+   pro tool that asks for four clicks to reach any of them is a tool nobody
+   finishes a card in. So the fields are small and close, and the touch rules
+   at the bottom of this block put them back to 44px on a phone, where close
+   together is the one thing they must not be. */
+.spmode{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0 2px}
+.spdmode{font-size:.74rem;color:var(--muted);margin-left:4px}
+
+.sptimewrap{margin:8px 0 4px;border:1px solid var(--line);border-radius:9px;
+  background:#fff;padding:8px 10px}
+.sptimehead h3{margin:0 0 2px;font-size:.88rem}
+.sptimehead p{margin:0 0 7px;font-size:.73rem;color:var(--muted);line-height:1.45}
+.sptimeline{display:flex;flex-direction:column;gap:3px}
+.spdtrow{display:flex;align-items:center;gap:7px}
+.spdtrow.on .spdtname{color:#5a4512;font-weight:600}
+.spdtname{flex:0 0 92px;font-size:.71rem;color:var(--muted);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.spdtlane{position:relative;flex:1;height:17px;background:var(--soft);
+  border-radius:4px;border:1px solid var(--line);min-width:0}
+.spdtbar{position:absolute;top:1px;bottom:1px;background:var(--night);
+  border-radius:3px;cursor:grab;overflow:hidden;touch-action:none}
+.spdtrow.on .spdtbar{background:var(--gold)}
+.spdtbar.off{opacity:.3}
+.spdtbar i{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.34)}
+.spdte{left:0}
+.spdtx{right:0}
+.spdtruler .spdtlane{height:9px;background:none;border:none}
+.spdtick{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+
+.spdpresets{display:flex;flex-direction:column;gap:5px;margin:0 0 9px}
+.spdrow{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:0 0 5px}
+.spdlab{font-size:.71rem;color:var(--muted);flex:0 0 76px}
+.spdsuf{font-size:.71rem;color:var(--muted);font-variant-numeric:tabular-nums;
+  min-width:30px}
+.spdrow input[type=number],.spdrow input[type=text],.spdrow select{font:inherit;
+  font-size:.8rem;padding:4px 6px;border:1px solid var(--line);border-radius:6px;
+  background:var(--soft);color:var(--ink);flex:1;min-width:0}
+.spdrow input[type=color]{width:46px;height:28px;padding:0;border:1px solid var(--line);
+  border-radius:6px;background:none}
+.spdrange{flex:1;min-width:0;height:22px;touch-action:pan-x}
+.spdsec{margin:12px 0 5px;font-size:.78rem;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);
+  padding-bottom:3px}
+.spdhint{margin:1px 0 7px;font-size:.71rem;color:var(--muted);line-height:1.45}
+.spdempty{margin:4px 0;font-size:.75rem;color:var(--muted);font-style:italic}
+
+.spdstack{display:flex;flex-direction:column;gap:3px;max-height:290px;
+  overflow-y:auto;padding-right:2px}
+.spdlayer{display:flex;align-items:center;gap:2px;border:1px solid var(--line);
+  border-radius:7px;background:#fff;padding:2px 3px}
+.spdlayer.on{border-color:var(--gold);background:#fdf8ea}
+.spdlayer.off{opacity:.55}
+.spdeye,.spdmv{font:inherit;font-size:.78rem;line-height:1;min-width:24px;
+  padding:5px 4px;border:1px solid transparent;border-radius:5px;background:none;
+  color:var(--muted);cursor:pointer}
+.spdeye:hover,.spdmv:hover{border-color:var(--line);background:var(--soft);
+  color:var(--ink)}
+.spdx:hover{border-color:#e0b4ad;background:#fdf1ef;color:#9a3c2a}
+.spdname{flex:1;min-width:0;text-align:left;font:inherit;font-size:.78rem;
+  background:none;border:none;cursor:pointer;padding:4px 3px;color:var(--ink);
+  display:flex;align-items:baseline;gap:5px}
+.spdkind{font-size:.63rem;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--gold);flex:0 0 auto}
+.spdtitle{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.spdwin{font-size:.65rem;color:var(--muted);font-variant-numeric:tabular-nums;
+  margin-left:auto;flex:0 0 auto}
+.spdadd{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0 0}
+.spdadd .spbtn{font-size:.76rem;padding:5px 9px}
+
+.spdinsp{border:1px solid var(--line);border-radius:9px;background:#fff;
+  padding:8px 10px}
+.spdhead{display:flex;align-items:baseline;gap:6px;margin:0 0 6px;
+  padding-bottom:5px;border-bottom:1px solid var(--line)}
+.spdhead b{font-size:.86rem}
+.spdsel{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 6px}
+.spchip.sm{font-size:.72rem;padding:3px 7px}
+.spdgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:0 0 4px}
+.spdcell{display:flex;flex-direction:column;gap:2px;font-size:.66rem;
+  color:var(--muted)}
+.spdcell.to{color:#2f7d55}
+.spdcell input{font:inherit;font-size:.76rem;padding:4px 3px;text-align:center;
+  border:1px solid var(--line);border-radius:5px;background:var(--soft);
+  color:var(--ink);width:100%;min-width:0}
+.spdtok{margin:2px 0 7px;font-size:.7rem;color:var(--muted);line-height:1.7}
+.spdtokb{font:inherit;font-size:.68rem;padding:1px 5px;margin:0 2px 0 0;
+  border:1px solid var(--line);border-radius:4px;background:var(--soft);
+  color:#5a4512;cursor:pointer}
+.spdtokb:hover{border-color:var(--gold)}
+.spdwarn{margin:8px 0 0;padding-left:17px;font-size:.73rem;color:var(--muted);
+  line-height:1.5}
+.spdwarn li.bad{color:#9a3c2a}
+.spdlib{margin:0 0 6px}
+.spdname-in{flex:1;min-width:0}
+.spdsaved{display:flex;flex-direction:column;gap:3px;margin:6px 0 0}
+.spdsrow{display:flex;align-items:center;gap:3px}
+.spdsrow .spchip{flex:1;text-align:left}
+@media (pointer:coarse){
+  .spdeye,.spdmv{min-width:38px;min-height:38px}
+  .spdrow input[type=number],.spdrow input[type=text],.spdrow select,
+  .spdcell input{min-height:40px}
+  .spdrange{height:38px}
+  /* The timeline bar is a drag target, not a readout: a bar is dragged to
+     retime a layer and its ends are dragged to trim it. At 26 the lane left a
+     22px bar, which is half a fingertip — tall enough to read and too short
+     to grab, the worst of both. 42 leaves a 38px bar. */
+  .spdtlane{height:42px}
+  .spdtname{flex:0 0 76px}
+  .spdname{padding:9px 4px}
+}
+.spdeye,.spdmv,.spdname,.spdtokb,.spdtbar{touch-action:manipulation}
+/* The canvas swallows touch only while layers are draggable. In Auto mode a
+   finger on the frame has to scroll the page, which is most of what a finger
+   on a phone is for; the class is put on by the Director panel. */
+.spdragging#sp-canvas{touch-action:none}
+
 .sptray{display:flex;flex-direction:column;gap:6px}
 .sprow{display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid var(--line);
   border-radius:9px;background:var(--soft)}
@@ -960,6 +1076,21 @@ table.stplantab td.stph{color:var(--ink)}
               aria-label="The composed animation frame"></canvas>
     </div>
 
+    <!-- Auto decides; Director hands every decision over. The switch sits
+         directly under the frame because it changes what the frame IS, and a
+         control that changes everything belongs next to the everything. -->
+    <div class="spmode" id="sp-modebar"></div>
+
+    <div class="sptimewrap" id="sp-timewrap" hidden>
+      <div class="sptimehead">
+        <h3>The timeline</h3>
+        <p>One bar per layer against the length of the reel. Drag a bar to move
+           it, drag its ends to retime it. The darker shading at each end is
+           the entry and the exit.</p>
+      </div>
+      <div id="sp-timeline" class="sptimeline"></div>
+    </div>
+
     <div class="spctl">
       <!-- The scrubber gets its own row. Beside the button it sat nine pixels
            from it, and a fingertip is forty across: a tap aimed at Pause
@@ -1040,14 +1171,56 @@ table.stplantab td.stph{color:var(--ink)}
     </div>
     <div id="sp-tray" class="sptray"></div>
 
-    <div class="sphead">
-      <h3>Views that fit this selection</h3>
-      <p>The stage picks the one that uses the most of what you chose. Pin a
-         different one if you want it drawn another way.</p>
-    </div>
-    <div id="sp-views" class="spviews"></div>
+    <div id="sp-autoonly">
+      <div class="sphead">
+        <h3>Views that fit this selection</h3>
+        <p>The stage picks the one that uses the most of what you chose. Pin a
+           different one if you want it drawn another way.</p>
+      </div>
+      <div id="sp-views" class="spviews"></div>
 
-    <div id="sp-notes" class="spnotes"></div>
+      <div id="sp-notes" class="spnotes"></div>
+
+      <div class="sphead">
+        <h3>Take control of it</h3>
+        <p>Auto is one picture, laid out and timed for you. Director breaks a
+           composition into layers you place, order, time and animate yourself
+           — the same composers, none of the decisions.</p>
+      </div>
+      <div class="sprow2">
+        <button type="button" id="sp-takeone" class="spbtn primary">Take control</button>
+        <button type="button" id="sp-takesplit" class="spbtn">Take apart</button>
+      </div>
+      <div class="sprow2">
+        <button type="button" id="sp-takesolo" class="spbtn">One layer per node</button>
+        <button type="button" id="sp-takeblank" class="spbtn">Start empty</button>
+      </div>
+      <p class="spdhint">“Take control” keeps the picture as Auto drew it and
+         hands you the parts. “Take apart” gives each kind of quantity its own
+         layer. Nothing is lost either way — Auto is one click back.</p>
+    </div>
+
+    <!-- ===== Director ============================================== -->
+    <div id="sp-dirpanel" hidden>
+      <div class="sphead">
+        <h3 id="director">The document</h3>
+        <p class="spstat" id="sp-dstat"></p>
+      </div>
+
+      <div id="sp-presets" class="spdpresets"></div>
+
+      <h4 class="spdsec">Layers — topmost first</h4>
+      <div id="sp-stack" class="spdstack"></div>
+      <div id="sp-addbar" class="spdadd"></div>
+
+      <h4 class="spdsec">The selected layer</h4>
+      <div id="sp-insp" class="spdinsp"></div>
+
+      <ul id="sp-dwarn" class="spdwarn"></ul>
+
+      <h4 class="spdsec">Saved compositions</h4>
+      <div id="sp-library" class="spdlib"></div>
+    </div>
 
     <div class="sphead">
       <h3>The storyboard</h3>
@@ -1085,6 +1258,39 @@ page can make is not the number of animations anyone wrote.</p>
 panels and draws each group with whatever fits it, so there is no combination
 that produces nothing. And whenever a view cannot use part of what you picked,
 <b>it says so on the page</b> rather than quietly dropping it.</p>
+
+<h3>Director mode</h3>
+
+<p>Auto mode answers one question — what is the best picture of this
+selection? — and it answers it by deciding: it scores the composers, picks the
+winner, lays it in the one stage rectangle and times it against the one
+playhead. Those are the right defaults and that is exactly why they cannot
+also be a pro tool, because none of them is negotiable.</p>
+
+<p>Director mode takes the same composition apart into <b>layers</b> and hands
+every one of those decisions over. A layer has a <b>what</b> — a group of
+nodes and the composer that draws them, or your own text, a rule, a wash, the
+caption band, the stamp; a <b>where</b> — a rectangle in the frame, and
+optionally a second rectangle it travels to, which is how a move, a pan or a
+zoom is expressed; a <b>when</b> — the stretch of the reel it is on screen for;
+and a <b>how</b> — an entry, an exit, a continuous motion, an easing, and which
+clock the drawing inside it believes.</p>
+
+<p>Nothing in Director draws astronomy of its own. Every picture is still one
+of the composers above, because a composer has never been told where it sits:
+it is handed a rectangle and a playhead and sizes everything from them. That
+is why placing a diagram in a corner, holding it still while a line of text
+arrives, and drifting the pair of them is a matter of four fields rather than a
+new animation — and why a composer added for Auto mode arrives in Director
+already placeable, already timeable, already animatable.</p>
+
+<p>A composition is a plain object. It saves as text in this browser, reopens,
+and can be dropped into the storyboard as one scene among several. Text layers
+may carry tokens — <code>{tithi}</code>, <code>{naks}</code>,
+<code>{date}</code>, <code>{dasha}</code> and the rest — which resolve when the
+frame is drawn rather than when it was typed, so a card saved today and
+reopened next month states next month's almanac instead of a stale copy of
+today's.</p>
 
 <h2 id="honest">What is not here</h2>
 
