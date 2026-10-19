@@ -68,6 +68,13 @@
       </div>
 
       <div class="sprow2">
+        <!-- the picker replaces the contents of its own host, so the visible
+             label lives outside it, beside "Moment" and the rest -->
+        <div class="spfield wide"><span>Place</span>
+          <div id="sp-place"></div></div>
+      </div>
+
+      <div class="sprow2">
         <label class="spfield"><span>Moment</span>
           <input id="sp-when" type="datetime-local"></label>
         <label class="spfield"><span>Span for time plots</span>
@@ -165,4 +172,5 @@ is uploaded, and the page works with no network at all once it has loaded.</p>
 
 <script src="engine.js" defer></script>
 <script src="panchanga.js" defer></script>
+<script src="places.js" defer></script>
 <script src="studio-pro.js" defer></script>

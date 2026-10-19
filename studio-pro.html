@@ -975,6 +975,13 @@ table.stplantab td.stph{color:var(--ink)}
       </div>
 
       <div class="sprow2">
+        <!-- the picker replaces the contents of its own host, so the visible
+             label lives outside it, beside "Moment" and the rest -->
+        <div class="spfield wide"><span>Place</span>
+          <div id="sp-place"></div></div>
+      </div>
+
+      <div class="sprow2">
         <label class="spfield"><span>Moment</span>
           <input id="sp-when" type="datetime-local"></label>
         <label class="spfield"><span>Span for time plots</span>
@@ -1072,5 +1079,6 @@ is uploaded, and the page works with no network at all once it has loaded.</p>
 
 <script src="engine.js" defer></script>
 <script src="panchanga.js" defer></script>
+<script src="places.js" defer></script>
 <script src="studio-pro.js" defer></script>
 </main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p><b>How the numbers are worked out:</b> <a href="kundli-technical-report.html">the chart engine, in detail</a> &mdash; the ephemeris, the ayanāṃśa modes, the sunrise convention and what each divisional chart is computed from.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>

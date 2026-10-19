@@ -30,6 +30,7 @@
   var PLAY = false, RAF = null, T0 = 0, DUR = 15;
   var LAST = null;         /* the last render result */
   var SHOTS = [];          /* the storyboard: [{sel, force, seconds, label}] */
+  var PLACE = null;        /* the place the reader picked, if they picked one */
   var STORY = false;       /* true while the storyboard is what plays */
 
   var DOM_LABEL = {
@@ -46,18 +47,59 @@
       return raw ? JSON.parse(raw) : null;
     } catch (e) { return null; }
   }
+  /* The site writes a place as {n, lat, lon, tz} everywhere — the picker, the
+     calendar, the pañcāṅga. This page had grown its own {name, ...} and then
+     read a control that was never added to the markup, so the place was
+     whatever the birth record said or New Delhi, with no way to change it.
+     One shape now, carrying both spellings so neither side has to know about
+     the other. */
+  function asPlace(o, fallbackName) {
+    if (!o || o.lat == null) return null;
+    var nm = o.n || o.name || fallbackName || "";
+    return { n: nm, name: nm, lat: +o.lat, lon: +o.lon,
+             tz: +(o.tz != null ? o.tz : o.tzHours) || 0 };
+  }
+  function defaultPlace(b) {
+    /* in order: what the reader picked, what they last picked here, the place
+       this browser's chart was cast for, the one the rest of the site saves,
+       and only then a default */
+    if (PLACE) return PLACE;
+    var sv = null;
+    try { sv = window.NP && window.NP.savedPlace ? window.NP.savedPlace() : null; }
+    catch (e) {}
+    return asPlace(b && b.lat != null
+                     ? { n: b.place || b.name || "your chart's place",
+                         lat: b.lat, lon: b.lon, tz: b.tzHours } : null)
+        || asPlace(sv)
+        || { n: "New Delhi", name: "New Delhi", lat: 28.6139, lon: 77.2090, tz: 5.5 };
+  }
+  /* Everything that has to happen when the place changes, in one function so
+     the picker and the test drive the same code rather than two that agree
+     until one of them is edited. */
+  function applyPlace(pp) {
+    var np = asPlace(pp);
+    if (!np) return null;
+    PLACE = np;
+    /* The day object, the sunrise and every window hanging off it are cached
+       per place. A stale cache here is the worst kind of wrong: one city's
+       pañcāṅga under another city's name, with nothing on the page to show
+       it. */
+    try { if (window.NP && window.NP.cacheClear) window.NP.cacheClear(); }
+    catch (e) {}
+    C = buildContext(C ? C.when : Date.now());
+    refreshWall(); refreshTray(); draw();
+    buildStrip();
+    saveState();
+    flash("Now computing for " + C.place.n + ".");
+    return C.place;
+  }
+
   function buildContext(whenMs) {
     var b = readBirth(), J = null;
     if (b && window.buildLocalChart) {
       try { J = window.buildLocalChart(b); } catch (e) { J = null; }
     }
-    var place = (b && b.lat != null)
-      ? { name: b.name || "your birth place", lat: b.lat, lon: b.lon, tz: b.tzHours }
-      : { name: "New Delhi", lat: 28.6139, lon: 77.2090, tz: 5.5 };
-    var sp = $("sp-place");
-    if (sp && sp.dataset && sp.dataset.lat)
-      place = { name: sp.value || place.name, lat: +sp.dataset.lat,
-                lon: +sp.dataset.lon, tz: +sp.dataset.tz };
+    var place = defaultPlace(b);
     var when = whenMs || Date.now();
     var day = null;
     try { if (window.NP && window.NP.day) day = window.NP.day(when, place); }
@@ -641,7 +683,8 @@
       localStorage.setItem("nirayana.studiopro", JSON.stringify({
         sel: SEL, ratio: window.SPStage.S.ratio, pal: window.SPStage.S.pal,
         safe: window.SPStage.S.safe, head: window.SPStage.S.headline,
-        sub: window.SPStage.S.sub, shots: SHOTS, story: STORY }));
+        sub: window.SPStage.S.sub, shots: SHOTS, story: STORY,
+        place: PLACE }));
     } catch (e) {}
   }
   function loadState() {
@@ -655,6 +698,7 @@
       if (o.safe != null) window.SPStage.S.safe = o.safe;
       if (o.head) window.SPStage.S.headline = o.head;
       if (o.sub) window.SPStage.S.sub = o.sub;
+      if (o.place && o.place.lat != null) PLACE = asPlace(o.place);
       if (o.shots && o.shots.length) {
         SHOTS = o.shots.filter(function (sh) {
           return sh && sh.sel && sh.sel.length; });
@@ -774,6 +818,29 @@
       sub.addEventListener("input", function () {
         window.SPStage.S.sub = sub.value; draw(); saveState(); });
     }
+    /* the place picker: the site's own, not a second one */
+    var ph = $("sp-place");
+    if (ph && window.NPlaces) {
+      var sv2 = null;
+      try { sv2 = window.NP && window.NP.savedPlace ? window.NP.savedPlace() : null; }
+      catch (e) {}
+      var quick = (sv2 ? [sv2] : []);
+      if (C.birth && C.birth.lat != null)
+        quick = quick.concat([{ n: (C.birth.place || C.birth.name ||
+                                    "your chart's place"),
+                                lat: C.birth.lat, lon: C.birth.lon,
+                                tz: C.birth.tzHours }]);
+      quick = quick.concat((window.NP && window.NP.PLACES) || []);
+      window.NPlaces.picker({
+        host: ph, value: C.place, quick: quick, label: "Place",
+        refMs: function () { return C ? C.when : Date.now(); },
+        onPick: applyPlace
+      });
+    } else if (ph) {
+      ph.appendChild(el("p", "spmuted",
+        "The city list did not load, so the place cannot be changed here."));
+    }
+
     var when = $("sp-when");
     if (when) {
       var d = new Date(C.when - new Date().getTimezoneOffset() * 60000);
@@ -851,7 +918,12 @@
         return STRIP.tiles.slice(0, STRIP.live).map(function (t) {
           return t.spec.label; }); },
       rollStrip: function () { rollOne($("sp-strip")); return this.stripSpecs(); },
-      poolSize: function () { return poolAvailable().length; }
+      poolSize: function () { return poolAvailable().length; },
+      place: function () { return C && C.place; },
+      pickPlace: function (p) { return applyPlace(p); },
+      placeInputs: function () {
+        var h = $("sp-place");
+        return h ? h.querySelectorAll("input").length : 0; }
     };
   } catch (e) {}
 })();

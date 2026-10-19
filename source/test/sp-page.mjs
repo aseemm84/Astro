@@ -144,35 +144,53 @@ async function run(withChart) {
       return {lit, hash};
     };
     out.beforeSpecs = window.__spUI.stripSpecs();
+
+    /* the place picker: it must mount, and picking must actually move the
+       pañcāṅga — a picker that changes a label and nothing else is worse than
+       none, because the page then lies about what it computed */
+    out.placeInputs = window.__spUI.placeInputs();
+    out.placeBefore = window.__spUI.place();
+    const dayBefore = (() => {
+      const n = window.SPNodes.byId("day.almanac");
+      const v = n && window.SPNodes.resolve(n, window.__spUI.ctx());
+      return v ? v.rows[4].cols[0].value : null;   /* sunrise */
+    })();
+    /* Reykjavík, chosen because its sunrise cannot coincide with Delhi's */
+    window.__spUI.pickPlace({ n: "Reykjavík", lat: 64.1466, lon: -21.9426, tz: 0 });
+    out.placeAfter = window.__spUI.place();
+    const dayAfter = (() => {
+      const n = window.SPNodes.byId("day.almanac");
+      const v = n && window.SPNodes.resolve(n, window.__spUI.ctx());
+      return v ? v.rows[4].cols[0].value : null;
+    })();
+    out.sunriseMoved = !!dayBefore && !!dayAfter && dayBefore !== dayAfter;
+    out.sunrisePair = dayBefore + " -> " + dayAfter;
+    /* and put it back, so the rest of the measurements are of the same place */
+    window.__spUI.pickPlace({ n: "New Delhi", lat: 28.6139, lon: 77.2090, tz: 5.5 });
     return {out, tileLit:true};
   });
-  /* measured outside evaluate so real animation frames can elapse */
-  const first = await pg.evaluate(() => {
-    let lit=0,hash=0;
-    [].slice.call(document.querySelectorAll(".sptile canvas")).slice(0,4)
-      .forEach(cv=>{ const d=cv.getContext("2d").getImageData(0,0,cv.width,cv.height).data;
-        for(let i=0;i<d.length;i+=4*53){const v=d[i]+d[i+1]+d[i+2];
-          hash=(hash*31+v)|0; if(v>170) lit++;} });
-    return {lit,hash};
-  });
-  /* The strip only draws while it is on screen — that is the point of it.
-     A test measuring it from the top of a 720px page measures the guard, not
-     the strip, so put it in view first the way a reader would. */
-  await pg.evaluate(() => {
-    const s = document.getElementById("sp-strip");
-    if (s) s.scrollIntoView({ block: "center" });
-  });
-  await pg.waitForTimeout(1500);
-  const second = await pg.evaluate(() => {
+  /* Measured outside evaluate so real animation frames can elapse — and
+     AFTER the strip is scrolled into view, because it deliberately draws
+     nothing while off screen. The place-pick inside the evaluate above
+     rebuilds the strip, so the first sample has to come after a beat or it
+     measures twenty blank canvases. */
+  const litNow = () => pg.evaluate(() => {
     let lit=0,hash=0;
     [].slice.call(document.querySelectorAll(".sptile canvas")).slice(0,4)
       .forEach(cv=>{ const d=cv.getContext("2d").getImageData(0,0,cv.width,cv.height).data;
         for(let i=0;i<d.length;i+=4*53){const v=d[i]+d[i+1]+d[i+2];
           hash=(hash*31+v)|0; if(v>170) lit++;} });
     const strip=document.getElementById("sp-strip");
-    return {lit,hash,scroll:strip?strip.scrollLeft:0,
-            diag:window.__spUI.strip()};
+    return {lit,hash,scroll:strip?strip.scrollLeft:0,diag:window.__spUI.strip()};
   });
+  await pg.evaluate(() => {
+    const s = document.getElementById("sp-strip");
+    if (s) s.scrollIntoView({ block: "center" });
+  });
+  await pg.waitForTimeout(700);
+  const first = await litNow();
+  await pg.waitForTimeout(1500);
+  const second = await litNow();
   const rolled = await pg.evaluate(() => {
     const before = window.__spUI.stripSpecs().join("|");
     for (let i=0;i<6;i++) window.__spUI.rollStrip();
@@ -206,6 +224,9 @@ function show(tag, r) {
   console.log(`    awkward 5-node mixture → composer "${r.mixComposer}", ` +
               `${r.mixMissing} reported as unusable, ${r.mixOptions} views offered, lit ${r.mixLit}`);
   console.log(`    "what is not here" list: ${r.absent} entries`);
+  console.log(`    place: picker mounted ${r.placeInputs>0}, ` +
+              `"${r.placeBefore && r.placeBefore.n}" -> "${r.placeAfter && r.placeAfter.n}", ` +
+              `sunrise ${r.sunrisePair}, moved ${r.sunriseMoved}`);
   console.log(`    strip: ${r.tiles} tiles from a pool of ${r.poolSize}, ` +
               `lit ${r.tileLitFirst}, animating ${r.tileMoved}, ` +
               `scrolling ${r.stripScrolled}, re-roll changes it ${r.rollChanged}`);
@@ -245,7 +266,10 @@ const checks=[
   ["a re-roll changes what is on offer", A.rollChanged===true],
   ["with no chart the pool still has something", B.poolSize>=8 && B.tiles>=12],
   ["with no chart the strip still draws and moves",
-   B.tileLitFirst>200 && B.tileMoved===true]
+   B.tileLitFirst>200 && B.tileMoved===true],
+  ["the place picker mounts", A.placeInputs>0 && B.placeInputs>0],
+  ["picking a place moves the pañcāṅga with it",
+   A.sunriseMoved===true && B.sunriseMoved===true]
 ];
 console.log("");
 let bad=0;
