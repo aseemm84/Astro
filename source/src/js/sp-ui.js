@@ -29,6 +29,8 @@
   var FORCE = null;        /* a composer the user pinned */
   var PLAY = false, RAF = null, T0 = 0, DUR = 15;
   var LAST = null;         /* the last render result */
+  var SHOTS = [];          /* the storyboard: [{sel, force, seconds, label}] */
+  var STORY = false;       /* true while the storyboard is what plays */
 
   var DOM_LABEL = {
     sky: "Sky & grahas", rashi: "Rāśis", bhava: "Bhāvas", nakshatra: "Nakṣatras",
@@ -286,9 +288,83 @@
   /* ---- the stage --------------------------------------------------------- */
   function draw() {
     if (!window.SPStage || !C) return;
-    LAST = window.SPStage.render(SEL, C, window.SPStage.S.p, FORCE);
+    LAST = (STORY && SHOTS.length)
+      ? window.SPStage.renderStory(SHOTS, C, window.SPStage.S.p)
+      : window.SPStage.render(SEL, C, window.SPStage.S.p, FORCE);
     fitPreview();
     refreshViews(); refreshNotes();
+  }
+
+  /* ---- the storyboard ---------------------------------------------------- */
+  function shotLabel(sh) {
+    if (sh.label) return sh.label;
+    var names = sh.sel.map(function (id) {
+      var n = window.SPNodes.byId(id); return n ? n.label : id; });
+    return names.slice(0, 3).join(" + ") + (names.length > 3 ? " +" + (names.length - 3) : "");
+  }
+  function addShot() {
+    if (!SEL.length) { flash("Select something first, then add it as a shot."); return; }
+    SHOTS.push({ sel: SEL.slice(), force: FORCE, seconds: 5 });
+    STORY = true;
+    refreshShots(); saveState(); draw();
+  }
+  function refreshShots() {
+    var host = $("sp-shots"); if (!host) return;
+    host.innerHTML = "";
+    var tot = $("sp-shottotal");
+    if (!SHOTS.length) {
+      host.appendChild(el("p", "spmuted",
+        "No shots yet. Build a selection, then press “Add as a shot”. " +
+        "Two or three shots make a reel that holds attention; one makes a card."));
+      if (tot) tot.textContent = "";
+      var tb = $("sp-storytoggle"); if (tb) tb.hidden = true;
+      return;
+    }
+    SHOTS.forEach(function (sh, i) {
+      var row = el("div", "sprow" + (LAST && STORY && LAST.shot === i ? " live" : ""));
+      var t = el("div", "sprowt");
+      t.appendChild(el("b", null, (i + 1) + ". " + shotLabel(sh)));
+      t.appendChild(el("small", null,
+        (sh.force ? "pinned: " + sh.force + " · " : "") + sh.sel.length + " node(s)"));
+      row.appendChild(t);
+      var sec = document.createElement("input");
+      sec.type = "number"; sec.min = "1"; sec.max = "30"; sec.value = String(sh.seconds);
+      sec.className = "spsec";
+      sec.setAttribute("aria-label", "seconds for shot " + (i + 1));
+      sec.addEventListener("change", function () {
+        sh.seconds = Math.max(1, Math.min(30, +sec.value || 5));
+        refreshShots(); saveState(); });
+      row.appendChild(sec);
+      [["↑", -1], ["↓", 1]].forEach(function (mv) {
+        var b = el("button", "sprowx", mv[0]);
+        b.type = "button";
+        b.setAttribute("aria-label", (mv[1] < 0 ? "move up" : "move down"));
+        b.addEventListener("click", function () {
+          var j = i + mv[1];
+          if (j < 0 || j >= SHOTS.length) return;
+          var tmp = SHOTS[i]; SHOTS[i] = SHOTS[j]; SHOTS[j] = tmp;
+          refreshShots(); saveState(); draw(); });
+        row.appendChild(b);
+      });
+      var x = el("button", "sprowx", "×");
+      x.type = "button"; x.setAttribute("aria-label", "remove shot " + (i + 1));
+      x.addEventListener("click", function () {
+        SHOTS.splice(i, 1);
+        if (!SHOTS.length) STORY = false;
+        refreshShots(); saveState(); draw(); });
+      row.appendChild(x);
+      /* clicking the row loads that shot back into the wall for editing */
+      t.style.cursor = "pointer";
+      t.addEventListener("click", function () {
+        SEL = sh.sel.slice(); FORCE = sh.force || null; STORY = false;
+        var tb2 = $("sp-storytoggle"); if (tb2) tb2.checked = false;
+        refreshWall(); refreshTray(); refreshShots(); draw(); });
+      host.appendChild(row);
+    });
+    if (tot) tot.textContent = "Reel length " +
+      window.SPStage.storyTotal(SHOTS) + " s across " + SHOTS.length + " shot(s).";
+    var tb3 = $("sp-storytoggle");
+    if (tb3) { tb3.hidden = false; tb3.checked = STORY; }
   }
   function fitPreview() {
     var cv = $("sp-canvas"), box = $("sp-stagebox");
@@ -329,6 +405,9 @@
   }
   function play(on) {
     PLAY = on;
+    /* a storyboard plays for its own total, not the single-shot length */
+    if (STORY && SHOTS.length) DUR = window.SPStage.storyTotal(SHOTS);
+    else { var d = $("sp-dur"); if (d) DUR = +d.value; }
     var b = $("sp-play");
     if (b) b.textContent = on ? "Pause" : "Play";
     if (on) { T0 = Date.now() - window.SPStage.S.p * DUR * 1000; tick(); }
@@ -341,7 +420,7 @@
       localStorage.setItem("nirayana.studiopro", JSON.stringify({
         sel: SEL, ratio: window.SPStage.S.ratio, pal: window.SPStage.S.pal,
         safe: window.SPStage.S.safe, head: window.SPStage.S.headline,
-        sub: window.SPStage.S.sub }));
+        sub: window.SPStage.S.sub, shots: SHOTS, story: STORY }));
     } catch (e) {}
   }
   function loadState() {
@@ -355,6 +434,11 @@
       if (o.safe != null) window.SPStage.S.safe = o.safe;
       if (o.head) window.SPStage.S.headline = o.head;
       if (o.sub) window.SPStage.S.sub = o.sub;
+      if (o.shots && o.shots.length) {
+        SHOTS = o.shots.filter(function (sh) {
+          return sh && sh.sel && sh.sel.length; });
+        STORY = !!o.story && SHOTS.length > 0;
+      }
     } catch (e) {}
   }
 
@@ -373,7 +457,8 @@
     var was = btn.textContent;
     btn.disabled = true;
     play(false);
-    window.SPStage.record(SEL, C, DUR, 30, FORCE, function (f) {
+    var what = (STORY && SHOTS.length) ? SHOTS : SEL;
+    window.SPStage.record(what, C, DUR, 30, FORCE, function (f) {
       btn.textContent = "Recording " + Math.round(f * 100) + "%";
     }).then(function (res) {
       btn.disabled = false; btn.textContent = was;
@@ -402,6 +487,7 @@
     C = buildContext();
     buildWall();
     refreshTray();
+    refreshShots();
 
     /* mode banner: a chart, or live only */
     var mode = $("sp-mode");
@@ -481,6 +567,12 @@
     var span = $("sp-span");
     if (span) span.addEventListener("change", function () {
       C = buildContext(C.when); draw(); });
+    $("sp-addshot") && $("sp-addshot").addEventListener("click", addShot);
+    var tog = $("sp-storytoggle");
+    if (tog) tog.addEventListener("change", function () {
+      STORY = tog.checked; window.SPStage.S.p = 0; refreshShots(); draw(); saveState(); });
+    $("sp-clearshots") && $("sp-clearshots").addEventListener("click", function () {
+      SHOTS = []; STORY = false; refreshShots(); draw(); saveState(); });
     $("sp-png") && $("sp-png").addEventListener("click", savePng);
     $("sp-rec") && $("sp-rec").addEventListener("click", saveVideo);
 
@@ -509,6 +601,9 @@
       last: function () { return LAST; },
       ctx: function () { return C; },
       related: related,
+      shots: function () { return SHOTS.slice(); },
+      addShot: function () { addShot(); return SHOTS.length; },
+      setStory: function (on) { STORY = on; refreshShots(); draw(); return STORY; },
       nodeCount: function () { return window.SPNodes.all().length; }
     };
   } catch (e) {}

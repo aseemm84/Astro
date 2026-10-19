@@ -98,6 +98,35 @@ async function run(withChart) {
     out.mixOptions = res ? res.options.length : -1;
     const mixSnap = snap();
     out.mixLit = mixSnap.lit;
+
+    /* the storyboard: three shots, each a different kind of picture, then
+       checked that the stage actually moves between them */
+    window.__spUI.select(["chart.d1"]);              window.__spUI.addShot();
+    window.__spUI.select(["sky.lon.Sūrya","sky.lon.Candra"]); window.__spUI.addShot();
+    window.__spUI.select(["av.grid"]);               window.__spUI.addShot();
+    out.shotCount = window.__spUI.shots().length;
+    out.shotRows = document.querySelectorAll("#sp-shots .sprow").length;
+    out.storyOn = window.__spUI.setStory(true);
+    out.total = window.SPStage.storyTotal(window.__spUI.shots());
+    /* render at the middle of each shot; each must be a different picture,
+       and the reported shot index must advance */
+    const ctxd = window.__spUI.ctx();
+    const seen = [], idx = [];
+    [0.10, 0.45, 0.85].forEach(pp => {
+      const r = window.SPStage.renderStory(window.__spUI.shots(), ctxd, pp);
+      idx.push(r.shot);
+      seen.push(snap().h);
+    });
+    out.storyIdx = idx;
+    out.storyDistinct = new Set(seen).size;
+    /* and the dip between shots must actually darken the frame */
+    const at = window.SPStage.shotAt(window.__spUI.shots(), 0.333);
+    window.SPStage.renderStory(window.__spUI.shots(), ctxd, 0.333);
+    const boundary = snap().lit;
+    window.SPStage.renderStory(window.__spUI.shots(), ctxd, 0.22);
+    const middle = snap().lit;
+    out.dipWorks = boundary < middle;
+    out.dipAt = [boundary, middle];
     return out;
   });
   const html = await pg.content();
@@ -122,6 +151,9 @@ function show(tag, r) {
   console.log(`    awkward 5-node mixture → composer "${r.mixComposer}", ` +
               `${r.mixMissing} reported as unusable, ${r.mixOptions} views offered, lit ${r.mixLit}`);
   console.log(`    "what is not here" list: ${r.absent} entries`);
+  console.log(`    storyboard: ${r.shotCount} shots, ${r.shotRows} rows, total ${r.total}s, ` +
+              `indices at 10/45/85% = [${r.storyIdx}], ${r.storyDistinct}/3 distinct pictures, ` +
+              `dip darkens: ${r.dipWorks} (${r.dipAt && r.dipAt.join(" vs ")})`);
   if (r.errs.length) { console.log("    page errors:"); r.errs.forEach(e=>console.log("      "+e)); }
 }
 show("with a birth chart stored", A);
@@ -139,7 +171,11 @@ const checks=[
   ["an awkward five-node mixture still draws", !!A.mixComposer && A.mixLit>50],
   ["the page lists what it cannot do", A.absent>=6],
   ["the page is in the navigation", A.navHasLink],
-  ["no page errors in either mode", A.errs.length===0 && B.errs.length===0]
+  ["no page errors in either mode", A.errs.length===0 && B.errs.length===0],
+  ["the storyboard takes shots and lists them", A.shotCount===3 && A.shotRows===3],
+  ["the storyboard advances through its shots",
+   A.storyIdx && A.storyIdx[0]===0 && A.storyIdx[2]===2 && A.storyDistinct===3],
+  ["the cut between shots dips to black", A.dipWorks===true]
 ];
 console.log("");
 let bad=0;

@@ -145,6 +145,23 @@
     return typeof at !== "function" ? null
       : { kind: "series", at: at, unit: unit, label: label, range: range || null };
   }
+  /* A chart: twelve cells, each a sign, a house number and what stands in it.
+
+     This is the one shape that is not geometry on a circle. A kundli is the
+     form every Jyotiṣa reader recognises before they read a word of it, and a
+     studio for this subject that could not draw one would be a strange studio.
+     The cells carry the SIGN and the HOUSE separately, because the North
+     Indian diagram fixes the houses and rotates the signs through them while
+     the South Indian fixes the signs and moves the house numbers — the same
+     data, two conventions, and a shape that kept only one of them could not
+     draw both. */
+  function houses(lagnaSign, cells, label, from) {
+    var ok = (cells || []).filter(function (c) { return c && c.sign != null; });
+    return ok.length === 12
+      ? { kind: "houses", lagna: lagnaSign, cells: ok, label: label,
+          from: from || "Lagna" }
+      : null;
+  }
   function grid(rows, cols, label, max) {
     var r = (rows || []).filter(function (x) { return x && x.vals; });
     return r.length ? { kind: "grid", rows: r, cols: cols, label: label,
@@ -451,6 +468,13 @@
           : { deg: s * 30 + 15, label: sa, tone: "glow" }; }).filter(Boolean),
         code + (v.en ? " · " + v.en : ""));
     });
+    add("varga.kundli." + code, "chart", code + " as a kundli",
+        "that division drawn as a chart", ["houses"], function (C) {
+      var v = vargaOf(C, code);
+      if (!v || !v.positions || v.lagna == null) return null;
+      return chartFrom(C, v.lagna % 12, code + " chart", code + " lagna",
+                       v.positions);
+    });
     add("varga.lagna." + code, "varga", code + " lagna",
         "the rising sign of that division", ["lon"], function (C) {
       var v = vargaOf(C, code);
@@ -478,6 +502,70 @@
       var d = natalLon(C, sa);
       return d == null ? null : { deg: d, label: sa + " vargottama", tone: "gold" };
     }).filter(Boolean), "vargottama");
+  });
+
+  /* =======================================================================
+     THE CHART ITSELF — read from Lagna, from Candra, from Sūrya, and in
+     every varga. The three reference points are the Sudarśana Cakra: the
+     same twelve grahas judged from three different first houses, which is a
+     definition rather than a table and so is safe to derive here.
+     ======================================================================= */
+  function chartFrom(C, firstSign, label, from, positions) {
+    if (firstSign == null) return null;
+    var cells = [];
+    for (var i = 0; i < 12; i++) {
+      var sign = (firstSign + i) % 12;
+      cells.push({ sign: sign, house: i + 1, items: [] });
+    }
+    SA.forEach(function (sa) {
+      var sg = null;
+      if (positions) sg = positions[sa];
+      else { var d = natalLon(C, sa); sg = d == null ? null : Math.floor(norm(d) / 30); }
+      if (sg == null) return;
+      var h = ((sg - firstSign) % 12 + 12) % 12;
+      var g = positions ? null : G(C, sa);
+      cells[h].items.push({ label: sa, retro: !!(g && g.retrograde),
+                            tone: sa === "Sūrya" ? "gold" : "glow" });
+    });
+    return houses(firstSign, cells, label, from);
+  }
+  add("chart.d1", "chart", "The chart from Lagna",
+      "twelve houses counted from the rising sign", ["houses"], function (C) {
+    var L = lagnaSign(C);
+    return chartFrom(C, L, "Rāśi chart", "Lagna");
+  });
+  add("chart.moon", "chart", "The chart from Candra",
+      "the same grahas judged from the Moon's sign", ["houses"], function (C) {
+    var m = natalLon(C, "Candra");
+    return m == null ? null
+      : chartFrom(C, Math.floor(norm(m) / 30), "Candra lagna", "Candra");
+  });
+  add("chart.sun", "chart", "The chart from Sūrya",
+      "the same grahas judged from the Sun's sign", ["houses"], function (C) {
+    var d = natalLon(C, "Sūrya");
+    return d == null ? null
+      : chartFrom(C, Math.floor(norm(d) / 30), "Sūrya lagna", "Sūrya");
+  });
+  add("chart.sudarshana", "chart", "Sudarśana — all three",
+      "Lagna, Candra and Sūrya as three rings of the same chart",
+      ["houseset"], function (C) {
+    var L = lagnaSign(C), m = natalLon(C, "Candra"), s = natalLon(C, "Sūrya");
+    if (L == null || m == null || s == null) return null;
+    var three = [chartFrom(C, L, "from Lagna", "Lagna"),
+                 chartFrom(C, Math.floor(norm(m) / 30), "from Candra", "Candra"),
+                 chartFrom(C, Math.floor(norm(s) / 30), "from Sūrya", "Sūrya")];
+    if (three.some(function (x) { return !x; })) return null;
+    return { kind: "houseset", items: three, label: "Sudarśana Cakra" };
+  });
+  add("chart.transit", "chart", "The sky now, as a chart",
+      "transiting grahas in houses from the natal Lagna", ["houses"],
+      function (C) {
+    var L = lagnaSign(C); if (L == null) return null;
+    var pos = {};
+    SA.forEach(function (sa) {
+      var d = liveLon(C, sa);
+      if (d != null) pos[sa] = Math.floor(norm(d) / 30); });
+    return chartFrom(C, L, "Gocara — transits now", "Lagna", pos);
   });
 
   /* =======================================================================

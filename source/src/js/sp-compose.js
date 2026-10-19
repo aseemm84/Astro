@@ -318,11 +318,17 @@
     function (bag) {
       var n = count(bag, "lon") + count(bag, "lonset");
       if (n === 0) return -1;
-      var pts = count(bag, "lon");
-      (bag.lonset || []).forEach(function (x) { pts += x.v.items.length; });
-      if (pts < 3) return -1;
-      return (all(bag) === count(bag, "lon") + count(bag, "lonset"))
-        ? count(bag, "lon") + count(bag, "lonset") : -1;
+      if (all(bag) !== n) return -1;
+      /* A set is always welcome here however few points it holds. Demanding
+         three left a one-member set — "the vargottama grahas", of which a
+         chart may have exactly one — with no composer anywhere, so it fell to
+         Layers and Layers drew nothing. Loose longitudes still need three,
+         because one is `mark` and two are `angle`, both of which say more. */
+      if (count(bag, "lonset") === 0) {
+        var pts = count(bag, "lon");
+        if (pts < 3) return -1;
+      }
+      return n;
     },
     function (bag, p, st) {
       var P = pal();
@@ -494,10 +500,15 @@
     });
 
   /* --- 5. concentric divisions ------------------------------------------ */
-  composer("rings", "Concentric divisions",
-    "two or more divisions of the same circle, one inside the other",
+  composer("rings", "Divisions of the circle",
+    "one division, or several nested inside each other, with a hand reading them",
     function (bag) {
-      return (count(bag, "lanes") >= 2 &&
+      /* ONE is enough. Requiring two left a single division — "the navāṃśa
+         division", say — with no composer at all: it fell to Layers, whose
+         sub-pick also refused it, and the panel drew nothing. A lone division
+         is a perfectly good picture; it just needs the sweeping hand to be
+         an animation rather than a diagram. */
+      return (count(bag, "lanes") >= 1 &&
               all(bag) === count(bag, "lanes") + count(bag, "lon"))
         ? count(bag, "lanes") + count(bag, "lon") : -1;
     },
@@ -921,6 +932,216 @@
              st.cx, foot + S.U * 0.032, S.U * 0.018, P.dim, "center", 500, st.w * 0.9);
     });
 
+  /* --- the kundli, in both conventions ----------------------------------
+
+     The two diagrams carry the same twelve cells and disagree about what is
+     nailed down. The NORTH fixes the houses — the first is always the top
+     diamond — and rotates the signs through them, so a reader sees the shape
+     of the life. The SOUTH fixes the signs in the frame and moves the house
+     numbers, so a reader sees the shape of the zodiac. Offering one and
+     calling it "the chart" would be taking a side; both are here and the
+     perspective switcher moves between them. */
+
+  /* centroids of the North Indian diamond, as fractions of its box. House 1
+     is the top centre, and the count runs anticlockwise, which is the
+     convention every printed North Indian chart uses. */
+  var NORTH = [
+    [0.50, 0.25], [0.26, 0.11], [0.11, 0.26], [0.25, 0.50], [0.11, 0.74],
+    [0.26, 0.89], [0.50, 0.75], [0.74, 0.89], [0.89, 0.74], [0.75, 0.50],
+    [0.89, 0.26], [0.74, 0.11]
+  ];
+  /* the South Indian frame: sign index at each cell of the 4×4 ring, Meṣa at
+     the second cell of the top row and running clockwise */
+  var SOUTH = [
+    [11, 0], [0, 1], [1, 2], [2, 3],
+    [10, 0], null, null, [3, 3],
+    [9, 0], null, null, [4, 3],
+    [8, 0], [7, 1], [6, 2], [5, 3]
+  ];
+
+  function kundliFrame(st) {
+    var side = Math.min(st.w * 0.92, st.h * 0.74);
+    return { x: st.cx - side / 2, y: st.y + st.h * 0.10, s: side };
+  }
+  function drawCell(F, cx, cy, cell, P, hot, showHouse, showSign) {
+    var u = F.s;
+    var lines = cell.items.map(function (it) {
+      return it.label + (it.retro ? " ℞" : ""); });
+    var head = [];
+    if (showSign) head.push(window.SPNodes.RASHI[cell.sign].slice(0, 4));
+    if (showHouse) head.push(String(cell.house));
+    txt(head.join(" · "), cx, cy - u * 0.045, u * 0.026,
+        hot ? P.gold : P.dim, "center", 700);
+    lines.slice(0, 5).forEach(function (L, i) {
+      txt(L, cx, cy - u * 0.012 + i * u * 0.030, u * 0.028,
+          L.indexOf("Sūrya") === 0 ? P.gold : P.ink, "center", 600);
+    });
+  }
+  composer("kundliN", "North Indian kundli",
+    "the diamond — houses fixed, signs rotating through them",
+    function (bag) {
+      return (count(bag, "houses") === 1 && all(bag) === 1) ? 1.4 : -1;
+    },
+    function (bag, p, st) {
+      var P = pal(), H = bag.houses[0].v, F = kundliFrame(st), c = S.ctx;
+      var x = F.x, y = F.y, u = F.s;
+      c.save();
+      c.strokeStyle = P.dim; c.globalAlpha = 0.7;
+      c.lineWidth = Math.max(1.5, S.U * 0.0020);
+      c.strokeRect(x, y, u, u);
+      /* the two diagonals and the inner diamond make all twelve cells */
+      c.beginPath();
+      c.moveTo(x, y); c.lineTo(x + u, y + u);
+      c.moveTo(x + u, y); c.lineTo(x, y + u);
+      c.moveTo(x + u / 2, y); c.lineTo(x + u, y + u / 2);
+      c.lineTo(x + u / 2, y + u); c.lineTo(x, y + u / 2); c.closePath();
+      c.stroke();
+      c.restore();
+      var lit = Math.round(12 * Math.min(1, p * 1.2));
+      H.cells.forEach(function (cell, i) {
+        if (i >= lit) return;
+        var pos = NORTH[i];
+        drawCell(F, x + pos[0] * u, y + pos[1] * u, cell, P,
+                 cell.house === 1, true, true);
+      });
+      txtFit(H.label + " — " + H.from + " in " +
+             window.SPNodes.RASHI[H.lagna], st.cx, y + u + S.U * 0.034,
+             S.U * 0.022, P.ink, "center", 600, st.w * 0.92);
+      txtFit("North Indian: the first house is always the top diamond; the " +
+             "signs turn through it", st.cx, y + u + S.U * 0.068,
+             S.U * 0.018, P.dim, "center", 500, st.w * 0.92);
+    });
+
+  composer("kundliS", "South Indian kundli",
+    "the square — signs fixed in the frame, the house numbers moving",
+    function (bag) {
+      return (count(bag, "houses") === 1 && all(bag) === 1) ? 1.3 : -1;
+    },
+    function (bag, p, st) {
+      var P = pal(), H = bag.houses[0].v, F = kundliFrame(st), c = S.ctx;
+      var x = F.x, y = F.y, u = F.s, q = u / 4;
+      var bySign = {};
+      H.cells.forEach(function (cl) { bySign[cl.sign] = cl; });
+      c.save();
+      c.strokeStyle = P.dim; c.globalAlpha = 0.7;
+      c.lineWidth = Math.max(1.5, S.U * 0.0020);
+      c.strokeRect(x, y, u, u);
+      for (var k = 1; k < 4; k++) {
+        /* only the outer ring is divided: the middle four cells are one box */
+        c.beginPath(); c.moveTo(x + q * k, y); c.lineTo(x + q * k, y + q); c.stroke();
+        c.beginPath(); c.moveTo(x + q * k, y + u - q); c.lineTo(x + q * k, y + u); c.stroke();
+        c.beginPath(); c.moveTo(x, y + q * k); c.lineTo(x + q, y + q * k); c.stroke();
+        c.beginPath(); c.moveTo(x + u - q, y + q * k); c.lineTo(x + u, y + q * k); c.stroke();
+      }
+      c.strokeRect(x + q, y + q, u - 2 * q, u - 2 * q);
+      c.restore();
+      var lit = Math.round(12 * Math.min(1, p * 1.2));
+      var shown = 0;
+      SOUTH.forEach(function (cellSpec, idx) {
+        if (!cellSpec) return;
+        var sign = cellSpec[0], cl = bySign[sign];
+        if (!cl) return;
+        if (shown++ >= lit) return;
+        var col = idx % 4, row = Math.floor(idx / 4);
+        var ccx = x + q * (col + 0.5), ccy = y + q * (row + 0.5);
+        if (cl.house === 1) {
+          c.save();
+          c.fillStyle = P.gold; c.globalAlpha = 0.13;
+          c.fillRect(x + q * col, y + q * row, q, q);
+          c.restore();
+        }
+        drawCell({ s: q * 2.6 }, ccx, ccy, cl, P, cl.house === 1, true, true);
+      });
+      txtFit(H.label + " — " + H.from + " in " +
+             window.SPNodes.RASHI[H.lagna], st.cx, y + u + S.U * 0.034,
+             S.U * 0.022, P.ink, "center", 600, st.w * 0.92);
+      txtFit("South Indian: the signs are nailed to the frame; the lit cell " +
+             "is the first house", st.cx, y + u + S.U * 0.068,
+             S.U * 0.018, P.dim, "center", 500, st.w * 0.92);
+    });
+
+  /* --- Sudarśana: the same chart from three first houses ----------------- */
+  composer("sudarshana", "Sudarśana Cakra",
+    "one chart read from Lagna, from Candra and from Sūrya, as three rings",
+    function (bag) {
+      return (count(bag, "houseset") === 1 && all(bag) === 1) ? 1.5 : -1;
+    },
+    function (bag, p, st) {
+      var P = pal(), H = bag.houseset[0].v, c = S.ctx;
+      var cy = st.y + st.h * 0.40;
+      var rOut = Math.min(st.w * 0.46, st.h * 0.37);
+      /* Three rings have to share one radius, and the first version gave the
+         innermost a quarter of it — too little to hold a house number and two
+         graha names, so the middle of the frame became a knot. Equal-WIDTH
+         annuli rather than equal ratios: each ring gets the same room, and the
+         hub is just large enough to be a hub. */
+      var RING = [rOut, rOut * 0.785, rOut * 0.570];
+      var HUB = rOut * 0.355;
+      var sweep = p * 360;
+      H.items.forEach(function (ch, ri) {
+        var r = RING[ri], rin = ri < 2 ? RING[ri + 1] : HUB;
+        c.save();
+        c.strokeStyle = P.dim; c.globalAlpha = 0.45;
+        c.lineWidth = Math.max(1, S.U * 0.0014);
+        c.beginPath(); c.arc(st.cx, cy, r, 0, Math.PI * 2); c.stroke();
+        for (var i = 0; i < 12; i++) {
+          var a = (i * 30 - 90) * R2;
+          c.beginPath();
+          c.moveTo(st.cx + Math.cos(a) * rin, cy + Math.sin(a) * rin);
+          c.lineTo(st.cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+          c.stroke();
+        }
+        c.restore();
+        ch.cells.forEach(function (cell, hi) {
+          var mid = ((hi * 30) + 15 - 90) * R2;
+          var rr = (r + rin) / 2;
+          var live = Math.floor(norm(sweep) / 30) === hi;
+          if (live) {
+            c.save(); c.fillStyle = P.gold; c.globalAlpha = 0.14;
+            c.beginPath();
+            c.arc(st.cx, cy, r, (hi * 30 - 90) * R2, ((hi + 1) * 30 - 90) * R2);
+            c.arc(st.cx, cy, rin, ((hi + 1) * 30 - 90) * R2, (hi * 30 - 90) * R2, true);
+            c.closePath(); c.fill(); c.restore();
+          }
+          var names = cell.items.map(function (it) {
+            return it.label.slice(0, 2); }).join("·");
+          var tx = st.cx + Math.cos(mid) * rr, ty = cy + Math.sin(mid) * rr;
+          var band = (r - rin);
+          txt(String(cell.house), tx, ty - band * 0.17,
+              S.U * 0.0155, live ? P.gold : P.dim, "center", 700);
+          if (names)
+            txtFit(names, tx, ty + band * 0.20, S.U * 0.0135, P.ink,
+                   "center", 600, band * 1.5);
+        });
+        /* the ring's name on the left margin, where no cell text goes */
+        txt(ch.from, st.cx - (r + rin) / 2, cy - (r - rin) * 0.42,
+            S.U * 0.0155, ri === 0 ? P.gold : P.dim, "center", 700);
+      });
+      /* the hub, so the three rings read as rings rather than a pie */
+      c.save();
+      c.fillStyle = P.bg; c.globalAlpha = 1;
+      c.beginPath(); c.arc(st.cx, cy, HUB, 0, Math.PI * 2); c.fill();
+      c.strokeStyle = P.dim; c.globalAlpha = 0.45;
+      c.lineWidth = Math.max(1, S.U * 0.0014);
+      c.beginPath(); c.arc(st.cx, cy, HUB, 0, Math.PI * 2); c.stroke();
+      c.restore();
+      var hi2 = Math.floor(norm(sweep) / 30);
+      txt(String(hi2 + 1), st.cx, cy - S.U * 0.012, S.U * 0.040, P.gold,
+          "center", 700);
+      txt("bhāva", st.cx, cy + S.U * 0.018, S.U * 0.016, P.dim, "center", 500);
+      var who = H.items.map(function (ch) {
+        var names = ch.cells[hi2].items.map(function (it) { return it.label; });
+        return ch.from + " " + (hi2 + 1) + ": " + (names.length ? names.join(", ") : "—");
+      }).join("    ·    ");
+      txtFit("house " + (hi2 + 1) + " from each", st.cx, cy + rOut * 1.22,
+             S.U * 0.023, P.ink, "center", 700, st.w * 0.9);
+      txtFit(who, st.cx, cy + rOut * 1.22 + S.U * 0.034, S.U * 0.018,
+             P.gold, "center", 500, st.w * 0.95);
+      txtFit("a house is strong when it is strong from all three",
+             st.cx, cy + rOut * 1.22 + S.U * 0.066, S.U * 0.018,
+             P.dim, "center", 500, st.w * 0.9);
+    });
+
   /* --- 12. the catch-all: panels ---------------------------------------- *
      Always scores, so there is no selection that draws nothing. It splits the
      stage and runs the best single-group composer in each panel. */
@@ -1041,11 +1262,25 @@
     }
     if (!chosen) chosen = pick(B.bag);
     if (!chosen) {
-      txt("Pick something from the wall", st.cx, st.cy, S.U * 0.030,
-          P.dim, "center", 500);
+      /* Two different nothings, and they deserve different words. An empty
+         selection is an invitation; a selection whose every node came back
+         empty is a finding, and the reason belongs on the frame rather than
+         in a console nobody opens. */
+      if (!sel.length) {
+        txt("Pick something from the wall", st.cx, st.cy, S.U * 0.030,
+            P.dim, "center", 500);
+      } else {
+        txtFit("nothing to draw for this selection", st.cx,
+               st.cy - S.U * 0.030, S.U * 0.028, P.ink, "center", 600, st.w * 0.9);
+        B.missing.slice(0, 4).forEach(function (m, i) {
+          txtFit((m.label || m.id) + " — " + m.why, st.cx,
+                 st.cy + S.U * (0.010 + i * 0.034), S.U * 0.019, P.dim,
+                 "center", 500, st.w * 0.92);
+        });
+      }
       captionBand(S.headline || "Studio Pro", S.sub);
       safeGuides();
-      return { composer: null, missing: B.missing, unused: [] };
+      return { composer: null, missing: B.missing, options: [] };
     }
     try { chosen.draw(B.bag, p, st, C); }
     catch (e) {
@@ -1063,11 +1298,78 @@
              options: options(B.bag) };
   }
 
+  /* ---- the storyboard ----------------------------------------------------
+
+     A reel that makes one point is a card with motion. A reel that makes three
+     in sequence — here is the claim, here is the geometry, here is the number
+     — is the thing people watch twice. A shot is a selection, a pinned view
+     and a length; the storyboard plays them end to end and the recorder
+     captures the whole run rather than one shot.
+
+     The dip between shots is not decoration. A hard cut between two dark
+     canvases of similar composition reads as a glitch rather than an edit,
+     and the eye needs the beat to accept that the subject changed. */
+  function storyTotal(shots) {
+    var t = 0;
+    (shots || []).forEach(function (sh) { t += Math.max(1, sh.seconds || 5); });
+    return t || 1;
+  }
+  function shotAt(shots, p) {
+    var total = storyTotal(shots), acc = 0, want = p * total;
+    for (var i = 0; i < shots.length; i++) {
+      var len = Math.max(1, shots[i].seconds || 5);
+      if (want < acc + len || i === shots.length - 1)
+        return { i: i, shot: shots[i], local: Math.min(1, (want - acc) / len),
+                 len: len, total: total, at: want };
+      acc += len;
+    }
+    return null;
+  }
+  function renderStory(shots, C, p) {
+    if (!shots || !shots.length) return render([], C, p, null);
+    var cur = shotAt(shots, p);
+    if (!cur) return render([], C, p, null);
+    var out = render(cur.shot.sel || [], C, cur.local, cur.shot.force || null);
+    /* the dip: a quarter-second at each join, strongest at the boundary */
+    var dipFor = 0.22;
+    var into = cur.local * cur.len, left = cur.len - into;
+    var a = 0;
+    if (cur.i > 0 && into < dipFor) a = 1 - into / dipFor;
+    if (cur.i < shots.length - 1 && left < dipFor) a = Math.max(a, 1 - left / dipFor);
+    if (a > 0) {
+      var c = S.ctx;
+      c.save(); c.fillStyle = pal().bg; c.globalAlpha = a * 0.92;
+      c.fillRect(0, 0, S.W, S.H); c.restore();
+    }
+    /* which shot, and how many — a viewer scrubbing needs to know where they
+       are, and a three-part reel benefits from the viewer knowing it is three */
+    if (shots.length > 1) {
+      var st = stage(), P = pal(), c2 = S.ctx;
+      var bw = st.w * 0.30, bx = st.cx - bw / 2, by = st.y - S.H * 0.016;
+      for (var k = 0; k < shots.length; k++) {
+        var seg = bw / shots.length, x = bx + seg * k;
+        c2.save();
+        c2.fillStyle = k === cur.i ? P.gold : P.line;
+        c2.globalAlpha = k === cur.i ? 0.9 : 0.45;
+        c2.fillRect(x + 1, by, seg - 2, Math.max(2, S.H * 0.0022));
+        c2.restore();
+      }
+    }
+    out.shot = cur.i;
+    out.shots = shots.length;
+    return out;
+  }
+
   /* ---- the recorder ------------------------------------------------------
      Frame-accurate: the canvas is driven at a fixed step and the stream is
      fed one frame per step, so the file lasts exactly as long as it says
      rather than as long as the machine happened to take. */
+  /* `sel` is either a selection (one shot) or an array of shots, in which
+     case `seconds` is ignored and the storyboard's own total is used. */
   function record(sel, C, seconds, fps, forceKey, onFrame) {
+    var shots = (sel && sel.length && typeof sel[0] === "object" && sel[0].sel)
+      ? sel : null;
+    if (shots) seconds = storyTotal(shots);
     return new Promise(function (resolve, reject) {
       var stream = null;
       try { stream = S.cv.captureStream(0); }
@@ -1097,7 +1399,8 @@
       function step() {
         if (i > total) { try { rec.stop(); } catch (e) {} return; }
         S.p = i / total;
-        render(sel, C, S.p, forceKey);
+        if (shots) renderStory(shots, C, S.p);
+        else render(sel, C, S.p, forceKey);
         try { track.requestFrame(); } catch (e) {}
         if (onFrame) onFrame(i / total);
         i++;
@@ -1121,7 +1424,8 @@
       if (S.cv) { S.cv.width = r.w; S.cv.height = r.h; }
       STARS = null;
     },
-    render: render, record: record, options: options, bagOf: bagOf,
+    render: render, renderStory: renderStory, record: record,
+    storyTotal: storyTotal, shotAt: shotAt, options: options, bagOf: bagOf,
     composers: function () { return COMPOSERS.map(function (K) {
       return { key: K.key, label: K.label, blurb: K.blurb }; }); }
   };

@@ -60,7 +60,8 @@ const R = await pg.evaluate(() => {
     if(typeof v==="object") for(const k of Object.keys(v)) walk(v[k],path+"."+k,depth+1);
   };
   const KINDS={lon:"lon",lonset:"lonset",scalar:"scalar",sset:"sset",lanes:"lanes",
-               edges:"edges",span:"span",spanset:"spanset",series:"series",grid:"grid"};
+               edges:"edges",span:"span",spanset:"spanset",series:"series",grid:"grid",
+               houses:"houses",houseset:"houseset"};
   const rows=[], byDom={};
   let nullWith=0, nullWithout=0, roleMismatch=[], shapeBad=[];
   for (const n of window.SPNodes.all()) {

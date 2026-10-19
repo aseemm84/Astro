@@ -107,7 +107,11 @@ const R = await pg.evaluate(() => {
     const worstBot=Math.max(...frames.map(f=>f.bot));
     const worstRight=Math.max(...frames.map(f=>f.right));
     const distinct=new Set(frames.map(f=>f.hash)).size;
-    if(distinct<2){ still++; if(stills.length<8) stills.push({sel,composer:key}); }
+    /* A selection whose every node came back empty draws a frame that says
+       so, and that frame is correctly identical at every playhead position.
+       Counting it as a failed animation would push the page toward animating
+       an apology. Only a frame that DREW something is required to move. */
+    if(distinct<2 && key!=="none"){ still++; if(stills.length<8) stills.push({sel,composer:key}); }
     if(minLit<0.002){ fails.push({sel,why:"drew almost nothing ("+(minLit*100).toFixed(3)+"%)",composer:key}); continue; }
     if(worstTop>0.012||worstBot>0.012||worstRight>0.012){
       fails.push({sel,why:`into a reserved strip t/b/r ${(worstTop*100).toFixed(2)}/${(worstBot*100).toFixed(2)}/${(worstRight*100).toFixed(2)}%`,composer:key});
@@ -129,6 +133,9 @@ const R = await pg.evaluate(() => {
     timeline:["pan.horas"],
     trace:["tr.track.Maṅgala"],
     heat:["av.grid"],
+    kundliN:["chart.d1"],
+    kundliS:["chart.d1"],
+    sudarshana:["chart.sudarshana"],
     layers:["sky.all","bala.total","pan.horas"]
   };
   const delib={};

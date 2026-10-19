@@ -846,3 +846,7 @@ table.stplantab td.stph{color:var(--ink)}
 .spabsent{font-size:.86rem;line-height:1.55}
 .spabsent li{margin:6px 0}
 .vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.sprow.live{border-color:var(--gold);background:#fdf8ea}
+.spsec{width:52px;font:inherit;font-size:.8rem;padding:4px 6px;border:1px solid var(--line);
+  border-radius:6px;background:#fff;color:var(--ink)}
