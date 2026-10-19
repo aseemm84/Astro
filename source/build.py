@@ -343,10 +343,12 @@ def build_shared():
         # panel must have published window.SPDirUI by then, and it is simpler
         # to read the file in the order the dependencies run than to rely on
         # that being true.
-        "studio-pro.js": brandify(read(SRC, "js", "sp-nodes.js") + "\n" +
+        "studio-pro.js": brandify(read(SRC, "js", "ss-engine.js") + "\n" +
+                                  read(SRC, "js", "sp-nodes.js") + "\n" +
                                   read(SRC, "js", "sp-almanac.js") + "\n" +
                                   read(SRC, "js", "sp-compose.js") + "\n" +
                                   read(SRC, "js", "sp-cycles.js") + "\n" +
+                                  read(SRC, "js", "ss-nodes.js") + "\n" +
                                   read(SRC, "js", "sp-intent.js") + "\n" +
                                   read(SRC, "js", "sp-intentui.js") + "\n" +
                                   read(SRC, "js", "sp-director.js") + "\n" +
@@ -359,10 +361,12 @@ def build_shared():
         # renderer, the export and the page — and sp-director rides along
         # because the text tokens live there and a second copy of {tithi} that
         # resolved differently would be exactly the bug this avoids.
-        "director-pro.js": brandify(read(SRC, "js", "sp-nodes.js") + "\n" +
+        "director-pro.js": brandify(read(SRC, "js", "ss-engine.js") + "\n" +
+                                    read(SRC, "js", "sp-nodes.js") + "\n" +
                                     read(SRC, "js", "sp-almanac.js") + "\n" +
                                     read(SRC, "js", "sp-compose.js") + "\n" +
                                     read(SRC, "js", "sp-cycles.js") + "\n" +
+                                    read(SRC, "js", "ss-nodes.js") + "\n" +
                                     read(SRC, "js", "sp-intent.js") + "\n" +
                                     read(SRC, "js", "sp-intentui.js") + "\n" +
                                     read(SRC, "js", "sp-director.js") + "\n" +
@@ -370,6 +374,11 @@ def build_shared():
                                     read(SRC, "js", "dp-render.js") + "\n" +
                                     read(SRC, "js", "dp-export.js") + "\n" +
                                     read(SRC, "js", "dp-ui.js")),
+        # The Sūrya Siddhānta page carries the engine and its own view. The
+        # engine is also inside the two studio bundles, because the nodes it
+        # publishes live there — one implementation, three places it is read.
+        "siddhanta.js": brandify(read(SRC, "js", "ss-engine.js") + "\n" +
+                                 read(SRC, "js", "ss-page.js")),
         "panchanga.js": brandify(read(SRC, "js", "panchanga.js") + "\n" +
                                  read(SRC, "js", "festivals.js")),
         # cities.js is cities.json with sixteen characters in front of it. The chart

@@ -1248,3 +1248,23 @@ label.dpbtn{display:inline-block}
   .sirecipe{min-height:40px}
 }
 .sirecipe,.sirow button{touch-action:manipulation}
+
+/* ===== Sūrya Siddhānta page ============================================== */
+.ssnote{font-size:.84rem;color:var(--muted);line-height:1.6;max-width:86ch}
+.ssrow{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin:8px 0 10px}
+.ssfield{display:flex;flex-direction:column;gap:3px;font-size:.74rem;
+  color:var(--muted)}
+.ssfield input,.ssfield select{font:inherit;font-size:.85rem;padding:6px 9px;
+  border:1px solid var(--line);border-radius:8px;background:var(--soft);
+  color:var(--ink)}
+#ss-params table.tbl td.num,#ss-now table.tbl td.num,
+#ss-working table.tbl td.num{font-variant-numeric:tabular-nums;
+  white-space:nowrap}
+#ss-now td.num.warn{color:#9a3c2a;font-weight:600}
+#ss-working td.muted{color:var(--muted);font-size:.8rem}
+.sslist{margin:10px 0;padding-left:18px;font-size:.84rem;line-height:1.7;
+  max-width:86ch}
+#ss-drift{display:block;width:100%;max-width:860px;height:300px;
+  border:1px solid var(--line);border-radius:10px;background:#fff;
+  margin:4px 0 6px}
+@media (pointer:coarse){.ssfield input,.ssfield select{min-height:44px}}

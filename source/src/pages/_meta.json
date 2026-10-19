@@ -151,6 +151,14 @@
   "layout": "onecol wide",
   "has_aside": false
  },
+ "siddhanta": {
+  "title": "Sūrya Siddhānta — the older sky, computed — {{BRAND}}",
+  "desc": "A working Sūrya Siddhānta engine: ahargaa, yuga revolutions, manda and śīghra epicycles, true longitudes — set beside a modern ephemeris, with the drift between them drawn.",
+  "h1": "Sūrya Siddhānta",
+  "sub": "The same sky, computed the older way — and the distance between the two, drawn.",
+  "layout": "",
+  "has_aside": true
+ },
  "404": {
   "title": "Page not found — {{BRAND}}",
   "desc": "That address is not on this site. Links to the chart builder, the pañcāṅga for now, and the main reference pages.",

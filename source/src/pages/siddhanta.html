@@ -1,0 +1,107 @@
+<p class="ssnote">Everything on this page is computed in your browser, twice —
+once the way the Sūrya Siddhānta does it and once with this site's modern
+ephemeris — so the two can be set beside each other.</p>
+
+<h2 id="what">What this is, and what it is not</h2>
+
+<p>Every other page on this site computes positions from a modern ephemeris.
+This one computes them the way the <b>Sūrya Siddhānta</b> does: from the number
+of revolutions each graha makes in a Mahāyuga, the number of civil days in that
+Mahāyuga, and a pair of epicycle corrections. It is not a better method and it
+is not offered as one.</p>
+
+<p>It is here because the whole interpretive apparatus this site teaches was
+built on numbers produced this way. A student who has never seen what those
+numbers are cannot judge how much of a classical rule rests on astronomy and
+how much on arithmetic that has since been improved — and that judgement is
+worth more than either set of figures.</p>
+
+<p><b>This is not BPHS.</b> Brihat Parashara Hora Shastra is a work of
+horoscopy and supplies no planetary theory at all; the positions a classical
+reading was done from came from a siddhānta, and this is one of those. Nothing
+on this page is presented as BPHS doctrine.</p>
+
+<p><b>No verse is cited here, deliberately.</b> The parameters below are the
+standard Sūrya Siddhānta values as ordinarily implemented, and an
+implementation written from standard parameters is not the same thing as a
+reading of the text. This project's rule is that a citation is either exact or
+absent. A reader who wants the verses should take these numbers to the
+translation and find them there — which is a better use of the volumes than a
+reference printed here on anyone's say-so.</p>
+
+<h2 id="params">The parameters it uses</h2>
+
+<p>Generated from the engine itself, so what you read is what it is computing
+with. A manda or śīghra epicycle is given as two circumferences — one used at
+the ends of the odd quadrants of the anomaly and one at the even, with the
+value between them interpolated by the sine of the anomaly. That interpolation
+is part of the method.</p>
+
+<div id="ss-params"></div>
+
+<h2 id="now">The two skies</h2>
+
+<div class="ssrow">
+  <label class="ssfield"><span>Moment</span>
+    <input id="ss-when" type="datetime-local"></label>
+</div>
+<div id="ss-now"></div>
+
+<h2 id="working">The working, step by step</h2>
+
+<p>The Sun and the Moon take one correction. The star-planets take four steps,
+and the order is the method rather than a refinement of it: half the śīghra,
+then half the manda, then the whole manda from what that gives, then the whole
+śīghra.</p>
+
+<p>For Maṅgala, Guru and Śani the mean longitude is the graha's own and the
+śīghrocca is the Sun's mean place. For Budha and Śukra it is the other way
+about — the mean longitude is the <i>Sun's</i>, and the graha's own revolution
+count gives its śīghrocca. That inversion is how the system carries the fact
+that the inner planets go round the Sun, in a scheme that never says so.</p>
+
+<div class="ssrow">
+  <label class="ssfield"><span>Graha</span>
+    <select id="ss-pick"></select></label>
+</div>
+<div id="ss-working"></div>
+
+<h2 id="drift">The drift</h2>
+
+<p>The revolution counts imply a sidereal year, and that year is about three
+and a half minutes too long. Three and a half minutes is nothing; fifteen
+centuries of three and a half minutes is several days, and several days of the
+Sun is several degrees. This is that, drawn.</p>
+
+<div class="ssrow">
+  <label class="ssfield"><span>Graha</span><select id="ss-body"></select></label>
+  <label class="ssfield"><span>From</span>
+    <input id="ss-from" type="number" value="500" min="-3000" max="3000" step="10"></label>
+  <label class="ssfield"><span>To</span>
+    <input id="ss-to" type="number" value="2100" min="-3000" max="3000" step="10"></label>
+</div>
+<canvas id="ss-drift" height="300" role="img"
+        aria-label="The difference between the two methods, over time"></canvas>
+<p class="ssnote" id="ss-driftnote"></p>
+
+<p>The Moon's line has a different cause and is worth looking at separately.
+Its sidereal month is barely a second too long — the synodic month is accurate
+to about a tenth of a second, which is remarkable — but a second a month for
+five thousand years is most of a day, and most of a day of the Moon is eleven
+degrees.</p>
+
+<h2 id="use">Using it</h2>
+
+<p>These positions are published into Studio Pro and Director Pro as ordinary
+nodes, so the older sky can be drawn by the same composers as the modern one
+and, more usefully, drawn alongside it. Look under <b>siddhanta</b> on the
+wall: the nine as the Sūrya Siddhānta places them, the two sets of positions on
+one ring, the gaps as bars, the working for any star-planet, and the drift as a
+series you can animate across whatever span you like.</p>
+
+<p class="ssnote">Nothing here is a prediction, and the difference between the
+two columns is not an error in either. It is the distance between a
+fifth-century theory and a modern one.</p>
+
+<script src="engine.js" defer></script>
+<script src="siddhanta.js" defer></script>
