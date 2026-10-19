@@ -63,7 +63,7 @@ await page.goto(`${base}/kundli.html`, { waitUntil: "load" });
 await page.waitForFunction(
   () => window.__moReelKeys && window.__moDeepKeys && window.__moGlassKeys &&
         window.__moCalKeys && window.__moTwoClockKeys &&
-        window.__moYuddhaKeys,
+        window.__moYuddhaKeys && window.__moCycleKeys,
   { timeout: 30000 });
 
 /* Both families: the day-dynamic five and the deep-time pair. Listing them
@@ -74,7 +74,8 @@ const keys = want.length ? want : await page.evaluate(
                                            window.__moGlassKeys || [],
                                            window.__moCalKeys || [],
                                            window.__moTwoClockKeys || [],
-                                           window.__moYuddhaKeys || []));
+                                           window.__moYuddhaKeys || [],
+                                           window.__moCycleKeys || []));
 console.log(`probing ${keys.length} scene(s) at 1080x1920\n`);
 
 let bad = 0;

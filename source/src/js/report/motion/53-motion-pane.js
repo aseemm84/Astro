@@ -41,6 +41,7 @@ function motionPane(D,J){
   MO.opt.spanN=12; MO.opt.spanU="y"; MO.speed=1;
   MO.opt.houses="both"; MO.opt.eclN=10;
   MO.opt.varga=0; MO.opt.rpin=-1; MO.opt.npin=-1;
+  MO.opt.cycle="purnima";
   MO.cap.title=""; MO.cap.sub="";
   MO_CACHE={};
   for(var g in MO.show) MO.show[g]=true;
@@ -293,6 +294,17 @@ function moSceneOpts(){
         return '<button type="button" class="skyv'+
           (((MO.opt.rose||"Venus")===en)?" on":"")+
           '" data-morose="'+en+'">'+esc(MO_FULL[en])+'</button>'; }).join("");
+  } else if(k==="cycles"){
+    h='<span class="molab">Event</span>'+
+      [["purnima","Pūrṇimā"],["amavasya","Amāvāsyā"],["venus","Śukra–Sun"],
+       ["mercury","Budha–Sun"],["mars","Maṅgala–Sun"],["jupiter","Guru–Sun"],
+       ["saturn","Śani–Sun"],["sankranti","Saṅkrānti"]].map(function(e){
+        return '<button type="button" class="skyv'+
+          (((MO.opt.cycle||"purnima")===e[0])?" on":"")+
+          '" data-mocycle="'+e[0]+'">'+esc(e[1])+'</button>'; }).join("")+
+      MO_BRK+moSpanRow(["y"],"how long to let it run")+
+      '<span class="mohint">the closure is counted from the occurrences this '+
+      'ephemeris produces \u2014 lengthen the span and a tighter one appears</span>';
   } else if(k==="retro"||k==="drishti"){
     h='<span class="molab">Graha</span>'+
       (k==="drishti"?MO_NAMES:["Mercury","Venus","Mars","Jupiter","Saturn"]).map(function(en){
@@ -690,6 +702,11 @@ document.addEventListener("click",function(ev){
   if(ro){ MO.opt.rose=ro; MO_CACHE={}; MO.p=0;
     [].forEach.call(document.querySelectorAll("[data-morose]"),function(b){
       b.className="skyv"+(b.getAttribute("data-morose")===ro?" on":""); });
+    moDraw(); return; }
+  var cy2=t.getAttribute("data-mocycle");
+  if(cy2){ MO.opt.cycle=cy2; MO_CACHE={}; MO.p=0;
+    [].forEach.call(document.querySelectorAll("[data-mocycle]"),function(b){
+      b.className="skyv"+(b.getAttribute("data-mocycle")===cy2?" on":""); });
     moDraw(); return; }
   var pa=t.getAttribute("data-mopal");
   if(pa){ MO.pal=pa;

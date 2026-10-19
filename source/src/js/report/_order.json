@@ -60,6 +60,7 @@
   "motion/64-motion-calendar.js",
   "motion/65-motion-twoclocks.js",
   "motion/66-motion-yuddha.js",
+  "motion/67-motion-cycles.js",
   "motion/56-motion-guide.js",
   "motion/53-motion-pane.js",
   "export/42-json-export.js",

@@ -1148,7 +1148,11 @@
     { scene: "yuddha", span: "4d", speed: "1", secs: 16,
       title: "Graha Yuddha",
       why: "Two grahas closing to within a degree, drawn through a narrow field with the ecliptic across it so north is up. Three victor tests are applied live — the verse at Vol. 2 ch. 79, and two positions from the translator's notes — and on most meetings they disagree, so each verdict carries its source. Watch the lesser-longitude verdict reverse as they cross.",
-      post: "The rare case where the honest answer is three answers, and the card says which is the verse." }
+      post: "The rare case where the honest answer is three answers, and the card says which is the verse." },
+    { scene: "cycles", span: "20y", speed: "1.4", secs: 25,
+      title: "Where it keeps landing",
+      why: "Every pūrṇimā for twenty years, each one marked on the nakṣatra ring where it actually happened and drawn in towards the Earth on a shorter orbit than the one before. Twelve arms appear, leaning backwards, because twelve lunations fall 10.8° short of a full turn — and after 235 of them the figure lies back down on itself to within 0.15°, which is nineteen years. Switch the event to Śukra and five arms appear instead; switch to Maṅgala and the frame says it never closes.",
+      post: "The one that rewards a rewatch. Every number on it is counted from the occurrences, not quoted." }
   ];
 
   function reelLink(r, place, ratio) {
