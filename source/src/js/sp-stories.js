@@ -353,7 +353,8 @@
     }
     if (ev.length < 3) return null;
     var lons = ev.map(function (e) { return e.lon; });
-    var arms = window.SPCycles ? window.SPCycles.arms(lons) : 0;
+    var fit = armsFromStep(lons);
+    var arms = fit && fit.visible ? fit.visible.q : (fit ? fit.q : 0);
     var yrs = yearsOf(ev);
     var step = meanStep(lons);
     return {
@@ -368,13 +369,10 @@
         big: ev.length + " hidings. " + yrs.toFixed(0) + " years." +
              (arms ? "  " + numword(arms) + " arms." : ""),
         lines: [
-          arms
-            ? "Each hiding falls about " + step.toFixed(0) + "° on from the " +
-              "last, so " + arms + " of them carry it almost once round — a " +
-              "little short, which is why the arms curl."
-            : "These do not fall into arms: the step between them is not " +
-              "near a simple fraction of the circle, and the reel says so " +
-              "rather than naming a number.",
+          fit ? armsLine(fit)
+             : "These do not fall into arms: the step between them is not " +
+               "near any simple fraction of the circle, and the reel says so " +
+               "rather than naming a number.",
           "Every hiding is a date. Together they draw a whirl.",
           "The " + orb + "° limit is the classical orb for " + sa +
           ", not an astronomical boundary — the glare fades, it does not stop."
@@ -390,6 +388,74 @@
     }
     return n ? s / n : 0;
   }
+
+  /* HOW MANY ARMS, AND WHY CLUSTERING WAS THE WRONG QUESTION.
+
+     Three hundred years of Sukra hidings plainly draw five arms, and asking
+     a clusterer how many groups the longitudes fall into returned none —
+     correctly. Each arm PRECESSES: the step between one hiding and the next
+     is a little short of four fifths of a circle, so every arm sweeps most
+     of a quadrant over the run and the longitudes end up spread everywhere.
+     Cluster the raw longitudes and there is nothing to find; the arms are
+     visible only because the radius carries time.
+
+     The arms are a property of the STEP, not of the positions. So: take the
+     mean step, and ask which small fraction p/q of a circle it is nearest.
+     The denominator is the number of arms, the residual is how far each
+     circuit falls short, and when nothing fits inside a few degrees the
+     answer is honestly none. */
+  function armsFromStep(lons) {
+    var step = meanStep(lons);
+    if (!(step > 0)) return null;
+    function nearest(maxQ) {
+      var best = null;
+      for (var q = 2; q <= maxQ; q++)
+        for (var pn = 1; pn < q; pn++) {
+          if (gcd(pn, q) !== 1) continue;
+          var err = Math.abs(step - 360 * pn / q);
+          if (err > 180) err = 360 - err;
+          if (!best || err < best.err) best = { p: pn, q: q, err: err };
+        }
+      /* Two bounds, and the second is what stops this finding a pattern in
+         anything. A small step can be fitted by SOME fraction with a large
+         denominator almost always, so the residual must also be small beside
+         the step itself: a fit a quarter of a step out is not a fit, it is a
+         coincidence with a big number in it. */
+      if (!best || best.err > 4 || best.err > step * 0.25) return null;
+      return best;
+    }
+    /* TWO ANSWERS, BOTH TRUE, AND THEY ARE DIFFERENT QUESTIONS.
+
+       Budha's hidings step 57.1° — near a sixth of a circle, so the beads
+       lie in six arms and six arms is what anybody looking at the figure
+       counts. But 3/19 fits the step twelve times more tightly, and that is
+       the number of steps before the pattern actually repeats. Reporting
+       only the tight fit says "nineteen arms" about a picture with six;
+       reporting only the loose one leaves out why they curl.
+
+       So the headline counts what the eye counts, from the small
+       denominators, and the closure is given separately. */
+    var visible = nearest(12), closes = nearest(36);
+    if (!visible && !closes) return null;
+    return { step: step, visible: visible, closes: closes,
+             q: (visible || closes).q, err: (visible || closes).err };
+  }
+  function armsLine(fit) {
+    var v = fit.visible, c = fit.closes;
+    var out = "Each hiding falls " + fit.step.toFixed(1) + "° on from the last";
+    if (v) {
+      out += " — " + v.p + "/" + v.q + " of a circle, " + v.err.toFixed(2) +
+             "° short. So " + v.q + " of them carry it almost once round, " +
+             "and that shortfall is why the arms curl instead of closing.";
+      if (c && c.q !== v.q)
+        out += " The figure repeats in earnest only after " + c.q + ".";
+    } else {
+      out += ", which is " + c.p + "/" + c.q + " of a circle to within " +
+             c.err.toFixed(2) + "° — so the beads lie in " + c.q + " arms.";
+    }
+    return out;
+  }
+  function gcd(a, b) { while (b) { var t = a % b; a = b; b = t; } return a; }
   var WORDS = ["zero", "one", "two", "three", "four", "five", "six", "seven",
                "eight", "nine", "ten", "eleven", "twelve", "thirteen"];
   function numword(n) { return WORDS[n] ? WORDS[n][0].toUpperCase() +

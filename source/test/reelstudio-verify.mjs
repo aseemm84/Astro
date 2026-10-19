@@ -166,6 +166,56 @@ console.log("\nThe figures count what the periods predict");
   }
 }
 
+/* ---- 2b. the arms are the step -----------------------------------------
+   The arm count printed on the closing card is a claim about geometry, and
+   it is checked here against arithmetic the renderer never sees: the Sun
+   moves 0.98565° a day, so the angle between one hiding and the next is that
+   times the gap, and the number of arms is the denominator of the fraction
+   of a circle it comes to. */
+console.log("\nThe arm counts are the step between hidings");
+{
+  const r = await pg.evaluate(() => {
+    const out = [];
+    ["asta.venus", "asta.jupiter", "asta.mercury", "asta.saturn", "asta.mars"]
+      .forEach(k => {
+        const R = window.SPStories.build(k, { t0: Date.parse("2026-01-01") });
+        const ev = R.events;
+        const gap = (ev[ev.length - 1].t - ev[0].t) / (ev.length - 1) / 86400000;
+        let step = 0;
+        for (let i = 1; i < ev.length; i++) {
+          let d = (ev[i].lon - ev[i - 1].lon) % 360;
+          if (d < 0) d += 360;
+          step += d;
+        }
+        step /= (ev.length - 1);
+        const m = R.closing.big.match(/(\w+) arms/i);
+        out.push({ k, gap, step, says: m ? m[1] : null,
+                   line: R.closing.lines[0] });
+      });
+    return out;
+  });
+  const WORD = { Two: 2, Three: 3, Four: 4, Five: 5, Six: 6, Seven: 7,
+                 Eight: 8, Nine: 9, Ten: 10, Eleven: 11, Twelve: 12 };
+  r.forEach(q => {
+    /* the Sun's own mean motion, independently */
+    const want = (0.9856474 * q.gap) % 360;
+    ok(Math.abs(((q.step - want + 540) % 360) - 180) < 1.2,
+       q.k + ": the step between hidings is " + q.step.toFixed(1) +
+       "°, and the Sun covers " + want.toFixed(1) + "° in " +
+       q.gap.toFixed(1) + " days");
+    const n = WORD[q.says] != null ? WORD[q.says] : +q.says;
+    if (n) {
+      const frac = q.step * n / 360;
+      ok(Math.abs(frac - Math.round(frac)) * 360 / n < 4.5,
+         q.k + ": " + n + " steps make " + frac.toFixed(3) +
+         " whole circles, so " + n + " arms is what the figure has");
+    } else {
+      ok(/do not fall into arms/.test(q.line),
+         q.k + ": names no arm count and says why");
+    }
+  });
+}
+
 /* ---- 3. the span is the span --------------------------------------------
    THE REGRESSION. The finder caps how many events it will look for, and when
    the cap bit the reel went on printing the span it had been asked for. */
