@@ -1,0 +1,1433 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Simulation — what if the Moon moved? — Nirayana</title><meta name="description" content="A gravitational simulator for counterfactuals: move the Moon an inch, stop it revolving, double its mass, take it away — and integrate the equations of motion to find out what follows, for the sky and for the system this site teaches.">
+<link rel="canonical" href="https://aseemm84.github.io/Astro/simulation.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Nirayana">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="Simulation — what if the Moon moved? — Nirayana">
+<meta property="og:description" content="A gravitational simulator for counterfactuals: move the Moon an inch, stop it revolving, double its mass, take it away — and integrate the equations of motion to find out what follows, for the sky and for the system this site teaches.">
+<meta property="og:url" content="https://aseemm84.github.io/Astro/simulation.html">
+<meta property="og:image" content="https://aseemm84.github.io/Astro/assets/og-nirayana.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Nirayana — a Vedic astrology reference and chart engine">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Simulation — what if the Moon moved? — Nirayana">
+<meta name="twitter:description" content="A gravitational simulator for counterfactuals: move the Moon an inch, stop it revolving, double its mass, take it away — and integrate the equations of motion to find out what follows, for the sky and for the system this site teaches.">
+<meta name="twitter:image" content="https://aseemm84.github.io/Astro/assets/og-nirayana.png">
+<meta name="theme-color" content="#1d2340">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2213%22%20fill%3D%22%231d2340%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2212.5%22%20fill%3D%22none%22%20stroke%3D%22%23c9a24b%22%20stroke-width%3D%223%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%227.5%22%20fill%3D%22%23edc968%22%2F%3E%3Cpath%20d%3D%22M46.8%2020.6A19%2019%200%200%201%2051%2032%22%20fill%3D%22none%22%20stroke%3D%22%23e7d19a%22%20stroke-width%3D%225%22%2F%3E%3Cpath%20d%3D%22M32%2013.5v3.4M32%2047.1v3.4M13.5%2032h3.4M47.1%2032h3.4%22%20stroke%3D%22%23c9a24b%22%20stroke-width%3D%222.6%22%2F%3E%3C%2Fsvg%3E">
+<link rel="apple-touch-icon" href="assets/brand/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest"><style>
+:root{--night:#191d33;--night2:#252a49;--gold:#c9a24b;--gold-soft:#e7d19a;--paper:#fbfbfd;--ink:#20233a;--muted:#6c7089;--line:#e7e7f0;--soft:#f4f4fb;--serif:"Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+*{box-sizing:border-box}html,body{margin:0}html{scroll-behavior:smooth}body{font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.62}
+.masthead{background:radial-gradient(1px 1px at 18% 30%,#fff 40%,transparent 41%),radial-gradient(1px 1px at 42% 66%,#fff 40%,transparent 41%),radial-gradient(1.4px 1.4px at 70% 24%,#fff 40%,transparent 41%),radial-gradient(1px 1px at 86% 60%,#fff 40%,transparent 41%),radial-gradient(1px 1px at 55% 40%,#fff 40%,transparent 41%),radial-gradient(1200px 300px at 80% -40%,#33406f 0%,transparent 60%),linear-gradient(160deg,var(--night),var(--night2));color:#f3f2ec;padding:30px clamp(16px,5vw,64px) 26px;border-bottom:3px solid var(--gold)}
+.masthead .eyebrow{letter-spacing:.14em;text-transform:uppercase;font-size:11px;color:var(--gold-soft);margin:0 0 8px}
+.masthead h1{font-family:var(--serif);font-weight:600;font-size:clamp(26px,4.4vw,42px);margin:0 0 6px;line-height:1.1;color:#fff}
+.masthead p.sub{font-family:var(--serif);font-style:italic;font-size:clamp(15px,2vw,19px);color:#cdd0e4;margin:0;max-width:74ch}
+nav.site{position:sticky;top:0;z-index:30;background:rgba(25,29,51,.97);backdrop-filter:blur(6px);border-bottom:1px solid #333a5e;padding:8px clamp(10px,5vw,64px);display:flex;flex-wrap:wrap;gap:2px 4px}
+nav.site a{color:#c7cbe4;text-decoration:none;font-size:12.5px;padding:5px 9px;border-radius:7px;white-space:nowrap}
+nav.site a:hover{background:#2c3358;color:#fff}nav.site a.active{background:var(--gold);color:#231c07;font-weight:600}
+.layout{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:0;padding:0 clamp(16px,4vw,40px)}
+@media(min-width:1000px){.layout{grid-template-columns:230px 1fr;gap:34px}.layout.onecol{grid-template-columns:1fr}}
+aside.onpage{display:none}
+@media(min-width:1000px){aside.onpage{display:block;position:sticky;top:52px;align-self:start;height:calc(100vh - 60px);overflow:auto;padding:26px 0 40px;font-size:13px}}
+aside.onpage b{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:block;margin:0 0 8px}
+aside.onpage a{display:block;color:#4a4e68;text-decoration:none;padding:3px 10px;border-left:2px solid var(--line);line-height:1.35;margin:1px 0}
+aside.onpage a:hover{color:var(--gold);border-left-color:var(--gold)}
+main{padding:26px 0 64px;min-width:0}
+h2{font-family:var(--serif);font-weight:600;font-size:25px;margin:38px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--gold);color:#1b1e33;scroll-margin-top:56px}
+h2:first-of-type{margin-top:6px}
+h3{font-family:var(--serif);font-weight:600;font-size:19px;margin:22px 0 6px;color:#2a2e4a}
+p{margin:0 0 12px;max-width:80ch}p.lead{font-size:17px;color:#3a3e58;max-width:82ch}
+.term{background:var(--soft);border-left:3px solid var(--gold);padding:8px 12px;border-radius:0 7px 7px 0;margin:0 0 10px;max-width:82ch}
+.term b{font-family:var(--serif);font-size:16px}
+.src{font-size:12.5px;color:var(--muted);background:#f7f6ef;border:1px solid #ece7d4;border-radius:7px;padding:6px 11px;margin:2px 0 14px;max-width:84ch}
+.src span{font-weight:700;color:#8a6d1f;text-transform:uppercase;letter-spacing:.05em;font-size:10.5px;margin-right:6px}
+.note{background:#eef2f7;border:1px solid #dbe3ee;border-left:3px solid #6f86b0;border-radius:0 7px 7px 0;padding:9px 13px;margin:2px 0 14px;font-size:14px;max-width:84ch}
+.mine{background:#f0f6f1;border:1px solid #d8e7db;border-left:3px solid #4f8c5f;border-radius:0 7px 7px 0;padding:9px 13px;margin:2px 0 14px;font-size:14px;max-width:84ch}
+.ex{background:#fbf6e8;border:1px solid #ecdcae;border-left:3px solid var(--gold);border-radius:0 7px 7px 0;padding:9px 13px;margin:2px 0 14px;font-size:14px;max-width:84ch}
+.caution{background:#fbeeee;border:1px solid #ecc1c1;border-left:3px solid #b45252;border-radius:0 7px 7px 0;padding:10px 13px;margin:8px 0 16px;font-size:14px;max-width:84ch}
+ul,ol{margin:0 0 12px;padding-left:22px;max-width:82ch}li{margin:3px 0}
+.tw{overflow-x:auto;margin:0 0 16px}
+table.tbl{border-collapse:collapse;width:100%;font-size:13.5px;min-width:520px}
+table.tbl th{background:var(--night);color:#eef0fb;text-align:left;font-weight:600;font-size:12px;padding:8px 10px;border-bottom:2px solid var(--gold);vertical-align:bottom}
+table.tbl td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.tbl tr:nth-child(even) td{background:var(--soft)}
+table.tbl td b{color:#1b1e33}
+.crux td{background:#fbf6e8 !important}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin:14px 0}
+.card{display:block;text-decoration:none;color:inherit;background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px 16px;transition:border-color .15s,transform .15s}
+.card:hover{border-color:var(--gold);transform:translateY(-2px)}
+.card .n{font-size:11px;color:var(--muted)}.card h3{margin:2px 0 5px;font-size:17px;color:#1b1e33}.card p{font-size:13px;color:#4a4e68;margin:0}
+.card.tool{background:linear-gradient(160deg,#20264a,#2b3358);border-color:#39406a}.card.tool h3,.card.tool .n{color:#fff}.card.tool p{color:#c9cce4}
+footer{border-top:1px solid var(--line);background:#f5f5fb;color:var(--muted);font-size:12.5px;padding:24px clamp(16px,5vw,64px) 46px}
+footer .wrap{max-width:100ch;margin:0 auto}footer b{color:#454963}footer p{margin:0 0 8px;max-width:none}
+a{color:#2b5fa5}a:hover{color:var(--gold)}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:1px 8px;border-radius:999px;background:var(--soft);color:#4a4e68;margin-left:5px}
+.k-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0}
+.k-form label{display:block;font-size:12px;font-weight:600;color:#4a4e68;margin:0 0 4px}
+.k-form input,.k-form select{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;background:#fdfdff;color:var(--ink)}
+.k-full{grid-column:1/-1}
+.k-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0 4px}
+.k-btn{background:var(--night);color:#fff;border:0;border-radius:9px;padding:10px 18px;font:inherit;font-weight:600;font-size:14px;cursor:pointer}
+.k-btn:hover{background:#2b3358}.k-btn.sec{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.k-btn:disabled{opacity:.55;cursor:default}
+.k-status{font-size:13px;margin:6px 0;min-height:1.1em;color:var(--muted)}
+.k-err{background:#fbeeee;border:1px solid #ecc1c1;border-left:3px solid #b45252;border-radius:0 8px 8px 0;padding:10px 13px;font-size:13.5px;margin:8px 0;max-width:84ch}
+.k-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:12px 0}
+.k-card{background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+.k-card .lab{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.k-card .val{font-family:var(--serif);font-size:18px;color:#1b1e33;margin-top:2px;line-height:1.2}
+.k-card .sub{font-size:12px;color:#4a4e68;margin-top:2px}
+.k-retro{color:#b45252;font-weight:700}
+.k-deg{font-variant-numeric:tabular-nums;color:var(--muted);font-size:12px}
+details.k-raw{margin:14px 0}details.k-raw summary{cursor:pointer;font-size:13px;color:#2b5fa5}
+details.k-raw pre,pre.k-code{background:#0f1223;color:#d9dcf2;padding:12px;border-radius:10px;overflow:auto;font-size:11.5px;line-height:1.5;max-width:100%}
+code.k-inline{background:#f0f0f6;padding:1px 5px;border-radius:5px;font-size:12.5px}
+.k-rawbar{display:flex;align-items:center;gap:10px;margin:8px 0}
+.k-copymsg{font-size:12px;color:#4f8c5f;min-height:1em}
+.k-searchrow{display:flex;gap:8px}
+.k-searchrow input{flex:1;min-width:0}
+.k-results{margin:6px 0 0}
+.k-results button{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 10px;margin:4px 0;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
+.k-results button:hover{border-color:var(--gold);background:#fdfbf4}
+.k-results button b{font-weight:600}
+.k-results button span{color:var(--muted);font-size:12px;margin-left:6px}
+.k-results .k-rmsg{font-size:12.5px;color:var(--muted);padding:4px 0}
+.kreport{margin:14px 0}
+.kreport .ksec{margin:26px 0 0}
+.kreport .kh{font-size:17px;margin:0 0 4px;padding-bottom:6px;border-bottom:2px solid #cdbf9a;font-family:var(--serif);font-weight:600}
+.kreport .kh span{float:right;font-size:11px;color:var(--muted);font-weight:400;padding-top:7px}
+.kreport .ksub{font-size:13.5px;margin:16px 0 4px;color:#3a4060;font-weight:600}
+.kreport .knote{font-size:13px;color:var(--muted);margin:6px 0 8px;max-width:76ch}
+.kreport .klegend{font-size:11px;color:var(--muted);margin:6px 0 0}
+.kreport .kmut{color:var(--muted)}
+.kreport .kthin{font-weight:400}
+.kreport .kcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:12px 0}
+.kreport .kcard{border:1px solid var(--line);background:#fff;padding:9px 11px;border-left:3px solid var(--gold);border-radius:0 6px 6px 0}
+.kreport .kcard .k{font-size:10.5px;color:var(--muted);display:block}
+.kreport .kcard .v{font-size:16px;font-weight:600;margin-top:1px;line-height:1.25;font-family:var(--serif);display:block}
+.kreport .kcard .s{font-size:11.5px;color:#4a4e68;margin-top:1px;display:block}
+.kreport .kcharts{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;margin:12px 0}
+.kreport .kchartfig{margin:0}
+.kreport .kchartfig figcaption{font-size:12px;margin-bottom:6px}
+.kreport .kchartfig figcaption span{color:var(--muted);margin-left:6px}
+.kreport .kchartsvg{width:100%;height:auto;display:block}
+.kreport .kchartsvg .hn{font:600 9px system-ui,sans-serif;fill:#a89a72;text-anchor:middle}
+.kreport .kchartsvg .hs{font:600 10px system-ui,sans-serif;fill:#6f6a5c;text-anchor:middle}
+.kreport .kchartsvg .hp{font:700 12px system-ui,sans-serif;fill:#1d2340;text-anchor:middle}
+.kreport .kchartsvg .ss{font:600 9.5px system-ui,sans-serif;fill:#8b8368}
+.kreport .kchartsvg .sh{font:600 9.5px system-ui,sans-serif;fill:#b08a2e;text-anchor:end}
+.kreport .kchartsvg .sp{font:700 12px system-ui,sans-serif;fill:#1d2340;text-anchor:middle}
+.kreport .kchartsvg .slag{font:600 8.5px system-ui,sans-serif;fill:#b08a2e;text-anchor:middle}
+.kreport .kwsvg{width:100%;height:auto;display:block;margin:8px 0}
+.kreport .kwsvg .ax{font:600 9.5px system-ui,sans-serif;fill:#6f6a5c;text-anchor:middle}
+.kreport .kwsvg .axs{font:400 8px system-ui,sans-serif;fill:#9a917a;text-anchor:middle}
+.kreport .kwsvg .bv{font:700 10px system-ui,sans-serif;fill:#1d2340;text-anchor:middle}
+.kreport .kwsvg .tl{font:700 10px system-ui,sans-serif;fill:#fff;text-anchor:middle}
+.kreport .kwsvg .ty{font:400 8.5px system-ui,sans-serif;fill:#6f6a5c;text-anchor:middle}
+.kreport .kwsvg .now{font:700 9px system-ui,sans-serif;fill:#a1493a;text-anchor:middle}
+.kreport table.ktbl{border-collapse:collapse;width:100%;font-size:12.3px;font-variant-numeric:tabular-nums;margin:8px 0 4px;display:table}
+.kreport table.ktbl th{background:var(--night);color:#f2eee0;text-align:left;padding:6px 7px;font-weight:600;font-size:10.5px;border-bottom:2px solid var(--gold);white-space:nowrap}
+.kreport table.ktbl td{padding:5px 7px;border-bottom:1px solid var(--line);vertical-align:top}
+.kreport table.ktbl tbody tr:nth-child(even) td{background:var(--soft)}
+.kreport table.ktbl tr.khl td{background:#f7f0dc}
+.kreport table.ktbl td.knum{text-align:right}
+.kreport table.ktbl td.kb{text-align:center;font-weight:600}
+.kreport table.ktbl td.kbsav{background:var(--night);color:#f2eee0}
+.kreport .ktwrap{overflow-x:auto;margin:8px 0}
+.kreport .kchip{display:inline-block;font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:3px;letter-spacing:.04em}
+.kreport .kprow{display:grid;grid-template-columns:112px 1fr 38px 180px;gap:9px;align-items:center;margin:4px 0;font-size:11.5px}
+.kreport .kplab b{margin-left:5px}
+.kreport .kpbar{background:#e6dfcb;height:10px;border-radius:2px;overflow:hidden}
+.kreport .kpbar span{display:block;height:100%;background:linear-gradient(90deg,#b08a2e,#1c6b46)}
+.kreport .kppct{text-align:right;color:var(--muted)}
+.kreport .kpdate{color:var(--muted)}
+.kreport .kbox{border:1px solid #dbe3ee;border-left:3px solid #6f86b0;background:#eef2f7;padding:9px 12px;font-size:12.5px;margin:10px 0;max-width:82ch;border-radius:0 6px 6px 0}
+.kreport .kbox.kwarn{border-left-color:#b45252;background:#fbeeee}
+.kreport .kbox b{display:block;margin-bottom:2px}
+@media(max-width:700px){.kreport .kprow{grid-template-columns:96px 1fr 34px}.kreport .kpdate{display:none}}
+.kreport .kvgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin:12px 0}
+.kreport .kvgrid .kchartfig figcaption{font-size:11px}
+.kreport .kvgrid .kchartsvg .hp{font-size:13px}
+.kreport .kvgrid .kchartsvg .hs{font-size:9.5px}
+.kreport .katoggle{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 10px;font-size:12px}
+.kreport .kanote{background:#f2f6f2;border:1px solid #d8e5db;border-left:3px solid #4f8c5f;border-radius:0 7px 7px 0;padding:10px 13px;margin:12px 0 4px;font-size:13px;line-height:1.55;max-width:84ch}
+.kreport .kanote b:first-child{display:block;margin-bottom:3px;color:#2f6b45;font-size:11px;letter-spacing:.03em;text-transform:uppercase}
+.kreport .kanote .kmore{display:none}
+.kreport.kdetail .kanote .kmore{display:inline}
+.kreport .kasrc{display:block;margin-top:6px;font-size:11px;color:var(--muted)}
+.kreport .kasrc a{color:#2b5fa5;text-decoration:none}
+.kreport .kasrc a:hover{color:var(--gold)}
+.kreport .kname{font-family:var(--serif);font-size:22px;font-weight:600;color:var(--night);margin:2px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.kreport .kbasics{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
+.kreport table.kkv td.kk{color:var(--muted);width:46%}
+.kreport table.kkv th{display:none}
+.kreport .ksudnote{align-self:center}
+.kreport .kchartsvg .sc-h{font:600 8.5px system-ui,sans-serif;fill:#a89a72;text-anchor:middle}
+.kreport .kchartsvg .sc-p{font:700 10px system-ui,sans-serif;fill:#1d2340;text-anchor:middle}
+.kreport .kchartsvg .sc-c{font:16px serif;fill:#a1493a;text-anchor:middle}
+@media print{
+  nav.site,aside.onpage,.k-form,.k-actions,.k-status,.katoggle,details.k-raw,#k-searchnote,.k-results,header.masthead p.sub{display:none!important}
+  body{background:#fff}
+  .kreport .kmore{display:inline!important}
+  .kreport .ksec{break-inside:avoid;page-break-inside:avoid}
+  .kreport .kchartfig,.kreport .kanote,.kreport table{break-inside:avoid;page-break-inside:avoid}
+  .kreport .kvgrid{grid-template-columns:repeat(4,1fr)}
+  a{text-decoration:none;color:#000}
+}
+.kreport .katoggle{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 10px;font-size:12px}
+.kreport .kanote{background:#f2f6f2;border:1px solid #d8e5db;border-left:3px solid #4f8c5f;border-radius:0 7px 7px 0;padding:10px 13px;margin:12px 0 4px;font-size:13px;line-height:1.55;max-width:84ch}
+.kreport .kanote b:first-child{display:block;margin-bottom:3px;color:#2f6b45;font-size:11px;letter-spacing:.03em;text-transform:uppercase}
+.kreport .kanote .kmore{display:none}
+.kreport.kdetail .kanote .kmore{display:inline}
+.kreport .kasrc{display:block;margin-top:6px;font-size:11px;color:var(--muted)}
+.kreport .kasrc a{color:#2b5fa5;text-decoration:none}
+.kreport .kasrc a:hover{color:var(--gold)}
+
+@media(max-width:820px){
+  nav.site{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none;padding-left:12px;padding-right:12px;
+    -webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);
+            mask-image:linear-gradient(90deg,#000 88%,transparent)}
+  nav.site::-webkit-scrollbar{display:none}
+  nav.site a{flex:0 0 auto;white-space:nowrap}
+}
+.lhbrand{display:inline-block;vertical-align:-0.22em;margin-right:12px}
+.lhbrand .lhmark{width:1.55em;height:1.18em}
+svg.lhmark .lhink{stroke:currentColor}
+svg.lhmark .lhorb{stroke:#c9a24b;fill:#c9a24b}
+svg.lhmark .lhorb ellipse{fill:none}
+/* --- brand lockup: inline vector mark + the name as real text ---------------
+   The mark used to be a 12 KB base64 JPEG pasted into both shells and the print
+   module. It is now one SVG on disk, inlined by the build, and the wordmark is
+   text rather than a picture of text, so it stays crisp, themes with the page and
+   is readable by a screen reader. */
+.masthead .lhbrand{display:inline-flex;align-items:center;gap:15px;text-decoration:none;
+  color:inherit;margin:0 0 14px}
+.masthead .lhmarkwrap{display:block;width:clamp(52px,11vw,74px);flex:0 0 auto}
+.masthead .lhmark{display:block;width:100%;height:auto}
+.masthead .lhword{display:flex;flex-direction:column;line-height:1}
+.masthead .lhname{font-family:var(--serif);font-size:clamp(27px,6.4vw,37px);font-weight:600;
+  color:#dcb866;letter-spacing:.012em}
+.masthead .lhdeva{font-size:clamp(15px,3.4vw,20px);color:#c9a24b;opacity:.9;margin-top:4px;
+  font-family:"Noto Sans Devanagari","Nirmala UI",system-ui,sans-serif}
+.masthead .lhbrand:hover .lhname{color:#edc968}
+@media print{.masthead .lhbrand{display:none}}
+
+/* The landing hero: say what the thing does, show that it does it, and give one
+   way in. Before this the page opened with a paragraph and seventeen equal
+   navigation links, so a visitor had no way to tell there was an engine here. */
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:30px;align-items:center;margin:4px 0 26px}
+.hero-copy .lead{margin-top:0}
+.hero-do{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:16px 0 14px}
+.k-btn.big{display:inline-block;text-decoration:none;font-size:16px;padding:13px 26px;
+  background:linear-gradient(160deg,#2b3358,#1d2340);box-shadow:0 2px 10px rgba(29,35,64,.22)}
+.k-btn.big:hover{background:linear-gradient(160deg,#39406a,#262d52)}
+.hero-free{font-size:12.5px;color:var(--muted)}
+.hero-pts{margin:0;padding-left:18px}
+.hero-pts li{font-size:13.5px;line-height:1.55;color:#4a4e68;margin-bottom:5px}
+.hero-pts li b{color:var(--ink)}
+.hero-shot{margin:0}
+.hero-shot img{width:100%;height:auto;border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 6px 22px rgba(29,35,64,.13)}
+.hero-shot figcaption{font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.45}
+@media (max-width:820px){
+  .hero{grid-template-columns:1fr;gap:20px}
+  .hero-shot{order:-1}
+  .hero-shot img{max-width:360px;display:block;margin:0 auto}
+}
+
+/* ===== navigation that fits the screen ======================================
+   Sixteen links in a horizontal scroller hid 883px of themselves on a phone.
+   Wide screens keep the row; narrow ones get a button and a panel. */
+.navbar{display:none}
+html.navlock,html.navlock body{overflow:hidden}
+@media(max-width:1000px){
+  .navbar{display:block;position:sticky;top:0;z-index:31;
+    background:linear-gradient(160deg,var(--night),var(--night2));
+    border-bottom:1px solid #333a5e}
+  .navtoggle{display:flex;align-items:center;gap:11px;width:100%;
+    padding:11px clamp(12px,4vw,24px);background:none;border:0;cursor:pointer;
+    font:inherit;color:#f0eee6;text-align:left}
+  .navtoggle-i{display:inline-flex;flex-direction:column;gap:3.5px;flex:0 0 auto}
+  .navtoggle-i i{display:block;width:17px;height:2px;background:var(--gold);border-radius:2px}
+  .navtoggle-t{flex:1;font-size:14.5px;font-weight:600;letter-spacing:.01em}
+  .navtoggle-c{color:var(--gold);font-size:12px;transition:transform .18s}
+  .navtoggle[aria-expanded="true"] .navtoggle-c{transform:rotate(180deg)}
+  nav.site{display:none;position:sticky;top:44px;z-index:30;
+    flex-wrap:wrap;overflow:visible;padding:8px clamp(12px,4vw,24px) 14px;
+    -webkit-mask-image:none;mask-image:none;
+    max-height:calc(100vh - 44px);overflow-y:auto}
+  nav.site.open{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+  nav.site a{white-space:normal;padding:10px 11px;font-size:13.5px;border-radius:8px}
+  nav.site a.active{background:var(--gold);color:#231c07}
+}
+/* two columns even on a small phone: sixteen single-file items is a long scroll,
+   and the labels wrap rather than truncate */
+@media(max-width:340px){ nav.site.open{grid-template-columns:1fr} }
+
+/* ---- section links where the sidebar is hidden --------------------------- */
+.onpage-m{display:none}
+@media(max-width:999px){
+  .onpage-m{display:block;margin:0 0 18px;border:1px solid var(--line);
+    border-left:3px solid var(--gold);border-radius:4px 10px 10px 4px;background:#fff}
+  .onpage-m>summary{list-style:none;cursor:pointer;padding:10px 14px;
+    font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+  .onpage-m>summary::-webkit-details-marker{display:none}
+  .onpage-m>summary span{font-weight:400;letter-spacing:0;text-transform:none;font-size:12px}
+  .onpage-m>summary::after{content:"\25be";color:var(--gold);margin-left:8px}
+  .onpage-m[open]>summary::after{content:"\25b4"}
+  .onpage-m-list{padding:2px 10px 10px;display:flex;flex-direction:column}
+  .onpage-m-list a{display:block;padding:7px 10px;color:#4a4e68;text-decoration:none;
+    font-size:14px;border-left:2px solid var(--line);line-height:1.3}
+  .onpage-m-list a:hover{color:var(--gold);border-left-color:var(--gold)}
+}
+
+/* ===== your own chart, on a reference page ==================================
+   A rule is easier to hold once you have seen it land somewhere. These state
+   what your chart contains and stop there; the page around them carries the
+   interpretation. */
+.inchart{margin:0 0 20px;border:1px solid #d8e7db;border-left:3px solid #4f8c5f;
+  border-radius:0 10px 10px 0;background:#f4faf5;padding:13px 16px;max-width:84ch}
+.inchart h4{margin:0 0 8px;font-family:var(--serif);font-size:16px;color:#1f4f33}
+.inchart h4 span{font-family:var(--sans);font-size:12.5px;color:#5c7a66;font-weight:400}
+.inchart ul{margin:0;padding-left:18px;max-width:none}
+.inchart li{font-size:13.5px;line-height:1.55;margin:0 0 5px;color:#33493b}
+.inchart li b{color:#15351f}
+.inchart-f{margin:10px 0 0;font-size:11.5px;line-height:1.5;color:#6a8271;max-width:none}
+.inchart-f a{color:#2b5fa5}
+.inchart-x{font:inherit;font-size:11.5px;color:#6a8271;background:none;border:0;
+  border-bottom:1px dotted #9db3a3;padding:0;cursor:pointer;margin-left:2px}
+.inchart-x:hover{color:#1f4f33;border-bottom-color:#1f4f33}
+.inchart-ask{font-size:13px;color:var(--muted);background:var(--soft);
+  border:1px dashed var(--line);border-radius:9px;padding:9px 13px;margin:0 0 18px;max-width:84ch}
+@media print{.inchart-ask,.inchart-f,.navbar{display:none}.inchart{break-inside:avoid}}
+
+/* ===== now.html ==========================================================
+   A clock page: the numbers are the content, so they are set large and the
+   labels small, and the cards wrap to one column on a phone without the figures
+   shrinking with them. */
+.nowbar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;
+  margin:18px 0 10px;padding:12px 14px;border:1px solid var(--line);
+  border-radius:12px;background:var(--card,#fff)}
+.nowlab{font-size:12px;font-weight:700;letter-spacing:.02em;color:#5a5f78}
+.nowsel{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--line);
+  border-radius:8px;background:transparent;color:inherit;max-width:100%}
+.nowhint{flex:1 1 18em;min-width:14em;font-size:12px;line-height:1.5;color:#6a7090}
+.nowhead{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;margin:16px 0 4px}
+.nowclock{font-size:40px;font-weight:700;letter-spacing:-.01em;
+  font-variant-numeric:tabular-nums;line-height:1}
+/* The Hindu clock sits beside the civil one, smaller and in the gold, so the two
+   read as one line of time in two reckonings rather than as two competing clocks. */
+.nowhindu{font-size:24px;font-weight:600;color:var(--gold,#9a7a28);
+  font-variant-numeric:tabular-nums;line-height:1}
+.nowhindu i{font-style:normal;font-size:.55em;font-weight:600;opacity:.75;
+  margin:0 .15em 0 .05em}
+.nowplace{font-size:14px;color:#5a5f78}
+.nowdate{font-size:14px;font-weight:600;color:var(--gold,#9a7a28)}
+.nowgrid{display:grid;gap:10px;margin:12px 0 6px;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.nowcard{border:1px solid var(--line);border-radius:12px;padding:12px 13px;
+  background:var(--card,#fff);display:flex;flex-direction:column;gap:3px}
+.nowcard b{font-size:11px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:#6a7090}
+.nowbig{font-size:21px;font-weight:600;line-height:1.25}
+.nowsub{font-size:12.5px;color:#5a5f78;line-height:1.45}
+.nowcard.nowlt{border-style:dashed}
+.nowstrip{width:100%;display:block;margin:10px 0 4px}
+.nownote{font-size:14px;color:#6a7090}
+@media (max-width:520px){ .nowclock{font-size:32px} }
+@media (prefers-color-scheme:dark){
+  .nowbar,.nowcard{background:rgba(255,255,255,.03)}
+  .nowhint,.nowplace,.nowsub,.nownote{color:#9aa0bd}
+  .nowcard b{color:#9aa0bd}
+}
+
+/* ===== calendar.html =====================================================
+   The grid is solar and the content is lunisolar, so the layout has to carry
+   markers for the three mismatches rather than smoothing them away: a cell can
+   hold a second tithi (upari), a lunar month boundary is drawn as a rule BETWEEN
+   cells rather than inside one, and the year view exists because an intercalary
+   month has no cell at all in a Gregorian grid. */
+.cbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;
+  border:1px solid var(--line);border-radius:12px;padding:10px 13px;
+  margin:14px 0 8px;background:var(--soft)}
+.cbar2{background:transparent}
+.cbargroup{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.clab{font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);font-weight:700}
+.csel{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);
+  border-radius:8px;background:#fff;color:var(--ink);max-width:min(42ch,70vw)}
+.cnum{width:7.5em}
+.cvbtn{font:inherit;font-size:13px;padding:5px 12px;border:1px solid var(--line);
+  border-radius:8px;background:#fff;color:var(--ink);cursor:pointer}
+.cvbtn:hover{border-color:var(--gold)}
+.cvbtn.on{background:var(--night);color:#fff;border-color:var(--night)}
+.clayerbox{border:1px solid var(--line);border-radius:12px;padding:8px 13px;
+  margin:0 0 10px;font-size:13px}
+.clayerbox summary{cursor:pointer;font-weight:600}
+.clayerlist{display:grid;gap:2px 16px;margin:8px 0 4px;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.clayer{display:flex;gap:7px;align-items:center;font-size:13px}
+.clayer.cbase{color:var(--muted)}
+.clayer i{font-style:normal;font-size:10px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--muted);border:1px solid var(--line);
+  border-radius:4px;padding:0 4px}
+.cplacenote{font-size:13px;color:var(--muted);margin:4px 0 10px}
+.cheadbar{margin:6px 0 10px}
+.cnav{display:flex;gap:8px;align-items:center}
+.cnav button{font:inherit;font-size:17px;line-height:1;padding:4px 11px;
+  border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer}
+.cnav button.csec{font-size:13px}
+.cnav button:hover{border-color:var(--gold)}
+.clabel{display:flex;flex-direction:column;line-height:1.25;margin:0 6px}
+.clabel b{font-family:var(--serif);font-size:20px}
+.clabel i{font-style:normal;font-size:12px;color:var(--muted)}
+
+/* --- the month grid --- */
+.cgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));
+  gap:1px;background:var(--line);border:1px solid var(--line);
+  border-radius:12px;overflow:hidden}
+.chead{background:var(--night);color:#cdd0e4;font-size:11px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;text-align:center;padding:6px 2px}
+.ccell{background:#fff;min-height:104px;padding:5px 6px 7px;display:flex;
+  flex-direction:column;gap:1px;cursor:pointer;position:relative}
+.ccell:hover{background:#fcfbf6}
+.ccell:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+.ccell.cempty{background:var(--soft);cursor:default;min-height:0}
+.cdate{font-family:var(--serif);font-size:17px;font-weight:600;line-height:1.1}
+.cmoon{position:absolute;top:6px;right:6px}
+/* The lunar month boundary is a rule across the grid: it is a boundary BETWEEN
+   cells, so it is drawn on the cell edge rather than as a badge inside one. */
+.ccell.cmonthstart{box-shadow:inset 3px 0 0 var(--gold)}
+.ccell.cfull{background:#fffdf4}
+.ccell.cnew{background:#f7f7fa}
+.ccell.csel{background:#f3f0e4;box-shadow:inset 0 0 0 2px var(--gold)}
+.ctithi{font-size:12px;line-height:1.3;margin-top:2px}
+.ctithi i{font-style:normal;font-weight:700;color:var(--gold);margin-right:3px}
+.cnak{font-size:11.5px;color:#4a4e68;line-height:1.3}
+.cmin{font-size:10.5px;color:var(--muted);line-height:1.3}
+.cends{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+/* The doubled tithi, marked the way printed almanacs mark it. */
+.cupari{font-size:10.5px;color:#7a5c12;background:#fdf6e3;border-radius:4px;
+  padding:0 3px;line-height:1.35}
+.cupari i{font-style:italic}
+.csank{font-size:10.5px;color:#1d4f6b;background:#eaf4f9;border-radius:4px;
+  padding:0 3px}
+.cadhika{font-size:10px;letter-spacing:.05em;text-transform:uppercase;
+  font-weight:700;color:#7a3b12;background:#fcefe6;border-radius:4px;
+  padding:0 4px;align-self:flex-start}
+.cfestname{font-size:11px;font-weight:600;color:#6b4a00;line-height:1.3}
+.cfestname.cminor{font-weight:400;color:var(--muted)}
+.cfestname.ccontested::after{content:" *";color:#a1493a}
+.cfestname i{font-style:normal;font-size:9.5px;text-transform:uppercase;
+  letter-spacing:.04em;color:#a1493a;border:1px solid #e3c8c2;border-radius:3px;
+  padding:0 3px;margin-left:3px}
+.cwarn{position:absolute;bottom:5px;right:7px;color:#a1493a;font-weight:700}
+
+/* --- the almanac row --- */
+.calm{width:100%;border-collapse:collapse;font-size:12.5px}
+.calm th{background:var(--night);color:#cdd0e4;font-size:10.5px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;text-align:left;padding:6px 7px;
+  position:sticky;top:0}
+.calm td{border-bottom:1px solid var(--line);padding:5px 7px;vertical-align:top}
+.calm tr:hover td{background:#fcfbf6}
+.calm small{color:var(--muted);font-variant-numeric:tabular-nums}
+.calm td i{font-style:normal;font-weight:700;color:var(--gold)}
+.calm td b{font-weight:600;color:#7a5c12}
+
+/* --- the day detail --- */
+.cdetail{border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  margin:0 0 14px}
+.cdhead{display:flex;gap:14px;align-items:center;padding:13px 15px;
+  background:var(--night);color:#f3f2ec}
+.cdhead h3{font-family:var(--serif);font-size:22px;margin:0;color:#fff}
+.cdhead p{margin:2px 0 0;font-size:13px;color:#cdd0e4}
+.cdrow{display:grid;grid-template-columns:minmax(110px,150px) 1fr;gap:12px;
+  padding:8px 15px;border-top:1px solid var(--line);font-size:14px}
+.cdrow b{font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted);padding-top:3px}
+.cdrow span{display:flex;flex-direction:column}
+.cdrow i{font-style:normal;font-size:12.5px;color:var(--muted);line-height:1.5}
+.csub{font-family:var(--serif);font-size:19px;margin:18px 0 8px}
+.cfestbox{border:1px solid var(--line);border-left:3px solid var(--gold);
+  border-radius:0 10px 10px 0;padding:10px 13px;margin:0 0 9px;font-size:13.5px}
+.cfestbox.ccon{border-left-color:#a1493a}
+.cfestbox b{font-size:15px}
+.cfestbox p{margin:5px 0 0;line-height:1.55}
+.cfestbox .csrc{font-size:12px;color:var(--muted);margin-top:6px}
+.ctag{display:inline-block;font-size:10.5px;letter-spacing:.03em;
+  text-transform:uppercase;font-weight:700;color:#7a3b12;background:#fcefe6;
+  border-radius:4px;padding:1px 6px;margin-left:7px}
+.ctag.ctagwarn{color:#1d4f6b;background:#eaf4f9;text-transform:none;
+  letter-spacing:0;font-weight:400}
+
+/* --- the year view --- */
+.cyear{border:1px solid var(--line);border-radius:12px;padding:9px 11px;
+  background:#fff;overflow-x:auto}
+.cyrow{display:flex;gap:9px;align-items:center;margin:0 0 3px}
+.cymon{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted);width:3.1em;flex:0 0 auto;cursor:pointer}
+.cymon:hover{color:var(--gold)}
+.cystrip{display:flex;gap:1px;flex:1 1 auto;min-width:420px}
+.cyd{flex:1 1 0;height:17px;background:var(--soft);border-radius:2px;
+  cursor:pointer;min-width:5px}
+.cyd:hover{outline:1px solid var(--gold)}
+.cyd.cyfull{background:var(--gold-soft)}
+.cyd.cynew{background:#4a4e68}
+.cyd.cysank{background:#9fc6db}
+.cyd.cybound{box-shadow:inset 2px 0 0 var(--gold)}
+.cyd.cyadhika{background:#fcefe6}
+.ckey{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;
+  font-size:12px;color:var(--muted);margin:8px 0 0}
+.ckey .cyd{flex:0 0 auto;width:15px;cursor:default}
+.cadhikanote{border-left:3px solid var(--gold);padding-left:11px}
+.cnote{font-size:13px;color:var(--muted);line-height:1.6}
+.crange{border-left:3px solid #a1493a;padding-left:11px}
+
+@media (max-width:700px){
+  /* On a phone the seven-column grid is unreadable, so the month becomes a
+     list of days — the same cells, stacked, keeping every marker. */
+  .cgrid{grid-template-columns:1fr;border-radius:10px}
+  .chead{display:none}
+  .ccell{min-height:0;flex-direction:row;flex-wrap:wrap;gap:4px 10px;
+    align-items:baseline;padding:8px 10px}
+  .ccell.cempty{display:none}
+  .cdate{width:1.8em}
+  .cmoon{position:static;order:-1}
+  .ccell.cmonthstart{box-shadow:inset 0 3px 0 var(--gold)}
+  .calm{font-size:11.5px}
+  .calm th:nth-child(5),.calm td:nth-child(5),
+  .calm th:nth-child(6),.calm td:nth-child(6){display:none}
+  .cdrow{grid-template-columns:1fr;gap:1px}
+}
+@media print{
+  /* A month that prints on one page is a real feature: the printed wall
+     calendar is the form this information has actually taken for fifty years. */
+  .cbar,.clayerbox,.cnav button,.sitenav,nav.site,aside.onpage{display:none}
+  .cgrid{break-inside:avoid}
+  .ccell{min-height:86px}
+  .calm th{position:static;background:#fff;color:#000;border-bottom:2px solid #000}
+}
+@media (prefers-color-scheme:dark){
+  .cbar,.cyear,.csel,.cvbtn,.cnav button{background:rgba(255,255,255,.04)}
+  .ccell{background:#1b1f36}
+  .ccell:hover{background:#232842}
+  .ccell.cempty{background:rgba(255,255,255,.02)}
+  .ccell.cfull{background:#232136}
+  .ccell.cnew{background:#15182a}
+  .ccell.csel{background:#2a2a40}
+  .cnak{color:#b9bedb}
+  .cnote,.cplacenote,.clabel i,.cdrow b,.cdrow i,.calm small{color:#9aa0bd}
+  .calm tr:hover td{background:rgba(255,255,255,.03)}
+  .cupari{background:#2e2714;color:#e7d19a}
+  .csank{background:#15293a;color:#9fc6db}
+  .cadhika{background:#33210f;color:#e8b98e}
+  .cfestname{color:#e7d19a}
+}
+
+/* The export row, and a printed month that is actually one page.
+   The first attempt hid the controls and left the reference prose in place, so
+   a month printed as fourteen A4 sheets. The prose is wrapped in .cprose for
+   exactly this reason: on paper the calendar is the artefact and the essay is
+   not. */
+.cexport{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:12px 0 6px}
+.cexport .cnote{flex:1 1 32ch;min-width:0}
+.cprintonly{display:none}
+@media print{
+  /* Measured, not guessed: in print media the page came to 956 px against about
+     740 usable on A4 landscape, and the masthead and the navigation header
+     accounted for 227 px of it. The .cprintonly line replaces both — it names
+     the month, the place and the sunrise convention, which is everything a
+     printed sheet needs in order to be checkable. */
+  .cprose,.cexport,.cplacenote,.lead,.clayerbox,.cbar,footer,
+  .cnav,header.masthead,.masthead{display:none !important}
+  .cprintonly{display:block;margin:0 0 5px;font-size:11.5px;color:#000;
+    border-bottom:1px solid #999;padding-bottom:3px}
+  .cheadbar{margin:0 0 5px}
+  main>h1,main>p.sub{display:none}
+  /* The sidebar is hidden on paper but its 230 px column was still reserved, so
+     every cell lost a fifth of its width and the text wrapped into extra lines.
+     That, not the row height, was why one month printed on three sheets and
+     another on one. */
+  .layout{grid-template-columns:1fr !important;gap:0 !important;
+    padding:0 !important;max-width:none}
+  .cgrid{font-size:9.5px}
+  /* No minimum height on paper: a 31-day month starting on a Friday needs six
+     rows where February needs four, and a fixed row height is what made the
+     same sheet print on one page or three depending on the month. Rows take the
+     height their content needs and no more. */
+  .ccell{min-height:0;padding:2px 4px;gap:0}
+  .cdate{font-size:13px}
+  .ctithi{font-size:9px}.cnak{font-size:8.5px}.cmin,.cends{font-size:8px}
+  .cfestname{font-size:8.5px}
+  .cmoon{width:11px;height:11px}
+  @page{size:A4 landscape;margin:9mm}
+}
+
+}
+
+/* The shared place picker (NPlaces.picker). One control on three pages, so one
+   block of styling rather than three that drift. The results sit in the flow
+   rather than floating: a popover would need positioning against bars that
+   wrap at three widths, and pushing the content down is the simpler honest
+   behaviour on a control that is dismissed as soon as it is used. */
+.nppick{position:relative;display:flex;flex-wrap:wrap;gap:4px;min-width:min(26ch,100%)}
+.npfind{font:inherit;font-size:13px;padding:5px 9px;border:1px solid var(--line,#e7e7f0);
+  border-radius:8px;background:#fff;color:var(--ink,#20233a);width:100%;min-width:0}
+.npfind::placeholder{color:var(--ink,#20233a);opacity:.85}
+.npfind:focus{outline:2px solid var(--gold,#c9a24b);outline-offset:1px}
+.npres{flex-basis:100%;display:flex;flex-direction:column;gap:2px;
+  max-height:min(50vh,340px);overflow:auto;margin:2px 0 0}
+.npres[hidden]{display:none}
+.npres button{font:inherit;text-align:left;background:#fff;cursor:pointer;
+  border:1px solid var(--line,#e7e7f0);border-radius:8px;padding:5px 9px;
+  display:flex;flex-direction:column;line-height:1.3}
+.npres button:hover,.npres button:focus-visible{border-color:var(--gold,#c9a24b);
+  background:#fcfbf6}
+.npres button b{font-size:13px;font-weight:600}
+.npres button span{font-size:11.5px;color:var(--muted,#6c7089);
+  font-variant-numeric:tabular-nums}
+.npmsg{font-size:12px;color:var(--muted,#6c7089);margin:2px 0 3px;padding:0 2px}
+@media print{ .npres{display:none !important} }
+@media (prefers-color-scheme:dark){
+  .npfind,.npres button{background:rgba(255,255,255,.04);color:#e8e9f3}
+  .npres button:hover{background:rgba(255,255,255,.08)}
+}
+
+/* ===== studio.html =======================================================
+   Cards, because each one is a decision: post this, or scroll on. They are
+   wide and few rather than small and many — a caption has to be readable in
+   place or it will be copied unread. */
+.stbar{display:flex;flex-wrap:wrap;gap:9px 16px;align-items:center;
+  border:1px solid var(--line);border-radius:12px;padding:10px 13px;
+  margin:14px 0 10px;background:var(--soft)}
+.stlab{font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);font-weight:700}
+.stsel{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);
+  border-radius:8px;background:#fff;color:var(--ink)}
+.stbar .nppick{min-width:min(24ch,100%);flex:0 1 26ch}
+.stcards{display:grid;gap:14px;margin:10px 0 6px}
+.stcard{border:1px solid var(--line);border-left:3px solid var(--gold);
+  border-radius:0 12px 12px 0;padding:14px 16px;background:var(--card,#fff)}
+.stcard header{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.stcard h3{font-family:var(--serif);font-size:21px;margin:0;line-height:1.25}
+.strank{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:#7a5c12;background:#fdf6e3;border-radius:5px;padding:2px 7px;flex:0 0 auto}
+.stbody{margin:8px 0 0;line-height:1.6;font-size:14.5px}
+.stfacts{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:3px;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.stfacts li{font-size:13px;color:#4a4e68;border-left:2px solid var(--line);
+  padding-left:9px;font-variant-numeric:tabular-nums}
+.sttags{margin:10px 0 0;font-size:12px;color:var(--muted);word-break:break-word}
+.stact{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}
+.stbtn{font:inherit;font-size:13px;padding:6px 13px;border-radius:8px;
+  border:1px solid var(--night);background:var(--night);color:#fff;cursor:pointer;
+  text-decoration:none;display:inline-block}
+.stbtn.sec{background:#fff;color:var(--ink);border-color:var(--line)}
+.stbtn.sec:hover{border-color:var(--gold)}
+.stmsg{font-size:12.5px;color:var(--muted)}
+.stcopybox{width:100%;min-height:9em;margin:8px 0 0;font:inherit;font-size:12.5px;
+  border:1px solid var(--line);border-radius:8px;padding:8px}
+.stpreview{margin:10px 0;text-align:center}
+.stpreview img{max-width:min(340px,80vw);height:auto;border-radius:10px;
+  border:1px solid var(--line);box-shadow:0 6px 24px rgba(20,26,51,.18)}
+table.stahead{width:100%;border-collapse:collapse;font-size:13.5px}
+table.stahead td{border-bottom:1px solid var(--line);padding:5px 8px}
+table.stahead td:nth-child(2){font-variant-numeric:tabular-nums;color:var(--muted)}
+table.stahead td:nth-child(4){color:var(--muted);text-align:right}
+table.stahead tr:hover td{background:#fcfbf6}
+.stnote{font-size:13.5px;color:var(--muted)}
+@media (max-width:620px){
+  .stcard h3{font-size:18px}
+  .stfacts{grid-template-columns:1fr}
+}
+@media (prefers-color-scheme:dark){
+  .stbar,.stsel,.stbtn.sec{background:rgba(255,255,255,.04);color:#e8e9f3}
+  .stcard{background:rgba(255,255,255,.03)}
+  .stfacts li{color:#b9bedb}
+  .strank{background:#2e2714;color:#e7d19a}
+  table.stahead tr:hover td{background:rgba(255,255,255,.03)}
+}
+
+/* ===== the reel strip and the card composer =============================
+   Both sit on the Studio page and both reuse its controls, so they also reuse
+   its type and its chrome: a new visual language for a second half of the same
+   page would read as a second site. The composer is the only thing here that
+   needs a layout of its own — slots on the left and a live card on the right,
+   collapsing to one column when there is not room for two. */
+.streels{display:grid;gap:12px;margin:10px 0 6px}
+.strcard{border:1px solid var(--line);border-left:3px solid var(--gold);
+  border-radius:0 12px 12px 0;padding:13px 16px;background:var(--card,#fff)}
+.strcard header{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.strcard h3{font-family:var(--serif);font-size:20px;margin:0;line-height:1.25;flex:1 1 auto}
+.strcard p{margin:7px 0 0;font-size:14px;line-height:1.6}
+.strno{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--gold);
+  flex:0 0 auto;min-width:1.2em}
+.strsec{font-size:11px;font-weight:700;letter-spacing:.06em;color:#7a5c12;
+  background:#fdf6e3;border-radius:5px;padding:2px 7px;flex:0 0 auto}
+.strpost{color:var(--muted);font-size:13px !important;font-style:italic}
+
+.stcompose{margin:10px 0 6px}
+.stcbar{display:flex;flex-wrap:wrap;gap:9px 14px;align-items:center;
+  border:1px solid var(--line);border-radius:12px;padding:10px 13px;
+  margin:0 0 8px;background:var(--soft)}
+.stchk{font-size:12.5px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.stclayout{display:grid;gap:16px;grid-template-columns:minmax(0,1fr) minmax(0,300px);
+  align-items:start}
+.stcslots{display:grid;gap:9px;min-width:0}
+.stcrow{border:1px solid var(--line);border-radius:10px;padding:9px 11px;
+  background:var(--card,#fff);display:grid;gap:6px}
+.stchead{display:flex;align-items:center;gap:8px}
+.stchead b{font-size:12px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted);flex:1 1 auto}
+.stcmove{display:flex;gap:4px}
+.stcmove button{font:inherit;font-size:13px;line-height:1;width:26px;height:24px;
+  border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);
+  cursor:pointer}
+.stcmove button:hover{border-color:var(--gold)}
+.stcrow input,.stcrow textarea{font:inherit;font-size:13.5px;padding:6px 8px;
+  border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);
+  width:100%;box-sizing:border-box;resize:vertical}
+.stcadd{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.stcadd .stsel{flex:1 1 18ch;min-width:0}
+.stcprev{position:sticky;top:12px}
+.stcprev canvas{width:100%;height:auto;border-radius:10px;
+  border:1px solid var(--line);box-shadow:0 6px 24px rgba(20,26,51,.18);display:block}
+@media (max-width:760px){
+  .stclayout{grid-template-columns:1fr}
+  .stcprev{position:static;max-width:320px;margin:0 auto}
+}
+@media (prefers-color-scheme:dark){
+  .strcard,.stcrow{background:rgba(255,255,255,.03)}
+  .strsec{background:#2e2714;color:#e7d19a}
+  .stcbar,.stcrow input,.stcrow textarea,.stcmove button{
+    background:rgba(255,255,255,.04);color:#e8e9f3}
+}
+
+/* The running clock. Civil time and Hindu time side by side, both ticking, so
+   the relationship between them is visible rather than asserted: the vipala
+   column moves two and a half times a second against the civil seconds, which
+   is what a sixtieth of a sixtieth of a sixtieth of a day looks like. */
+.cclock{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:baseline;
+  border:1px solid var(--line);border-radius:12px;padding:9px 14px;
+  margin:4px 0 10px;background:var(--soft)}
+.cclock .cck{display:flex;flex-direction:column;gap:1px}
+.cclock b{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--muted);font-weight:700}
+.cclock .cckv{font-size:26px;font-weight:600;line-height:1.05;
+  font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.cclock .cckh{color:var(--gold,#c9a24b)}
+.cclock .cckn{font-size:12px;color:var(--muted);align-self:flex-end;
+  padding-bottom:3px;max-width:46ch;line-height:1.45}
+.cclock .cckunit{font-size:.52em;font-weight:600;opacity:.72;margin-left:.12em}
+@media (max-width:620px){ .cclock .cckv{font-size:22px} }
+@media (prefers-color-scheme:dark){ .cclock{background:rgba(255,255,255,.04)} }
+.strec{margin:10px 0 0;padding:9px 12px;border-radius:9px;background:var(--soft);
+  font-size:13px;line-height:1.55;color:#4a4e68}
+.strec b{color:var(--ink)}
+.strecset{display:block;margin-top:4px;font-size:12px;color:var(--muted);
+  font-variant-numeric:tabular-nums}
+@media (prefers-color-scheme:dark){
+  .strec{background:rgba(255,255,255,.05);color:#b9bedb}
+  .strec b{color:#e8e9f3}
+}
+
+/* Provenance tags. The point of this project is that it says which book a rule
+   came from, and until now it said so in prose. A tag beside the row is the
+   same claim made legible at a glance — and the colours are deliberately not a
+   good/bad scale: later tradition is not worse than BPHS, it is OTHER, and a
+   red tag would be an argument the site is not making. */
+.dptag{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  border-radius:5px;padding:2px 7px;white-space:nowrap;border:1px solid transparent}
+.dptag.dpb{background:#eef3ec;color:#2f5d3a;border-color:#cfe0d2}
+.dptag.dpc{background:#fdf6e3;color:#7a5c12;border-color:#ecdcae}
+.dptag.dpt{background:#eef0f8;color:#434a74;border-color:#d4d9ec}
+.dptag.dpa{background:#eaf1f6;color:#2d5873;border-color:#cadde8}
+.dpwhy td{font-size:12.5px;color:var(--muted);padding-top:0 !important;
+  border-bottom:1px solid var(--line) !important;line-height:1.55}
+table.dptable td{vertical-align:top}
+@media (prefers-color-scheme:dark){
+  .dptag.dpb{background:#1b2a1f;color:#a9d6b4;border-color:#2c4433}
+  .dptag.dpc{background:#2e2714;color:#e7d19a;border-color:#4a3f1f}
+  .dptag.dpt{background:#1d2138;color:#b9c0e6;border-color:#313859}
+  .dptag.dpa{background:#152632;color:#a8cde2;border-color:#24404f}
+}
+
+/* The carousel strip and the month plan. Both are lists of things to act on,
+   so they borrow the Studio's existing chrome rather than inventing more. */
+.stslides{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 9px}
+.stslide{font:inherit;font-size:13px;font-weight:700;min-width:30px;height:28px;
+  border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);
+  cursor:pointer;padding:0 8px}
+.stslide.on{background:var(--night);color:#fff;border-color:var(--night)}
+.stslide:hover{border-color:var(--gold)}
+.stslide.add{color:var(--gold);font-size:16px;line-height:1}
+.stslide.rm{color:#a4503c}
+.stslides .stnote{margin:0 0 0 6px;font-size:12px}
+.stpack{margin:10px 0 6px}
+.stplan{margin:8px 0 0}
+table.stplantab td{font-size:13px;vertical-align:top}
+table.stplantab td.stpd{white-space:nowrap;font-weight:600}
+table.stplantab td.stph{color:var(--ink)}
+@media (prefers-color-scheme:dark){
+  .stslide{background:rgba(255,255,255,.04);color:#e8e9f3}
+  .stslide.on{background:#e7d19a;color:#1b1f33;border-color:#e7d19a}
+}
+
+/* ===== Studio Pro =========================================================
+   Three panes on a desk, stacked on a phone. The wall scrolls on its own so
+   the stage never leaves the screen while you browse two hundred chips, and
+   the stage is sticky on wide screens for the same reason: picking a node and
+   not seeing what it did to the picture is the one thing that would make this
+   page useless. */
+.layout.wide{max-width:1680px}
+/* A page with no aside must say `onecol` as well, or at 1000px and up it
+   lands in the 230px column the aside would have had — which is how the
+   sample strip came to be rendering into a 270px-wide sliver while the panes
+   below it, whose own grid overflowed that sliver, looked correct. */
+.spwrap{display:grid;grid-template-columns:1fr;gap:18px;margin:18px 0 28px}
+@media (min-width:1100px){
+  .spwrap{grid-template-columns:minmax(260px,1fr) minmax(340px,1.15fr) minmax(260px,0.95fr)}
+}
+.sppane{border:1px solid var(--line);border-radius:12px;background:#fff;
+  padding:14px 14px 16px;min-width:0}
+.sppane h2{margin:0 0 6px;font-size:1.05rem}
+.sppane h3{margin:14px 0 4px;font-size:.92rem;letter-spacing:.02em}
+.sppane .sphead p{margin:0 0 8px;font-size:.84rem;line-height:1.45;color:var(--muted)}
+.spsearch input{width:100%;padding:8px 10px;border:1px solid var(--line);
+  border-radius:8px;background:var(--soft);color:var(--ink);font:inherit;font-size:.9rem}
+.spcheck{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;
+  color:var(--muted);margin:6px 0}
+.spstat{margin:4px 0 0;font-size:.75rem;color:var(--muted)}
+
+.spwall{max-height:62vh;overflow:auto;padding-right:4px}
+@media (max-width:1099px){.spwall{max-height:none}}
+.spgrp{margin:12px 0 2px}
+.spgrp h3{display:flex;align-items:baseline;gap:8px;margin:10px 0 6px}
+.spcount{font-size:.72rem;color:var(--muted);font-weight:500}
+.spchips{display:flex;flex-wrap:wrap;gap:5px}
+.spchip{font:inherit;font-size:.78rem;line-height:1.2;padding:5px 9px;
+  border:1px solid var(--line);border-radius:999px;background:var(--soft);
+  color:var(--ink);cursor:pointer;transition:background .12s,border-color .12s}
+.spchip:hover{border-color:var(--gold)}
+.spchip.on{background:var(--night);border-color:var(--night);color:var(--gold-soft);font-weight:600}
+/* a chip with a stated relation to what is already picked */
+.spchip.rel{border-color:var(--gold);background:#fdf8ea;color:#5a4512}
+.spchip.off{opacity:.4;cursor:not-allowed}
+.spchip.off:hover{border-color:var(--line)}
+
+.spstagebox{display:flex;justify-content:center;background:#0b1020;border-radius:10px;
+  padding:6px;overflow:hidden}
+#sp-canvas{display:block;border-radius:6px;max-width:100%}
+@media (min-width:1100px){.spmid{position:sticky;top:12px;align-self:start}}
+
+.spctl{margin-top:12px;display:flex;flex-direction:column;gap:9px}
+.sprow2{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+.splab{font-size:.76rem;color:var(--muted);min-width:52px}
+.spbtn{font:inherit;font-size:.84rem;padding:7px 13px;border:1px solid var(--line);
+  border-radius:8px;background:var(--soft);color:var(--ink);cursor:pointer}
+.spbtn.primary{border-color:var(--gold);color:#8a6a1e;background:#fdfaf1;font-weight:600}
+.spbtn:disabled,.spv:disabled{opacity:.45;cursor:not-allowed}
+/* the Record button while it owns the playhead: it is the way out */
+.spbtn.rec{background:#fdf0ec;border-color:#b5533c;color:#8a3a26}
+#sp-scrub:disabled{opacity:.45}
+.spv{font:inherit;font-size:.78rem;padding:5px 10px;border:1px solid var(--line);
+  border-radius:7px;background:var(--soft);color:var(--ink);cursor:pointer}
+.spv.on{background:var(--night);border-color:var(--night);color:var(--gold-soft);font-weight:600}
+/* The playhead gets a row to itself, full width, with a touch area tall
+   enough to grab deliberately and nothing within a fingertip of it. */
+.spscrubrow{margin:9px 0 4px}
+#sp-scrub{flex:1;width:100%;min-width:0;height:34px;touch-action:pan-x;cursor:pointer}
+.sptime{font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums;
+  margin-left:auto}
+/* Apple asks for 44×44; these were 38 tall and sat beside a 16px slider. */
+@media (pointer:coarse){
+  .spbtn,.spv,.spfield select,.spfield input{min-height:44px}
+  .spchip{min-height:38px;padding:8px 12px}
+  .sprowx{min-width:38px;min-height:38px}
+}
+.spbtn,.spv,.spchip,.sprowx,.sptile,.spview{touch-action:manipulation}
+.spfield{display:flex;flex-direction:column;gap:3px;font-size:.75rem;color:var(--muted)}
+.spfield.wide{flex:1;min-width:200px}
+.spfield input,.spfield select{font:inherit;font-size:.84rem;padding:6px 8px;
+  border:1px solid var(--line);border-radius:7px;background:var(--soft);color:var(--ink)}
+.spflash{margin:2px 0 0;font-size:.8rem;color:var(--gold)}
+
+/* ===== Director mode =====================================================
+   The panel is dense on purpose: a layer has roughly thirty properties and a
+   pro tool that asks for four clicks to reach any of them is a tool nobody
+   finishes a card in. So the fields are small and close, and the touch rules
+   at the bottom of this block put them back to 44px on a phone, where close
+   together is the one thing they must not be. */
+.spmode{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0 2px}
+.spdmode{font-size:.74rem;color:var(--muted);margin-left:4px}
+
+.sptimewrap{margin:8px 0 4px;border:1px solid var(--line);border-radius:9px;
+  background:#fff;padding:8px 10px}
+.sptimehead h3{margin:0 0 2px;font-size:.88rem}
+.sptimehead p{margin:0 0 7px;font-size:.73rem;color:var(--muted);line-height:1.45}
+.sptimeline{display:flex;flex-direction:column;gap:3px}
+.spdtrow{display:flex;align-items:center;gap:7px}
+.spdtrow.on .spdtname{color:#5a4512;font-weight:600}
+.spdtname{flex:0 0 92px;font-size:.71rem;color:var(--muted);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.spdtlane{position:relative;flex:1;height:17px;background:var(--soft);
+  border-radius:4px;border:1px solid var(--line);min-width:0}
+.spdtbar{position:absolute;top:1px;bottom:1px;background:var(--night);
+  border-radius:3px;cursor:grab;overflow:hidden;touch-action:none}
+.spdtrow.on .spdtbar{background:var(--gold)}
+.spdtbar.off{opacity:.3}
+.spdtbar i{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.34)}
+.spdte{left:0}
+.spdtx{right:0}
+.spdtruler .spdtlane{height:9px;background:none;border:none}
+.spdtick{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+
+.spdpresets{display:flex;flex-direction:column;gap:5px;margin:0 0 9px}
+.spdrow{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:0 0 5px}
+.spdlab{font-size:.71rem;color:var(--muted);flex:0 0 76px}
+.spdsuf{font-size:.71rem;color:var(--muted);font-variant-numeric:tabular-nums;
+  min-width:30px}
+.spdrow input[type=number],.spdrow input[type=text],.spdrow select{font:inherit;
+  font-size:.8rem;padding:4px 6px;border:1px solid var(--line);border-radius:6px;
+  background:var(--soft);color:var(--ink);flex:1;min-width:0}
+.spdrow input[type=color]{width:46px;height:28px;padding:0;border:1px solid var(--line);
+  border-radius:6px;background:none}
+.spdrange{flex:1;min-width:0;height:22px;touch-action:pan-x}
+.spdsec{margin:12px 0 5px;font-size:.78rem;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);
+  padding-bottom:3px}
+.spdhint{margin:1px 0 7px;font-size:.71rem;color:var(--muted);line-height:1.45}
+.spdempty{margin:4px 0;font-size:.75rem;color:var(--muted);font-style:italic}
+
+.spdstack{display:flex;flex-direction:column;gap:3px;max-height:290px;
+  overflow-y:auto;padding-right:2px}
+.spdlayer{display:flex;align-items:center;gap:2px;border:1px solid var(--line);
+  border-radius:7px;background:#fff;padding:2px 3px}
+.spdlayer.on{border-color:var(--gold);background:#fdf8ea}
+.spdlayer.off{opacity:.55}
+.spdeye,.spdmv{font:inherit;font-size:.78rem;line-height:1;min-width:24px;
+  padding:5px 4px;border:1px solid transparent;border-radius:5px;background:none;
+  color:var(--muted);cursor:pointer}
+.spdeye:hover,.spdmv:hover{border-color:var(--line);background:var(--soft);
+  color:var(--ink)}
+.spdx:hover{border-color:#e0b4ad;background:#fdf1ef;color:#9a3c2a}
+.spdname{flex:1;min-width:0;text-align:left;font:inherit;font-size:.78rem;
+  background:none;border:none;cursor:pointer;padding:4px 3px;color:var(--ink);
+  display:flex;align-items:baseline;gap:5px}
+.spdkind{font-size:.63rem;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--gold);flex:0 0 auto}
+.spdtitle{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.spdwin{font-size:.65rem;color:var(--muted);font-variant-numeric:tabular-nums;
+  margin-left:auto;flex:0 0 auto}
+.spdadd{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0 0}
+.spdadd .spbtn{font-size:.76rem;padding:5px 9px}
+
+.spdinsp{border:1px solid var(--line);border-radius:9px;background:#fff;
+  padding:8px 10px}
+.spdhead{display:flex;align-items:baseline;gap:6px;margin:0 0 6px;
+  padding-bottom:5px;border-bottom:1px solid var(--line)}
+.spdhead b{font-size:.86rem}
+.spdsel{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 6px}
+.spchip.sm{font-size:.72rem;padding:3px 7px}
+.spdgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:0 0 4px}
+.spdcell{display:flex;flex-direction:column;gap:2px;font-size:.66rem;
+  color:var(--muted)}
+.spdcell.to{color:#2f7d55}
+.spdcell input{font:inherit;font-size:.76rem;padding:4px 3px;text-align:center;
+  border:1px solid var(--line);border-radius:5px;background:var(--soft);
+  color:var(--ink);width:100%;min-width:0}
+.spdtok{margin:2px 0 7px;font-size:.7rem;color:var(--muted);line-height:1.7}
+.spdtokb{font:inherit;font-size:.68rem;padding:1px 5px;margin:0 2px 0 0;
+  border:1px solid var(--line);border-radius:4px;background:var(--soft);
+  color:#5a4512;cursor:pointer}
+.spdtokb:hover{border-color:var(--gold)}
+.spdwarn{margin:8px 0 0;padding-left:17px;font-size:.73rem;color:var(--muted);
+  line-height:1.5}
+.spdwarn li.bad{color:#9a3c2a}
+.spdlib{margin:0 0 6px}
+.spdname-in{flex:1;min-width:0}
+.spdsaved{display:flex;flex-direction:column;gap:3px;margin:6px 0 0}
+.spdsrow{display:flex;align-items:center;gap:3px}
+.spdsrow .spchip{flex:1;text-align:left}
+@media (pointer:coarse){
+  .spdeye,.spdmv{min-width:38px;min-height:38px}
+  .spdrow input[type=number],.spdrow input[type=text],.spdrow select,
+  .spdcell input{min-height:40px}
+  .spdrange{height:38px}
+  /* The timeline bar is a drag target, not a readout: a bar is dragged to
+     retime a layer and its ends are dragged to trim it. At 26 the lane left a
+     22px bar, which is half a fingertip — tall enough to read and too short
+     to grab, the worst of both. 42 leaves a 38px bar. */
+  .spdtlane{height:42px}
+  .spdtname{flex:0 0 76px}
+  .spdname{padding:9px 4px}
+}
+.spdeye,.spdmv,.spdname,.spdtokb,.spdtbar{touch-action:manipulation}
+/* The canvas swallows touch only while layers are draggable. In Auto mode a
+   finger on the frame has to scroll the page, which is most of what a finger
+   on a phone is for; the class is put on by the Director panel. */
+.spdragging#sp-canvas{touch-action:none}
+
+.sptray{display:flex;flex-direction:column;gap:6px}
+.sprow{display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid var(--line);
+  border-radius:9px;background:var(--soft)}
+.sprow.dead{opacity:.5}
+.sprowt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.sprowt b{font-size:.86rem}
+.sprowt small{font-size:.7rem;color:var(--muted)}
+.spkind{font-size:.68rem;color:var(--gold);text-transform:uppercase;letter-spacing:.06em}
+.sprowx{font:inherit;font-size:1rem;line-height:1;padding:2px 7px;border:1px solid var(--line);
+  border-radius:6px;background:transparent;color:var(--muted);cursor:pointer}
+.splinks{margin-top:10px;padding:9px 11px;border-left:3px solid var(--gold);
+  background:var(--soft);border-radius:0 8px 8px 0}
+.splinks b{font-size:.8rem}
+.splinks p{margin:5px 0 0;font-size:.78rem;line-height:1.4;color:var(--muted)}
+.spviews{display:flex;flex-wrap:wrap;gap:5px}
+.spview{font:inherit;font-size:.76rem;padding:5px 9px;border:1px solid var(--line);
+  border-radius:7px;background:var(--soft);color:var(--ink);cursor:pointer}
+.spview.on{background:var(--night);border-color:var(--night);color:var(--gold-soft);font-weight:600}
+.spnotes{margin-top:12px;font-size:.8rem;line-height:1.45}
+.spnotes p{margin:5px 0}
+.spwarn{color:var(--muted)}
+.spmuted{color:var(--muted);font-size:.82rem;line-height:1.45}
+.spnote{padding:9px 12px;border-left:3px solid var(--gold);background:#fff;
+  border-radius:0 8px 8px 0;font-size:.85rem;line-height:1.5;margin:10px 0}
+.spnote.warn{border-left-color:#b5533c}
+.spabsent{font-size:.86rem;line-height:1.55}
+.spabsent li{margin:6px 0}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.sprow.live{border-color:var(--gold);background:#fdf8ea}
+.spsec{width:52px;font:inherit;font-size:.8rem;padding:4px 6px;border:1px solid var(--line);
+  border-radius:6px;background:#fff;color:var(--ink)}
+/* A shot row carries a name, a timer and three buttons. On a narrow column
+   that is more than one line will hold, and the first attempt let the name
+   wrap to four words a line beside the controls. The name takes its own row;
+   the controls sit under it, right-aligned. */
+#sp-shots .sprow{flex-wrap:wrap}
+#sp-shots .sprowt{flex:1 0 100%;cursor:pointer}
+#sp-shots .spsec{margin-left:auto}
+#sp-shots .sprowx{padding:2px 8px}
+
+/* ===== Studio Pro — the live sample strip ================================
+   A full-bleed row of small canvases. It scrolls itself, and a reader can
+   take it over by dragging; hovering stops it so a tile can be read rather
+   than chased. */
+/* the samples are the first thing the page is for, so they are not allowed
+   to be pushed past the fold by a notice */
+.spstripwrap{margin:10px 0 4px}
+.spnote{margin:8px 0}
+.spstriphead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 9px}
+.spstriphead h2{margin:0;font-size:1.05rem}
+.spstriphead p{margin:0;flex:1;min-width:220px;font-size:.82rem;color:var(--muted);line-height:1.45}
+.spstrip{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;padding:4px 2px 10px;
+  scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.spstrip::-webkit-scrollbar{height:7px}
+.spstrip::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+.sptile{flex:0 0 auto;margin:0;cursor:pointer;border-radius:10px;padding:4px;
+  border:1px solid transparent;transition:border-color .15s,transform .15s}
+.sptile:hover,.sptile:focus-visible{border-color:var(--gold);transform:translateY(-2px);outline:none}
+.sptile canvas{display:block;width:126px;height:224px;border-radius:7px;background:#0b1020}
+.sptile figcaption{margin-top:5px;font-size:.72rem;color:var(--muted);text-align:center;
+  max-width:126px;line-height:1.3}
+@media (prefers-reduced-motion:reduce){.sptile{transition:none}}
+
+/* ===== Director Pro =======================================================
+   A three-column workstation with a timeline under the stage. The density is
+   the point — a keyframe tool whose properties are four clicks away is a tool
+   nobody finishes a reel in — and the coarse-pointer block at the end puts
+   every target back to 40px on a phone, where density is the one thing that
+   must not survive. */
+.dptopbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  background:var(--night);color:#eceaf6;padding:8px 11px;border-radius:10px;
+  margin:10px 0 9px}
+.dptitle{font:inherit;font-size:.92rem;font-weight:600;padding:5px 9px;
+  border:1px solid #39406b;border-radius:7px;background:#232949;color:#fff;
+  min-width:150px;flex:0 1 240px}
+.dptopbar .dpfield{flex-direction:row;align-items:center;gap:5px;color:#aeb4d6}
+.dptopbar select{font:inherit;font-size:.78rem;padding:4px 6px;border-radius:6px;
+  border:1px solid #39406b;background:#232949;color:#eceaf6}
+.dptopbar .dpcheck{color:#aeb4d6;font-size:.75rem}
+.dpspacer{flex:1}
+.dptopbar .dpbtn{background:#232949;border-color:#39406b;color:#eceaf6}
+.dptopbar .dpbtn:disabled{opacity:.35}
+
+.dpshell{display:grid;grid-template-columns:270px minmax(300px,1fr) 320px;
+  gap:12px;align-items:start}
+@media (max-width:1250px){.dpshell{grid-template-columns:1fr}}
+.dppane{border:1px solid var(--line);border-radius:11px;background:#fff;
+  padding:10px 11px;min-width:0}
+.dpsech{margin:10px 0 6px;font-size:.76rem;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);
+  border-bottom:1px solid var(--line);padding-bottom:4px}
+.dpsech:first-child{margin-top:0}
+.dpnote{font-size:.8rem;color:var(--muted);margin:0 0 8px}
+.dpnote.warn{color:#8a5a12}
+.dpstat{font-size:.72rem;color:var(--muted);margin:4px 0;
+  font-variant-numeric:tabular-nums}
+.dphint{font-size:.71rem;color:var(--muted);margin:3px 0 6px;line-height:1.45}
+.dpempty{font-size:.75rem;color:var(--muted);font-style:italic;margin:4px 0}
+.dpflash{margin:4px 0 0;font-size:.8rem;color:var(--gold)}
+.dpwarn{margin:5px 0 0;padding-left:17px;font-size:.72rem;color:var(--muted)}
+.dpwarn li.bad{color:#9a3c2a}
+
+.dpsearch input{width:100%;font:inherit;font-size:.82rem;padding:6px 9px;
+  border:1px solid var(--line);border-radius:8px;background:var(--soft);
+  color:var(--ink)}
+.dplib{max-height:260px;overflow-y:auto;margin:4px 0 0}
+.dplibgroup h5{margin:7px 0 3px;font-size:.68rem;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--gold)}
+.dplibchips{display:flex;flex-wrap:wrap;gap:3px}
+.dpchip{font:inherit;font-size:.72rem;line-height:1.2;padding:4px 7px;
+  border:1px solid var(--line);border-radius:999px;background:#fff;
+  color:var(--ink);cursor:pointer}
+.dpchip:hover{border-color:var(--gold)}
+.dpchip.on{background:var(--night);border-color:var(--night);
+  color:var(--gold-soft);font-weight:600}
+.dpchip.off{opacity:.4}
+.dpchips{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 6px}
+
+.dpaddbar{display:flex;flex-wrap:wrap;gap:4px}
+.dpbtn{font:inherit;font-size:.78rem;padding:6px 10px;border:1px solid var(--line);
+  border-radius:8px;background:#fff;color:var(--ink);cursor:pointer}
+.dpbtn:hover{border-color:var(--gold)}
+.dpbtn.primary{background:var(--night);border-color:var(--night);color:#fff}
+.dpbtn.primary:hover{background:#2b3358}
+.dpbtn.rec{background:#9a3c2a;border-color:#9a3c2a}
+.dpbtn:disabled{opacity:.45;cursor:not-allowed}
+
+.dpstack{display:flex;flex-direction:column;gap:3px;max-height:280px;
+  overflow-y:auto}
+.dplayer{display:flex;align-items:center;gap:1px;border:1px solid var(--line);
+  border-radius:7px;background:#fff;padding:2px 3px}
+.dplayer.on{border-color:var(--gold);background:#fdf8ea}
+.dplayer.off{opacity:.55}
+.dpmini{font:inherit;font-size:.72rem;line-height:1;min-width:22px;padding:5px 3px;
+  border:1px solid transparent;border-radius:5px;background:none;color:var(--muted);
+  cursor:pointer}
+.dpmini:hover{border-color:var(--line);background:var(--soft);color:var(--ink)}
+.dpmini.on{color:var(--gold);font-weight:700}
+.dpname{flex:1;min-width:0;text-align:left;font:inherit;font-size:.77rem;
+  background:none;border:none;cursor:pointer;padding:4px 3px;color:var(--ink);
+  display:flex;align-items:baseline;gap:5px}
+.dpkind{font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--gold);flex:0 0 auto}
+.dpnametxt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.dpstagebox{display:flex;align-items:center;justify-content:center;
+  background:#15172a;border-radius:10px;padding:8px;min-height:300px;
+  max-height:58vh}
+#dp-canvas{display:block;border-radius:5px;box-shadow:0 6px 26px rgba(0,0,0,.4);
+  touch-action:none;max-width:100%;max-height:54vh}
+.dptransport{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:8px 0}
+.dptime{font-size:.76rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.dpfield{display:flex;flex-direction:column;gap:2px;font-size:.71rem;
+  color:var(--muted)}
+.dpfield.wide{flex:1;min-width:170px}
+.dpfield input,.dpfield select{font:inherit;font-size:.8rem;padding:5px 7px;
+  border:1px solid var(--line);border-radius:7px;background:var(--soft);
+  color:var(--ink)}
+.dpcheck{display:inline-flex;align-items:center;gap:4px;font-size:.73rem;
+  color:var(--muted)}
+
+.dpscenes{display:flex;gap:6px;overflow-x:auto;padding:4px 0 7px}
+.dpscene{display:flex;gap:6px;align-items:center;border:1px solid var(--line);
+  border-radius:8px;padding:4px 7px 4px 4px;background:#fff;cursor:pointer;
+  flex:0 0 auto}
+.dpscene.on{border-color:var(--gold);background:#fdf8ea}
+.dpthumb{display:block;border-radius:4px;background:#0b1020;width:30px;height:auto}
+.dpscenemeta{display:flex;flex-direction:column;font-size:.68rem;
+  color:var(--muted);line-height:1.35}
+.dpscenemeta b{font-size:.76rem;color:var(--ink)}
+.dptrans{color:var(--gold)}
+.dpaddscene{font:inherit;font-size:.76rem;padding:6px 10px;border:1px dashed var(--line);
+  border-radius:8px;background:none;color:var(--muted);cursor:pointer;flex:0 0 auto}
+.dpaddscene:hover{border-color:var(--gold);color:var(--gold)}
+
+.dptimeline{display:flex;flex-direction:column;gap:2px;border:1px solid var(--line);
+  border-radius:9px;padding:6px 8px;background:var(--soft);max-height:300px;
+  overflow-y:auto}
+.dptrow{display:flex;align-items:center;gap:6px}
+.dptrow.on .dptname{color:#5a4512;font-weight:600}
+.dptname{flex:0 0 108px;font-size:.71rem;color:var(--muted);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;background:none;border:none;
+  text-align:left;font-family:inherit;cursor:pointer;padding:3px 0;
+  display:flex;align-items:center;gap:3px}
+.dptwist{font-size:.6rem;color:var(--gold)}
+.dptpname{padding-left:14px;font-size:.67rem;cursor:default}
+.dptlane{position:relative;flex:1;height:19px;background:#fff;border-radius:4px;
+  border:1px solid var(--line);min-width:0}
+.dptprop .dptlane{height:13px;background:none;border-color:transparent}
+.dptbar{position:absolute;top:1px;bottom:1px;background:var(--night);
+  border-radius:3px;cursor:grab;touch-action:none}
+.dptrow.on .dptbar{background:var(--gold)}
+.dptbar.off{opacity:.3}
+.dpruler .dptlane{height:15px;background:none;border:none}
+.dptscene{position:absolute;top:0;bottom:0;background:#e3e3ef;border-radius:3px;
+  border-right:2px solid #fff;cursor:pointer}
+.dptscene.on{background:var(--gold-soft)}
+.dptick{position:absolute;top:0;bottom:0;width:1px;background:rgba(0,0,0,.10)}
+.dpplayhead{position:absolute;top:-3px;bottom:-3px;width:2px;background:#c0392b;
+  pointer-events:none;z-index:3}
+.dptkey{position:absolute;top:50%;width:9px;height:9px;margin:-5px 0 0 -5px;
+  background:var(--gold);border:1px solid #8a6a1c;transform:rotate(45deg);
+  cursor:grab;touch-action:none;z-index:2}
+.dptkey:hover{background:#fff}
+
+.dpinsp,.dpexport,.dpreels{font-size:.8rem}
+.dpsec{display:flex;align-items:baseline;gap:6px;margin:12px 0 5px;
+  padding-bottom:4px;border-bottom:1px solid var(--line)}
+.dpsec:first-child{margin-top:0}
+.dpsec h4{margin:0;font-size:.84rem}
+.dpsub{margin:9px 0 3px;font-size:.68rem;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--muted)}
+.dprow{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:0 0 5px}
+.dplab{font-size:.71rem;color:var(--muted);flex:0 0 74px}
+.dpunit{font-size:.69rem;color:var(--muted)}
+.dprow input[type=text],.dprow input[type=number],.dprow select{font:inherit;
+  font-size:.78rem;padding:4px 6px;border:1px solid var(--line);border-radius:6px;
+  background:var(--soft);color:var(--ink);flex:1;min-width:0}
+.dprow input[type=color]{width:44px;height:26px;padding:0;border-radius:6px;
+  border:1px solid var(--line);background:none;flex:0 0 auto}
+.dpprop{display:flex;align-items:center;gap:4px;margin:0 0 3px}
+.dpprop.anim .dpproplab{color:#5a4512;font-weight:600}
+.dpstop{font:inherit;font-size:.74rem;line-height:1;min-width:22px;padding:4px 2px;
+  border:1px solid transparent;border-radius:5px;background:none;
+  color:var(--muted);cursor:pointer}
+.dpstop.on{color:var(--gold)}
+.dpstop:hover{border-color:var(--line);background:var(--soft)}
+.dpproplab{flex:0 0 68px;font-size:.7rem;color:var(--muted);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.dpslider{flex:1;min-width:0;height:20px;touch-action:pan-x}
+.dppropnum{width:60px;flex:0 0 60px;font:inherit;font-size:.74rem;padding:3px 4px;
+  border:1px solid var(--line);border-radius:5px;background:var(--soft);
+  color:var(--ink);text-align:right}
+.dptok{margin:2px 0 7px;line-height:1.8}
+.dptokb{font:inherit;font-size:.67rem;padding:1px 5px;margin:0 2px 0 0;
+  border:1px solid var(--line);border-radius:4px;background:var(--soft);
+  color:#5a4512;cursor:pointer}
+.dptokb:hover{border-color:var(--gold)}
+.dpsaved{display:flex;flex-direction:column;gap:3px;margin:6px 0 0}
+.dpsrow{display:flex;align-items:center;gap:3px}
+.dpsrow .dpchip{flex:1;text-align:left}
+label.dpbtn{display:inline-block}
+
+@media (pointer:coarse){
+  .dpbtn,.dprow select,.dprow input,.dpfield input,.dpfield select,
+  .dptopbar select,.dppropnum{min-height:40px}
+  .dpmini,.dpstop{min-width:38px;min-height:38px}
+  .dpchip{min-height:36px;padding:7px 11px}
+  .dpslider{height:36px}
+  .dptlane{height:38px}
+  .dptprop .dptlane{height:30px}
+  .dptkey{width:18px;height:18px;margin:-9px 0 0 -9px}
+  .dptname{flex:0 0 84px}
+}
+.dpbtn,.dpchip,.dpmini,.dpstop,.dpname,.dptokb,.dpscene{touch-action:manipulation}
+/* The harness measured these at 28 and 23 pixels on a phone: a layer's name
+   is how you select it and a token chip is how you insert a token, so both
+   are targets, not labels. */
+@media (pointer:coarse){
+  .dpname,.dptokb,.dptname,label.dpbtn{min-height:38px}
+  .dptokb{padding:8px 10px;margin-bottom:3px}
+}
+
+/* ===== Say what you want ================================================= */
+.sipanel{border:1px solid var(--line);border-radius:12px;background:#fff;
+  padding:12px 14px;margin:10px 0 12px}
+.sihead h2{margin:0 0 4px;font-size:1.05rem;border:none;padding:0}
+.sihead p{margin:0 0 9px;font-size:.78rem;color:var(--muted);line-height:1.5;
+  max-width:92ch}
+.sirow{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+#si-text{flex:1;min-width:230px;font:inherit;font-size:.9rem;padding:9px 12px;
+  border:1px solid var(--line);border-radius:9px;background:var(--soft);
+  color:var(--ink)}
+#si-text:focus{outline:2px solid var(--gold);outline-offset:1px;background:#fff}
+.siread-box{margin:8px 0 0;min-height:1px}
+.siread{margin:0 0 4px;font-size:.78rem;color:var(--muted);line-height:1.55}
+.sigood{color:#2f7d55;font-weight:600}
+.sibad{color:#9a3c2a;font-weight:600}
+.siwhy{margin:3px 0;font-size:.78rem;color:#8a5a12;line-height:1.5;
+  border-left:3px solid var(--gold);padding-left:8px;background:#fdf8ea;
+  border-radius:0 5px 5px 0}
+.silist{max-height:230px;overflow-y:auto;margin:6px 0 0;
+  border-top:1px solid var(--line);padding-top:7px}
+.sigroup h5{margin:7px 0 3px;font-size:.67rem;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--gold)}
+.sirecipe{display:block;width:100%;text-align:left;font:inherit;font-size:.78rem;
+  padding:5px 9px;margin:0 0 3px;border:1px solid transparent;border-radius:6px;
+  background:var(--soft);color:var(--ink);cursor:pointer;line-height:1.4}
+.sirecipe:hover{border-color:var(--gold);background:#fdf8ea}
+@media (pointer:coarse){
+  #si-text,.sirow button{min-height:44px}
+  .sirecipe{min-height:40px}
+}
+.sirecipe,.sirow button{touch-action:manipulation}
+
+/* ===== Sūrya Siddhānta page ============================================== */
+.ssnote{font-size:.84rem;color:var(--muted);line-height:1.6;max-width:86ch}
+.ssrow{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin:8px 0 10px}
+.ssfield{display:flex;flex-direction:column;gap:3px;font-size:.74rem;
+  color:var(--muted)}
+.ssfield input,.ssfield select{font:inherit;font-size:.85rem;padding:6px 9px;
+  border:1px solid var(--line);border-radius:8px;background:var(--soft);
+  color:var(--ink)}
+#ss-params table.tbl td.num,#ss-now table.tbl td.num,
+#ss-working table.tbl td.num{font-variant-numeric:tabular-nums;
+  white-space:nowrap}
+#ss-now td.num.warn{color:#9a3c2a;font-weight:600}
+#ss-working td.muted{color:var(--muted);font-size:.8rem}
+.sslist{margin:10px 0;padding-left:18px;font-size:.84rem;line-height:1.7;
+  max-width:86ch}
+#ss-drift{display:block;width:100%;max-width:860px;height:300px;
+  border:1px solid var(--line);border-radius:10px;background:#fff;
+  margin:4px 0 6px}
+@media (pointer:coarse){.ssfield input,.ssfield select{min-height:44px}}
+
+/* ===== Simulation ======================================================== */
+.simnote{font-size:.84rem;color:var(--muted);line-height:1.6;max-width:86ch}
+.simpicker{display:flex;flex-direction:column;gap:7px;margin:8px 0 10px}
+.simgroup h4{margin:4px 0 4px;font-size:.7rem;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--gold)}
+.simchips{display:flex;flex-wrap:wrap;gap:5px}
+.simchip{font:inherit;font-size:.8rem;padding:6px 11px;border:1px solid var(--line);
+  border-radius:999px;background:#fff;color:var(--ink);cursor:pointer}
+.simchip:hover{border-color:var(--gold)}
+.simchip.on{background:var(--night);border-color:var(--night);
+  color:var(--gold-soft);font-weight:600}
+.simrow{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.simfield{display:flex;flex-direction:column;gap:2px;font-size:.72rem;
+  color:var(--muted)}
+.simfield input,.simfield select{font:inherit;font-size:.84rem;padding:6px 8px;
+  border:1px solid var(--line);border-radius:7px;background:var(--soft);
+  color:var(--ink)}
+.simbtn{font:inherit;font-size:.84rem;padding:7px 14px;border:1px solid var(--night);
+  border-radius:8px;background:var(--night);color:#fff;cursor:pointer}
+.simbtn:hover{background:#2b3358}
+#sim-scrub{flex:1;min-width:120px;max-width:100%;height:36px;touch-action:pan-x}
+.simstat{font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.simrun{font-size:.8rem;color:var(--gold);margin:4px 0}
+.simflash{font-size:.8rem;color:var(--gold);margin:4px 0}
+.simstagebox,.simdiscbox{margin:6px 0 4px}
+#sim-canvas,#sim-discs{display:block;width:100%;border-radius:10px;
+  border:1px solid var(--line);background:#0b1020}
+.simreport{margin:10px 0 4px}
+.simq{font-size:.95rem;color:var(--ink);margin:10px 0 4px;font-style:italic}
+.simhead{font-size:1.02rem;font-weight:600;color:#1b1e33;margin:2px 0 10px;
+  padding-left:11px;border-left:3px solid var(--gold)}
+.simsec{margin:16px 0 6px;font-size:.98rem}
+/* the site's data tables carry a 520px floor so wide numeric grids scroll
+   rather than crush; these two-column report tables are not those, and the
+   floor is what pushed the page sideways on a phone */
+.simreport table.tbl,.simnoise table.tbl{table-layout:fixed;width:100%;
+  max-width:100%;min-width:0}
+.simreport table.tbl td,.simnoise table.tbl td{vertical-align:top;
+  overflow-wrap:anywhere}
+.simreport table.tbl td:first-child,.simnoise table.tbl td:first-child{
+  width:32%;color:var(--muted);font-size:.84rem}
+td.simval{font-size:.86rem}
+.simjy td:first-child{color:#5a4512;font-weight:600}
+.simnoise{border:1px solid #ecdcae;background:#fbf6e8;border-left:3px solid var(--gold);
+  border-radius:0 8px 8px 0;padding:11px 14px;margin:10px 0}
+.simnoise h4{margin:0 0 6px;font-size:.92rem}
+.simnoise p{font-size:.85rem;line-height:1.6;margin:0 0 7px}
+.simmoral{font-style:italic;color:#5a4512}
+.simlist{margin:10px 0;padding-left:18px;font-size:.84rem;line-height:1.7;
+  max-width:88ch}
+@media (pointer:coarse){
+  .simchip,.simbtn,.simfield input,.simfield select{min-height:42px}
+  #sim-scrub{height:40px}
+}
+.simchip,.simbtn{touch-action:manipulation}
+</style></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Simulation</h1><p class="sub">Change one thing about the Earth, the Moon or the Sun, and integrate the consequences.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html" class="active">Simulation</a><a href="kundli.html">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#what">What this is</a><a href="#pick">Choose a counterfactual</a><a href="#eclipse">Could there still be an eclipse?</a><a href="#notmodelled">What is not modelled</a></aside><main><p class="simnote">Every trajectory on this page is integrated, not drawn.
+Nothing here scripts an outcome: a scenario changes a position, a velocity or
+a mass, and what follows is whatever summing the forces produces.</p>
+
+<h2 id="what">What this is</h2>
+
+<p>Ask what would happen if the Moon moved an inch away, or stopped revolving,
+and there are two ways to answer. One is to decide what would happen and then
+draw it. The other is to take the real Earth, the real Moon and the real Sun —
+their actual positions and velocities for the moment you choose, from this
+site's own ephemeris — change the one thing, and <b>integrate the equations of
+motion</b> to find out.</p>
+
+<p>Only the second can surprise you, and being able to be surprised is the
+whole point. So when the Moon falls into the Earth in four and a half days,
+that is where the integrator put it, and you can check the figure against the
+free-fall time you can work out with a pencil.</p>
+
+<p><b>The simulator knows its own resolution.</b> Asked about an inch, it will
+tell you that the change is far below anything it or any simulation could
+show — and then give you the arithmetic instead. A confident little animation
+of a fifth of a millisecond would be a lie, and refusing to draw it is the
+more useful answer.</p>
+
+<h2 id="pick">Choose a counterfactual</h2>
+
+<div id="sim-picker" class="simpicker"></div>
+<div class="simrow">
+  <label class="simfield"><span>Starting from</span>
+    <input id="sim-when" type="datetime-local"></label>
+  <span class="simstat" id="sim-stat"></span>
+</div>
+<p class="simrun" id="sim-running" hidden></p>
+
+<div class="simstagebox" id="sim-stagebox">
+  <canvas id="sim-canvas" width="900" height="560" role="img"
+          aria-label="The simulated Earth, Moon and Sun"></canvas>
+</div>
+<div class="simrow">
+  <button type="button" id="sim-play" class="simbtn">Play</button>
+  <input id="sim-scrub" type="range" min="0" max="1000" value="0" step="1"
+         aria-label="Scrub through the run">
+  <label class="simfield"><span>Over</span>
+    <select id="sim-speed">
+      <option value="8">8 s</option>
+      <option value="16" selected>16 s</option>
+      <option value="40">40 s</option>
+    </select></label>
+</div>
+<p class="simflash" id="sim-flash" hidden></p>
+
+<div id="sim-report" class="simreport"></div>
+
+<h2 id="eclipse">Could there still be an eclipse?</h2>
+
+<p>Whether a total solar eclipse is possible at all comes down to one
+comparison: is the Moon's disc, seen from the ground, wider than the Sun's?
+Right now it only just is, and only near perigee — which is why totality is
+rare, brief, and seen from a narrow band. Move the Moon out and it stops being
+possible at all; every solar eclipse becomes annular, a ring of Sun around a
+Moon too small to cover it.</p>
+
+<div class="simdiscbox">
+  <canvas id="sim-discs" width="800" height="420" role="img"
+          aria-label="The apparent sizes of the Sun and Moon compared"></canvas>
+</div>
+
+<p>The filled disc is the larger of each body's range, the outline the smaller.
+That the two ranges overlap at all is a coincidence of this moment in the
+Earth's history — the Moon is receding, and in a few hundred million years
+totality will have ended for good.</p>
+
+<h2 id="notmodelled">What is not modelled</h2>
+
+<p>Each of these is absent for a stated reason, and the reasons matter more
+than the list — several of them are exactly the mechanisms a reader would
+expect this page to be about.</p>
+
+<ul id="sim-absent" class="simlist"></ul>
+
+<p class="simnote">Everything on this page is computed in your browser.
+Nothing is uploaded, and the page works with no network at all once it has
+loaded.</p>
+
+<script src="engine.js" defer></script>
+<script src="simulation.js" defer></script>
+</main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p><b>How the numbers are worked out:</b> <a href="kundli-technical-report.html">the chart engine, in detail</a> &mdash; the ephemeris, the ayanāṃśa modes, the sunrise convention and what each divisional chart is computed from.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>

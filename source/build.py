@@ -379,6 +379,14 @@ def build_shared():
         # publishes live there — one implementation, three places it is read.
         "siddhanta.js": brandify(read(SRC, "js", "ss-engine.js") + "\n" +
                                  read(SRC, "js", "ss-page.js")),
+        # The simulator: a gravitational integrator, the scenario library,
+        # the renderer and the page. It needs engine.js beside it for the
+        # state vectors the runs start from — the initial conditions are the
+        # real sky, not a tidy circular orbit.
+        "simulation.js": brandify(read(SRC, "js", "sim-engine.js") + "\n" +
+                                  read(SRC, "js", "sim-scenarios.js") + "\n" +
+                                  read(SRC, "js", "sim-draw.js") + "\n" +
+                                  read(SRC, "js", "sim-ui.js")),
         "panchanga.js": brandify(read(SRC, "js", "panchanga.js") + "\n" +
                                  read(SRC, "js", "festivals.js")),
         # cities.js is cities.json with sixteen characters in front of it. The chart

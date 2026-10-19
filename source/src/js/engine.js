@@ -1088,6 +1088,51 @@ window.__kHelio=function(name,ms){
             r:Math.sqrt(v.x*v.x+v.y*v.y+v.z*v.z)};
   }catch(e){ return null; }
 };
+/* FULL STATE VECTORS, heliocentric, in AU and AU per day.
+
+   Everything else exported here is an angle, because a chart is made of
+   angles. A simulation is not: to integrate the equations of motion you need
+   where a body is in three dimensions and how fast it is going, and no
+   combination of longitudes will give you that.
+
+   The velocity is a central difference rather than an analytic derivative,
+   because the library gives positions and the derivative of a position is
+   what a velocity is. The step is a hundredth of a day — small enough that
+   the second-order error is below the position accuracy, large enough that
+   the subtraction of two nearly equal numbers does not lose precision.
+
+   The Moon is handled apart: its heliocentric place is the Earth's plus its
+   own geocentric one, which is both exact and the only form the library is
+   certain to supply. */
+window.__kState=function(name,ms){
+  try{
+    var h=0.01;                                  /* days */
+    function at(t){
+      var d=new Date(t);
+      if(name==="Moon"||name==="Candra"){
+        var e=Astronomy.HelioVector(Astronomy.Body.Earth,d);
+        var m=Astronomy.GeoVector(Astronomy.Body.Moon,d,false);
+        return {x:e.x+m.x, y:e.y+m.y, z:e.z+m.z};
+      }
+      if(name==="Sun"||name==="Sūrya") return {x:0,y:0,z:0};
+      var key=BODY[name]||name;
+      return Astronomy.HelioVector(Astronomy.Body[key],d);
+    }
+    /* ROTATED INTO THE ECLIPTIC FRAME. The library returns equatorial J2000
+       vectors, in which the Earth's orbit is inclined by the obliquity and
+       the Moon's by the obliquity plus its own five degrees — both true and
+       both useless for this purpose. The plane this subject lives in is the
+       ecliptic: a plan view should be the plane of the solar system, and an
+       inclination should be the five degrees everyone means by the Moon's
+       inclination. One rotation about x by the obliquity of J2000. */
+    var EPS=23.439291111*Math.PI/180, CE=Math.cos(EPS), SE=Math.sin(EPS);
+    function ecl(v){ return {x:v.x, y:v.y*CE+v.z*SE, z:-v.y*SE+v.z*CE}; }
+    var dt=h*86400000;
+    var a=ecl(at(ms-dt)), b=ecl(at(ms+dt)), c=ecl(at(ms));
+    return { x:c.x, y:c.y, z:c.z,
+             vx:(b.x-a.x)/(2*h), vy:(b.y-a.y)/(2*h), vz:(b.z-a.z)/(2*h) };
+  }catch(e){ return null; }
+};
 window.__kEquator=function(name,ms,lat,lon){
   try{
     var obs=new Astronomy.Observer(lat||0,lon||0,0);

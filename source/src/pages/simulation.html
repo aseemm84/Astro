@@ -1,0 +1,86 @@
+<p class="simnote">Every trajectory on this page is integrated, not drawn.
+Nothing here scripts an outcome: a scenario changes a position, a velocity or
+a mass, and what follows is whatever summing the forces produces.</p>
+
+<h2 id="what">What this is</h2>
+
+<p>Ask what would happen if the Moon moved an inch away, or stopped revolving,
+and there are two ways to answer. One is to decide what would happen and then
+draw it. The other is to take the real Earth, the real Moon and the real Sun —
+their actual positions and velocities for the moment you choose, from this
+site's own ephemeris — change the one thing, and <b>integrate the equations of
+motion</b> to find out.</p>
+
+<p>Only the second can surprise you, and being able to be surprised is the
+whole point. So when the Moon falls into the Earth in four and a half days,
+that is where the integrator put it, and you can check the figure against the
+free-fall time you can work out with a pencil.</p>
+
+<p><b>The simulator knows its own resolution.</b> Asked about an inch, it will
+tell you that the change is far below anything it or any simulation could
+show — and then give you the arithmetic instead. A confident little animation
+of a fifth of a millisecond would be a lie, and refusing to draw it is the
+more useful answer.</p>
+
+<h2 id="pick">Choose a counterfactual</h2>
+
+<div id="sim-picker" class="simpicker"></div>
+<div class="simrow">
+  <label class="simfield"><span>Starting from</span>
+    <input id="sim-when" type="datetime-local"></label>
+  <span class="simstat" id="sim-stat"></span>
+</div>
+<p class="simrun" id="sim-running" hidden></p>
+
+<div class="simstagebox" id="sim-stagebox">
+  <canvas id="sim-canvas" width="900" height="560" role="img"
+          aria-label="The simulated Earth, Moon and Sun"></canvas>
+</div>
+<div class="simrow">
+  <button type="button" id="sim-play" class="simbtn">Play</button>
+  <input id="sim-scrub" type="range" min="0" max="1000" value="0" step="1"
+         aria-label="Scrub through the run">
+  <label class="simfield"><span>Over</span>
+    <select id="sim-speed">
+      <option value="8">8 s</option>
+      <option value="16" selected>16 s</option>
+      <option value="40">40 s</option>
+    </select></label>
+</div>
+<p class="simflash" id="sim-flash" hidden></p>
+
+<div id="sim-report" class="simreport"></div>
+
+<h2 id="eclipse">Could there still be an eclipse?</h2>
+
+<p>Whether a total solar eclipse is possible at all comes down to one
+comparison: is the Moon's disc, seen from the ground, wider than the Sun's?
+Right now it only just is, and only near perigee — which is why totality is
+rare, brief, and seen from a narrow band. Move the Moon out and it stops being
+possible at all; every solar eclipse becomes annular, a ring of Sun around a
+Moon too small to cover it.</p>
+
+<div class="simdiscbox">
+  <canvas id="sim-discs" width="800" height="420" role="img"
+          aria-label="The apparent sizes of the Sun and Moon compared"></canvas>
+</div>
+
+<p>The filled disc is the larger of each body's range, the outline the smaller.
+That the two ranges overlap at all is a coincidence of this moment in the
+Earth's history — the Moon is receding, and in a few hundred million years
+totality will have ended for good.</p>
+
+<h2 id="notmodelled">What is not modelled</h2>
+
+<p>Each of these is absent for a stated reason, and the reasons matter more
+than the list — several of them are exactly the mechanisms a reader would
+expect this page to be about.</p>
+
+<ul id="sim-absent" class="simlist"></ul>
+
+<p class="simnote">Everything on this page is computed in your browser.
+Nothing is uploaded, and the page works with no network at all once it has
+loaded.</p>
+
+<script src="engine.js" defer></script>
+<script src="simulation.js" defer></script>

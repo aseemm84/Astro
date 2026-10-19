@@ -159,6 +159,14 @@
   "layout": "",
   "has_aside": true
  },
+ "simulation": {
+  "title": "Simulation — what if the Moon moved? — {{BRAND}}",
+  "desc": "A gravitational simulator for counterfactuals: move the Moon an inch, stop it revolving, double its mass, take it away — and integrate the equations of motion to find out what follows, for the sky and for the system this site teaches.",
+  "h1": "Simulation",
+  "sub": "Change one thing about the Earth, the Moon or the Sun, and integrate the consequences.",
+  "layout": "",
+  "has_aside": true
+ },
  "404": {
   "title": "Page not found — {{BRAND}}",
   "desc": "That address is not on this site. Links to the chart builder, the pañcāṅga for now, and the main reference pages.",
