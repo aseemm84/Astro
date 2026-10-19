@@ -118,4 +118,9 @@ function derive(J){
   }
   return D;
 }
+/* A test hook, in the same style as the motion bundle's probes. Studio Pro
+   computes the Viṃśottarī sequence for itself — it cannot reach this bundle —
+   and sp-verify.mjs asserts the two agree to the day. That assertion needs
+   this one reachable from outside the bundle's scope. */
+try { window.__derive = derive; } catch (e) {}
 

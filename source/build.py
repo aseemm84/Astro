@@ -331,6 +331,13 @@ def build_shared():
         # the date, the place, the language and the ratio are already there, and
         # three copies of those controls would be three things to keep in step.
         "cards.js": brandify(read(SRC, "js", "cards.js")),
+        # Studio Pro ships as one file built from three: the node registry, the
+        # composers that draw from shapes, and the page wiring. Three files
+        # because they are three concerns; one asset because a page that loaded
+        # half of them would be a page with a command wall and nothing behind it.
+        "studio-pro.js": brandify(read(SRC, "js", "sp-nodes.js") + "\n" +
+                                  read(SRC, "js", "sp-compose.js") + "\n" +
+                                  read(SRC, "js", "sp-ui.js")),
         "panchanga.js": brandify(read(SRC, "js", "panchanga.js") + "\n" +
                                  read(SRC, "js", "festivals.js")),
         # cities.js is cities.json with sixteen characters in front of it. The chart

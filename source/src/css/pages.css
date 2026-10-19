@@ -757,3 +757,92 @@ table.stplantab td.stph{color:var(--ink)}
   .stslide{background:rgba(255,255,255,.04);color:#e8e9f3}
   .stslide.on{background:#e7d19a;color:#1b1f33;border-color:#e7d19a}
 }
+
+/* ===== Studio Pro =========================================================
+   Three panes on a desk, stacked on a phone. The wall scrolls on its own so
+   the stage never leaves the screen while you browse two hundred chips, and
+   the stage is sticky on wide screens for the same reason: picking a node and
+   not seeing what it did to the picture is the one thing that would make this
+   page useless. */
+.layout.wide{max-width:1680px}
+.spwrap{display:grid;grid-template-columns:1fr;gap:18px;margin:18px 0 28px}
+@media (min-width:1100px){
+  .spwrap{grid-template-columns:minmax(260px,1fr) minmax(340px,1.15fr) minmax(260px,0.95fr)}
+}
+.sppane{border:1px solid var(--line);border-radius:12px;background:#fff;
+  padding:14px 14px 16px;min-width:0}
+.sppane h2{margin:0 0 6px;font-size:1.05rem}
+.sppane h3{margin:14px 0 4px;font-size:.92rem;letter-spacing:.02em}
+.sppane .sphead p{margin:0 0 8px;font-size:.84rem;line-height:1.45;color:var(--muted)}
+.spsearch input{width:100%;padding:8px 10px;border:1px solid var(--line);
+  border-radius:8px;background:var(--soft);color:var(--ink);font:inherit;font-size:.9rem}
+.spcheck{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;
+  color:var(--muted);margin:6px 0}
+.spstat{margin:4px 0 0;font-size:.75rem;color:var(--muted)}
+
+.spwall{max-height:62vh;overflow:auto;padding-right:4px}
+@media (max-width:1099px){.spwall{max-height:none}}
+.spgrp{margin:12px 0 2px}
+.spgrp h3{display:flex;align-items:baseline;gap:8px;margin:10px 0 6px}
+.spcount{font-size:.72rem;color:var(--muted);font-weight:500}
+.spchips{display:flex;flex-wrap:wrap;gap:5px}
+.spchip{font:inherit;font-size:.78rem;line-height:1.2;padding:5px 9px;
+  border:1px solid var(--line);border-radius:999px;background:var(--soft);
+  color:var(--ink);cursor:pointer;transition:background .12s,border-color .12s}
+.spchip:hover{border-color:var(--gold)}
+.spchip.on{background:var(--night);border-color:var(--night);color:var(--gold-soft);font-weight:600}
+/* a chip with a stated relation to what is already picked */
+.spchip.rel{border-color:var(--gold);background:#fdf8ea;color:#5a4512}
+.spchip.off{opacity:.4;cursor:not-allowed}
+.spchip.off:hover{border-color:var(--line)}
+
+.spstagebox{display:flex;justify-content:center;background:#0b1020;border-radius:10px;
+  padding:6px;overflow:hidden}
+#sp-canvas{display:block;border-radius:6px;max-width:100%}
+@media (min-width:1100px){.spmid{position:sticky;top:12px;align-self:start}}
+
+.spctl{margin-top:12px;display:flex;flex-direction:column;gap:9px}
+.sprow2{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+.splab{font-size:.76rem;color:var(--muted);min-width:52px}
+.spbtn{font:inherit;font-size:.84rem;padding:7px 13px;border:1px solid var(--line);
+  border-radius:8px;background:var(--soft);color:var(--ink);cursor:pointer}
+.spbtn.primary{border-color:var(--gold);color:#8a6a1e;background:#fdfaf1;font-weight:600}
+.spbtn:disabled{opacity:.55;cursor:progress}
+.spv{font:inherit;font-size:.78rem;padding:5px 10px;border:1px solid var(--line);
+  border-radius:7px;background:var(--soft);color:var(--ink);cursor:pointer}
+.spv.on{background:var(--night);border-color:var(--night);color:var(--gold-soft);font-weight:600}
+#sp-scrub{flex:1;min-width:120px}
+.spfield{display:flex;flex-direction:column;gap:3px;font-size:.75rem;color:var(--muted)}
+.spfield.wide{flex:1;min-width:200px}
+.spfield input,.spfield select{font:inherit;font-size:.84rem;padding:6px 8px;
+  border:1px solid var(--line);border-radius:7px;background:var(--soft);color:var(--ink)}
+.spflash{margin:2px 0 0;font-size:.8rem;color:var(--gold)}
+
+.sptray{display:flex;flex-direction:column;gap:6px}
+.sprow{display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid var(--line);
+  border-radius:9px;background:var(--soft)}
+.sprow.dead{opacity:.5}
+.sprowt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.sprowt b{font-size:.86rem}
+.sprowt small{font-size:.7rem;color:var(--muted)}
+.spkind{font-size:.68rem;color:var(--gold);text-transform:uppercase;letter-spacing:.06em}
+.sprowx{font:inherit;font-size:1rem;line-height:1;padding:2px 7px;border:1px solid var(--line);
+  border-radius:6px;background:transparent;color:var(--muted);cursor:pointer}
+.splinks{margin-top:10px;padding:9px 11px;border-left:3px solid var(--gold);
+  background:var(--soft);border-radius:0 8px 8px 0}
+.splinks b{font-size:.8rem}
+.splinks p{margin:5px 0 0;font-size:.78rem;line-height:1.4;color:var(--muted)}
+.spviews{display:flex;flex-wrap:wrap;gap:5px}
+.spview{font:inherit;font-size:.76rem;padding:5px 9px;border:1px solid var(--line);
+  border-radius:7px;background:var(--soft);color:var(--ink);cursor:pointer}
+.spview.on{background:var(--night);border-color:var(--night);color:var(--gold-soft);font-weight:600}
+.spnotes{margin-top:12px;font-size:.8rem;line-height:1.45}
+.spnotes p{margin:5px 0}
+.spwarn{color:var(--muted)}
+.spmuted{color:var(--muted);font-size:.82rem;line-height:1.45}
+.spnote{padding:9px 12px;border-left:3px solid var(--gold);background:#fff;
+  border-radius:0 8px 8px 0;font-size:.85rem;line-height:1.5;margin:10px 0}
+.spnote.warn{border-left-color:#b5533c}
+.spabsent{font-size:.86rem;line-height:1.55}
+.spabsent li{margin:6px 0}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}

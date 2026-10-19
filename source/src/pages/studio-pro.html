@@ -1,0 +1,142 @@
+<p class="spnote" id="sp-mode">Loading what this browser knows…</p>
+
+<div class="spwrap">
+
+  <!-- ===== the command wall ========================================== -->
+  <section class="sppane spleft" aria-label="Calculation wall">
+    <div class="sphead">
+      <h2 id="wall">The wall</h2>
+      <p>Every quantity the engines compute, as a chip. Click one, or several.
+         Chips that <b>light</b> when you select something have a stated
+         relation to it — hover to read what it is. Greyed chips need a birth
+         chart, or need data this moment does not have.</p>
+      <label class="spsearch">
+        <span class="vh">Search the wall</span>
+        <input id="sp-search" type="search" placeholder="Search — graha, bhāva, varga, daśā…">
+      </label>
+      <label class="spcheck"><input type="checkbox" id="sp-onlylive"> only what is available now</label>
+      <p class="spstat" id="sp-wallstat"></p>
+    </div>
+    <div id="sp-wall" class="spwall"></div>
+  </section>
+
+  <!-- ===== the stage ================================================= -->
+  <section class="sppane spmid" aria-label="Director stage">
+    <div class="spstagebox" id="sp-stagebox">
+      <canvas id="sp-canvas" width="1080" height="1920" role="img"
+              aria-label="The composed animation frame"></canvas>
+    </div>
+
+    <div class="spctl">
+      <div class="sprow2">
+        <button type="button" id="sp-play" class="spbtn">Play</button>
+        <input id="sp-scrub" type="range" min="0" max="1000" value="0" step="1"
+               aria-label="Scrub the playhead">
+        <select id="sp-dur" aria-label="Length">
+          <option value="8">8 s</option>
+          <option value="15" selected>15 s</option>
+          <option value="30">30 s</option>
+          <option value="60">60 s</option>
+        </select>
+      </div>
+
+      <div class="sprow2">
+        <span class="splab">Shape</span>
+        <button type="button" class="spv" data-spratio="9:16">9:16</button>
+        <button type="button" class="spv" data-spratio="4:5">4:5</button>
+        <button type="button" class="spv" data-spratio="1:1">1:1</button>
+        <label class="spcheck"><input type="checkbox" id="sp-safe" checked> safe zones</label>
+      </div>
+
+      <div class="sprow2">
+        <span class="splab">Palette</span>
+        <button type="button" class="spv" data-sppal="midnight">Midnight</button>
+        <button type="button" class="spv" data-sppal="eclipse">Eclipse</button>
+        <button type="button" class="spv" data-sppal="parchment">Parchment</button>
+        <button type="button" class="spv" data-sppal="ink">Ink</button>
+      </div>
+
+      <div class="sprow2">
+        <label class="spfield"><span>Moment</span>
+          <input id="sp-when" type="datetime-local"></label>
+        <label class="spfield"><span>Span for time plots</span>
+          <select id="sp-span">
+            <option value="30">30 days</option>
+            <option value="365" selected>1 year</option>
+            <option value="3650">10 years</option>
+            <option value="36500">100 years</option>
+          </select></label>
+      </div>
+
+      <div class="sprow2">
+        <label class="spfield wide"><span>Headline</span>
+          <input id="sp-head" type="text" placeholder="leave empty to use the view's own name"></label>
+      </div>
+      <div class="sprow2">
+        <label class="spfield wide"><span>Sub-line</span>
+          <input id="sp-sub" type="text" placeholder="leave empty to use the view's own blurb"></label>
+      </div>
+
+      <div class="sprow2">
+        <button type="button" id="sp-png" class="spbtn primary">Save the frame</button>
+        <button type="button" id="sp-rec" class="spbtn primary">Record the reel</button>
+        <button type="button" id="sp-clear" class="spbtn">Clear selection</button>
+      </div>
+      <p class="spflash" id="sp-flash" hidden></p>
+    </div>
+  </section>
+
+  <!-- ===== the tray ================================================== -->
+  <section class="sppane spright" aria-label="Composition tray">
+    <div class="sphead">
+      <h2 id="tray">The tray</h2>
+    </div>
+    <div id="sp-tray" class="sptray"></div>
+
+    <div class="sphead">
+      <h3>Views that fit this selection</h3>
+      <p>The stage picks the one that uses the most of what you chose. Pin a
+         different one if you want it drawn another way.</p>
+    </div>
+    <div id="sp-views" class="spviews"></div>
+
+    <div id="sp-notes" class="spnotes"></div>
+  </section>
+</div>
+
+<h2 id="how">How this page works</h2>
+
+<p>Most studio tools are a gallery: somebody writes a dozen animations and you
+pick one. This is not that. Every quantity the engines compute is published
+here with a declared <b>shape</b> — a longitude, a magnitude, a division of the
+circle, a set of pairs, an interval of time, a quantity that varies with the
+instant — and a small set of composers each declare which shapes they can
+draw.</p>
+
+<p>So a composer that draws <i>two longitudes and the angle between them</i>
+will draw the Sun and the Moon, the Lagna and the Arūḍha Lagna, a daśā lord
+and its dispositor, or a transiting graha against its own natal place, without
+knowing that any of those things exist. That is why the number of pictures this
+page can make is not the number of animations anyone wrote.</p>
+
+<p>When a selection is too mixed for any single view, the stage splits into
+panels and draws each group with whatever fits it, so there is no combination
+that produces nothing. And whenever a view cannot use part of what you picked,
+<b>it says so on the page</b> rather than quietly dropping it.</p>
+
+<h2 id="honest">What is not here</h2>
+
+<p>A few things that belong on a list like this are missing, and each is
+missing for a stated reason rather than for want of effort. Everything on this
+page is computed from the ephemeris and the rules the rest of the site uses; a
+quantity that would need a classical table this build cannot read is left out
+rather than guessed.</p>
+
+<ul id="sp-absent" class="spabsent"></ul>
+
+<p class="spnote">Every figure on this page is computed in your browser. Nothing
+is uploaded, and the page works with no network at all once it has loaded.</p>
+
+<script src="engine.js" defer></script>
+<script src="panchanga.js" defer></script>
+<script src="studio-pro.js" defer></script>
