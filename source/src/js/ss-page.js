@@ -95,7 +95,25 @@
         Math.abs((K.sidMonthDays - 27.321661547) * 86400).toFixed(2) + " s"],
      ["Epoch", "Kaliyuga, on the meridian of Ujjain (" +
         S.UJJAIN_LON.toFixed(2) + "° E), reckoned from mean sunrise"],
-     ["Ahargaṇa now", Math.floor(S.ahargana(WHEN)).toLocaleString("en") + " days"]
+     ["Ahargaṇa now", Math.floor(S.ahargana(WHEN)).toLocaleString("en") + " days"],
+     ["Radius of the sine table", S.RAD + " — the minutes of arc in a radian, " +
+        "which is why that number and not another"],
+     ["Obliquity", S.OBLIQUITY + "°, against a modern 23.44° and shrinking"],
+     ["Ayanāṃśa now", S.ayanamsa(WHEN).toFixed(3) + "° by the " +
+        S.OPT.ayana + " reading"],
+     ["Anomalistic month", S.constants().anomalisticMonthDays.toFixed(6) +
+        " days — out by " +
+        Math.abs((S.constants().anomalisticMonthDays - 27.554549878) * 86400)
+          .toFixed(2) + " s"],
+     ["Draconitic month", S.constants().draconiticMonthDays.toFixed(6) +
+        " days — out by " +
+        Math.abs((S.constants().draconiticMonthDays - 27.212220817) * 86400)
+          .toFixed(2) + " s"],
+     ["An intercalary month", "every " +
+        S.constants().adhikaMasaYears.toFixed(3) + " years, which follows from " +
+        "the year holding " + S.constants().monthsPerYear.toFixed(6) +
+        " lunar months"],
+     ["Elapsed Kali", S.era(WHEN).kaliElapsed.toLocaleString("en") + " years"]
     ].forEach(function (q) {
       var li = el("li");
       li.appendChild(el("b", null, q[0] + ": "));
@@ -191,6 +209,191 @@
     host.appendChild(t);
   }
 
+
+  /* ---- the day --------------------------------------------------------- */
+  var PLACE = { n: "Delhi", lat: 28.6139, lon: 77.209, tz: 5.5 };
+  function hm(ms) {
+    var d = new Date(ms + PLACE.tz * 3600000);
+    return String(d.getUTCHours()).padStart(2, "0") + ":" +
+           String(d.getUTCMinutes()).padStart(2, "0");
+  }
+  function dayPanel() {
+    var S = window.SSEngine, host = $("ss-day");
+    if (!host) return;
+    host.innerHTML = "";
+    var D = S.sunriseSunset(WHEN, PLACE);
+    if (!D) return;
+    var mo = null;
+    try { mo = window.NP ? window.NP.day(WHEN, PLACE) : null; } catch (e) {}
+    var rows = [
+      ["Sunrise", hm(D.sunrise), mo ? "a modern ephemeris: " + hm(mo.sunrise) +
+        "  ·  " + ((D.sunrise - mo.sunrise) / 60000).toFixed(1) + " min apart" : ""],
+      ["Sunset", hm(D.sunset), mo ? "a modern ephemeris: " + hm(mo.sunset) : ""],
+      ["Length of the day", D.dayHours.toFixed(4) + " h",
+        "twelve hours plus twice the cara"],
+      ["Declination of the Sun", D.declination.toFixed(4) + "°",
+        "of the sāyana longitude, at an obliquity of " + S.OBLIQUITY + "°"],
+      ["Cara", D.cara.toFixed(4) + "°",
+        "the ascensional difference — what makes a summer day long"],
+      ["Bhujāntara", D.bhujantaraMinutes.toFixed(2) + " min",
+        "the Sun's own equation of centre, as time"],
+      ["Udayāntara", D.udayantaraMinutes.toFixed(2) + " min",
+        "the obliquity's share of the equation of time"],
+      ["Equation of time", D.equationOfTimeMinutes.toFixed(2) + " min",
+        "the two together"]
+    ];
+    var L = S.lagna(WHEN, PLACE);
+    if (L) rows.push(["Lagna rising", dms(L.lon),
+      "walked out of the oblique ascensions; sāyana " + dms(L.tropical)]);
+    host.appendChild(table3(rows));
+    host.appendChild(el("p", "ssnote",
+      "Computed for " + PLACE.n + ". The place matters: the deśāntara shifts " +
+      "every mean place by the longitude's share of a day, and the cara is a " +
+      "function of the latitude."));
+  }
+  function table3(rows) {
+    var t = el("table", "tbl"), tb = el("tbody");
+    rows.forEach(function (r) {
+      var tr = el("tr");
+      tr.appendChild(el("td", null, r[0]));
+      tr.appendChild(el("td", "num", r[1]));
+      tr.appendChild(el("td", "muted", r[2] || ""));
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb);
+    return t;
+  }
+
+  /* ---- the pañcāṅga ---------------------------------------------------- */
+  function panchangaPanel() {
+    var S = window.SSEngine, host = $("ss-panchanga");
+    if (!host) return;
+    host.innerHTML = "";
+    var p = S.panchanga(WHEN, PLACE);
+    var m = null;
+    try { m = window.NP ? window.NP.day(WHEN, PLACE) : null; } catch (e) {}
+    var modT = m ? m.at.tithi.n + (m.at.tithi.paksha === "kṛṣṇa" ? 15 : 0) : null;
+    host.appendChild(table3([
+      ["Vāra", p.vara.name + " — " + p.vara.english,
+        "from the ahargaṇa alone: " + Math.floor(p.ahargana).toLocaleString("en") +
+        " days since the epoch, modulo seven"],
+      ["Tithi", p.tithi.paksha + " " + p.tithi.name + "  (" + p.tithi.n + " of 30)",
+        modT ? "a modern pañcāṅga: " + modT +
+          (modT === p.tithi.n ? " — the same" : " — one apart") : ""],
+      ["Nakṣatra", p.nakshatra.name + ", pāda " + p.nakshatra.pada,
+        m ? "a modern pañcāṅga: " + m.at.nak.name : ""],
+      ["Yoga", p.yoga.name + "  (" + p.yoga.n + ")",
+        m && m.at.yoga ? "a modern pañcāṅga: " + m.at.yoga.name : ""],
+      ["Karaṇa", p.karana.name, "the half-tithi"],
+      ["Sun", dms(p.sun), "Sūrya Siddhānta"],
+      ["Moon", dms(p.moon), "Sūrya Siddhānta"]
+    ]));
+  }
+
+  /* ---- eclipses --------------------------------------------------------- */
+  function eclipsePanel() {
+    var S = window.SSEngine, host = $("ss-eclipses");
+    if (!host) return;
+    host.innerHTML = "";
+    var from = +($("ss-efrom") || { value: 2024 }).value;
+    var to = +($("ss-eto") || { value: 2032 }).value;
+    if (!(to > from)) return;
+    if (to - from > 60) to = from + 60;
+    var list;
+    try { list = S.eclipsesIn(Date.UTC(from, 0, 1), Date.UTC(to, 0, 1), PLACE); }
+    catch (e) { return; }
+    if (!list.length) {
+      host.appendChild(el("p", "ssnote", "None found in that span."));
+      return;
+    }
+    var t = el("table", "tbl");
+    var th = el("thead"), hr = el("tr");
+    ["Kind", "When", "Magnitude", "Moon's latitude", "Half-duration"]
+      .forEach(function (h) { hr.appendChild(el("th", null, h)); });
+    th.appendChild(hr); t.appendChild(th);
+    var tb = el("tbody");
+    list.forEach(function (q) {
+      var e = q.e, tr = el("tr");
+      tr.appendChild(el("td", null, q.kind === "lunar" ? "Lunar" : "Solar"));
+      tr.appendChild(el("td", "num",
+        new Date(e.at + PLACE.tz * 3600000).toISOString().slice(0, 16).replace("T", "  ")));
+      tr.appendChild(el("td", "num", e.magnitude.toFixed(2) +
+        (e.total ? "  total" : (e.annular ? "  annular" : ""))));
+      tr.appendChild(el("td", "num", e.latitude.toFixed(3) + "°"));
+      tr.appendChild(el("td", "num", e.halfDurationHours != null
+        ? (e.halfDurationHours * 60).toFixed(0) + " min" : "—"));
+      tb.appendChild(tr);
+    });
+    t.appendChild(tb);
+    host.appendChild(t);
+    host.appendChild(el("p", "ssnote",
+      list.length + " in " + (to - from) + " years. It finds the deep ones " +
+      "reliably and misses some of the slight ones, and the reason is its " +
+      "node: the draconitic month is right to about two seconds, but two " +
+      "seconds carried across the circuits the node has made since the epoch " +
+      "puts it a few degrees from the truth — and an eclipse season sits " +
+      "where the node says it does. Solar eclipses are judged for " + PLACE.n +
+      ", because parallax makes a solar eclipse a question about where you " +
+      "are standing."));
+  }
+
+  /* ---- the trigonometry -------------------------------------------------- */
+  function trigPanel() {
+    var S = window.SSEngine, host = $("ss-trig");
+    if (!host) return;
+    host.innerHTML = "";
+    var keep = S.OPT.sines;
+    S.options({ sines: "exact" });
+    var ex = S.positions(WHEN).grahas;
+    S.options({ sines: "table" });
+    var tb = S.positions(WHEN).grahas;
+    S.options({ sines: keep });
+    var rows = [];
+    S.SA.forEach(function (sa) {
+      if (!ex[sa] || !tb[sa]) return;
+      var d = S.norm(tb[sa].lon - ex[sa].lon);
+      if (d > 180) d -= 360;
+      rows.push([sa, (d * 60).toFixed(2) + "′",
+                 "table " + tb[sa].lon.toFixed(4) + "°, exact " +
+                 ex[sa].lon.toFixed(4) + "°"]);
+    });
+    host.appendChild(el("p", "ssnote",
+      "What the table costs, at this moment, in minutes of arc:"));
+    host.appendChild(table3(rows));
+    /* the table itself */
+    var t = el("table", "tbl");
+    var th = el("thead"), hr = el("tr");
+    ["Arc", "Jyā", "The sine function", "Out by"].forEach(function (h) {
+      hr.appendChild(el("th", null, h)); });
+    th.appendChild(hr); t.appendChild(th);
+    var tbody = el("tbody");
+    S.JYA.forEach(function (v, i) {
+      var arc = i * 3.75;
+      var exact = S.RAD * Math.sin(arc * Math.PI / 180);
+      var tr = el("tr");
+      tr.appendChild(el("td", "num", arc.toFixed(2) + "°"));
+      tr.appendChild(el("td", "num", String(v)));
+      tr.appendChild(el("td", "num", exact.toFixed(2)));
+      tr.appendChild(el("td", "num", (v - exact).toFixed(2)));
+      tbody.appendChild(tr);
+    });
+    t.appendChild(tbody);
+    host.appendChild(t);
+  }
+
+  /* ---- what is absent ---------------------------------------------------- */
+  function absentPanel() {
+    var S = window.SSEngine, host = $("ss-absent");
+    if (!host) return;
+    host.innerHTML = "";
+    S.ABSENT.forEach(function (q) {
+      var li = el("li");
+      li.appendChild(el("b", null, q.what + " — "));
+      li.appendChild(document.createTextNode(q.why));
+      host.appendChild(li);
+    });
+  }
+
   /* ---- the drift ----------------------------------------------------------- */
   function drift() {
     var S = window.SSEngine, cv = $("ss-drift");
@@ -282,6 +485,11 @@
     }
   }
 
+  function redraw() {
+    params(); now(); working(); trigPanel(); dayPanel(); panchangaPanel();
+    eclipsePanel(); absentPanel(); drift();
+  }
+
   /* ---- wiring --------------------------------------------------------------- */
   function bind() {
     if (!window.SSEngine || !$("ss-params")) return;
@@ -292,7 +500,7 @@
       when.addEventListener("change", function () {
         var t = Date.parse(when.value);
         WHEN = isFinite(t) ? t : Date.now();
-        params(); now(); working();
+        redraw();
       });
     }
     var pick = $("ss-pick");
@@ -318,12 +526,22 @@
       var e = $(id);
       if (e) e.addEventListener("change", drift);
     });
-    params(); now(); working(); drift();
+    var si = $("ss-sines");
+    if (si) si.addEventListener("change", function () {
+      window.SSEngine.options({ sines: si.value }); redraw(); });
+    var ay = $("ss-ayana");
+    if (ay) ay.addEventListener("change", function () {
+      window.SSEngine.options({ ayana: ay.value }); redraw(); });
+    ["ss-efrom", "ss-eto"].forEach(function (id) {
+      var e = $(id);
+      if (e) e.addEventListener("change", eclipsePanel);
+    });
+    redraw();
     window.addEventListener("resize", function () { drift(); });
     try {
-      window.__ss = { when: function () { return WHEN; },
-                      redraw: function () { params(); now(); working(); drift(); },
-                      setWhen: function (t) { WHEN = t; this.redraw(); } };
+      window.__ss = { when: function () { return WHEN; }, redraw: redraw,
+                      setWhen: function (t) { WHEN = t; redraw(); },
+                      place: function () { return PLACE; } };
     } catch (e) {}
   }
   if (document.readyState === "loading")

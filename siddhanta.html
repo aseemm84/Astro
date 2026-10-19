@@ -1288,7 +1288,7 @@ label.dpbtn{display:inline-block}
   border:1px solid var(--line);border-radius:10px;background:#fff;
   margin:4px 0 6px}
 @media (pointer:coarse){.ssfield input,.ssfield select{min-height:44px}}
-</style></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Sūrya Siddhānta</h1><p class="sub">The same sky, computed the older way — and the distance between the two, drawn.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html" class="active">Sūrya Siddhānta</a><a href="kundli.html">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#what">What this is, and what it is not</a><a href="#params">The parameters it uses</a><a href="#now">The two skies</a><a href="#working">The working, step by step</a><a href="#drift">The drift</a><a href="#use">Using it</a></aside><main><p class="ssnote">Everything on this page is computed in your browser, twice —
+</style></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Sūrya Siddhānta</h1><p class="sub">The same sky, computed the older way — and the distance between the two, drawn.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html" class="active">Sūrya Siddhānta</a><a href="kundli.html">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#what">What this is, and what it is not</a><a href="#params">The parameters it uses</a><a href="#now">The two skies</a><a href="#working">The working, step by step</a><a href="#trig">Its own trigonometry</a><a href="#day">The day where you are standing</a><a href="#panchanga">The pañcāṅga, the old way</a><a href="#eclipses">Eclipses</a><a href="#drift">The drift</a><a href="#absent">What is not here</a><a href="#use">Using it</a></aside><main><p class="ssnote">Everything on this page is computed in your browser, twice —
 once the way the Sūrya Siddhānta does it and once with this site's modern
 ephemeris — so the two can be set beside each other.</p>
 
@@ -1356,6 +1356,72 @@ that the inner planets go round the Sun, in a scheme that never says so.</p>
 </div>
 <div id="ss-working"></div>
 
+<h2 id="trig">Its own trigonometry</h2>
+
+<p>The Sūrya Siddhānta has no sine function. It has a <b>table</b> of
+twenty-four sines of a circle whose radius is 3438 — the number of minutes of
+arc in a radian, which is why that radius and not another — tabulated every
+3°45′, interpolated linearly between entries, and read backwards through
+itself when an arc is wanted from a sine.</p>
+
+<p>Computing the equations with a modern sine would give the answers a modern
+reader expects <i>from</i> the method and not the answers the method
+<i>gives</i>. So this engine computes with the table by default. You can
+switch it, and the difference is printed: it is smaller than the table's
+coarseness suggests, because the errors of the manda and śīghra steps are not
+in the same direction and partly cancel.</p>
+
+<div class="ssrow">
+  <label class="ssfield"><span>Compute with</span>
+    <select id="ss-sines">
+      <option value="table" selected>the text's table of 24 sines</option>
+      <option value="exact">the modern sine function</option>
+    </select></label>
+  <label class="ssfield"><span>Ayanāṃśa</span>
+    <select id="ss-ayana">
+      <option value="libration" selected>libration, ±27° over 7200 years</option>
+      <option value="linear">a steady 54″ a year</option>
+      <option value="none">none at all</option>
+    </select></label>
+</div>
+<div id="ss-trig"></div>
+
+<h2 id="day">The day where you are standing</h2>
+
+<p>A siddhānta has to tell you when the Sun rises where you are, and that
+needs three things this engine now has: the declination of the Sun — taken of
+the <i>sāyana</i> longitude, because declination is measured from the equinox
+and not from the stars — the ascensional difference your latitude gives it,
+and the equation of time, which the text reaches in two named pieces rather
+than one.</p>
+
+<div id="ss-day"></div>
+
+<h2 id="panchanga">The pañcāṅga, the old way</h2>
+
+<p>The five limbs follow from the two longitudes, so a Sūrya Siddhānta
+pañcāṅga is a Sūrya Siddhānta Sun and Moon put through the same arithmetic a
+modern one uses. The nakṣatra usually agrees with a modern almanac. The tithi
+often differs by one, and that is the Moon's accumulated drift arriving where
+a reader would actually notice it.</p>
+
+<div id="ss-panchanga"></div>
+
+<h2 id="eclipses">Eclipses</h2>
+
+<p>An eclipse is the hardest thing a classical astronomy is asked for, because
+it needs the Moon's latitude, the apparent sizes of three bodies and the
+instant of syzygy all at once — and an error in any of them turns a total
+eclipse into a partial one or into none.</p>
+
+<div class="ssrow">
+  <label class="ssfield"><span>From</span>
+    <input id="ss-efrom" type="number" value="2024" min="-1000" max="3000" step="1"></label>
+  <label class="ssfield"><span>To</span>
+    <input id="ss-eto" type="number" value="2032" min="-1000" max="3000" step="1"></label>
+</div>
+<div id="ss-eclipses"></div>
+
 <h2 id="drift">The drift</h2>
 
 <p>The revolution counts imply a sidereal year, and that year is about three
@@ -1380,6 +1446,13 @@ to about a tenth of a second, which is remarkable — but a second a month for
 five thousand years is most of a day, and most of a day of the Moon is eleven
 degrees.</p>
 
+<h2 id="absent">What is not here</h2>
+
+<p>Each of these is missing for a stated reason rather than for want of
+effort, and the reasons are worth more than the items.</p>
+
+<ul id="ss-absent" class="sslist"></ul>
+
 <h2 id="use">Using it</h2>
 
 <p>These positions are published into Studio Pro and Director Pro as ordinary
@@ -1393,6 +1466,11 @@ series you can animate across whatever span you like.</p>
 two columns is not an error in either. It is the distance between a
 fifth-century theory and a modern one.</p>
 
+<!-- panchanga.js is the site's own modern almanac. It is loaded here so the
+     page can put the two side by side: a Sūrya Siddhānta sunrise against a
+     modern one, a Sūrya Siddhānta tithi against a modern tithi. Without it
+     the comparison columns are simply blank, which is a worse page. -->
 <script src="engine.js" defer></script>
+<script src="panchanga.js" defer></script>
 <script src="siddhanta.js" defer></script>
 </main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p><b>How the numbers are worked out:</b> <a href="kundli-technical-report.html">the chart engine, in detail</a> &mdash; the ephemeris, the ayanāṃśa modes, the sunrise convention and what each divisional chart is computed from.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>
