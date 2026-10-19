@@ -383,6 +383,14 @@ def build_shared():
         # the renderer and the page. It needs engine.js beside it for the
         # state vectors the runs start from — the initial conditions are the
         # real sky, not a tidy circular orbit.
+        # The Reel Studio: the light pipeline, the reel grammar, the
+        # stories that drive it, and the page. It rides on sp-nodes and
+        # sp-cycles for the generic cycle template, and on engine.js for
+        # every position it plots.
+        "reel.js": brandify(read(SRC, "js", "sp-glow.js") + "\n" +
+                            read(SRC, "js", "sp-reel.js") + "\n" +
+                            read(SRC, "js", "sp-stories.js") + "\n" +
+                            read(SRC, "js", "sp-reelui.js")),
         "simulation.js": brandify(read(SRC, "js", "sim-engine.js") + "\n" +
                                   read(SRC, "js", "sim-scenarios.js") + "\n" +
                                   read(SRC, "js", "sim-draw.js") + "\n" +

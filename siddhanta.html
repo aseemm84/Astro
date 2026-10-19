@@ -1344,7 +1344,73 @@ td.simval{font-size:.86rem}
   #sim-scrub{height:40px}
 }
 .simchip,.simbtn{touch-action:manipulation}
-</style></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Sūrya Siddhānta</h1><p class="sub">The same sky, computed the older way — and the distance between the two, drawn.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html" class="active">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#what">What this is, and what it is not</a><a href="#params">The parameters it uses</a><a href="#now">The two skies</a><a href="#working">The working, step by step</a><a href="#trig">Its own trigonometry</a><a href="#day">The day where you are standing</a><a href="#panchanga">The pañcāṅga, the old way</a><a href="#eclipses">Eclipses</a><a href="#drift">The drift</a><a href="#absent">What is not here</a><a href="#use">Using it</a></aside><main><p class="ssnote">Everything on this page is computed in your browser, twice —
+
+/* ===== Reel Studio ======================================================= */
+.reelintro{font-size:.86rem;color:var(--muted);line-height:1.65;max-width:88ch}
+.reelwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,360px);
+  gap:22px;align-items:start;margin:14px 0}
+.reelmain{order:-1;position:sticky;top:12px}
+.reelside{min-width:0}
+.reelstagebox{display:flex;justify-content:center}
+#reel-canvas{display:block;border-radius:14px;border:1px solid var(--line);
+  background:#05060b;box-shadow:0 14px 40px rgba(10,12,24,.28);max-width:100%}
+.reelctl{margin-top:9px}
+#reel-scrub{flex:1;min-width:110px;max-width:100%;height:36px;touch-action:pan-x}
+.reelwhen{font-size:.7rem;color:var(--muted);font-variant-numeric:tabular-nums;
+  white-space:nowrap}
+.reelpicker{display:flex;flex-direction:column;gap:8px;margin:6px 0 8px}
+.reelgroup h4{margin:3px 0 4px;font-size:.68rem;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--gold)}
+.reelchips{display:flex;flex-wrap:wrap;gap:5px}
+.reelchip{font:inherit;font-size:.78rem;padding:6px 10px;border:1px solid var(--line);
+  border-radius:999px;background:#fff;color:var(--ink);cursor:pointer;
+  text-align:left;touch-action:manipulation}
+.reelchip:hover{border-color:var(--gold)}
+.reelchip.on{background:var(--night);border-color:var(--night);
+  color:var(--gold-soft);font-weight:600}
+.reelblurb{font-size:.79rem;color:var(--muted);line-height:1.55;margin:4px 0 2px;
+  padding-left:10px;border-left:2px solid var(--line)}
+.reelsub{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);margin:16px 0 6px;border-bottom:1px solid var(--line);
+  padding-bottom:4px}
+.reelrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}
+.reelfield{display:flex;flex-direction:column;gap:2px;font-size:.7rem;
+  color:var(--muted)}
+.reelfield input,.reelfield select{font:inherit;font-size:.82rem;padding:6px 8px;
+  border:1px solid var(--line);border-radius:7px;background:var(--soft);
+  color:var(--ink)}
+.reelslider{display:block;font-size:.7rem;color:var(--muted);margin:7px 0}
+.reelslider span{display:flex;justify-content:space-between;align-items:baseline}
+.reelslider b{color:var(--ink);font-size:.8rem;font-variant-numeric:tabular-nums}
+.reelslider input{width:100%;height:34px;touch-action:pan-x}
+.reelbtn{font:inherit;font-size:.82rem;padding:8px 14px;border:1px solid var(--night);
+  border-radius:8px;background:var(--night);color:#fff;cursor:pointer;
+  touch-action:manipulation}
+.reelbtn:hover{background:#2b3358}
+.reelbtn.ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+.reelbtn.ghost:hover{border-color:var(--gold)}
+.reelprog{width:100%;height:5px;margin:4px 0}
+.reelnote{font-size:.78rem;color:var(--gold);margin:4px 0;line-height:1.5}
+.reelnote.bad{color:#9a3b2a}
+/* table.tbl carries a 520px floor for wide numeric grids; this two-column
+   report is not one, and a bare .reeltbl loses the specificity contest */
+table.reeltbl{table-layout:fixed;width:100%;max-width:100%;min-width:0}
+table.reeltbl td{vertical-align:top;overflow-wrap:anywhere;font-size:.8rem}
+table.reeltbl td:first-child{width:38%;color:var(--muted)}
+.reelclosing{border:1px solid #ecdcae;background:#fbf6e8;border-left:3px solid var(--gold);
+  border-radius:0 8px 8px 0;padding:12px 15px;margin:10px 0;max-width:80ch}
+.reelclosing h4{margin:0 0 7px;font-size:1rem;color:#5a4512}
+.reelclosing p{font-size:.85rem;line-height:1.6;margin:0 0 7px}
+@media (max-width:860px){
+  .reelwrap{grid-template-columns:1fr}
+  .reelmain{position:static}
+  #reel-canvas{max-height:72vh}
+}
+@media (pointer:coarse){
+  .reelchip,.reelbtn,.reelfield input,.reelfield select{min-height:42px}
+  #reel-scrub,.reelslider input{height:42px}
+}
+</style></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Sūrya Siddhānta</h1><p class="sub">The same sky, computed the older way — and the distance between the two, drawn.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html" class="active">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#what">What this is, and what it is not</a><a href="#params">The parameters it uses</a><a href="#now">The two skies</a><a href="#working">The working, step by step</a><a href="#trig">Its own trigonometry</a><a href="#day">The day where you are standing</a><a href="#panchanga">The pañcāṅga, the old way</a><a href="#eclipses">Eclipses</a><a href="#drift">The drift</a><a href="#absent">What is not here</a><a href="#use">Using it</a></aside><main><p class="ssnote">Everything on this page is computed in your browser, twice —
 once the way the Sūrya Siddhānta does it and once with this site's modern
 ephemeris — so the two can be set beside each other.</p>
 

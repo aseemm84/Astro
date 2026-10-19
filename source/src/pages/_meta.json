@@ -143,6 +143,14 @@
   "layout": "onecol wide",
   "has_aside": false
  },
+ "reel": {
+  "title": "Reel Studio — stories a computation tells — {{BRAND}}",
+  "desc": "Build vertical reels from real computation: every new Moon and how far it stood from the node, a thread drawn between two planets for centuries, every hiding of a graha in the Sun's glare. Rendered as light, recorded in your browser, sent nowhere.",
+  "h1": "Reel Studio",
+  "sub": "A question, the computation that answers it, and the figure it draws.",
+  "layout": "",
+  "has_aside": true
+ },
  "director-pro": {
   "title": "Director Pro — the keyframe reel workstation — {{BRAND}}",
   "desc": "A keyframe animation workstation for Vedic-astronomy reels. Scenes, layers, keyframes on every property, effects, masks, blend modes, a camera, transitions, a soundtrack from your own machine, and frame-accurate export up to 4K — all of it in the browser, with nothing uploaded.",
