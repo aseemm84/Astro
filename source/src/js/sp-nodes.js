@@ -1170,6 +1170,20 @@
       return v;
     },
     cacheClear: function () { RC.key = null; RC.map = {}; },
+    /* Another file may publish nodes into this registry. sp-cycles.js does,
+       because the long-run event cycles it computes are a different kind of
+       work from everything here — a root-find over centuries rather than a
+       reading of one instant — and keeping them apart means the file that
+       holds two hundred one-line nodes stays readable. A duplicate id is
+       refused rather than silently shadowing, since two nodes answering to
+       one name is a bug nobody would ever find from the symptom. */
+    register: function (node) {
+      if (!node || !node.id || typeof node.get !== "function") return false;
+      for (var i = 0; i < N.length; i++) if (N[i].id === node.id) return false;
+      N.push(node);
+      RC.key = null;
+      return true;
+    },
     domains: function () {
       var seen = [];
       N.forEach(function (n) { if (seen.indexOf(n.dom) < 0) seen.push(n.dom); });

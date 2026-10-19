@@ -1170,6 +1170,20 @@
       return v;
     },
     cacheClear: function () { RC.key = null; RC.map = {}; },
+    /* Another file may publish nodes into this registry. sp-cycles.js does,
+       because the long-run event cycles it computes are a different kind of
+       work from everything here — a root-find over centuries rather than a
+       reading of one instant — and keeping them apart means the file that
+       holds two hundred one-line nodes stays readable. A duplicate id is
+       refused rather than silently shadowing, since two nodes answering to
+       one name is a bug nobody would ever find from the symptom. */
+    register: function (node) {
+      if (!node || !node.id || typeof node.get !== "function") return false;
+      for (var i = 0; i < N.length; i++) if (N[i].id === node.id) return false;
+      N.push(node);
+      RC.key = null;
+      return true;
+    },
     domains: function () {
       var seen = [];
       N.forEach(function (n) { if (seen.indexOf(n.dom) < 0) seen.push(n.dom); });
@@ -2421,8 +2435,13 @@
         txt(r.k, st.x + st.w * 0.24, y + hgt * 0.45, S.U * 0.019, P.ink, "right", 600);
         var c = S.ctx;
         c.save();
+        /* The TRACK draws in too, not just the bar. A scalar that is exactly
+           zero — Sūrya's ecliptic latitude is zero by definition — gives a
+           bar of no length, and with a static track the whole frame then sat
+           still through the entire reel. The sampler found it. */
+        var sweep = grow(p, i, n);
         c.fillStyle = P.line; c.globalAlpha = 0.5;
-        c.fillRect(x0, y + hgt * 0.22, bw, hgt * 0.46);
+        c.fillRect(x0, y + hgt * 0.22, bw * sweep, hgt * 0.46);
         c.fillStyle = r.v < 0 ? P.mal : P.gold; c.globalAlpha = 0.9;
         c.fillRect(x0, y + hgt * 0.22, bw * frac, hgt * 0.46);
         c.restore();
@@ -2977,6 +2996,140 @@
                             { foot: S.handle });
     });
 
+  /* --- the orbit pattern ------------------------------------------------- *
+
+     A set of events, each with a time and a place in the circle, drawn so
+     that ANGLE CARRIES WHERE and RADIUS CARRIES WHEN. The first event sits on
+     the outer ring and each later one a little further in, so the figure
+     spirals inward; chords join consecutive events.
+
+     The inward spiral is not decoration, it is the whole reason the picture
+     works. Drawn at a fixed radius, consecutive events twenty-nine degrees
+     apart simply retrace the same circle and the figure is a circle — which
+     is what an earlier version of this drew, and it told the reader nothing.
+     Shrinking the radius separates the turns, and the shape the chords make
+     IS the cycle: five arms for Śukra's conjunctions, a near-closed ring at
+     two hundred and thirty-five for the new Moon.
+
+     Both numbers are printed, because they are different questions. The arms
+     are what the eye counts. The closure is after how many events the
+     longitude comes back to where it began, which is what a calendar is built
+     from. For Śukra those are five and ten, and reporting either alone would
+     mislead whichever reader wanted the other. */
+  composer("rose", "The orbit pattern",
+    "a long run of one event, each plotted where in the circle it falls, " +
+    "spiralling inward so the figure is the cycle",
+    function (bag) {
+      return (count(bag, "cycleset") === 1 && all(bag) === 1) ? 3 : -1;
+    },
+    function (bag, p, st) {
+      var P = pal(), V = bag.cycleset[0].v;
+      var ev = V.events, n = ev.length;
+      var r = Math.min(st.w * 0.44, st.h * 0.40);
+      var cy = st.y + st.h * 0.42;
+      var c = S.ctx;
+
+      ringTicks(st.cx, cy, r, 27, 0.30);
+      ringTicks(st.cx, cy, r * 0.965, 12, 0.45, 0.04);
+
+      function rad(i) { return r * (1 - 0.72 * (n > 1 ? i / (n - 1) : 0)); }
+      function pt(i) {
+        var a = (norm(ev[i].lon) - 90) * R2, q = rad(i);
+        return { x: st.cx + Math.cos(a) * q, y: cy + Math.sin(a) * q };
+      }
+      /* How much is drawn by now. The reveal IS the animation, because the
+         pattern only becomes a pattern as the events accumulate.
+
+         CONTINUOUS, not a whole number of events. Rounding meant a set of two
+         or three never changed at all — max(2, round(n·p)) is 2 at every
+         playhead when n is 2 — so the composer drew four identical frames and
+         called it an animation. The sampler caught it on a pair whose second
+         node had not resolved. The chord to the next event is now drawn
+         partially, with a bright head travelling along it, which moves for
+         any n at all. */
+      var prog = Math.min(1, p / 0.88) * (n - 1);
+      var full = Math.min(n - 1, Math.floor(prog));
+      var frac = Math.min(1, prog - full);
+      var shown = full + 1;
+
+      c.save();
+      c.lineWidth = Math.max(1, S.U * 0.0016);
+      c.strokeStyle = P.gold;
+      c.globalAlpha = 0.55;
+      c.beginPath();
+      for (var i = 0; i < shown; i++) {
+        var q = pt(i);
+        if (i) c.lineTo(q.x, q.y); else c.moveTo(q.x, q.y);
+      }
+      if (full < n - 1 && frac > 0) {
+        var qa = pt(full), qb = pt(full + 1);
+        c.lineTo(qa.x + (qb.x - qa.x) * frac, qa.y + (qb.y - qa.y) * frac);
+      }
+      c.stroke();
+      c.restore();
+
+      /* the spokes: a faint line from the centre to each event, which is what
+         makes the arms readable as directions rather than as a tangle */
+      c.save();
+      c.strokeStyle = P.line; c.globalAlpha = 0.30;
+      c.lineWidth = Math.max(1, S.U * 0.0009);
+      for (var k = 0; k < shown; k++) {
+        var a2 = (norm(ev[k].lon) - 90) * R2;
+        c.beginPath();
+        c.moveTo(st.cx, cy);
+        c.lineTo(st.cx + Math.cos(a2) * r, cy + Math.sin(a2) * r);
+        c.stroke();
+      }
+      c.restore();
+
+      for (var j = 0; j < shown; j++) {
+        var q2 = pt(j);
+        var fresh = j > shown - 3;
+        c.fillStyle = fresh ? P.ink : P.gold;
+        c.globalAlpha = fresh ? 1 : 0.85;
+        c.beginPath();
+        c.arc(q2.x, q2.y, S.U * (fresh ? 0.0065 : 0.0040), 0, Math.PI * 2);
+        c.fill();
+      }
+      /* the travelling head, which is what moves when there are only a
+         handful of events to reveal */
+      if (full < n - 1) {
+        var ha = pt(full), hb = pt(full + 1);
+        c.fillStyle = P.ink;
+        c.beginPath();
+        c.arc(ha.x + (hb.x - ha.x) * frac, ha.y + (hb.y - ha.y) * frac,
+              S.U * 0.0075, 0, Math.PI * 2);
+        c.fill();
+      }
+      c.globalAlpha = 1;
+
+      /* The label goes ABOVE the ring, not in the middle of it. The spiral
+         converges on the centre, so that is precisely where the last and most
+         interesting events are — and an earlier version printed the title
+         across them. A figure's own name must not be drawn over the figure. */
+      txtFit(V.label, st.cx, cy - r * 1.14, S.U * 0.028, P.ink, "center", 700,
+             st.w * 0.9);
+      txt(Math.min(n, shown) + " of " + n, st.cx, cy - r * 1.14 + S.U * 0.034,
+          S.U * 0.019, P.gold, "center", 600);
+
+      var y = cy + r * 1.22;
+      txtFit(n + " " + V.what + " over " + V.spanYears.toFixed(1) + " years   ·   " +
+             "one every " + V.meanDays.toFixed(2) + " days",
+             st.cx, y, S.U * 0.021, P.dim, "center", 500, st.w * 0.95);
+      txtFit(V.arms ? ("the eye counts " + V.arms + " arm" + (V.arms === 1 ? "" : "s"))
+                    : "these do not cluster — they fall right round the circle",
+             st.cx, y + S.U * 0.036, S.U * 0.022,
+             V.arms ? P.ink : P.dim, "center", 600, st.w * 0.95);
+      if (V.closure)
+        txtFit("closest return after " + V.closure.n + " — " +
+               V.closure.years.toFixed(2) + " years, within " +
+               V.closure.err.toFixed(3) + "°",
+               st.cx, y + S.U * 0.070, S.U * 0.021, P.gold, "center", 600, st.w * 0.95);
+      else
+        txtFit("no return inside this span", st.cx, y + S.U * 0.070,
+               S.U * 0.021, P.dim, "center", 500, st.w * 0.95);
+    });
+
   /* --- 12. the catch-all: panels ---------------------------------------- *
      Always scores, so there is no selection that draws nothing. It splits the
      stage and runs the best single-group composer in each panel. */
@@ -2986,8 +3139,14 @@
     function (bag, p, st, ctxData) {
       var P = pal();
       /* one group per kind present, in a stable order */
-      var ORDER = ["lon", "lonset", "lanes", "edges", "sset", "scalar",
-                   "spanset", "span", "series", "grid"];
+      /* cycleset belongs here too. Leaving it out did not just lose the
+         picture — it lost it SILENTLY, which is the one thing this page
+         promises never to do: a selection pairing a chart with a long run of
+         events drew the chart and dropped the events with nothing on the
+         frame to say so. The sampler found it as four identical frames,
+         because what remained had no animation of its own. */
+      var ORDER = ["cycleset", "lon", "lonset", "lanes", "edges", "sset",
+                   "scalar", "spanset", "span", "series", "grid"];
       var groups = [];
       ORDER.forEach(function (k) {
         if ((bag[k] || []).length) {
@@ -3402,6 +3561,1306 @@
     composers: function () { return COMPOSERS.map(function (K) {
       return { key: K.key, label: K.label, blurb: K.blurb }; }); }
   };
+})();
+
+/* ===== Studio Pro — the long cycles =======================================
+
+   WHAT THIS ADDS, AND WHY IT IS A SEPARATE FILE.
+
+   Everything in the node registry reads ONE INSTANT: where a graha stands
+   now, what the day's tithi is, how strong a bhāva is. This file reads
+   CENTURIES: it finds every Pūrṇimā, every Śukra combustion, every
+   Maṅgala–Guru conjunction in a span, and hands back the set so a composer
+   can plot where in the circle they fall and whether they fall anywhere in
+   particular.
+
+   That is a different kind of work — a root-find rather than a reading — and
+   it is the work behind the thing the eye is actually after: a pattern. The
+   Metonic cycle is not a fact anyone has to supply; it is what you get when
+   you plot two hundred and thirty-five new moons and notice that the last one
+   lands where the first did. The Venus pentagram is what you get when you
+   plot ten conjunctions. Nothing in this file is told that either exists.
+
+   HOW THE EVENTS ARE FOUND, AND WHY NOT BY SCANNING.
+
+   The obvious method is to step through the span and watch for a sign change
+   in some function — and over two hundred years at a usable step that is tens
+   of thousands of ephemeris evaluations, which is a page that hangs. So:
+
+     the first two events are found by a coarse scan, which is the only part
+       that has to search blind;
+     thereafter the gap between the events found so far PREDICTS the next one,
+       and a short bracket around that prediction is bisected.
+
+   The running mean gap is used rather than the textbook synodic period for
+   one reason: nothing here should need telling what the period is. A
+   predictor built from the data cannot be wrong about a body whose period
+   this file never heard of, and when the gaps are uneven — Śukra's inferior
+   and superior conjunctions alternate at unequal spacing — a mean that
+   follows the data recovers, while a constant would walk off.
+
+   WHAT IS REPORTED, AND THE DISTINCTION THAT MATTERS.
+
+   Two different numbers are both called "the cycle" and they are not the
+   same:
+
+     the ARMS — how many distinct directions the events cluster into, which
+       is what the eye counts in the picture;
+     the CLOSURE — after how many events the longitude returns closest to
+       where it started, which is what a calendar is built on.
+
+   For Śukra's conjunctions the eye counts five and the calendar wants ten.
+   Reporting one of them and calling it "the cycle" would be telling half the
+   truth to whichever reader was looking for the other half, so both are
+   reported and both are labelled.
+
+   WHAT THIS FILE DOES NOT CLAIM. These are computed cycles, not doctrine.
+   BPHS is not the source of any of them and none is presented as such; what
+   the classical texts say about a Pūrṇimā is a separate matter from where the
+   Pūrṇimās fall, and only the second is what is drawn here. */
+
+(function () {
+  "use strict";
+
+  var SA = ["Sūrya", "Candra", "Maṅgala", "Budha", "Guru", "Śukra", "Śani"];
+  var EN = { "Sūrya": "Sun", "Candra": "Moon", "Maṅgala": "Mars",
+             "Budha": "Mercury", "Guru": "Jupiter", "Śukra": "Venus",
+             "Śani": "Saturn" };
+  var DAY = 86400000;
+
+  function norm(x) { return ((x % 360) + 360) % 360; }
+  /* the signed short way round, which is the only difference that behaves
+     like a continuous function across 0° */
+  function diff(a, b) {
+    var d = norm(a - b);
+    return d > 180 ? d - 360 : d;
+  }
+  function lonAt(en, ms) {
+    try { return window.__kSidAt(en, new Date(ms)); } catch (e) { return null; }
+  }
+
+  function bisect(f, a, b) {
+    var fa = f(a);
+    if (fa == null) return null;
+    for (var i = 0; i < 48; i++) {
+      var m = (a + b) / 2, fm = f(m);
+      if (fm == null) return null;
+      if ((fa < 0) === (fm < 0)) { a = m; fa = fm; } else { b = m; }
+      if (b - a < 1000) break;        /* a second is finer than any of this needs */
+    }
+    return (a + b) / 2;
+  }
+
+  /* Find every root of `f` between t0 and t1.
+
+     THIS WAS A PREDICTOR, AND THE PREDICTOR WAS WRONG IN A WAY THAT DREW
+     BEAUTIFULLY. The idea was to use the rhythm of the events found so far to
+     guess where the next one is and bisect a short bracket around the guess,
+     turning a scan of tens of thousands of ephemeris evaluations into a
+     handful per event. It worked for the Moon. It failed for everything whose
+     intervals are uneven, and it failed silently: when the guess was too
+     long, the bracket opened PAST the next event and found the one after it,
+     so the run came back short with no gap in it to notice — Maṅgala's
+     stations every 81 days instead of 390, Budha's combustions a quarter
+     missing. A figure drawn from three-quarters of the events is still a
+     tidy figure.
+
+     Three attempts to patch the predictor each fixed one case and left
+     another, which is the signal that the method is wrong rather than the
+     tuning: any scheme that decides where NOT to look can skip, and skipping
+     is undetectable from the result.
+
+     So this scans forward, and the only cleverness left is the step. It
+     starts at the caller's seed and TIGHTENS to a quarter of the shortest
+     interval actually seen, never loosening — so an event set that turns out
+     closer together than expected is still resolved, and one that is far
+     apart does not pay for the fine step it does not need. The cost is paid
+     once per context because the registry caches resolved values. Correct and
+     affordable beats fast and occasionally short. */
+  function findAll(f, t0, t1, guessDays, cap) {
+    cap = cap || 260;
+    var out = [];
+    var step = Math.max(DAY * 0.125, (guessDays || 30) * DAY / 14);
+    var minGap = Infinity;
+    var t = t0, prev = f(t);
+    /* a bound on work, so a pathological function cannot hang the page; it is
+       generous enough that nothing the page offers comes near it */
+    for (var guard = 0; guard < 120000 && t < t1 && out.length < cap; guard++) {
+      var tn = t + step, cu = f(tn);
+      if (prev != null && cu != null && (prev < 0) !== (cu < 0) &&
+          Math.abs(prev) < 120 && Math.abs(cu) < 120) {
+        var r = bisect(f, t, tn);
+        if (r != null) {
+          if (out.length) minGap = Math.min(minGap, r - out[out.length - 1]);
+          out.push(r);
+          if (out.length >= 3 && isFinite(minGap))
+            step = Math.max(DAY * 0.125, Math.min(step, minGap / 4));
+        }
+      }
+      t = tn; prev = cu;
+    }
+    return out;
+  }
+
+  /* Keep only the crossings that go one way. A combustion has an entry and an
+     exit and they are not the same event: "every entry into combustion" is a
+     list of occasions, while a list of both is a list of boundaries, and
+     plotting boundaries gives a figure with twice as many points and half the
+     meaning. The direction is read from the function either side rather than
+     recorded during the search, because the search bisects and the sign at
+     the root is whatever rounding made it. */
+  function onlyFalling(f, ts, h) {
+    h = h || 43200000;
+    return ts.filter(function (t) {
+      var a = f(t - h), b = f(t + h);
+      return a != null && b != null && a > 0 && b < 0;
+    });
+  }
+
+  /* ---- the event kinds ----------------------------------------------------
+     Each is a function whose sign changes at the event, plus the longitude to
+     plot the event AT. The second is the part that makes a picture: an event
+     set with no place in the circle is a list of dates. */
+
+  function elongFn(aEN, bEN) {
+    return function (ms) {
+      var a = lonAt(aEN, ms), b = lonAt(bEN, ms);
+      return (a == null || b == null) ? null : diff(a, b);
+    };
+  }
+  /* opposition: the same function shifted half a turn */
+  function oppFn(aEN, bEN) {
+    return function (ms) {
+      var a = lonAt(aEN, ms), b = lonAt(bEN, ms);
+      if (a == null || b == null) return null;
+      return diff(a + 180, b);
+    };
+  }
+  /* combustion: the elongation crossing a stated orb. BPHS gives orbs for
+     combustion; the figures used here are the ones the rest of this site
+     uses, and they are stated rather than hidden so a reader can disagree
+     with them and know what they are disagreeing with. */
+  var ORB = { "Candra": 12, "Maṅgala": 17, "Budha": 14, "Guru": 11,
+              "Śukra": 10, "Śani": 15 };
+  function combustFn(sa, orb) {
+    var en = EN[sa];
+    return function (ms) {
+      var a = lonAt("Sun", ms), b = lonAt(en, ms);
+      if (a == null || b == null) return null;
+      return Math.abs(diff(b, a)) - orb;
+    };
+  }
+  /* a station: the daily motion changing sign */
+  function stationFn(sa) {
+    var en = EN[sa];
+    return function (ms) {
+      var a = lonAt(en, ms - DAY * 0.5), b = lonAt(en, ms + DAY * 0.5);
+      if (a == null || b == null) return null;
+      return diff(b, a);
+    };
+  }
+
+  /* ---- the span ----------------------------------------------------------
+     The page's span control is in days and reaches two hundred years. A
+     cycle node takes it as given: a reader who asks for a century and gets
+     a decade has been quietly overruled. The cap on event count is the only
+     limit, and it is reported when it bites. */
+  function spanOf(C) {
+    var days = Math.max(30, C.spanDays || 365);
+    return { t0: C.when, t1: C.when + days * DAY, days: days };
+  }
+
+  /* arms: how many directions the eye counts. Longitudes are binned at a
+     width that is generous enough to call a drifting cluster one arm and
+     tight enough not to merge two real ones. */
+  /* HOW MANY DIRECTIONS DO THESE CLUSTER INTO?
+
+     The first version binned the circle at a fixed width and counted occupied
+     bins, which fails on exactly the case that matters: Śukra's inferior
+     conjunctions make five arms, but each arm DRIFTS about two and a half
+     degrees per cycle, so over five turns an arm is twelve degrees wide and a
+     bin of eight splits it in two. It reported eleven arms for a pentagram.
+
+     Clustering by GAPS has no width to get wrong. Sort the longitudes round
+     the circle, look at the gaps between neighbours, and a cluster boundary
+     is a gap much larger than the typical one. Five tight groups separated by
+     seventy-degree gaps give five boundaries however wide the groups are;
+     points spread evenly give no gap that stands out, and the honest answer
+     there is not a number of arms but "these do not cluster", which is
+     returned as zero and said in words rather than drawn as a figure that
+     isn't there. */
+  function arms(lons) {
+    var n = lons.length;
+    if (n < 4) return n;
+    var s = lons.map(norm).sort(function (a, b) { return a - b; });
+    var g = [];
+    for (var i = 0; i < n; i++) g.push(i === n - 1 ? (360 - s[i] + s[0]) : (s[i + 1] - s[i]));
+    var sorted = g.slice().sort(function (a, b) { return a - b; });
+    var med = sorted[Math.floor(n / 2)];
+    /* a boundary is a gap at least three times typical, and at least six
+       degrees — the second condition stops a run of near-identical values
+       from making every tiny gap a boundary */
+    var thr = Math.max(med * 3, 6);
+    var k = 0;
+    g.forEach(function (q) { if (q >= thr) k++; });
+    return k > 1 && k <= n / 2 ? k : 0;
+  }
+  /* closure: after how many events does the longitude come back closest */
+  function closure(lons) {
+    if (lons.length < 4) return null;
+    var best = null;
+    for (var k = 2; k < Math.min(lons.length, 300); k++) {
+      var d = Math.abs(diff(lons[k], lons[0]));
+      if (best == null || d < best.err) best = { n: k, err: d };
+    }
+    return best;
+  }
+
+  function cycleset(events, label, what, C) {
+    if (!events || events.length < 2) return null;
+    var lons = events.map(function (e) { return e.lon; });
+    var gaps = [];
+    for (var i = 1; i < events.length; i++) gaps.push(events[i].t - events[i - 1].t);
+    var mean = gaps.reduce(function (a, b) { return a + b; }, 0) / gaps.length;
+    var cl = closure(lons);
+    return {
+      kind: "cycleset",
+      label: label,
+      what: what,
+      events: events,
+      n: events.length,
+      meanDays: mean / DAY,
+      spanYears: (events[events.length - 1].t - events[0].t) / DAY / 365.2564,
+      arms: arms(lons),
+      closure: cl ? { n: cl.n, err: cl.err,
+                      years: (events[Math.min(cl.n, events.length - 1)].t - events[0].t)
+                               / DAY / 365.2564 } : null
+    };
+  }
+
+  function build(C, f, lonOf, guessDays, label, what, cap, filter) {
+    var S = spanOf(C);
+    /* The cap counts what the finder FINDS, not what survives the filter. A
+       combustion node keeps only the entries and discards the exits, so a cap
+       of three hundred leaves a hundred and fifty — and the span the reader
+       asked for is silently halved with nothing on the frame to say so. A
+       filtered node therefore searches for twice as many. */
+    var want = (cap || 240) * (filter ? 2.4 : 1);
+    var ts = findAll(f, S.t0, S.t1, guessDays, Math.round(want));
+    if (filter === "falling") ts = onlyFalling(f, ts);
+    else if (typeof filter === "function") ts = ts.filter(filter);
+    if (ts.length < 2) return null;
+    var ev = [];
+    for (var i = 0; i < ts.length; i++) {
+      var L = lonOf(ts[i]);
+      if (L == null) continue;
+      ev.push({ t: ts[i], lon: norm(L) });
+    }
+    return cycleset(ev, label, what, C);
+  }
+
+  /* ---- publishing the nodes ---------------------------------------------- */
+  function reg(id, label, hint, get) {
+    window.SPNodes.register({ id: id, dom: "cycles", label: label, hint: hint,
+                              roles: ["cycleset"], get: get });
+  }
+
+  function publish() {
+    if (!window.SPNodes || !window.SPNodes.register) return;
+    if (!window.__kSidAt) return;
+
+    /* the two syzygies */
+    reg("cyc.purnima", "Pūrṇimā over time",
+        "every full Moon in the span, plotted where in the circle it falls",
+        function (C) {
+          return build(C, oppFn("Moon", "Sun"),
+            function (t) { return lonAt("Moon", t); }, 29.53,
+            "Pūrṇimā", "full Moons");
+        });
+    reg("cyc.amavasya", "Amāvasyā over time",
+        "every new Moon in the span, plotted where in the circle it falls",
+        function (C) {
+          return build(C, elongFn("Moon", "Sun"),
+            function (t) { return lonAt("Moon", t); }, 29.53,
+            "Amāvasyā", "new Moons");
+        });
+
+    /* combustion — the thing the eye most wants plotted over a long run */
+    ["Candra", "Maṅgala", "Budha", "Guru", "Śukra", "Śani"].forEach(function (sa) {
+      var orb = ORB[sa];
+      reg("cyc.combust." + sa, sa + " combust",
+          "every entry into combustion at " + orb + "° of Sūrya, over the span",
+          function (C) {
+            return build(C, combustFn(sa, orb),
+              function (t) { return lonAt("Sun", t); },
+              sa === "Candra" ? 15 : (sa === "Budha" ? 30 :
+              (sa === "Śukra" ? 60 : 120)),
+              sa + " combust", "combustions", 300, "falling");
+          });
+    });
+
+    /* Inferior and superior conjunction, separately, for the two bodies that
+       have both. A reader who asks for "Śukra's conjunctions" gets both kinds
+       — which is correct, and is why the combined set has ten arms rather
+       than the five of the famous figure. The pentagram proper is the
+       inferior conjunctions alone, and it is worth being able to ask for it.
+       The two are told apart by motion: a body at inferior conjunction is
+       between us and Sūrya, and is retrograde. */
+    [["Budha", 58], ["Śukra", 292]].forEach(function (q) {
+      var sa = q[0], en = EN[sa], guess = q[1];
+      function retroAt(t) {
+        var a = lonAt(en, t - DAY * 0.5), b = lonAt(en, t + DAY * 0.5);
+        return (a == null || b == null) ? null : diff(b, a) < 0;
+      }
+      reg("cyc.inferior." + sa, sa + " inferior conjunctions",
+          "only the conjunctions with " + sa + " between us and Sūrya — the " +
+          "figure these trace is the one usually meant",
+          function (C) {
+            return build(C, elongFn("Sun", en),
+              function (t) { return lonAt("Sun", t); }, guess,
+              sa + " inferior ☌", "inferior conjunctions", 300,
+              function (t) { return retroAt(t) === true; });
+          });
+      reg("cyc.superior." + sa, sa + " superior conjunctions",
+          "only the conjunctions with Sūrya between us and " + sa,
+          function (C) {
+            return build(C, elongFn("Sun", en),
+              function (t) { return lonAt("Sun", t); }, guess,
+              sa + " superior ☌", "superior conjunctions", 300,
+              function (t) { return retroAt(t) === false; });
+          });
+    });
+
+    /* stations */
+    ["Maṅgala", "Budha", "Guru", "Śukra", "Śani"].forEach(function (sa) {
+      reg("cyc.station." + sa, sa + " stations",
+          "every turn between retrograde and direct, plotted where it happens",
+          function (C) {
+            return build(C, stationFn(sa),
+              function (t) { return lonAt(EN[sa], t); },
+              sa === "Budha" ? 58 : (sa === "Śukra" ? 290 : 190),
+              sa + " stations", "stations");
+          });
+    });
+
+    /* every pair, in conjunction and in opposition — this is where the
+       hundreds come from, and each one is a real computation rather than a
+       label on the same picture */
+    for (var i = 0; i < SA.length; i++) {
+      for (var j = i + 1; j < SA.length; j++) {
+        (function (a, b) {
+          var guess = 400;
+          if (a === "Sūrya" && b === "Candra") guess = 29.53;
+          else if (a === "Sūrya") guess = b === "Budha" ? 116 : (b === "Śukra" ? 584 : 390);
+          else if (a === "Candra") guess = 27.5;
+          reg("cyc.conj." + a + "-" + b, a + " with " + b,
+              "every conjunction of the two in the span, plotted where it falls",
+              function (C) {
+                return build(C, elongFn(EN[a], EN[b]),
+                  function (t) { return lonAt(EN[a], t); }, guess,
+                  a + " ☌ " + b, "conjunctions");
+              });
+          reg("cyc.opp." + a + "-" + b, a + " opposite " + b,
+              "every opposition of the two in the span, plotted where it falls",
+              function (C) {
+                return build(C, oppFn(EN[a], EN[b]),
+                  function (t) { return lonAt(EN[a], t); }, guess,
+                  a + " ☍ " + b, "oppositions");
+              });
+        })(SA[i], SA[j]);
+      }
+    }
+  }
+
+  window.SPCycles = { publish: publish, findAll: findAll, arms: arms,
+                      closure: closure, ORB: ORB, norm: norm, diff: diff };
+  /* published as soon as the registry and the ephemeris both exist; the page
+     scripts are deferred, so by the time anything asks for a node this has
+     run — and publish() is idempotent because register() refuses duplicates */
+  if (window.SPNodes && window.__kSidAt) publish();
+  else if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", publish);
+  else setTimeout(publish, 0);
+})();
+
+/* ===== Studio Pro / Director Pro — saying what you want ===================
+
+   WHY THIS IS A PARSER AND NOT A LANGUAGE MODEL.
+
+   The ask was "something like a local LLM": type a sentence, get the
+   animation. A language model running in the browser is the wrong tool for
+   it, and not because it would be hard. The smallest model that could turn a
+   sentence into a correct specification is hundreds of megabytes, needs
+   WebGPU, and breaks this site's two standing promises — that it works
+   offline from a local copy and fetches nothing from anybody. And it would
+   still be worse at the job, because the job is not open-ended: a request
+   here names things from a list of about three hundred, an event from a list
+   of six, a span, and a figure. A model would sometimes invent a node that
+   does not exist and present it with confidence. A grammar cannot.
+
+   So this is a grammar over the site's own vocabulary, and the design rule
+   throughout is: NEVER GUESS SILENTLY. Every parse reports what it
+   understood, phrase by phrase, and what it could not place. A sentence that
+   is half understood produces half an animation and says which half — which
+   is the behaviour that lets somebody learn the vocabulary by using it,
+   rather than by reading a manual.
+
+   WHAT IT UNDERSTANDS.
+
+     subjects   every graha by IAST, by English, and by the spellings people
+                actually type — Shukra, Sukra, Venus, Shukr
+     events     conjunction, opposition, full and new Moon, combustion,
+                stations, inferior and superior conjunction
+     spans      "next 200 years", "over a century", "for 50 years", "the
+                next 30 days", bare years
+     figures    orbit pattern, rose, web, wheel, bars, chart, timeline, gears
+     manner     slowly, quickly, zoomed in, full bleed, on dark, as a square
+
+   WHAT IT REFUSES TO DO. It does not round a request down to something it can
+   draw and stay quiet about it. If you ask for a span of two hundred years
+   and the events cap out, the figure says so. If you name a graha it knows
+   and an event it does not, it says which word it could not place.
+
+   THE RECIPES ARE GENERATED, NOT WRITTEN. A hand-written list of a dozen
+   examples teaches the vocabulary badly, because the gaps between the
+   examples are where the user's own sentence lives. These are produced
+   combinatorially from templates and the registry, so every pair, every
+   graha and every span is represented, and each one is a real sentence this
+   parser really understands — they are produced by the same grammar that
+   reads them, so a recipe cannot drift out of date with the parser. */
+
+(function () {
+  "use strict";
+
+  var SA = ["Sūrya", "Candra", "Maṅgala", "Budha", "Guru", "Śukra", "Śani",
+            "Rāhu", "Ketu"];
+  /* The spellings people actually type. Diacritics are stripped before
+     matching, so "Sūrya" and "Surya" are the same key here; what this list
+     has to carry is the genuinely different names — English, the alternative
+     Sanskrit names, and the common misspellings. */
+  var ALIAS = {
+    "Sūrya":   ["surya", "sun", "ravi", "aditya", "sooryan", "soorya", "suryan", "sura"],
+    "Candra":  ["candra", "chandra", "moon", "soma", "chandrama", "chander", "chand"],
+    "Maṅgala": ["mangala", "mangal", "mars", "kuja", "angaraka", "bhauma", "sevvai"],
+    "Budha":   ["budha", "budh", "mercury", "buddha", "budhan"],
+    "Guru":    ["guru", "jupiter", "brihaspati", "bṛhaspati", "brhaspati", "devaguru", "jiva"],
+    "Śukra":   ["sukra", "shukra", "venus", "shukr", "bhargava", "sukran"],
+    "Śani":    ["sani", "shani", "saturn", "sanaischara", "shanaishchara", "shanidev"],
+    "Rāhu":    ["rahu", "north node", "dragon head", "caput"],
+    "Ketu":    ["ketu", "south node", "dragon tail", "cauda"]
+  };
+
+  /* Events, longest phrase first so "inferior conjunction" wins over
+     "conjunction" and "full moon" over "moon". */
+  var EVENTS = [
+    { k: "inferior", words: ["inferior conjunction", "inferior conjunctions",
+        "inferior"], needs: 1, inner: true,
+      say: "inferior conjunctions" },
+    { k: "superior", words: ["superior conjunction", "superior conjunctions",
+        "superior"], needs: 1, inner: true,
+      say: "superior conjunctions" },
+    { k: "purnima", words: ["purnima", "purnimas", "full moon", "full moons",
+        "pournami", "pournamis", "poornima", "poornimas", "paurnami"],
+      needs: 0, say: "full Moons" },
+    { k: "amavasya", words: ["amavasya", "amavasyas", "new moon", "new moons",
+        "amavasai", "amavas", "darsha"], needs: 0, say: "new Moons" },
+    { k: "combust", words: ["combustion", "combust", "combustible", "asta",
+        "astangata", "burnt", "under the sun's beams", "combusted"], needs: 1,
+      say: "combustions" },
+    { k: "station", words: ["station", "stations", "retrograde", "retrogression",
+        "vakri", "vakra", "direct motion", "turning"], needs: 1,
+      say: "stations" },
+    { k: "conj", words: ["conjunction", "conjunctions", "conjunct", "yuti",
+        "yoga with", "together with", "meets", "meeting", "meet", "graha yuddha",
+        "planetary war", "same degree"], needs: 2, say: "conjunctions" },
+    { k: "opp", words: ["opposition", "oppositions", "opposite", "pratiyuti",
+        "facing"], needs: 2, say: "oppositions" }
+  ];
+
+  /* Figures map onto composers. A figure named but impossible for what was
+     selected is reported rather than quietly dropped. */
+  var FIGURES = [
+    { k: "rose", words: ["orbit pattern", "orbital pattern", "orbit patterns",
+        "rose", "spiral", "pattern", "patterns", "figure", "petal", "flower",
+        "pentagram", "star pattern", "over the years", "over time pattern"],
+      say: "the orbit pattern" },
+    { k: "angle", words: ["angle", "angle between", "mutual position",
+        "mutual positions", "separation", "distance between", "relative position",
+        "relationship between"], say: "the angle between" },
+    { k: "web", words: ["web", "aspects", "aspect web", "drishti", "dṛṣṭi",
+        "lines between"], say: "the aspect web" },
+    { k: "rings", words: ["rings", "ring", "wheel", "circle", "divisions",
+        "zodiac wheel"], say: "the rings" },
+    { k: "bars", words: ["bars", "bar chart", "strengths", "comparison",
+        "compare", "ranking"], say: "bars" },
+    { k: "kundliN", words: ["north indian chart", "north chart", "kundli",
+        "kundali", "diamond chart", "birth chart"], say: "a North Indian chart" },
+    { k: "kundliS", words: ["south indian chart", "south chart", "square chart"],
+      say: "a South Indian chart" },
+    { k: "timeline", words: ["timeline", "periods", "dasha bar", "time bar"],
+      say: "a timeline" },
+    { k: "gears", words: ["gears", "nested", "wheels within wheels"],
+      say: "the daśā gears" },
+    { k: "trace", words: ["trace", "track", "path", "over time", "across time",
+        "through time", "motion"], say: "the path over time" },
+    { k: "heat", words: ["heat", "heatmap", "grid of", "ashtakavarga grid"],
+      say: "a heat grid" },
+    { k: "almanac", words: ["almanac", "panchanga", "pañcāṅga", "leaf",
+        "calendar card", "day card"], say: "the almanac leaf" },
+    { k: "sudarshana", words: ["sudarshana", "sudarśana", "three charts",
+        "three lagnas"], say: "the Sudarśana" },
+    { k: "zoom", words: ["zoom", "deep zoom", "magnify", "close up", "closeup"],
+      say: "a deep zoom" },
+    /* These name a thing to draw rather than a way of drawing it, so they
+       pick a selection and leave the composer to the matcher. Keeping them in
+       the same list means one place to look for "what words does it know",
+       which matters more than the tidiness of two lists. */
+    { k: "fiveLimbs", words: ["five limbs", "the five limbs", "panchanga limbs",
+        "limbs of the day"], say: "the five limbs" },
+    { k: "horas", words: ["horas", "hora", "planetary hours", "hour lords"],
+      say: "the horās" },
+    { k: "choghadiya", words: ["choghadiya", "chogadiya", "choghadiyas"],
+      say: "the choghaḍiyā" },
+    { k: "tara", words: ["tara bala", "tarabala", "the nine taras"],
+      say: "Tāra Bala" }
+  ];
+
+  var MANNER = [
+    { k: "slow", words: ["slowly", "slow", "gently", "calm", "unhurried"] },
+    { k: "fast", words: ["quickly", "fast", "snappy", "rapid", "punchy"] },
+    { k: "bleed", words: ["full bleed", "fullbleed", "edge to edge", "full frame",
+        "no margins"] },
+    { k: "square", words: ["square", "1:1", "feed post", "instagram post"] },
+    { k: "wide", words: ["landscape", "16:9", "widescreen", "youtube"] },
+    { k: "reel", words: ["reel", "story", "9:16", "vertical", "shorts", "tiktok"] },
+    { k: "dark", words: ["dark", "midnight", "night", "black", "eclipse"] },
+    { k: "light", words: ["light", "parchment", "paper", "white", "cream"] },
+    { k: "title", words: ["with a title", "add a title", "titled", "with titles",
+        "with a caption", "with text"] },
+    { k: "notitle", words: ["no title", "without a title", "no text",
+        "without text", "plain"] }
+  ];
+
+  /* ---- normalising -------------------------------------------------------
+     Diacritics are stripped, so the user is never required to type ṣ or ā to
+     be understood. The site shows the diacritics; it does not demand them. */
+  function fold(s) {
+    return String(s == null ? "" : s)
+      .normalize ? String(s).normalize("NFD").replace(/[̀-ͯ]/g, "")
+          .toLowerCase().replace(/[^a-z0-9\s:+\-]/g, " ").replace(/\s+/g, " ").trim()
+      : String(s).toLowerCase();
+  }
+
+  /* ---- time --------------------------------------------------------------- */
+  var WORDNUM = { a: 1, an: 1, one: 1, two: 2, three: 3, four: 4, five: 5,
+    six: 6, seven: 7, eight: 8, nine: 9, ten: 10, twelve: 12, fifteen: 15,
+    twenty: 20, thirty: 30, forty: 40, fifty: 50, sixty: 60, hundred: 100,
+    "two hundred": 200, "three hundred": 300, thousand: 1000 };
+  var UNITDAYS = { day: 1, days: 1, week: 7, weeks: 7, month: 30.44,
+    months: 30.44, year: 365.2564, years: 365.2564, yr: 365.2564,
+    yrs: 365.2564, decade: 3652.564, decades: 3652.564, century: 36525.64,
+    centuries: 36525.64, millennium: 365256.4 };
+
+  function parseSpan(f) {
+    /* "200 years", "two hundred years", "a century", "the next 30 days" */
+    var m = f.match(/(\d+(?:\.\d+)?)\s*(day|days|week|weeks|month|months|year|years|yr|yrs|decade|decades|century|centuries|millennium)\b/);
+    if (m) return { days: Math.round(parseFloat(m[1]) * UNITDAYS[m[2]]),
+                    say: m[0] };
+    /* "two hundred years" is two words of number. An earlier version matched
+       a single number word followed by a unit, so it read "two hundred years"
+       as "hundred years" and quietly halved the span — the span being the one
+       thing in the sentence the reader is most specific about. */
+    var w = f.match(/\b((?:two|three|four|five|six|seven|eight|nine)\s+(?:hundred|thousand)|a|an|one|two|three|four|five|six|seven|eight|nine|ten|twelve|fifteen|twenty|thirty|forty|fifty|sixty|hundred|thousand)\s+(day|days|week|weeks|month|months|year|years|decade|decades|century|centuries|millennium)\b/);
+    if (w) {
+      var mult = WORDNUM[w[1]];
+      if (mult == null) {
+        var parts = w[1].split(/\s+/);
+        mult = (WORDNUM[parts[0]] || 1) * (WORDNUM[parts[1]] || 1);
+      }
+      return { days: Math.round(mult * UNITDAYS[w[2]]), say: w[0] };
+    }
+    var c = f.match(/\b(a|one|half a|two|three)\s+(century|centuries|millennium|decade)\b/);
+    if (c) return { days: Math.round((WORDNUM[c[1]] || 1) * UNITDAYS[c[2]]),
+                    say: c[0] };
+    return null;
+  }
+  /* "the next 50 Purnimas" — a count of events rather than a span of time.
+     Turned into a span using the event's own rough period, and the figure
+     then reports how many it actually found, so the count is a request and
+     the number on the frame is the answer. */
+  var ROUGH = { purnima: 29.53, amavasya: 29.53, conj: 400, opp: 400,
+                combust: 120, station: 200, inferior: 584, superior: 584 };
+  function parseCount(f) {
+    var m = f.match(/(\d+)\s+(purnimas?|amavasyas?|full moons?|new moons?|conjunctions?|oppositions?|combustions?|stations?|events?|times)\b/);
+    return m ? { n: parseInt(m[1], 10), say: m[0] } : null;
+  }
+
+  /* ---- matching helpers --------------------------------------------------- */
+  function findPhrase(f, words) {
+    var best = null;
+    words.forEach(function (w) {
+      var i = f.indexOf(w);
+      if (i < 0) return;
+      /* word boundaries, so "sun" does not match inside "sunday" */
+      var before = i === 0 ? " " : f[i - 1];
+      var after = (i + w.length >= f.length) ? " " : f[i + w.length];
+      if (!/[a-z0-9]/.test(before) && !/[a-z0-9]/.test(after))
+        if (!best || w.length > best.w.length) best = { w: w, at: i };
+    });
+    return best;
+  }
+
+  /* ---- the parse ---------------------------------------------------------- */
+  function parse(text) {
+    var f = fold(text);
+    var used = [], understood = [], notes = [];
+    function consume(phrase) {
+      var i = f.indexOf(phrase);
+      if (i >= 0) f = f.slice(0, i) + " ".repeat(phrase.length) + f.slice(i + phrase.length);
+      used.push(phrase);
+    }
+
+    /* THE EVENT IS MATCHED BEFORE THE SUBJECTS, and the reason is one word.
+
+       "Moon" is how people write Candra, and "full moon" is how they write
+       Pūrṇimā. Matching subjects first consumed the "moon" out of "full
+       moon", leaving a fragment no event could match — so "show every full
+       Moon over 19 years" was read as "Candra, over 19 years" and drew where
+       Candra is standing. The sentence was understood as something it plainly
+       does not say, which is the one failure mode this parser exists to
+       avoid.
+
+       The general rule behind it: the longer, more specific phrase wins, and
+       event names are longer and more specific than the body names inside
+       them. So events go first, and what they take is no longer available to
+       be read as a subject. */
+    var event = null;
+    for (var i = 0; i < EVENTS.length && !event; i++) {
+      var hit = findPhrase(f, EVENTS[i].words);
+      if (hit) { event = EVENTS[i]; consume(hit.w); understood.push(EVENTS[i].say); }
+    }
+
+    /* subjects, in the order they are mentioned — the order matters, because
+       "Maṅgala with Guru" and "Guru with Maṅgala" are the same event but the
+       reader named one first and the label should agree with them */
+    var subs = [];
+    SA.forEach(function (sa) {
+      var h0 = findPhrase(f, ALIAS[sa]);
+      if (h0) subs.push({ sa: sa, at: h0.at, w: h0.w });
+    });
+    subs.sort(function (a, b) { return a.at - b.at; });
+    subs.forEach(function (q) { consume(q.w); });
+    if (subs.length)
+      understood.push(subs.map(function (q) { return q.sa; }).join(" and "));
+
+    /* the figure */
+    var figure = null;
+    for (var j = 0; j < FIGURES.length && !figure; j++) {
+      var h2 = findPhrase(f, FIGURES[j].words);
+      if (h2) { figure = FIGURES[j]; consume(h2.w); understood.push(FIGURES[j].say); }
+    }
+
+    /* manner */
+    var manner = {};
+    MANNER.forEach(function (m) {
+      var h3 = findPhrase(f, m.words);
+      if (h3) { manner[m.k] = true; consume(h3.w); understood.push(h3.w); }
+    });
+
+    /* time */
+    var span = parseSpan(f);
+    if (span) { consume(span.say); understood.push(span.say); }
+    var count = parseCount(f);
+    if (count) { consume(count.say); understood.push(count.say); }
+    if (!span && count && event) span = { days: Math.round(count.n * (ROUGH[event.k] || 100)),
+                                          say: count.say };
+
+    /* whatever is left that is not a filler word */
+    var FILLER = ("show me make create animate draw plot a an the of for over " +
+      "and with to in on next last past coming during across between from " +
+      "please can you i want would like video reel clip animation picture " +
+      "see view it this that their its how where when what is are was were " +
+      "be do does let us lets going we my our me").split(" ");
+    var left = f.split(/\s+/).filter(function (w) {
+      return w && FILLER.indexOf(w) < 0 && !/^\d+$/.test(w); });
+
+    return { text: text, subjects: subs.map(function (s) { return s.sa; }),
+             event: event ? event.k : null,
+             eventSay: event ? event.say : null,
+             eventNeeds: event ? event.needs : 0,
+             figure: figure ? figure.k : null,
+             figureSay: figure ? figure.say : null,
+             manner: manner, spanDays: span ? span.days : null,
+             count: count ? count.n : null,
+             understood: understood, ignored: left };
+  }
+
+  /* ---- turning a parse into a selection ----------------------------------
+     This is where a request becomes node ids. Every branch either produces a
+     selection or records why it could not, and the "why" is written for the
+     person rather than for a log. */
+  function toSelection(P) {
+    var sel = [], force = null, why = [], note = null;
+    var s = P.subjects;
+    var pairId = function (a, b, kind) {
+      /* the registry keys a pair in the fixed order of the grahas, so a
+         request naming them the other way round still finds the node */
+      var order = ["Sūrya", "Candra", "Maṅgala", "Budha", "Guru", "Śukra", "Śani"];
+      var ia = order.indexOf(a), ib = order.indexOf(b);
+      if (ia < 0 || ib < 0) return null;
+      return "cyc." + kind + "." + (ia < ib ? a + "-" + b : b + "-" + a);
+    };
+
+    if (P.event === "purnima") sel = ["cyc.purnima"];
+    else if (P.event === "amavasya") sel = ["cyc.amavasya"];
+    else if (P.event === "combust") {
+      if (!s.length) why.push("combustion needs a graha — which one?");
+      else if (s[0] === "Sūrya")
+        why.push("Sūrya cannot be combust by itself; name the graha that is.");
+      else if (["Rāhu", "Ketu"].indexOf(s[0]) >= 0)
+        why.push("the nodes have no combustion in this build — they are not bodies with an elongation from Sūrya in the sense this uses.");
+      else sel = ["cyc.combust." + s[0]];
+    }
+    else if (P.event === "station") {
+      if (!s.length) why.push("stations need a graha — which one?");
+      else if (["Sūrya", "Candra"].indexOf(s[0]) >= 0)
+        why.push("Sūrya and Candra never turn retrograde, so they have no stations.");
+      else if (["Rāhu", "Ketu"].indexOf(s[0]) >= 0)
+        why.push("the nodes are always retrograde in the mean reckoning this uses, so they have no stations.");
+      else sel = ["cyc.station." + s[0]];
+    }
+    else if (P.event === "inferior" || P.event === "superior") {
+      var inner = s.filter(function (q) { return q === "Budha" || q === "Śukra"; });
+      if (!inner.length)
+        why.push("only Budha and Śukra have inferior and superior conjunctions — they are the ones that pass between us and Sūrya.");
+      else sel = ["cyc." + P.event + "." + inner[0]];
+    }
+    else if (P.event === "conj" || P.event === "opp") {
+      if (s.length < 2) why.push("a " + (P.event === "conj" ? "conjunction" : "opposition") +
+        " needs two grahas — only " + (s.length ? "one was" : "none were") + " named.");
+      else if (["Rāhu", "Ketu"].indexOf(s[0]) >= 0 || ["Rāhu", "Ketu"].indexOf(s[1]) >= 0)
+        why.push("the node pairs are not published as cycles in this build.");
+      else {
+        var id = pairId(s[0], s[1], P.event === "conj" ? "conj" : "opp");
+        if (id) sel = [id];
+        else why.push("that pair is not published as a cycle.");
+      }
+    }
+    /* NO EVENT NAMED, BUT A PATTERN ASKED FOR.
+
+       "the mutual position of Sūrya and Śukra over 200 years as an orbit
+       pattern" names two grahas, a long span and a figure, and no event at
+       all — and it is perfectly clear what it means. The recurring
+       configuration two bodies make is their conjunction, and that is what a
+       pattern over centuries is a pattern OF. So it is read that way.
+
+       It is read that way OUT LOUD. An inference the reader did not state is
+       exactly the kind of thing that should not happen silently, so the note
+       says what was assumed and the readback shows it. Without the long span
+       or the figure, two grahas still mean what they plainly mean: where they
+       are now, and the angle between them. */
+    if (!sel.length && !why.length && s.length >= 2 && !P.event &&
+        (P.figure === "rose" || (P.spanDays && P.spanDays > 365 * 2))) {
+      var cid = pairId(s[0], s[1], "conj");
+      if (cid) {
+        sel = [cid];
+        note = "no event was named, so this is read as the conjunctions of " +
+               s[0] + " and " + s[1] + " — the configuration a pattern over " +
+               "that long is a pattern of.";
+      }
+    }
+    /* no event named: the figure, or the subjects alone, decide */
+    if (!sel.length && !why.length) {
+      if (P.figure === "angle" && s.length >= 2)
+        sel = ["sky.lon." + s[0], "sky.lon." + s[1]];
+      else if (P.figure === "trace" && s.length)
+        sel = s.map(function (q) { return "tr.track." + q; }).slice(0, 2);
+      else if (P.figure === "almanac") sel = ["day.almanac"];
+      else if (P.figure === "web") sel = ["rel.drishti"];
+      else if (P.figure === "gears") sel = ["dasha.gears"];
+      else if (P.figure === "timeline") sel = ["dasha.maha"];
+      else if (P.figure === "heat") sel = ["av.grid"];
+      else if (P.figure === "bars") sel = ["bala.total_rupa"];
+      else if (P.figure === "kundliN" || P.figure === "kundliS") sel = ["chart.d1"];
+      else if (P.figure === "sudarshana") sel = ["chart.sudarshana"];
+      else if (P.figure === "rings") sel = ["geo.rashis", "geo.naks"];
+      else if (P.figure === "fiveLimbs") sel = ["pan.fiveLimbs"];
+      else if (P.figure === "horas") sel = ["pan.horas"];
+      else if (P.figure === "choghadiya") sel = ["pan.choghadiya"];
+      else if (P.figure === "tara") sel = ["pan.tara"];
+      else if (P.figure === "zoom" && s.length) sel = ["sky.lon." + s[0], "geo.d60"];
+      else if (s.length === 1) sel = ["sky.now." + s[0]];
+      else if (s.length >= 2) sel = s.slice(0, 4).map(function (q) { return "sky.now." + q; });
+    }
+    /* a figure named explicitly becomes a pinned composer, when it can draw
+       what was selected — and when it cannot, that is said */
+    if (P.figure && ["rose", "angle", "web", "rings", "bars", "kundliN",
+                     "kundliS", "timeline", "gears", "trace", "heat",
+                     "sudarshana", "zoom", "almanac"].indexOf(P.figure) >= 0)
+      force = P.figure;
+    /* a cycle set only ever draws as the orbit pattern, whatever else was
+       asked for — saying so is better than pinning a composer that will not
+       score and silently falling back */
+    if (sel.length && sel[0].indexOf("cyc.") === 0) {
+      if (force && force !== "rose") {
+        var clash = "a long run of events draws as the orbit pattern; " +
+                    P.figureSay + " cannot take one.";
+        note = note ? (note + "  " + clash) : clash;
+      }
+      force = "rose";
+    }
+    return { sel: sel, force: force, why: why, note: note };
+  }
+
+  /* ---- the whole thing ---------------------------------------------------- */
+  function understand(text) {
+    var P = parse(text);
+    var S = toSelection(P);
+    var seconds = P.manner.slow ? 20 : (P.manner.fast ? 8 : 14);
+    var format = P.manner.square ? "square" : (P.manner.wide ? "wide" : "reel");
+    var pal = P.manner.light ? "parchment" : (P.manner.dark ? "eclipse" : "midnight");
+    /* a span was asked for, or the event implies one worth seeing */
+    var span = P.spanDays;
+    if (!span && S.sel.length && S.sel[0].indexOf("cyc.") === 0)
+      span = Math.round(365.2564 * 40);
+    return {
+      parse: P, sel: S.sel, force: S.force, why: S.why, note: S.note,
+      spanDays: span, seconds: seconds, format: format, pal: pal,
+      titles: P.manner.notitle ? false : true,
+      bleed: !!P.manner.bleed,
+      ok: S.sel.length > 0,
+      headline: headlineFor(P, S),
+      subline: sublineFor(P)
+    };
+  }
+  function headlineFor(P, S) {
+    var s = P.subjects;
+    if (P.event === "purnima") return "Every full Moon";
+    if (P.event === "amavasya") return "Every new Moon";
+    if (P.event === "combust" && s.length) return s[0] + " under the beams";
+    if (P.event === "station" && s.length) return s[0] + " turning";
+    if ((P.event === "inferior" || P.event === "superior") && s.length)
+      return s[0] + " " + (P.event === "inferior" ? "between us and Sūrya"
+                                                  : "behind Sūrya");
+    if (P.event === "conj" && s.length >= 2) return s[0] + " meets " + s[1];
+    if (P.event === "opp" && s.length >= 2) return s[0] + " faces " + s[1];
+    if (s.length === 1) return s[0];
+    if (s.length >= 2) return s.slice(0, 3).join("  ·  ");
+    return P.figureSay ? P.figureSay.charAt(0).toUpperCase() + P.figureSay.slice(1)
+                       : "The sky";
+  }
+  function sublineFor(P) {
+    var bits = [];
+    if (P.spanDays) {
+      var y = P.spanDays / 365.2564;
+      bits.push(y >= 1.5 ? (Math.round(y) + " years") : (Math.round(P.spanDays) + " days"));
+    }
+    bits.push("{date}  ·  {place}");
+    return bits.join("  ·  ");
+  }
+
+  /* ---- building a reel from it --------------------------------------------
+     A title scene and a figure scene. Two is the shortest sequence that reads
+     as a made thing rather than as a chart someone exported, and everything
+     in it is an ordinary layer the user can then take apart. */
+  function toReel(U) {
+    var M = window.DPModel;
+    if (!M) return null;
+    var d = M.doc({ name: U.headline, format: U.format, pal: U.pal,
+                    grade: { bright: 1.02, contrast: 1.05, sat: 1.04, hue: 0,
+                             vignette: 0.30, grain: 0.08 },
+                    scenes: [] });
+    d.scenes = [];
+    var titleLen = Math.max(2.5, U.seconds * 0.26);
+    var mainLen = Math.max(4, U.seconds - titleLen);
+
+    if (U.titles) {
+      var s1 = M.scene({ name: "Title", seconds: titleLen,
+        bg: { style: "radial", stars: true },
+        trans: { k: "zoomBlur", seconds: 0.6 } });
+      var glow = M.layer({ kind: "wash", shape: "disc", col: "custom",
+        hex: "#2a3570", t0: 0, t1: titleLen,
+        base: { x: 10, y: 24, w: 80, h: 44, opacity: 0.5, blur: 40 } });
+      M.applyIdle(glow, s1, "pulse", 1.4, 1);
+      s1.layers.push(glow);
+      var h = M.layer({ kind: "text", text: U.headline, size: 0.072, lines: 2,
+        col: "gold", weight: 800, tracking: 0.04, animator: "charRise",
+        animSeconds: 1.3, t0: 0.15, t1: titleLen,
+        base: { x: 8, y: 36, w: 84, h: 16 } });
+      s1.layers.push(h);
+      var rule = M.layer({ kind: "rule", shape: "line", col: "gold",
+        t0: 0.6, t1: titleLen, base: { x: 40, y: 56, w: 20, h: 0.3 } });
+      M.applyEntry(rule, s1, "unroll", 0.8);
+      s1.layers.push(rule);
+      var sub = M.layer({ kind: "text", text: U.subline, size: 0.028, lines: 2,
+        col: "dim", weight: 500, animator: "wordFade", animSeconds: 1.2,
+        t0: 0.9, t1: titleLen, base: { x: 10, y: 60, w: 80, h: 10 } });
+      s1.layers.push(sub);
+      M.setKey(s1.camera.tracks.zoom, 0, 1.1, "inOut");
+      M.setKey(s1.camera.tracks.zoom, titleLen, 1, "inOut");
+      d.scenes.push(s1);
+    }
+
+    var s2 = M.scene({ name: "The figure", seconds: mainLen,
+      bg: { style: "gradient", stars: true } });
+    var box = U.bleed ? { x: 0, y: 0, w: 100, h: 100 }
+                      : { x: 4, y: 12, w: 92, h: 58 };
+    var v = M.layer({ kind: "view", sel: U.sel.slice(), force: U.force,
+      t0: 0, t1: mainLen,
+      base: { x: box.x, y: box.y, w: box.w, h: box.h } });
+    /* the figure draws itself: the composer's own playhead is stretched over
+       most of the scene, which for a cycle set means the pattern accumulates
+       in front of the viewer rather than appearing complete */
+    M.applyEntry(v, s2, "draw", mainLen * 0.82);
+    s2.layers.push(v);
+    if (U.titles && !U.bleed) {
+      var band = M.layer({ kind: "band", text: U.headline, sub: U.subline,
+        col: "gold", animator: "wordFade", animSeconds: 1,
+        t0: 0.6, t1: mainLen, base: { x: 8, y: 74, w: 84, h: 11 } });
+      M.applyEntry(band, s2, "rise", 0.8);
+      s2.layers.push(band);
+    }
+    s2.layers.push(M.layer({ kind: "stamp", text: "{date}  ·  {place}",
+      size: 0.018, col: "dim", t0: 0.3, t1: mainLen,
+      base: { x: 8, y: 93, w: 84, h: 4 } }));
+    d.scenes.push(s2);
+    if (!d.scenes.length) d.scenes.push(M.scene({ name: "Scene 1" }));
+    return d;
+  }
+
+  /* ---- the recipes ---------------------------------------------------------
+     Generated from the same vocabulary the parser reads, so a recipe is
+     always a sentence that parses. Each is produced with its own span, and
+     the groups are ordered so that the first screenful is the interesting
+     part rather than the alphabetical part. */
+  function recipes() {
+    var out = [];
+    function add(group, text) { out.push({ group: group, text: text }); }
+    var inner = ["Budha", "Śukra"];
+    var seven = ["Sūrya", "Candra", "Maṅgala", "Budha", "Guru", "Śukra", "Śani"];
+
+    /* the patterns people come for */
+    add("Patterns", "animate the inferior conjunctions of Śukra over 40 years as an orbit pattern");
+    add("Patterns", "show every full Moon over the next 19 years as an orbit pattern");
+    add("Patterns", "every new Moon for 19 years as a spiral");
+    add("Patterns", "the inferior conjunctions of Budha over 25 years as an orbit pattern");
+    add("Patterns", "Guru and Śani conjunctions over 200 years as an orbit pattern");
+    add("Patterns", "Maṅgala stations over 80 years as an orbit pattern");
+
+    /* Every pair, both events, several spans, several figures. This is where
+       the bulk is, and none of it is filler: each one resolves to a different
+       node or a different span, so each is a different computation rather
+       than the same picture with a different caption. */
+    var SPANS = [["50 years", 50], ["100 years", 100], ["200 years", 200]];
+    for (var i = 0; i < seven.length; i++)
+      for (var j = i + 1; j < seven.length; j++) {
+        var a = seven[i], b = seven[j];
+        SPANS.forEach(function (sp) {
+          add("Conjunctions", "animate the conjunctions of " + a + " and " + b +
+              " over " + sp[0] + " as an orbit pattern");
+        });
+        add("Oppositions", "show " + a + " opposite " + b +
+            " over 100 years as an orbit pattern");
+        add("Oppositions", "every opposition of " + a + " and " + b +
+            " for 200 years as a spiral");
+        add("Mutual position", "animate the mutual position of " + a + " and " + b);
+        add("Mutual position", "the angle between " + a + " and " + b + " now");
+        add("Mutual position", "animate the mutual position of " + a + " and " + b +
+            " over 200 years as an orbit pattern");
+      }
+    /* combustion and stations for every body that has them, at several spans */
+    ["Candra", "Maṅgala", "Budha", "Guru", "Śukra", "Śani"].forEach(function (sa) {
+      [["20 years", 0], ["50 years", 1], ["100 years", 2]].forEach(function (sp) {
+        add("Combustion", "every time " + sa + " is combust over " + sp[0] +
+            " as an orbit pattern");
+      });
+      add("Combustion", "when is " + sa + " combust over the next 10 years");
+      add("Combustion", "show " + sa + " under the sun's beams for 30 years");
+    });
+    ["Maṅgala", "Budha", "Guru", "Śukra", "Śani"].forEach(function (sa) {
+      [["20 years", 0], ["60 years", 1], ["150 years", 2]].forEach(function (sp) {
+        add("Stations", sa + " stations over " + sp[0] + " as an orbit pattern");
+      });
+      add("Stations", "show " + sa + " retrograde turning points over 20 years");
+      add("Stations", "when does " + sa + " turn vakri over the next 10 years");
+    });
+    inner.forEach(function (sa) {
+      [["20 years", 0], ["40 years", 1], ["120 years", 2]].forEach(function (sp) {
+        add("Inferior and superior", "the inferior conjunctions of " + sa +
+            " over " + sp[0] + " as an orbit pattern");
+        add("Inferior and superior", "the superior conjunctions of " + sa +
+            " over " + sp[0] + " as an orbit pattern");
+      });
+    });
+    /* the syzygies at several spans */
+    [["19 years", 0], ["50 years", 1], ["100 years", 2]].forEach(function (sp) {
+      add("Full and new Moon", "show every full Moon over " + sp[0] +
+          " as an orbit pattern");
+      add("Full and new Moon", "every new Moon for " + sp[0] + " as a spiral");
+    });
+    add("Full and new Moon", "the next 60 Purnimas as an orbit pattern");
+    add("Full and new Moon", "the next 100 new moons as a spiral");
+    /* single bodies over time, several spans */
+    seven.concat(["Rāhu", "Ketu"]).forEach(function (sa) {
+      [["2 years", 0], ["10 years", 1], ["30 years", 2]].forEach(function (sp) {
+        add("Paths", "trace " + sa + " over the next " + sp[0]);
+      });
+      add("Now", "where is " + sa + " now");
+      add("Deep zoom", "zoom into " + sa + " down to the ṣaṣṭyāṃśa");
+    });
+    /* the day and the chart */
+    add("The day", "draw the almanac leaf for today");
+    add("The day", "show today's pañcāṅga as a calendar card");
+    add("The day", "show the five limbs of today");
+    add("The chart", "draw my chart as a North Indian kundli");
+    add("The chart", "draw my chart as a South Indian chart");
+    add("The chart", "show the Sudarśana three charts");
+    add("The chart", "compare the ṣaḍbala strengths as bars");
+    add("The chart", "show the aspect web");
+    add("The chart", "show the daśā gears");
+    add("The chart", "show the daśā periods as a timeline");
+    add("The chart", "show the aṣṭakavarga as a heat grid");
+    add("The rings", "show the rāśi and nakṣatra rings");
+    add("The rings", "show the zodiac wheel");
+    /* manner, demonstrated */
+    add("Manner", "animate the conjunctions of Guru and Śani over 200 years slowly, full bleed, on dark");
+    add("Manner", "show every full Moon for 19 years as a square, no title");
+    add("Manner", "trace Maṅgala over 5 years quickly as a landscape");
+    add("Manner", "the inferior conjunctions of Śukra over 40 years on parchment");
+    add("Manner", "every new Moon for 19 years as a reel, slowly, with a title");
+    return out;
+  }
+
+  window.SPIntent = {
+    parse: parse, toSelection: toSelection, understand: understand,
+    toReel: toReel, recipes: recipes, fold: fold,
+    ALIAS: ALIAS, EVENTS: EVENTS, FIGURES: FIGURES, MANNER: MANNER
+  };
+})();
+
+/* ===== Saying what you want — the panel ===================================
+
+   One module, two hosts. On Director Pro a sentence becomes a whole reel; on
+   Studio Pro it becomes a selection and a pinned view. The difference is two
+   lines at the end, because the parse is the same question either way.
+
+   WHAT THE PANEL IS FOR, BEYOND CONVENIENCE. It is the fastest way to learn
+   the vocabulary. A reader types something, sees phrase by phrase what was
+   understood and what was not, and adjusts — which teaches the grammar in the
+   place it is used rather than in a list somebody has to go and read. That is
+   why the readback is not a status line but the main thing on the panel, and
+   why an unrecognised word is shown as the word rather than as "parse error".
+
+   The suggestions are the same grammar run backwards: every one of them is a
+   sentence this parser really reads, generated from the registry, so they
+   cannot drift out of step with what is understood. Typing filters them, so
+   the list doubles as a search over everything the page can be asked for. */
+
+(function () {
+  "use strict";
+
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+
+  var HOST = null, MODE = null, LAST = null;
+
+  function readback(U) {
+    var box = $("si-read");
+    if (!box) return;
+    box.innerHTML = "";
+    if (!U) return;
+    var P = U.parse;
+
+    if (P.understood.length) {
+      var u = el("p", "siread");
+      u.appendChild(el("b", null, "Understood: "));
+      P.understood.forEach(function (q, i) {
+        if (i) u.appendChild(document.createTextNode("  ·  "));
+        u.appendChild(el("span", "sigood", q));
+      });
+      box.appendChild(u);
+    } else {
+      box.appendChild(el("p", "siread",
+        "Nothing in that was recognised. Try one of the suggestions below — " +
+        "they are all sentences this understands."));
+    }
+    if (P.ignored.length) {
+      var g = el("p", "siread");
+      g.appendChild(el("b", null, "Not placed: "));
+      P.ignored.slice(0, 8).forEach(function (q, i) {
+        if (i) g.appendChild(document.createTextNode(", "));
+        g.appendChild(el("span", "sibad", q));
+      });
+      g.appendChild(document.createTextNode(
+        " — these were skipped, not guessed at."));
+      box.appendChild(g);
+    }
+    U.why.forEach(function (w) {
+      box.appendChild(el("p", "siwhy", w));
+    });
+    if (U.note) box.appendChild(el("p", "siwhy", U.note));
+    if (U.ok) {
+      var s = el("p", "siread");
+      s.appendChild(el("b", null, "Will draw: "));
+      s.appendChild(document.createTextNode(
+        U.sel.map(function (id) {
+          var n = window.SPNodes.byId(id);
+          return n ? n.label : id;
+        }).join(" + ") +
+        (U.force ? "  as " + U.force : "") +
+        (U.spanDays ? "  over " + (U.spanDays >= 500
+          ? (U.spanDays / 365.2564).toFixed(0) + " years"
+          : Math.round(U.spanDays) + " days") : "")));
+      box.appendChild(s);
+    }
+  }
+
+  function apply(U) {
+    if (!U || !U.ok) return false;
+    if (U.spanDays) {
+      var sp = $(MODE === "dp" ? "dp-span" : "sp-span");
+      if (sp) {
+        var want = String(Math.round(U.spanDays));
+        var has = false;
+        [].forEach.call(sp.options, function (o) { if (o.value === want) has = true; });
+        if (!has) {
+          var o2 = el("option", null, U.spanDays >= 500
+            ? (U.spanDays / 365.2564).toFixed(0) + " years"
+            : Math.round(U.spanDays) + " days");
+          o2.value = want;
+          sp.appendChild(o2);
+        }
+        sp.value = want;
+        sp.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    }
+    if (MODE === "dp") {
+      var d = window.SPIntent.toReel(U);
+      if (!d) return false;
+      window.__dp.mark();
+      window.__dp.setDoc(d);
+      return true;
+    }
+    /* Studio Pro: the selection and the pinned view */
+    if (window.__spUI) {
+      window.__spUI.select(U.sel);
+      if (U.force) {
+        var btns = document.querySelectorAll("#sp-views .spview");
+        for (var i = 0; i < btns.length; i++) {
+          if (btns[i].getAttribute("data-key") === U.force) { btns[i].click(); break; }
+        }
+      }
+      return true;
+    }
+    return false;
+  }
+
+  function run() {
+    var inp = $("si-text");
+    if (!inp) return;
+    var U = window.SPIntent.understand(inp.value || "");
+    LAST = U;
+    readback(U);
+    if (!U.ok) { flash("Nothing to draw from that yet — see the readback."); return; }
+    if (apply(U)) flash(MODE === "dp"
+      ? "Built a reel. Everything in it is an ordinary layer you can now edit."
+      : "Selected. The stage is drawing it.");
+  }
+  function flash(msg) {
+    var f = $(MODE === "dp" ? "dp-flash" : "sp-flash");
+    if (!f) return;
+    f.textContent = msg; f.hidden = false;
+    clearTimeout(flash._t);
+    flash._t = setTimeout(function () { f.hidden = true; }, 3600);
+  }
+
+  function suggestions(filter) {
+    var host = $("si-list");
+    if (!host) return;
+    host.innerHTML = "";
+    var all = window.SPIntent.recipes();
+    var f = window.SPIntent.fold(filter || "");
+    var terms = f ? f.split(/\s+/).filter(Boolean) : [];
+    var hits = all.filter(function (r) {
+      if (!terms.length) return true;
+      var hay = window.SPIntent.fold(r.text + " " + r.group);
+      return terms.every(function (t) { return hay.indexOf(t) >= 0; });
+    });
+    var stat = $("si-stat");
+    if (stat) stat.textContent = hits.length + " of " + all.length +
+      " things you can ask for";
+    var groups = {};
+    hits.slice(0, 160).forEach(function (r) {
+      (groups[r.group] = groups[r.group] || []).push(r);
+    });
+    Object.keys(groups).forEach(function (g) {
+      var sec = el("div", "sigroup");
+      sec.appendChild(el("h5", null, g));
+      groups[g].forEach(function (r) {
+        var b = el("button", "sirecipe", r.text);
+        b.type = "button";
+        b.addEventListener("click", function () {
+          var inp = $("si-text");
+          if (inp) inp.value = r.text;
+          run();
+        });
+        sec.appendChild(b);
+      });
+      host.appendChild(sec);
+    });
+    if (!hits.length)
+      host.appendChild(el("p", "siread",
+        "Nothing matches that. The vocabulary is the nine grahas, the events " +
+        "(conjunction, opposition, full and new Moon, combustion, stations), " +
+        "a span of time, and a figure to draw it as."));
+  }
+
+  function mount(mode) {
+    MODE = mode;
+    var inp = $("si-text");
+    if (!inp) return;
+    inp.addEventListener("input", function () {
+      /* the readback updates as you type — the point is to see the grammar
+         working, not to find out after pressing a button */
+      var U = window.SPIntent.understand(inp.value || "");
+      LAST = U;
+      readback(U);
+      suggestions(inp.value);
+    });
+    inp.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") { e.preventDefault(); run(); }
+    });
+    var go = $("si-go");
+    if (go) go.addEventListener("click", run);
+    var ex = $("si-shuffle");
+    if (ex) ex.addEventListener("click", function () {
+      var all = window.SPIntent.recipes();
+      var r = all[Math.floor(Math.random() * all.length)];
+      inp.value = r.text;
+      run();
+      suggestions("");
+    });
+    suggestions("");
+    readback(null);
+  }
+
+  window.SPIntentUI = { mount: mount, run: run, last: function () { return LAST; },
+                        apply: apply, suggestions: suggestions };
+
+  function boot() {
+    if (!$("si-text")) return;
+    if (window.__dp) mount("dp");
+    else if (window.__spUI) mount("sp");
+    else setTimeout(boot, 120);
+  }
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", function () { setTimeout(boot, 60); });
+  else setTimeout(boot, 60);
 })();
 
 /* ===== Studio Pro — Director mode =========================================
@@ -5595,6 +7054,9 @@
         ((FORCE ? FORCE === o.key : (LAST && LAST.composer === o.key)) ? " on" : ""),
         o.label);
       b.type = "button"; b.title = o.blurb;
+      /* the key, so something other than a human finger can pin a view — the
+         sentence parser pins one when a figure was named */
+      b.setAttribute("data-key", o.key);
       b.addEventListener("click", function () {
         FORCE = (FORCE === o.key) ? null : o.key; draw(); });
       host.appendChild(b);

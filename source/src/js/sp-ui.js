@@ -305,6 +305,9 @@
         ((FORCE ? FORCE === o.key : (LAST && LAST.composer === o.key)) ? " on" : ""),
         o.label);
       b.type = "button"; b.title = o.blurb;
+      /* the key, so something other than a human finger can pin a view — the
+         sentence parser pins one when a figure was named */
+      b.setAttribute("data-key", o.key);
       b.addEventListener("click", function () {
         FORCE = (FORCE === o.key) ? null : o.key; draw(); });
       host.appendChild(b);

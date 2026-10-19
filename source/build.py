@@ -346,6 +346,9 @@ def build_shared():
         "studio-pro.js": brandify(read(SRC, "js", "sp-nodes.js") + "\n" +
                                   read(SRC, "js", "sp-almanac.js") + "\n" +
                                   read(SRC, "js", "sp-compose.js") + "\n" +
+                                  read(SRC, "js", "sp-cycles.js") + "\n" +
+                                  read(SRC, "js", "sp-intent.js") + "\n" +
+                                  read(SRC, "js", "sp-intentui.js") + "\n" +
                                   read(SRC, "js", "sp-director.js") + "\n" +
                                   read(SRC, "js", "sp-dirui.js") + "\n" +
                                   read(SRC, "js", "sp-ui.js")),
@@ -359,6 +362,9 @@ def build_shared():
         "director-pro.js": brandify(read(SRC, "js", "sp-nodes.js") + "\n" +
                                     read(SRC, "js", "sp-almanac.js") + "\n" +
                                     read(SRC, "js", "sp-compose.js") + "\n" +
+                                    read(SRC, "js", "sp-cycles.js") + "\n" +
+                                    read(SRC, "js", "sp-intent.js") + "\n" +
+                                    read(SRC, "js", "sp-intentui.js") + "\n" +
                                     read(SRC, "js", "sp-director.js") + "\n" +
                                     read(SRC, "js", "dp-model.js") + "\n" +
                                     read(SRC, "js", "dp-render.js") + "\n" +

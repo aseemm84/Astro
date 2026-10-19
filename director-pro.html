@@ -1236,7 +1236,59 @@ label.dpbtn{display:inline-block}
   .dpname,.dptokb,.dptname,label.dpbtn{min-height:38px}
   .dptokb{padding:8px 10px;margin-bottom:3px}
 }
+
+/* ===== Say what you want ================================================= */
+.sipanel{border:1px solid var(--line);border-radius:12px;background:#fff;
+  padding:12px 14px;margin:10px 0 12px}
+.sihead h2{margin:0 0 4px;font-size:1.05rem;border:none;padding:0}
+.sihead p{margin:0 0 9px;font-size:.78rem;color:var(--muted);line-height:1.5;
+  max-width:92ch}
+.sirow{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+#si-text{flex:1;min-width:230px;font:inherit;font-size:.9rem;padding:9px 12px;
+  border:1px solid var(--line);border-radius:9px;background:var(--soft);
+  color:var(--ink)}
+#si-text:focus{outline:2px solid var(--gold);outline-offset:1px;background:#fff}
+.siread-box{margin:8px 0 0;min-height:1px}
+.siread{margin:0 0 4px;font-size:.78rem;color:var(--muted);line-height:1.55}
+.sigood{color:#2f7d55;font-weight:600}
+.sibad{color:#9a3c2a;font-weight:600}
+.siwhy{margin:3px 0;font-size:.78rem;color:#8a5a12;line-height:1.5;
+  border-left:3px solid var(--gold);padding-left:8px;background:#fdf8ea;
+  border-radius:0 5px 5px 0}
+.silist{max-height:230px;overflow-y:auto;margin:6px 0 0;
+  border-top:1px solid var(--line);padding-top:7px}
+.sigroup h5{margin:7px 0 3px;font-size:.67rem;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--gold)}
+.sirecipe{display:block;width:100%;text-align:left;font:inherit;font-size:.78rem;
+  padding:5px 9px;margin:0 0 3px;border:1px solid transparent;border-radius:6px;
+  background:var(--soft);color:var(--ink);cursor:pointer;line-height:1.4}
+.sirecipe:hover{border-color:var(--gold);background:#fdf8ea}
+@media (pointer:coarse){
+  #si-text,.sirow button{min-height:44px}
+  .sirecipe{min-height:40px}
+}
+.sirecipe,.sirow button{touch-action:manipulation}
 </style></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Director Pro</h1><p class="sub">Scenes, layers and a keyframe on every property. The same composers, none of the decisions, and an export that posts without conversion.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="director-pro.html" class="active">Director Pro</a><a href="kundli.html">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main><p class="dpnote" id="dp-mode">Loading what this browser knows…</p>
+
+<section class="sipanel" aria-label="Describe what you want">
+  <div class="sihead">
+    <h2 id="say">Say what you want</h2>
+    <p>Type it in words. This is a grammar over this site's own vocabulary —
+       the nine grahas by any spelling, the events, a span of time, a figure —
+       not a language model, so it never invents a quantity that does not
+       exist, and it tells you phrase by phrase what it understood and what it
+       could not place.</p>
+  </div>
+  <div class="sirow">
+    <input id="si-text" type="text" autocomplete="off"
+      placeholder="animate the inferior conjunctions of Śukra over 40 years as an orbit pattern">
+    <button type="button" id="si-go" class="dpbtn primary">Make it</button>
+    <button type="button" id="si-shuffle" class="dpbtn">Surprise me</button>
+  </div>
+  <div id="si-read" class="siread-box"></div>
+  <p class="dpstat" id="si-stat"></p>
+  <div id="si-list" class="silist"></div>
+</section>
 
 <div class="dptopbar" id="dp-top"></div>
 

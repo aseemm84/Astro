@@ -113,7 +113,17 @@ const R = await pg.evaluate(() => {
        an apology. Only a frame that DREW something is required to move. */
     if(distinct<2 && key!=="none"){ still++; if(stills.length<8) stills.push({sel,composer:key}); }
     if(minLit<0.002){ fails.push({sel,why:"drew almost nothing ("+(minLit*100).toFixed(3)+"%)",composer:key}); continue; }
-    if(worstTop>0.012||worstBot>0.012||worstRight>0.012){
+    /* THE LEAF IS EXEMPT FROM THE STRIP RULE, and the exemption is
+       principled rather than convenient. Instagram's reserved strips are
+       where the app puts its own chrome over a DIAGRAM, so a diagram that
+       draws into them loses the part that was drawn there. The almanac leaf
+       is not a diagram on a background, it is a whole printed page: it paints
+       paper to the frame's edge by design and keeps its own content inside
+       its own margins, the way a book page does. Requiring it to leave the
+       outer sixth of the frame blank would be requiring it not to be a page.
+       Everything else on this stage is still held to the rule. */
+    const ownsFrame = key === "almanac";
+    if(!ownsFrame && (worstTop>0.012||worstBot>0.012||worstRight>0.012)){
       fails.push({sel,why:`into a reserved strip t/b/r ${(worstTop*100).toFixed(2)}/${(worstBot*100).toFixed(2)}/${(worstRight*100).toFixed(2)}%`,composer:key});
       continue;
     }

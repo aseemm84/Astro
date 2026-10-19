@@ -647,8 +647,13 @@
         txt(r.k, st.x + st.w * 0.24, y + hgt * 0.45, S.U * 0.019, P.ink, "right", 600);
         var c = S.ctx;
         c.save();
+        /* The TRACK draws in too, not just the bar. A scalar that is exactly
+           zero — Sūrya's ecliptic latitude is zero by definition — gives a
+           bar of no length, and with a static track the whole frame then sat
+           still through the entire reel. The sampler found it. */
+        var sweep = grow(p, i, n);
         c.fillStyle = P.line; c.globalAlpha = 0.5;
-        c.fillRect(x0, y + hgt * 0.22, bw, hgt * 0.46);
+        c.fillRect(x0, y + hgt * 0.22, bw * sweep, hgt * 0.46);
         c.fillStyle = r.v < 0 ? P.mal : P.gold; c.globalAlpha = 0.9;
         c.fillRect(x0, y + hgt * 0.22, bw * frac, hgt * 0.46);
         c.restore();
@@ -1203,6 +1208,140 @@
                             { foot: S.handle });
     });
 
+  /* --- the orbit pattern ------------------------------------------------- *
+
+     A set of events, each with a time and a place in the circle, drawn so
+     that ANGLE CARRIES WHERE and RADIUS CARRIES WHEN. The first event sits on
+     the outer ring and each later one a little further in, so the figure
+     spirals inward; chords join consecutive events.
+
+     The inward spiral is not decoration, it is the whole reason the picture
+     works. Drawn at a fixed radius, consecutive events twenty-nine degrees
+     apart simply retrace the same circle and the figure is a circle — which
+     is what an earlier version of this drew, and it told the reader nothing.
+     Shrinking the radius separates the turns, and the shape the chords make
+     IS the cycle: five arms for Śukra's conjunctions, a near-closed ring at
+     two hundred and thirty-five for the new Moon.
+
+     Both numbers are printed, because they are different questions. The arms
+     are what the eye counts. The closure is after how many events the
+     longitude comes back to where it began, which is what a calendar is built
+     from. For Śukra those are five and ten, and reporting either alone would
+     mislead whichever reader wanted the other. */
+  composer("rose", "The orbit pattern",
+    "a long run of one event, each plotted where in the circle it falls, " +
+    "spiralling inward so the figure is the cycle",
+    function (bag) {
+      return (count(bag, "cycleset") === 1 && all(bag) === 1) ? 3 : -1;
+    },
+    function (bag, p, st) {
+      var P = pal(), V = bag.cycleset[0].v;
+      var ev = V.events, n = ev.length;
+      var r = Math.min(st.w * 0.44, st.h * 0.40);
+      var cy = st.y + st.h * 0.42;
+      var c = S.ctx;
+
+      ringTicks(st.cx, cy, r, 27, 0.30);
+      ringTicks(st.cx, cy, r * 0.965, 12, 0.45, 0.04);
+
+      function rad(i) { return r * (1 - 0.72 * (n > 1 ? i / (n - 1) : 0)); }
+      function pt(i) {
+        var a = (norm(ev[i].lon) - 90) * R2, q = rad(i);
+        return { x: st.cx + Math.cos(a) * q, y: cy + Math.sin(a) * q };
+      }
+      /* How much is drawn by now. The reveal IS the animation, because the
+         pattern only becomes a pattern as the events accumulate.
+
+         CONTINUOUS, not a whole number of events. Rounding meant a set of two
+         or three never changed at all — max(2, round(n·p)) is 2 at every
+         playhead when n is 2 — so the composer drew four identical frames and
+         called it an animation. The sampler caught it on a pair whose second
+         node had not resolved. The chord to the next event is now drawn
+         partially, with a bright head travelling along it, which moves for
+         any n at all. */
+      var prog = Math.min(1, p / 0.88) * (n - 1);
+      var full = Math.min(n - 1, Math.floor(prog));
+      var frac = Math.min(1, prog - full);
+      var shown = full + 1;
+
+      c.save();
+      c.lineWidth = Math.max(1, S.U * 0.0016);
+      c.strokeStyle = P.gold;
+      c.globalAlpha = 0.55;
+      c.beginPath();
+      for (var i = 0; i < shown; i++) {
+        var q = pt(i);
+        if (i) c.lineTo(q.x, q.y); else c.moveTo(q.x, q.y);
+      }
+      if (full < n - 1 && frac > 0) {
+        var qa = pt(full), qb = pt(full + 1);
+        c.lineTo(qa.x + (qb.x - qa.x) * frac, qa.y + (qb.y - qa.y) * frac);
+      }
+      c.stroke();
+      c.restore();
+
+      /* the spokes: a faint line from the centre to each event, which is what
+         makes the arms readable as directions rather than as a tangle */
+      c.save();
+      c.strokeStyle = P.line; c.globalAlpha = 0.30;
+      c.lineWidth = Math.max(1, S.U * 0.0009);
+      for (var k = 0; k < shown; k++) {
+        var a2 = (norm(ev[k].lon) - 90) * R2;
+        c.beginPath();
+        c.moveTo(st.cx, cy);
+        c.lineTo(st.cx + Math.cos(a2) * r, cy + Math.sin(a2) * r);
+        c.stroke();
+      }
+      c.restore();
+
+      for (var j = 0; j < shown; j++) {
+        var q2 = pt(j);
+        var fresh = j > shown - 3;
+        c.fillStyle = fresh ? P.ink : P.gold;
+        c.globalAlpha = fresh ? 1 : 0.85;
+        c.beginPath();
+        c.arc(q2.x, q2.y, S.U * (fresh ? 0.0065 : 0.0040), 0, Math.PI * 2);
+        c.fill();
+      }
+      /* the travelling head, which is what moves when there are only a
+         handful of events to reveal */
+      if (full < n - 1) {
+        var ha = pt(full), hb = pt(full + 1);
+        c.fillStyle = P.ink;
+        c.beginPath();
+        c.arc(ha.x + (hb.x - ha.x) * frac, ha.y + (hb.y - ha.y) * frac,
+              S.U * 0.0075, 0, Math.PI * 2);
+        c.fill();
+      }
+      c.globalAlpha = 1;
+
+      /* The label goes ABOVE the ring, not in the middle of it. The spiral
+         converges on the centre, so that is precisely where the last and most
+         interesting events are — and an earlier version printed the title
+         across them. A figure's own name must not be drawn over the figure. */
+      txtFit(V.label, st.cx, cy - r * 1.14, S.U * 0.028, P.ink, "center", 700,
+             st.w * 0.9);
+      txt(Math.min(n, shown) + " of " + n, st.cx, cy - r * 1.14 + S.U * 0.034,
+          S.U * 0.019, P.gold, "center", 600);
+
+      var y = cy + r * 1.22;
+      txtFit(n + " " + V.what + " over " + V.spanYears.toFixed(1) + " years   ·   " +
+             "one every " + V.meanDays.toFixed(2) + " days",
+             st.cx, y, S.U * 0.021, P.dim, "center", 500, st.w * 0.95);
+      txtFit(V.arms ? ("the eye counts " + V.arms + " arm" + (V.arms === 1 ? "" : "s"))
+                    : "these do not cluster — they fall right round the circle",
+             st.cx, y + S.U * 0.036, S.U * 0.022,
+             V.arms ? P.ink : P.dim, "center", 600, st.w * 0.95);
+      if (V.closure)
+        txtFit("closest return after " + V.closure.n + " — " +
+               V.closure.years.toFixed(2) + " years, within " +
+               V.closure.err.toFixed(3) + "°",
+               st.cx, y + S.U * 0.070, S.U * 0.021, P.gold, "center", 600, st.w * 0.95);
+      else
+        txtFit("no return inside this span", st.cx, y + S.U * 0.070,
+               S.U * 0.021, P.dim, "center", 500, st.w * 0.95);
+    });
+
   /* --- 12. the catch-all: panels ---------------------------------------- *
      Always scores, so there is no selection that draws nothing. It splits the
      stage and runs the best single-group composer in each panel. */
@@ -1212,8 +1351,14 @@
     function (bag, p, st, ctxData) {
       var P = pal();
       /* one group per kind present, in a stable order */
-      var ORDER = ["lon", "lonset", "lanes", "edges", "sset", "scalar",
-                   "spanset", "span", "series", "grid"];
+      /* cycleset belongs here too. Leaving it out did not just lose the
+         picture — it lost it SILENTLY, which is the one thing this page
+         promises never to do: a selection pairing a chart with a long run of
+         events drew the chart and dropped the events with nothing on the
+         frame to say so. The sampler found it as four identical frames,
+         because what remained had no animation of its own. */
+      var ORDER = ["cycleset", "lon", "lonset", "lanes", "edges", "sset",
+                   "scalar", "spanset", "span", "series", "grid"];
       var groups = [];
       ORDER.forEach(function (k) {
         if ((bag[k] || []).length) {

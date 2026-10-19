@@ -59,7 +59,10 @@ const R = await pg.evaluate(() => {
     if(Array.isArray(v)){ v.slice(0,40).forEach((x,i)=>walk(x,path+"["+i+"]",depth+1)); return; }
     if(typeof v==="object") for(const k of Object.keys(v)) walk(v[k],path+"."+k,depth+1);
   };
+  /* cycleset is the long-run shape sp-cycles publishes: a set of events,
+     each with a time and a place in the circle. */
   const KINDS={lon:"lon",lonset:"lonset",scalar:"scalar",sset:"sset",lanes:"lanes",
+    cycleset:"cycleset",
                edges:"edges",span:"span",spanset:"spanset",series:"series",grid:"grid",
                houses:"houses",houseset:"houseset",almanac:"almanac"};
   const rows=[], byDom={};
