@@ -724,6 +724,17 @@ roseMeets:   {en:"they draw level {0} times in that span",
 roseYearOf:  {en:"year {0} of {1}", hi:"वर्ष {0} / {1}"},
 roseWhy:     {en:"{0} meetings, so {0} petals", hi:"{0} मिलन, इसलिए {0} पंखुड़ियाँ"},
 heliocentric:{en:"Sun at the centre \u2014 both orbits are the real ones",
-              hi:"केन्द्र में सूर्य \u2014 दोनों कक्षाएँ वास्तविक"}
+              hi:"केन्द्र में सूर्य \u2014 दोनों कक्षाएँ वास्तविक"},
+sunriseAt:   {en:"sunrise {0}", hi:"सूर्योदय {0}"},
+tithiBoth:   {en:"{0} tithi repeated, {1} skipped \u2014 the counter cannot keep step",
+              hi:"{0} तिथि दोहरी, {1} क्षय \u2014 गिनती कदम नहीं मिला पाती"},
+tithiRepeat: {en:"{0} tithi repeated this month \u2014 adhika",
+              hi:"इस मास {0} अधिका तिथि"},
+tithiSkip:   {en:"{0} tithi skipped this month \u2014 k\u1e63aya",
+              hi:"इस मास {0} क्षय तिथि"},
+tithiEven:   {en:"this month the tithis and the days happen to keep step",
+              hi:"इस मास तिथि और दिन कदम मिलाकर चलते हैं"},
+realMoons:   {en:"every Moon drawn from that morning\u2019s own elongation",
+              hi:"हर चन्द्र उसी प्रातः के वास्तविक कोण से"}
 };
 for(var _k8 in MO_PHR8) MO_PHR[_k8]=MO_PHR8[_k8];

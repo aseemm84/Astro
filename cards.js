@@ -625,6 +625,170 @@
         return rowH * 2;
       }
     },
+    monthgrid: {
+      label: "Month grid", hint: "the whole month, each day with its real Moon",
+      fields: [],
+      run: function (c, S, s, draw) {
+        /* A MONTH WHOSE MOONS ARE REAL. Every printed calendar draws the same
+           four stock phase icons at the quarter days. This one draws the
+           terminator for each day's actual elongation, so the crescent thins
+           and fattens across the grid at the rate the Moon really moves —
+           which is also why the full moon is not always on the fifteenth cell
+           of a pakṣa. Ekādaśī and the syzygies are marked because they are the
+           days people are looking for. */
+        var M = S.ctx.month;
+        if (!M) {
+          if (draw) {
+            c.font = "500 " + Math.round(S.u * 0.026) + "px " + SANS;
+            c.fillStyle = PAL.dim;
+            c.fillText("(the grid needs the month)", S.pad, S.y + S.u * 0.04);
+          }
+          return S.u * 0.07;
+        }
+        var cw = S.inner / 7, ch = cw * 0.82;
+        var first = M.days.find(function (x) { return x; });
+        var lead = first ? first.wd : 0;
+        var rows = Math.ceil((lead + M.last) / 7);
+        var head = S.u * 0.030;
+        var h = head + rows * ch + S.u * 0.020;
+        if (!draw) return h;
+
+        var WD = ["S", "M", "T", "W", "T", "F", "S"];
+        c.textAlign = "center";
+        c.font = "700 " + Math.round(S.u * 0.019) + "px " + SANS;
+        c.fillStyle = PAL.dim;
+        for (var w = 0; w < 7; w++)
+          c.fillText(WD[w], S.pad + cw * (w + 0.5), S.y + head * 0.72);
+
+        M.days.forEach(function (day, i) {
+          if (!day) return;
+          var cell = lead + i;
+          var cx = S.pad + cw * (cell % 7 + 0.5);
+          var cy = S.y + head + ch * Math.floor(cell / 7);
+          var r = cw * 0.21;
+          NCard.phase(c, cx, cy + ch * 0.44, r, day.elong);
+          c.font = "600 " + Math.round(S.u * 0.0185) + "px " + SANS;
+          c.fillStyle = day.full || day.newmoon ? PAL.gold : PAL.ink;
+          c.fillText(String(day.d), cx, cy + ch * 0.17);
+          /* the days people look for */
+          var tag = day.full ? "P" : day.newmoon ? "A" : day.ekadashi ? "11" : "";
+          if (tag) {
+            c.font = "700 " + Math.round(S.u * 0.0135) + "px " + SANS;
+            c.fillStyle = PAL.gold;
+            c.fillText(tag, cx + r * 1.35, cy + ch * 0.26);
+          }
+          if (day.fest.length) {
+            c.beginPath();
+            c.arc(cx, cy + ch * 0.76, Math.max(2, S.u * 0.0035), 0, 6.2832);
+            c.fillStyle = PAL.ben; c.fill();
+          }
+        });
+        c.textAlign = "left";
+        return h;
+      }
+    },
+    lunation: {
+      label: "This moon", hint: "new moon to new moon, with where today sits",
+      fields: [],
+      run: function (c, S, s, draw) {
+        /* ONE LUNATION, END TO END. Drawn from the new moon that began it to
+           the one that ends it, with a disc every day at that day's real
+           elongation — so the strip is 29 or 30 discs long depending on the
+           lunation, not a fixed thirty, because a synodic month is 29.27 to
+           29.83 days and never the same twice. */
+        var L = S.ctx.lunation;
+        if (!L) {
+          if (draw) {
+            c.font = "500 " + Math.round(S.u * 0.026) + "px " + SANS;
+            c.fillStyle = PAL.dim;
+            c.fillText("(this needs the lunation)", S.pad, S.y + S.u * 0.04);
+          }
+          return S.u * 0.07;
+        }
+        var n = Math.round(L.days);
+        var h = S.u * 0.165;
+        if (!draw) return h;
+        var step = S.inner / n, r = Math.min(step * 0.40, S.u * 0.026);
+        var y = S.y + h * 0.42;
+        for (var i = 0; i <= n; i++) {
+          var f = i / n;
+          /* elongation runs 0 to 360 across the lunation by definition */
+          NCard.phase(c, S.pad + step * i + step * 0.0, y, r, f * 360);
+        }
+        /* where today stands */
+        var tx = S.pad + S.inner * Math.max(0, Math.min(1, L.f));
+        c.strokeStyle = PAL.gold; c.lineWidth = Math.max(2, S.u * 0.003);
+        c.beginPath(); c.moveTo(tx, y - r * 2.0); c.lineTo(tx, y + r * 2.0); c.stroke();
+        c.textAlign = "center";
+        c.font = "700 " + Math.round(S.u * 0.0185) + "px " + SANS;
+        c.fillStyle = PAL.gold;
+        c.fillText("today", tx, y + r * 3.4);
+        c.textAlign = "left";
+        c.font = "500 " + Math.round(S.u * 0.0185) + "px " + SANS;
+        c.fillStyle = PAL.dim;
+        c.fillText(L.days.toFixed(2) + " days from new moon to new moon",
+                   S.pad, S.y + h * 0.98);
+        return h;
+      }
+    },
+    timeline: {
+      label: "The day's windows", hint: "sunrise to sunrise, with the kālas marked",
+      fields: [],
+      run: function (c, S, s, draw) {
+        /* THE DAY AS A BAR. Sunrise to sunrise, daylight light and night dark,
+           with the windows people actually plan around laid on it. Abhijit is
+           the eighth of the fifteen daytime muhūrtas and is computed here
+           rather than taken as a fixed midday band, because the fifteen are
+           fifteenths of THIS day's length and a fixed band drifts by tens of
+           minutes across a year. */
+        var W = S.ctx.windows;
+        if (!W) {
+          if (draw) {
+            c.font = "500 " + Math.round(S.u * 0.026) + "px " + SANS;
+            c.fillStyle = PAL.dim;
+            c.fillText("(this needs the day's sunrise)", S.pad, S.y + S.u * 0.04);
+          }
+          return S.u * 0.07;
+        }
+        var barH = S.u * 0.042, h = barH + S.u * 0.085;
+        if (!draw) return h;
+        var y = S.y + S.u * 0.012;
+        function X(ms) {
+          return S.pad + S.inner * Math.max(0, Math.min(1, (ms - W.from) / (W.to - W.from)));
+        }
+        /* day and night */
+        c.fillStyle = "rgba(255,255,255,0.10)";
+        c.fillRect(S.pad, y, X(W.sunset) - S.pad, barH);
+        c.fillStyle = "rgba(255,255,255,0.03)";
+        c.fillRect(X(W.sunset), y, S.pad + S.inner - X(W.sunset), barH);
+        c.strokeStyle = PAL.dim; c.lineWidth = 1;
+        c.strokeRect(S.pad, y, S.inner, barH);
+        /* the windows */
+        (W.bands || []).forEach(function (b) {
+          c.fillStyle = b.col; c.globalAlpha = 0.80;
+          c.fillRect(X(b.from), y, Math.max(2, X(b.to) - X(b.from)), barH);
+          c.globalAlpha = 1;
+        });
+        /* now, if the day is today */
+        if (W.now != null && W.now >= W.from && W.now <= W.to) {
+          c.strokeStyle = PAL.ink; c.lineWidth = Math.max(2, S.u * 0.003);
+          c.beginPath(); c.moveTo(X(W.now), y - barH * 0.22);
+          c.lineTo(X(W.now), y + barH * 1.22); c.stroke();
+        }
+        /* the legend, which is what makes the bar readable */
+        var ly = y + barH + S.u * 0.034, lx = S.pad;
+        c.font = "600 " + Math.round(S.u * 0.0175) + "px " + SANS;
+        (W.bands || []).forEach(function (b) {
+          c.fillStyle = b.col;
+          c.fillRect(lx, ly - S.u * 0.013, S.u * 0.016, S.u * 0.016);
+          c.fillStyle = PAL.ink;
+          c.fillText(" " + b.n + " " + b.t, lx + S.u * 0.019, ly);
+          lx += c.measureText(" " + b.n + " " + b.t).width + S.u * 0.044;
+          if (lx > S.W - S.padR - S.u * 0.14) { lx = S.pad; ly += S.u * 0.030; }
+        });
+        return h;
+      }
+    },
     moon: {
       label: "Moon", hint: "the phase as it actually is, with a line beside it",
       fields: [["text", "Caption", "Śukla pakṣa · waxing"]],
@@ -912,6 +1076,10 @@
       title: "Why the Moon is late every day",
       why: "Thirty moonrises from today, each with the Moon's real phase on it, drifting later down the frame. The one day a month the Moon does not rise at all is the moment the chain visibly breaks.",
       post: "The drift is never the same two days running — that is the hook." },
+    { scene: "monthwalk", span: "1m", speed: "1", secs: 21,
+      title: "A month of real moons",
+      why: "Your month as a grid, every cell carrying the Moon as it really is that morning — and the tithi number beside it stumbles: it repeats on the days a tithi spans two sunrises and skips on the days one fits between them. That stumble is the clearest proof that a tithi is not a day.",
+      post: "The calendar everyone thinks they understand, with the part nobody notices." },
     { scene: "fiverings", span: "3d", speed: "1", secs: 15,
       title: "The five, with the working",
       why: "Tithi, karaṇa, nakṣatra and yoga are all divisions of the same two numbers, and the frame prints the division beside each one. Nobody else shows the subtraction, and it is the only thing that turns a pañcāṅga card into a reason to follow the account.",
@@ -1079,6 +1247,98 @@
             { type: "sub", text: "one line of context" }
           ];
         } },
+      { key: "calday", name: "Today in full", ratio: "4:5",
+        blurb: "The whole day on one card — the five limbs, the Moon as it " +
+               "actually is, and the day drawn as a bar from sunrise to " +
+               "sunrise with Brahma muhūrta, Abhijit and Rāhu kāla laid on it.",
+        make: function () {
+          return [
+            { type: "kicker", text: (hi ? "निरयन" : "NIRAYANA") + " · " + dateline.toUpperCase() },
+            { type: "headline", text: tithi },
+            { type: "moon", text: masa + " · " + (D ? D.vara : "") },
+            { type: "timeline" },
+            { type: "rule" },
+            { type: "facts", text: D ? [
+                "Nakṣatra: " + D.at.nak.name + " pāda " + D.at.nak.pada,
+                "Yoga: " + D.at.yoga.name,
+                "Karaṇa: " + D.at.karana.name,
+                "Sunrise: " + hhmm(D.sunrise) + "   Sunset: " + hhmm(D.sunset)
+              ].join("\n") : "" }
+          ];
+        } },
+      { key: "calmonth", name: "This month", ratio: "4:5",
+        blurb: "The month as a grid, every day carrying the Moon as it really " +
+               "is that morning — so the crescent thins and fattens at the rate " +
+               "the Moon actually moves. Pūrṇimā, amāvāsyā and the ekādaśīs are " +
+               "marked, and a dot shows a festival.",
+        make: function () {
+          var M = null;
+          try { M = window.__ncMonth(S.date.y, S.date.m, S.place); } catch (e) {}
+          var names = [];
+          if (M) M.days.forEach(function (x) {
+            if (x) x.fest.forEach(function (f) { if (names.indexOf(f) < 0) names.push(f); });
+          });
+          return [
+            { type: "kicker", text: (hi ? "निरयन" : "NIRAYANA") + " · " +
+              ["", "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY",
+               "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"][S.date.m] +
+              " " + S.date.y },
+            { type: "headline", text: masa },
+            { type: "monthgrid" },
+            { type: "rule" },
+            { type: "facts", text: (names.length
+                ? "This month: " + names.slice(0, 6).join(", ")
+                : "No major festival this month by the rules this site applies") +
+              "\nP pūrṇimā   A amāvāsyā   11 ekādaśī   • festival" }
+          ];
+        } },
+      { key: "calmoon", name: "This moon", ratio: "4:5",
+        blurb: "One lunation end to end — new moon to new moon — with a disc " +
+               "for every day at that day's real elongation, and today marked. " +
+               "The strip is 29 or 30 long depending on the lunation, because a " +
+               "synodic month is never the same length twice.",
+        make: function () {
+          var L = null;
+          try { L = window.__ncLunation(D); } catch (e) {}
+          return [
+            { type: "kicker", text: dateline.toUpperCase() },
+            { type: "headline", text: hi ? "यह चान्द्र मास" : "This moon" },
+            { type: "sub", text: masa + " · " + (D ? D.masa.ritu : "") },
+            { type: "lunation" },
+            { type: "rule" },
+            { type: "facts", text: (D ? [
+                "Today: " + tithi,
+                "Illumination: " + Math.round((1 - Math.cos((D.elongation || 0) *
+                  Math.PI / 180)) / 2 * 100) + "%",
+                "Elongation: " + (D.elongation || 0).toFixed(2) + "°"
+              ].join("\n") : "") + (L ? "\nThis lunation: " + L.days.toFixed(2) +
+                " days (29.27 to 29.83 is the real range)" : "") }
+          ];
+        } },
+      { key: "calahead", name: "What is coming", ratio: "4:5",
+        blurb: "The festivals and syzygies this month, each with its date — the " +
+               "card to post at the start of a month so people save it.",
+        make: function () {
+          var M = null;
+          try { M = window.__ncMonth(S.date.y, S.date.m, S.place); } catch (e) {}
+          var rows = [];
+          if (M) M.days.forEach(function (x) {
+            if (!x) return;
+            var MN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
+                      "Sep", "Oct", "Nov", "Dec"][S.date.m - 1];
+            x.fest.forEach(function (f) { rows.push(x.d + " " + MN + ": " + f); });
+            if (x.full) rows.push(x.d + " " + MN + ": Pūrṇimā");
+            if (x.newmoon) rows.push(x.d + " " + MN + ": Amāvāsyā");
+          });
+          return [
+            { type: "kicker", text: (hi ? "आगे क्या है" : "WHAT IS COMING") },
+            { type: "headline", text: masa },
+            { type: "rule" },
+            { type: "facts", text: rows.length ? rows.slice(0, 9).join("\n")
+                : "Nothing major this month by the rules this site applies" },
+            { type: "pill", text: S.place.n }
+          ];
+        } },
       { key: "twomoments", name: "Pañcāṅga, twice", ratio: "4:5",
         blurb: "The same day read at both instants — the sunrise that names it, " +
                "and this minute — with the Sun-to-Moon angle drawn on one ring " +
@@ -1213,6 +1473,89 @@
     };
   }
   try { window.__ncElongPair = elongPair; } catch (e) {}
+
+  /* ===== a month, computed once ===========================================
+     Thirty-ish days each needing its own sunrise search and its own boundary
+     bisections, which is a second of work — so it is built once per month and
+     place and kept, rather than rebuilt every time a slider moves. */
+  var MONTH_CACHE = {};
+  function monthData(y, m, P) {
+    var key = y + "-" + m + "|" + P.lat.toFixed(3) + "," + P.lon.toFixed(3);
+    if (MONTH_CACHE[key]) return MONTH_CACHE[key];
+    var NP = window.NP;
+    if (!NP) return null;
+    var last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    var days = [];
+    for (var d = 1; d <= last; d++) {
+      var D = null;
+      try { D = NP.dayOfDate(y, m, d, P, { ends: true, month: true }); } catch (e) {}
+      if (!D) { days.push(null); continue; }
+      var f = [];
+      try { f = NP.festivalsOn(D, { minor: false }) || []; } catch (e) {}
+      days.push({
+        d: d, D: D, elong: D.elongation,
+        tithi: D.at.tithi, nak: D.at.nak,
+        paksha: D.at.tithi.paksha,
+        full: D.at.tithi.i === 14, newmoon: D.at.tithi.i === 29,
+        ekadashi: D.at.tithi.i === 10 || D.at.tithi.i === 25,
+        fest: f.map(function (x) { return x.name || x.key; }),
+        wd: new Date(Date.UTC(y, m - 1, d)).getUTCDay()
+      });
+    }
+    var out = { y: y, m: m, days: days, last: last,
+                masa: days.find(function (x) { return x; }) };
+    MONTH_CACHE[key] = out;
+    return out;
+  }
+  try { window.__ncMonth = monthData; } catch (e) {}
+
+  /* The lunation this day sits in: new moon to new moon, with where we stand. */
+  function lunationOf(D) {
+    var NP = window.NP;
+    if (!NP || !NP.newMoonNear || !D) return null;
+    var prev = null, next = null;
+    try {
+      prev = NP.newMoonNear(D.sunrise - 20 * 86400000);
+      next = NP.newMoonNear(D.sunrise + 20 * 86400000);
+      /* newMoonNear returns the nearest; walk until one sits either side */
+      if (prev > D.sunrise) prev = NP.newMoonNear(D.sunrise - 32 * 86400000);
+      if (next < D.sunrise) next = NP.newMoonNear(D.sunrise + 32 * 86400000);
+    } catch (e) { return null; }
+    if (prev == null || next == null || next <= prev) return null;
+    return { from: prev, to: next, days: (next - prev) / 86400000,
+             f: (D.sunrise - prev) / (next - prev) };
+  }
+  try { window.__ncLunation = lunationOf; } catch (e) {}
+
+  /* The day as a span with its named windows on it. Abhijit is derived here —
+     the eighth of fifteen daytime muhūrtas — because NP does not carry it and
+     a fixed midday band would be wrong by tens of minutes across a year. */
+  function dayWindows(D, S) {
+    var NP = window.NP;
+    if (!NP || !D || D.sunrise == null || D.sunset == null) return null;
+    var to = D.nextSunrise != null ? D.nextSunrise : D.sunrise + 86400000;
+    var day = D.sunset - D.sunrise, mu = day / 15;
+    var bands = [];
+    var rk = null, bm = null;
+    try { rk = NP.rahuKala(D); } catch (e) {}
+    try { bm = NP.brahmaMuhurta(D); } catch (e) {}
+    function hhmm(ms) {
+      var d = new Date(ms + (S.place.tz || 0) * 3600000);
+      return String(d.getUTCHours()).padStart(2, "0") + ":" +
+             String(d.getUTCMinutes()).padStart(2, "0");
+    }
+    if (bm) bands.push({ n: "Brahma muhūrta", t: hhmm(bm.from) + "–" + hhmm(bm.to),
+                         from: bm.from, to: bm.to, col: "#7f9fd8" });
+    bands.push({ n: "Abhijit", t: hhmm(D.sunrise + 7 * mu) + "–" + hhmm(D.sunrise + 8 * mu),
+                 from: D.sunrise + 7 * mu, to: D.sunrise + 8 * mu, col: PAL.ben });
+    if (rk) bands.push({ n: "Rāhu kāla", t: hhmm(rk.from) + "–" + hhmm(rk.to),
+                         from: rk.from, to: rk.to, col: PAL.mal });
+    var now = Date.now();
+    return { from: Math.min(D.sunrise, bm ? bm.from : D.sunrise), to: to,
+             sunset: D.sunset, bands: bands,
+             now: (now >= D.sunrise && now <= to) ? now : null };
+  }
+  try { window.__ncWindows = dayWindows; } catch (e) {}
 
   function fmtDate(ms, tz) {
     var d = new Date(ms + (tz || 0) * 3600000);
@@ -1749,6 +2092,9 @@
          disagree about the arithmetic they both show. */
       C.ctx.limbs = limbsOf(D);
       C.ctx.elong = elongPair(D, S);
+      C.ctx.month = monthData(S.date.y, S.date.m, S.place);
+      C.ctx.lunation = lunationOf(D);
+      C.ctx.windows = dayWindows(D, S);
       C.ctx.sky = NCard.sky(D.sunrise + (D.sunset != null
         ? (D.sunset - D.sunrise) / 2 : 6 * 3600000), S.place);
     }

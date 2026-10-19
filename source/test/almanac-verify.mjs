@@ -348,6 +348,37 @@ const hrs = (((EP.futureSunset - EP.futureSunrise) / 2)) / 3600000;
 say(dt > 0 && dt / hrs > 0.3 && dt / hrs < 0.75,
   `the Sun-to-Moon angle opened ${dt.toFixed(2)}° in ${hrs.toFixed(1)} h = ${(dt / hrs * 24).toFixed(1)}°/day — the Moon gains 11.8 to 15.4°/day on the Sun`);
 
+/* ---- the month walk: the stumble must match the days themselves -------- */
+console.log("\nthe month walk — adhika and kṣaya read off the sequence");
+const MW = await gp.evaluate(() => {
+  const cv = document.createElement("canvas"); cv.width = 1080; cv.height = 1920;
+  window.__moProbe(cv, "monthwalk", 0.6, { n: "New Delhi", lat: 28.6139, lon: 77.209, tz: 5.5 });
+  const M = window.__moCalFacts();
+  if (!M) return null;
+  const days = M.days.filter(Boolean);
+  /* count the stumble independently, straight off the indices */
+  let rep = 0, skip = 0;
+  for (let i = 1; i < days.length; i++) {
+    const gap = ((days[i].ti - days[i - 1].ti) % 30 + 30) % 30;
+    if (gap === 0) rep++; else if (gap > 1) skip += gap - 1;
+  }
+  return { rep, skip, repeats: M.repeats.length, missing: M.missing.length,
+           n: days.length, last: M.last,
+           wrapped: new Set(days.map(d => d.ti)).size < days.length };
+});
+say(MW && MW.n === MW.last, `every day of the month computed (${MW.n} of ${MW.last})`);
+say(MW.repeats === MW.rep && MW.missing === MW.skip,
+  `${MW.repeats} tithi repeated and ${MW.missing} skipped — matching a count made ` +
+  `straight from the indices`);
+/* The real check: a month holds ~31.5 tithis, so an index recurs through the
+   wrap. Counting recurrences instead of consecutive repeats is the bug this
+   guards — it reported three adhika on a month that has one. */
+say(MW.wrapped,
+  `the tithi index does recur across the month, which is why the count must be ` +
+  `made between consecutive days and not over the whole month`);
+say(MW.repeats <= 2 && MW.missing <= 3,
+  `and the figures are in the range a single month can produce (${MW.repeats}, ${MW.missing})`);
+
 console.log("\nthe orbit rose — petals counted, not asserted");
 const rose = await gp.evaluate(async () => {
   const out = {};
