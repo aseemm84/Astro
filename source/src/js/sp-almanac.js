@@ -302,20 +302,29 @@
     c.restore();
   }
 
-  /* ---- the card ---------------------------------------------------------- */
-  /* A is the packaged day; see the almanac node in sp-nodes.js. */
-  function draw(c, W, H, A, p, P, opts) {
-    opts = opts || {};
-    var I = inks(P);
-    var U = W;
+  var FITCACHE = {}, FITN = 0;
 
-    /* the drift: a fraction of a percent, which is the difference between a
-       card and a photograph of a card */
-    var dz = 1 + 0.010 * (0.5 - 0.5 * Math.cos(p * Math.PI * 2));
-    var dy = H * 0.004 * Math.sin(p * Math.PI * 2);
-    c.save();
-    c.translate(W / 2, H / 2); c.scale(dz, dz); c.translate(-W / 2, -H / 2 + dy);
+  /* The leaf's still layers, drawn once and kept.
 
+     The paper, the panel, the star field, the constellation arcs, the gold
+     rules, the arch and the four corner pieces do not change from frame to
+     frame — between them they are several hundred paths and about a thousand
+     sampled points, and redrawing them sixty times a second to put a moving
+     band of light on top was most of what made this card cost six times what
+     any other composer costs. They are rendered once into an offscreen canvas
+     keyed by size and palette, and blitted.
+
+     The drift is applied when blitting rather than when drawing, so the whole
+     leaf still moves. */
+  var BACK = null;
+
+  /* Everything that never changes between frames, drawn once into `BACK`. */
+  function buildBack(W, H, P, I) {
+    var cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    var c = cv.getContext("2d");
+    var m = W * 0.052, pr = W * 0.030;
+    var px = m, py = m * (H / W) * 0.62, pw = W - m * 2, ph = H - py * 2;
     /* 1 — the paper */
     c.fillStyle = I.paper; c.fillRect(-W, -H, W * 3, H * 3);
     var vg = c.createRadialGradient(W / 2, H / 2, W * 0.1, W / 2, H / 2, W * 0.95);
@@ -324,8 +333,6 @@
     c.fillStyle = vg; c.fillRect(0, 0, W, H);
 
     /* 2 — the panel */
-    var m = W * 0.052, pr = W * 0.030;
-    var px = m, py = m * (H / W) * 0.62, pw = W - m * 2, ph = H - py * 2;
     c.save();
     rr(c, px, py, pw, ph, pr);
     var pg = c.createLinearGradient(0, py, 0, py + ph);
@@ -407,6 +414,34 @@
     flourish(c, px + fo, py + ph - fo, fs, false, true, I, 0.60);
     flourish(c, px + pw - fo, py + ph - fo, fs, true, true, I, 0.60);
 
+    return { cv: cv, px: px, py: py, pw: pw, ph: ph,
+             archBase: archBase, sunCy: sunCy, sunR: sunR, archTop: archTop };
+  }
+
+  /* ---- the card ---------------------------------------------------------- */
+  /* A is the packaged day; see the almanac node in sp-nodes.js. */
+  function draw(c, W, H, A, p, P, opts) {
+    opts = opts || {};
+    var I = inks(P);
+    var U = W;
+
+    /* the drift: a fraction of a percent, which is the difference between a
+       card and a photograph of a card */
+    var dz = 1 + 0.010 * (0.5 - 0.5 * Math.cos(p * Math.PI * 2));
+    var dy = H * 0.004 * Math.sin(p * Math.PI * 2);
+    c.save();
+    c.translate(W / 2, H / 2); c.scale(dz, dz); c.translate(-W / 2, -H / 2 + dy);
+
+    /* the still layers, built once and kept */
+    var key = W + "x" + H + "|" + P.key;
+    if (!BACK || BACK.key !== key) {
+      BACK = buildBack(W, H, P, I);
+      BACK.key = key;
+    }
+    c.drawImage(BACK.cv, 0, 0);
+    var px = BACK.px, py = BACK.py, pw = BACK.pw, ph = BACK.ph;
+    var archBase = BACK.archBase, sunCy = BACK.sunCy, sunR = BACK.sunR;
+
     /* 6 — the crown, sitting on the apex rather than off the top edge */
     sunMedallion(c, W / 2, sunCy, sunR, p, I);
 
@@ -417,13 +452,23 @@
       c.font = (weight || 600) + " " + Math.round(size) + "px " + (font || SANS);
       c.fillText(String(s), x, y);
     }
+    /* memoised for the reason given in sp-compose.js: the leaf makes about
+       twenty of these calls a frame and each one can cost twenty-two text
+       measurements, which no card's content changes between frames to
+       justify */
     function fit(s, size, maxW, weight, font) {
+      var key = (font === SERIF ? "s" : "n") + (weight || 600) + "|" +
+                Math.round(size) + "|" + Math.round(maxW) + "|" + s;
+      var hit = FITCACHE[key];
+      if (hit !== undefined) return hit;
       var f = size;
       for (var z = 0; z < 22; z++) {
         c.font = (weight || 600) + " " + Math.round(f) + "px " + (font || SANS);
         if (c.measureText(String(s)).width <= maxW) break;
         f *= 0.95;
       }
+      if (++FITN > 900) { FITCACHE = {}; FITN = 0; }
+      FITCACHE[key] = f;
       return f;
     }
     function txtFit(s, x, y, size, col, align, weight, maxW, font) {

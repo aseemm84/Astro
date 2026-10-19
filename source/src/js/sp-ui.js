@@ -328,6 +328,25 @@
   }
 
   /* ---- the stage --------------------------------------------------------- */
+  /* THE FRAME PATH. Nothing here may touch the DOM.
+
+     draw() used to rebuild the view switcher and the notes panel, and call
+     fitPreview, on every single frame. At sixty frames a second that is an
+     innerHTML churn and a forced layout sixty times a second on a page
+     carrying two hundred and fifty chips — which, measured on a throttled
+     phone, took the frame budget from twenty milliseconds to two hundred and
+     thirty-four. The main thread was blocked in quarter-second blocks, so
+     taps never landed: pressing Play made the whole panel stop responding,
+     including Pause.
+
+     So the frame path draws the canvas and does nothing else, and the panels
+     are synced only when the composition actually changes. */
+  function drawFrame() {
+    if (!window.SPStage || !C) return;
+    LAST = (STORY && SHOTS.length)
+      ? window.SPStage.renderStory(SHOTS, C, window.SPStage.S.p)
+      : window.SPStage.render(SEL, C, window.SPStage.S.p, FORCE, true);
+  }
   function draw() {
     if (!window.SPStage || !C) return;
     LAST = (STORY && SHOTS.length)
@@ -638,6 +657,15 @@
     if (w > box.clientWidth - 8) { w = box.clientWidth - 8; h = w * r.h / r.w; }
     cv.style.width = Math.round(w) + "px";
     cv.style.height = Math.round(h) + "px";
+    /* and render at about the resolution it is actually displayed at, rather
+       than at export size. Two device pixels per CSS pixel is the point past
+       which nobody can tell; beyond that it is only heat. */
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var want = Math.max(0.25, Math.min(1, (w * dpr) / r.w));
+    if (Math.abs(want - window.SPStage.S.quality) > 0.04) {
+      window.SPStage.S.quality = want;
+      window.SPStage.resize();
+    }
   }
   function toggle(id) {
     var i = SEL.indexOf(id);
@@ -658,14 +686,34 @@
   }
 
   /* ---- playback ---------------------------------------------------------- */
+  /* The preview is throttled and adapts. A reel is recorded at thirty frames
+     a second by the recorder, which drives its own clock; the PREVIEW only has
+     to look like motion, and a phone that cannot hold thirty is better off
+     drawing twenty good frames than queueing sixty it will never finish. */
+  var FPS_TARGET = 30, lastFrame = 0, slowRun = 0;
   function tick() {
     if (!PLAY) return;
+    RAF = requestAnimationFrame(tick);
+    var now = performance.now();
+    if (now - lastFrame < 1000 / FPS_TARGET - 1) return;
+    lastFrame = now;
     var el2 = (Date.now() - T0) / 1000;
     window.SPStage.S.p = (el2 % DUR) / DUR;
-    var sc = $("sp-scrub"); if (sc) sc.value = String(Math.round(window.SPStage.S.p * 1000));
-    showTime();
-    draw();
-    RAF = requestAnimationFrame(tick);
+    var t0 = performance.now();
+    drawFrame();
+    var cost = performance.now() - t0;
+    /* back off when the device cannot keep up, and creep back when it can */
+    if (cost > 1000 / FPS_TARGET) { if (++slowRun > 3 && FPS_TARGET > 12) {
+      FPS_TARGET -= 4; slowRun = 0; } }
+    else if (--slowRun < -40 && FPS_TARGET < 30) { FPS_TARGET += 2; slowRun = 0; }
+    /* the two cheap DOM writes, which are single attributes rather than a
+       rebuild, and only a few times a second */
+    if (!tick.ui || now - tick.ui > 120) {
+      tick.ui = now;
+      var sc = $("sp-scrub");
+      if (sc) sc.value = String(Math.round(window.SPStage.S.p * 1000));
+      showTime();
+    }
   }
   /* where the playhead is, in seconds — the slider alone does not say, and
      on a phone the thumb is often under a finger */
@@ -683,8 +731,20 @@
     else { var d = $("sp-dur"); if (d) DUR = +d.value; }
     var b = $("sp-play");
     if (b) b.textContent = on ? "Pause" : "Play";
-    if (on) { T0 = Date.now() - window.SPStage.S.p * DUR * 1000; tick(); }
-    else if (RAF) { cancelAnimationFrame(RAF); RAF = null; }
+    /* One animation loop at a time. The sample strip and the stage both
+       drawing on a phone is the difference between motion and a slideshow. */
+    STRIP.paused = on || STRIP.hover;
+    if (on) {
+      FPS_TARGET = 30; slowRun = 0; lastFrame = 0;
+      T0 = Date.now() - window.SPStage.S.p * DUR * 1000;
+      tick();
+    } else {
+      if (RAF) { cancelAnimationFrame(RAF); RAF = null; }
+      var sc2 = $("sp-scrub");
+      if (sc2) sc2.value = String(Math.round(window.SPStage.S.p * 1000));
+      showTime();
+      draw();                      /* one full pass, to resync the panels */
+    }
   }
 
   /* ---- persistence: the selection survives a reload ---------------------- */
@@ -720,11 +780,16 @@
   /* ---- export ------------------------------------------------------------ */
   function savePng() {
     var cv = $("sp-canvas");
+    /* the preview is deliberately low-resolution; a saved frame is not */
+    window.SPStage.withFullSize(function () {
+      window.SPStage.render(SEL, C, window.SPStage.S.p, FORCE);
+    });
     cv.toBlob(function (b) {
       var u = URL.createObjectURL(b), a = document.createElement("a");
       a.href = u; a.download = "nirayana-studio-pro.png";
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(function () { URL.revokeObjectURL(u); }, 4000);
+      draw();                      /* back to the preview size */
     }, "image/png");
   }
   /* The transport, while a recording owns the playhead.
@@ -754,10 +819,14 @@
     setTransport(true);
     btn.textContent = "Stop (0%)";
     var what = (STORY && SHOTS.length) ? SHOTS : SEL;
+    /* a recording is the artefact, so it is captured at export size */
+    var qKeep = window.SPStage.S.quality;
+    window.SPStage.S.quality = 1; window.SPStage.resize();
     window.SPStage.record(what, C, DUR, 30, FORCE, function (f) {
       btn.textContent = "Stop (" + Math.round(f * 100) + "%)";
     }).then(function (res) {
       setTransport(false); btn.textContent = was;
+      window.SPStage.S.quality = qKeep; window.SPStage.resize();
       /* put the playhead back where the reader left it, rather than at the
          end of the recording */
       window.SPStage.S.p = keepP;
@@ -778,6 +847,7 @@
           Math.round(res.blob.size / 1024) + " KB.");
     }).catch(function (e) {
       setTransport(false); btn.textContent = was;
+      window.SPStage.S.quality = qKeep; window.SPStage.resize();
       window.SPStage.S.p = keepP; draw();
       flash("Could not record: " + (e && e.message || e) +
             " — the still export always works.");
@@ -845,7 +915,7 @@
     var scrub = $("sp-scrub");
     if (scrub) scrub.addEventListener("input", function () {
       play(false);
-      window.SPStage.S.p = (+scrub.value) / 1000; showTime(); draw(); });
+      window.SPStage.S.p = (+scrub.value) / 1000; showTime(); drawFrame(); });
     $("sp-play") && $("sp-play").addEventListener("click", function () { play(!PLAY); });
     var dur = $("sp-dur");
     if (dur) dur.addEventListener("change", function () { DUR = +dur.value; showTime(); });
@@ -901,12 +971,14 @@
        be scrubbed by hand */
     var strip = $("sp-strip");
     if (strip) {
-      strip.addEventListener("mouseenter", function () { STRIP.paused = true; });
-      strip.addEventListener("mouseleave", function () { STRIP.paused = false; });
+      strip.addEventListener("mouseenter", function () {
+        STRIP.hover = true; STRIP.paused = true; });
+      strip.addEventListener("mouseleave", function () {
+        STRIP.hover = false; STRIP.paused = PLAY; });
       strip.addEventListener("pointerdown", function () { STRIP.dragging = true; });
       window.addEventListener("pointerup", function () { STRIP.dragging = false; });
-      strip.addEventListener("touchstart", function () { STRIP.paused = true; },
-                             { passive: true });
+      strip.addEventListener("touchstart", function () {
+        STRIP.hover = true; STRIP.paused = true; }, { passive: true });
     }
     var sh = $("sp-shuffle");
     if (sh) sh.addEventListener("click", function () { buildStrip(); });

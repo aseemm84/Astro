@@ -58,6 +58,12 @@
 
   var S = {
     pal: "midnight", ratio: "9:16", safe: true, speed: 1, p: 0, tile: false,
+    /* The render size as a fraction of the export size. The stage preview is
+       about three hundred CSS pixels wide; rendering it at 1080 was six times
+       the pixels anyone could see, and at twenty milliseconds a frame it was
+       most of the reason playback ran at four frames a second on a phone.
+       Export always goes back to 1 — see withFullSize. */
+    quality: 1,
     ctx: null, cv: null, W: 1080, H: 1920, U: 1080,
     headline: "", sub: "", handle: "@Nirayana.Soft"
   };
@@ -73,16 +79,31 @@
     c.font = (weight || 600) + " " + Math.round(size) + "px " + SANS;
     c.fillText(String(s), x, y);
   }
-  /* the size at which a line finally fits a width — a centred line that does
+  /* The size at which a line finally fits a width — a centred line that does
      not fit loses the same number of words at each end, which is the one
-     failure that reads as deliberate */
+     failure that reads as deliberate.
+
+     MEMOISED, because it is the single most expensive thing on the page. Each
+     call can run twenty measureText probes, a frame can carry twenty such
+     calls, and the answer depends only on the string, the starting size, the
+     width and the weight — none of which change between frames of the same
+     card. Four hundred text measurements per frame was most of the reason the
+     almanac cost six times what any other composer costs. */
+  var FITS = {}, FITN = 0;
   function fit(s, size, maxW, weight) {
+    var key = (weight || 600) + "|" + Math.round(size) + "|" + Math.round(maxW) + "|" + s;
+    var hit = FITS[key];
+    if (hit !== undefined) return hit;
     var c = S.ctx, f = size;
     for (var i = 0; i < 20; i++) {
       c.font = (weight || 600) + " " + Math.round(f) + "px " + SANS;
       if (c.measureText(String(s)).width <= maxW) break;
       f *= 0.94;
     }
+    /* an unbounded cache on a page that can scrub through a year of dates
+       would grow without end; this is a cache, not a ledger */
+    if (++FITN > 1200) { FITS = {}; FITN = 0; }
+    FITS[key] = f;
     return f;
   }
   function txtFit(s, x, y, size, col, align, weight, maxW) {
@@ -1266,7 +1287,10 @@
   }
 
   /* ---- the public draw -------------------------------------------------- */
-  function render(sel, C, p, forceKey) {
+  /* `quiet` skips the work only the side panels need. render() is called
+     sixty times a second during playback and scoring every composer to build
+     a list of alternatives that nothing reads is pure waste. */
+  function render(sel, C, p, forceKey, quiet) {
     var B = bagOf(sel, C);
     background();
     if (pal().key !== "parchment") stars();
@@ -1301,7 +1325,7 @@
       }
       captionBand(S.headline || "Studio Pro", S.sub);
       safeGuides();
-      return { composer: null, missing: B.missing, options: [] };
+      return { composer: null, missing: B.missing, options: quiet ? null : [] };
     }
     /* The leaf is a whole page: it paints its own paper to the frame's edge
        and carries its own foot, so the stage's background, stars and caption
@@ -1327,7 +1351,7 @@
     }
     safeGuides();
     return { composer: chosen.key, label: chosen.label, missing: B.missing,
-             options: options(B.bag) };
+             options: quiet ? null : options(B.bag) };
   }
 
   /* ---- the storyboard ----------------------------------------------------
@@ -1361,7 +1385,7 @@
     if (!shots || !shots.length) return render([], C, p, null);
     var cur = shotAt(shots, p);
     if (!cur) return render([], C, p, null);
-    var out = render(cur.shot.sel || [], C, cur.local, cur.shot.force || null);
+    var out = render(cur.shot.sel || [], C, cur.local, cur.shot.force || null, true);
     /* the dip: a quarter-second at each join, strongest at the boundary */
     var dipFor = 0.22;
     var into = cur.local * cur.len, left = cur.len - into;
@@ -1484,7 +1508,7 @@
     S.W = w; S.H = h; S.U = w; S.safe = false; S.tile = true;
     S.headline = ""; S.sub = "";
     var out = null;
-    try { out = render(sel, C, p, force); } catch (e) { out = null; }
+    try { out = render(sel, C, p, force, true); } catch (e) { out = null; }
     S.cv = keep.cv; S.ctx = keep.ctx; S.W = keep.W; S.H = keep.H; S.U = keep.U;
     S.safe = keep.safe; S.headline = keep.head; S.sub = keep.sub; S.tile = keep.tile;
     return out;
@@ -1498,9 +1522,18 @@
     },
     resize: function () {
       var r = RATIOS[S.ratio] || RATIOS["9:16"];
-      S.W = r.w; S.H = r.h; S.U = r.w;
-      if (S.cv) { S.cv.width = r.w; S.cv.height = r.h; }
+      var q = Math.max(0.25, Math.min(1, S.quality || 1));
+      S.W = Math.round(r.w * q); S.H = Math.round(r.h * q); S.U = S.W;
+      if (S.cv) { S.cv.width = S.W; S.cv.height = S.H; }
       STARS = null;
+    },
+    /* Run something at true export size, then put the preview size back.
+       Every composer sizes from S.U, so the picture is identical either way —
+       only the number of pixels differs. */
+    withFullSize: function (fn) {
+      var q = S.quality;
+      S.quality = 1; this.resize();
+      try { return fn(); } finally { S.quality = q; this.resize(); }
     },
     render: render, renderStory: renderStory, record: record,
     isRecording: isRecording, cancelRecording: cancelRecording,

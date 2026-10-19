@@ -235,6 +235,55 @@ async function run(withChart) {
     return out;
   });
 
+  /* RESPONSIVENESS DURING PLAYBACK.
+
+     The fault this guards against is the one that made the whole panel go
+     dead: draw() rebuilt the view switcher and the notes panel and forced a
+     layout on EVERY frame, on a page carrying two hundred and fifty chips.
+     Measured on a throttled phone that took a frame from twenty milliseconds
+     to two hundred and thirty-four, so the main thread was blocked in
+     quarter-second blocks and taps simply never landed. Pressing Play made
+     Pause — and everything else — stop working.
+
+     A screenshot cannot see this and neither can a click dispatched straight
+     at a handler. What it needs is a frame-time budget and a control that has
+     to actually take effect while the thing is running. */
+  const perf = await pg.evaluate(async () => {
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+    const out = {};
+    window.__spUI.select(["day.almanac"]);
+    await sleep(300);
+    const frames = []; let last = performance.now(), stop = false;
+    (function probe() { const n = performance.now();
+      frames.push(n - last); last = n;
+      if (!stop) requestAnimationFrame(probe); })();
+    document.getElementById("sp-play").click();
+    await sleep(1800);
+    /* a real setting change, mid-playback */
+    const before = window.SPStage.S.ratio;
+    document.querySelector('[data-spratio="4:5"]').click();
+    await sleep(400);
+    out.settingTookEffect = window.SPStage.S.ratio === "4:5" && before !== "4:5";
+    /* and the palette, which repaints rather than resizes */
+    document.querySelector('[data-sppal="eclipse"]').click();
+    await sleep(300);
+    out.paletteTookEffect = window.SPStage.S.pal === "eclipse";
+    /* and Pause itself */
+    document.getElementById("sp-play").click();
+    await sleep(200);
+    out.pausedLabel = document.getElementById("sp-play").textContent;
+    const p1 = window.SPStage.S.p; await sleep(400);
+    out.frozen = p1 === window.SPStage.S.p;
+    stop = true;
+    frames.sort((a, b) => a - b);
+    out.medianFrameMs = +frames[Math.floor(frames.length / 2)].toFixed(1);
+    out.worstFrameMs = +frames[frames.length - 1].toFixed(1);
+    /* put the shape back for the measurements that follow */
+    document.querySelector('[data-spratio="9:16"]').click();
+    document.querySelector('[data-sppal="midnight"]').click();
+    return out;
+  });
+
   const rolled = await pg.evaluate(() => {
     const before = window.__spUI.stripSpecs().join("|");
     for (let i=0;i<6;i++) window.__spUI.rollStrip();
@@ -246,6 +295,7 @@ async function run(withChart) {
   r2.rollChanged = rolled.before !== rolled.after;
   r2.diag = second.diag;
   r2.tr = transport;
+  r2.perf = perf;
   r = r2;
   const html = await pg.content();
   r.navHasLink = html.indexOf('studio-pro.html') >= 0;
@@ -316,6 +366,10 @@ function show(tag, r) {
   console.log(`    awkward 5-node mixture → composer "${r.mixComposer}", ` +
               `${r.mixMissing} reported as unusable, ${r.mixOptions} views offered, lit ${r.mixLit}`);
   console.log(`    "what is not here" list: ${r.absent} entries`);
+  const pf = r.perf || {};
+  console.log(`    while playing: median frame ${pf.medianFrameMs}ms, worst ${pf.worstFrameMs}ms; ` +
+              `shape change took effect ${pf.settingTookEffect}, palette ${pf.paletteTookEffect}, ` +
+              `pause "${pf.pausedLabel}" frozen ${pf.frozen}`);
   const t = r.tr || {};
   console.log(`    transport: moves while playing ${t.movesWhilePlaying} ("${t.labelWhilePlaying}"), ` +
               `frozen after pause ${t.frozenAfterPause} ("${t.labelAfterPause}")`);
@@ -381,6 +435,12 @@ const checks=[
   ["a touch tap toggles the transport", M.toggles===true],
   ["a touch tap never drags the playhead back to the start",
    M.collapsed===false],
+  ["the panel still responds while the animation is running",
+   A.perf.settingTookEffect===true && A.perf.paletteTookEffect===true],
+  ["Pause works while the animation is running",
+   A.perf.pausedLabel==="Play" && A.perf.frozen===true],
+  ["playback does not block the main thread in long chunks",
+   A.perf.medianFrameMs < 70 && A.perf.worstFrameMs < 400],
   ["no page errors on a phone", M.errs.length===0],
   ["the playhead moves while playing", A.tr.movesWhilePlaying===true],
   ["Pause freezes the playhead and relabels", A.tr.frozenAfterPause===true &&

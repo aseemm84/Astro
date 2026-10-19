@@ -1464,20 +1464,29 @@
     c.restore();
   }
 
-  /* ---- the card ---------------------------------------------------------- */
-  /* A is the packaged day; see the almanac node in sp-nodes.js. */
-  function draw(c, W, H, A, p, P, opts) {
-    opts = opts || {};
-    var I = inks(P);
-    var U = W;
+  var FITCACHE = {}, FITN = 0;
 
-    /* the drift: a fraction of a percent, which is the difference between a
-       card and a photograph of a card */
-    var dz = 1 + 0.010 * (0.5 - 0.5 * Math.cos(p * Math.PI * 2));
-    var dy = H * 0.004 * Math.sin(p * Math.PI * 2);
-    c.save();
-    c.translate(W / 2, H / 2); c.scale(dz, dz); c.translate(-W / 2, -H / 2 + dy);
+  /* The leaf's still layers, drawn once and kept.
 
+     The paper, the panel, the star field, the constellation arcs, the gold
+     rules, the arch and the four corner pieces do not change from frame to
+     frame — between them they are several hundred paths and about a thousand
+     sampled points, and redrawing them sixty times a second to put a moving
+     band of light on top was most of what made this card cost six times what
+     any other composer costs. They are rendered once into an offscreen canvas
+     keyed by size and palette, and blitted.
+
+     The drift is applied when blitting rather than when drawing, so the whole
+     leaf still moves. */
+  var BACK = null;
+
+  /* Everything that never changes between frames, drawn once into `BACK`. */
+  function buildBack(W, H, P, I) {
+    var cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    var c = cv.getContext("2d");
+    var m = W * 0.052, pr = W * 0.030;
+    var px = m, py = m * (H / W) * 0.62, pw = W - m * 2, ph = H - py * 2;
     /* 1 — the paper */
     c.fillStyle = I.paper; c.fillRect(-W, -H, W * 3, H * 3);
     var vg = c.createRadialGradient(W / 2, H / 2, W * 0.1, W / 2, H / 2, W * 0.95);
@@ -1486,8 +1495,6 @@
     c.fillStyle = vg; c.fillRect(0, 0, W, H);
 
     /* 2 — the panel */
-    var m = W * 0.052, pr = W * 0.030;
-    var px = m, py = m * (H / W) * 0.62, pw = W - m * 2, ph = H - py * 2;
     c.save();
     rr(c, px, py, pw, ph, pr);
     var pg = c.createLinearGradient(0, py, 0, py + ph);
@@ -1569,6 +1576,34 @@
     flourish(c, px + fo, py + ph - fo, fs, false, true, I, 0.60);
     flourish(c, px + pw - fo, py + ph - fo, fs, true, true, I, 0.60);
 
+    return { cv: cv, px: px, py: py, pw: pw, ph: ph,
+             archBase: archBase, sunCy: sunCy, sunR: sunR, archTop: archTop };
+  }
+
+  /* ---- the card ---------------------------------------------------------- */
+  /* A is the packaged day; see the almanac node in sp-nodes.js. */
+  function draw(c, W, H, A, p, P, opts) {
+    opts = opts || {};
+    var I = inks(P);
+    var U = W;
+
+    /* the drift: a fraction of a percent, which is the difference between a
+       card and a photograph of a card */
+    var dz = 1 + 0.010 * (0.5 - 0.5 * Math.cos(p * Math.PI * 2));
+    var dy = H * 0.004 * Math.sin(p * Math.PI * 2);
+    c.save();
+    c.translate(W / 2, H / 2); c.scale(dz, dz); c.translate(-W / 2, -H / 2 + dy);
+
+    /* the still layers, built once and kept */
+    var key = W + "x" + H + "|" + P.key;
+    if (!BACK || BACK.key !== key) {
+      BACK = buildBack(W, H, P, I);
+      BACK.key = key;
+    }
+    c.drawImage(BACK.cv, 0, 0);
+    var px = BACK.px, py = BACK.py, pw = BACK.pw, ph = BACK.ph;
+    var archBase = BACK.archBase, sunCy = BACK.sunCy, sunR = BACK.sunR;
+
     /* 6 — the crown, sitting on the apex rather than off the top edge */
     sunMedallion(c, W / 2, sunCy, sunR, p, I);
 
@@ -1579,13 +1614,23 @@
       c.font = (weight || 600) + " " + Math.round(size) + "px " + (font || SANS);
       c.fillText(String(s), x, y);
     }
+    /* memoised for the reason given in sp-compose.js: the leaf makes about
+       twenty of these calls a frame and each one can cost twenty-two text
+       measurements, which no card's content changes between frames to
+       justify */
     function fit(s, size, maxW, weight, font) {
+      var key = (font === SERIF ? "s" : "n") + (weight || 600) + "|" +
+                Math.round(size) + "|" + Math.round(maxW) + "|" + s;
+      var hit = FITCACHE[key];
+      if (hit !== undefined) return hit;
       var f = size;
       for (var z = 0; z < 22; z++) {
         c.font = (weight || 600) + " " + Math.round(f) + "px " + (font || SANS);
         if (c.measureText(String(s)).width <= maxW) break;
         f *= 0.95;
       }
+      if (++FITN > 900) { FITCACHE = {}; FITN = 0; }
+      FITCACHE[key] = f;
       return f;
     }
     function txtFit(s, x, y, size, col, align, weight, maxW, font) {
@@ -1765,6 +1810,12 @@
 
   var S = {
     pal: "midnight", ratio: "9:16", safe: true, speed: 1, p: 0, tile: false,
+    /* The render size as a fraction of the export size. The stage preview is
+       about three hundred CSS pixels wide; rendering it at 1080 was six times
+       the pixels anyone could see, and at twenty milliseconds a frame it was
+       most of the reason playback ran at four frames a second on a phone.
+       Export always goes back to 1 — see withFullSize. */
+    quality: 1,
     ctx: null, cv: null, W: 1080, H: 1920, U: 1080,
     headline: "", sub: "", handle: "@Nirayana.Soft"
   };
@@ -1780,16 +1831,31 @@
     c.font = (weight || 600) + " " + Math.round(size) + "px " + SANS;
     c.fillText(String(s), x, y);
   }
-  /* the size at which a line finally fits a width — a centred line that does
+  /* The size at which a line finally fits a width — a centred line that does
      not fit loses the same number of words at each end, which is the one
-     failure that reads as deliberate */
+     failure that reads as deliberate.
+
+     MEMOISED, because it is the single most expensive thing on the page. Each
+     call can run twenty measureText probes, a frame can carry twenty such
+     calls, and the answer depends only on the string, the starting size, the
+     width and the weight — none of which change between frames of the same
+     card. Four hundred text measurements per frame was most of the reason the
+     almanac cost six times what any other composer costs. */
+  var FITS = {}, FITN = 0;
   function fit(s, size, maxW, weight) {
+    var key = (weight || 600) + "|" + Math.round(size) + "|" + Math.round(maxW) + "|" + s;
+    var hit = FITS[key];
+    if (hit !== undefined) return hit;
     var c = S.ctx, f = size;
     for (var i = 0; i < 20; i++) {
       c.font = (weight || 600) + " " + Math.round(f) + "px " + SANS;
       if (c.measureText(String(s)).width <= maxW) break;
       f *= 0.94;
     }
+    /* an unbounded cache on a page that can scrub through a year of dates
+       would grow without end; this is a cache, not a ledger */
+    if (++FITN > 1200) { FITS = {}; FITN = 0; }
+    FITS[key] = f;
     return f;
   }
   function txtFit(s, x, y, size, col, align, weight, maxW) {
@@ -2973,7 +3039,10 @@
   }
 
   /* ---- the public draw -------------------------------------------------- */
-  function render(sel, C, p, forceKey) {
+  /* `quiet` skips the work only the side panels need. render() is called
+     sixty times a second during playback and scoring every composer to build
+     a list of alternatives that nothing reads is pure waste. */
+  function render(sel, C, p, forceKey, quiet) {
     var B = bagOf(sel, C);
     background();
     if (pal().key !== "parchment") stars();
@@ -3008,7 +3077,7 @@
       }
       captionBand(S.headline || "Studio Pro", S.sub);
       safeGuides();
-      return { composer: null, missing: B.missing, options: [] };
+      return { composer: null, missing: B.missing, options: quiet ? null : [] };
     }
     /* The leaf is a whole page: it paints its own paper to the frame's edge
        and carries its own foot, so the stage's background, stars and caption
@@ -3034,7 +3103,7 @@
     }
     safeGuides();
     return { composer: chosen.key, label: chosen.label, missing: B.missing,
-             options: options(B.bag) };
+             options: quiet ? null : options(B.bag) };
   }
 
   /* ---- the storyboard ----------------------------------------------------
@@ -3068,7 +3137,7 @@
     if (!shots || !shots.length) return render([], C, p, null);
     var cur = shotAt(shots, p);
     if (!cur) return render([], C, p, null);
-    var out = render(cur.shot.sel || [], C, cur.local, cur.shot.force || null);
+    var out = render(cur.shot.sel || [], C, cur.local, cur.shot.force || null, true);
     /* the dip: a quarter-second at each join, strongest at the boundary */
     var dipFor = 0.22;
     var into = cur.local * cur.len, left = cur.len - into;
@@ -3191,7 +3260,7 @@
     S.W = w; S.H = h; S.U = w; S.safe = false; S.tile = true;
     S.headline = ""; S.sub = "";
     var out = null;
-    try { out = render(sel, C, p, force); } catch (e) { out = null; }
+    try { out = render(sel, C, p, force, true); } catch (e) { out = null; }
     S.cv = keep.cv; S.ctx = keep.ctx; S.W = keep.W; S.H = keep.H; S.U = keep.U;
     S.safe = keep.safe; S.headline = keep.head; S.sub = keep.sub; S.tile = keep.tile;
     return out;
@@ -3205,9 +3274,18 @@
     },
     resize: function () {
       var r = RATIOS[S.ratio] || RATIOS["9:16"];
-      S.W = r.w; S.H = r.h; S.U = r.w;
-      if (S.cv) { S.cv.width = r.w; S.cv.height = r.h; }
+      var q = Math.max(0.25, Math.min(1, S.quality || 1));
+      S.W = Math.round(r.w * q); S.H = Math.round(r.h * q); S.U = S.W;
+      if (S.cv) { S.cv.width = S.W; S.cv.height = S.H; }
       STARS = null;
+    },
+    /* Run something at true export size, then put the preview size back.
+       Every composer sizes from S.U, so the picture is identical either way —
+       only the number of pixels differs. */
+    withFullSize: function (fn) {
+      var q = S.quality;
+      S.quality = 1; this.resize();
+      try { return fn(); } finally { S.quality = q; this.resize(); }
     },
     render: render, renderStory: renderStory, record: record,
     isRecording: isRecording, cancelRecording: cancelRecording,
@@ -3547,6 +3625,25 @@
   }
 
   /* ---- the stage --------------------------------------------------------- */
+  /* THE FRAME PATH. Nothing here may touch the DOM.
+
+     draw() used to rebuild the view switcher and the notes panel, and call
+     fitPreview, on every single frame. At sixty frames a second that is an
+     innerHTML churn and a forced layout sixty times a second on a page
+     carrying two hundred and fifty chips — which, measured on a throttled
+     phone, took the frame budget from twenty milliseconds to two hundred and
+     thirty-four. The main thread was blocked in quarter-second blocks, so
+     taps never landed: pressing Play made the whole panel stop responding,
+     including Pause.
+
+     So the frame path draws the canvas and does nothing else, and the panels
+     are synced only when the composition actually changes. */
+  function drawFrame() {
+    if (!window.SPStage || !C) return;
+    LAST = (STORY && SHOTS.length)
+      ? window.SPStage.renderStory(SHOTS, C, window.SPStage.S.p)
+      : window.SPStage.render(SEL, C, window.SPStage.S.p, FORCE, true);
+  }
   function draw() {
     if (!window.SPStage || !C) return;
     LAST = (STORY && SHOTS.length)
@@ -3857,6 +3954,15 @@
     if (w > box.clientWidth - 8) { w = box.clientWidth - 8; h = w * r.h / r.w; }
     cv.style.width = Math.round(w) + "px";
     cv.style.height = Math.round(h) + "px";
+    /* and render at about the resolution it is actually displayed at, rather
+       than at export size. Two device pixels per CSS pixel is the point past
+       which nobody can tell; beyond that it is only heat. */
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var want = Math.max(0.25, Math.min(1, (w * dpr) / r.w));
+    if (Math.abs(want - window.SPStage.S.quality) > 0.04) {
+      window.SPStage.S.quality = want;
+      window.SPStage.resize();
+    }
   }
   function toggle(id) {
     var i = SEL.indexOf(id);
@@ -3877,14 +3983,34 @@
   }
 
   /* ---- playback ---------------------------------------------------------- */
+  /* The preview is throttled and adapts. A reel is recorded at thirty frames
+     a second by the recorder, which drives its own clock; the PREVIEW only has
+     to look like motion, and a phone that cannot hold thirty is better off
+     drawing twenty good frames than queueing sixty it will never finish. */
+  var FPS_TARGET = 30, lastFrame = 0, slowRun = 0;
   function tick() {
     if (!PLAY) return;
+    RAF = requestAnimationFrame(tick);
+    var now = performance.now();
+    if (now - lastFrame < 1000 / FPS_TARGET - 1) return;
+    lastFrame = now;
     var el2 = (Date.now() - T0) / 1000;
     window.SPStage.S.p = (el2 % DUR) / DUR;
-    var sc = $("sp-scrub"); if (sc) sc.value = String(Math.round(window.SPStage.S.p * 1000));
-    showTime();
-    draw();
-    RAF = requestAnimationFrame(tick);
+    var t0 = performance.now();
+    drawFrame();
+    var cost = performance.now() - t0;
+    /* back off when the device cannot keep up, and creep back when it can */
+    if (cost > 1000 / FPS_TARGET) { if (++slowRun > 3 && FPS_TARGET > 12) {
+      FPS_TARGET -= 4; slowRun = 0; } }
+    else if (--slowRun < -40 && FPS_TARGET < 30) { FPS_TARGET += 2; slowRun = 0; }
+    /* the two cheap DOM writes, which are single attributes rather than a
+       rebuild, and only a few times a second */
+    if (!tick.ui || now - tick.ui > 120) {
+      tick.ui = now;
+      var sc = $("sp-scrub");
+      if (sc) sc.value = String(Math.round(window.SPStage.S.p * 1000));
+      showTime();
+    }
   }
   /* where the playhead is, in seconds — the slider alone does not say, and
      on a phone the thumb is often under a finger */
@@ -3902,8 +4028,20 @@
     else { var d = $("sp-dur"); if (d) DUR = +d.value; }
     var b = $("sp-play");
     if (b) b.textContent = on ? "Pause" : "Play";
-    if (on) { T0 = Date.now() - window.SPStage.S.p * DUR * 1000; tick(); }
-    else if (RAF) { cancelAnimationFrame(RAF); RAF = null; }
+    /* One animation loop at a time. The sample strip and the stage both
+       drawing on a phone is the difference between motion and a slideshow. */
+    STRIP.paused = on || STRIP.hover;
+    if (on) {
+      FPS_TARGET = 30; slowRun = 0; lastFrame = 0;
+      T0 = Date.now() - window.SPStage.S.p * DUR * 1000;
+      tick();
+    } else {
+      if (RAF) { cancelAnimationFrame(RAF); RAF = null; }
+      var sc2 = $("sp-scrub");
+      if (sc2) sc2.value = String(Math.round(window.SPStage.S.p * 1000));
+      showTime();
+      draw();                      /* one full pass, to resync the panels */
+    }
   }
 
   /* ---- persistence: the selection survives a reload ---------------------- */
@@ -3939,11 +4077,16 @@
   /* ---- export ------------------------------------------------------------ */
   function savePng() {
     var cv = $("sp-canvas");
+    /* the preview is deliberately low-resolution; a saved frame is not */
+    window.SPStage.withFullSize(function () {
+      window.SPStage.render(SEL, C, window.SPStage.S.p, FORCE);
+    });
     cv.toBlob(function (b) {
       var u = URL.createObjectURL(b), a = document.createElement("a");
       a.href = u; a.download = "nirayana-studio-pro.png";
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(function () { URL.revokeObjectURL(u); }, 4000);
+      draw();                      /* back to the preview size */
     }, "image/png");
   }
   /* The transport, while a recording owns the playhead.
@@ -3973,10 +4116,14 @@
     setTransport(true);
     btn.textContent = "Stop (0%)";
     var what = (STORY && SHOTS.length) ? SHOTS : SEL;
+    /* a recording is the artefact, so it is captured at export size */
+    var qKeep = window.SPStage.S.quality;
+    window.SPStage.S.quality = 1; window.SPStage.resize();
     window.SPStage.record(what, C, DUR, 30, FORCE, function (f) {
       btn.textContent = "Stop (" + Math.round(f * 100) + "%)";
     }).then(function (res) {
       setTransport(false); btn.textContent = was;
+      window.SPStage.S.quality = qKeep; window.SPStage.resize();
       /* put the playhead back where the reader left it, rather than at the
          end of the recording */
       window.SPStage.S.p = keepP;
@@ -3997,6 +4144,7 @@
           Math.round(res.blob.size / 1024) + " KB.");
     }).catch(function (e) {
       setTransport(false); btn.textContent = was;
+      window.SPStage.S.quality = qKeep; window.SPStage.resize();
       window.SPStage.S.p = keepP; draw();
       flash("Could not record: " + (e && e.message || e) +
             " — the still export always works.");
@@ -4064,7 +4212,7 @@
     var scrub = $("sp-scrub");
     if (scrub) scrub.addEventListener("input", function () {
       play(false);
-      window.SPStage.S.p = (+scrub.value) / 1000; showTime(); draw(); });
+      window.SPStage.S.p = (+scrub.value) / 1000; showTime(); drawFrame(); });
     $("sp-play") && $("sp-play").addEventListener("click", function () { play(!PLAY); });
     var dur = $("sp-dur");
     if (dur) dur.addEventListener("change", function () { DUR = +dur.value; showTime(); });
@@ -4120,12 +4268,14 @@
        be scrubbed by hand */
     var strip = $("sp-strip");
     if (strip) {
-      strip.addEventListener("mouseenter", function () { STRIP.paused = true; });
-      strip.addEventListener("mouseleave", function () { STRIP.paused = false; });
+      strip.addEventListener("mouseenter", function () {
+        STRIP.hover = true; STRIP.paused = true; });
+      strip.addEventListener("mouseleave", function () {
+        STRIP.hover = false; STRIP.paused = PLAY; });
       strip.addEventListener("pointerdown", function () { STRIP.dragging = true; });
       window.addEventListener("pointerup", function () { STRIP.dragging = false; });
-      strip.addEventListener("touchstart", function () { STRIP.paused = true; },
-                             { passive: true });
+      strip.addEventListener("touchstart", function () {
+        STRIP.hover = true; STRIP.paused = true; }, { passive: true });
     }
     var sh = $("sp-shuffle");
     if (sh) sh.addEventListener("click", function () { buildStrip(); });
