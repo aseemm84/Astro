@@ -74,13 +74,15 @@
   NCard.RATIOS = RATIOS;
   NCard.PAL = PAL;
 
-  var MARK = null, MARK_TRIED = false;
+  /* The mark comes from NMark, which carries it as a data: URI rather than
+     fetching assets/brand/mark.svg. Fetching it taints the canvas when the
+     page is opened as a local file — see brand-mark.js — and a tainted
+     canvas cannot export the card it has just drawn. */
+  var MARK = null;
   NCard.mark = function (cb) {
-    if (MARK || MARK_TRIED) return cb(MARK);
-    var im = new Image();
-    im.onload = function () { MARK = im; MARK_TRIED = true; cb(im); };
-    im.onerror = function () { MARK_TRIED = true; cb(null); };
-    im.src = "assets/brand/mark.svg";
+    if (MARK) return cb(MARK);
+    if (!window.NMark) return cb(null);
+    window.NMark.ready().then(function (im) { MARK = im; cb(im); });
   };
 
   function wrap(c, text, maxW) {

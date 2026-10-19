@@ -689,7 +689,10 @@
     S.pal = window.SPReel.pal(opts.palette || "gold");
     S.seconds = seconds;
     S.foot = opts.foot || "nirayana · computed in your browser · nothing sent anywhere";
-    S.clockMode = opts.clockMode || (years > 40 ? "year" : "elapsed");
+    /* a story that knows what its own clock counts wins: a four-day
+       simulation labelled "YEAR 0.0" is a clock measuring the wrong thing */
+    S.clockMode = opts.clockMode || S.clockMode ||
+                  (years > 40 ? "year" : "elapsed");
     /* HOW LONG A CAPTION TAKES TO ARRIVE, in days of simulated time.
 
        Tying it to the span over the length — a fifth of a second's worth of
@@ -730,8 +733,17 @@
     return S;
   }
 
+  /* Other engines register their own stories through this rather than being
+     listed here, so a template and the engine it needs live in one file and
+     a missing engine costs its own reels and nothing else. */
+  function add(T) {
+    if (!T || !T.key || byKey(T.key)) return false;
+    TEMPLATES.push(T);
+    return true;
+  }
+
   window.SPStories = {
-    TEMPLATES: TEMPLATES, byKey: byKey, groups: groups, build: build,
+    TEMPLATES: TEMPLATES, byKey: byKey, groups: groups, build: build, add: add,
     ready: ready, findAll: findAll,
     /* exposed so the harness can check the finder against brute force */
     _eclipse: eclipseStory, _thread: threadStory, _asta: astaStory

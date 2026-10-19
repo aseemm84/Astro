@@ -211,7 +211,7 @@
       stage: { x: W * 0.045, y: H * 0.160, w: W * 0.910, h: H * 0.470 },
       cap: { y: H * 0.665, h: H * 0.205 },
       tally: { y: H * 0.896 },
-      foot: { y: H * 0.945 }
+      foot: { y: H * 0.948 }
     };
   }
 
@@ -243,13 +243,54 @@
     c.restore();
   }
 
+  /* ---- the mark -----------------------------------------------------------
+     The same assets/brand/mark.svg the cards and the Studio draw, loaded once
+     and kept. It must be LOADED BEFORE A RECORDING STARTS, not merely
+     requested: an image that arrives on frame forty gives a video whose first
+     second and a half is unbranded, and nobody watching a reel back notices
+     that the logo faded in — they notice it on the second viewing, by which
+     time the file is posted. So `markReady` returns a promise and the
+     recorder waits on it. */
+  var MARK = null;
+  function markReady() {
+    if (MARK) return Promise.resolve(MARK);
+    if (!window.NMark) return Promise.resolve(null);
+    return window.NMark.ready().then(function (im) { MARK = im; return im; });
+  }
+
+  /* The lockup: mark, handle, promise. Centred as one group rather than
+     pinned to the corners, because a reel is watched in a feed where the
+     corners are where the platform puts its own furniture. */
   function drawFoot(c, W, H, B, reel, P, p) {
+    var fade = smooth(clamp(p / 0.05, 0, 1));
+    var mk = W * 0.062;
+    var gap = W * 0.019;
     c.save();
-    c.globalAlpha = 0.45 * smooth(clamp(p / 0.05, 0, 1));
-    c.fillStyle = P.dim;
-    c.textAlign = "center";
+    c.textBaseline = "alphabetic";
+    c.font = "600 " + (W * 0.0245).toFixed(1) + "px " + SERIF;
+    var handle = "@Nirayana.Soft";
+    var hw = c.measureText(handle).width + W * 0.0245 * 0.06 * (handle.length - 1);
     c.font = (W * 0.0165).toFixed(1) + "px " + SERIF;
-    tracked(c, reel.foot, W / 2, B.foot.y, W * 0.006, "center");
+    var pw = c.measureText(reel.foot).width;
+    var textW = Math.max(hw, pw);
+    var total = (MARK ? mk + gap : 0) + textW;
+    var x = (W - total) / 2;
+    var baseY = B.foot.y;
+
+    if (MARK) {
+      c.globalAlpha = 0.92 * fade;
+      try { c.drawImage(MARK, x, baseY - mk * 0.78, mk, mk); } catch (e) {}
+      x += mk + gap;
+    }
+    c.textAlign = "left";
+    c.globalAlpha = 0.88 * fade;
+    c.fillStyle = P.gold;
+    c.font = "600 " + (W * 0.0245).toFixed(1) + "px " + SERIF;
+    tracked(c, handle, x, baseY - W * 0.019, W * 0.0245 * 0.06, "left");
+    c.globalAlpha = 0.46 * fade;
+    c.fillStyle = P.dim;
+    c.font = (W * 0.0165).toFixed(1) + "px " + SERIF;
+    c.fillText(reel.foot, x, baseY + W * 0.006);
     c.restore();
   }
 
@@ -258,9 +299,12 @@
      only thing on the frame moving continuously. */
   function drawClock(c, W, H, B, reel, P, now) {
     var yrs = (now.t - reel.tl.t0) / DAY / 365.2564;
-    var txt = reel.clockMode === "year"
-      ? String(new Date(now.t).getUTCFullYear())
-      : "YEAR " + (yrs < 10 ? yrs.toFixed(1) : Math.round(yrs));
+    var txt;
+    if (reel.clockMode === "year") txt = String(new Date(now.t).getUTCFullYear());
+    else if (reel.clockMode === "days") {
+      var d = (now.t - reel.tl.t0) / DAY;
+      txt = "DAY " + (d < 10 ? d.toFixed(2) : d.toFixed(1));
+    } else txt = "YEAR " + (yrs < 10 ? yrs.toFixed(1) : Math.round(yrs));
     c.save();
     c.globalAlpha = 0.13;
     c.fillStyle = P.gold;
@@ -484,6 +528,7 @@
     c.lineWidth = Math.max(0.8, r * 0.0032);
     c.beginPath();
     for (i = 0; i <= idx && i < n; i++) {
+      if (!isFinite(ev[i].lon) || !isFinite(ev[i].lat)) continue;
       a = (ev[i].lon - 90) * R2;
       var q = r + ev[i].lat * K;
       x = cx + Math.cos(a) * q; y = cy + Math.sin(a) * q;
@@ -494,6 +539,7 @@
 
     for (i = 0; i <= idx && i < n; i++) {
       var e = ev[i];
+      if (!isFinite(e.lon) || !isFinite(e.lat)) continue;
       a = (e.lon - 90) * R2;
       var qq = r + e.lat * K;
       x = cx + Math.cos(a) * qq; y = cy + Math.sin(a) * qq;
@@ -635,8 +681,157 @@
     G.star(c, cx, cy, r * 0.016, P.warm, { spikes: 0.3, core: 0.5 });
   }
 
+  /* --- 5. the drift --------------------------------------------------------
+     Two engines asked the same question, and the answer is the gap between
+     them. The ring is where the modern ephemeris puts the graha; the dot's
+     distance from the ring is how far the Sūrya Siddhānta puts it somewhere
+     else, out for ahead and in for behind.
+
+     The scale is MEASURED from the run — the largest error it actually
+     contains — because a fixed degrees-per-pixel either flattens Budha, whose
+     error swings through whole signs, or sends Śani off the frame. The scale
+     is then printed on the frame, since a deviation plot without its scale
+     is a shape rather than a measurement. */
+  function stageDrift(c, G, R, reel, P, now, idx, p) {
+    var cx = R.x + R.w / 2, cy = R.y + R.h * 0.47;
+    /* the rāśi ring sits well outside the zero line here, and its labels sit
+       outside that again — so the OUTERMOST thing has to be what fits the
+       stage, and the data radius is derived from it. Sizing the data first
+       pushed KUMBHA and MITHUNA off both edges. */
+    var rim1 = Math.min(R.w * 0.40, R.h * 0.42);
+    var r = rim1 / 1.42;
+    var D = reel.drift, n = D.lon.length;
+    var K = r * 0.34 / Math.max(0.25, D.scale);
+    var i, a, q, x, y;
+    var upto = 0;
+    while (upto < n && D.t[upto] <= now.t) upto++;
+
+    /* the zero line: agreement */
+    c.save();
+    c.globalAlpha = 0.5;
+    c.strokeStyle = G.rgba(P.accent, 0.8);
+    c.lineWidth = Math.max(1, r * 0.004);
+    c.beginPath(); c.arc(cx, cy, r, 0, TAU); c.stroke();
+    c.globalAlpha = 0.16;
+    c.strokeStyle = G.rgba(P.line, 1);
+    c.lineWidth = Math.max(0.6, r * 0.002);
+    [-1, 1].forEach(function (s) {
+      for (var k = 1; k <= 3; k++) {
+        c.beginPath();
+        c.arc(cx, cy, r + s * k * (D.scale / 3) * K, 0, TAU);
+        c.stroke();
+      }
+    });
+    c.restore();
+    rim(c, G, cx, cy, rim1, P, 0.6);
+
+    c.save();
+    c.globalAlpha = 0.85;
+    c.strokeStyle = G.rgba(P.gold, 1);
+    c.lineWidth = Math.max(1, r * 0.0055);
+    c.beginPath();
+    for (i = 0; i < upto; i++) {
+      a = (D.lon[i] - 90) * R2;
+      q = r + D.err[i] * K;
+      x = cx + Math.cos(a) * q; y = cy + Math.sin(a) * q;
+      if (i) c.lineTo(x, y); else c.moveTo(x, y);
+    }
+    c.stroke();
+    c.restore();
+
+    if (upto > 0) {
+      a = (D.lon[upto - 1] - 90) * R2;
+      q = r + D.err[upto - 1] * K;
+      x = cx + Math.cos(a) * q; y = cy + Math.sin(a) * q;
+      /* the spoke from the ring to the point: the error, drawn as a length */
+      c.save();
+      c.globalCompositeOperation = "lighter";
+      c.strokeStyle = G.rgba(P.hot, 0.8);
+      c.lineWidth = Math.max(1, r * 0.006);
+      c.beginPath();
+      c.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
+      c.lineTo(x, y);
+      c.stroke();
+      c.restore();
+      G.star(c, x, y, r * 0.026, P.hot, { spikes: 1 });
+      G.star(c, cx + Math.cos(a) * r, cy + Math.sin(a) * r, r * 0.013,
+             P.accent, { spikes: 0.4 });
+    }
+    c.save();
+    c.globalAlpha = 0.6;
+    c.fillStyle = G.rgba(P.dim, 1);
+    c.textAlign = "center";
+    c.font = (r * 0.068).toFixed(1) + "px " + SERIF;
+    c.fillText("the ring is the modern place · each step out is " +
+               (D.scale / 3).toFixed(1) + "°",
+               cx, Math.min(cy + r * 1.62, R.y + R.h - r * 0.02));
+    c.restore();
+    G.star(c, cx, cy, r * 0.014, P.warm, { spikes: 0.2, core: 0.45 });
+  }
+
+  /* --- 6. a simulated orbit ------------------------------------------------
+     Earth-centred, the Moon's integrated path accumulating behind it, and
+     the direction of the Sun marked — because half of what the counterfactual
+     changes is the phase, and a path with no Sun in it cannot show that. */
+  function stageOrbit(c, G, R, reel, P, now, idx, p) {
+    var cx = R.x + R.w / 2, cy = R.y + R.h * 0.47;
+    var r = Math.min(R.w * 0.42, R.h * 0.44);
+    var O = reel.orbit, n = O.x.length;
+    var upto = 0;
+    while (upto < n && O.t[upto] <= now.t) upto++;
+    if (upto < 1) upto = 1;
+    var K = r * 0.92 / Math.max(1e-9, O.extent);
+
+    /* the Earth's own disc, to scale with the path */
+    c.save();
+    c.globalAlpha = 0.35;
+    c.strokeStyle = G.rgba(P.line, 1);
+    c.lineWidth = Math.max(0.6, r * 0.002);
+    c.beginPath(); c.arc(cx, cy, Math.max(2, O.earthR * K), 0, TAU); c.stroke();
+    c.restore();
+
+    c.save();
+    c.globalAlpha = 0.75;
+    c.strokeStyle = G.rgba(P.gold, 1);
+    c.lineWidth = Math.max(1, r * 0.004);
+    c.beginPath();
+    for (var i = 0; i < upto; i++) {
+      var x = cx + O.x[i] * K, y = cy + O.y[i] * K;
+      if (i) c.lineTo(x, y); else c.moveTo(x, y);
+    }
+    c.stroke();
+    c.restore();
+
+    /* where the Sun is, as a direction rather than a body */
+    if (O.sun && upto > 0) {
+      var sa = Math.atan2(O.sun.y[upto - 1], O.sun.x[upto - 1]);
+      c.save();
+      c.globalAlpha = 0.45;
+      c.strokeStyle = G.rgba(P.accent, 1);
+      c.setLineDash([r * 0.03, r * 0.03]);
+      c.lineWidth = Math.max(1, r * 0.004);
+      c.beginPath();
+      c.moveTo(cx, cy);
+      c.lineTo(cx + Math.cos(sa) * r * 1.06, cy + Math.sin(sa) * r * 1.06);
+      c.stroke();
+      c.restore();
+      c.save();
+      c.globalAlpha = 0.65;
+      c.fillStyle = G.rgba(P.accent, 1);
+      c.textAlign = "center";
+      c.font = (r * 0.062).toFixed(1) + "px " + SERIF;
+      c.fillText("to the Sun", cx + Math.cos(sa) * r * 1.18,
+                 cy + Math.sin(sa) * r * 1.18);
+      c.restore();
+    }
+    G.star(c, cx + O.x[upto - 1] * K, cy + O.y[upto - 1] * K, r * 0.030,
+           P.hot, { spikes: 1 });
+    G.star(c, cx, cy, r * 0.022, P.warm, { spikes: 0.45, core: 0.8 });
+  }
+
   var STAGES = { nodes: stageNodes, thread: stageThread,
-                 whirl: stageWhirl, loops: stageLoops };
+                 whirl: stageWhirl, loops: stageLoops,
+                 drift: stageDrift, orbit: stageOrbit };
 
   /* ---- the frame ==========================================================
      ONE definition of "the frame at p", as everywhere else in this codebase,
@@ -731,6 +926,9 @@
      the tab is in the background. A reel that came out short because the
      user looked away is a bug report nobody can reproduce. */
   function record(canvas, seconds, fps, drawAt, onProgress) {
+    /* the mark first: an unbranded first second and a half is the kind of
+       thing nobody sees until the file is posted */
+    return markReady().then(function () {
     return new Promise(function (resolve, reject) {
       var stream;
       try { stream = canvas.captureStream(0); }
@@ -771,13 +969,14 @@
         setTimeout(pump, Math.max(4, 1000 / fps / 4));
       })();
     });
+    });
   }
   var RECJOB = null;
   function cancelRecording() { if (RECJOB) RECJOB.cancel = true; }
   function isRecording() { return !!RECJOB; }
 
   window.SPReel = {
-    record: record, cancelRecording: cancelRecording, isRecording: isRecording,
+    record: record, markReady: markReady, mark: function () { return MARK; }, cancelRecording: cancelRecording, isRecording: isRecording,
     PALETTES: PALETTES, pal: pal, bands: bands, frameAt: frameAt,
     buildTimeline: buildTimeline, clockAt: clockAt,
     SERIF: SERIF, RASHI: RASHI, dateCaps: dateCaps,

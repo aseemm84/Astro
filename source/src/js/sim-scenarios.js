@@ -570,8 +570,24 @@
     var el = S.elements(w, "Moon", "Earth");
     var P = el && el.periodDays ? el.periodDays : S.REAL.siderealMonth;
     if (!(P > 0) || !isFinite(P)) P = S.REAL.siderealMonth;
+    /* A MARGINALLY BOUND ORBIT HAS AN ENORMOUS PERIOD, AND IT IS A LIE.
+
+       At 1.45× speed the Moon's two-body energy is still just negative, so
+       elements() dutifully reports a semi-major axis of 0.56 AU and a period
+       of two hundred and forty years. Eighteen turns of that is one and a
+       half million days, which at an hour and a half a step is twenty-two
+       million steps — eleven seconds of a frozen tab to measure a month that
+       does not exist, because long before the Moon came back the Sun would
+       have taken it.
+
+       So the period is capped by the Hill radius: an orbit whose far point
+       reaches past it is not going to complete, and measuring it is measuring
+       nothing. Beyond that the run is capped outright, and the aliasing guard
+       in measurePeriod reports honestly that no period was found. */
+    var hill = S.hillRadius ? S.hillRadius(w) : null;
+    if (el && hill && el.apoapsis != null && el.apoapsis > hill) P = 0;
     var turns = 18;
-    var days = Math.max(P * turns, 2);
+    var days = Math.max(Math.min(P * turns, 4000), 2);
     /* forty samples a turn, which leaves a wide margin over the six the
        aliasing guard insists on */
     var samples = Math.min(20000, Math.max(900, Math.round(turns * 40)));

@@ -389,6 +389,142 @@ console.log("\nA story chosen mid-build gets its own span");
   ok(/8 years/.test(r.sub), "and says so", r.sub);
 }
 
+/* ---- 8b. the mark ------------------------------------------------------
+   THE REGRESSION THAT WAS ALREADY THERE. Loading assets/brand/mark.svg into
+   an Image and drawing it taints the canvas when the page is opened as a
+   local file: Chromium gives every file:// document its own opaque origin,
+   so the site's own logo is cross-origin to the site. A tainted canvas
+   refuses toDataURL, toBlob, getImageData and captureStream — every way
+   this site has of producing a card, a still or a reel. Over http it never
+   happens, which is why no harness had ever seen it, and the configuration
+   it breaks is the one this site is for: a folder of files on a Mac.
+
+   This file is loaded over file:// precisely so that it would. */
+console.log("\nThe mark is on the frame, and does not poison it");
+{
+  const r = await pg.evaluate(async () => {
+    const im = await window.SPReel.markReady();
+    if (!im) return { loaded: false };
+    const cv = document.getElementById("reel-canvas");
+    const c = cv.getContext("2d");
+    window.SPReel.frameAt(c, 1080, 1920, window.__reel.reel(), 0.5);
+    let exportOk = true, grab = true;
+    try { cv.toDataURL("image/png"); } catch (e) { exportOk = false; }
+    let lit = 0;
+    try {
+      /* the foot band: the logo and the handle live here and nothing else
+         bright does, so ink in this strip is the lockup */
+      const d = c.getImageData(0, Math.round(1920 * 0.915), 1080,
+                               Math.round(1920 * 0.075)).data;
+      for (let i = 0; i < d.length; i += 4)
+        if (d[i] > 55 || d[i + 1] > 45) lit++;
+    } catch (e) { grab = false; }
+    let streamOk = true;
+    try { cv.captureStream(0).getVideoTracks()[0].requestFrame(); }
+    catch (e) { streamOk = false; }
+    return { loaded: true, exportOk, grab, lit, streamOk,
+             src: im.src.slice(0, 11), w: im.width };
+  });
+  ok(r.loaded, "the mark loads");
+  ok(r.src === "data:image/", "it is a data: URI, not a fetched file", r.src);
+  ok(r.exportOk, "the canvas can still be exported to PNG after drawing it");
+  ok(r.grab, "and read back with getImageData");
+  ok(r.streamOk, "and captured as a stream, which is what recording needs");
+  ok(r.lit > 900, "the foot band carries the lockup (" + r.lit + " lit px)");
+}
+
+/* ---- 8c. the other three engines ---------------------------------------
+   The point of these is not variety. Each can only be made by a site that
+   has the engine underneath, so each is checked against something outside
+   the reel: the Siddhanta's drift against the modern ephemeris it is being
+   compared to, its eclipses against the library's eclipse search, and the
+   simulated orbits against the integrator's own conservation. */
+console.log("\nThe reels from the other engines say true things");
+{
+  const r = await pg.evaluate(() => {
+    const out = {};
+    /* 1. the drift really is the gap between the two engines */
+    const D = window.SPStories.build("ssdrift.jupiter",
+      { t0: Date.parse("2026-01-01"), years: 40 });
+    const S = window.SSEngine;
+    let worst = 0;
+    for (let i = 0; i < D.drift.t.length; i += 7) {
+      const t = D.drift.t[i];
+      const ss = S.trueLongitude("Guru", S.ahargana(t)).lon;
+      const md = window.__kSidAt("Jupiter", new Date(t));
+      let d = (ss - md) % 360; if (d > 180) d -= 360; if (d < -180) d += 360;
+      worst = Math.max(worst, Math.abs(d - D.drift.err[i]));
+    }
+    out.driftWorst = worst;
+    out.driftRange = [Math.min(...D.drift.err), Math.max(...D.drift.err)];
+
+    /* 2. every eclipse the Siddhanta reel says is real, is real */
+    const A = window.Astronomy;
+    const t0 = Date.parse("2026-01-01"), t1 = t0 + 25 * 365.2564 * 86400000;
+    const real = [];
+    let l = A.SearchLunarEclipse(new Date(t0));
+    for (let i = 0; i < 300 && l && l.peak.date.getTime() < t1; i++) {
+      real.push(l.peak.date.getTime()); l = A.NextLunarEclipse(l.peak); }
+    let s2 = A.SearchGlobalSolarEclipse(new Date(t0));
+    for (let i = 0; i < 300 && s2 && s2.peak.date.getTime() < t1; i++) {
+      real.push(s2.peak.date.getTime()); s2 = A.NextGlobalSolarEclipse(s2.peak); }
+    const E = window.SPStories.build("sseclipse", { t0, years: 25 });
+    let badConfirm = 0, badMiss = 0;
+    E.events.forEach(e => {
+      const near = real.some(t => Math.abs(t - e.t) < 2.5 * 86400000);
+      if (e.tally === "confirmed" && !near) badConfirm++;
+      if (e.tally === "missed" && !near) badMiss++;
+    });
+    out.confirmed = E.events.filter(e => e.tally === "confirmed").length;
+    out.missed = E.events.filter(e => e.tally === "missed").length;
+    out.badConfirm = badConfirm; out.badMiss = badMiss;
+    /* the dates must be in this century, not the fifth: an ahargana is a
+       julian day minus an epoch, and feeding one to msOf lands in year 415 */
+    out.firstYear = new Date(E.events[0].t).getUTCFullYear();
+
+    /* 3. the simulated path is the integrator's, and it ends where the run does */
+    const M = window.SPStories.build("sim.stop", { t0: Date.now() });
+    const last = Math.sqrt(M.orbit.x[M.orbit.x.length - 1] ** 2 +
+                           M.orbit.y[M.orbit.y.length - 1] ** 2);
+    const first = Math.sqrt(M.orbit.x[0] ** 2 + M.orbit.y[0] ** 2);
+    out.fallFrom = first; out.fallTo = last;
+    out.monotone = M.orbit.x.every((_, i) => i === 0 ||
+      Math.sqrt(M.orbit.x[i] ** 2 + M.orbit.y[i] ** 2) <=
+      Math.sqrt(M.orbit.x[i - 1] ** 2 + M.orbit.y[i - 1] ** 2) + 1);
+    out.simClock = M.clockMode;
+    const C = window.SPStories.build("sim.half", { t0: Date.now() });
+    out.halfMax = Math.max(...C.orbit.x.map((v, i) =>
+      Math.sqrt(v ** 2 + C.orbit.y[i] ** 2)));
+    return out;
+  });
+  ok(r.driftWorst < 1e-9,
+     "the drift plotted is exactly Siddhānta minus modern",
+     "worst mismatch " + r.driftWorst);
+  ok(Math.abs(r.driftRange[0]) + Math.abs(r.driftRange[1]) > 1,
+     "and it is a real gap: " + r.driftRange[0].toFixed(2) + "° to " +
+     r.driftRange[1].toFixed(2) + "° for Guru over 40 years");
+  ok(r.firstYear > 2000 && r.firstYear < 2100,
+     "Siddhānta eclipse dates land in this century, not the fifth",
+     "first is " + r.firstYear);
+  ok(r.badConfirm === 0,
+     "every eclipse the reel calls confirmed is one the library also has",
+     r.badConfirm + " were not");
+  ok(r.badMiss === 0, "and every one it calls missed is real too");
+  ok(r.confirmed > 20 && r.missed > 10,
+     "it confirms " + r.confirmed + " and misses " + r.missed +
+     " over 25 years");
+  ok(r.monotone, "a stopped Moon falls monotonically inward");
+  ok(r.fallTo < r.fallFrom * 0.1,
+     "and the drawn path ends at the ground, not at the origin: " +
+     Math.round(r.fallFrom).toLocaleString("en") + " km to " +
+     Math.round(r.fallTo).toLocaleString("en"));
+  ok(r.simClock === "days", "a four-day run is clocked in days, not years",
+     r.simClock);
+  ok(Math.abs(r.halfMax - 192200) / 192200 < 0.25,
+     "the half-distance Moon orbits near half the distance: " +
+     Math.round(r.halfMax).toLocaleString("en") + " km");
+}
+
 /* ---- 9. the page -------------------------------------------------------- */
 console.log("\nThe page behaves");
 {

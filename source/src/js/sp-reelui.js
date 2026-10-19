@@ -271,6 +271,9 @@
     fit();
     picker();
     drawFrame();
+    /* the mark is fetched once; the frame is redrawn when it lands so the
+       preview and the export agree from the first frame onward */
+    window.SPReel.markReady().then(function () { drawFrame(); });
 
     var pal = $("reel-palette");
     if (pal) {

@@ -136,6 +136,10 @@
      of the frame's brightness — four spikes, because every lens anyone has
      ever looked through puts spikes on a bright point. */
   function star(c, x, y, r, col, opt) {
+    /* a light with no finite place is not drawn. createRadialGradient throws
+       on a non-finite radius, and one NaN in one stage's data took the whole
+       frame down rather than losing one dot. */
+    if (!isFinite(x) || !isFinite(y) || !isFinite(r) || r <= 0) return;
     opt = opt || {};
     var spikes = opt.spikes == null ? 1 : opt.spikes;
     var g = c.createRadialGradient(x, y, 0, x, y, Math.max(0.6, r * 6));

@@ -575,13 +575,13 @@
      place, the handle. The content is the differentiator, so the design stays
      out of its way — and everything on it came from the day object, so the
      picture cannot contradict the caption beside it. */
+  /* via NMark, a data: URI — fetching the SVG taints the canvas on file://
+     and a tainted canvas cannot export the card. See brand-mark.js. */
   var MARKIMG = null;
   function markImage(cb) {
     if (MARKIMG) return cb(MARKIMG);
-    var im = new Image();
-    im.onload = function () { MARKIMG = im; cb(im); };
-    im.onerror = function () { cb(null); };
-    im.src = "assets/brand/mark.svg";
+    if (!window.NMark) return cb(null);
+    window.NMark.ready().then(function (im) { MARKIMG = im; cb(im); });
     return null;
   }
   function wrap(c, text, maxW) {

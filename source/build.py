@@ -324,13 +324,15 @@ def build_shared():
         "places.js": brandify(read(SRC, "js", "places.js")),
         # studio.html's own script: what is worth posting today, the caption and
         # the image. Loaded only on that page, like now.js and calendar.js.
-        "studio.js": brandify(read(SRC, "js", "studio.js")),
+        "studio.js": brandify(read(SRC, "js", "brand-mark.js") + "\n" +
+                              read(SRC, "js", "studio.js")),
         # The reel strip and the card composer. A separate file from studio.js
         # because it is a separate concern and because the Studio's own card
         # keeps working if this one fails to load; it rides on that page because
         # the date, the place, the language and the ratio are already there, and
         # three copies of those controls would be three things to keep in step.
-        "cards.js": brandify(read(SRC, "js", "cards.js")),
+        "cards.js": brandify(read(SRC, "js", "brand-mark.js") + "\n" +
+                             read(SRC, "js", "cards.js")),
         # Studio Pro ships as one file built from six: the node registry, the
         # almanac leaf, the composers that draw from shapes, the Director layer
         # model, its panel, and the page wiring. Six files because they are six
@@ -387,9 +389,20 @@ def build_shared():
         # stories that drive it, and the page. It rides on sp-nodes and
         # sp-cycles for the generic cycle template, and on engine.js for
         # every position it plots.
-        "reel.js": brandify(read(SRC, "js", "sp-glow.js") + "\n" +
+        # The Reel Studio carries FOUR engines, because the point of the
+        # second three is that only a site which has them can make those
+        # reels: the Surya Siddhanta's own method, the n-body integrator, and
+        # the cycle registry, alongside the modern ephemeris in engine.js.
+        "reel.js": brandify(read(SRC, "js", "brand-mark.js") + "\n" +
+                            read(SRC, "js", "sp-glow.js") + "\n" +
                             read(SRC, "js", "sp-reel.js") + "\n" +
+                            read(SRC, "js", "ss-engine.js") + "\n" +
+                            read(SRC, "js", "sp-nodes.js") + "\n" +
+                            read(SRC, "js", "sp-cycles.js") + "\n" +
+                            read(SRC, "js", "sim-engine.js") + "\n" +
+                            read(SRC, "js", "sim-scenarios.js") + "\n" +
                             read(SRC, "js", "sp-stories.js") + "\n" +
+                            read(SRC, "js", "sp-stories-engines.js") + "\n" +
                             read(SRC, "js", "sp-reelui.js")),
         "simulation.js": brandify(read(SRC, "js", "sim-engine.js") + "\n" +
                                   read(SRC, "js", "sim-scenarios.js") + "\n" +
