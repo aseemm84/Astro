@@ -312,6 +312,42 @@ say(Math.abs(agree.c.tithi.v - agree.elong / 12) < 1e-9 &&
 say(agree.c.tithi.name === agree.tithiName && agree.c.nak.name === "Pūrva Āṣāḍhā" || agree.c.nak.name.length > 2,
   `and names the same tithi the day object does (${agree.c.tithi.name}, ${agree.c.nak.name})`);
 
+/* ---- the two-moment card -------------------------------------------- */
+console.log("\nthe same day at sunrise and at a moment, as the card prints it");
+const EP = await page.evaluate(() => {
+  const P = { n: "Delhi", lat: 28.6139, lon: 77.2090, tz: 5.5 };
+  const S = { place: P, lang: "en" };
+  const out = {};
+  /* today: "now" must be a real now inside the day */
+  const now = new Date();
+  const T = window.NP.dayOfDate(now.getFullYear(), now.getMonth() + 1, now.getDate(),
+                                P, { ends: true, month: true });
+  out.today = window.__ncElongPair(T, S);
+  /* a day that is not today: "now" must fall back to midday, not to an
+     instant that has not happened */
+  const F = window.NP.dayOfDate(2027, 3, 14, P, { ends: true, month: true });
+  out.future = window.__ncElongPair(F, S);
+  out.futureSunrise = F.sunrise; out.futureSunset = F.sunset;
+  return out;
+});
+const n360 = x => ((x % 360) + 360) % 360;
+["today", "future"].forEach(k => {
+  const E = EP[k];
+  say(E && E.sunrise && E.now, `${k}: both instants present`);
+  [["sunrise", E.sunrise], ["now", E.now]].forEach(([w, v]) => {
+    say(Math.abs(n360(v.moon - v.sun) - v.elong) < 1e-9,
+      `${k}/${w.padEnd(7)} Moon ${v.moon.toFixed(2)}° − Sun ${v.sun.toFixed(2)}° = ${v.elong.toFixed(2)}° — the printed subtraction holds`);
+  });
+});
+say(EP.today.isToday, `for today the second instant really is now, not midday`);
+say(!EP.future.isToday && /midday/.test(EP.future.nowClock),
+  `for a day that is not today it falls back to midday and says so ("${EP.future.nowClock}")`);
+/* the Moon must have moved between the two instants, and by a believable rate */
+const dt = (EP.future.now.elong - EP.future.sunrise.elong + 360) % 360;
+const hrs = (((EP.futureSunset - EP.futureSunrise) / 2)) / 3600000;
+say(dt > 0 && dt / hrs > 0.3 && dt / hrs < 0.75,
+  `the Sun-to-Moon angle opened ${dt.toFixed(2)}° in ${hrs.toFixed(1)} h = ${(dt / hrs * 24).toFixed(1)}°/day — the Moon gains 11.8 to 15.4°/day on the Sun`);
+
 console.log("\nthe orbit rose — petals counted, not asserted");
 const rose = await gp.evaluate(async () => {
   const out = {};

@@ -443,6 +443,188 @@
         return rows.length * f * 1.95;
       }
     },
+    elongation: {
+      label: "Sun-to-Moon angle", hint: "the ring, both instants, with the arc between",
+      fields: [["size", "Height", "0.36"]],
+      run: function (c, S, s, draw) {
+        /* ONE RING, TWO MOMENTS. A tithi is the angle from the Sun to the Moon
+           and nothing else, so the honest picture of it is the two bodies on a
+           circle with the arc between them drawn. Putting sunrise and now on
+           the SAME ring is what makes the card worth reading twice: the Sun
+           has barely moved, the Moon visibly has, and the arc between them has
+           grown by the few degrees that are the difference between the tithi
+           an almanac prints and the tithi running at this minute.
+
+           The ticks are every 12°, because 12° is one tithi. Counting them
+           round to the Moon is the definition, performed. */
+        var E = S.ctx.elong;
+        var frac = Math.max(0.16, Math.min(0.6, parseFloat(s.size) || 0.36));
+        /* Scaled by S.u/S.W along with everything else. A slot sized only from
+           the frame does not shrink when the card rescales to fit, so the fit
+           pass can shrink every word on the card and still be eighteen pixels
+           over — which is exactly what this did at 4:5. */
+        var R = Math.min(S.inner * 0.40, S.room * frac * 0.46) * (S.u / S.W);
+        var h = R * 2.56;
+        if (!E || E.sunrise == null) {
+          if (draw) {
+            c.font = "500 " + Math.round(S.u * 0.026) + "px " + SANS;
+            c.fillStyle = PAL.dim;
+            c.fillText("(the diagram needs the day's longitudes)", S.pad, S.y + S.u * 0.04);
+          }
+          return S.u * 0.07;
+        }
+        if (!draw) return h;
+
+        var cx = S.W / 2, cy = S.y + h * 0.545;
+        function at(lon, r) {
+          var a = (lon - 90) * Math.PI / 180;
+          return [cx + Math.cos(a) * r, cy + Math.sin(a) * r];
+        }
+        /* the ecliptic, and the thirty twelve-degree steps a tithi is one of */
+        c.strokeStyle = "rgba(255,255,255,0.14)";
+        c.lineWidth = Math.max(1, S.u * 0.0018);
+        c.beginPath(); c.arc(cx, cy, R, 0, 6.2832); c.stroke();
+        for (var t = 0; t < 30; t++) {
+          var p0 = at(t * 12, R * 0.955), p1 = at(t * 12, R);
+          c.strokeStyle = (t % 5 === 0) ? "rgba(255,255,255,0.34)" : "rgba(255,255,255,0.15)";
+          c.beginPath(); c.moveTo(p0[0], p0[1]); c.lineTo(p1[0], p1[1]); c.stroke();
+        }
+        /* the two arcs: sunrise set back and dim, now in front and bright */
+        function arc(sun, moon, r, col, alpha, w) {
+          c.save();
+          c.globalAlpha = alpha;
+          c.strokeStyle = col; c.lineWidth = w;
+          c.beginPath();
+          c.arc(cx, cy, r, (sun - 90) * Math.PI / 180,
+                (sun - 90) * Math.PI / 180 + ((moon - sun + 360) % 360) * Math.PI / 180);
+          c.stroke();
+          c.restore();
+        }
+        function body(lon, r, col, glyph, dim) {
+          var q = at(lon, r);
+          c.save();
+          if (!dim) { c.shadowColor = col; c.shadowBlur = R * 0.14; }
+          c.globalAlpha = dim ? 0.45 : 1;
+          c.fillStyle = col;
+          c.beginPath(); c.arc(q[0], q[1], R * (dim ? 0.055 : 0.075), 0, 6.2832); c.fill();
+          c.restore();
+          c.save();
+          c.globalAlpha = dim ? 0.6 : 1;
+          c.font = "700 " + Math.round(R * (dim ? 0.07 : 0.095)) + "px " + SANS;
+          c.fillStyle = PAL.navy; c.textAlign = "center"; c.textBaseline = "middle";
+          c.fillText(glyph, q[0], q[1]);
+          c.restore();
+          c.textAlign = "left"; c.textBaseline = "alphabetic";
+        }
+        if (E.now) {
+          arc(E.sunrise.sun, E.sunrise.moon, R * 0.74, PAL.dim, 0.5, R * 0.075);
+          body(E.sunrise.sun, R * 0.74, PAL.dim, "S", true);
+          body(E.sunrise.moon, R * 0.74, PAL.dim, "M", true);
+        }
+        var cur = E.now || E.sunrise;
+        arc(cur.sun, cur.moon, R, PAL.gold, 0.85, R * 0.105);
+        body(cur.sun, R, PAL.gold, "S", false);
+        body(cur.moon, R, PAL.ink, "M", false);
+
+        /* the angle, in the middle, which is the whole quantity */
+        c.textAlign = "center";
+        c.font = "700 " + Math.round(R * 0.24) + "px " + SANS;
+        c.fillStyle = PAL.ink;
+        c.fillText(cur.elong.toFixed(2) + "°", cx, cy + R * 0.03);
+        c.font = "500 " + Math.round(R * 0.095) + "px " + SANS;
+        c.fillStyle = PAL.dim;
+        c.fillText("Sun → Moon", cx, cy + R * 0.17);
+        c.fillText("each tick 12° = one tithi", cx, cy + R * 0.30);
+        /* Which arc is which. Without this the two read as one thick arc with
+           a shadow, and the whole point of drawing both is lost. */
+        if (E.now) {
+          c.font = "700 " + Math.round(R * 0.095) + "px " + SANS;
+          c.fillStyle = PAL.gold;
+          c.fillText("now", cx, cy - R * 1.20);
+          c.fillStyle = PAL.dim;
+          c.fillText("at sunrise", cx, cy - R * 1.05);
+        }
+        c.textAlign = "left";
+        return h;
+      }
+    },
+    twotimes: {
+      label: "Sunrise and now", hint: "the five limbs at both instants, with the equations",
+      fields: [],
+      run: function (c, S, s, draw) {
+        /* WHY A CARD SHOWS BOTH. An almanac names the day by the tithi running
+           AT SUNRISE. A chart is cast for the minute of birth. Those are
+           answers to two different questions and they disagree on roughly half
+           of all days, which is the single commonest reason somebody says
+           their nakṣatra "does not match the calendar". Printing both, with
+           the subtraction under each, settles it on the card itself. */
+        var E = S.ctx.elong;
+        if (!E || !E.now) {
+          if (draw) {
+            c.font = "500 " + Math.round(S.u * 0.026) + "px " + SANS;
+            c.fillStyle = PAL.dim;
+            c.fillText("(this needs both instants)", S.pad, S.y + S.u * 0.04);
+          }
+          return S.u * 0.07;
+        }
+        var cols = [
+          { k: "sunrise", lab: "AT SUNRISE", when: E.sunriseClock, v: E.sunrise },
+          { k: "now", lab: "AT THIS MOMENT", when: E.nowClock, v: E.now }
+        ];
+        var fl = Math.round(S.u * 0.019), fn = Math.round(S.u * 0.031),
+            fw = Math.round(S.u * 0.0205), fr = Math.round(S.u * 0.025);
+        /* Measured from what the draw loop below actually advances by, with
+           one wrapped row of limbs allowed for. The first figure reserved more
+           than three extra rows' worth, which pushed the card over the height
+           of a 4:5 post for no reason — an overestimate is the safe direction
+           and still a wrong number. */
+        var rowH = fl * 1.25 + fn * 1.05 + fw * 2.60 + fr * 2.70 + S.u * 0.030;
+        if (!draw) return rowH * 2;
+
+        var y = S.y;
+        cols.forEach(function (col, ci) {
+          var v = col.v;
+          y += fl * 1.25;
+          c.font = "700 " + fl + "px " + SANS;
+          c.fillStyle = ci ? PAL.gold : PAL.dim;
+          c.fillText(col.lab + "   " + col.when, S.pad, y);
+          y += fn * 1.05;
+          c.font = "600 " + fn + "px " + SERIF;
+          c.fillStyle = PAL.ink;
+          c.fillText(v.tithiName, S.pad, y);
+          y += fw * 1.35;
+          c.font = "500 " + fw + "px " + SANS;
+          c.fillStyle = PAL.dim;
+          c.fillText("Moon " + v.moon.toFixed(2) + "° − Sun " + v.sun.toFixed(2) +
+                     "° = " + v.elong.toFixed(2) + "°", S.pad, y);
+          y += fw * 1.25;
+          c.fillText(v.elong.toFixed(2) + "° ÷ 12° = " + (v.elong / 12).toFixed(2) +
+                     "  →  tithi " + (Math.floor(v.elong / 12) + 1) + " of 30, " +
+                     Math.round(((v.elong / 12) % 1) * 100) + "% through",
+                     S.pad, y);
+          /* the other three limbs, marked where they differ from sunrise */
+          y += fr * 1.35;
+          c.font = "500 " + fr + "px " + SANS;
+          var bits = [["Nakṣatra", v.nak], ["Yoga", v.yoga], ["Karaṇa", v.karana]];
+          var x = S.pad;
+          bits.forEach(function (b) {
+            var changed = ci === 1 && b[1] !== cols[0].v[b[0] === "Nakṣatra" ? "nak"
+                          : b[0] === "Yoga" ? "yoga" : "karana"];
+            c.fillStyle = PAL.dim;
+            c.fillText(b[0] + " ", x, y);
+            x += c.measureText(b[0] + " ").width;
+            c.fillStyle = changed ? PAL.gold : PAL.ink;
+            c.font = (changed ? "700 " : "500 ") + fr + "px " + SANS;
+            c.fillText(b[1], x, y);
+            x += c.measureText(b[1]).width + S.u * 0.022;
+            c.font = "500 " + fr + "px " + SANS;
+            if (x > S.W - S.padR - S.u * 0.10) { x = S.pad; y += fr * 1.35; }
+          });
+          y += S.u * 0.030;
+        });
+        return rowH * 2;
+      }
+    },
     moon: {
       label: "Moon", hint: "the phase as it actually is, with a line beside it",
       fields: [["text", "Caption", "Śukla pakṣa · waxing"]],
@@ -461,14 +643,16 @@
     },
     wheel: {
       label: "Star wheel", hint: "the sky at this moment, as a tilted disc",
-      fields: [["size", "Height", "0.42"]],
+      fields: [["size", "Height", "0.36"]],
       run: function (c, S, s, draw) {
         /* a fraction of the room this card actually has, not of the frame:
            with Instagram's strips kept clear a 9:16 card loses a quarter of its
            height, and a wheel sized off the frame would eat what was left */
         var frac = Math.max(0.2, Math.min(0.6, parseFloat(s.size) || 0.42));
         var k = wheelExtent();
-        var R = Math.min(S.inner * 0.52, S.room * frac / k);
+        /* ×(S.u/S.W) for the reason the elongation slot gives: a slot sized
+           only from the frame cannot take part in the card's fit pass. */
+        var R = Math.min(S.inner * 0.52, S.room * frac / k) * (S.u / S.W);
         /* Reserved from what the wheel DRAWS, not from what it was allotted.
            The ecliptic is a disc tilted 58° away from the viewer, so its height
            from the projection itself, so the slot reserves what it draws. */
@@ -591,8 +775,15 @@
        star wheel and a pañcāṅga block genuinely do not both fit a square with
        a quarter of it reserved, and the useful reply to that is the name of a
        shape where they do. */
+    /* A slot measures itself generously — it reserves whole line-heights and
+       rounds up — so a card can come out a handful of pixels "over" while
+       every word of it sits comfortably inside the frame. The warning exists
+       to catch content landing under the foot, not to be pixel-exact, and one
+       that fires on six pixels is one that gets ignored when it fires on two
+       hundred. One per cent of the room is below anything the eye can find. */
+    var SLACK = room * 0.01;
     var need = measure();
-    if (need > room) {
+    if (need > room + SLACK) {
       S.u = W * Math.max(0.62, room / need);
       need = measure();
     }
@@ -888,6 +1079,20 @@
             { type: "sub", text: "one line of context" }
           ];
         } },
+      { key: "twomoments", name: "Pañcāṅga, twice", ratio: "4:5",
+        blurb: "The same day read at both instants — the sunrise that names it, " +
+               "and this minute — with the Sun-to-Moon angle drawn on one ring " +
+               "and the subtraction printed under each. This is the card that " +
+               "answers \u201cwhy does my nak\u1e63atra not match the calendar?\u201d",
+        make: function () {
+          return [
+            { type: "kicker", text: (hi ? "निरयन" : "NIRAYANA") + " · " + dateline.toUpperCase() },
+            { type: "headline", text: hi ? "एक दिन, दो क्षण" : "One day, two moments" },
+            { type: "elongation", size: "0.30" },
+            { type: "rule" },
+            { type: "twotimes" }
+          ];
+        } },
       { key: "working", name: "Show the working",
         blurb: "The five limbs with the arithmetic that produced each one — the " +
                "two longitudes, the division, the number. Every other pañcāṅga " +
@@ -961,6 +1166,53 @@
     };
   }
   try { window.__ncLimbsOf = limbsOf; } catch (e) {}
+
+  /* The same day read at two instants: the sunrise that NAMES it, and the
+     moment the card is made. Both carry their own longitudes, so the card can
+     print the subtraction for each rather than a difference with no operands.
+
+     "Now" means now when the date on screen is today, and local noon otherwise
+     — "at this moment" on a card for next March would be a figure for an
+     instant that has not happened, which is worse than useless because it
+     looks right. */
+  function elongPair(D, S) {
+    if (!D || !window.NP || !window.NP.atMoment) return null;
+    function clock(ms) {
+      var d = new Date(ms + (S.place.tz || 0) * 3600000);
+      return String(d.getUTCHours()).padStart(2, "0") + ":" +
+             String(d.getUTCMinutes()).padStart(2, "0");
+    }
+    function pack(at, nameFn) {
+      if (!at || at.sun == null || at.moon == null) return null;
+      return { sun: ((at.sun % 360) + 360) % 360,
+               moon: ((at.moon % 360) + 360) % 360,
+               elong: at.elongation,
+               tithiName: nameFn(at),
+               nak: at.nak.name + " " + at.nak.pada,
+               yoga: at.yoga.name, karana: at.karana.name };
+    }
+    function nm(at) {
+      return (at.tithi.paksha === "śukla" ? "Śukla " : "Kṛṣṇa ") + at.tithi.name;
+    }
+    /* sunrise: D.at is already read there, and D carries its longitudes */
+    var sr = pack({ sun: D.sunDeg, moon: D.moonDeg, elongation: D.elongation,
+                    tithi: D.at.tithi, nak: D.at.nak, yoga: D.at.yoga,
+                    karana: D.at.karana }, nm);
+    var now = Date.now();
+    var isToday = D.nextSunrise != null && now >= D.sunrise && now < D.nextSunrise;
+    var atMs = isToday ? now : (D.sunset != null
+             ? D.sunrise + (D.sunset - D.sunrise) / 2 : D.sunrise + 6 * 3600000);
+    var R = null;
+    try { R = window.NP.atMoment(D, atMs); } catch (e) {}
+    return {
+      sunrise: sr, sunriseClock: clock(D.sunrise),
+      now: R ? pack(R.atMoment, nm) : null,
+      nowClock: clock(atMs) + (isToday ? "" : " · midday"),
+      isToday: isToday,
+      differs: R ? R.differs : null
+    };
+  }
+  try { window.__ncElongPair = elongPair; } catch (e) {}
 
   function fmtDate(ms, tz) {
     var d = new Date(ms + (tz || 0) * 3600000);
@@ -1130,7 +1382,7 @@
            overflow lands under the foot and looks like a design choice. */
         var m = $("stcmsg");
         if (!m) return;
-        if (r.used <= r.room) { m.textContent = ""; return; }
+        if (r.used <= r.room + r.room * 0.01) { m.textContent = ""; return; }
         /* Name the way out rather than the problem. A tall stack almost always
            wants a taller frame, and the reader is one control away from it. */
         var tall = C.ratio !== "9:16";
@@ -1238,6 +1490,8 @@
        is defined after this function runs. Publishing the two entry points it
        needs is cheaper and clearer than hoisting the whole composer. */
     useSlideExternal = function () { useSlide(0); };
+    try { window.__ncSlots = function () { return C.slots; };
+          window.__ncCtx = function () { return C.ctx; }; } catch (e) {}
     rebuildComposer = function () { slideBar(); rows(); draw(); };
 
     pickRecipe();
@@ -1494,6 +1748,7 @@
          the day's own sunrise longitudes so a card and a frame cannot
          disagree about the arithmetic they both show. */
       C.ctx.limbs = limbsOf(D);
+      C.ctx.elong = elongPair(D, S);
       C.ctx.sky = NCard.sky(D.sunrise + (D.sunset != null
         ? (D.sunset - D.sunrise) / 2 : 6 * 3600000), S.place);
     }

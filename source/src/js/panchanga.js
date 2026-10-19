@@ -1281,6 +1281,11 @@
              pada: Math.floor(((((mo % 360) + 360) % 360) % (40 / 3)) / (10 / 3)) + 1 },
       yoga: { i: yg, name: YOGA[yg] },
       karana: { i: kr, name: karanaName(kr) },
+      /* The two longitudes themselves, not only their difference. Anything
+         that wants to SHOW the working — a card printing the subtraction, a
+         diagram placing the two bodies on a ring — needs the operands, and
+         re-deriving them from the elongation is impossible. */
+      sun: su, moon: mo,
       elongation: (su == null || mo == null) ? null : (((mo - su) % 360) + 360) % 360
     };
     at.illumination = at.elongation == null ? null
