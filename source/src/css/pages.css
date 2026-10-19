@@ -850,3 +850,11 @@ table.stplantab td.stph{color:var(--ink)}
 .sprow.live{border-color:var(--gold);background:#fdf8ea}
 .spsec{width:52px;font:inherit;font-size:.8rem;padding:4px 6px;border:1px solid var(--line);
   border-radius:6px;background:#fff;color:var(--ink)}
+/* A shot row carries a name, a timer and three buttons. On a narrow column
+   that is more than one line will hold, and the first attempt let the name
+   wrap to four words a line beside the controls. The name takes its own row;
+   the controls sit under it, right-aligned. */
+#sp-shots .sprow{flex-wrap:wrap}
+#sp-shots .sprowt{flex:1 0 100%;cursor:pointer}
+#sp-shots .spsec{margin-left:auto}
+#sp-shots .sprowx{padding:2px 8px}
