@@ -39,16 +39,23 @@
     </div>
 
     <div class="spctl">
+      <!-- The scrubber gets its own row. Beside the button it sat nine pixels
+           from it, and a fingertip is forty across: a tap aimed at Pause
+           landed on the slider as well and dragged the playhead to zero, so
+           the reel appeared to rewind every time it was paused. -->
       <div class="sprow2">
         <button type="button" id="sp-play" class="spbtn">Play</button>
-        <input id="sp-scrub" type="range" min="0" max="1000" value="0" step="1"
-               aria-label="Scrub the playhead">
         <select id="sp-dur" aria-label="Length">
           <option value="8">8 s</option>
           <option value="15" selected>15 s</option>
           <option value="30">30 s</option>
           <option value="60">60 s</option>
         </select>
+        <span class="sptime" id="sp-time">0.0 s</span>
+      </div>
+      <div class="sprow2 spscrubrow">
+        <input id="sp-scrub" type="range" min="0" max="1000" value="0" step="1"
+               aria-label="Scrub the playhead">
       </div>
 
       <div class="sprow2">

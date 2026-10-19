@@ -663,8 +663,15 @@
     var el2 = (Date.now() - T0) / 1000;
     window.SPStage.S.p = (el2 % DUR) / DUR;
     var sc = $("sp-scrub"); if (sc) sc.value = String(Math.round(window.SPStage.S.p * 1000));
+    showTime();
     draw();
     RAF = requestAnimationFrame(tick);
+  }
+  /* where the playhead is, in seconds — the slider alone does not say, and
+     on a phone the thumb is often under a finger */
+  function showTime() {
+    var t = $("sp-time"); if (!t) return;
+    t.textContent = (window.SPStage.S.p * DUR).toFixed(1) + " / " + DUR + " s";
   }
   function play(on) {
     /* belt as well as braces: the buttons are disabled during a recording,
@@ -838,10 +845,10 @@
     var scrub = $("sp-scrub");
     if (scrub) scrub.addEventListener("input", function () {
       play(false);
-      window.SPStage.S.p = (+scrub.value) / 1000; draw(); });
+      window.SPStage.S.p = (+scrub.value) / 1000; showTime(); draw(); });
     $("sp-play") && $("sp-play").addEventListener("click", function () { play(!PLAY); });
     var dur = $("sp-dur");
-    if (dur) dur.addEventListener("change", function () { DUR = +dur.value; });
+    if (dur) dur.addEventListener("change", function () { DUR = +dur.value; showTime(); });
     var head = $("sp-head");
     if (head) {
       head.value = window.SPStage.S.headline;
@@ -923,6 +930,7 @@
     });
 
     window.addEventListener("resize", function () { fitPreview(); });
+    showTime();
     draw();
     buildStrip();
   }

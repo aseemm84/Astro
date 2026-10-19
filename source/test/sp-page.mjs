@@ -254,8 +254,55 @@ async function run(withChart) {
   return r;
 }
 
+/* A phone, because the fault this guards against was invisible on a desktop:
+   the transport worked perfectly with a mouse and fell apart under a thumb.
+   The scrubber sat nine pixels from the Pause button and a fingertip is forty
+   across, so a tap aimed at Pause also landed on the slider and dragged the
+   playhead to zero — the reel appeared to rewind every time it was paused. */
+async function runPhone() {
+  const pg = await br.newPage({ viewport: { width: 393, height: 852 },
+    deviceScaleFactor: 3, isMobile: true, hasTouch: true });
+  const errs = []; pg.on("pageerror", e => errs.push(String(e)));
+  await pg.addInitScript(() => { localStorage.clear(); });
+  await pg.goto(`${base}/studio-pro.html`, { waitUntil: "load" });
+  await pg.waitForFunction(() => window.__spUI && window.__spUI.nodeCount() > 0,
+                           { timeout: 30000 });
+  await pg.evaluate(() => window.__spUI.select(["day.almanac"]));
+  await pg.waitForTimeout(400);
+  const geo = await pg.evaluate(() => {
+    const b = document.getElementById("sp-play").getBoundingClientRect();
+    const s = document.getElementById("sp-scrub").getBoundingClientRect();
+    const small = [].slice.call(document.querySelectorAll(".spctl .spbtn, .spctl .spv"))
+      .filter(e => e.getBoundingClientRect().height < 44).length;
+    return { btnH: Math.round(b.height), scrubH: Math.round(s.height),
+             sameRow: Math.abs(s.top - b.top) < 10,
+             gap: Math.round(s.top - b.bottom), tooSmall: small };
+  });
+  await pg.evaluate(() => { window.SPStage.S.p = 0.42;
+    document.getElementById("sp-scrub").value = "420"; });
+  const read = () => pg.evaluate(() => ({
+    p: +window.SPStage.S.p.toFixed(3),
+    v: +document.getElementById("sp-scrub").value,
+    label: document.getElementById("sp-play").textContent }));
+  await pg.locator("#sp-play").tap();
+  await pg.waitForTimeout(300);
+  const t1 = await read();
+  const corner = await pg.evaluate(() => {
+    const r = document.getElementById("sp-play").getBoundingClientRect();
+    return { x: r.right - 5, y: r.bottom - 5 }; });
+  await pg.touchscreen.tap(corner.x, corner.y);
+  await pg.waitForTimeout(300);
+  const t2 = await read();
+  await pg.close();
+  return { geo, t1, t2, errs: errs.slice(0, 4),
+           toggles: t1.label === "Pause" && t2.label === "Play",
+           /* the symptom: the playhead collapsing to the start on a tap */
+           collapsed: t1.v < 50 || t2.v < 50 };
+}
+
 const A = await run(true);
 const B = await run(false);
+const M = await runPhone();
 
 function show(tag, r) {
   console.log(`\n  ${tag}`);
@@ -290,6 +337,14 @@ function show(tag, r) {
               `dip darkens: ${r.dipWorks} (${r.dipAt && r.dipAt.join(" vs ")})`);
   if (r.errs.length) { console.log("    page errors:"); r.errs.forEach(e=>console.log("      "+e)); }
 }
+console.log(`\n  on a phone (393x852, touch)`);
+console.log(`    Pause ${M.geo.btnH}px tall, scrubber ${M.geo.scrubH}px, ` +
+            `same row ${M.geo.sameRow}, ${M.geo.gap}px between them, ` +
+            `${M.geo.tooSmall} control(s) under 44px`);
+console.log(`    tap centre -> ${JSON.stringify(M.t1)}`);
+console.log(`    tap corner -> ${JSON.stringify(M.t2)}`);
+console.log(`    toggles ${M.toggles}, playhead collapsed to the start ${M.collapsed}`);
+
 show("with a birth chart stored", A);
 show("with NO birth chart", B);
 
@@ -319,6 +374,14 @@ const checks=[
   ["with no chart the strip still draws and moves",
    B.tileLitFirst>200 && B.tileMoved===true],
   ["the place picker mounts", A.placeInputs>0 && B.placeInputs>0],
+  ["on a phone, the transport controls meet a 44px touch target",
+   M.geo.btnH>=44 && M.geo.tooSmall===0],
+  ["on a phone, the scrubber is not within a fingertip of Pause",
+   M.geo.sameRow===false && M.geo.gap>=16],
+  ["a touch tap toggles the transport", M.toggles===true],
+  ["a touch tap never drags the playhead back to the start",
+   M.collapsed===false],
+  ["no page errors on a phone", M.errs.length===0],
   ["the playhead moves while playing", A.tr.movesWhilePlaying===true],
   ["Pause freezes the playhead and relabels", A.tr.frozenAfterPause===true &&
    A.tr.labelWhilePlaying==="Pause" && A.tr.labelAfterPause==="Play"],

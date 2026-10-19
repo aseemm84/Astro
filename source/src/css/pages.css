@@ -818,7 +818,19 @@ table.stplantab td.stph{color:var(--ink)}
 .spv{font:inherit;font-size:.78rem;padding:5px 10px;border:1px solid var(--line);
   border-radius:7px;background:var(--soft);color:var(--ink);cursor:pointer}
 .spv.on{background:var(--night);border-color:var(--night);color:var(--gold-soft);font-weight:600}
-#sp-scrub{flex:1;min-width:120px}
+/* The playhead gets a row to itself, full width, with a touch area tall
+   enough to grab deliberately and nothing within a fingertip of it. */
+.spscrubrow{margin:9px 0 4px}
+#sp-scrub{flex:1;width:100%;min-width:0;height:34px;touch-action:pan-x;cursor:pointer}
+.sptime{font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums;
+  margin-left:auto}
+/* Apple asks for 44×44; these were 38 tall and sat beside a 16px slider. */
+@media (pointer:coarse){
+  .spbtn,.spv,.spfield select,.spfield input{min-height:44px}
+  .spchip{min-height:38px;padding:8px 12px}
+  .sprowx{min-width:38px;min-height:38px}
+}
+.spbtn,.spv,.spchip,.sprowx,.sptile,.spview{touch-action:manipulation}
 .spfield{display:flex;flex-direction:column;gap:3px;font-size:.75rem;color:var(--muted)}
 .spfield.wide{flex:1;min-width:200px}
 .spfield input,.spfield select{font:inherit;font-size:.84rem;padding:6px 8px;
