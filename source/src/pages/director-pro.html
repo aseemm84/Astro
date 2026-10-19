@@ -1,0 +1,134 @@
+<p class="dpnote" id="dp-mode">Loading what this browser knows…</p>
+
+<div class="dptopbar" id="dp-top"></div>
+
+<div class="dpshell">
+
+  <!-- ===== left: the library and the stack ========================== -->
+  <section class="dppane dpleft" aria-label="Library and layers">
+    <h3 class="dpsech">The library</h3>
+    <label class="dpsearch">
+      <span class="vh">Search the library</span>
+      <input id="dp-libsearch" type="search" placeholder="Search — graha, bhāva, varga, daśā…">
+    </label>
+    <div class="dprow">
+      <label class="dpcheck"><input type="checkbox" id="dp-liblive" checked>
+        only what resolves now</label>
+      <label class="dpcheck"><input type="checkbox" id="dp-liblink">
+        push straight into the picked layer</label>
+    </div>
+    <p class="dpstat" id="dp-libstat"></p>
+    <div id="dp-lib" class="dplib"></div>
+
+    <h3 class="dpsech">Add to this scene</h3>
+    <div id="dp-add" class="dpaddbar"></div>
+
+    <h3 class="dpsech">Layers</h3>
+    <div id="dp-stack" class="dpstack"></div>
+  </section>
+
+  <!-- ===== centre: the stage ======================================== -->
+  <section class="dppane dpmid" aria-label="The stage">
+    <div class="dpstagebox" id="dp-stagebox">
+      <canvas id="dp-canvas" width="1080" height="1920" role="img"
+              aria-label="The frame being composed"></canvas>
+    </div>
+
+    <div class="dptransport">
+      <button type="button" id="dp-play" class="dpbtn">Play</button>
+      <span class="dptime" id="dp-time">0.00 s</span>
+      <span class="dpspacer"></span>
+      <label class="dpfield"><span>Moment</span>
+        <input id="dp-when" type="datetime-local"></label>
+      <label class="dpfield"><span>Span</span>
+        <select id="dp-span">
+          <option value="30">30 days</option>
+          <option value="365" selected>1 year</option>
+          <option value="3650">10 years</option>
+          <option value="36500">100 years</option>
+          <option value="73000">200 years</option>
+        </select></label>
+      <div class="dpfield wide"><span>Place</span><div id="dp-place"></div></div>
+    </div>
+
+    <div class="dpscenes" id="dp-scenes"></div>
+    <div id="dp-timeline" class="dptimeline"></div>
+    <p class="dpstat" id="dp-stat"></p>
+    <ul id="dp-warn" class="dpwarn"></ul>
+    <p class="dpflash" id="dp-flash" hidden></p>
+  </section>
+
+  <!-- ===== right: the inspector ===================================== -->
+  <section class="dppane dpright" aria-label="Inspector">
+    <h3 class="dpsech">Export</h3>
+    <div id="dp-export" class="dpexport"></div>
+
+    <h3 class="dpsech">Reels</h3>
+    <div id="dp-reels" class="dpreels"></div>
+
+    <h3 class="dpsech">Inspector</h3>
+    <div id="dp-insp" class="dpinsp"></div>
+  </section>
+</div>
+
+<h2 id="how">How this page works</h2>
+
+<p>Studio Pro's Director mode gave a layer an entry, an exit, a continuous
+motion and somewhere to travel to. Four named behaviours cover a great many
+reels, and they cannot cover <i>rise, hold for two seconds, drift left, then
+fall away</i>, because that is five changes of direction on one property and
+the model holds two. Every tool that has met this problem has reached the same
+answer, and it is not a fifth behaviour. It is <b>keyframes</b>.</p>
+
+<p>So here every animatable property of every layer is a track — a list of
+times, values and easings — and the value at an instant is the eased
+interpolation between the two keys either side. A property with one key is a
+constant. A property with none uses the layer's own base value. Nothing else
+animates anything, which is the point: there is exactly one answer to “why is
+this moving”, and it is always “because of these keys”.</p>
+
+<p>The motion presets are still one click, and each one <b>writes keyframes</b>
+rather than setting a mode the renderer obeys. Apply <i>rise</i>, then drag the
+second key later, and the rise gets slower — instead of discovering that the
+preset owns the property and your edit is ignored. A hidden second animation
+system that silently wins over the visible one is the most confusing thing a
+tool like this can do, and not having one is worth the extra code.</p>
+
+<h3>What a layer can be, and what it can do</h3>
+
+<p>A layer holds a composition from the library — any of the nodes, drawn by
+any composer that can draw them — or your own text, a caption band, a stamp, a
+shape, a rule or a wash. Every one of them can be placed, scaled, rotated,
+skewed, blurred, glowed, graded, masked with a feathered rectangle or ellipse,
+and composited with any of the sixteen blend modes. Text additionally arrives
+by character, by word or by line, with tracking, in eleven animators.</p>
+
+<p>A scene has a backdrop, a camera that zooms, pans and rolls on its own
+keyframes, and a transition into the next one — a dissolve, a dip, a push, a
+wipe, an iris, a zoom blur, a flash or a glitch. The transition is drawn over
+the join rather than added to it, so putting a dissolve in does not retime
+every scene after it.</p>
+
+<h3>Getting it out</h3>
+
+<p>The reel records frame by frame rather than in real time: the playhead is
+set, the frame is drawn, and only then is the frame handed to the encoder. A
+slow machine makes the export take longer; it does not make the reel shorter
+and it does not drop a frame. Formats run from a 1080×1920 reel to 4K in
+either orientation, at 24 to 60 frames a second, with the bitrate under your
+control. Where the browser offers it, the file is MP4 with H.264, which posts
+without conversion.</p>
+
+<p>A soundtrack is a file you choose from your own machine. It is decoded by
+the browser, routed through a gain node with your fades, and muxed into the
+recording. It is never uploaded, never fetched, and never leaves the
+computer.</p>
+
+<p class="dpnote">Every figure on this page is computed in your browser.
+Nothing is uploaded, and the page works with no network at all once it has
+loaded.</p>
+
+<script src="engine.js" defer></script>
+<script src="panchanga.js" defer></script>
+<script src="places.js" defer></script>
+<script src="director-pro.js" defer></script>

@@ -349,6 +349,21 @@ def build_shared():
                                   read(SRC, "js", "sp-director.js") + "\n" +
                                   read(SRC, "js", "sp-dirui.js") + "\n" +
                                   read(SRC, "js", "sp-ui.js")),
+        # Director Pro is a keyframe workstation built on Studio Pro's parts:
+        # it borrows the node registry, the almanac leaf and all fifteen
+        # composers rather than carrying a second set of pictures free to
+        # disagree with the first. dp-* is its own — the document, the
+        # renderer, the export and the page — and sp-director rides along
+        # because the text tokens live there and a second copy of {tithi} that
+        # resolved differently would be exactly the bug this avoids.
+        "director-pro.js": brandify(read(SRC, "js", "sp-nodes.js") + "\n" +
+                                    read(SRC, "js", "sp-almanac.js") + "\n" +
+                                    read(SRC, "js", "sp-compose.js") + "\n" +
+                                    read(SRC, "js", "sp-director.js") + "\n" +
+                                    read(SRC, "js", "dp-model.js") + "\n" +
+                                    read(SRC, "js", "dp-render.js") + "\n" +
+                                    read(SRC, "js", "dp-export.js") + "\n" +
+                                    read(SRC, "js", "dp-ui.js")),
         "panchanga.js": brandify(read(SRC, "js", "panchanga.js") + "\n" +
                                  read(SRC, "js", "festivals.js")),
         # cities.js is cities.json with sixteen characters in front of it. The chart
