@@ -625,6 +625,43 @@
         return rowH * 2;
       }
     },
+    taragrid: {
+      label: "Tāra Bala, all 27", hint: "every birth star, so a reader finds their own",
+      fields: [],
+      run: function (c, S, s, draw) {
+        /* ALL TWENTY-SEVEN, not the four-line summary. The compact version
+           answers "which stars have a hard day"; this one answers "what about
+           MINE", which is the question that makes somebody stop scrolling and
+           send the card to a cousin. Three columns of nine is the shape that
+           fits a card and keeps the nakṣatras in their own order, so a reader
+           can count to theirs rather than hunt. */
+        var G = S.ctx.tara;
+        if (!G) {
+          if (draw) {
+            c.font = "500 " + Math.round(S.u * 0.026) + "px " + SANS;
+            c.fillStyle = PAL.dim;
+            c.fillText("(this needs the day's Moon)", S.pad, S.y + S.u * 0.04);
+          }
+          return S.u * 0.07;
+        }
+        var colW = S.inner / 3, rowH = S.u * 0.0335;
+        var h = 9 * rowH + S.u * 0.016;
+        if (!draw) return h;
+        G.rows.forEach(function (r, i) {
+          var col = Math.floor(i / 9), row = i % 9;
+          var x = S.pad + colW * col, y = S.y + rowH * (row + 1);
+          var good = r.tara && r.tara.good;
+          c.font = "500 " + Math.round(S.u * 0.0185) + "px " + SANS;
+          c.fillStyle = PAL.dim;
+          c.fillText(r.name, x, y);
+          var w = c.measureText(r.name + " ").width;
+          c.font = "700 " + Math.round(S.u * 0.0185) + "px " + SANS;
+          c.fillStyle = r.tara ? (good ? PAL.ben : PAL.mal) : PAL.dim;
+          c.fillText(" " + (r.tara ? r.tara.name : "—"), x + w, y);
+        });
+        return h;
+      }
+    },
     monthgrid: {
       label: "Month grid", hint: "the whole month, each day with its real Moon",
       fields: [],
@@ -1103,7 +1140,15 @@
     { scene: "venusrose", span: "8y", speed: "1.5", secs: 22,
       title: "The Venus rose",
       why: "Eight years of Śukra's elongation against the season, which closes into five petals because five synodic returns are within days of eight years. Morning star and evening star in two colours.",
-      post: "The slowest to earn its shape and the one people replay." }
+      post: "The slowest to earn its shape and the one people replay." },
+    { scene: "twoclocks", span: "3d", speed: "1", secs: 15,
+      title: "Two scales, one ring",
+      why: "A tithi and a nakṣatra sit side by side in every pañcāṅga as though they were two readings of one instrument. They are not. One ring carries both: the twenty-seven nailed to the stars and never moving, the thirty drawn from the Sun and visibly sliding as the days run. The frame counts the boundaries each crosses and prints the subtraction for both.",
+      post: "The explainer. Everything else here assumes somebody has seen this one." },
+    { scene: "yuddha", span: "4d", speed: "1", secs: 16,
+      title: "Graha Yuddha",
+      why: "Two grahas closing to within a degree, drawn through a narrow field with the ecliptic across it so north is up. Three victor tests are applied live — the verse at Vol. 2 ch. 79, and two positions from the translator's notes — and on most meetings they disagree, so each verdict carries its source. Watch the lesser-longitude verdict reverse as they cross.",
+      post: "The rare case where the honest answer is three answers, and the card says which is the verse." }
   ];
 
   function reelLink(r, place, ratio) {
@@ -1399,10 +1444,272 @@
                                      : "muhūrta tradition, not BPHS" }
           ];
         } },
+      { key: "taraday", name: "Tāra Bala, all 27", ratio: "4:5",
+        blurb: "Every one of the twenty-seven birth stars with its tāra for " +
+               "today, so a reader finds their own rather than a group. The " +
+               "card people screenshot. Muhūrta tradition, not BPHS.",
+        make: function () {
+          var G = null;
+          try { G = window.NP && D ? window.NP.taraGrid(D) : null; } catch (e) {}
+          return [
+            { type: "kicker", text: dateline.toUpperCase() },
+            { type: "headline", text: hi ? "सब २७ के लिए" : "All 27, today" },
+            { type: "sub", text: G ? "counted from the Moon in " + G.todayName : "" },
+            { type: "rule" },
+            { type: "taragrid" },
+            { type: "pill", text: hi ? "मुहूर्त परम्परा — बृ.पा.हो.शा. नहीं"
+                                     : "muhūrta tradition, not BPHS" }
+          ];
+        } },
+      { key: "zeroshadow", name: "The day with no shadow", ratio: "4:5",
+        blurb: "The two dates a year when the noon Sun stands overhead and a " +
+               "vertical stick casts nothing. Only happens between the tropics " +
+               "— and the card says so plainly where it cannot happen, rather " +
+               "than inventing a date.",
+        make: function () {
+          var Z = null;
+          try { Z = window.NP.zeroShadowDays(S.place, S.date.y); } catch (e) {}
+          var MN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
+                    "Sep", "Oct", "Nov", "Dec"];
+          function dstr(ms) {
+            var d = new Date(ms + (S.place.tz || 0) * 3600000);
+            return d.getUTCDate() + " " + MN[d.getUTCMonth()];
+          }
+          var rows;
+          if (Z && Z.days.length) {
+            rows = Z.days.map(function (ms) {
+              return dstr(ms) + "   noon Sun overhead, no shadow";
+            });
+            /* The latitude read BACK OUT of the shadow, which is the point of
+               the exercise: the stick measures the place. */
+            rows.push("");
+            rows.push("Latitude here: " + S.place.lat.toFixed(4) + "°");
+            rows.push("On those two days the Sun's noon declination equals it");
+          } else {
+            rows = [S.place.n + " is at " + S.place.lat.toFixed(2) + "°",
+                    "The Sun never reaches further than 23.44°",
+                    "", "So there is no zero-shadow day here — ever.",
+                    "It happens only between the tropics."];
+          }
+          return [
+            { type: "kicker", text: (hi ? "निरयन" : "NIRAYANA") + " · " + S.date.y },
+            { type: "headline", text: hi ? "छायाहीन दिन" : "The day with no shadow" },
+            { type: "sub", text: S.place.n },
+            { type: "rule" },
+            { type: "facts", text: rows.join("\n") },
+            { type: "pill", text: hi ? "खगोल — परम्परा नहीं" : "astronomy, not tradition" }
+          ];
+        } },
+      { key: "astawin", name: "When a graha is burnt", ratio: "4:5",
+        blurb: "Asta — a planet too close to the Sun to be seen, which the " +
+               "muhūrta tradition treats as a pause for ceremonies. Computed " +
+               "from the real elongation against each graha's classical orb, " +
+               "for the year ahead.",
+        make: function () {
+          var now = D ? D.ms : Date.now(), out = [];
+          var MN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
+                    "Sep", "Oct", "Nov", "Dec"];
+          function dstr(ms) {
+            if (ms == null) return "…";
+            var d = new Date(ms + (S.place.tz || 0) * 3600000);
+            return d.getUTCDate() + " " + MN[d.getUTCMonth()];
+          }
+          ["Venus", "Jupiter", "Mercury", "Mars", "Saturn"].forEach(function (g) {
+            var W = null;
+            try { W = window.NP.astaWindows(g, now, now + 400 * 86400000); } catch (e) {}
+            if (!W || !W.windows.length) return;
+            var w = W.windows[0];
+            out.push(g + " (orb " + W.orb + "°): " + dstr(w.from) + " – " + dstr(w.to));
+          });
+          return [
+            { type: "kicker", text: dateline.toUpperCase() },
+            { type: "headline", text: hi ? "अस्त" : "Asta — burnt by the Sun" },
+            { type: "sub", text: hi ? "सूर्य के बहुत निकट, अदृश्य"
+                                    : "too near the Sun to be seen" },
+            { type: "rule" },
+            { type: "facts", text: out.length
+                ? "Next window for each, within a year:\n" + out.join("\n")
+                : "No asta window for the major grahas in the year ahead" },
+            { type: "pill", text: hi ? "शास्त्रीय कक्षा — मुहूर्त परम्परा"
+                                     : "classical orbs · muhūrta tradition" }
+          ];
+        } },
+      { key: "lunardist", name: "How far the Moon is", ratio: "4:5",
+        blurb: "The Moon's distance tonight, and the next perigee and apogee — " +
+               "found as real extrema of the distance, so the figures do not " +
+               "depend on anybody's definition of “supermoon”. That label " +
+               "does, so the card gives the kilometres and names the threshold.",
+        make: function () {
+          var now = D ? D.ms : Date.now();
+          var km = null, X = [];
+          try { km = window.NP.moonDistance(now); } catch (e) {}
+          try { X = window.NP.lunarExtremes(now, now + 45 * 86400000) || []; } catch (e) {}
+          var MN = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug",
+                    "Sep", "Oct", "Nov", "Dec"];
+          function dstr(ms) {
+            var d = new Date(ms + (S.place.tz || 0) * 3600000);
+            return d.getUTCDate() + " " + MN[d.getUTCMonth()] + " " + hhmm(ms);
+          }
+          var rows = [];
+          if (km != null) rows.push("Right now: " + Math.round(km).toLocaleString() + " km");
+          X.slice(0, 4).forEach(function (e) {
+            rows.push((e.kind === "perigee" ? "Perigee " : "Apogee  ") +
+                      dstr(e.ms) + "   " + Math.round(e.km).toLocaleString() + " km");
+          });
+          rows.push("");
+          rows.push("Mean distance 384,400 km. The popular");
+          rows.push("“supermoon” line is drawn at 360,000 km — a");
+          rows.push("convention, not a classical or physical fact.");
+          return [
+            { type: "kicker", text: dateline.toUpperCase() },
+            { type: "headline", text: hi ? "चन्द्र की दूरी" : "How far the Moon is" },
+            { type: "moon", text: tithi },
+            { type: "rule" },
+            { type: "facts", text: rows.join("\n") },
+            { type: "pill", text: hi ? "खगोल" : "astronomy" }
+          ];
+        } },
+      { key: "festrule", name: "Why that date", ratio: "4:5",
+        blurb: "A festival with the RULE that fixes its date printed under it — " +
+               "which tithi, which month, which reckoning — because the rule is " +
+               "the interesting part and almost nobody posts it. Shows today's " +
+               "festival if there is one, otherwise the next one this month.",
+        make: function () {
+          var F = null, when = null;
+          try { F = D ? window.NP.festivalsOn(D) : null; } catch (e) {}
+          var f = F && F.length ? F[0] : null;
+          if (!f) {
+            /* nothing today — walk the month for the next one */
+            var M = null;
+            try { M = window.__ncMonth(S.date.y, S.date.m, S.place); } catch (e) {}
+            if (M) for (var i = 0; i < M.days.length; i++) {
+              var x = M.days[i];
+              if (x && x.d >= (S.date.d || 1) && x.festFull && x.festFull.length) {
+                f = x.festFull[0]; when = x.d; break;
+              }
+            }
+          }
+          if (!f) return [
+            { type: "kicker", text: dateline.toUpperCase() },
+            { type: "headline", text: hi ? "नियम" : "Why that date" },
+            { type: "rule" },
+            { type: "facts", text: "No festival today or later this month by the\n" +
+                "rules this site applies. The rules themselves are\n" +
+                "on the calendar page — every date here is derived,\n" +
+                "never looked up in a list." }
+          ];
+          var rows = [];
+          if (f.rule) rows.push("Rule: " + f.rule);
+          if (f.note) rows.push("");
+          if (f.note) rows.push(f.note);
+          if (f.close) rows.push("");
+          if (f.close) rows.push("Close call: " + (f.closeWhy || "boundary near sunrise"));
+          return [
+            { type: "kicker", text: (hi ? "नियम क्यों" : "WHY THAT DATE") +
+              (when ? " · " + when : " · " + dateline.toUpperCase()) },
+            { type: "headline", text: f.name },
+            { type: "sub", text: when ? "later this month" : (D ? D.vara + " · " + tithi : "") },
+            { type: "rule" },
+            { type: "facts", text: rows.join("\n") },
+            { type: "pill", text: hi ? "नियम से निकाला, सूची से नहीं"
+                                     : "derived from the rule, not a list" }
+          ];
+        } },
+      { key: "horastory", name: "The day's horās", ratio: "9:16",
+        blurb: "All twenty-four horās of the day with their lords and times, " +
+               "the one running now marked. Twelve rows of two, because a " +
+               "twenty-four line list does not fit a story once Instagram's " +
+               "own strips are kept clear.",
+        make: function () {
+          var H = [], live = -1;
+          if (D && D.sunrise != null && D.nextSunrise != null) {
+            var span = (D.nextSunrise - D.sunrise) / 24;
+            for (var i = 0; i < 24; i++) {
+              /* NP.hora reads D.ms, so a copied day at the middle of each slot
+                 gets that slot's lord from the real implementation rather than
+                 a second copy of the order table here. */
+              var h = null;
+              try { h = window.NP.hora(dayAt(D, D.sunrise + span * (i + 0.5))); }
+              catch (e) {}
+              if (!h) continue;
+              if (D.ms >= h.from && D.ms < h.to) live = H.length;
+              H.push(h);
+            }
+          }
+          /* Twelve rows, two horās each — the day's first twelve on the left
+             and the second twelve on the right, so a reader scans down one
+             column rather than across a page. */
+          var rows = [];
+          for (var r = 0; r < 12 && r < H.length; r++) {
+            var a = H[r], b = H[r + 12];
+            rows.push((live === r ? "▸" : " ") + hhmm(a.from) + " " + a.lord +
+                      (b ? "   " + (live === r + 12 ? "▸" : " ") +
+                           hhmm(b.from) + " " + b.lord : ""));
+          }
+          return [
+            { type: "kicker", text: (hi ? "होरा" : "HORĀ") + " · " + dateline.toUpperCase() },
+            { type: "headline", text: hi ? "दिन के २४ होरा" : "The day's 24 horās" },
+            { type: "sub", text: hi ? "सूर्योदय से सूर्योदय का चौबीसवाँ भाग"
+                                    : "a twenty-fourth of sunrise to sunrise" },
+            { type: "rule" },
+            { type: "facts", text: rows.join("\n") },
+            { type: "pill", text: (live >= 0 ? "▸ running now · " : "") +
+                                  (hi ? "मुहूर्त परम्परा" : "muhūrta tradition") }
+          ];
+        } },
+      { key: "choghastory", name: "Today's choghaḍiyā", ratio: "9:16",
+        blurb: "The eight daytime choghaḍiyā with their names and times, the " +
+               "current one marked. Each is one eighth of sunrise to sunset, " +
+               "so they stretch and shrink with the season.",
+        make: function () {
+          var rows = [];
+          if (D && D.sunrise != null && D.sunset != null) {
+            var part = (D.sunset - D.sunrise) / 8;
+            for (var i = 0; i < 8; i++) {
+              var C = null;
+              try { C = window.NP.choghadiya(dayAt(D, D.sunrise + part * (i + 0.5))); }
+              catch (e) {}
+              if (!C || C.night) continue;
+              var live = D.ms >= C.from && D.ms < C.to;
+              rows.push((live ? "▸ " : "  ") + hhmm(C.from) + "–" + hhmm(C.to) +
+                        "  " + C.name);
+            }
+          }
+          return [
+            { type: "kicker", text: (hi ? "चौघड़िया" : "CHOGHAḌIYĀ") + " · " +
+              dateline.toUpperCase() },
+            { type: "headline", text: hi ? "आज के आठ" : "Today's eight" },
+            { type: "sub", text: D ? "sunrise " + hhmm(D.sunrise) + " · sunset " +
+                                     hhmm(D.sunset) : "" },
+            { type: "rule" },
+            { type: "facts", text: rows.join("\n") },
+            { type: "facts", text: "Each is one eighth of the day's own length,\n" +
+                "so they are longer in summer and shorter in\n" +
+                "winter. The clock hour has nothing to do with it." },
+            { type: "pill", text: hi ? "मुहूर्त परम्परा — बृ.पा.हो.शा. नहीं"
+                                     : "muhūrta tradition, not BPHS" }
+          ];
+        } },
       { key: "blank", name: "Empty",
         blurb: "Nothing but the frame and the foot. Build it slot by slot.",
         make: function () { return [{ type: "headline", text: "" }]; } }
     ];
+  }
+
+  /* The same day object read at a different instant.
+
+     NP.hora and NP.choghadiya both answer "which one is running", reading
+     D.ms — which is the right shape for a clock and the wrong one for a card
+     that wants all twenty-four. Rather than copy the order tables here, where
+     they would be free to drift from the real ones, the recipes ask the real
+     functions once per slot with the day's own ms moved into that slot. One
+     shallow copy per call, and the answer comes from the implementation the
+     rest of the site uses. */
+  function dayAt(D, ms) {
+    var o = {};
+    for (var k in D) if (Object.prototype.hasOwnProperty.call(D, k)) o[k] = D[k];
+    o.ms = ms;
+    return o;
   }
 
   /* The five limbs with their working, from a day object. Mirrors the motion
@@ -1499,6 +1806,7 @@
         full: D.at.tithi.i === 14, newmoon: D.at.tithi.i === 29,
         ekadashi: D.at.tithi.i === 10 || D.at.tithi.i === 25,
         fest: f.map(function (x) { return x.name || x.key; }),
+        festFull: f,
         wd: new Date(Date.UTC(y, m - 1, d)).getUTCDay()
       });
     }
@@ -2095,6 +2403,7 @@
       C.ctx.month = monthData(S.date.y, S.date.m, S.place);
       C.ctx.lunation = lunationOf(D);
       C.ctx.windows = dayWindows(D, S);
+      try { C.ctx.tara = window.NP.taraGrid(D); } catch (e) { C.ctx.tara = null; }
       C.ctx.sky = NCard.sky(D.sunrise + (D.sunset != null
         ? (D.sunset - D.sunrise) / 2 : 6 * 3600000), S.place);
     }

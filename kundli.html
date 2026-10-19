@@ -2308,6 +2308,20 @@ window.__kAsc=function(inp,offMin){
   return ascendant(jd,date,inp.lat,inp.lon,ayanamsa(jd));
 };
 /* sidereal longitude of a graha at any instant — used by the timeline, events and Now panel */
+/* Sidereal longitude AND geocentric ecliptic latitude together.
+   tropLon() has the latitude in hand at line 67 and throws it away, because
+   every chart calculation on this site needs only the longitude. The graha
+   yuddha scene needs the other one: BPHS Vol. 2 ch. 79 decides the victor by
+   which planet stands to the north, and north of the ECLIPTIC — the śara or
+   vikṣepa — is a latitude, not a declination. Returning both from one call
+   also guarantees the pair are read at the same instant. */
+window.__kEclip=function(name,ms){
+  var key=BODY[name]||name;
+  if(!Astronomy.Body[key]) return null;
+  var date=new Date(ms), jd=ms/86400000+2440587.5;
+  var ev=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[key],date,true));
+  return {lon:norm(ev.elon-ayanamsa(jd)), trop:norm(ev.elon), lat:ev.elat};
+};
 window.__kSidAt=function(name,date){
   var jd=date.getTime()/86400000+2440587.5, ay=ayanamsa(jd);
   if(name==="Rahu") return norm(meanNode(jd)-ay);
@@ -7973,7 +7987,41 @@ tithiSkip:   {en:"{0} tithi skipped this month \u2014 k\u1e63aya",
 tithiEven:   {en:"this month the tithis and the days happen to keep step",
               hi:"इस मास तिथि और दिन कदम मिलाकर चलते हैं"},
 realMoons:   {en:"every Moon drawn from that morning\u2019s own elongation",
-              hi:"हर चन्द्र उसी प्रातः के वास्तविक कोण से"}
+              hi:"हर चन्द्र उसी प्रातः के वास्तविक कोण से"},
+twoClocksHead:{en:"Two scales, one ring", hi:"एक वृत्त, दो मापनी"},
+nakColHead:  {en:"NAKṢATRA", hi:"नक्षत्र"},
+tithiColHead:{en:"TITHI", hi:"तिथि"},
+oneBody:     {en:"one body \u2014 boundaries fixed to the stars",
+              hi:"एक ग्रह \u2014 सीमाएँ नक्षत्रों पर स्थिर"},
+twoBodies:   {en:"two bodies \u2014 boundaries move with the Sun",
+              hi:"दो ग्रह \u2014 सीमाएँ सूर्य के साथ चलतीं"},
+pctThrough:  {en:"{0}% through it", hi:"{0}% बीता"},
+crossedBoth: {en:"in these 2\u00bd days: {0} nakṣatra boundaries crossed, {1} tithi",
+              hi:"इन २½ दिनों में: {0} नक्षत्र सीमा, {1} तिथि सीमा"},
+gridSlid:    {en:"and the tithi grid itself slid {0}\u00b0 \u2014 it is pinned to the Sun",
+              hi:"और तिथि की जाली स्वयं {0}\u00b0 खिसकी \u2014 वह सूर्य से बँधी है"},
+yuddhaHead:  {en:"Graha Yuddha", hi:"ग्रह युद्ध"},
+noWarAhead:  {en:"no graha yuddha within the next fourteen months",
+              hi:"आगामी चौदह मास में कोई ग्रह युद्ध नहीं"},
+eclipticLine:{en:"the ecliptic \u2014 north and south are measured from here",
+              hi:"क्रान्तिवृत्त \u2014 उत्तर-दक्षिण यहीं से"},
+oneDegreeBox:{en:"one degree \u2014 the condition for a war",
+              hi:"एक अंश \u2014 युद्ध की शर्त"},
+sepNow:      {en:"{0}\u00b0 apart in longitude", hi:"भोगांश में {0}\u00b0 का अन्तर"},
+tagVerse:    {en:"BPHS TEXT", hi:"बृ.पा.हो.शा. मूल"},
+tagNote:     {en:"TRANSLATOR\u2019S NOTE", hi:"अनुवादक की टिप्पणी"},
+conquers:    {en:"{0} conquers", hi:"{0} विजयी"},
+noWarAtAll:  {en:"no war on this test", hi:"इस कसौटी पर युद्ध नहीं"},
+testsAgree:  {en:"on this meeting the three tests agree",
+              hi:"इस मिलन पर तीनों कसौटी एकमत"},
+testsDiffer: {en:"the three tests do not agree here \u2014 which is why the source is named",
+              hi:"यहाँ तीनों कसौटी भिन्न \u2014 इसीलिए स्रोत नामित"},
+notYetWar:   {en:"more than a degree apart \u2014 no war yet",
+              hi:"एक अंश से अधिक दूर \u2014 अभी युद्ध नहीं"},
+warOn:       {en:"\u2014 within one degree, a war",
+              hi:"\u2014 एक अंश के भीतर, युद्ध"},
+latNotDec:   {en:"latitude from the ecliptic \u2014 the śara, not declination",
+              hi:"क्रान्तिवृत्त से शर \u2014 क्रान्ति नहीं"}
 };
 for(var _k8 in MO_PHR8) MO_PHR[_k8]=MO_PHR8[_k8];
 /* ===== Motion — the context bar ===========================================
@@ -15557,6 +15605,595 @@ window.__moCalFacts = function () {
 
 MO_SCENES = MO_SCENES.concat(MO_CAL);
 try { window.__moCalKeys = MO_CAL.map(function (s) { return s.key; }); } catch (e) {}
+/* ===== Two clocks on one ring =============================================
+
+   THE QUESTION THIS ANSWERS. Every pañcāṅga prints a tithi and a nakṣatra
+   side by side, in the same typeface, in the same row, as though they were
+   two readings of the same instrument. They are not. They are readings of two
+   different instruments that happen to both involve the Moon, and almost
+   nobody is ever told the difference:
+
+     a NAKṢATRA is the Moon's own place. One body, measured against the fixed
+     stars. Its twenty-seven boundaries are nailed to the zodiac and never
+     move — Aśvinī begins at 0° and will begin at 0° forever.
+
+     a TITHI is the ANGLE BETWEEN the Moon and the Sun. Two bodies. Its
+     boundaries are not nailed to anything: they sit twelve degrees apart
+     measured FROM THE SUN, so the whole set of thirty slides forward through
+     the zodiac as the year goes on, about a degree a day.
+
+   So the two counters advance at different rates and out of step, and the
+   reason is not an adjustment or a correction — it is that one of them is
+   measured from a thing that moves.
+
+   WHAT THE FRAME SHOWS. One ring carrying both scales at once. The outer
+   track is the twenty-seven, fixed, with the current nakṣatra lit. The inner
+   track is the thirty tithi boundaries, drawn FROM THE SUN'S CURRENT PLACE,
+   with the current tithi lit — and as the playhead runs, that inner track
+   visibly rotates while the outer one does not. Two hands, Sun and Moon. The
+   gold arc between them is the elongation, which is the tithi's whole input.
+
+   The counters below advance as they advance, and the frame states the count:
+   in two days the Moon crosses about two nakṣatra boundaries and the pair
+   crosses about two tithi boundaries, but never the same two, and never at
+   the same moments.
+
+   The span is deliberately short — about two and a half days — because the
+   point is a boundary crossing you can watch, not a month you have to take on
+   trust. Everything on the frame comes from mgLimbs(), the same function the
+   glassbox scenes use, so the two cannot disagree. */
+
+var MO_TWOCLOCK = [];
+
+/* moFitWidth returns the size that fits; it does not draw. This scene has two
+   narrow columns and a full-width footer, all carrying sentences rather than
+   labels, so it wraps the pair together once rather than at seven call sites. */
+function tcFit(s, x, y, size, col, align, weight, maxW) {
+  moText(s, x, y, moFitWidth(s, size, maxW, false, weight), col, align, weight);
+}
+
+MO_TWOCLOCK.push({
+  key: "twoclocks", label: "Two clocks, one ring",
+  title: "A tithi and a nakṣatra are not the same kind of thing",
+  sub: "one is the Moon's place; the other is the angle between the Moon and the Sun — so one set of boundaries moves",
+  draw: function (p) {
+    var P = moPal(), S = moSize(), st = moStage(), c = MO.ctx;
+    var U = Math.min(S.w, S.h) / moTypeK();
+    var R = Math.PI / 180;
+
+    /* Two and a half days from the start of today, local. Long enough for the
+       Moon to cross a nakṣatra boundary and the pair to cross a tithi one;
+       short enough that both crossings are watchable rather than asserted. */
+    var W = moPlace();
+    var tz = (W && W.tz) || 0;
+    var M = moCached("twoclocks|" + (W ? W.name : "-") + "|" + moToday(tz), function () {
+      var loc = new Date(Date.now() + tz * 3600000);
+      var t0 = Date.UTC(loc.getUTCFullYear(), loc.getUTCMonth(), loc.getUTCDate())
+             - tz * 3600000;
+      var span = 2.5 * 86400000;
+      /* Sampled once so the counters below can be counted rather than guessed:
+         how many boundaries of each kind the span actually contains. */
+      var N = 150, rows = [];
+      for (var i = 0; i <= N; i++) {
+        var L = mgLimbs(t0 + span * i / N);
+        if (!L) return null;
+        rows.push({ ms: t0 + span * i / N, sun: L.sun, moon: L.moon,
+                    elong: L.elong, ti: L.tithi.i, ni: L.nak.i,
+                    tn: L.tithi.name, tp: L.tithi.paksha,
+                    nn: L.nak.name, tf: L.tithi.f, nf: L.nak.f });
+      }
+      var tC = 0, nC = 0;
+      for (var j = 1; j < rows.length; j++) {
+        if (rows[j].ti !== rows[j - 1].ti) tC++;
+        if (rows[j].ni !== rows[j - 1].ni) nC++;
+      }
+      /* How far the tithi grid itself slides over the span. It is pinned to
+         the Sun, so this is simply the Sun's own motion — which is the whole
+         explanation, stated as a number. */
+      var slide = ((rows[rows.length - 1].sun - rows[0].sun) % 360 + 360) % 360;
+      return { t0: t0, span: span, rows: rows, tC: tC, nC: nC, slide: slide };
+    });
+    if (!M) { moText(moT("noPlace"), st.cx, st.cy, U * 0.03, P.dim, "center"); return {}; }
+
+    moStars();
+    var k = Math.min(M.rows.length - 1, Math.floor(M.rows.length * p));
+    var r = M.rows[k], r0 = M.rows[0];
+
+    var cx = st.cx, cy = st.y + st.h * 0.345;
+    var rad = Math.min(S.w * 0.355, st.h * 0.260);
+
+    moText(moP("twoClocksHead"), cx, st.y + st.h * 0.055, U * 0.034, P.ink, "center", 700);
+
+    /* --- the outer track: the 27, nailed to the stars -------------------- */
+    c.save();
+    c.strokeStyle = P.dim; c.lineWidth = Math.max(1, U * 0.0016);
+    c.globalAlpha = 0.55;
+    for (var n = 0; n < 27; n++) {
+      var a = (n * (40 / 3) - 90) * R;
+      c.beginPath();
+      c.moveTo(cx + Math.cos(a) * rad * 1.00, cy + Math.sin(a) * rad * 1.00);
+      c.lineTo(cx + Math.cos(a) * rad * 1.13, cy + Math.sin(a) * rad * 1.13);
+      c.stroke();
+    }
+    c.globalAlpha = 1;
+    /* the nakṣatra the Moon is in now */
+    var na0 = (r.ni * (40 / 3) - 90) * R, na1 = ((r.ni + 1) * (40 / 3) - 90) * R;
+    c.beginPath();
+    c.arc(cx, cy, rad * 1.065, na0, na1);
+    c.strokeStyle = P.glow; c.lineWidth = Math.max(4, U * 0.017);
+    c.stroke();
+    c.restore();
+
+    /* --- the inner track: the 30 tithi boundaries, FROM THE SUN ----------
+       Drawn at Sun + 12k, so the whole set turns with the Sun. That rotation
+       is the thing the scene exists to show, and it is visible across the
+       span because the Sun moves about two and a half degrees in it. */
+    c.save();
+    c.strokeStyle = P.gold; c.lineWidth = Math.max(1.5, U * 0.0026);
+    c.globalAlpha = 0.85;
+    for (var t = 0; t < 30; t++) {
+      var b = (r.sun + t * 12 - 90) * R;
+      c.beginPath();
+      c.moveTo(cx + Math.cos(b) * rad * 0.70, cy + Math.sin(b) * rad * 0.70);
+      c.lineTo(cx + Math.cos(b) * rad * 0.84, cy + Math.sin(b) * rad * 0.84);
+      c.stroke();
+    }
+    c.globalAlpha = 1;
+    /* the tithi now: the wedge from Sun+12i to Sun+12(i+1) */
+    var ta0 = (r.sun + r.ti * 12 - 90) * R, ta1 = (r.sun + (r.ti + 1) * 12 - 90) * R;
+    c.beginPath();
+    c.arc(cx, cy, rad * 0.77, ta0, ta1);
+    c.strokeStyle = P.gold; c.lineWidth = Math.max(4, U * 0.017);
+    c.stroke();
+    /* a ghost of where the tithi grid stood at the start, so the slide is a
+       comparison rather than a memory */
+    c.strokeStyle = P.ink; c.globalAlpha = 0.40;
+    c.lineWidth = Math.max(1, U * 0.0020);
+    c.setLineDash([U * 0.008, U * 0.008]);
+    for (var t2 = 0; t2 < 30; t2++) {
+      var b2 = (r0.sun + t2 * 12 - 90) * R;
+      c.beginPath();
+      c.moveTo(cx + Math.cos(b2) * rad * 0.70, cy + Math.sin(b2) * rad * 0.70);
+      c.lineTo(cx + Math.cos(b2) * rad * 0.84, cy + Math.sin(b2) * rad * 0.84);
+      c.stroke();
+    }
+    c.setLineDash([]); c.globalAlpha = 1;
+    c.restore();
+
+    /* --- the elongation arc, which is the tithi's only input ------------- */
+    c.save();
+    c.beginPath();
+    c.arc(cx, cy, rad * 0.93, (r.sun - 90) * R, (r.moon - 90) * R);
+    c.strokeStyle = P.gold; c.globalAlpha = 0.30;
+    c.lineWidth = Math.max(4, U * 0.013);
+    c.stroke();
+    c.restore();
+
+    /* --- the two hands -------------------------------------------------- */
+    function hand(deg, len, col, lab, w) {
+      var a = (deg - 90) * R;
+      c.save();
+      c.strokeStyle = col; c.lineWidth = Math.max(2, U * (w || 0.004));
+      c.beginPath(); c.moveTo(cx, cy);
+      c.lineTo(cx + Math.cos(a) * rad * len, cy + Math.sin(a) * rad * len);
+      c.stroke();
+      c.restore();
+      /* inside the ring: the middle is empty apart from the phase disc, and
+         a label out at the rim lands on the ticks or on the row below */
+      moText(lab, cx + Math.cos(a) * rad * 0.44,
+             cy + Math.sin(a) * rad * 0.44 + U * 0.008,
+             U * 0.019, col, "center", 700);
+    }
+    hand(r.sun, 0.62, P.gold, moTgraha("Sun"), 0.0055);
+    hand(r.moon, 0.93, P.glow, moTgraha("Moon"), 0.0040);
+    moPhaseDisc(cx, cy, rad * 0.17, r.elong, P);
+
+    /* --- the two counters ------------------------------------------------ */
+    var by = cy + rad * 1.34;
+    var colL = cx - S.w * 0.215, colR = cx + S.w * 0.215;
+
+    moText(moP("nakColHead") + "  ·  27", colL, by, U * 0.0200, P.glow, "center", 700);
+    moText(r.nn, colL, by + st.h * 0.042, U * 0.030, P.ink, "center", 700);
+    tcFit(moP("oneBody"), colL, by + st.h * 0.072, U * 0.0150, P.dim,
+               "center", 500, S.w * 0.44);
+    moText(moP("pctThrough", Math.round(r.nf * 100)), colL, by + st.h * 0.098,
+           U * 0.0165, P.dim, "center", 500);
+
+    moText(moP("tithiColHead") + "  ·  30", colR, by, U * 0.0200, P.gold, "center", 700);
+    moText(r.tp + " " + r.tn, colR, by + st.h * 0.042, U * 0.030, P.ink, "center", 700);
+    tcFit(moP("twoBodies"), colR, by + st.h * 0.072, U * 0.0150, P.dim,
+               "center", 500, S.w * 0.44);
+    moText(moP("pctThrough", Math.round(r.tf * 100)), colR, by + st.h * 0.098,
+           U * 0.0165, P.dim, "center", 500);
+
+    /* the subtraction, because this scene belongs to the glassbox family */
+    moText("Moon " + r.moon.toFixed(2) + "° − Sun " + r.sun.toFixed(2) + "° = " +
+           r.elong.toFixed(2) + "°  ÷ 12° = " + (r.elong / 12).toFixed(2),
+           cx, by + st.h * 0.137, U * 0.0170, P.gold, "center", 500);
+    moText("Moon " + r.moon.toFixed(2) + "° ÷ 13°20′ = " +
+           (r.moon / (40 / 3)).toFixed(2),
+           cx, by + st.h * 0.168, U * 0.0170, P.glow, "center", 500);
+
+    /* --- what the span contained, counted ------------------------------- */
+    tcFit(moP("crossedBoth", M.nC, M.tC), cx, st.y + st.h * 0.925,
+           U * 0.0185, P.ink, "center", 600, S.w * 0.90);
+    tcFit(moP("gridSlid", M.slide.toFixed(1)), cx, st.y + st.h * 0.968,
+           U * 0.0160, P.dim, "center", 500, S.w * 0.90);
+    return { ms: r.ms };
+  }
+});
+
+/* The sampled span, so the counts on the frame can be re-derived from the
+   longitudes rather than trusted. */
+try {
+window.__moTwoClockFacts = function () {
+  var W = moPlace();
+  return MO_CACHE["twoclocks|" + (W ? W.name : "-") + "|" +
+                  moToday((W && W.tz) || 0)] || null;
+};
+} catch (e) {}
+
+MO_SCENES = MO_SCENES.concat(MO_TWOCLOCK);
+try { window.__moTwoClockKeys = MO_TWOCLOCK.map(function (s) { return s.key; }); }
+catch (e) {}
+/* ===== Graha Yuddha, through a telescope ==================================
+
+   WHAT THIS SCENE IS FOR. "Defeated in planetary war" appears in the list of
+   conditions that void a bhāva's potence, and it appears again in the list of
+   planetary states that colour a daśā. It is one of the few BPHS conditions
+   that is purely geometric — two planets at the same degree — and so one of
+   the few that can be shown rather than asserted. Almost nobody has seen it
+   drawn.
+
+   THE SOURCE, AND WHY THERE ARE THREE VERDICTS AND NOT ONE.
+
+   The uploaded Santhanam translation does not speak with one voice here, and
+   the honest thing is to show all three positions with their provenance rather
+   than pick one and present it as the rule:
+
+     BPHS TEXT. Vol. 2, ch. 79, v. 9 gives the condition and the victor test
+     directly: a war when the five tārā grahas are "within one degree of each
+     other"; Śukra conquers whether north or south; among the other four, the
+     one standing to the NORTH conquers and the one to the south is defeated.
+     The luminaries are not in the list. This is a verse, and the scene labels
+     it as one.
+
+     TRANSLATOR'S NOTE, Vol. 1, ch. 11. Santhanam reports a different test as
+     the one commonly taught — that of two planets on the same degree, the one
+     with the LESSER LONGITUDE wins. He gives it as what "we are taught", not
+     as Parāśara's words.
+
+     TRANSLATOR'S NOTE, Vol. 1, ch. 11, citing C. G. Rajan. A third test:
+     identical longitudes to the minute of arc; both planets must be on the
+     SAME side of the ecliptic for a war to exist at all; and then the one of
+     HIGHER latitude wins. Santhanam adds that this need not be taken as
+     contrary to Parāśara.
+
+   So the frame prints three verdicts side by side, each with its source, and
+   where they disagree it says so. They disagree often: about a third of real
+   conjunctions have the two planets on opposite sides of the ecliptic, which
+   under the Rajan test is not a war at all while under ch. 79 it has a clear
+   victor. That disagreement is the most interesting thing on the card, and a
+   scene that picked one rule would have hidden it.
+
+   WHAT THE GEOMETRY SHOWS. A narrow field — three degrees of longitude by
+   eight of latitude — with the ecliptic drawn across it, so north is up. Both
+   planets carry a trail. They converge in longitude, cross, and separate, and
+   their latitudes barely change in the day and a half on either side: the
+   victory is decided by where each one sits relative to the ecliptic plane,
+   which is a fact about the tilt of its orbit and not about the meeting.
+
+   WHAT IT DOES NOT CLAIM. The discs are symbols at a fixed size. Drawing them
+   at true angular diameter would need a table of planetary radii, and the rule
+   this scene is about does not use the disc at all — it uses latitude. So the
+   scene does not imply that the bigger or brighter planet matters, because
+   none of the three tests in the uploaded translation says it does. */
+
+var MO_YUD = [];
+
+var MY_GRAHA = ["Mars", "Mercury", "Jupiter", "Venus", "Saturn"];
+
+function myNorm(x) { return ((x % 360) + 360) % 360; }
+function mySepAt(a, b, ms) {
+  var A = null, B = null;
+  try { A = window.__kEclip(a, ms); B = window.__kEclip(b, ms); } catch (e) {}
+  if (!A || !B) return null;
+  var d = myNorm(A.lon - B.lon);
+  return d > 180 ? 360 - d : d;
+}
+
+/* The next war from a given instant, searched day by day across the pairs and
+   then refined to the closest approach. Returns the pair and the instant, or
+   null if none inside the horizon — which the scene then says, rather than
+   drawing an event it invented. */
+function myNextWar(fromMs, horizonDays) {
+  var best = null;
+  for (var i = 0; i < MY_GRAHA.length; i++)
+    for (var j = i + 1; j < MY_GRAHA.length; j++) {
+      var a = MY_GRAHA[i], b = MY_GRAHA[j];
+      var step = 86400000, found = null;
+      for (var d = 0; d <= horizonDays; d++) {
+        var t = fromMs + d * step;
+        var s = mySepAt(a, b, t);
+        if (s == null) continue;
+        if (s < 1.0) { if (!found || s < found.s) found = { t: t, s: s }; }
+        else if (found) break;
+        if (best && t > best.ms) break;
+      }
+      if (!found) continue;
+      /* refine to the closest approach by ternary search on the bracket */
+      var lo = found.t - step, hi = found.t + step;
+      for (var k = 0; k < 44; k++) {
+        var m1 = lo + (hi - lo) / 3, m2 = hi - (hi - lo) / 3;
+        var v1 = mySepAt(a, b, m1), v2 = mySepAt(a, b, m2);
+        if (v1 == null || v2 == null) break;
+        if (v1 < v2) hi = m2; else lo = m1;
+      }
+      var at = (lo + hi) / 2;
+      if (!best || at < best.ms) best = { a: a, b: b, ms: at, sep: mySepAt(a, b, at) };
+    }
+  return best;
+}
+
+/* The three verdicts, each from its own stated authority. Returns the working
+   as well as the answer, because a verdict with no visible reason is the thing
+   this whole site exists to avoid. */
+function myVerdicts(a, b, A, B) {
+  var out = [];
+
+  /* 1. BPHS Vol. 2 ch. 79 v. 9 — Śukra always; otherwise the northern one. */
+  var v1;
+  if (a === "Venus" || b === "Venus")
+    v1 = { who: "Venus", why: "Śukra conquers whether north or south" };
+  else {
+    var n = A.lat > B.lat ? a : b;
+    v1 = { who: n, why: (n === a ? a : b) + " stands further north (" +
+           (A.lat > B.lat ? A.lat : B.lat).toFixed(2) + "° vs " +
+           (A.lat > B.lat ? B.lat : A.lat).toFixed(2) + "°)" };
+  }
+  out.push({ src: "bphs", cite: "BPHS Vol. 2, ch. 79, v. 9", v: v1 });
+
+  /* 2. the test Santhanam reports as commonly taught: lesser longitude.
+
+        It has a degeneracy the other two do not, and it shows up exactly at
+        the moment it is meant to settle: a war IS the two longitudes being
+        equal, so at the closest approach there is often nothing left to
+        compare. Below a thousandth of a degree the difference is smaller than
+        any classical instrument could resolve and smaller than the spread
+        between ayanāṃśas, so the scene says the test does not separate them
+        rather than reporting the rounding. */
+  var dlon = Math.abs(A.lon - B.lon);
+  if (dlon < 0.001)
+    out.push({ src: "note", cite: "Translator's note, Vol. 1, ch. 11",
+               v: { who: null, why: "the longitudes are equal to within " +
+                    (dlon * 3600).toFixed(1) + "″ — this test cannot separate them" } });
+  else
+    out.push({ src: "note", cite: "Translator's note, Vol. 1, ch. 11",
+               v: { who: A.lon < B.lon ? a : b, why: "lesser longitude (" +
+                    Math.min(A.lon, B.lon).toFixed(4) + "° vs " +
+                    Math.max(A.lon, B.lon).toFixed(4) + "°)" } });
+
+  /* 3. C. G. Rajan, as reported in that note: same side required, then the
+        higher latitude wins. Opposite sides means no war at all — which is a
+        real verdict and is printed as one. */
+  var same = (A.lat >= 0) === (B.lat >= 0);
+  if (!same)
+    out.push({ src: "rajan", cite: "C. G. Rajan, in that note",
+               v: { who: null, why: "opposite sides of the ecliptic — " +
+                    "on this test there is no war" } });
+  else {
+    var hi2 = Math.abs(A.lat) > Math.abs(B.lat) ? a : b;
+    out.push({ src: "rajan", cite: "C. G. Rajan, in that note",
+               v: { who: hi2, why: "same side, higher latitude (" +
+                    Math.max(Math.abs(A.lat), Math.abs(B.lat)).toFixed(2) +
+                    "° vs " + Math.min(Math.abs(A.lat), Math.abs(B.lat)).toFixed(2) + "°)" } });
+  }
+  return out;
+}
+
+MO_YUD.push({
+  key: "yuddha", label: "Graha Yuddha",
+  title: "Two grahas at the same degree",
+  sub: "a war, by the text — and the three tests in the uploaded translation do not always agree on who wins",
+  draw: function (p) {
+    var P = moPal(), S = moSize(), st = moStage(), c = MO.ctx;
+    var U = Math.min(S.w, S.h) / moTypeK();
+    var W = moPlace(), tz = (W && W.tz) || 0;
+
+    var M = moCached("yuddha|" + moToday(tz), function () {
+      var E = myNextWar(Date.now(), 420);
+      if (!E) return { none: true };
+      /* The window is the WAR, not a fixed day and a half.
+
+         A fixed span was wrong at both ends. Mars and Jupiter stay inside one
+         degree for about five days, so ±1.6 days opened the reel already at
+         war and never showed it begin or end; Mercury and Venus can pass
+         through in well under a day, so the same span would have been mostly
+         empty sky. Here the edges are found — the instants the separation
+         crosses one degree — and the reel runs from a quarter-width before to
+         a quarter-width after, so every pair gives the same four beats:
+         approach, the degree crossed, the meeting, release. */
+      var edge = 0, lim = 12 * 86400000;
+      for (var e = 3600000; e < lim; e += 3600000) {
+        var sa = mySepAt(E.a, E.b, E.ms - e), sb2 = mySepAt(E.a, E.b, E.ms + e);
+        if ((sa != null && sa >= 1.0) || (sb2 != null && sb2 >= 1.0)) { edge = e; break; }
+      }
+      if (!edge) edge = 2 * 86400000;
+      var half = edge * 1.28, N = 120, rows = [];
+      for (var i = 0; i <= N; i++) {
+        var t = E.ms - half + 2 * half * i / N;
+        var A = null, B = null;
+        try { A = window.__kEclip(E.a, t); B = window.__kEclip(E.b, t); } catch (e) {}
+        if (!A || !B) return { none: true };
+        var d = myNorm(B.lon - A.lon); if (d > 180) d -= 360;
+        rows.push({ ms: t, aLon: A.lon, aLat: A.lat, bLon: B.lon, bLat: B.lat,
+                    mid: A.lon + d / 2 });
+      }
+      return { none: false, a: E.a, b: E.b, ms: E.ms, sep: E.sep, rows: rows };
+    });
+    if (!M) { moText(moT("noPlace"), st.cx, st.cy, U * 0.03, P.dim, "center"); return {}; }
+    if (M.none) {
+      moText(moP("noWarAhead"), st.cx, st.cy, U * 0.028, P.dim, "center", 500);
+      return {};
+    }
+
+    moStars();
+    var k = Math.min(M.rows.length - 1, Math.floor(M.rows.length * p));
+    var r = M.rows[k];
+
+    moText(moP("yuddhaHead"), st.cx, st.y + st.h * 0.052, U * 0.034, P.ink, "center", 700);
+    moText(moTgraha(M.a) + "  ·  " + moTgraha(M.b) + "   " +
+           moFmtDate(M.ms, tz) + "  " + moHM(M.ms, tz),
+           st.cx, st.y + st.h * 0.095, U * 0.021, P.gold, "center", 600);
+
+    /* --- the field ------------------------------------------------------- */
+    var fx = S.w * 0.10, fw = S.w * 0.80;
+    var fy = st.y + st.h * 0.150, fh = st.h * 0.275;
+    var LON = 1.8;
+    /* the latitude half-width, fitted to this pair. A fixed scale flattened
+       the only distance that decides the verdict; a floor keeps a pair that
+       really is nearly coplanar from being magnified into a false drama. */
+    var LAT = 0;
+    for (var li = 0; li < M.rows.length; li++)
+      LAT = Math.max(LAT, Math.abs(M.rows[li].aLat), Math.abs(M.rows[li].bLat));
+    LAT = Math.max(1.2, LAT * 1.45);
+    function X(dlon) { return fx + fw * (0.5 + dlon / (2 * LON)); }
+    function Y(lat) { return fy + fh * (0.5 - lat / (2 * LAT)); }
+
+    c.save();
+    c.strokeStyle = P.dim; c.globalAlpha = 0.35;
+    c.lineWidth = Math.max(1, U * 0.0014);
+    c.strokeRect(fx, fy, fw, fh);
+    c.globalAlpha = 1;
+    /* the ecliptic: latitude zero, which is what north and south are measured
+       from and the only reference the victor test uses */
+    c.strokeStyle = P.gold; c.globalAlpha = 0.5;
+    c.lineWidth = Math.max(1.5, U * 0.0022);
+    c.setLineDash([U * 0.012, U * 0.008]);
+    c.beginPath(); c.moveTo(fx, Y(0)); c.lineTo(fx + fw, Y(0)); c.stroke();
+    c.setLineDash([]); c.globalAlpha = 1;
+    c.restore();
+    /* at the foot of the box: beside the dashed line it sat under whichever
+       planet happened to be near the ecliptic, which is most of them */
+    moText(moP("eclipticLine"), fx + U * 0.010, fy + fh - U * 0.016,
+           U * 0.0145, P.gold, "left", 500);
+    moText("N", fx + U * 0.012, fy + U * 0.026, U * 0.021, P.dim, "left", 700);
+    moText("S", fx + U * 0.012, fy + fh - U * 0.010, U * 0.021, P.dim, "left", 700);
+    /* the one-degree box, which is the condition itself */
+    c.save();
+    c.strokeStyle = P.glow; c.globalAlpha = 0.20;
+    c.lineWidth = Math.max(1, U * 0.0016);
+    c.strokeRect(X(-0.5), fy, X(0.5) - X(-0.5), fh);
+    c.restore();
+    moText(moP("oneDegreeBox"), X(0), fy + fh + U * 0.028, U * 0.0155,
+           P.glow, "center", 500);
+
+    /* --- the trails ------------------------------------------------------ */
+    function trail(key, latKey, col) {
+      c.save();
+      c.strokeStyle = col; c.globalAlpha = 0.70;
+      c.lineWidth = Math.max(2, U * 0.0034);
+      c.beginPath();
+      for (var i = 0; i <= k; i++) {
+        var q = M.rows[i];
+        var dl = myNorm(q[key] - q.mid); if (dl > 180) dl -= 360;
+        var px = X(dl), py = Y(q[latKey]);
+        if (i === 0) c.moveTo(px, py); else c.lineTo(px, py);
+      }
+      c.stroke();
+      c.restore();
+    }
+    trail("aLon", "aLat", P.glow);
+    trail("bLon", "bLat", P.gold);
+
+    function disc(lon, lat, col, name, up) {
+      var dl = myNorm(lon - r.mid); if (dl > 180) dl -= 360;
+      var px = X(dl), py = Y(lat), rr = Math.max(5, U * 0.013);
+      c.save();
+      c.fillStyle = col; c.globalAlpha = 0.95;
+      c.beginPath(); c.arc(px, py, rr, 0, Math.PI * 2); c.fill();
+      c.restore();
+      /* the northern planet is labelled above and the southern below, so two
+         planets a tenth of a degree apart in latitude still read as two */
+      var s1 = up ? py - rr - U * 0.015 : py + rr + U * 0.020;
+      var s2 = up ? py - rr - U * 0.038 : py + rr + U * 0.043;
+      moText(moTgraha(name), px, s1, U * 0.019, col, "center", 700);
+      moText((lat >= 0 ? "N" : "S") + Math.abs(lat).toFixed(2) + "°",
+             px, s2, U * 0.0150, P.dim, "center", 500);
+    }
+    var aUp = r.aLat >= r.bLat;
+    disc(r.aLon, r.aLat, P.glow, M.a, aUp);
+    disc(r.bLon, r.bLat, P.gold, M.b, !aUp);
+
+    /* the separation at the playhead, which is the condition being tested */
+    var sepNow = myNorm(r.bLon - r.aLon); if (sepNow > 180) sepNow = 360 - sepNow;
+    moText(moP("sepNow", sepNow.toFixed(3)) +
+           (sepNow < 1.0 ? "   " + moP("warOn") : ""),
+           st.cx, fy + fh + U * 0.064,
+           U * 0.0195, sepNow < 1.0 ? P.gold : P.dim, "center", 600);
+
+    /* --- the three verdicts, at the playhead ------------------------------
+
+       NOT frozen at the exact conjunction. Freezing them there was unfair to
+       one of the three rules and made the reel static: a war is the two
+       planets being WITHIN a degree, which lasts hours or days, and a chart is
+       cast at some moment inside that window rather than at its midpoint. So
+       the tests are applied to the instant under the playhead, exactly as they
+       would be applied to a birth moment.
+
+       What that shows, which the frozen version hid: the lesser-longitude test
+       gives one answer before the crossing and the opposite answer after it,
+       and at the crossing itself it gives none, because the longitudes are
+       equal — that is what a war IS. The other two tests hold steady through
+       the whole window, because latitude barely changes in a day and a half.
+       A rule that reverses halfway through the event it is meant to decide is
+       worth seeing reverse. */
+    var inWar = sepNow < 1.0;
+    var VR = myVerdicts(M.a, M.b,
+                        { lon: r.aLon, lat: r.aLat },
+                        { lon: r.bLon, lat: r.bLat });
+    var vy = fy + fh + st.h * 0.078;
+    var TAG = { bphs: moP("tagVerse"), note: moP("tagNote"), rajan: moP("tagNote") };
+    var COL = { bphs: P.gold, note: P.dim, rajan: P.dim };
+    if (!inWar) {
+      moText(moP("notYetWar"), st.cx, vy + st.h * 0.055, U * 0.026,
+             P.dim, "center", 500);
+    }
+    for (var vi = 0; inWar && vi < VR.length; vi++) {
+      var V = VR[vi], y = vy + vi * st.h * 0.098;
+      moText(TAG[V.src], fx, y, U * 0.0150, COL[V.src], "left", 700);
+      moText(V.v.who ? moP("conquers", moTgraha(V.v.who)) : moP("noWarAtAll"),
+             fx, y + st.h * 0.030, U * 0.0255,
+             V.v.who ? P.ink : P.dim, "left", 700);
+      moText(V.v.why, fx, y + st.h * 0.057, U * 0.0160, P.dim, "left", 500);
+      moText(V.cite, fx + fw, y + st.h * 0.057, U * 0.0145, P.dim, "right", 500);
+    }
+
+    /* --- whether they agree, stated -------------------------------------- */
+    var who = VR.map(function (v) { return v.v.who; });
+    var agree = who[0] === who[1] && who[1] === who[2];
+    if (inWar)
+      moText(agree ? moP("testsAgree") : moP("testsDiffer"),
+             st.cx, st.y + st.h * 0.862, U * 0.0190,
+             agree ? P.glow : P.gold, "center", 600);
+    moText(moP("latNotDec"), st.cx, st.y + st.h * 0.903, U * 0.0160, P.dim, "center", 500);
+    return { ms: r.ms };
+  }
+});
+
+/* The war as found, so the verdicts on the frame can be re-derived from the
+   longitudes and latitudes rather than trusted. */
+try {
+window.__moYuddhaFacts = function () {
+  var W = moPlace();
+  return MO_CACHE["yuddha|" + moToday((W && W.tz) || 0)] || null;
+};
+window.__moYuddhaNext = myNextWar;
+window.__moYuddhaVerdicts = myVerdicts;
+} catch (e) {}
+
+MO_SCENES = MO_SCENES.concat(MO_YUD);
+try { window.__moYuddhaKeys = MO_YUD.map(function (s) { return s.key; }); } catch (e) {}
 /* ============================================================================
    "How to read this" — a short note beside each scene, on the page.
 
@@ -18956,4 +19593,4 @@ window.buildKundliReport=function(J){
   }
 })();
 </script>
-<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-19.eb99ca4</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>
+<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-19.c4f78f6</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>

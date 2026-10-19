@@ -1376,6 +1376,20 @@ window.__kAsc=function(inp,offMin){
   return ascendant(jd,date,inp.lat,inp.lon,ayanamsa(jd));
 };
 /* sidereal longitude of a graha at any instant — used by the timeline, events and Now panel */
+/* Sidereal longitude AND geocentric ecliptic latitude together.
+   tropLon() has the latitude in hand at line 67 and throws it away, because
+   every chart calculation on this site needs only the longitude. The graha
+   yuddha scene needs the other one: BPHS Vol. 2 ch. 79 decides the victor by
+   which planet stands to the north, and north of the ECLIPTIC — the śara or
+   vikṣepa — is a latitude, not a declination. Returning both from one call
+   also guarantees the pair are read at the same instant. */
+window.__kEclip=function(name,ms){
+  var key=BODY[name]||name;
+  if(!Astronomy.Body[key]) return null;
+  var date=new Date(ms), jd=ms/86400000+2440587.5;
+  var ev=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[key],date,true));
+  return {lon:norm(ev.elon-ayanamsa(jd)), trop:norm(ev.elon), lat:ev.elat};
+};
 window.__kSidAt=function(name,date){
   var jd=date.getTime()/86400000+2440587.5, ay=ayanamsa(jd);
   if(name==="Rahu") return norm(meanNode(jd)-ay);
