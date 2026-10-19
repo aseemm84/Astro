@@ -485,10 +485,17 @@
       sub = names.join(" – ") + " · " + eraLabel(D) + " · " +
             (S.reckoning === "amanta" ? "amānta" : "pūrṇimānta");
     }
+    /* The label names the unit the arrows move, which depends on the view. It
+       belongs in this markup rather than being set on the elements afterwards:
+       this function rebuilds the buttons on every render, so an attribute
+       written anywhere else is overwritten the next time anything changes. */
+    var unit = stepUnit();
     el.innerHTML = '<div class="cnav">' +
-      '<button id="cprev" type="button" aria-label="Previous">‹</button>' +
+      '<button id="cprev" type="button" aria-label="Previous ' + unit +
+        '" title="Previous ' + unit + '">‹</button>' +
       '<span class="clabel"><b>' + esc(label) + "</b><i>" + esc(sub) + "</i></span>" +
-      '<button id="cnext" type="button" aria-label="Next">›</button>' +
+      '<button id="cnext" type="button" aria-label="Next ' + unit +
+        '" title="Next ' + unit + '">›</button>' +
       '<button id="ctoday" type="button" class="csec">Today</button>' +
       "</div>";
     /* A printed sheet has no controls and no place note, so it has to name
@@ -503,16 +510,38 @@
     $("ctoday").addEventListener("click", function () { today(); render(); });
   }
   /* Navigation stops at the range boundary rather than running past it. */
+  /* The arrows step by whatever the view is showing.
+
+     They used to step a MONTH in every view, so in the day view pressing ›
+     from the 18th of October landed on the 1st of November — it moved the
+     month and then reset the day to the first. A reader stepping through days
+     one at a time is the whole reason the day view exists, and it was the one
+     thing the arrows could not do.
+
+     Year steps a year, month and almanac step a month, day steps a day. The
+     day case goes through a real Date so it crosses month and year ends by
+     itself rather than by a table of month lengths that would have to know
+     about leap years. */
   function step(k) {
-    if (S.view === "year") { if (NP.inRange(S.y + k)) S.y += k; }
-    else {
+    if (S.view === "year") {
+      if (NP.inRange(S.y + k)) S.y += k;
+    } else if (S.view === "day") {
+      var t = new Date(Date.UTC(S.y, S.m - 1, S.d || 1));
+      t.setUTCDate(t.getUTCDate() + k);
+      if (!NP.inRange(t.getUTCFullYear())) return;
+      S.y = t.getUTCFullYear(); S.m = t.getUTCMonth() + 1; S.d = t.getUTCDate();
+    } else {
       var m = S.m + k, y = S.y;
       if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; }
       if (!NP.inRange(y)) return;
       S.y = y; S.m = m; S.d = null;
-      if (S.view === "day") S.d = 1;
     }
     render();
+  }
+  /* What the arrows will do, in words — so the control says which unit it
+     moves instead of leaving the reader to press it and find out. */
+  function stepUnit() {
+    return S.view === "year" ? "year" : S.view === "day" ? "day" : "month";
   }
   function today() {
     var now = new Date(Date.now() + S.place.tz * 3600000);
@@ -591,7 +620,15 @@
     document.querySelectorAll("[data-cview]").forEach(function (b) {
       b.addEventListener("click", function () {
         S.view = b.getAttribute("data-cview");
-        if (S.view === "day" && !S.d) S.d = 1;
+        /* Entering the day view with no day chosen lands on today when the
+           month on screen is the current one, and on the first otherwise —
+           the first of a month you are already looking at is rarely the day
+           you meant. */
+        if (S.view === "day" && !S.d) {
+          var now = new Date(Date.now() + S.place.tz * 3600000);
+          S.d = (now.getUTCFullYear() === S.y && now.getUTCMonth() + 1 === S.m)
+              ? now.getUTCDate() : 1;
+        }
         render();
       });
     });
