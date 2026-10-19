@@ -191,6 +191,50 @@ async function run(withChart) {
   const first = await litNow();
   await pg.waitForTimeout(1500);
   const second = await litNow();
+  /* The transport. Play and Pause are the two controls a reader presses most,
+     and the whole of their job is invisible in a screenshot — a paused canvas
+     and a playing one look identical in a still. So they are measured: the
+     playhead must move while playing and must be frozen after Pause.
+
+     And the state that was actually broken: while a recording owns the
+     playhead, Pause wrote PLAY = false into a loop that never read it, so the
+     button sat there enabled and inert. Now the transport is locked for the
+     duration and the Record button becomes the way out. */
+  const transport = await pg.evaluate(async () => {
+    const out = {};
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+    const playBtn = document.getElementById("sp-play");
+    const P = () => window.SPStage.S.p;
+    window.__spUI.select(["sky.all"]);
+    playBtn.click();                       /* play */
+    await sleep(420);
+    const a = P(); await sleep(420); const b = P();
+    out.movesWhilePlaying = a !== b;
+    out.labelWhilePlaying = playBtn.textContent;
+    playBtn.click();                       /* pause */
+    await sleep(120);
+    const c = P(); await sleep(520);
+    out.frozenAfterPause = c === P();
+    out.labelAfterPause = playBtn.textContent;
+
+    /* now the recorder */
+    const rec = document.getElementById("sp-rec");
+    rec.click();
+    await sleep(500);
+    out.recording = window.SPStage.isRecording();
+    out.playLockedDuringRecord = playBtn.disabled;
+    out.scrubLockedDuringRecord = document.getElementById("sp-scrub").disabled;
+    out.recIsStop = /stop/i.test(rec.textContent);
+    rec.click();                           /* stop it */
+    await sleep(1000);
+    out.stoppedCleanly = !window.SPStage.isRecording();
+    out.transportRestored = !playBtn.disabled &&
+                            !document.getElementById("sp-scrub").disabled;
+    const d = P(); await sleep(450);
+    out.frozenAfterStop = d === P();
+    return out;
+  });
+
   const rolled = await pg.evaluate(() => {
     const before = window.__spUI.stripSpecs().join("|");
     for (let i=0;i<6;i++) window.__spUI.rollStrip();
@@ -201,6 +245,7 @@ async function run(withChart) {
   r2.stripScrolled = second.scroll > 0;
   r2.rollChanged = rolled.before !== rolled.after;
   r2.diag = second.diag;
+  r2.tr = transport;
   r = r2;
   const html = await pg.content();
   r.navHasLink = html.indexOf('studio-pro.html') >= 0;
@@ -224,6 +269,12 @@ function show(tag, r) {
   console.log(`    awkward 5-node mixture → composer "${r.mixComposer}", ` +
               `${r.mixMissing} reported as unusable, ${r.mixOptions} views offered, lit ${r.mixLit}`);
   console.log(`    "what is not here" list: ${r.absent} entries`);
+  const t = r.tr || {};
+  console.log(`    transport: moves while playing ${t.movesWhilePlaying} ("${t.labelWhilePlaying}"), ` +
+              `frozen after pause ${t.frozenAfterPause} ("${t.labelAfterPause}")`);
+  console.log(`    recording: locks play/scrub ${t.playLockedDuringRecord}/${t.scrubLockedDuringRecord}, ` +
+              `button becomes Stop ${t.recIsStop}, stops cleanly ${t.stoppedCleanly}, ` +
+              `transport restored ${t.transportRestored}, frozen after ${t.frozenAfterStop}`);
   console.log(`    place: picker mounted ${r.placeInputs>0}, ` +
               `"${r.placeBefore && r.placeBefore.n}" -> "${r.placeAfter && r.placeAfter.n}", ` +
               `sunrise ${r.sunrisePair}, moved ${r.sunriseMoved}`);
@@ -268,6 +319,14 @@ const checks=[
   ["with no chart the strip still draws and moves",
    B.tileLitFirst>200 && B.tileMoved===true],
   ["the place picker mounts", A.placeInputs>0 && B.placeInputs>0],
+  ["the playhead moves while playing", A.tr.movesWhilePlaying===true],
+  ["Pause freezes the playhead and relabels", A.tr.frozenAfterPause===true &&
+   A.tr.labelWhilePlaying==="Pause" && A.tr.labelAfterPause==="Play"],
+  ["a recording locks the transport rather than leaving it inert",
+   A.tr.playLockedDuringRecord===true && A.tr.scrubLockedDuringRecord===true],
+  ["a recording can be stopped, and restores the transport",
+   A.tr.recIsStop===true && A.tr.stoppedCleanly===true &&
+   A.tr.transportRestored===true && A.tr.frozenAfterStop===true],
   ["picking a place moves the pañcāṅga with it",
    A.sunriseMoved===true && B.sunriseMoved===true]
 ];

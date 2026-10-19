@@ -811,7 +811,10 @@ table.stplantab td.stph{color:var(--ink)}
 .spbtn{font:inherit;font-size:.84rem;padding:7px 13px;border:1px solid var(--line);
   border-radius:8px;background:var(--soft);color:var(--ink);cursor:pointer}
 .spbtn.primary{border-color:var(--gold);color:#8a6a1e;background:#fdfaf1;font-weight:600}
-.spbtn:disabled{opacity:.55;cursor:progress}
+.spbtn:disabled,.spv:disabled{opacity:.45;cursor:not-allowed}
+/* the Record button while it owns the playhead: it is the way out */
+.spbtn.rec{background:#fdf0ec;border-color:#b5533c;color:#8a3a26}
+#sp-scrub:disabled{opacity:.45}
 .spv{font:inherit;font-size:.78rem;padding:5px 10px;border:1px solid var(--line);
   border-radius:7px;background:var(--soft);color:var(--ink);cursor:pointer}
 .spv.on{background:var(--night);border-color:var(--night);color:var(--gold-soft);font-weight:600}

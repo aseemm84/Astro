@@ -1396,6 +1396,20 @@
      Frame-accurate: the canvas is driven at a fixed step and the stream is
      fed one frame per step, so the file lasts exactly as long as it says
      rather than as long as the machine happened to take. */
+  /* The recording in flight, so it can be stopped.
+
+     It used to be unstoppable: once started, its own loop drove the playhead
+     for the whole length and nothing could interrupt it. The Pause button sat
+     there enabled, writing PLAY = false, which the recorder never read — so
+     pressing Pause during a recording did exactly nothing, and pressing Play
+     put a SECOND writer on the playhead and would have corrupted the capture.
+     A transport control that is enabled and inert is worse than one that is
+     greyed out, because the only thing the reader learns is that the page
+     does not work. */
+  var JOB = null;
+  function isRecording() { return !!JOB; }
+  function cancelRecording() { if (JOB) JOB.cancel = true; return !!JOB; }
+
   /* `sel` is either a selection (one shot) or an array of shots, in which
      case `seconds` is ignored and the storyboard's own total is used. */
   function record(sel, C, seconds, fps, forceKey, onFrame) {
@@ -1421,15 +1435,19 @@
       var chunks = [], rec;
       try { rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 12000000 }); }
       catch (e) { reject(e); return; }
+      var job = { cancel: false };
+      JOB = job;
       rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
       rec.onstop = function () {
+        JOB = null;
         resolve({ blob: new Blob(chunks, { type: mime }), mime: mime,
-                  seconds: seconds, frames: total });
+                  seconds: seconds, frames: total, cancelled: job.cancel,
+                  madeSeconds: Math.min(i, total) / fps });
       };
       var total = Math.max(2, Math.round(seconds * fps)), i = 0;
       rec.start();
       function step() {
-        if (i > total) { try { rec.stop(); } catch (e) {} return; }
+        if (job.cancel || i > total) { try { rec.stop(); } catch (e) {} return; }
         S.p = i / total;
         if (shots) renderStory(shots, C, S.p);
         else render(sel, C, S.p, forceKey);
@@ -1485,6 +1503,7 @@
       STARS = null;
     },
     render: render, renderStory: renderStory, record: record,
+    isRecording: isRecording, cancelRecording: cancelRecording,
     storyTotal: storyTotal, shotAt: shotAt, options: options, bagOf: bagOf,
     composers: function () { return COMPOSERS.map(function (K) {
       return { key: K.key, label: K.label, blurb: K.blurb }; }); }

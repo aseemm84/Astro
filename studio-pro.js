@@ -3103,6 +3103,20 @@
      Frame-accurate: the canvas is driven at a fixed step and the stream is
      fed one frame per step, so the file lasts exactly as long as it says
      rather than as long as the machine happened to take. */
+  /* The recording in flight, so it can be stopped.
+
+     It used to be unstoppable: once started, its own loop drove the playhead
+     for the whole length and nothing could interrupt it. The Pause button sat
+     there enabled, writing PLAY = false, which the recorder never read — so
+     pressing Pause during a recording did exactly nothing, and pressing Play
+     put a SECOND writer on the playhead and would have corrupted the capture.
+     A transport control that is enabled and inert is worse than one that is
+     greyed out, because the only thing the reader learns is that the page
+     does not work. */
+  var JOB = null;
+  function isRecording() { return !!JOB; }
+  function cancelRecording() { if (JOB) JOB.cancel = true; return !!JOB; }
+
   /* `sel` is either a selection (one shot) or an array of shots, in which
      case `seconds` is ignored and the storyboard's own total is used. */
   function record(sel, C, seconds, fps, forceKey, onFrame) {
@@ -3128,15 +3142,19 @@
       var chunks = [], rec;
       try { rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 12000000 }); }
       catch (e) { reject(e); return; }
+      var job = { cancel: false };
+      JOB = job;
       rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
       rec.onstop = function () {
+        JOB = null;
         resolve({ blob: new Blob(chunks, { type: mime }), mime: mime,
-                  seconds: seconds, frames: total });
+                  seconds: seconds, frames: total, cancelled: job.cancel,
+                  madeSeconds: Math.min(i, total) / fps });
       };
       var total = Math.max(2, Math.round(seconds * fps)), i = 0;
       rec.start();
       function step() {
-        if (i > total) { try { rec.stop(); } catch (e) {} return; }
+        if (job.cancel || i > total) { try { rec.stop(); } catch (e) {} return; }
         S.p = i / total;
         if (shots) renderStory(shots, C, S.p);
         else render(sel, C, S.p, forceKey);
@@ -3192,6 +3210,7 @@
       STARS = null;
     },
     render: render, renderStory: renderStory, record: record,
+    isRecording: isRecording, cancelRecording: cancelRecording,
     storyTotal: storyTotal, shotAt: shotAt, options: options, bagOf: bagOf,
     composers: function () { return COMPOSERS.map(function (K) {
       return { key: K.key, label: K.label, blurb: K.blurb }; }); }
@@ -3867,6 +3886,9 @@
     RAF = requestAnimationFrame(tick);
   }
   function play(on) {
+    /* belt as well as braces: the buttons are disabled during a recording,
+       but the keyboard and any future caller are not */
+    if (on && window.SPStage.isRecording()) return;
     PLAY = on;
     /* a storyboard plays for its own total, not the single-shot length */
     if (STORY && SHOTS.length) DUR = window.SPStage.storyTotal(SHOTS);
@@ -3917,25 +3939,58 @@
       setTimeout(function () { URL.revokeObjectURL(u); }, 4000);
     }, "image/png");
   }
+  /* The transport, while a recording owns the playhead.
+
+     Everything that writes S.p is turned off for the duration and visibly so.
+     The Record button becomes the way out, because "Stop" is what somebody
+     wants when they decide thirty seconds was too long. */
+  function setTransport(recording) {
+    [["sp-play", true], ["sp-scrub", true], ["sp-dur", true],
+     ["sp-png", true], ["sp-addshot", true], ["sp-clear", true]]
+      .forEach(function (pair) {
+        var e = $(pair[0]); if (e) e.disabled = recording; });
+    var b = $("sp-rec");
+    if (b) b.className = "spbtn primary" + (recording ? " rec" : "");
+  }
   function saveVideo() {
     var btn = $("sp-rec"); if (!btn) return;
-    var was = btn.textContent;
-    btn.disabled = true;
+    /* a second press is "stop", not a second recording */
+    if (window.SPStage.isRecording()) {
+      window.SPStage.cancelRecording();
+      btn.textContent = "Stopping…";
+      return;
+    }
+    var was = "Record the reel";
+    var keepP = window.SPStage.S.p;
     play(false);
+    setTransport(true);
+    btn.textContent = "Stop (0%)";
     var what = (STORY && SHOTS.length) ? SHOTS : SEL;
     window.SPStage.record(what, C, DUR, 30, FORCE, function (f) {
-      btn.textContent = "Recording " + Math.round(f * 100) + "%";
+      btn.textContent = "Stop (" + Math.round(f * 100) + "%)";
     }).then(function (res) {
-      btn.disabled = false; btn.textContent = was;
+      setTransport(false); btn.textContent = was;
+      /* put the playhead back where the reader left it, rather than at the
+         end of the recording */
+      window.SPStage.S.p = keepP;
+      var sc = $("sp-scrub"); if (sc) sc.value = String(Math.round(keepP * 1000));
+      draw();
+      if (res.cancelled && res.madeSeconds < 1) {
+        flash("Recording stopped — nothing long enough to save.");
+        return;
+      }
       var ext = res.mime.indexOf("mp4") >= 0 ? "mp4" : "webm";
       var u = URL.createObjectURL(res.blob), a = document.createElement("a");
       a.href = u; a.download = "nirayana-studio-pro." + ext;
       document.body.appendChild(a); a.click(); a.remove();
       setTimeout(function () { URL.revokeObjectURL(u); }, 8000);
-      flash("Recorded " + res.seconds + " s, " +
-            Math.round(res.blob.size / 1024) + " KB.");
+      flash(res.cancelled
+        ? "Stopped at " + res.madeSeconds.toFixed(1) + " s — saved what was made."
+        : "Recorded " + res.seconds + " s, " +
+          Math.round(res.blob.size / 1024) + " KB.");
     }).catch(function (e) {
-      btn.disabled = false; btn.textContent = was;
+      setTransport(false); btn.textContent = was;
+      window.SPStage.S.p = keepP; draw();
       flash("Could not record: " + (e && e.message || e) +
             " — the still export always works.");
     });
