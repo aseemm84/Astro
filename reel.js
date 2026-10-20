@@ -44,48 +44,46 @@
                    get: function () { return IMG; } };
 })();
 
-/* ===== The light =========================================================
+/* ===== The light ==========================================================
 
-   WHAT ACTUALLY SEPARATES A DIAGRAM FROM A REEL.
+   WHAT THIS FILE LEARNED THE HARD WAY.
 
-   Put the same data in front of two people and one picture reads as a
-   textbook figure and the other stops the thumb. The difference is almost
-   never the data. It is that the second one is made of LIGHT rather than of
-   lines: thousands of hairline strokes, each nearly invisible, added
-   together so that density becomes brightness, and then bloomed so the dense
-   places spill.
+   The first version treated every bright point as a fresh radial gradient and
+   every frame as a fresh exposure of everything that had ever been drawn.
+   Both are wrong, and they are wrong in the same way: they redo, sixty times
+   a second, work whose answer has not changed.
 
-   That is a real optical model and not a style. A long exposure of a moving
-   point IS the sum of where it was; where the path crosses itself the film
-   receives twice the light; a bright enough place scatters in the lens and
-   grows a halo. So the pipeline here is the camera's:
+     A GLOW IS A SPRITE, NOT A GRADIENT. createRadialGradient allocates, and
+       filling a disc through one is a per-pixel shade. Forty-four of them a
+       frame — which is what an eclipse reel asks for once its marked events
+       have accumulated — is forty-four allocations and forty-four shaded
+       fills per frame. Draw the glow ONCE into a small canvas and every
+       later one is a drawImage. The measured difference was a tenth of a
+       second a frame, appearing as a stutter several times a second.
 
-     accumulate   every stroke added, never painted over — composite
-                  "lighter", alpha low enough that a single stroke is almost
-                  nothing and a hundred overlapping strokes are white;
+     AN ACCUMULATION IS A CACHE, NOT A REPLAY. A reel's stage is defined as
+       "everything up to the playhead", and for a run of fifteen hundred
+       chords that is fifteen hundred strokes redrawn for each of nine
+       hundred frames. But the frame before it drew fourteen hundred and
+       ninety-nine of the same strokes. Keep the canvas, append the
+       difference, and the per-frame cost stops depending on how far through
+       the run you are.
 
-     bloom        the accumulation buffer reduced, smoothed and added back,
-                  twice, at two radii — a tight halo and a wide one;
-
-     grade        a warm curve, because gold on black is the palette and a
-                  straight additive sum goes to white too fast;
-
-     vignette     and grain, which are what stop a canvas looking like a
-                  canvas.
+   AND THE GLOW ITSELF WAS TOO MUCH. Two bloom radii at better than half
+   strength, a warm grade over the whole frame and a heavy vignette turned
+   every figure into a lamp. Light is what makes density readable; past that
+   it only hides the drawing. The defaults here are now a third of what they
+   were, the second bloom radius is folded into the first so it costs one
+   composite instead of two, and every part of it can be turned off.
 
    NOTHING HERE IS RANDOM PER FRAME. The grain is seeded from the frame
-   index, so the same playhead gives the same pixels every time. A recorder
-   that re-renders a frame must get the frame it got before, and a test that
-   compares two renderings of the same instant must see them agree — which
-   is also how this file is checked.
-
-   Two canvases are kept and reused rather than allocated per frame. At
-   1080x1920, allocating a scratch canvas per frame is tens of megabytes a
-   second of churn and the frame path is where this codebase has already
-   learnt not to do that. */
+   index, so the same playhead gives the same pixels every time — which a
+   recorder depends on and the harness checks. */
 
 (function () {
   "use strict";
+
+  var TAU = 6.283185307179586;
 
   /* ---- scratch surfaces, allocated once ---------------------------------- */
   var BUF = null, SMALL = null, TINY = null;
@@ -93,7 +91,7 @@
     if (!hold || hold.cv.width !== w || hold.cv.height !== h) {
       var cv = document.createElement("canvas");
       cv.width = w; cv.height = h;
-      hold = { cv: cv, c: cv.getContext("2d", { willReadFrequently: false }) };
+      hold = { cv: cv, c: cv.getContext("2d") };
     }
     return hold;
   }
@@ -103,13 +101,17 @@
     h.c.globalAlpha = 1;
     h.c.clearRect(0, 0, h.cv.width, h.cv.height);
   }
+  function fresh(w, h) {
+    var cv = document.createElement("canvas");
+    cv.width = w; cv.height = h;
+    return cv;
+  }
 
   /* ---- the accumulation buffer -------------------------------------------
      Hand it a function that draws; everything that function draws is summed
-     rather than layered, and the sum is returned for grading and blooming.
-
-     The caller never sets globalCompositeOperation itself. That is the whole
-     point of the wrapper: one place decides that this is an exposure. */
+     rather than layered. The caller never sets globalCompositeOperation
+     itself — that is the point of the wrapper: one place decides that this
+     is an exposure. */
   function expose(w, h, draw) {
     BUF = surface(BUF, w, h);
     clear(BUF);
@@ -123,45 +125,54 @@
   }
 
   /* ---- bloom --------------------------------------------------------------
-     A reduce-and-add, twice. Downscaling with the browser's own smoothing IS
-     a blur — a box filter of exactly the right width for the reduction — and
-     it costs a fraction of what a separable Gaussian in JavaScript costs,
-     which matters because this runs sixty times a second during a recording.
-
-     Two radii rather than one. A single halo looks like a glow effect; a
-     tight one plus a wide one looks like a lens, because that is what a lens
-     does. */
+     ONE upscale, not two. The wide halo is folded into the tight one while
+     both are still small — a four-pixel-wide blur of a 135x240 image costs
+     nothing, and the single composite up to two megapixels is the part that
+     is expensive. Downscaling with the browser's own smoothing IS a blur, of
+     exactly the right width for the reduction. */
   function bloom(c, src, opt) {
     opt = opt || {};
-    var tight = opt.tight == null ? 0.55 : opt.tight;
-    var wide = opt.wide == null ? 0.38 : opt.wide;
-    var w = src.width, h = src.height;
-    if (tight > 0.001) {
-      var w1 = Math.max(2, w >> 3), h1 = Math.max(2, h >> 3);
-      SMALL = surface(SMALL, w1, h1);
-      clear(SMALL);
-      SMALL.c.imageSmoothingEnabled = true;
-      SMALL.c.drawImage(src, 0, 0, w1, h1);
-      c.save();
-      c.globalCompositeOperation = "lighter";
-      c.globalAlpha = tight;
-      c.imageSmoothingEnabled = true;
-      c.drawImage(SMALL.cv, 0, 0, w, h);
-      c.restore();
+    var tight = opt.tight == null ? 0.20 : opt.tight;
+    var wide = opt.wide == null ? 0.12 : opt.wide;
+    if (tight <= 0.002 && wide <= 0.002) return;
+    /* ONLY OVER THE RECT THAT HAS ANYTHING IN IT. The figure occupies the
+       middle band of the frame; blooming the title and the caption as well
+       costs the same again and does nothing but soften type. At 1080x1920
+       that is the difference between two megapixels of additive composite
+       and one. */
+    var rx = 0, ry = 0, rw = src.width, rh = src.height;
+    if (opt.rect) {
+      rx = Math.max(0, Math.floor(opt.rect.x));
+      ry = Math.max(0, Math.floor(opt.rect.y));
+      rw = Math.min(src.width - rx, Math.ceil(opt.rect.w));
+      rh = Math.min(src.height - ry, Math.ceil(opt.rect.h));
+      if (rw < 4 || rh < 4) return;
     }
-    if (wide > 0.001) {
-      var w2 = Math.max(2, w >> 5), h2 = Math.max(2, h >> 5);
+    var w = rw, h = rh;
+    var w1 = Math.max(2, w >> 3), h1 = Math.max(2, h >> 3);
+    SMALL = surface(SMALL, w1, h1);
+    clear(SMALL);
+    SMALL.c.imageSmoothingEnabled = true;
+    SMALL.c.globalAlpha = 1;
+    SMALL.c.drawImage(src, rx, ry, rw, rh, 0, 0, w1, h1);
+    if (wide > 0.002) {
+      var w2 = Math.max(2, w1 >> 2), h2 = Math.max(2, h1 >> 2);
       TINY = surface(TINY, w2, h2);
       clear(TINY);
       TINY.c.imageSmoothingEnabled = true;
-      TINY.c.drawImage(src, 0, 0, w2, h2);
-      c.save();
-      c.globalCompositeOperation = "lighter";
-      c.globalAlpha = wide;
-      c.imageSmoothingEnabled = true;
-      c.drawImage(TINY.cv, 0, 0, w, h);
-      c.restore();
+      TINY.c.drawImage(SMALL.cv, 0, 0, w2, h2);
+      SMALL.c.globalCompositeOperation = "lighter";
+      SMALL.c.globalAlpha = Math.min(1, wide / Math.max(0.02, tight));
+      SMALL.c.drawImage(TINY.cv, 0, 0, w1, h1);
+      SMALL.c.globalCompositeOperation = "source-over";
+      SMALL.c.globalAlpha = 1;
     }
+    c.save();
+    c.globalCompositeOperation = "lighter";
+    c.globalAlpha = Math.max(tight, 0.0001);
+    c.imageSmoothingEnabled = true;
+    c.drawImage(SMALL.cv, rx, ry, rw, rh);
+    c.restore();
   }
 
   /* Draw an exposure onto the page canvas: the sum itself, then its halo. */
@@ -175,56 +186,96 @@
     bloom(c, src, opt);
   }
 
-  /* ---- a point of light ---------------------------------------------------
-     Not a filled circle. A filled circle at this scale reads as a sticker;
-     what reads as a light is a core that clips to white, a falloff that
-     reaches several times further than the core, and — above about a tenth
-     of the frame's brightness — four spikes, because every lens anyone has
-     ever looked through puts spikes on a bright point. */
-  function star(c, x, y, r, col, opt) {
-    /* a light with no finite place is not drawn. createRadialGradient throws
-       on a non-finite radius, and one NaN in one stage's data took the whole
-       frame down rather than losing one dot. */
+  /* ---- sprites -------------------------------------------------------------
+     A cached picture of a light, drawn once per (colour, kind, size bucket)
+     and thereafter a drawImage. Sizes are bucketed to the nearest few pixels
+     so a point that grows smoothly does not mint a sprite per frame; the
+     bucket is then scaled on the way out, which is invisible at these radii
+     and is the difference between a cache that works and a cache that is a
+     memory leak with extra steps. */
+  var SPR = {}, SPR_KEYS = [];
+  function bucket(r) {
+    if (r < 8) return Math.max(2, Math.round(r));
+    if (r < 32) return Math.round(r / 2) * 2;
+    return Math.round(r / 8) * 8;
+  }
+  function spriteFor(key, R, paint) {
+    var hit = SPR[key];
+    if (hit) return hit;
+    var N = Math.max(8, Math.ceil(R * 2) + 2);
+    var cv = fresh(N, N);
+    var c = cv.getContext("2d");
+    paint(c, N / 2, N / 2, R);
+    if (SPR_KEYS.length > 160) delete SPR[SPR_KEYS.shift()];
+    SPR[key] = cv; SPR_KEYS.push(key);
+    return cv;
+  }
+
+  /* A point of light: a core that clips to white and a falloff that reaches
+     a few times further. `reach` is how far the halo goes in core radii —
+     the old fixed value of six is why everything looked like a street lamp. */
+  function glow(c, x, y, r, col, opt) {
     if (!isFinite(x) || !isFinite(y) || !isFinite(r) || r <= 0) return;
     opt = opt || {};
-    var spikes = opt.spikes == null ? 1 : opt.spikes;
-    var g = c.createRadialGradient(x, y, 0, x, y, Math.max(0.6, r * 6));
-    g.addColorStop(0, col);
-    g.addColorStop(0.06, col);
-    g.addColorStop(0.22, rgba(col, 0.45));
-    g.addColorStop(0.55, rgba(col, 0.10));
-    g.addColorStop(1, rgba(col, 0));
+    var reach = opt.reach == null ? 3.2 : opt.reach;
+    var core = opt.core == null ? 0.72 : opt.core;
+    var b = bucket(r), R = b * reach;
+    var key = "g|" + col + "|" + b + "|" + reach.toFixed(2) + "|" + core.toFixed(2);
+    var sp = spriteFor(key, R, function (cc, cx, cy, RR) {
+      var rr = RR / reach;
+      var g = cc.createRadialGradient(cx, cy, 0, cx, cy, RR);
+      g.addColorStop(0, col);
+      g.addColorStop(Math.min(0.5, 0.30 / reach), col);
+      g.addColorStop(Math.min(0.85, 1.1 / reach), rgba(col, 0.26));
+      g.addColorStop(1, rgba(col, 0));
+      cc.fillStyle = g;
+      cc.beginPath(); cc.arc(cx, cy, RR, 0, TAU); cc.fill();
+      if (core > 0.01) {
+        cc.globalAlpha = core;
+        cc.fillStyle = "#fff";
+        cc.beginPath(); cc.arc(cx, cy, rr * 0.5, 0, TAU); cc.fill();
+      }
+    });
+    var s = (r / b) * sp.width;
     c.save();
-    c.globalCompositeOperation = "lighter";
-    c.fillStyle = g;
-    c.beginPath();
-    c.arc(x, y, r * 6, 0, 6.283185307179586);
-    c.fill();
-    c.fillStyle = "#fff";
-    c.globalAlpha = opt.core == null ? 0.9 : opt.core;
-    c.beginPath();
-    c.arc(x, y, Math.max(0.5, r * 0.55), 0, 6.283185307179586);
-    c.fill();
-    if (spikes > 0) {
-      c.globalAlpha = 0.5 * spikes;
-      c.strokeStyle = rgba(col, 0.7);
-      c.lineWidth = Math.max(0.6, r * 0.22);
-      var L = r * (opt.spikeLen || 7);
-      c.beginPath();
-      c.moveTo(x - L, y); c.lineTo(x + L, y);
-      c.moveTo(x, y - L * 0.62); c.lineTo(x, y + L * 0.62);
-      c.stroke();
-    }
+    c.globalCompositeOperation = opt.blend || "lighter";
+    if (opt.alpha != null) c.globalAlpha = opt.alpha;
+    c.drawImage(sp, x - s / 2, y - s / 2, s, s);
     c.restore();
   }
 
-  /* #rrggbb or rgb()/rgba() to rgba() at a given alpha, without a regex
-     round-trip per stroke — this is called inside the inner loop. */
-  var CACHE = {};
+  /* A flat mark: no halo at all. Most of what accumulates on a stage should
+     be one of these — a hundred lamps is a smear, a hundred dots is a shape. */
+  function dot(c, x, y, r, col, alpha) {
+    if (!isFinite(x) || !isFinite(y) || !isFinite(r) || r <= 0) return;
+    c.save();
+    c.globalAlpha = alpha == null ? 1 : alpha;
+    c.fillStyle = col;
+    c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
+    c.restore();
+  }
+
+  /* kept for callers that still ask for the old four-spiked lamp; it is now
+     simply a glow, because the spikes were the single most artificial thing
+     on the frame */
+  function star(c, x, y, r, col, opt) {
+    glow(c, x, y, r, col, opt);
+  }
+
+  /* #rrggbb or rgb()/rgba() at a given alpha, cached — this is called inside
+     inner loops. */
+  var CACHE = {}, CACHE_N = 0;
   function rgba(col, a) {
     var k = col + "|" + a;
     var hit = CACHE[k];
     if (hit) return hit;
+    var p = parse(col);
+    var out = "rgba(" + p[0] + "," + p[1] + "," + p[2] + "," + a + ")";
+    if (CACHE_N > 4000) { CACHE = {}; CACHE_N = 0; }
+    CACHE[k] = out; CACHE_N++;
+    return out;
+  }
+  function parse(col) {
     var r = 255, g = 210, b = 140;
     if (col.charAt(0) === "#") {
       var s = col.length === 4
@@ -237,21 +288,23 @@
       var m = col.match(/(\d+(?:\.\d+)?)/g);
       if (m && m.length >= 3) { r = +m[0]; g = +m[1]; b = +m[2]; }
     }
-    var out = "rgba(" + r + "," + g + "," + b + "," + a + ")";
-    if (CACHE_N > 4000) { CACHE = {}; CACHE_N = 0; }
-    CACHE[k] = out; CACHE_N++;
-    return out;
+    return [r, g, b];
   }
-  var CACHE_N = 0;
+  function mix(a, b, t) {
+    var x = parse(a), y = parse(b);
+    return "rgb(" + Math.round(x[0] + (y[0] - x[0]) * t) + "," +
+                    Math.round(x[1] + (y[1] - x[1]) * t) + "," +
+                    Math.round(x[2] + (y[2] - x[2]) * t) + ")";
+  }
 
   /* ---- vignette ----------------------------------------------------------- */
   function vignette(c, w, h, amount) {
-    amount = amount == null ? 0.55 : amount;
-    if (amount <= 0.001) return;
-    var r = Math.max(w, h) * 0.78;
-    var g = c.createRadialGradient(w / 2, h * 0.46, r * 0.26, w / 2, h * 0.46, r);
+    amount = amount == null ? 0.30 : amount;
+    if (amount <= 0.002) return;
+    var r = Math.max(w, h) * 0.80;
+    var g = c.createRadialGradient(w / 2, h * 0.46, r * 0.34, w / 2, h * 0.46, r);
     g.addColorStop(0, "rgba(0,0,0,0)");
-    g.addColorStop(0.62, "rgba(0,0,0," + (amount * 0.25).toFixed(3) + ")");
+    g.addColorStop(0.70, "rgba(0,0,0," + (amount * 0.22).toFixed(3) + ")");
     g.addColorStop(1, "rgba(0,0,0," + amount.toFixed(3) + ")");
     c.save();
     c.globalCompositeOperation = "source-over";
@@ -261,17 +314,16 @@
   }
 
   /* ---- grain --------------------------------------------------------------
-     Deterministic. The seed is the frame index, so re-rendering a playhead
-     reproduces its pixels exactly — which a recorder depends on and a test
-     can check. A tile is drawn once per seed and repeated, because per-pixel
-     noise over two million pixels is not a thing to do sixty times a second. */
+     Deterministic: the seed is the frame index, so re-rendering a playhead
+     reproduces its pixels exactly. A tile is drawn once per seed and
+     repeated, because per-pixel noise over two million pixels is not a thing
+     to do sixty times a second. */
   var GRAIN = {}, GRAIN_KEYS = [];
   function grainTile(seed) {
     var key = "g" + seed;
     if (GRAIN[key]) return GRAIN[key];
     var N = 128;
-    var cv = document.createElement("canvas");
-    cv.width = N; cv.height = N;
+    var cv = fresh(N, N);
     var c = cv.getContext("2d");
     var img = c.createImageData(N, N);
     var d = img.data, s = (seed * 2654435761) >>> 0;
@@ -282,17 +334,25 @@
       d[i + 3] = 255;
     }
     c.putImageData(img, 0, 0);
-    if (GRAIN_KEYS.length > 24) { delete GRAIN[GRAIN_KEYS.shift()]; }
+    if (GRAIN_KEYS.length > 16) delete GRAIN[GRAIN_KEYS.shift()];
     GRAIN[key] = cv; GRAIN_KEYS.push(key);
     return cv;
   }
-  function grain(c, w, h, amount, seed) {
-    if (!(amount > 0.001)) return;
-    var t = grainTile((seed | 0) % 12);
+  /* Grain laid into a surface ONCE, for the cached background. Over the
+     final frame it is a two-megapixel blend every frame — eleven
+     milliseconds of the thirty-nine this page was spending — and what it
+     buys is a texture that does not move. Baking it into the ground gets the
+     same texture for nothing. */
+  function grainInto(c, w, h, amount, seed, mode) {
+    grain(c, w, h, amount, seed, mode);
+  }
+  function grain(c, w, h, amount, seed, mode) {
+    if (!(amount > 0.002)) return;
+    var t = grainTile((seed | 0) % 8);
     var pat = c.createPattern(t, "repeat");
     if (!pat) return;
     c.save();
-    c.globalCompositeOperation = "overlay";
+    c.globalCompositeOperation = mode || "overlay";
     c.globalAlpha = Math.min(0.2, amount);
     c.fillStyle = pat;
     c.fillRect(0, 0, w, h);
@@ -300,32 +360,952 @@
   }
 
   /* ---- a warm grade -------------------------------------------------------
-     A plain additive sum of gold strokes climbs the green channel fastest
-     and arrives at a sour yellow-white. One multiply pass in a warm tint
-     and one screen pass in a deep amber puts the climb back where gold
-     climbs: through orange into white. */
+     Light, now. A plain additive sum of gold strokes climbs the green channel
+     fastest and arrives at a sour yellow-white; a touch of warmth puts the
+     climb back through orange. At the old strength it also flattened
+     everything into the same amber, which is half of what "too much glow"
+     meant. */
   function grade(c, w, h, strength) {
-    strength = strength == null ? 1 : strength;
-    if (strength <= 0.001) return;
+    strength = strength == null ? 0.35 : strength;
+    if (strength <= 0.002) return;
     c.save();
     c.globalCompositeOperation = "soft-light";
-    c.globalAlpha = 0.30 * strength;
+    c.globalAlpha = 0.22 * strength;
     c.fillStyle = "#c98a2e";
-    c.fillRect(0, 0, w, h);
-    c.globalCompositeOperation = "source-over";
-    c.globalAlpha = 0.05 * strength;
-    c.fillStyle = "#1a1206";
     c.fillRect(0, 0, w, h);
     c.restore();
   }
 
+  /* ---- a watercolour wash -------------------------------------------------
+     For the paper theme, where there is no additive light at all. Soft blots
+     of two or three colours at low alpha, laid down once into a cached tile
+     and scaled up — a wash that is recomputed per frame is both slow and,
+     because it moves, wrong. */
+  var WASH = null, WASH_KEY = "";
+  function wash(c, w, h, cols, seed) {
+    var key = w + "x" + h + "|" + cols.join(",") + "|" + seed;
+    if (WASH_KEY !== key) {
+      var N = 192, M = Math.round(N * h / w);
+      var cv = fresh(N, M), cc = cv.getContext("2d");
+      cc.fillStyle = cols[0];
+      cc.fillRect(0, 0, N, M);
+      var s = (seed * 2654435761) >>> 0;
+      function rnd() { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }
+      for (var i = 0; i < 34; i++) {
+        var col = cols[1 + (i % (cols.length - 1))];
+        var x = rnd() * N, y = rnd() * M, r = (0.16 + rnd() * 0.42) * N;
+        var g = cc.createRadialGradient(x, y, 0, x, y, r);
+        g.addColorStop(0, rgba(col, 0.40));
+        g.addColorStop(0.55, rgba(col, 0.16));
+        g.addColorStop(1, rgba(col, 0));
+        cc.fillStyle = g;
+        cc.fillRect(x - r, y - r, r * 2, r * 2);
+      }
+      grain(cc, N, M, 0.07, 5, "multiply");
+      WASH = cv; WASH_KEY = key;
+    }
+    c.save();
+    c.globalCompositeOperation = "source-over";
+    c.imageSmoothingEnabled = true;
+    c.drawImage(WASH, 0, 0, w, h);
+    c.restore();
+  }
+
   window.SPGlow = {
-    expose: expose, develop: develop, bloom: bloom, star: star,
-    vignette: vignette, grain: grain, grade: grade, rgba: rgba,
-    /* exposed for the harness: proves the grain is a function of the seed
-       and of nothing else */
-    _grainTile: grainTile
+    expose: expose, develop: develop, bloom: bloom,
+    glow: glow, dot: dot, star: star, sprite: spriteFor, fresh: fresh,
+    vignette: vignette, grain: grain, grainInto: grainInto,
+    grade: grade, wash: wash,
+    rgba: rgba, mix: mix, parse: parse,
+    _grainTile: grainTile,
+    _sprites: function () { return SPR_KEYS.length; }
   };
+})();
+
+/* ============================================================================
+   Procedural bodies — Sūrya, Candra and the five tārā grahas, drawn from code.
+
+   Nothing here is a photograph. Every surface is generated: the maria are placed
+   at their real selenographic coordinates, the craters are a power-law population
+   with rims and shadows, the Sun's granules are a noise field at the right scale,
+   Jupiter's belts are at their real latitudes. The reason for building them rather
+   than fetching images is not only licensing — a photograph is lit the way it was
+   lit on the day it was taken, and the whole point of these scenes is to light the
+   body the way the sky lights it at the moment on the playhead.
+
+   How it renders fast enough. A per-pixel sphere raycast is too slow to do every
+   frame, so it is split in two. Everything that depends only on where a pixel sits
+   on the disc — the surface normal, the latitude row, the base longitude column —
+   is computed once per radius and kept. Everything that changes with time — the
+   light direction and the rotation — is a per-pixel multiply and an array lookup.
+   The axis is held vertical in view space, which is what makes the split work:
+   rotation then shifts the longitude column and leaves the latitude row alone.
+   ============================================================================ */
+
+/* ----------------------------------------------------------- noise and rng --- */
+/* A seeded generator, so a body looks the same every time the scene is drawn.
+   Nothing here is cryptographic; it only has to be repeatable and cheap. */
+function moRng(seed){
+  var s=seed>>>0 || 1;
+  return function(){ s^=s<<13; s>>>=0; s^=s>>17; s^=s<<5; s>>>=0; return s/4294967296; };
+}
+/* Value noise on a lattice, smoothed with a quintic fade. Good enough for cloud
+   decks and granulation, and far cheaper than gradient noise. */
+function moNoiseField(n,rnd){
+  var g=new Float32Array(n*n);
+  for(var i=0;i<n*n;i++) g[i]=rnd();
+  return {n:n,g:g};
+}
+/* `perx` makes the field repeat after that many lattice cells in x. A map wraps
+   round the body, so a field that does not repeat over exactly the width of the
+   map leaves a seam down the texture — and on a smooth-banded world like Guru
+   that seam rotates into view as a row of vertical steps. Passing the x-frequency
+   as the period closes it. Each octave doubles the frequency, so it doubles the
+   period with it; the lattice has to be at least as large as the largest period
+   any octave asks for. */
+function moNoise2(f,x,y,perx){
+  var n=f.n, g=f.g;
+  var xi=Math.floor(x), yi=Math.floor(y), xf=x-xi, yf=y-yi;
+  var u=xf*xf*xf*(xf*(xf*6-15)+10), v=yf*yf*yf*(yf*(yf*6-15)+10);
+  var P=(perx&&perx<=n)?perx:n;
+  var x0=((xi%P)+P)%P, x1=(x0+1)%P, y0=((yi%n)+n)%n, y1=(y0+1)%n;
+  var a=g[y0*n+x0], b=g[y0*n+x1], c=g[y1*n+x0], d=g[y1*n+x1];
+  return (a*(1-u)+b*u)*(1-v)+(c*(1-u)+d*u)*v;
+}
+function moFbm(f,x,y,oct,gain,perx){
+  var s=0, amp=1, norm=0, fr=1;
+  for(var i=0;i<oct;i++){
+    s+=amp*moNoise2(f,x*fr,y*fr,perx?perx*fr:0);
+    norm+=amp; amp*=(gain||0.5); fr*=2;
+  }
+  return s/norm;
+}
+
+/* ------------------------------------------------------------- the texture --- */
+/* An equirectangular map: TW columns of longitude by TH rows of latitude, holding
+   albedo as three bytes and a height in a separate float array. Height is only
+   used to perturb the normal, so its units are arbitrary — what matters is that
+   a crater rim catches the light a moment before its floor does. */
+var MO_TEX={}, MO_GEO={}, MO_BUF={}, MO_SPR={};
+/* A radial gradient filled across a 1080x1920 canvas rasterises nearly two million
+   pixels, and a glow that spans twice a body's radius does exactly that — which on
+   its own was costing the Candra scene two thirds of its frame rate. Baked once
+   into a small sprite and scaled up, the same glow costs a single drawImage, and
+   at these radii the scaling is invisible because a glow has no detail to lose. */
+function moGlowSprite(key,stops){
+  var e=MO_SPR[key]; if(e) return e;
+  var N=256, cv=document.createElement("canvas"); cv.width=N; cv.height=N;
+  var x=cv.getContext("2d");
+  var g=x.createRadialGradient(N/2,N/2,0,N/2,N/2,N/2);
+  for(var i=0;i<stops.length;i++) g.addColorStop(stops[i][0],stops[i][1]);
+  x.fillStyle=g; x.fillRect(0,0,N,N);
+  MO_SPR[key]=cv; return cv;
+}
+var MO_TW=1024, MO_TH=512;
+function moTexBlank(){
+  return {w:MO_TW, h:MO_TH,
+          r:new Uint8Array(MO_TW*MO_TH), g:new Uint8Array(MO_TW*MO_TH),
+          b:new Uint8Array(MO_TW*MO_TH), e:new Float32Array(MO_TW*MO_TH),
+          gx:null, gy:null};
+}
+function moTexXY(lonDeg,latDeg){
+  var x=Math.round(((lonDeg+180)/360)*MO_TW), y=Math.round(((90-latDeg)/180)*MO_TH);
+  return [((x%MO_TW)+MO_TW)%MO_TW, Math.max(0,Math.min(MO_TH-1,y))];
+}
+/* The surface slope, computed once when the texture is finished. It depends on
+   nothing that changes with time — not the light, not the rotation — so computing
+   it inside the per-frame loop was doing a quarter of a million redundant pairs of
+   texture reads a frame. Hoisting it here is most of the difference between this
+   running at forty frames a second and at sixty. */
+function moTexGrad(t){
+  var W=MO_TW, H=MO_TH, e=t.e;
+  var gx=new Float32Array(W*H), gy=new Float32Array(W*H);
+  for(var y=0;y<H;y++){
+    var yU=y?y-1:0, yD=(y+1===H)?H-1:y+1;
+    for(var x=0;x<W;x++){
+      var xL=x?x-1:W-1, xR=(x+1===W)?0:x+1;
+      gx[y*W+x]=(e[y*W+xR]-e[y*W+xL])*0.17;
+      gy[y*W+x]=(e[yD*W+x]-e[yU*W+x])*0.17;
+    }
+  }
+  t.gx=gx; t.gy=gy;
+  /* The height field has done its work. Nothing in the render path reads it
+     again — the loop uses the slope, not the height — so two megabytes a body
+     are released here rather than held for the life of the page. */
+  t.e=null;
+  return t;
+}
+
+/* Angular distance on the sphere, in degrees — craters and maria are circles on
+   the sphere, not on the map, or everything near the poles would be a smear. */
+function moAngDist(lo1,la1,lo2,la2){
+  var p1=la1*Math.PI/180, p2=la2*Math.PI/180, dl=(lo2-lo1)*Math.PI/180;
+  var c=Math.sin(p1)*Math.sin(p2)+Math.cos(p1)*Math.cos(p2)*Math.cos(dl);
+  return Math.acos(Math.max(-1,Math.min(1,c)))*180/Math.PI;
+}
+/* Walk every map cell within `rad` degrees of a centre. The longitude span widens
+   towards the poles by 1/cos(lat), which is the whole reason for doing it this way. */
+function moDisc(tex,lon,lat,rad,fn){
+  var y0=Math.max(0,Math.floor(((90-(lat+rad))/180)*MO_TH));
+  var y1=Math.min(MO_TH-1,Math.ceil(((90-(lat-rad))/180)*MO_TH));
+  for(var y=y0;y<=y1;y++){
+    var la=90-(y+0.5)/MO_TH*180;
+    var cl=Math.cos(la*Math.PI/180);
+    var span=(cl<0.02)?180:Math.min(180,rad/cl+1.5);
+    var xc=((lon+180)/360)*MO_TW, half=Math.ceil(span/360*MO_TW);
+    for(var k=-half;k<=half;k++){
+      var x=Math.round(xc+k); x=((x%MO_TW)+MO_TW)%MO_TW;
+      var lo=(x+0.5)/MO_TW*360-180;
+      var d=moAngDist(lon,lat,lo,la);
+      if(d<=rad) fn(y*MO_TW+x, d/rad, lo, la);
+    }
+  }
+}
+
+/* --------------------------------------------------------------- the Moon --- */
+/* The maria at their real selenographic positions. Getting these right is what
+   makes the disc read as the Moon rather than as a grey ball: the eye knows this
+   face, and a mare in the wrong place is noticed long before a missing crater. */
+var MO_MARIA=[
+  [-57, 18, 31, 0.93],   /* Oceanus Procellarum — the great western plain */
+  [-16, 33, 19, 1.00],   /* Imbrium */
+  [ 17, 28, 12, 1.00],   /* Serenitatis */
+  [ 31,  8, 13, 1.02],   /* Tranquillitatis */
+  [ 59, 17,  8, 0.95],   /* Crisium — the detached oval near the eastern limb */
+  [ 52, -8, 11, 0.98],   /* Fecunditatis */
+  [ 34,-15,  8, 0.96],   /* Nectaris */
+  [-39,-24,  8, 0.98],   /* Humorum */
+  [-17,-21, 11, 1.00],   /* Nubium */
+  [  4,  13, 6, 0.95],   /* Vaporum */
+  [ -5,  2,  5, 0.92],   /* Sinus Medii, near the apparent centre */
+  [-22, 44,  7, 0.95],   /* Sinus Iridum, off Imbrium */
+  [-60, 56, 10, 0.90],   /* Frigoris, western arc */
+  [  0, 58, 11, 0.90],   /* Frigoris, central arc */
+  [ 35, 56,  9, 0.90],   /* Frigoris, eastern arc */
+  [ 87,  2,  7, 0.92],   /* Smythii, right on the limb */
+  [ 148,26,  6, 0.90]    /* Moscoviense — the far side's one real mare */
+];
+/* The bright ray craters. Rays are albedo only: they are powdered ejecta, not
+   relief, which is why they vanish near the terminator and dominate at full. */
+var MO_RAYC=[[-11,-43,42,1.00],[-20,10,32,0.75],[-38,8,16,0.55],[-47,24,12,0.9]];
+
+function moMoonTex(){
+  if(MO_TEX.moon) return MO_TEX.moon;
+  var t=moTexBlank(), rnd=moRng(20261014), i;
+  var fine=moNoiseField(512,rnd), coarse=moNoiseField(64,rnd);
+  /* highlands: a bright, slightly mottled base */
+  for(var y=0;y<MO_TH;y++){
+    for(var x=0;x<MO_TW;x++){
+      i=y*MO_TW+x;
+      var n=moFbm(fine,x/MO_TW*34,y/MO_TH*17,4,0.55,34);
+      var v=204+ (n-0.5)*54;
+      t.r[i]=v; t.g[i]=v*0.985; t.b[i]=v*0.95;
+      t.e[i]=(moFbm(coarse,x/MO_TW*18,y/MO_TH*9,3,0.5)-0.5)*0.5;
+    }
+  }
+  /* maria: dark basalt, with an edge wandered by noise so none is a clean circle */
+  MO_MARIA.forEach(function(m,mi){
+    var lon=m[0], lat=m[1], rad=m[2], dk=m[3];
+    /* The outline is a function of the BEARING from the basin's own centre, not
+       of absolute longitude and latitude. Noise in lon/lat gives every basin the
+       same ripple at the same scale, so they all come out as circles or all as
+       the same scalloped cloud; a few harmonics around the rim give each one its
+       own lobed, concave shape, which is what these basins actually look like. */
+    var h=[ [2,0.17,rnd()*6.28],[3,0.13,rnd()*6.28],
+            [5,0.085,rnd()*6.28],[7,0.055,rnd()*6.28],[11,0.03,rnd()*6.28] ];
+    var la1=lat*Math.PI/180, sla1=Math.sin(la1), cla1=Math.cos(la1);
+    moDisc(t,lon,lat,rad*1.75,function(idx,q,lo,la){
+      var la2=la*Math.PI/180, dlo=(lo-lon)*Math.PI/180;
+      var th=Math.atan2(Math.sin(dlo)*Math.cos(la2),
+                        cla1*Math.sin(la2)-sla1*Math.cos(la2)*Math.cos(dlo));
+      var wob=1; for(var hi=0;hi<h.length;hi++) wob+=h[hi][1]*Math.sin(h[hi][0]*th+h[hi][2]);
+      var edge=q*1.75/wob;
+      if(edge>1) return;
+      var k=1-Math.pow(edge,7);        /* basalt meets highland sharply */
+      var mot=moFbm(fine,(lo+180)/5+mi*3,(la+90)/5,4,0.5);
+      var base=(78+mot*26)*dk;
+      t.r[idx]=t.r[idx]*(1-k)+base*k;
+      t.g[idx]=t.g[idx]*(1-k)+base*0.99*k;
+      t.b[idx]=t.b[idx]*(1-k)+base*1.04*k;                  /* the maria run blue */
+      /* the floor sits low, with wrinkle ridges across it — low, sinuous and
+         invisible at full, but they catch the light near the terminator */
+      var ridge=Math.sin((lo*2.4+la*3.1+mi*40)*Math.PI/180)*
+                moFbm(coarse,(lo+180)/9+mi,(la+90)/9,2,0.5);
+      t.e[idx]=t.e[idx]*(1-k)+(-0.9+ridge*0.22)*k;
+    });
+  });
+  /* craters: a power-law population, bowl floor and raised rim, more of them in
+     the highlands than on the young lava of the maria */
+  var N=1900;
+  for(var c=0;c<N;c++){
+    var lo=rnd()*360-180;
+    var la=Math.asin(rnd()*2-1)*180/Math.PI;               /* uniform on the sphere */
+    var u=rnd();
+    var rad2=0.35+9.5*Math.pow(u,3.1);                     /* small ones dominate */
+    var ix=moTexXY(lo,la);
+    var onMare=t.e[ix[1]*MO_TW+ix[0]]<-0.4;
+    if(onMare && rnd()>0.22) continue;                     /* maria are young */
+    var deep=0.55+rnd()*0.7, bright=0.90+rnd()*0.30;
+    /* A real crater is a paraboloid bowl inside a raised rim, not a flat floor
+       with a step. The difference matters: a step has a gradient only at its
+       edge, so it lights as a thin ring, while a bowl has a gradient everywhere
+       and so lights one interior wall and shadows the other, which is what the
+       eye recognises as a crater. */
+    moDisc(t,lo,la,rad2*1.45,function(idx,q){
+      var r=q*1.45;
+      var h=(r<1?-deep*(1-r*r):0)+deep*0.42*Math.exp(-Math.pow((r-0.95)/0.17,2));
+      var al=(r<0.95?bright*0.97:bright*1.06);
+      t.e[idx]+=h;
+      t.r[idx]=Math.min(255,t.r[idx]*(0.90+al*0.10));
+      t.g[idx]=Math.min(255,t.g[idx]*(0.90+al*0.10));
+      t.b[idx]=Math.min(255,t.b[idx]*(0.90+al*0.10));
+    });
+  }
+  /* ray systems — Tycho's reach right across the disc is the signature of a full
+     Moon, and nothing else explains why the full Moon looks streaked and flat */
+  MO_RAYC.forEach(function(rc,ri){
+    var lon=rc[0], lat=rc[1], reach=rc[2], str=rc[3];
+    var nray=26+Math.floor(rnd()*14);
+    for(var k=0;k<nray;k++){
+      var bearing=rnd()*360, len=reach*(0.35+rnd()*0.85), wid=0.6+rnd()*1.5;
+      for(var s=2;s<len;s+=0.55){
+        /* step along a great circle from the crater at this bearing */
+        var la1=lat*Math.PI/180, br=bearing*Math.PI/180, dd=s*Math.PI/180;
+        var la2=Math.asin(Math.sin(la1)*Math.cos(dd)+Math.cos(la1)*Math.sin(dd)*Math.cos(br));
+        var lo2=lon+Math.atan2(Math.sin(br)*Math.sin(dd)*Math.cos(la1),
+                               Math.cos(dd)-Math.sin(la1)*Math.sin(la2))*180/Math.PI;
+        var clump=0.45+0.95*moFbm(coarse,lo2/3.5+ri*9,la2*57.29578/3.5,3,0.55);
+        var fade=str*(1-s/len)*0.30*clump;
+        moDisc(t,lo2,la2*180/Math.PI,wid*(0.6+s/len),function(idx,q){
+          var k2=fade*(1-q)*(1-q);
+          t.r[idx]=Math.min(255,t.r[idx]+70*k2);
+          t.g[idx]=Math.min(255,t.g[idx]+70*k2);
+          t.b[idx]=Math.min(255,t.b[idx]+68*k2);
+        });
+      }
+    }
+    /* the crater itself, bright and sharp */
+    moDisc(t,lon,lat,reach*0.10+1.2,function(idx,q){
+      t.r[idx]=Math.min(255,t.r[idx]*(1+0.35*(1-q)));
+      t.g[idx]=Math.min(255,t.g[idx]*(1+0.35*(1-q)));
+      t.b[idx]=Math.min(255,t.b[idx]*(1+0.34*(1-q)));
+      t.e[idx]+= (q<0.75?-1.4:1.1);
+    });
+  });
+  moTexGrad(t); MO_TEX.moon=t; return t;
+}
+
+/* ---------------------------------------------------- the other surfaces --- */
+function moMercuryTex(){
+  if(MO_TEX.mercury) return MO_TEX.mercury;
+  var t=moTexBlank(), rnd=moRng(4401), i;
+  var fine=moNoiseField(512,rnd);
+  for(var y=0;y<MO_TH;y++) for(var x=0;x<MO_TW;x++){
+    i=y*MO_TW+x;
+    var n=moFbm(fine,x/MO_TW*30,y/MO_TH*15,4,0.55,30);
+    var v=132+(n-0.5)*40;                                   /* darker than the Moon */
+    t.r[i]=v*1.03; t.g[i]=v; t.b[i]=v*0.94; t.e[i]=(n-0.5)*0.6;
+  }
+  /* Mercury is the most heavily cratered surface in the solar system, and it has
+     Caloris, which is nearly a third the size of the planet */
+  for(var c=0;c<2400;c++){
+    var lo=rnd()*360-180, la=Math.asin(rnd()*2-1)*180/Math.PI;
+    var rad=0.35+8*Math.pow(rnd(),3.0), deep=0.5+rnd()*0.7, br=0.92+rnd()*0.22;
+    moDisc(t,lo,la,rad*1.45,function(idx,q){
+      var r=q*1.45;
+      var h=(r<1?-deep*(1-r*r):0)+deep*0.42*Math.exp(-Math.pow((r-0.95)/0.17,2));
+      t.e[idx]+=h;
+      var a=(r<0.95?br:1.0);
+      t.r[idx]=Math.min(255,t.r[idx]*(0.92+a*0.08));
+      t.g[idx]=Math.min(255,t.g[idx]*(0.92+a*0.08));
+      t.b[idx]=Math.min(255,t.b[idx]*(0.92+a*0.08));
+    });
+  }
+  moDisc(t,-160,30,22,function(idx,q){                       /* Caloris */
+    var k=1-Math.pow(q,5);
+    t.r[idx]=t.r[idx]*(1-k*0.25)+150*k*0.25;
+    t.g[idx]=t.g[idx]*(1-k*0.25)+146*k*0.25;
+    t.b[idx]=t.b[idx]*(1-k*0.25)+138*k*0.25;
+    t.e[idx]-=0.8*k;
+  });
+  moTexGrad(t); MO_TEX.mercury=t; return t;
+}
+function moVenusTex(){
+  if(MO_TEX.venus) return MO_TEX.venus;
+  /* No surface: Venus shows an unbroken sulphuric cloud deck. The only structure
+     is faint ultraviolet banding, which in visible light is almost nothing — so
+     the honest rendering is a nearly featureless cream disc. */
+  var t=moTexBlank(), rnd=moRng(777), f=moNoiseField(512,rnd);
+  for(var y=0;y<MO_TH;y++) for(var x=0;x<MO_TW;x++){
+    var i=y*MO_TW+x, la=90-(y/MO_TH)*180;
+    var band=moFbm(f,x/MO_TW*5+la/40,y/MO_TH*9,4,0.55,5);
+    var v=238+(band-0.5)*14-Math.abs(la)/90*8;
+    t.r[i]=Math.min(255,v); t.g[i]=Math.min(255,v*0.955); t.b[i]=Math.min(255,v*0.80);
+    t.e[i]=0;                                                /* cloud tops: no relief */
+  }
+  t.e=null; MO_TEX.venus=t; return t;
+}
+function moMarsTex(){
+  if(MO_TEX.mars) return MO_TEX.mars;
+  var t=moTexBlank(), rnd=moRng(1877), f=moNoiseField(512,rnd), g=moNoiseField(64,rnd);
+  for(var y=0;y<MO_TH;y++) for(var x=0;x<MO_TW;x++){
+    var i=y*MO_TW+x;
+    var n=moFbm(f,x/MO_TW*26,y/MO_TH*13,5,0.55,26);
+    var v=196+(n-0.5)*46;
+    t.r[i]=Math.min(255,v); t.g[i]=v*0.60; t.b[i]=v*0.41;    /* iron oxide */
+    t.e[i]=(n-0.5)*0.7;
+  }
+  /* the classical dark albedo features — the ones Schiaparelli named and every
+     small telescope still shows */
+  [[70,-5,22,0.62],[25,-25,30,0.70],[-30,-20,26,0.72],[-110,15,18,0.74],
+   [140,20,16,0.76],[-60,40,14,0.78],[100,-40,20,0.72]].forEach(function(a,ai){
+    moDisc(t,a[0],a[1],a[2],function(idx,q,lo,la){
+      var wob=0.72+0.4*moFbm(g,(lo+180)/14+ai*5,(la+90)/14,3,0.6);
+      if(q>wob) return;
+      var k=(1-Math.pow(q/wob,3))*0.8;
+      t.r[idx]*= (1-k)+a[3]*k; t.g[idx]*=(1-k)+a[3]*0.95*k; t.b[idx]*=(1-k)+a[3]*1.05*k;
+    });
+  });
+  /* polar caps, and Olympus Mons as a bright shield with a caldera */
+  [[90,1],[-90,1]].forEach(function(pc){
+    moDisc(t,0,pc[0],13,function(idx,q){
+      var k=Math.pow(1-q,0.6);
+      t.r[idx]=t.r[idx]*(1-k)+252*k; t.g[idx]=t.g[idx]*(1-k)+252*k; t.b[idx]=t.b[idx]*(1-k)+255*k;
+    });
+  });
+  moDisc(t,-134,18,5,function(idx,q){
+    t.e[idx]+= (q<0.25?0.4:1.6*(1-q));
+    t.r[idx]=Math.min(255,t.r[idx]*1.10); t.g[idx]=Math.min(255,t.g[idx]*1.08);
+  });
+  moTexGrad(t); MO_TEX.mars=t; return t;
+}
+function moJupiterTex(){
+  if(MO_TEX.jupiter) return MO_TEX.jupiter;
+  /* Belts and zones at their real latitudes, with the flow sheared east-west so
+     the turbulence stretches into ribbons the way the real atmosphere does. */
+  var t=moTexBlank(), rnd=moRng(1610), f=moNoiseField(512,rnd);
+  var BANDS=[[0,0.0,[232,214,186]],[8,5,[196,150,112]],[-8,5,[196,150,112]],
+             [18,6,[238,226,202]],[-18,6,[238,226,202]],[27,6,[180,136,104]],
+             [-27,6,[186,142,108]],[38,7,[222,208,190]],[-38,7,[222,208,190]],
+             [50,9,[172,154,142]],[-50,9,[176,158,146]],[68,14,[150,140,138]],
+             [-68,14,[150,140,138]]];
+  for(var y=0;y<MO_TH;y++){
+    var la=90-(y+0.5)/MO_TH*180;
+    var cr=0,cg=0,cb=0,wt=0;
+    BANDS.forEach(function(b){
+      var w=Math.exp(-Math.pow((la-b[0])/b[1],2));
+      cr+=b[2][0]*w; cg+=b[2][1]*w; cb+=b[2][2]*w; wt+=w;
+    });
+    cr/=wt; cg/=wt; cb/=wt;
+    for(var x=0;x<MO_TW;x++){
+      var i=y*MO_TW+x;
+      /* stretched 14:1 in longitude — zonal flow, not isotropic cloud */
+      var n=moFbm(f,x/MO_TW*11,y/MO_TH*62,5,0.52,11)-0.5;
+      t.r[i]=Math.max(0,Math.min(255,cr+n*48));
+      t.g[i]=Math.max(0,Math.min(255,cg+n*44));
+      t.b[i]=Math.max(0,Math.min(255,cb+n*38));
+      t.e[i]=0;
+    }
+  }
+  /* the Great Red Spot: an oval at 22° south, about 14° of longitude across */
+  for(var y2=0;y2<MO_TH;y2++) for(var x2=0;x2<MO_TW;x2++){
+    var la2=90-(y2+0.5)/MO_TH*180, lo2=(x2+0.5)/MO_TW*360-180;
+    var dx=(lo2-40)/11, dy=(la2+22)/4.6;
+    var d=dx*dx+dy*dy; if(d>1.6) continue;
+    var i2=y2*MO_TW+x2, k=Math.max(0,1-Math.pow(d/1.6,2))*0.92;
+    var sw=moFbm(f,lo2/9+30,la2/4,4,0.5);
+    t.r[i2]=t.r[i2]*(1-k)+(206+sw*30)*k;
+    t.g[i2]=t.g[i2]*(1-k)+(118+sw*26)*k;
+    t.b[i2]=t.b[i2]*(1-k)+( 92+sw*22)*k;
+  }
+  t.e=null; MO_TEX.jupiter=t; return t;
+}
+function moSaturnTex(){
+  if(MO_TEX.saturn) return MO_TEX.saturn;
+  var t=moTexBlank(), rnd=moRng(1655), f=moNoiseField(512,rnd);
+  for(var y=0;y<MO_TH;y++){
+    var la=90-(y+0.5)/MO_TH*180;
+    /* Saturn's banding is the same physics as Jupiter's seen through a deeper
+       haze, so the contrast is a fraction of it */
+    var base=224-Math.abs(la)/90*34, warm=1-Math.abs(la)/120;
+    var bandy=Math.sin(la*Math.PI/180*7)*6;
+    for(var x=0;x<MO_TW;x++){
+      var i=y*MO_TW+x;
+      var n=moFbm(f,x/MO_TW*8,y/MO_TH*46,4,0.5,8)-0.5;
+      var v=base+bandy+n*15;
+      t.r[i]=Math.min(255,v*1.00); t.g[i]=Math.min(255,v*(0.90+warm*0.05));
+      t.b[i]=Math.min(255,v*(0.70+warm*0.06));
+      t.e[i]=0;
+    }
+  }
+  t.e=null; MO_TEX.saturn=t; return t;
+}
+var MO_TEXFN={moon:moMoonTex, mercury:moMercuryTex, venus:moVenusTex,
+              mars:moMarsTex, jupiter:moJupiterTex, saturn:moSaturnTex};
+
+/* ------------------------------------------------- the per-radius geometry --- */
+/* THE CACHE MUST BE BOUNDED. This was a crash, not a slow path. The key is the
+   radius and the axis tilt, and for Candra both move every single frame — the
+   drawn size follows the real apparent diameter, and the tilt follows the real
+   libration in latitude. Every frame therefore minted a fresh set of multi-
+   megabyte arrays and a fresh canvas, and nothing was ever evicted: measured at
+   thirteen megabytes a frame, four gigabytes over three hundred frames. Desktop
+   browsers swallow that for a while. Safari on a phone reaches its limit for the
+   tab in a few seconds and reloads the page, which is exactly what it looked
+   like from the outside.
+
+   Two defences, because either alone is brittle. The inputs are quantised, so
+   consecutive frames land on the same key and the cache is actually used; and
+   the cache is capped and evicts its oldest entry, so no sequence of inputs can
+   make it grow without limit. */
+var MO_GEO_ORDER=[], MO_GEO_MAX=8;
+function moGeomPut(key,G){
+  MO_GEO[key]=G; MO_GEO_ORDER.push(key);
+  while(MO_GEO_ORDER.length>MO_GEO_MAX){
+    var old=MO_GEO_ORDER.shift();
+    if(old!==key) delete MO_GEO[old];
+  }
+  return G;
+}
+/* Stored per pixel: the texture column and row, which need the tilt, and the
+   z of the normal. The x and y of the normal are NOT stored — they follow from
+   the pixel's position, and walking each row left to right gives x by addition.
+   That is three fewer arrays, and it turns a scattered indexed write into a
+   sequential one. Columns and rows are sixteen-bit: the map is 1024 by 512. */
+function moGeom(R,axTiltDeg){
+  var ax=axTiltDeg||0;
+  var key=R+"|"+ax;
+  if(MO_GEO[key]) return MO_GEO[key];
+  var D=R*2, py, px;
+  var x0a=new Int16Array(D), x1a=new Int16Array(D), st0=new Int32Array(D);
+  var cnt=0;
+  for(py=0;py<D;py++){
+    var y=(py+0.5-R)/R;
+    if(y*y>=1){ x0a[py]=0; x1a[py]=-1; st0[py]=cnt; continue; }
+    var hx=Math.sqrt(1-y*y)*R;
+    var lo=Math.ceil(R-hx-0.5), hi=Math.floor(R+hx-0.5);
+    while(lo<=hi){ var xx=(lo+0.5-R)/R; if(xx*xx+y*y<1) break; lo++; }
+    while(hi>=lo){ var xh=(hi+0.5-R)/R; if(xh*xh+y*y<1) break; hi--; }
+    if(lo<0) lo=0; if(hi>D-1) hi=D-1;
+    x0a[py]=lo; x1a[py]=hi; st0[py]=cnt;
+    if(hi>=lo) cnt+=hi-lo+1;
+  }
+  var nz=new Float32Array(cnt), col=new Uint16Array(cnt), row=new Uint16Array(cnt);
+  var ct=Math.cos(ax*Math.PI/180), stt=Math.sin(ax*Math.PI/180);
+  var k=0;
+  for(py=0;py<D;py++){
+    var y2=(py+0.5-R)/R, lo2=x0a[py], hi2=x1a[py];
+    for(px=lo2;px<=hi2;px++){
+      var x2=(px+0.5-R)/R, r2=x2*x2+y2*y2;
+      var z=r2<1?Math.sqrt(1-r2):0;
+      nz[k]=z;
+      /* tilt the pole towards or away from the viewer, then read off lat/lon */
+      var wy=(-y2)*ct-z*stt, wz=(-y2)*stt+z*ct;
+      var lat=Math.asin(wy>1?1:(wy<-1?-1:wy));
+      var lon=Math.atan2(x2,wz);
+      var rr=Math.floor((0.5-lat/Math.PI)*MO_TH);
+      row[k]=rr<0?0:(rr>MO_TH-1?MO_TH-1:rr);
+      var cc=Math.floor(((lon/(2*Math.PI))+0.5)*MO_TW);
+      col[k]=((cc%MO_TW)+MO_TW)%MO_TW;
+      k++;
+    }
+  }
+  return moGeomPut(key,{R:R,D:D,n:cnt,nz:nz,col:col,row:row,x0:x0a,x1:x1a,st:st0});
+}
+/* The radius and the tilt are rounded here rather than at each call site, so no
+   scene can reintroduce the unbounded key by forgetting to. Ten pixels of radius
+   and two degrees of tilt are both well under what anyone can see. */
+function moQR(R){ return Math.max(24,Math.round(R/10)*10); }
+function moQA(a){ return Math.round((a||0)/2)*2; }
+
+/* ------------------------------------------------------------- photometry --- */
+/* Lunar-Lambert. Pure Lambert makes an airless body look like a billiard ball,
+   shaded dark towards the limb; the real Moon at full is almost flat across the
+   disc, because regolith backscatters. The Lommel-Seeliger term is what does
+   that, and mixing the two with b≈0.85 matches the look at every phase. */
+function moShade(mu0,mu,b){
+  if(mu0<=0) return 0;
+  var ls=2*mu0/(mu0+mu+1e-6);
+  return mu0*((1-b)+b*ls);
+}
+
+/* ---------------------------------------------------------------- the draw --- */
+/* Renders a lit sphere into an offscreen canvas of side 2R and returns it. The
+   caller scales it onto the stage, so R is fixed per body and the heavy geometry
+   is computed once no matter how the frame is sized.
+
+   opt: {tex, lx,ly,lz (light direction, view space, unit), rot (degrees),
+         tint:[r,g,b] multiplier, relief, b (backscatter), gamma,
+         night:[r,g,b] added on the unlit side, amb} */
+var MO_BUF_ORDER=[], MO_BUF_MAX=3;
+function moCanvas(key,D){
+  /* The pixel buffer and its ImageData are kept per size — allocating a fresh
+     ImageData every frame is megabytes a frame for the collector to sweep. The
+     key is the SIZE only: the buffer holds pixels and does not care how the
+     sphere was tilted, and keying it by the tilt as well was half of the leak. */
+  key="d"+D;
+  var e=MO_BUF[key];
+  if(!e || e.cv.width!==D){
+    var cv=document.createElement("canvas"); cv.width=D; cv.height=D;
+    var cx2=cv.getContext("2d");
+    e={cv:cv, cx:cx2, img:cx2.createImageData(D,D)};
+    MO_BUF[key]=e; MO_BUF_ORDER.push(key);
+    while(MO_BUF_ORDER.length>MO_BUF_MAX){
+      var old=MO_BUF_ORDER.shift();
+      if(old!==key) delete MO_BUF[old];
+    }
+  }
+  return e;
+}
+function moBody(R,opt){
+  R=moQR(R);
+  var G=moGeom(R,moQA(opt.axis)), D=G.D, t=opt.tex;
+  var E=moCanvas(null,D), p=E.img.data;
+  p.fill(0);
+  var lx=opt.lx, ly=opt.ly, lz=opt.lz;
+  var rotCol=Math.round(((opt.rot||0)/360)*MO_TW)%MO_TW; if(rotCol<0) rotCol+=MO_TW;
+  var relief=(opt.relief==null?1:opt.relief), b=(opt.b==null?0.85:opt.b), b1=1-b;
+  var tr=opt.tint?opt.tint[0]:1, tg=opt.tint?opt.tint[1]:1, tb=opt.tint?opt.tint[2]:1;
+  var nr=opt.night?opt.night[0]:0, ng=opt.night?opt.night[1]:0, nb=opt.night?opt.night[2]:0;
+  var amb=opt.amb||0, gam=opt.gamma||1, exp=(opt.exposure==null?1:opt.exposure);
+  var TW=MO_TW, tR=t.r, tG=t.g, tB=t.b, tgx=t.gx, tgy=t.gy;
+  var Gc=G.col, Gr=G.row, Gz=G.nz, X0=G.x0, X1=G.x1, ST=G.st;
+  var dnx=1/R;
+  for(var py=0;py<D;py++){
+    var lo=X0[py], hi=X1[py]; if(hi<lo) continue;
+    var ey=-((py+0.5-R)/R);
+    var nx=(lo+0.5-R)/R;
+    var i=ST[py], q=(py*D+lo)*4;
+    for(var px=lo;px<=hi;px++,i++,q+=4,nx+=dnx){
+      var ez=Gz[i];
+      var c=Gc[i]+rotCol; if(c>=TW) c-=TW;
+      var idx=Gr[i]*TW+c;
+      var ex=nx, ey2=ey;
+      var mu0=ex*lx+ey2*ly+ez*lz, sh;
+      /* Deep on the night side no slope can reach the light: the relief tilts the
+         normal by at most the largest gradient in the map, so past that margin the
+         answer is settled and the expensive half of the loop can be skipped. On a
+         crescent that is most of the disc, which is where this scene spends its
+         frames. */
+      if(mu0<-0.42){
+        p[q]=nr>255?255:nr; p[q+1]=ng>255?255:ng; p[q+2]=nb>255?255:nb;
+        p[q+3]=(ez<0.10)?Math.round(2550*ez):255;
+        continue;
+      }
+      if(relief){
+        /* tilt the normal by the surface slope — this is what makes a crater rim
+           catch the light a moment before its floor does, and why the relief
+           disappears at full phase exactly as it does in the sky */
+        ex-=tgx[idx]*relief; ey2-=tgy[idx]*relief;
+        /* one Newton step for the inverse square root: the perturbed normal is
+           still close to unit length, so this is good to second order and costs
+           neither a square root nor a division */
+        var l2=ex*ex+ey2*ey2+ez*ez, ln=1.5-0.5*l2;
+        ex*=ln; ey2*=ln; ez*=ln;
+        mu0=ex*lx+ey2*ly+ez*lz;
+      }
+      if(mu0<=0) sh=0; else sh=mu0*(b1+b*(2*mu0/(mu0+ez+1e-6)));
+      sh=sh*exp+amb;
+      var rr=tR[idx]*sh*tr+nr, gg=tG[idx]*sh*tg+ng, bb=tB[idx]*sh*tb+nb;
+      if(gam!==1){
+        rr=255*Math.pow(rr>0?rr/255:0,gam);
+        gg=255*Math.pow(gg>0?gg/255:0,gam);
+        bb=255*Math.pow(bb>0?bb/255:0,gam);
+      }
+      p[q]=rr>255?255:(rr<0?0:rr);
+      p[q+1]=gg>255?255:(gg<0?0:gg);
+      p[q+2]=bb>255?255:(bb<0?0:bb);
+      /* a sub-pixel feather at the very limb, so the disc has no staircase edge */
+      p[q+3]=(Gz[i]<0.10)?Math.round(2550*Gz[i]):255;
+    }
+  }
+  E.cx.putImageData(E.img,0,0);
+  return E.cv;
+}
+
+/* ---------------------------------------------------------------- the Sun --- */
+/* The Sun is not a lit sphere — it is its own light source, so none of the
+   shading above applies. What it needs instead is limb darkening, which is a
+   consequence of looking obliquely into a hot gas and so seeing a shallower,
+   cooler layer, and granulation, which is the top of the convection zone. */
+function moSunTex(){
+  if(MO_TEX.sun) return MO_TEX.sun;
+  var t=moTexBlank(), rnd=moRng(1543), gr=moNoiseField(512,rnd), sp=moNoiseField(64,rnd);
+  for(var y=0;y<MO_TH;y++) for(var x=0;x<MO_TW;x++){
+    var i=y*MO_TW+x;
+    /* granules are about a thousand kilometres across, which on a disc of this
+       size is a cell every few pixels — hence the high frequency */
+    var g1=moFbm(gr,x/MO_TW*150,y/MO_TH*75,2,0.45,150);
+    var g2=moFbm(gr,x/MO_TW*48+11,y/MO_TH*24+7,3,0.5,48);
+    /* Granules are bright cells with dark lanes between them, not a smooth
+       mottle, so the fine octave is pushed towards its bright end and the lanes
+       fall out as what is left. */
+    var cell=Math.pow(g1,1.7)*0.72+g2*0.28;
+    var gn=(cell-0.42)*2;
+    /* Warm white rather than acid yellow: a white-light image of the photosphere
+       is nearly white at the centre and ambers towards the edge, and the edge is
+       handled by the limb-darkening law, not by the colour here. */
+    t.r[i]=255;
+    t.g[i]=Math.max(0,Math.min(255,228+gn*18));
+    t.b[i]=Math.max(0,Math.min(255,152+gn*40));
+    t.e[i]=cell;
+  }
+  /* sunspot groups: paired, within about 30° of the equator, never at the poles */
+  var ng=7+Math.floor(rnd()*6);
+  for(var k=0;k<ng;k++){
+    var la=(rnd()<0.5?1:-1)*(5+rnd()*25);
+    var lo=rnd()*360-180, sz=1.1+rnd()*2.8;
+    for(var pair=0;pair<2;pair++){
+      var plo=lo+(pair?1:-1)*sz*(1.1+rnd()*1.0), pla=la+(rnd()-0.5)*sz;
+      var r1=sz*(pair?0.72:1.0);
+      moDisc(t,plo,pla,r1*1.9,function(idx,q){
+        var r=q*1.9, k2;
+        if(r<0.74){ k2=0.93; }                       /* umbra */
+        else if(r<1.25){ k2=0.52*(1.25-r)/0.51+0.26; } /* penumbra, filamentary */
+        else { k2=0.22*Math.max(0,(1.9-r)/0.65); }
+        if(k2<=0) return;
+        t.r[idx]=t.r[idx]*(1-k2)+70*k2;
+        t.g[idx]=t.g[idx]*(1-k2)+26*k2;
+        t.b[idx]=t.b[idx]*(1-k2)+6*k2;
+      });
+    }
+    /* faculae: bright magnetic network around the group, which is why the Sun is very
+       slightly brighter at spot maximum than at minimum */
+    moDisc(t,lo,la,sz*4.5,function(idx,q){
+      if(q<0.45) return;
+      var k3=0.16*(1-Math.abs(q-0.7)/0.3);
+      if(k3<=0) return;
+      t.g[idx]=Math.min(255,t.g[idx]+36*k3); t.b[idx]=Math.min(255,t.b[idx]+30*k3);
+    });
+  }
+  moTexGrad(t); MO_TEX.sun=t; return t;
+}
+/* Eddington's limb-darkening law to second order. At the very edge the disc
+   falls to about a third of its central brightness, which is why the Sun looks
+   like a disc with an edge rather than a glowing ball. */
+function moLimbDark(mu){ return 0.34+0.93*mu-0.27*mu*mu; }
+function moSunDisc(R,rot){
+  R=moQR(R);
+  var G=moGeom(R,0), D=G.D, t=moSunTex();
+  var E=moCanvas(null,D), p=E.img.data;
+  p.fill(0);
+  var rotCol=Math.round((rot/360)*MO_TW)%MO_TW; if(rotCol<0) rotCol+=MO_TW;
+  var TW=MO_TW, Gc=G.col, Gr=G.row, Gz=G.nz, X0=G.x0, X1=G.x1, ST=G.st;
+  var norm=1/moLimbDark(1);
+  for(var py=0;py<D;py++){
+    var lo=X0[py], hi=X1[py]; if(hi<lo) continue;
+    var i=ST[py], q=(py*D+lo)*4;
+    for(var px=lo;px<=hi;px++,i++,q+=4){
+      var mu=Gz[i];
+      var c=Gc[i]+rotCol; if(c>=TW) c-=TW;
+      var idx=Gr[i]*TW+c;
+      var ld=(0.34+0.93*mu-0.27*mu*mu)*norm;
+      /* the edge runs red as well as dark: the oblique line of sight reaches only a
+         shallower, cooler layer, and a cooler gas radiates redder as well as fainter */
+      var warm=1-mu;
+      var rr=t.r[idx]*ld, gg=t.g[idx]*ld*(1-warm*0.22), bb=t.b[idx]*ld*(1-warm*0.45);
+      p[q]=rr>255?255:rr; p[q+1]=gg>255?255:gg; p[q+2]=bb>255?255:bb;
+      p[q+3]=(mu<0.07)?Math.round(3643*mu):255;
+    }
+  }
+  E.cx.putImageData(E.img,0,0);
+  return E.cv;
+}
+
+/* ===== Real grahas on the reel ============================================
+
+   This site already builds the bodies. `54-motion-bodies.js` generates every
+   surface from code — the Moon's maria at their real selenographic
+   coordinates, a power-law crater population with rims and shadows, Guru's
+   belts at their real latitudes, Sūrya's granulation at the right scale —
+   and lights them from the direction the Sun actually is at the moment on
+   the playhead. The reels were drawing generic glowing dots instead, which
+   is both worse and a waste of the best thing in the repository.
+
+   WHY THIS WRAPPER EXISTS RATHER THAN A DIRECT CALL. Generating a lit disc
+   is a per-pixel raycast: fine once, far too slow sixty times a second. So
+   everything here is a cache keyed on what the picture actually depends on —
+   the body, the radius, the phase, the rotation — each rounded to a step
+   below what the eye can see at reel sizes. A Moon that waxes smoothly
+   through a reel mints about thirty discs over its whole run instead of one
+   per frame, and every frame after the first is a drawImage.
+
+   The rounding is chosen per quantity rather than globally: phase matters
+   most (a crescent is the whole picture), rotation least (Guru's belts look
+   the same a degree later). */
+
+(function () {
+  "use strict";
+
+  var R2 = Math.PI / 180;
+
+  /* the texture builders, by the names this site uses */
+  function texOf(name) {
+    switch (name) {
+      case "Moon": case "Candra": return typeof moMoonTex === "function" ? moMoonTex() : null;
+      case "Mercury": case "Budha": return typeof moMercuryTex === "function" ? moMercuryTex() : null;
+      case "Venus": case "Śukra": return typeof moVenusTex === "function" ? moVenusTex() : null;
+      case "Mars": case "Maṅgala": return typeof moMarsTex === "function" ? moMarsTex() : null;
+      case "Jupiter": case "Guru": return typeof moJupiterTex === "function" ? moJupiterTex() : null;
+      case "Saturn": case "Śani": return typeof moSaturnTex === "function" ? moSaturnTex() : null;
+      default: return null;
+    }
+  }
+  /* axial tilt as the renderer wants it, and how much surface relief to
+     apply: a gas giant has none to speak of, a cratered world is mostly
+     relief */
+  var AX = { Moon: 1.5, Mercury: 0.03, Venus: 2.6, Mars: 25.2,
+             Jupiter: 3.1, Saturn: 26.7 };
+  var RELIEF = { Moon: 1, Mercury: 1, Venus: 0.35, Mars: 0.8,
+                 Jupiter: 0, Saturn: 0 };
+  /* how fast each turns, in degrees per day, only so that a long reel does
+     not show a frozen face — these are the real sidereal rotation rates */
+  var SPIN = { Moon: 13.18, Mercury: 6.14, Venus: -1.48, Mars: 350.89,
+               Jupiter: 870.54, Saturn: 810.79, Sun: 14.18 };
+
+  var CACHE = {}, KEYS = [], MAX = 90;
+
+  /* THE RENDERER HANDS BACK A CANVAS IT STILL OWNS.
+
+     moCanvas pools its pixel buffer by size — sensibly, since allocating an
+     ImageData per frame is megabytes a second for the collector. But that
+     means moBody returns a SHARED canvas: generate a new Moon and then a
+     full Moon at the same radius and the first result quietly becomes the
+     second, because they are the same object.
+
+     Caching those references therefore caches an alias. Every disc in the
+     cache would show whatever was drawn last, which on a reel means the
+     Moon's phase silently stops tracking the event under it — and it is
+     invisible to any test that measures a disc right after making it, which
+     is exactly what a probe does. The harness caught it by making two and
+     measuring both afterwards.
+
+     So each disc is copied into a canvas of its own on the way into the
+     cache. It is one drawImage of a few thousand pixels, once per cache
+     miss. */
+  function own(src) {
+    var cv = document.createElement("canvas");
+    cv.width = src.width; cv.height = src.height;
+    cv.getContext("2d").drawImage(src, 0, 0);
+    return cv;
+  }
+  function put(key, cv) {
+    if (KEYS.length >= MAX) delete CACHE[KEYS.shift()];
+    var mine = own(cv);
+    CACHE[key] = mine; KEYS.push(key);
+    return mine;
+  }
+
+  function ready() { return typeof moBody === "function"; }
+
+  /* A lit disc of `name`, radius R in device pixels.
+       opt.phase   0..360, the elongation from the Sun as seen from Earth;
+                   180 is full. Omit for an always-full body.
+       opt.spinDeg how far round it has turned.
+     Returns a canvas of side 2R, or null if the renderer is not present —
+     callers fall back to a plain dot rather than failing. */
+  function disc(name, R, opt) {
+    if (!ready()) return null;
+    opt = opt || {};
+    R = Math.max(3, R);
+    var rb = R < 14 ? Math.round(R) : Math.round(R / 3) * 3;
+    if (name === "Sun" || name === "Sūrya") {
+      var sk = "sun|" + rb + "|" + Math.round((opt.spinDeg || 0) / 30);
+      if (CACHE[sk]) return CACHE[sk];
+      if (typeof moSunDisc !== "function") return null;
+      return put(sk, moSunDisc(rb, opt.spinDeg || 0));
+    }
+    var tex = texOf(name);
+    if (!tex) return null;
+    var ph = opt.phase == null ? 180 : ((opt.phase % 360) + 360) % 360;
+    var pb = Math.round(ph / 6) * 6;                /* 6° of phase */
+    var sb = Math.round(((opt.spinDeg || 0) % 360) / 24) * 24;   /* 24° of spin */
+    var key = name + "|" + rb + "|" + pb + "|" + sb;
+    if (CACHE[key]) return CACHE[key];
+    /* the light direction from the phase: at opposition the Sun is behind
+       the viewer and the disc is full; at conjunction it is behind the body */
+    var pa = (180 - pb) * R2;
+    var lx = (pb < 180 ? 1 : -1) * Math.sin(Math.abs(pa));
+    var lz = Math.cos(pa);
+    var key2 = name;
+    /* HOW DARK THE NIGHT SIDE IS. Two or three counts out of 255 is right
+       for a body hanging in a photograph; on a reel it makes a new Moon a
+       hole punched in the frame. A thin crescent needs its dark limb to be
+       visible as a limb, so the night side is lifted to a slate when the
+       phase is narrow — which is also what earthshine does in the sky, and
+       for the same reason: the dark side is not actually black. */
+    var narrow = Math.min(pb, 360 - pb) < 70;
+    var night = narrow ? [16, 19, 27] : [2, 2, 3];
+    var cv = moBody(rb, {
+      tex: tex, lx: lx, ly: 0.03, lz: lz, rot: sb,
+      axis: AX[key2] == null ? 0 : AX[key2],
+      relief: (tex.gx ? (RELIEF[key2] == null ? 1 : RELIEF[key2]) : 0),
+      b: (RELIEF[key2] ? 0.82 : 0.25), exposure: 1.15, night: night
+    });
+    return put(key, cv);
+  }
+
+  /* Draw it centred, with a whisper of halo so it sits in the frame rather
+     than on top of it. The halo is deliberately small: these have surfaces
+     now, and a surface you cannot see through a glow is a dot again. */
+  function draw(c, name, x, y, R, opt) {
+    opt = opt || {};
+    var cv = disc(name, R, opt);
+    if (!cv) {
+      if (window.SPGlow) window.SPGlow.glow(c, x, y, R, opt.fallback || "#f0c870",
+        { reach: 2.4, core: 0.5 });
+      return false;
+    }
+    if (opt.halo && window.SPGlow) {
+      window.SPGlow.glow(c, x, y, R * 0.92, opt.haloCol || "#ffd79a",
+        { reach: opt.haloReach || 2.3, core: 0, alpha: opt.halo });
+    }
+    c.save();
+    c.globalCompositeOperation = "source-over";
+    c.drawImage(cv, x - R, y - R, R * 2, R * 2);
+    if (opt.earthshine) {
+      c.globalCompositeOperation = "lighter";
+      c.globalAlpha = 0.75;
+      c.strokeStyle = opt.earthshineCol || "rgba(186,200,226,0.95)";
+      c.lineWidth = Math.max(1, R * 0.16);
+      c.beginPath();
+      c.arc(x, y, R * 0.94, 0, 6.283185307179586);
+      c.stroke();
+    }
+    c.restore();
+    return true;
+  }
+
+  /* HOW FAR ROUND TO TURN IT, and why this is not the real rotation rate.
+
+     The first version used the true sidereal rates against the date on the
+     playhead. Guru turns 870° a day; a thread reel advances several days a
+     frame, so the rotation bucket changed on every single frame, every frame
+     was a cache miss, and every miss is a per-pixel raycast plus a canvas
+     allocation. The discs were being regenerated sixty times a second — the
+     stutter the reels had.
+
+     A reel is not a planetarium: nobody can read Guru's longitude off its
+     belts. What the rotation is FOR is that the body should not look frozen.
+     So it turns a fixed couple of times across the run, keyed on the
+     playhead, which gives about thirty distinct discs for the whole reel
+     instead of one per frame. Below ten pixels it does not turn at all,
+     because the surface detail is smaller than a pixel and the only thing
+     rotation would buy is cache misses. */
+  function spinFor(name, progress, R) {
+    if (!(R >= 10)) return 0;
+    var turns = (name === "Jupiter" || name === "Saturn") ? 2 : 1;
+    return ((progress || 0) * turns * 360) % 360;
+  }
+  function spinAt(name, ms, epochMs) {
+    var d = (ms - (epochMs || 0)) / 86400000;
+    return (SPIN[name] || 0) * d;
+  }
+
+  window.SPBody = { disc: disc, draw: draw, ready: ready, spinAt: spinAt,
+                    spinFor: spinFor,
+                    SPIN: SPIN,
+                    _cached: function () { return KEYS.length; } };
 })();
 
 /* ===== Reels: a story told by a computation ================================
@@ -375,6 +1355,10 @@
 
   var RASHI = ["MEŚA", "VṚṢABHA", "MITHUNA", "KARKA", "SIṂHA", "KANYĀ",
                "TULĀ", "VṚŚCIKA", "DHANU", "MAKARA", "KUMBHA", "MĪNA"];
+  /* the same twelve in mixed case, for the paper theme, where small caps
+     would fight the italic serif the whole sheet is set in */
+  var RASHI_SOFT = ["Meṣa", "Vṛṣabha", "Mithuna", "Karka", "Siṃha", "Kanyā",
+                    "Tulā", "Vṛścika", "Dhanu", "Makara", "Kumbha", "Mīna"];
   var MON = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN",
              "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
   function dateCaps(ms) {
@@ -402,7 +1386,14 @@
       c.textAlign = align === "center" ? "center" : (align === "right" ? "right" : "left");
       c.fillText(String(text), x, y);
       var wid = c.measureText(String(text)).width;
-      c.letterSpacing = prev; c.textAlign = pa;
+      /* restored to NONE, not to whatever it was. Tracking is ambient
+         canvas state, and a routine that puts back what it found passes a
+         leak along faithfully for ever: the kicker's tracking was still set
+         when the subtitle drew, so the paper theme's subtitle came out
+         letterspaced while its title did not, and tracing it across frames
+         showed nothing because the state was clean at both ends. Every
+         piece of text here now says what tracking it wants. */
+      c.letterSpacing = "0px"; c.textAlign = pa;
       return wid;
     }
     var chars = String(text).split("");
@@ -439,6 +1430,11 @@
     tracked(c, text, x, y, track * size, align);
     return size;
   }
+  /* no tracking, said out loud rather than assumed */
+  function plain(c) {
+    if ("letterSpacing" in c) c.letterSpacing = "0px";
+    return c;
+  }
   function wrapTo(c, text, maxW) {
     var words = String(text).split(/\s+/), lines = [], cur = "";
     for (var i = 0; i < words.length; i++) {
@@ -455,6 +1451,18 @@
      an additive pipeline needs a dark floor or there is nothing for light to
      be added to. The parchment palette is the one exception and it inverts
      the pipeline rather than recolouring it. */
+  /* TWO KINDS OF PALETTE, AND THEY ARE NOT VARIATIONS ON EACH OTHER.
+
+     A dark palette is an EXPOSURE: strokes are added to a dark floor and the
+     sum is bloomed, which is why gold on black works and why the floor has
+     to be dark for light to have anything to be added to.
+
+     Paper is not an exposure at all. It is ink and wash on a sheet — a
+     watercolour ground of pale teal and sand, a thin ochre line, names set
+     in italic serif, and the twelve rāśis drawn as a banded wheel with the
+     signs tinted. Running it through the additive pipeline would turn the
+     ochre white, so `dark: false` chooses the other render path entirely
+     rather than recolouring this one. */
   var PALETTES = {
     gold: { key: "gold", label: "Gold on black", dark: true,
             bg: "#05060b", ink: "#f4e8cf", gold: "#f0c870", warm: "#ffd79a",
@@ -465,9 +1473,24 @@
     ember: { key: "ember", label: "Ember", dark: true,
              bg: "#0a0604", ink: "#f7e3d2", gold: "#ef9a4a", warm: "#ffc48a",
              dim: "#8a6448", line: "#6b4a34", hot: "#fff1e0", accent: "#ff7a3d" },
-    leaf: { key: "leaf", label: "Ink on parchment", dark: false,
-            bg: "#efe6d2", ink: "#2b2418", gold: "#8a6a24", warm: "#6b5a34",
-            dim: "#7d7360", line: "#b8ab8e", hot: "#1b1710", accent: "#9c5a1e" }
+    paper: { key: "paper", label: "Watercolour paper", dark: false,
+             banded: true,
+             bg: "#efe7d6", ink: "#3b3022", gold: "#9a6f2c", warm: "#b98a3c",
+             dim: "#6f6150", line: "#a98a52", hot: "#8a5a1e", accent: "#c0762a",
+             band: "#f6efdd",
+             wash: ["#efe9da", "#bcd4d2", "#e3d3ae", "#cfdcd6", "#efdcc2"],
+             signs: ["#f2ded2", "#e5e8d2", "#dde7ef", "#eadfe8",
+                     "#f4e9d2", "#dceae0", "#f0e2d8", "#e2e6ef",
+                     "#efe3cf", "#e6e4d6", "#dfe9ee", "#eee0e6"] },
+    dusk: { key: "dusk", label: "Dusk paper", dark: false,
+            banded: true,
+            bg: "#e8e0e6", ink: "#362b33", gold: "#8d5a73", warm: "#a9708a",
+            dim: "#6b5c66", line: "#a07f93", hot: "#7a3f5e", accent: "#c0708f",
+            band: "#f2e8ee",
+            wash: ["#ece3e8", "#c6d3e4", "#e8d6d2", "#d8cfe2", "#f0dfd4"],
+            signs: ["#f0dcdc", "#e8e4d6", "#dde4ef", "#ead9e6",
+                    "#f3e6d6", "#dde8e2", "#f1e0d9", "#e0e4ee",
+                    "#eee2d4", "#e6e2d8", "#dfe7ee", "#ecdee6"] }
   };
   function pal(k) { return PALETTES[k] || PALETTES.gold; }
 
@@ -545,6 +1568,7 @@
     };
   }
 
+  function titleFont(P) { return (P.banded ? "italic " : "600 "); }
   function drawTitle(c, W, H, B, reel, P, p) {
     var intro = smooth(clamp(p / 0.045, 0, 1));
     c.save();
@@ -559,17 +1583,27 @@
               W * 0.0115, "center");
       c.globalAlpha = intro;
     }
-    c.fillStyle = P.warm;
-    fitTracked(c, reel.title.toUpperCase(), W / 2,
-               B.title.y + W * (reel.kicker ? 0.093 : 0.070),
-               W * 0.88, W * 0.072, 0.055, "center", "600");
-    c.fillStyle = P.ink;
-    c.globalAlpha = intro * 0.72;
-    c.font = (W * 0.0245).toFixed(1) + "px " + SERIF;
+    c.fillStyle = P.banded ? P.ink : P.warm;
+    if (P.banded)
+      fitTracked(c, reel.title, W / 2,
+                 B.title.y + W * (reel.kicker ? 0.095 : 0.072),
+                 W * 0.90, W * 0.070, 0.004, "center", "italic 600");
+    else
+      fitTracked(c, reel.title.toUpperCase(), W / 2,
+                 B.title.y + W * (reel.kicker ? 0.093 : 0.070),
+                 W * 0.88, W * 0.072, 0.055, "center", "600");
+    plain(c);
+    c.fillStyle = P.banded ? P.dim : P.ink;
+    c.globalAlpha = intro * (P.banded ? 0.95 : 0.72);
+    c.font = (P.banded ? "italic " : "") + (W * 0.0255).toFixed(1) + "px " + SERIF;
     var lines = wrapTo(c, reel.subtitle || "", W * 0.84);
-    for (var i = 0; i < Math.min(3, lines.length); i++)
-      c.fillText(lines[i], W / 2,
-                 B.title.y + W * (reel.kicker ? 0.128 : 0.105) + i * W * 0.030);
+    for (var i = 0; i < Math.min(3, lines.length); i++) {
+      if (P.banded) c.fillText(lines[i], W / 2,
+        B.title.y + W * (reel.kicker ? 0.132 : 0.108) + i * W * 0.032);
+      else tracked(c, lines[i], W / 2,
+        B.title.y + W * (reel.kicker ? 0.128 : 0.105) + i * W * 0.030,
+        W * 0.0012, "center");
+    }
     c.restore();
   }
 
@@ -617,7 +1651,8 @@
     c.fillStyle = P.gold;
     c.font = "600 " + (W * 0.0245).toFixed(1) + "px " + SERIF;
     tracked(c, handle, x, baseY - W * 0.019, W * 0.0245 * 0.06, "left");
-    c.globalAlpha = 0.46 * fade;
+    plain(c);
+    c.globalAlpha = 0.56 * fade;
     c.fillStyle = P.dim;
     c.font = (W * 0.0165).toFixed(1) + "px " + SERIF;
     c.fillText(reel.foot, x, baseY + W * 0.006);
@@ -636,8 +1671,8 @@
       txt = "DAY " + (d < 10 ? d.toFixed(2) : d.toFixed(1));
     } else txt = "YEAR " + (yrs < 10 ? yrs.toFixed(1) : Math.round(yrs));
     c.save();
-    c.globalAlpha = 0.13;
-    c.fillStyle = P.gold;
+    c.globalAlpha = P.banded ? 0.20 : 0.13;
+    c.fillStyle = P.banded ? P.line : P.gold;
     c.textAlign = "center";
     c.font = "600 " + (W * 0.062).toFixed(1) + "px " + SERIF;
     tracked(c, txt, W / 2, B.cap.y + B.cap.h * 0.97, W * 0.010, "center");
@@ -663,13 +1698,16 @@
     c.save();
     c.globalAlpha = a;
     c.textAlign = "center";
-    c.fillStyle = P.gold;
-    fitTracked(c, e.big, W / 2, y, W * 0.84, W * 0.054, 0.045, "center", "600");
+    c.fillStyle = P.banded ? P.hot : P.gold;
+    fitTracked(c, e.big, W / 2, y, W * 0.84, W * 0.054,
+               P.banded ? 0.012 : 0.045, "center",
+               P.banded ? "italic 600" : "600");
     y += W * 0.045;
     if (e.small) {
+      plain(c);
       c.fillStyle = P.ink;
       c.globalAlpha = a;
-      c.font = (W * 0.0265).toFixed(1) + "px " + SERIF;
+      c.font = (P.banded ? "italic " : "") + (W * 0.0265).toFixed(1) + "px " + SERIF;
       var ls = wrapTo(c, e.small, W * 0.82);
       for (var i = 0; i < Math.min(2, ls.length); i++) {
         c.fillText(ls[i], W / 2, y); y += W * 0.031;
@@ -710,22 +1748,36 @@
   /* The closing card. It does not wipe the stage — the figure the run drew
      is the evidence, and taking it away to put words in its place throws
      away the only thing the viewer has been watching accumulate. */
+  function G() { return window.SPGlow; }
   function drawClosing(c, W, H, B, reel, P, closeP) {
     var a = smooth(clamp(closeP * 2.1, 0, 1));
     if (a <= 0.004) return;
     c.save();
-    c.globalAlpha = a * 0.72;
-    c.fillStyle = P.bg;
-    c.fillRect(0, B.cap.y - W * 0.03, W, H - B.cap.y + W * 0.03);
+    /* A FLAT RECTANGLE HAS A TOP EDGE, and on the dark themes the ground
+       under it carries a vignette, so the edge showed as a seam straight
+       across the frame. A gradient that starts at nothing has no edge to
+       see. */
+    var top = B.cap.y - W * 0.06;
+    var fade = c.createLinearGradient(0, top, 0, top + W * 0.10);
+    var base = P.banded ? P.band : P.bg;
+    fade.addColorStop(0, G().rgba(base, 0));
+    fade.addColorStop(1, G().rgba(base, P.banded ? 0.86 : 0.80));
+    c.globalAlpha = a;
+    c.fillStyle = fade;
+    c.fillRect(0, top, W, W * 0.10);
+    c.fillStyle = G().rgba(base, P.banded ? 0.86 : 0.80);
+    c.fillRect(0, top + W * 0.10 - 1, W, H - top - W * 0.10 + 1);
     c.globalAlpha = a;
     c.textAlign = "center";
     var y = B.cap.y + W * 0.055;
-    c.fillStyle = P.warm;
-    fitTracked(c, reel.closing.big, W / 2, y, W * 0.86, W * 0.062, 0.05,
-               "center", "600");
+    c.fillStyle = P.banded ? P.ink : P.warm;
+    fitTracked(c, reel.closing.big, W / 2, y, W * 0.86, W * 0.062,
+               P.banded ? 0.012 : 0.05, "center",
+               P.banded ? "italic 600" : "600");
     y += W * 0.055;
+    plain(c);
     c.fillStyle = P.ink;
-    c.font = (W * 0.0255).toFixed(1) + "px " + SERIF;
+    c.font = (P.banded ? "italic " : "") + (W * 0.0255).toFixed(1) + "px " + SERIF;
     for (var i = 0; i < reel.closing.lines.length; i++) {
       var ls = wrapTo(c, reel.closing.lines[i], W * 0.80);
       for (var j = 0; j < ls.length; j++) {
@@ -737,435 +1789,646 @@
   }
 
   /* ---- stages =============================================================
-     Each stage is handed a rect, the palette, the reel, the clock and the
-     index of the last event that has happened. It draws into the exposure
-     buffer, so everything it does is ADDED rather than painted. */
 
-  /* A zodiac rim: the twelve names, ticks, and nothing else. Every stage in
-     this file sits inside one, because the rāśi ring is the coordinate
-     system the whole site is about and a figure floating in blank space has
-     nowhere to be. */
-  function rim(c, G, cx, cy, r, P, alpha) {
-    var i;
+     EVERY STAGE IS THREE FUNCTIONS, NOT ONE, and splitting them is what made
+     the reels smooth.
+
+       base(c, R, reel, P)              the furniture: rings, ticks, labels.
+                                        Drawn once.
+       append(c, R, reel, P, from, to)  the items numbered [from, to). Drawn
+                                        once each, ever.
+       live(c, R, reel, P, now, idx)    the moving head. Drawn every frame.
+
+     The first two go into a TRAIL canvas that persists between frames. A
+     thread reel draws fifteen hundred chords over its run; the old single
+     draw() redrew all fifteen hundred for each of nine hundred frames, and
+     the frame before had already drawn fourteen hundred and ninety-nine of
+     them. Now the trail is kept and only the difference is appended, so the
+     per-frame cost stops depending on how far through the run you are.
+
+     The trail is rebuilt from scratch only when the playhead goes backwards,
+     which is what scrubbing does and what a recording's single pass never
+     does.
+
+     AND THE BODIES ARE REAL. Where a stage shows a graha it asks SPBody for
+     the lit disc this site already knows how to generate — the Moon with its
+     maria and its true phase, Guru with its belts — instead of a glowing
+     dot. The dot is still there for the accumulated marks, because a hundred
+     lamps is a smear and a hundred dots is a shape. */
+
+  function sub(R, fx, fy, fw, fh) {
+    return { x: R.x + R.w * fx, y: R.y + R.h * fy, w: R.w * fw, h: R.h * fh };
+  }
+
+  /* A rāśi rim. On a dark palette it is a thin gold line; on paper it is the
+     banded wheel of the explainer films, twelve pale segments between two
+     ochre circles with the names set along it. */
+  function rim(c, G, cx, cy, r, P, alpha, opt) {
+    opt = opt || {};
+    var i, a;
+    var al = alpha == null ? 1 : alpha;
     c.save();
-    c.globalAlpha = (alpha == null ? 1 : alpha) * 0.5;
-    c.strokeStyle = G.rgba(P.line, 0.5);
-    c.lineWidth = Math.max(1, r * 0.004);
+    if (P.banded) {
+      var inner = r * 0.884;
+      for (i = 0; i < 12; i++) {
+        var a0 = (i * 30 - 90) * R2, a1 = ((i + 1) * 30 - 90) * R2;
+        c.beginPath();
+        c.arc(cx, cy, r, a0, a1);
+        c.arc(cx, cy, inner, a1, a0, true);
+        c.closePath();
+        c.globalAlpha = al * (opt.fill == null ? 1 : opt.fill);
+        c.fillStyle = P.signs ? P.signs[i] : P.band;
+        c.fill();
+        c.globalAlpha = al * 0.75;
+        c.strokeStyle = P.line;
+        c.lineWidth = Math.max(1, r * 0.0035);
+        c.stroke();
+      }
+      c.globalAlpha = al * 0.9;
+      c.strokeStyle = P.line;
+      c.lineWidth = Math.max(1, r * 0.005);
+      c.beginPath(); c.arc(cx, cy, r, 0, TAU); c.stroke();
+      c.beginPath(); c.arc(cx, cy, inner, 0, TAU); c.stroke();
+      /* the names set ALONG the rim, each rotated to its own segment, which
+         is how the explainer films do it and is why their wheel reads as a
+         wheel rather than as a circle with a list round it */
+      c.fillStyle = P.ink;
+      c.textAlign = "center";
+      c.textBaseline = "middle";
+      c.font = "italic " + (r * 0.058).toFixed(1) + "px " + SERIF;
+      c.globalAlpha = al;
+      for (i = 0; i < 12; i++) {
+        var m = ((i * 30 + 15) - 90) * R2, q = r * 1.075;
+        var x = cx + Math.cos(m) * q, y = cy + Math.sin(m) * q;
+        c.save();
+        c.translate(x, y);
+        /* Text set along a circle reads correctly while its own rotation
+           stays within a quarter turn of upright. The rotation here is the
+           tangent, m + 90°, so the test is on the tangent and not on m:
+           flipping where cos(m) < 0 turned the LEFT half over and left the
+           bottom half upside down, which is the half that actually needs
+           it. */
+        var rot = m + Math.PI / 2;
+        if (Math.sin(m) > 0) rot += Math.PI;
+        c.rotate(rot);
+        plain(c);
+        c.fillText(RASHI_SOFT[i], 0, 0);
+        c.restore();
+      }
+      c.restore();
+      return;
+    }
+    c.globalAlpha = al * 0.70;
+    c.strokeStyle = G.rgba(P.line, 0.8);
+    c.lineWidth = Math.max(1, r * 0.0035);
     c.beginPath(); c.arc(cx, cy, r, 0, TAU); c.stroke();
-    c.globalAlpha = (alpha == null ? 1 : alpha) * 0.75;
+    c.globalAlpha = al * 0.65;
     for (i = 0; i < 12; i++) {
-      var a = (i * 30 - 90) * R2;
+      a = (i * 30 - 90) * R2;
       c.beginPath();
       c.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
-      c.lineTo(cx + Math.cos(a) * r * 0.965, cy + Math.sin(a) * r * 0.965);
+      c.lineTo(cx + Math.cos(a) * r * 0.968, cy + Math.sin(a) * r * 0.968);
       c.stroke();
     }
-    c.fillStyle = G.rgba(P.dim, 0.95);
+    c.fillStyle = G.rgba(P.ink, 0.80);
     c.textAlign = "center";
     c.textBaseline = "middle";
-    c.font = "600 " + (r * 0.062).toFixed(1) + "px " + SERIF;
+    c.font = "600 " + (r * 0.060).toFixed(1) + "px " + SERIF;
+    c.globalAlpha = al * 0.85;
     for (i = 0; i < 12; i++) {
-      var m = ((i * 30 + 15) - 90) * R2, q = r * 1.085;
-      tracked(c, RASHI[i], cx + Math.cos(m) * q, cy + Math.sin(m) * q,
+      var mm = ((i * 30 + 15) - 90) * R2, qq = r * 1.085;
+      tracked(c, RASHI[i], cx + Math.cos(mm) * qq, cy + Math.sin(mm) * qq,
               r * 0.008, "center");
     }
     c.restore();
   }
 
-  /* --- 1. the node wheel ---------------------------------------------------
-     Every syzygy of the run plotted where in the circle it fell, spiralling
-     inward with time, plus the nodal axis drawn as the line it is. The point
-     the picture makes is that the dots pile into two opposite places and the
-     eclipses are exactly the dots that land there. */
-  /* THE RADIUS IS THE LATITUDE, and that one decision is what turns this
-     from a pretty scatter into the answer to the question in the title.
-
-     The first version spiralled the dots inward by index, which is what the
-     other figures on this site do and is wrong here. Spiralled by time, the
-     eclipses came out sprinkled evenly round the whole disc — and they ARE
-     sprinkled evenly round the disc, because the nodes regress once every
-     18.6 years, so over twenty years eclipses happen at every longitude
-     there is. A viewer looking at that picture would correctly conclude the
-     reel had no point.
-
-     Plot latitude as the distance from the ring instead and the argument
-     draws itself: every new Moon sits above or below the Sun's path by how
-     far it actually was, the band of dots crosses the ring exactly twice per
-     draconic period, and the marked ones are precisely the dots ON the ring.
-     Nothing is highlighted that is not geometrically where the highlight
-     says it is. */
-  function stageNodes(c, G, R, reel, P, now, idx, p) {
+  /* the geometry each stage agrees on, so base/append/live cannot disagree */
+  function geom(stage, R, reel) {
     var cx = R.x + R.w / 2, cy = R.y + R.h * 0.47;
+    if (stage === "drift") {
+      var rim1 = Math.min(R.w * 0.40, R.h * 0.42);
+      return { cx: cx, cy: cy, rim: rim1, r: rim1 / 1.42 };
+    }
     var r = Math.min(R.w * 0.40, R.h * 0.42);
-    var i, a, x, y;
-    var K = r * 0.072;                       /* radial pixels per degree of latitude */
-    var LI = reel.inner == null ? 0.9 : reel.inner;
-    var LO = reel.outer == null ? 1.57 : reel.outer;
-
-    /* The band within which a solar eclipse is certain somewhere on Earth.
-       It is drawn as a region because it IS one, but faintly: the first
-       version filled it at a fifth opacity and, once exposed and bloomed,
-       it came out a solid gold donut that was the first and almost the only
-       thing on the frame. The subject is the dots. */
-    c.save();
-    c.globalAlpha = 0.055;
-    c.fillStyle = G.rgba(P.accent, 1);
-    c.beginPath();
-    c.arc(cx, cy, r + LO * K, 0, TAU);
-    c.arc(cx, cy, r - LO * K, 0, TAU, true);
-    c.fill();
-    c.globalAlpha = 0.14;
-    c.strokeStyle = G.rgba(P.accent, 1);
-    c.lineWidth = Math.max(0.7, r * 0.002);
-    c.beginPath(); c.arc(cx, cy, r + LO * K, 0, TAU); c.stroke();
-    c.beginPath(); c.arc(cx, cy, r - LO * K, 0, TAU); c.stroke();
-    c.globalAlpha = 0.20;
-    c.beginPath(); c.arc(cx, cy, r + LI * K, 0, TAU); c.stroke();
-    c.beginPath(); c.arc(cx, cy, r - LI * K, 0, TAU); c.stroke();
-    c.restore();
-
-    rim(c, G, cx, cy, r, P, 0.9);
-
-    var ev = reel.events, n = ev.length;
-    if (reel.nodeAt) {
-      var nl = reel.nodeAt(now.t);
-      if (nl != null) {
-        var a0 = (nl - 90) * R2, R1 = r * 1.30;
-        c.save();
-        c.globalAlpha = 0.55;
-        c.strokeStyle = G.rgba(P.accent, 0.9);
-        c.lineWidth = Math.max(1, r * 0.005);
-        c.beginPath();
-        c.moveTo(cx + Math.cos(a0) * R1, cy + Math.sin(a0) * R1);
-        c.lineTo(cx - Math.cos(a0) * R1, cy - Math.sin(a0) * R1);
-        c.stroke();
-        c.restore();
-        G.star(c, cx + Math.cos(a0) * r, cy + Math.sin(a0) * r, r * 0.020,
-               P.accent, { spikes: 0.7 });
-        G.star(c, cx - Math.cos(a0) * r, cy - Math.sin(a0) * r, r * 0.020,
-               P.accent, { spikes: 0.7 });
-      }
-    }
-
-    /* The thread through the dots in time order. Successive new Moons are
-       29° apart, so this is a chord figure rather than a smooth wave, and at
-       any weight above a whisper it becomes the subject. It is kept because
-       it shows the order the dots arrived in; it is kept FAINT because the
-       dots are the argument. */
-    c.save();
-    c.globalAlpha = 0.11;
-    c.strokeStyle = G.rgba(P.gold, 1);
-    c.lineWidth = Math.max(0.8, r * 0.0032);
-    c.beginPath();
-    for (i = 0; i <= idx && i < n; i++) {
-      if (!isFinite(ev[i].lon) || !isFinite(ev[i].lat)) continue;
-      a = (ev[i].lon - 90) * R2;
-      var q = r + ev[i].lat * K;
-      x = cx + Math.cos(a) * q; y = cy + Math.sin(a) * q;
-      if (i) c.lineTo(x, y); else c.moveTo(x, y);
-    }
-    c.stroke();
-    c.restore();
-
-    for (i = 0; i <= idx && i < n; i++) {
-      var e = ev[i];
-      if (!isFinite(e.lon) || !isFinite(e.lat)) continue;
-      a = (e.lon - 90) * R2;
-      var qq = r + e.lat * K;
-      x = cx + Math.cos(a) * qq; y = cy + Math.sin(a) * qq;
-      var fresh = clamp(1 - (now.t - e.t) / (DAY * 70), 0, 1);
-      if (e.band === "central") {
-        G.star(c, x, y, r * (0.014 + 0.010 * fresh), P.hot, { spikes: 0.85 });
-      } else {
-        c.save();
-        c.globalCompositeOperation = "lighter";
-        c.fillStyle = G.rgba(e.band === "partial" ? P.accent : P.gold,
-                             (e.band === "partial" ? 0.60 : 0.30) + 0.40 * fresh);
-        c.beginPath();
-        c.arc(x, y, r * (0.0085 + 0.005 * fresh), 0, TAU);
-        c.fill();
-        c.restore();
-      }
-    }
-    /* the scale, stated on the frame rather than left to be guessed */
-    c.save();
-    c.globalAlpha = 0.55;
-    c.fillStyle = G.rgba(P.dim, 1);
-    c.textAlign = "center";
-    c.font = (r * 0.068).toFixed(1) + "px " + SERIF;
-    c.fillText("the ring is the Sun\u2019s path \u00b7 a dot\u2019s distance " +
-               "from it is the Moon\u2019s latitude",
-               cx, Math.min(cy + r * 1.33, R.y + R.h - r * 0.03));
-    c.restore();
-    G.star(c, cx, cy, r * 0.016, P.warm, { spikes: 0.25, core: 0.55 });
+    if (stage === "thread" || stage === "loops" || stage === "orbit")
+      r = Math.min(R.w * 0.42, R.h * 0.44);
+    return { cx: cx, cy: cy, rim: r, r: r };
   }
+
+  /* --- 1. the node wheel ---------------------------------------------------
+     Every syzygy plotted where in the circle it fell, with its distance from
+     the ring being the Moon's real latitude. That one decision is what makes
+     the picture answer the question: the band of dots crosses the ring twice
+     per draconic period and the eclipses are precisely the dots ON it. */
+  var S_nodes = {
+    base: function (c, G, R, reel, P) {
+      var g = geom("nodes", R, reel), r = g.r;
+      var K = r * 0.072;
+      var LI = reel.inner == null ? 0.9 : reel.inner;
+      var LO = reel.outer == null ? 1.57 : reel.outer;
+      c.save();
+      /* Every alpha in these stages was set while a heavy bloom was
+         doubling it back. With the bloom cut to a third, the same numbers
+         render a murky brown ring and a thread you have to squint at: the
+         drawing has to carry itself now. */
+      c.globalAlpha = P.dark ? 0.045 : 0.14;
+      c.fillStyle = G.rgba(P.accent, 1);
+      c.beginPath();
+      c.arc(g.cx, g.cy, r + LO * K, 0, TAU);
+      c.arc(g.cx, g.cy, r - LO * K, 0, TAU, true);
+      c.fill();
+      c.globalAlpha = P.dark ? 0.42 : 0.5;
+      c.strokeStyle = G.rgba(P.accent, 1);
+      c.lineWidth = Math.max(0.7, r * 0.002);
+      [LO, LI].forEach(function (L) {
+        c.beginPath(); c.arc(g.cx, g.cy, r + L * K, 0, TAU); c.stroke();
+        c.beginPath(); c.arc(g.cx, g.cy, r - L * K, 0, TAU); c.stroke();
+      });
+      c.restore();
+      rim(c, G, g.cx, g.cy, r, P, 0.9);
+      c.save();
+      c.globalAlpha = P.dark ? 0.72 : 0.85;
+      c.fillStyle = G.rgba(P.dim, 1);
+      c.textAlign = "center";
+      c.font = (r * 0.068).toFixed(1) + "px " + SERIF;
+      c.fillText("the ring is the Sun’s path · a dot’s distance " +
+                 "from it is the Moon’s latitude",
+                 g.cx, Math.min(g.cy + r * 1.33, R.y + R.h - r * 0.03));
+      c.restore();
+    },
+    append: function (c, G, R, reel, P, from, to) {
+      var g = geom("nodes", R, reel), r = g.r, K = r * 0.072;
+      var ev = reel.events, i;
+      c.save();
+      c.strokeStyle = G.rgba(P.gold, 1);
+      c.globalAlpha = P.dark ? 0.20 : 0.26;
+      c.lineWidth = Math.max(0.8, r * 0.0032);
+      c.beginPath();
+      for (i = Math.max(0, from - 1); i < to; i++) {
+        var e = ev[i];
+        if (!isFinite(e.lon) || !isFinite(e.lat)) continue;
+        var a = (e.lon - 90) * R2, q = r + e.lat * K;
+        var x = g.cx + Math.cos(a) * q, y = g.cy + Math.sin(a) * q;
+        if (i > Math.max(0, from - 1)) c.lineTo(x, y); else c.moveTo(x, y);
+      }
+      c.stroke();
+      c.restore();
+      for (i = from; i < to; i++) {
+        var e2 = ev[i];
+        if (!isFinite(e2.lon) || !isFinite(e2.lat)) continue;
+        var a2 = (e2.lon - 90) * R2, q2 = r + e2.lat * K;
+        var x2 = g.cx + Math.cos(a2) * q2, y2 = g.cy + Math.sin(a2) * q2;
+        if (e2.band === "central")
+          G.dot(c, x2, y2, r * 0.016, P.hot, 0.95);
+        else
+          G.dot(c, x2, y2, r * 0.0105,
+                e2.band === "partial" ? P.accent : P.gold,
+                e2.band === "partial" ? 0.92 : 0.70);
+      }
+    },
+    live: function (c, G, R, reel, P, now, idx, k, p) {
+      var g = geom("nodes", R, reel), r = g.r, K = r * 0.072;
+      if (reel.nodeAt) {
+        var nl = reel.nodeAt(now.t);
+        if (nl != null) {
+          var a0 = (nl - 90) * R2, R1 = r * 1.28;
+          c.save();
+          c.globalAlpha = 0.5;
+          c.strokeStyle = G.rgba(P.accent, 0.9);
+          c.lineWidth = Math.max(1, r * 0.0045);
+          c.beginPath();
+          c.moveTo(g.cx + Math.cos(a0) * R1, g.cy + Math.sin(a0) * R1);
+          c.lineTo(g.cx - Math.cos(a0) * R1, g.cy - Math.sin(a0) * R1);
+          c.stroke();
+          c.restore();
+          G.dot(c, g.cx + Math.cos(a0) * r, g.cy + Math.sin(a0) * r,
+                r * 0.013, P.accent, 0.9);
+          G.dot(c, g.cx - Math.cos(a0) * r, g.cy - Math.sin(a0) * r,
+                r * 0.013, P.accent, 0.9);
+        }
+      }
+      /* the Moon itself, at its real phase for this instant — a new Moon
+         reel shows a new Moon, which is the kind of thing that was being
+         thrown away by drawing a star */
+      if (idx >= 0 && idx < reel.events.length) {
+        var e = reel.events[idx];
+        if (isFinite(e.lon) && isFinite(e.lat)) {
+          var a3 = (e.lon - 90) * R2, q3 = r + e.lat * K;
+          var x = g.cx + Math.cos(a3) * q3, y = g.cy + Math.sin(a3) * q3;
+          if (e.band === "central") G.glow(c, x, y, r * 0.030, P.hot,
+            { reach: 2.6, core: 0.5 });
+          /* AT AMĀVĀSYĀ THE MOON IS UNLIT, and an unlit disc on a dark
+             ground is a hole punched in the frame. The sky solves this the
+             same way: earthshine, the thin ash-grey ring that is the only
+             reason anyone has ever seen a new Moon at all. */
+          drawBody(c, G, "Moon", x, y, r * 0.040, P,
+                   { phase: reel.full ? 180 : 0, progress: p,
+                     earthshine: !reel.full });
+        }
+      }
+      /* the Earth, which all of this is seen from */
+      drawBody(c, G, "Earth", g.cx, g.cy, r * 0.026, P, {});
+    }
+  };
 
   /* --- 2. the thread -------------------------------------------------------
-     A line drawn between two bodies every few days and never rubbed out.
-     Nothing is computed about the pattern; the pattern is what thousands of
-     straight lines happen to envelope, which is why the figure that appears
-     is a fact about the two periods and not a decision by anybody. */
-  function stageThread(c, G, R, reel, P, now, idx, p) {
-    var cx = R.x + R.w / 2, cy = R.y + R.h * 0.47;
-    var r = Math.min(R.w * 0.44, R.h * 0.46);
-    var S = reel.thread, n = S.a.length;
-    var upto = 0;
-    while (upto < n && S.t[upto] <= now.t) upto++;
-
-    rim(c, G, cx, cy, r, P, 0.45);
-
-    var scale = r * 0.97 / S.maxR;
-    c.save();
-    c.strokeStyle = G.rgba(P.gold, 1);
-    c.globalAlpha = S.alpha;
-    c.lineWidth = Math.max(0.55, r * 0.0016);
-    c.beginPath();
-    for (var i = 0; i < upto; i++) {
-      c.moveTo(cx + S.a[i].x * scale, cy + S.a[i].y * scale);
-      c.lineTo(cx + S.b[i].x * scale, cy + S.b[i].y * scale);
-    }
-    c.stroke();
-    c.restore();
-
-    if (upto > 0) {
-      var k = upto - 1;
-      /* the live chord, bright, so the eye has something to follow */
+     A line between two planets every few days, never rubbed out. The
+     envelope is a fact about the ratio of their periods and about nothing
+     else — no curve is fitted and no symmetry imposed. */
+  var S_thread = {
+    base: function (c, G, R, reel, P) {
+      var g = geom("thread", R, reel);
+      rim(c, G, g.cx, g.cy, g.r, P, P.dark ? 0.40 : 0.85);
+    },
+    append: function (c, G, R, reel, P, from, to) {
+      var g = geom("thread", R, reel), S = reel.thread;
+      var scale = g.r * 0.97 / S.maxR;
       c.save();
-      c.strokeStyle = G.rgba(P.hot, 0.95);
-      c.globalCompositeOperation = "lighter";
-      c.lineWidth = Math.max(1.2, r * 0.0075);
+      c.strokeStyle = G.rgba(P.gold, 1);
+      c.globalAlpha = S.alpha;
+      c.lineWidth = Math.max(0.55, g.r * 0.0016);
       c.beginPath();
-      c.moveTo(cx + S.a[k].x * scale, cy + S.a[k].y * scale);
-      c.lineTo(cx + S.b[k].x * scale, cy + S.b[k].y * scale);
+      for (var i = from; i < to; i++) {
+        c.moveTo(g.cx + S.a[i].x * scale, g.cy + S.a[i].y * scale);
+        c.lineTo(g.cx + S.b[i].x * scale, g.cy + S.b[i].y * scale);
+      }
       c.stroke();
       c.restore();
-      G.star(c, cx + S.a[k].x * scale, cy + S.a[k].y * scale, r * 0.022,
-             P.warm, { spikes: 1 });
-      G.star(c, cx + S.b[k].x * scale, cy + S.b[k].y * scale, r * 0.026,
-             P.hot, { spikes: 1 });
+    },
+    live: function (c, G, R, reel, P, now, idx, k, p) {
+      var g = geom("thread", R, reel), S = reel.thread;
+      var scale = g.r * 0.97 / S.maxR;
+      if (k > 0) {
+        var j = k - 1;
+        var ax = g.cx + S.a[j].x * scale, ay = g.cy + S.a[j].y * scale;
+        var bx = g.cx + S.b[j].x * scale, by = g.cy + S.b[j].y * scale;
+        c.save();
+        c.strokeStyle = G.rgba(P.hot, 0.9);
+        c.globalAlpha = P.dark ? 0.85 : 0.7;
+        c.lineWidth = Math.max(1.1, g.r * 0.0055);
+        c.beginPath(); c.moveTo(ax, ay); c.lineTo(bx, by); c.stroke();
+        c.restore();
+        drawBody(c, G, S.aName, ax, ay, g.r * 0.030, P, { progress: p });
+        drawBody(c, G, S.bName, bx, by, g.r * 0.036, P, { progress: p });
+      }
+      drawBody(c, G, "Sun", g.cx, g.cy, g.r * 0.040, P, { progress: p });
     }
-    /* the Sun, which every one of these chords is drawn around */
-    G.star(c, cx, cy, r * 0.030, P.hot, { spikes: 1.1, core: 1, spikeLen: 9 });
-  }
+  };
 
   /* --- 3. the whirl --------------------------------------------------------
-     One event per bead, each at the longitude it happened at, spiralling in.
-     When the events advance by a near-constant angle the beads fall into
-     arms, and the number of arms is a fact about the ratio of two periods.
-     The arm count is MEASURED by clustering rather than asserted, and when
-     the longitudes do not cluster the reel says so instead of naming a
-     number. */
-  function stageWhirl(c, G, R, reel, P, now, idx, p) {
-    var cx = R.x + R.w / 2, cy = R.y + R.h * 0.47;
-    var r = Math.min(R.w * 0.42, R.h * 0.44);
-    rim(c, G, cx, cy, r, P, 0.85);
-    var ev = reel.events, n = ev.length;
-    for (var i = 0; i <= idx && i < n; i++) {
-      var q = r * (0.90 - 0.56 * (n > 1 ? i / (n - 1) : 0));
-      var a = (ev[i].lon - 90) * R2;
-      var x = cx + Math.cos(a) * q, y = cy + Math.sin(a) * q;
-      var fresh = clamp(1 - (now.t - ev[i].t) / (DAY * 160), 0, 1);
-      c.save();
-      c.globalCompositeOperation = "lighter";
-      c.fillStyle = G.rgba(ev[i].marked ? P.hot : P.gold, 0.35 + 0.5 * fresh);
-      c.beginPath();
-      c.arc(x, y, r * (0.010 + 0.008 * fresh), 0, TAU);
-      c.fill();
-      c.restore();
-      if (i === idx) G.star(c, x, y, r * 0.026, P.hot, { spikes: 1 });
+     One bead per event at the longitude it happened, spiralling in. When the
+     events advance by a near-constant angle they fall into arms, and the arm
+     count is a fact about the ratio of two periods. */
+  var S_whirl = {
+    base: function (c, G, R, reel, P) {
+      var g = geom("whirl", R, reel);
+      rim(c, G, g.cx, g.cy, g.r, P, 0.85);
+    },
+    append: function (c, G, R, reel, P, from, to) {
+      var g = geom("whirl", R, reel), ev = reel.events, n = ev.length;
+      var big = n < 60;
+      for (var i = from; i < to; i++) {
+        var q = g.r * (0.90 - 0.56 * (n > 1 ? i / (n - 1) : 0));
+        var a = (ev[i].lon - 90) * R2;
+        G.dot(c, g.cx + Math.cos(a) * q, g.cy + Math.sin(a) * q,
+              g.r * (big ? 0.016 : 0.0105),
+              ev[i].marked ? P.hot : P.gold, P.dark ? 0.88 : 0.9);
+      }
+    },
+    live: function (c, G, R, reel, P, now, idx, k, p) {
+      var g = geom("whirl", R, reel), ev = reel.events, n = ev.length;
+      if (idx >= 0 && idx < n) {
+        var q = g.r * (0.90 - 0.56 * (n > 1 ? idx / (n - 1) : 0));
+        var a = (ev[idx].lon - 90) * R2;
+        var x = g.cx + Math.cos(a) * q, y = g.cy + Math.sin(a) * q;
+        G.glow(c, x, y, g.r * 0.022, P.hot, { reach: 2.8, core: 0.6 });
+        if (reel.bodyName)
+          drawBody(c, G, reel.bodyName, x, y, g.r * 0.034, P, { progress: p });
+      }
+      drawBody(c, G, "Sun", g.cx, g.cy, g.r * 0.030, P, { progress: p });
     }
-    G.star(c, cx, cy, r * 0.018, P.warm, { spikes: 0.3, core: 0.6 });
-  }
+  };
 
   /* --- 4. the loops --------------------------------------------------------
-     The path of one graha as it is actually seen: longitude against distance,
-     so the retrograde loops are loops rather than a line that reverses. */
-  function stageLoops(c, G, R, reel, P, now, idx, p) {
-    var cx = R.x + R.w / 2, cy = R.y + R.h * 0.47;
-    var r = Math.min(R.w * 0.42, R.h * 0.44);
-    rim(c, G, cx, cy, r, P, 0.7);
-    var T = reel.track, n = T.lon.length;
-    var upto = 0;
-    while (upto < n && T.t[upto] <= now.t) upto++;
-    var span = T.rMax - T.rMin || 1;
-    function pt(i) {
-      var a = (T.lon[i] - 90) * R2;
-      var q = r * (0.40 + 0.55 * (1 - (T.r[i] - T.rMin) / span));
-      return { x: cx + Math.cos(a) * q, y: cy + Math.sin(a) * q };
+     The path of one graha as it is actually seen: longitude against real
+     distance, so a retrograde is a loop rather than a line that reverses. */
+  var S_loops = {
+    base: function (c, G, R, reel, P) {
+      var g = geom("loops", R, reel);
+      rim(c, G, g.cx, g.cy, g.r, P, P.dark ? 0.55 : 0.85);
+    },
+    append: function (c, G, R, reel, P, from, to) {
+      var g = geom("loops", R, reel), T = reel.track;
+      var span = T.rMax - T.rMin || 1;
+      c.save();
+      c.globalAlpha = P.dark ? 0.78 : 0.85;
+      c.strokeStyle = G.rgba(P.gold, 1);
+      c.lineWidth = Math.max(1, g.r * 0.0038);
+      c.beginPath();
+      for (var i = Math.max(0, from - 1); i < to; i++) {
+        var a = (T.lon[i] - 90) * R2;
+        var q = g.r * (0.40 + 0.55 * (1 - (T.r[i] - T.rMin) / span));
+        var x = g.cx + Math.cos(a) * q, y = g.cy + Math.sin(a) * q;
+        if (i > Math.max(0, from - 1)) c.lineTo(x, y); else c.moveTo(x, y);
+      }
+      c.stroke();
+      c.restore();
+    },
+    live: function (c, G, R, reel, P, now, idx, k, p) {
+      var g = geom("loops", R, reel), T = reel.track;
+      var span = T.rMax - T.rMin || 1;
+      if (k > 0) {
+        var j = k - 1;
+        var a = (T.lon[j] - 90) * R2;
+        var q = g.r * (0.40 + 0.55 * (1 - (T.r[j] - T.rMin) / span));
+        var x = g.cx + Math.cos(a) * q, y = g.cy + Math.sin(a) * q;
+        drawBody(c, G, reel.bodyName || "Mars", x, y, g.r * 0.038, P,
+                 { progress: p });
+      }
+      drawBody(c, G, "Earth", g.cx, g.cy, g.r * 0.022, P, {});
     }
-    c.save();
-    c.globalAlpha = 0.5;
-    c.strokeStyle = G.rgba(P.gold, 1);
-    c.lineWidth = Math.max(1, r * 0.004);
-    c.beginPath();
-    for (var i = 0; i < upto; i++) {
-      var q = pt(i);
-      if (i) c.lineTo(q.x, q.y); else c.moveTo(q.x, q.y);
-    }
-    c.stroke();
-    c.restore();
-    if (upto > 0) {
-      var h = pt(upto - 1);
-      G.star(c, h.x, h.y, r * 0.028, P.hot, { spikes: 1 });
-    }
-    G.star(c, cx, cy, r * 0.016, P.warm, { spikes: 0.3, core: 0.5 });
-  }
+  };
 
   /* --- 5. the drift --------------------------------------------------------
-     Two engines asked the same question, and the answer is the gap between
-     them. The ring is where the modern ephemeris puts the graha; the dot's
-     distance from the ring is how far the Sūrya Siddhānta puts it somewhere
-     else, out for ahead and in for behind.
-
-     The scale is MEASURED from the run — the largest error it actually
-     contains — because a fixed degrees-per-pixel either flattens Budha, whose
-     error swings through whole signs, or sends Śani off the frame. The scale
-     is then printed on the frame, since a deviation plot without its scale
-     is a shape rather than a measurement. */
-  function stageDrift(c, G, R, reel, P, now, idx, p) {
-    var cx = R.x + R.w / 2, cy = R.y + R.h * 0.47;
-    /* the rāśi ring sits well outside the zero line here, and its labels sit
-       outside that again — so the OUTERMOST thing has to be what fits the
-       stage, and the data radius is derived from it. Sizing the data first
-       pushed KUMBHA and MITHUNA off both edges. */
-    var rim1 = Math.min(R.w * 0.40, R.h * 0.42);
-    var r = rim1 / 1.42;
-    var D = reel.drift, n = D.lon.length;
-    var K = r * 0.34 / Math.max(0.25, D.scale);
-    var i, a, q, x, y;
-    var upto = 0;
-    while (upto < n && D.t[upto] <= now.t) upto++;
-
-    /* the zero line: agreement */
-    c.save();
-    c.globalAlpha = 0.5;
-    c.strokeStyle = G.rgba(P.accent, 0.8);
-    c.lineWidth = Math.max(1, r * 0.004);
-    c.beginPath(); c.arc(cx, cy, r, 0, TAU); c.stroke();
-    c.globalAlpha = 0.16;
-    c.strokeStyle = G.rgba(P.line, 1);
-    c.lineWidth = Math.max(0.6, r * 0.002);
-    [-1, 1].forEach(function (s) {
-      for (var k = 1; k <= 3; k++) {
-        c.beginPath();
-        c.arc(cx, cy, r + s * k * (D.scale / 3) * K, 0, TAU);
-        c.stroke();
-      }
-    });
-    c.restore();
-    rim(c, G, cx, cy, rim1, P, 0.6);
-
-    c.save();
-    c.globalAlpha = 0.85;
-    c.strokeStyle = G.rgba(P.gold, 1);
-    c.lineWidth = Math.max(1, r * 0.0055);
-    c.beginPath();
-    for (i = 0; i < upto; i++) {
-      a = (D.lon[i] - 90) * R2;
-      q = r + D.err[i] * K;
-      x = cx + Math.cos(a) * q; y = cy + Math.sin(a) * q;
-      if (i) c.lineTo(x, y); else c.moveTo(x, y);
-    }
-    c.stroke();
-    c.restore();
-
-    if (upto > 0) {
-      a = (D.lon[upto - 1] - 90) * R2;
-      q = r + D.err[upto - 1] * K;
-      x = cx + Math.cos(a) * q; y = cy + Math.sin(a) * q;
-      /* the spoke from the ring to the point: the error, drawn as a length */
+     Two engines asked the same question; the ring is where the modern
+     ephemeris puts the graha and the dot's distance from it is how far the
+     Sūrya Siddhānta puts it somewhere else. The scale is measured from the
+     run and printed, because a deviation plot without its scale is a shape
+     rather than a measurement. */
+  var S_drift = {
+    base: function (c, G, R, reel, P) {
+      var g = geom("drift", R, reel), r = g.r, D = reel.drift;
+      var K = r * 0.34 / Math.max(0.25, D.scale);
       c.save();
-      c.globalCompositeOperation = "lighter";
-      c.strokeStyle = G.rgba(P.hot, 0.8);
-      c.lineWidth = Math.max(1, r * 0.006);
-      c.beginPath();
-      c.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r);
-      c.lineTo(x, y);
-      c.stroke();
-      c.restore();
-      G.star(c, x, y, r * 0.026, P.hot, { spikes: 1 });
-      G.star(c, cx + Math.cos(a) * r, cy + Math.sin(a) * r, r * 0.013,
-             P.accent, { spikes: 0.4 });
-    }
-    c.save();
-    c.globalAlpha = 0.6;
-    c.fillStyle = G.rgba(P.dim, 1);
-    c.textAlign = "center";
-    c.font = (r * 0.068).toFixed(1) + "px " + SERIF;
-    c.fillText("the ring is the modern place · each step out is " +
-               (D.scale / 3).toFixed(1) + "°",
-               cx, Math.min(cy + r * 1.62, R.y + R.h - r * 0.02));
-    c.restore();
-    G.star(c, cx, cy, r * 0.014, P.warm, { spikes: 0.2, core: 0.45 });
-  }
-
-  /* --- 6. a simulated orbit ------------------------------------------------
-     Earth-centred, the Moon's integrated path accumulating behind it, and
-     the direction of the Sun marked — because half of what the counterfactual
-     changes is the phase, and a path with no Sun in it cannot show that. */
-  function stageOrbit(c, G, R, reel, P, now, idx, p) {
-    var cx = R.x + R.w / 2, cy = R.y + R.h * 0.47;
-    var r = Math.min(R.w * 0.42, R.h * 0.44);
-    var O = reel.orbit, n = O.x.length;
-    var upto = 0;
-    while (upto < n && O.t[upto] <= now.t) upto++;
-    if (upto < 1) upto = 1;
-    var K = r * 0.92 / Math.max(1e-9, O.extent);
-
-    /* the Earth's own disc, to scale with the path */
-    c.save();
-    c.globalAlpha = 0.35;
-    c.strokeStyle = G.rgba(P.line, 1);
-    c.lineWidth = Math.max(0.6, r * 0.002);
-    c.beginPath(); c.arc(cx, cy, Math.max(2, O.earthR * K), 0, TAU); c.stroke();
-    c.restore();
-
-    c.save();
-    c.globalAlpha = 0.75;
-    c.strokeStyle = G.rgba(P.gold, 1);
-    c.lineWidth = Math.max(1, r * 0.004);
-    c.beginPath();
-    for (var i = 0; i < upto; i++) {
-      var x = cx + O.x[i] * K, y = cy + O.y[i] * K;
-      if (i) c.lineTo(x, y); else c.moveTo(x, y);
-    }
-    c.stroke();
-    c.restore();
-
-    /* where the Sun is, as a direction rather than a body */
-    if (O.sun && upto > 0) {
-      var sa = Math.atan2(O.sun.y[upto - 1], O.sun.x[upto - 1]);
-      c.save();
-      c.globalAlpha = 0.45;
-      c.strokeStyle = G.rgba(P.accent, 1);
-      c.setLineDash([r * 0.03, r * 0.03]);
+      c.globalAlpha = P.dark ? 0.45 : 0.75;
+      c.strokeStyle = G.rgba(P.accent, 0.8);
       c.lineWidth = Math.max(1, r * 0.004);
+      c.beginPath(); c.arc(g.cx, g.cy, r, 0, TAU); c.stroke();
+      c.globalAlpha = P.dark ? 0.14 : 0.3;
+      c.strokeStyle = G.rgba(P.line, 1);
+      c.lineWidth = Math.max(0.6, r * 0.002);
+      [-1, 1].forEach(function (s) {
+        for (var k = 1; k <= 3; k++) {
+          c.beginPath();
+          c.arc(g.cx, g.cy, r + s * k * (D.scale / 3) * K, 0, TAU);
+          c.stroke();
+        }
+      });
+      c.restore();
+      rim(c, G, g.cx, g.cy, g.rim, P, 0.6);
+      c.save();
+      c.globalAlpha = P.dark ? 0.55 : 0.85;
+      c.fillStyle = G.rgba(P.dim, 1);
+      c.textAlign = "center";
+      c.font = (g.rim * 0.048).toFixed(1) + "px " + SERIF;
+      plain(c);
+      c.fillText("the ring is the modern place · each step out is " +
+                 (D.scale / 3).toFixed(1) + "°",
+                 g.cx, Math.min(g.cy + g.rim * 1.30, R.y + R.h - g.rim * 0.01));
+      c.restore();
+    },
+    append: function (c, G, R, reel, P, from, to) {
+      var g = geom("drift", R, reel), r = g.r, D = reel.drift;
+      var K = r * 0.34 / Math.max(0.25, D.scale);
+      c.save();
+      c.globalAlpha = P.dark ? 0.8 : 0.95;
+      c.strokeStyle = G.rgba(P.gold, 1);
+      c.lineWidth = Math.max(1, r * 0.005);
       c.beginPath();
-      c.moveTo(cx, cy);
-      c.lineTo(cx + Math.cos(sa) * r * 1.06, cy + Math.sin(sa) * r * 1.06);
+      for (var i = Math.max(0, from - 1); i < to; i++) {
+        var a = (D.lon[i] - 90) * R2, q = r + D.err[i] * K;
+        var x = g.cx + Math.cos(a) * q, y = g.cy + Math.sin(a) * q;
+        if (i > Math.max(0, from - 1)) c.lineTo(x, y); else c.moveTo(x, y);
+      }
       c.stroke();
       c.restore();
-      c.save();
-      c.globalAlpha = 0.65;
-      c.fillStyle = G.rgba(P.accent, 1);
-      c.textAlign = "center";
-      c.font = (r * 0.062).toFixed(1) + "px " + SERIF;
-      c.fillText("to the Sun", cx + Math.cos(sa) * r * 1.18,
-                 cy + Math.sin(sa) * r * 1.18);
-      c.restore();
+    },
+    live: function (c, G, R, reel, P, now, idx, k, p) {
+      var g = geom("drift", R, reel), r = g.r, D = reel.drift;
+      var K = r * 0.34 / Math.max(0.25, D.scale);
+      if (k > 0) {
+        var j = k - 1;
+        var a = (D.lon[j] - 90) * R2, q = r + D.err[j] * K;
+        var x = g.cx + Math.cos(a) * q, y = g.cy + Math.sin(a) * q;
+        c.save();
+        c.strokeStyle = G.rgba(P.hot, 0.75);
+        c.globalAlpha = P.dark ? 0.8 : 0.6;
+        c.lineWidth = Math.max(1, r * 0.005);
+        c.beginPath();
+        c.moveTo(g.cx + Math.cos(a) * r, g.cy + Math.sin(a) * r);
+        c.lineTo(x, y);
+        c.stroke();
+        c.restore();
+        G.dot(c, g.cx + Math.cos(a) * r, g.cy + Math.sin(a) * r,
+              r * 0.011, P.accent, 0.85);
+        drawBody(c, G, reel.bodyName || "Jupiter", x, y, r * 0.034, P,
+                 { progress: p });
+      }
+      drawBody(c, G, "Earth", g.cx, g.cy, r * 0.018, P, {});
     }
-    G.star(c, cx + O.x[upto - 1] * K, cy + O.y[upto - 1] * K, r * 0.030,
-           P.hot, { spikes: 1 });
-    G.star(c, cx, cy, r * 0.022, P.warm, { spikes: 0.45, core: 0.8 });
+  };
+
+  /* --- 6. a simulated orbit ------------------------------------------------ */
+  var S_orbit = {
+    base: function (c, G, R, reel, P) {
+      var g = geom("orbit", R, reel), O = reel.orbit;
+      var K = g.r * 0.92 / Math.max(1e-9, O.extent);
+      c.save();
+      c.globalAlpha = P.dark ? 0.3 : 0.5;
+      c.strokeStyle = G.rgba(P.line, 1);
+      c.lineWidth = Math.max(0.6, g.r * 0.002);
+      c.beginPath();
+      c.arc(g.cx, g.cy, Math.max(2, O.earthR * K), 0, TAU);
+      c.stroke();
+      c.restore();
+    },
+    append: function (c, G, R, reel, P, from, to) {
+      var g = geom("orbit", R, reel), O = reel.orbit;
+      var K = g.r * 0.92 / Math.max(1e-9, O.extent);
+      c.save();
+      c.globalAlpha = P.dark ? 0.7 : 0.9;
+      c.strokeStyle = G.rgba(P.gold, 1);
+      c.lineWidth = Math.max(1, g.r * 0.0038);
+      c.beginPath();
+      for (var i = Math.max(0, from - 1); i < to; i++) {
+        var x = g.cx + O.x[i] * K, y = g.cy + O.y[i] * K;
+        if (i > Math.max(0, from - 1)) c.lineTo(x, y); else c.moveTo(x, y);
+      }
+      c.stroke();
+      c.restore();
+    },
+    live: function (c, G, R, reel, P, now, idx, k, p) {
+      var g = geom("orbit", R, reel), O = reel.orbit;
+      var K = g.r * 0.92 / Math.max(1e-9, O.extent);
+      var j = Math.max(0, k - 1);
+      if (O.sun) {
+        var sa = Math.atan2(O.sun.y[j], O.sun.x[j]);
+        c.save();
+        c.globalAlpha = 0.4;
+        c.strokeStyle = G.rgba(P.accent, 1);
+        c.setLineDash([g.r * 0.03, g.r * 0.03]);
+        c.lineWidth = Math.max(1, g.r * 0.0035);
+        c.beginPath();
+        c.moveTo(g.cx, g.cy);
+        c.lineTo(g.cx + Math.cos(sa) * g.r * 1.04, g.cy + Math.sin(sa) * g.r * 1.04);
+        c.stroke();
+        c.restore();
+        c.save();
+        c.globalAlpha = 0.6;
+        c.fillStyle = G.rgba(P.accent, 1);
+        c.textAlign = "center";
+        c.font = (g.r * 0.058).toFixed(1) + "px " + SERIF;
+        plain(c);
+        c.fillText("to the Sun", g.cx + Math.cos(sa) * g.r * 1.16,
+                   g.cy + Math.sin(sa) * g.r * 1.16);
+        c.restore();
+      }
+      drawBody(c, G, "Moon", g.cx + O.x[j] * K, g.cy + O.y[j] * K,
+               g.r * 0.034, P, { progress: p, phase: 150 });
+      drawBody(c, G, "Earth", g.cx, g.cy, g.r * 0.030, P, {});
+    }
+  };
+
+  /* ---- bodies ------------------------------------------------------------
+     One call site, so every stage gets the same treatment and the fallback
+     is in one place. The Earth has no texture in the body renderer, so it is
+     drawn as the blue disc it is. */
+  function drawBody(c, G, name, x, y, r, P, opt) {
+    opt = opt || {};
+    if (!isFinite(x) || !isFinite(y) || !(r > 0)) return;
+    if (name === "Earth") {
+      c.save();
+      c.globalCompositeOperation = "source-over";
+      var g = c.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.1, x, y, r);
+      g.addColorStop(0, "#9fd0ff");
+      g.addColorStop(0.55, "#4f7fc4");
+      g.addColorStop(1, "#24406e");
+      c.fillStyle = g;
+      c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
+      c.restore();
+      return;
+    }
+    if (window.SPBody && window.SPBody.ready()) {
+      var spin = window.SPBody.spinFor(name, opt.progress || 0, r);
+      window.SPBody.draw(c, name, x, y, r, {
+        phase: opt.phase, spinDeg: spin,
+        halo: P.dark ? (name === "Sun" ? 0.55 : 0.22) : 0,
+        haloCol: name === "Sun" ? P.warm : P.hot,
+        haloReach: name === "Sun" ? 3.0 : 2.1,
+        fallback: P.gold
+      });
+      return;
+    }
+    G.glow(c, x, y, r, name === "Sun" ? P.warm : P.gold,
+           { reach: 2.4, core: 0.5 });
   }
 
-  var STAGES = { nodes: stageNodes, thread: stageThread,
-                 whirl: stageWhirl, loops: stageLoops,
-                 drift: stageDrift, orbit: stageOrbit };
+  var STAGES = { nodes: S_nodes, thread: S_thread, whirl: S_whirl,
+                 loops: S_loops, drift: S_drift, orbit: S_orbit };
+
+  /* how many items a stage has, and how many of them have happened by `now` */
+  function countOf(reel) {
+    switch (reel.stage) {
+      case "thread": return reel.thread.t.length;
+      case "loops": return reel.track.t.length;
+      case "drift": return reel.drift.t.length;
+      case "orbit": return reel.orbit.t.length;
+      default: return reel.events.length;
+    }
+  }
+  function timesOf(reel) {
+    switch (reel.stage) {
+      case "thread": return reel.thread.t;
+      case "loops": return reel.track.t;
+      case "drift": return reel.drift.t;
+      case "orbit": return reel.orbit.t;
+      default: return null;
+    }
+  }
+  function shownBy(reel, t) {
+    var ts = timesOf(reel);
+    if (!ts) {
+      var k = 0, ev = reel.events;
+      while (k < ev.length && ev[k].t <= t) k++;
+      return k;
+    }
+    var n = 0;
+    /* a binary search, because this is called every frame and a linear walk
+       over fifteen hundred samples is work the cache was built to avoid */
+    var lo = 0, hi = ts.length;
+    while (lo < hi) {
+      var mid = (lo + hi) >> 1;
+      if (ts[mid] <= t) lo = mid + 1; else hi = mid;
+    }
+    n = lo;
+    return n;
+  }
+
+  /* ---- the trail ----------------------------------------------------------
+     A canvas holding the stage's base and everything appended so far. It is
+     rebuilt only when it cannot be appended to: a different reel, a
+     different size or palette, or a playhead that moved backwards. */
+  var TRAIL = null, TKEY = "", TN = 0;
+  function trailFor(reel, W, H, R, P, upto) {
+    var G = window.SPGlow;
+    var key = reel.key + "|" + reel.t0 + "|" + reel.seconds + "|" + W + "x" + H +
+              "|" + P.key + "|" + reel.stage;
+    if (!TRAIL || TRAIL.width !== W || TRAIL.height !== H) {
+      TRAIL = G.fresh(W, H); TKEY = ""; TN = 0;
+    }
+    var c = TRAIL.getContext("2d");
+    var S = STAGES[reel.stage] || S_whirl;
+    /* THE TRAIL MUST BE A FUNCTION OF THE PLAYHEAD AND NOTHING ELSE.
+
+       Appending is exact for the marks, which are drawn once each, but not
+       quite for the polylines: a path split into two strokes paints the
+       joining vertex in both, and under additive blending that vertex comes
+       out brighter. So the same playhead reached by playing differed, by a
+       few pixels at a few joints, from the same playhead reached by
+       scrubbing — which the determinism check caught and which a recorder
+       would eventually have shown as a flicker.
+
+       Playback steps the trail forward by a fraction of a percent a frame,
+       so appending stays worth having. Anything larger than a small step —
+       a scrub, a jump, a new reel — rebuilds from zero, which costs one
+       frame and makes (reel, p) decide the picture outright. */
+    var step = upto - TN;
+    var jump = step < 0 || step > Math.max(4, countOf(reel) * 0.08);
+    if (TKEY !== key || jump) {
+      c.setTransform(1, 0, 0, 1, 0, 0);
+      c.globalCompositeOperation = "source-over";
+      c.globalAlpha = 1;
+      c.clearRect(0, 0, W, H);
+      c.save();
+      if (P.dark) { c.globalCompositeOperation = "lighter"; c.lineCap = "round"; }
+      S.base(c, G, R, reel, P);
+      c.restore();
+      TKEY = key; TN = 0;
+    }
+    if (upto > TN) {
+      c.save();
+      if (P.dark) { c.globalCompositeOperation = "lighter"; c.lineCap = "round"; }
+      S.append(c, G, R, reel, P, TN, upto);
+      c.restore();
+      TN = upto;
+    }
+    return TRAIL;
+  }
+  function trailReset() { TKEY = ""; TN = 0; }
+  function trailState() { return { key: TKEY, n: TN }; }
 
   /* ---- the frame ==========================================================
      ONE definition of "the frame at p", as everywhere else in this codebase,
-     so preview, playback, recorder and still export cannot diverge. */
+     so preview, playback, recorder and still export cannot diverge.
+
+     Two render paths, because the palettes are not variations on each other.
+     A DARK palette is an exposure: strokes are added, the sum is bloomed, and
+     the floor must be dark for light to be added to. PAPER is not — it is
+     ink and wash on a sheet, laid down with ordinary alpha, and running it
+     through an additive pipeline would turn the ochre line white. So the
+     trail is composited one way or the other, and everything above it is the
+     same either way. */
   function frameAt(c, W, H, reel, p) {
     var G = window.SPGlow, P = reel.pal, B = bands(W, H);
     p = clamp(p, 0, 1);
@@ -1174,32 +2437,43 @@
     var idx = -1;
     for (var i = 0; i < reel.events.length; i++)
       if (reel.events[i].t <= now.t) idx = i; else break;
+    var k = shownBy(reel, now.t);
 
     c.setTransform(1, 0, 0, 1, 0, 0);
     c.globalCompositeOperation = "source-over";
     c.globalAlpha = 1;
-    c.fillStyle = P.bg;
-    c.fillRect(0, 0, W, H);
 
-    if (P.dark) backdrop(c, W, H, P, reel.seed);
+    if (P.dark) {
+      c.fillStyle = P.bg;
+      c.fillRect(0, 0, W, H);
+      backdrop(c, W, H, P, reel.seed);
+    } else {
+      G.wash(c, W, H, P.wash, reel.seed || 7);
+    }
 
-    /* the stage, exposed and then developed */
-    var stage = STAGES[reel.stage] || stageWhirl;
-    var openZoom = now.phase === "open"
-      ? lerp(2.6, 1, smooth(now.openP)) : 1;
-    var buf = G.expose(W, H, function (cc) {
-      cc.save();
-      if (openZoom !== 1) {
-        var sx = B.stage.x + B.stage.w / 2, sy = B.stage.y + B.stage.h / 2;
-        cc.translate(sx, sy); cc.scale(openZoom, openZoom); cc.translate(-sx, -sy);
-      }
-      stage(cc, G, B.stage, reel, P, now, idx, p);
-      cc.restore();
-    });
-    G.develop(c, buf, { gain: 1, tight: reel.bloomTight, wide: reel.bloomWide });
+    var trail = trailFor(reel, W, H, B.stage, P, k);
+    if (P.dark) {
+      G.develop(c, trail, { gain: 1, tight: reel.bloomTight,
+                            wide: reel.bloomWide,
+                            rect: { x: 0, y: B.stage.y - H * 0.03,
+                                    w: W, h: B.stage.h + H * 0.07 } });
+    } else {
+      c.save();
+      c.globalCompositeOperation = "source-over";
+      c.drawImage(trail, 0, 0);
+      c.restore();
+    }
 
-    if (P.dark) G.grade(c, W, H, reel.grade);
-    G.vignette(c, W, H, P.dark ? 0.62 : 0.18);
+    /* the live layer: the moving head, drawn fresh. It is a handful of
+       shapes, so it costs nothing and does not need the cache. */
+    var S = STAGES[reel.stage] || S_whirl;
+    if (S.live) {
+      c.save();
+      S.live(c, G, B.stage, reel, P, now, idx, k, p);
+      c.restore();
+    }
+
+    if (P.dark && reel.grade > 0.002) G.grade(c, W, H, reel.grade);
 
     drawTitle(c, W, H, B, reel, P, p);
     if (now.phase !== "close") {
@@ -1211,35 +2485,45 @@
     }
     drawFoot(c, W, H, B, reel, P, p);
 
-    G.grain(c, W, H, reel.grainAmount, Math.round(p * 600));
     return now;
   }
 
-  /* a faint star field and a central warmth — the two cheapest things that
-     stop a dark canvas reading as a dark rectangle */
+  /* a faint star field and a central warmth, cached: a field rebuilt per
+     frame is both slow and, because it is reseeded, visibly boiling */
+  var BACK = null, BACKKEY = "";
   function backdrop(c, W, H, P, seed) {
     var G = window.SPGlow;
-    var s = (seed || 7) >>> 0;
-    c.save();
-    c.globalAlpha = 0.55;
-    for (var i = 0; i < 150; i++) {
-      s = (s * 1664525 + 1013904223) >>> 0;
-      var x = (s >>> 8) % W;
-      s = (s * 1664525 + 1013904223) >>> 0;
-      var y = (s >>> 8) % H;
-      s = (s * 1664525 + 1013904223) >>> 0;
-      var b = 0.08 + ((s >>> 16) % 100) / 100 * 0.30;
-      c.fillStyle = G.rgba(P.ink, b);
-      c.fillRect(x, y, 1.1, 1.1);
+    var key = W + "x" + H + "|" + P.key + "|" + seed;
+    if (BACKKEY !== key) {
+      BACK = G.fresh(W, H);
+      var cc = BACK.getContext("2d");
+      var s = (seed || 7) >>> 0;
+      cc.globalAlpha = 0.5;
+      for (var i = 0; i < 150; i++) {
+        s = (s * 1664525 + 1013904223) >>> 0;
+        var x = (s >>> 8) % W;
+        s = (s * 1664525 + 1013904223) >>> 0;
+        var y = (s >>> 8) % H;
+        s = (s * 1664525 + 1013904223) >>> 0;
+        var b = 0.08 + ((s >>> 16) % 100) / 100 * 0.30;
+        cc.fillStyle = G.rgba(P.ink, b);
+        cc.fillRect(x, y, 1.1, 1.1);
+      }
+      cc.globalAlpha = 1;
+      var g = cc.createRadialGradient(W / 2, H * 0.40, 0, W / 2, H * 0.40, W * 0.72);
+      g.addColorStop(0, G.rgba(P.gold, 0.045));
+      g.addColorStop(1, G.rgba(P.gold, 0));
+      cc.fillStyle = g;
+      cc.fillRect(0, 0, W, H);
+      /* the vignette and the grain belong to the GROUND, not to the frame:
+         neither of them changes from one frame to the next, and laying them
+         over the finished picture cost two megapixels of blending twice a
+         frame for a texture that stands still */
+      G.vignette(cc, W, H, 0.34);
+      G.grainInto(cc, W, H, 0.05, 3, "overlay");
+      BACKKEY = key;
     }
-    c.restore();
-    var g = c.createRadialGradient(W / 2, H * 0.40, 0, W / 2, H * 0.40, W * 0.72);
-    g.addColorStop(0, G.rgba(P.gold, 0.055));
-    g.addColorStop(1, G.rgba(P.gold, 0));
-    c.save();
-    c.fillStyle = g;
-    c.fillRect(0, 0, W, H);
-    c.restore();
+    c.drawImage(BACK, 0, 0);
   }
 
   /* ---- recording ----------------------------------------------------------
@@ -1306,7 +2590,8 @@
   function isRecording() { return !!RECJOB; }
 
   window.SPReel = {
-    record: record, markReady: markReady, mark: function () { return MARK; }, cancelRecording: cancelRecording, isRecording: isRecording,
+    record: record, markReady: markReady, mark: function () { return MARK; },
+    resetTrail: trailReset, trailState: trailState, cancelRecording: cancelRecording, isRecording: isRecording,
     PALETTES: PALETTES, pal: pal, bands: bands, frameAt: frameAt,
     buildTimeline: buildTimeline, clockAt: clockAt,
     SERIF: SERIF, RASHI: RASHI, dateCaps: dateCaps,
@@ -5575,7 +6860,8 @@
                 "they draw in " + yrs.toFixed(0) + " years?",
       stage: "thread",
       cover: cover(sampleT0, sampleT1),
-      thread: { a: a, b: b, t: ts, maxR: maxR, alpha: spec.alpha || 0.14 },
+      thread: { a: a, b: b, t: ts, maxR: maxR, alpha: spec.alpha || 0.22,
+                aName: A, bName: B },
       events: events,
       tallyKeys: ["meetings"],
       closing: {
@@ -5642,6 +6928,7 @@
       subtitle: "Every time " + sa + " hides in the Sun’s glare. Where does " +
                 "it hide?",
       stage: "whirl",
+      bodyName: body,
       events: ev,
       tallyKeys: ["hidings"],
       closing: {
@@ -5785,6 +7072,7 @@
       subtitle: "Why does a planet go backwards? Watch its real path, " +
                 "longitude against distance.",
       stage: "loops",
+      bodyName: body,
       cover: cover(trackT0, trackT1),
       track: { lon: lon, r: r, t: ts, rMin: rMin, rMax: rMax },
       events: ev,
@@ -5867,7 +7155,7 @@
       "Five meetings, and the figure they close.",
       years: 8, seconds: 28,
       build: function (s) { s.a = "Earth"; s.b = "Venus"; s.everyDays = 3;
-                            s.alpha = 0.115; return threadStory(s); } },
+                            s.alpha = 0.18; return threadStory(s); } },
     { key: "thread.earth-mars", group: "The golden thread",
       label: "Maṅgala & Earth", blurb: "Every four days for sixteen years.",
       years: 16, seconds: 30,
@@ -5989,10 +7277,10 @@
     var typical = gaps.length ? gaps[Math.floor(gaps.length / 2)] : 30;
     S.fadeDays = Math.max(0.2, Math.min(
       (spec.t1 - spec.t0) / DAY / seconds * 0.22, typical * 0.22));
-    S.grainAmount = opts.grain == null ? 0.045 : opts.grain;
-    S.grade = opts.grade == null ? 1 : opts.grade;
-    S.bloomTight = opts.bloomTight == null ? 0.55 : opts.bloomTight;
-    S.bloomWide = opts.bloomWide == null ? 0.40 : opts.bloomWide;
+    S.grainAmount = opts.grain == null ? 0.035 : opts.grain;
+    S.grade = opts.grade == null ? 0.22 : opts.grade;
+    S.bloomTight = opts.bloomTight == null ? 0.18 : opts.bloomTight;
+    S.bloomWide = opts.bloomWide == null ? 0.11 : opts.bloomWide;
     S.seed = (t0 / DAY) | 0;
     var last = S.events[S.events.length - 1];
     var step = S.events.length > 1
@@ -6127,6 +7415,7 @@
       subtitle: sa + ", computed twice — once by the Siddhānta's own method " +
                 "and once by a modern ephemeris. The gap is drawn.",
       stage: "drift",
+      bodyName: body,
       cover: { t0: ts[0], t1: ts[ts.length - 1] },
       drift: { lon: lon, err: err, t: ts, scale: scale, lo: lo, hi: hi },
       events: ev,
@@ -6277,6 +7566,11 @@
       subtitle: "Every eclipse the fifth-century method foresees, against " +
                 "every one that happens.",
       stage: "nodes",
+      /* this reel mixes solar and lunar predictions, so there is no single
+         phase to draw the Moon at; `full` is deliberately absent rather than
+         guessed. It was briefly set to an undefined `full`, which threw
+         inside build()'s try and made the whole template vanish with no
+         error anywhere. */
       inner: 1, outer: 1.5,
       events: ev,
       tallyKeys: ["confirmed", "not there", "missed"],

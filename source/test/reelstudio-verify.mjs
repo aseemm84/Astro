@@ -525,6 +525,144 @@ console.log("\nThe reels from the other engines say true things");
      Math.round(r.halfMax).toLocaleString("en") + " km");
 }
 
+/* ---- 8d. it has to be smooth ---------------------------------------------
+   The complaint that started this rework was that the video stutters, and a
+   stutter is not something a screenshot can show. So it is measured: the
+   whole frame, with a forced flush, because canvas calls are deferred and
+   timing them individually reports zero and then one spike in ten.
+
+   The budget is per frame in a SOFTWARE rasteriser — this harness runs
+   headless with no GPU, so a real machine has considerable headroom on top.
+   What is being guarded is the shape of the cost: it must not grow with how
+   far through the run the playhead is, which is what redrawing every
+   accumulated stroke every frame did. */
+console.log("\nIt renders fast enough, and the cost does not grow");
+{
+  for (const k of ["eclipse.new", "thread.earth-jupiter", "asta.venus"]) {
+    await choose(k);
+    const r = await pg.evaluate(() => {
+      const cv = document.getElementById("reel-canvas");
+      const c = cv.getContext("2d");
+      const R = window.__reel.reel();
+      function timeAt(from, to) {
+        for (let i = 0; i < 4; i++) window.SPReel.frameAt(c, 1080, 1920, R, from);
+        c.getImageData(0, 0, 1, 1);
+        const N = 30, t0 = performance.now();
+        for (let i = 0; i < N; i++) {
+          window.SPReel.frameAt(c, 1080, 1920, R, from + (to - from) * i / N);
+          c.getImageData(0, 0, 1, 1);
+        }
+        return (performance.now() - t0) / N;
+      }
+      const early = timeAt(0.10, 0.22);
+      const late = timeAt(0.80, 0.92);
+      return { early: +early.toFixed(1), late: +late.toFixed(1) };
+    });
+    ok(r.late < 45, k + ": " + r.late + " ms a frame late in the run " +
+       "(software rasteriser, no GPU)");
+    ok(r.late < r.early * 1.9,
+       k + ": the cost does not grow with the run — " + r.early +
+       " ms early, " + r.late + " ms late");
+  }
+}
+
+/* ---- 8e. the other render path --------------------------------------------
+   Paper is not a recolouring of the dark themes. It has no additive pass at
+   all — ink and wash on a sheet — so it is a second render path and gets its
+   own checks: it must draw, it must be LIGHT (an additive path on a pale
+   ground blows out to white), and the type must not inherit the tracking the
+   dark theme's small caps use. */
+console.log("\nThe paper theme is its own render path");
+{
+  await choose("eclipse.new");
+  const r = await pg.evaluate(() => {
+    const cv = document.getElementById("reel-canvas");
+    const c = cv.getContext("2d");
+    const R = window.__reel.reel();
+    function stats(key) {
+      R.pal = window.SPReel.pal(key);
+      window.SPReel.frameAt(c, 1080, 1920, R, 0.6);
+      const d = c.getImageData(0, 0, 1080, 1920).data;
+      let sum = 0, n = 0, blown = 0;
+      for (let i = 0; i < d.length; i += 40) {
+        const v = (d[i] + d[i + 1] + d[i + 2]) / 3;
+        sum += v; n++;
+        if (d[i] > 250 && d[i + 1] > 250 && d[i + 2] > 250) blown++;
+      }
+      return { mean: sum / n, blown: blown / n, dark: R.pal.dark };
+    }
+    const gold = stats("gold"), paper = stats("paper"), dusk = stats("dusk");
+    /* the subtitle must be set without tracking on paper: measured by asking
+       the canvas what it would be, after a full frame has been drawn */
+    R.pal = window.SPReel.pal("paper");
+    window.SPReel.frameAt(c, 1080, 1920, R, 0.6);
+    const ls = ("letterSpacing" in c) ? c.letterSpacing : "0px";
+    R.pal = window.SPReel.pal("gold");
+    return { gold, paper, dusk, ls };
+  });
+  ok(r.gold.mean < 70, "gold on black is dark: mean " +
+     r.gold.mean.toFixed(0) + "/255");
+  ok(r.paper.mean > 150, "paper is light: mean " +
+     r.paper.mean.toFixed(0) + "/255");
+  ok(r.dusk.mean > 140, "and so is dusk: mean " + r.dusk.mean.toFixed(0));
+  ok(r.paper.blown < 0.02,
+     "paper is not blown out — only " + (r.paper.blown * 100).toFixed(2) +
+     "% of it is pure white, so it is not running through the additive path");
+  ok(r.gold.blown < 0.02,
+     "and neither is gold: " + (r.gold.blown * 100).toFixed(2) + "% white");
+  ok(r.ls === "0px", "tracking does not leak out of a frame", r.ls);
+}
+
+/* ---- 8f. the grahas are grahas -------------------------------------------- */
+console.log("\nThe bodies are the site's own, not glowing dots");
+{
+  const r = await pg.evaluate(() => {
+    if (!window.SPBody || !window.SPBody.ready()) return { ready: false };
+    const out = { ready: true, bodies: {} };
+    ["Moon", "Jupiter", "Venus", "Mars", "Saturn", "Mercury", "Sun"]
+      .forEach(n => {
+        const cv = window.SPBody.disc(n, 48, { phase: 180 });
+        if (!cv) { out.bodies[n] = null; return; }
+        const c = cv.getContext("2d");
+        const d = c.getImageData(0, 0, cv.width, cv.height).data;
+        /* a textured disc has many distinct colours; a flat dot has one */
+        const seen = new Set();
+        let lit = 0;
+        for (let i = 0; i < d.length; i += 4) {
+          if (d[i + 3] < 128) continue;
+          lit++;
+          seen.add((d[i] >> 3) + "," + (d[i + 1] >> 3) + "," + (d[i + 2] >> 3));
+        }
+        out.bodies[n] = { lit, shades: seen.size, size: cv.width };
+      });
+    /* and the phase is real: a new Moon and a full Moon are not the same */
+    const a = window.SPBody.disc("Moon", 40, { phase: 10 });
+    const b = window.SPBody.disc("Moon", 40, { phase: 180 });
+    function brightness(cv) {
+      const d = cv.getContext("2d").getImageData(0, 0, cv.width, cv.height).data;
+      let s = 0;
+      for (let i = 0; i < d.length; i += 4) s += d[i] * (d[i + 3] / 255);
+      return s / (cv.width * cv.height);
+    }
+    out.newMoon = brightness(a);
+    out.fullMoon = brightness(b);
+    return out;
+  });
+  ok(r.ready, "the procedural body renderer is on the page");
+  if (r.ready) {
+    const thin = Object.keys(r.bodies).filter(n =>
+      !r.bodies[n] || r.bodies[n].shades < 12);
+    ok(thin.length === 0,
+       "every graha renders a textured disc, not a flat dot — " +
+       Object.keys(r.bodies).map(n => n + " " + (r.bodies[n] || {}).shades)
+         .join(", "), thin.join(" | "));
+    ok(r.fullMoon > r.newMoon * 3,
+       "and the phase is real: a full Moon is " +
+       (r.fullMoon / Math.max(0.01, r.newMoon)).toFixed(1) +
+       "x brighter than a new one");
+  }
+}
+
 /* ---- 9. the page -------------------------------------------------------- */
 console.log("\nThe page behaves");
 {

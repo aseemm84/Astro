@@ -296,7 +296,8 @@
                 "they draw in " + yrs.toFixed(0) + " years?",
       stage: "thread",
       cover: cover(sampleT0, sampleT1),
-      thread: { a: a, b: b, t: ts, maxR: maxR, alpha: spec.alpha || 0.14 },
+      thread: { a: a, b: b, t: ts, maxR: maxR, alpha: spec.alpha || 0.22,
+                aName: A, bName: B },
       events: events,
       tallyKeys: ["meetings"],
       closing: {
@@ -363,6 +364,7 @@
       subtitle: "Every time " + sa + " hides in the Sun’s glare. Where does " +
                 "it hide?",
       stage: "whirl",
+      bodyName: body,
       events: ev,
       tallyKeys: ["hidings"],
       closing: {
@@ -506,6 +508,7 @@
       subtitle: "Why does a planet go backwards? Watch its real path, " +
                 "longitude against distance.",
       stage: "loops",
+      bodyName: body,
       cover: cover(trackT0, trackT1),
       track: { lon: lon, r: r, t: ts, rMin: rMin, rMax: rMax },
       events: ev,
@@ -588,7 +591,7 @@
       "Five meetings, and the figure they close.",
       years: 8, seconds: 28,
       build: function (s) { s.a = "Earth"; s.b = "Venus"; s.everyDays = 3;
-                            s.alpha = 0.115; return threadStory(s); } },
+                            s.alpha = 0.18; return threadStory(s); } },
     { key: "thread.earth-mars", group: "The golden thread",
       label: "Maṅgala & Earth", blurb: "Every four days for sixteen years.",
       years: 16, seconds: 30,
@@ -710,10 +713,10 @@
     var typical = gaps.length ? gaps[Math.floor(gaps.length / 2)] : 30;
     S.fadeDays = Math.max(0.2, Math.min(
       (spec.t1 - spec.t0) / DAY / seconds * 0.22, typical * 0.22));
-    S.grainAmount = opts.grain == null ? 0.045 : opts.grain;
-    S.grade = opts.grade == null ? 1 : opts.grade;
-    S.bloomTight = opts.bloomTight == null ? 0.55 : opts.bloomTight;
-    S.bloomWide = opts.bloomWide == null ? 0.40 : opts.bloomWide;
+    S.grainAmount = opts.grain == null ? 0.035 : opts.grain;
+    S.grade = opts.grade == null ? 0.22 : opts.grade;
+    S.bloomTight = opts.bloomTight == null ? 0.18 : opts.bloomTight;
+    S.bloomWide = opts.bloomWide == null ? 0.11 : opts.bloomWide;
     S.seed = (t0 / DAY) | 0;
     var last = S.events[S.events.length - 1];
     var step = S.events.length > 1

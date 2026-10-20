@@ -43,11 +43,45 @@
   var $ = function (id) { return document.getElementById(id); };
 
   /* ===== the palette, which is the Studio card's own ======================= */
-  var PAL = {
-    navy: "#141a33", navy2: "#232a4d", gold: "#c9a24b", pale: "#e7d19a",
-    ink: "#f4f2ea", dim: "#9aa0c0", line: "rgba(201,162,75,0.5)",
-    ben: "#6fcf97", mal: "#e0785f", star: "#ffe9a8"
+  /* THE CARD'S PALETTE IS ONE OBJECT, AND IT IS MUTATED IN PLACE.
+
+     Sixty-nine places in this file read PAL.gold or PAL.ink directly, which
+     is the right way to write a card and the wrong way to add a second
+     theme. Rather than thread a palette argument through all of them, a
+     theme is COPIED INTO the same object: every existing reference keeps
+     working and picks up whatever theme is current.
+
+     `paper` is not a recolouring. It is the watercolour ground of the
+     explainer films — a wash of pale teal and sand, a thin ochre rule, ink
+     rather than cream — so NCard.frame paints something different for it
+     rather than the same frame in other colours. */
+  var THEMES = {
+    night: { key: "night", label: "Gold on navy", paper: false,
+             navy: "#141a33", navy2: "#232a4d", gold: "#c9a24b",
+             pale: "#e7d19a", ink: "#f4f2ea", dim: "#9aa0c0",
+             line: "rgba(201,162,75,0.5)",
+             ben: "#6fcf97", mal: "#e0785f", star: "#ffe9a8" },
+    paper: { key: "paper", label: "Watercolour paper", paper: true,
+             navy: "#efe7d6", navy2: "#e6ddc8", gold: "#9a6f2c",
+             pale: "#7a5a22", ink: "#3b3022", dim: "#6f6150",
+             line: "rgba(169,138,82,0.55)",
+             ben: "#3f7f5c", mal: "#a8503c", star: "#b98a3c",
+             wash: ["#efe9da", "#bcd4d2", "#e3d3ae", "#cfdcd6", "#efdcc2"] },
+    dusk: { key: "dusk", label: "Dusk paper", paper: true,
+            navy: "#e8e0e6", navy2: "#ded3dc", gold: "#8d5a73",
+            pale: "#6d3f56", ink: "#362b33", dim: "#6b5c66",
+            line: "rgba(160,127,147,0.55)",
+            ben: "#4b7a62", mal: "#9f4f62", star: "#a9708a",
+            wash: ["#ece3e8", "#c6d3e4", "#e8d6d2", "#d8cfe2", "#f0dfd4"] }
   };
+  var PAL = {};
+  function theme(k) {
+    var T = THEMES[k] || THEMES.night;
+    for (var q in PAL) if (PAL.hasOwnProperty(q)) delete PAL[q];
+    for (var p in T) if (T.hasOwnProperty(p)) PAL[p] = T[p];
+    return PAL;
+  }
+  theme("night");
   var SANS = '"Inter","Helvetica Neue",system-ui,-apple-system,sans-serif';
   var SERIF = '"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif';
   var RATIOS = {
@@ -109,8 +143,27 @@
   }
 
   /* ===== the frame ========================================================= */
+  NCard.THEMES = THEMES;
+  NCard.theme = theme;
   NCard.frame = function (c, W, H, o) {
     o = o || {};
+    if (PAL.paper) {
+      /* the same wash the reels lay down, so a card and a reel posted
+         together look like one hand made them */
+      if (window.SPGlow) window.SPGlow.wash(c, W, H, PAL.wash, 7);
+      else { c.fillStyle = PAL.navy; c.fillRect(0, 0, W, H); }
+      c.save();
+      c.globalAlpha = 0.9;
+      c.strokeStyle = PAL.line;
+      c.lineWidth = Math.max(1, W * 0.0022);
+      c.strokeRect(W * 0.035, W * 0.035, W - W * 0.07, H - W * 0.07);
+      c.restore();
+      c.fillStyle = PAL.gold;
+      c.globalAlpha = 0.85;
+      c.fillRect(0, H - 10, W, 10);
+      c.globalAlpha = 1;
+      return;
+    }
     var g = c.createLinearGradient(0, 0, W * 0.4, H);
     g.addColorStop(0, PAL.navy2); g.addColorStop(1, PAL.navy);
     c.fillStyle = g; c.fillRect(0, 0, W, H);
@@ -1893,6 +1946,12 @@
             return '<option value="' + k + '"' + (k === C.ratio ? " selected" : "") +
                    ">" + RATIOS[k].label + "</option>"; }).join("") +
         "</select>" +
+        '<span class="stlab">Theme</span>' +
+        '<select id="stctheme" class="stsel">' +
+          Object.keys(THEMES).map(function (k) {
+            return '<option value="' + k + '">' + esc(THEMES[k].label) +
+                   "</option>"; }).join("") +
+        "</select>" +
         '<label class="stchk"><input type="checkbox" id="stcsafe"> Keep Instagram’s strips clear</label>' +
         '<button type="button" class="stbtn" id="stcsave">Download this slide</button>' +
         '<button type="button" class="stbtn sec" id="stczip">Download all slides (.zip)</button>' +
@@ -2117,6 +2176,8 @@
 
     $("stcrecipe").addEventListener("change", pickRecipe);
     $("stcratio").addEventListener("change", draw);
+    var th = $("stctheme");
+    if (th) th.addEventListener("change", function () { theme(th.value); draw(); });
     $("stcsafe").addEventListener("change", draw);
     $("stcaddbtn").addEventListener("click", function () {
       var t = $("stcnew").value, def = SLOTS[t], s = { type: t };

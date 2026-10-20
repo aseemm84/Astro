@@ -331,7 +331,11 @@ def build_shared():
         # keeps working if this one fails to load; it rides on that page because
         # the date, the place, the language and the ratio are already there, and
         # three copies of those controls would be three things to keep in step.
+        # sp-glow rides along for the watercolour wash the paper themes
+        # share with the reels, so a card and a reel posted together look
+        # like one hand made them.
         "cards.js": brandify(read(SRC, "js", "brand-mark.js") + "\n" +
+                             read(SRC, "js", "sp-glow.js") + "\n" +
                              read(SRC, "js", "cards.js")),
         # Studio Pro ships as one file built from six: the node registry, the
         # almanac leaf, the composers that draw from shapes, the Director layer
@@ -395,6 +399,13 @@ def build_shared():
         # the cycle registry, alongside the modern ephemeris in engine.js.
         "reel.js": brandify(read(SRC, "js", "brand-mark.js") + "\n" +
                             read(SRC, "js", "sp-glow.js") + "\n" +
+                            # the procedural grahas: every surface generated
+                            # and lit from where the Sun actually is. The
+                            # reels drew glowing dots before this, which was
+                            # both worse and a waste of the best thing here.
+                            read(SRC, "js", "report", "motion",
+                                 "54-motion-bodies.js") + "\n" +
+                            read(SRC, "js", "sp-bodies.js") + "\n" +
                             read(SRC, "js", "sp-reel.js") + "\n" +
                             read(SRC, "js", "ss-engine.js") + "\n" +
                             read(SRC, "js", "sp-nodes.js") + "\n" +

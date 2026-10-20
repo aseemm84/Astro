@@ -96,6 +96,7 @@
       subtitle: sa + ", computed twice — once by the Siddhānta's own method " +
                 "and once by a modern ephemeris. The gap is drawn.",
       stage: "drift",
+      bodyName: body,
       cover: { t0: ts[0], t1: ts[ts.length - 1] },
       drift: { lon: lon, err: err, t: ts, scale: scale, lo: lo, hi: hi },
       events: ev,
@@ -246,6 +247,11 @@
       subtitle: "Every eclipse the fifth-century method foresees, against " +
                 "every one that happens.",
       stage: "nodes",
+      /* this reel mixes solar and lunar predictions, so there is no single
+         phase to draw the Moon at; `full` is deliberately absent rather than
+         guessed. It was briefly set to an undefined `full`, which threw
+         inside build()'s try and made the whole template vanish with no
+         error anywhere. */
       inner: 1, outer: 1.5,
       events: ev,
       tallyKeys: ["confirmed", "not there", "missed"],
