@@ -73,6 +73,35 @@ strip.forEach(s => {
 say(strip.every(s => !/rec=1/.test(s.open)),
   "the second link opens the scene without recording");
 
+/* the foot line every card carries */
+console.log("\nthe foot line");
+{
+  /* WHAT A POSTED CARD OWES ITS VIEWER IS PROVENANCE. The foot used to
+     print "computed in the browser · nothing is sent anywhere" — a promise
+     to somebody USING the tool, addressed on a card in a feed to nobody,
+     because the viewer did not compute anything. The reels changed first;
+     this check is what stops the cards drifting back. Read by spying on
+     every string the card actually draws, rather than by trusting the
+     source. */
+  const foot = await page.evaluate(() => {
+    const cv = document.createElement("canvas");
+    cv.width = 1080; cv.height = 1350;
+    const c = cv.getContext("2d");
+    const said = [];
+    const real = c.fillText.bind(c);
+    c.fillText = function (t, x, y) { said.push(String(t)); return real(t, x, y); };
+    window.NCard.foot(c, 1080, 1350, { pad: 60, place: "Abu Dhabi, AE" });
+    return said;
+  });
+  const joined = foot.join(" | ");
+  say(!/nothing is sent|nothing was sent|भेजा नहीं/.test(joined),
+      "no privacy promise on a card built to be posted");
+  say(/ayan[āa]|अयनांश/.test(joined),
+      `it names its method instead: ${joined}`);
+  say(/Abu Dhabi/.test(joined) && /@Nirayana\.Soft/.test(joined),
+      "and still carries the place and the handle");
+}
+
 /* the composer */
 console.log("\nthe composer");
 const comp = await page.evaluate(() => {

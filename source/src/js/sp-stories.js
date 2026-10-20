@@ -742,10 +742,20 @@
     /* A story may ask for its clock to run at a varying rate — see makeWarp.
        It asks with numbers rather than a built function, because where the
        notch actually belongs depends on where the holds land, and only the
-       timeline knows that. */
+       timeline knows that.
+
+       THE DEFAULT IS NOW "HOLDS", for every reel rather than only the
+       festival dials. A hold already stops the clock dead at the moment the
+       reel is about; what the festival dial added was the approach and the
+       departure, and that reads as arriving rather than as stalling
+       wherever there are a few moments worth arriving at. The timeline
+       declines it when there are too many — see WARP_MAX — and a story can
+       still name its own position, or pass null to keep an even clock. */
+    var warpAsk = S.warpAt === undefined ? "holds" : S.warpAt;
+    if (opts.warp === false) warpAsk = null;
     S.tl = window.SPReel.buildTimeline(S.events, {
       t0: startT, t1: endT, seconds: seconds,
-      warpAt: S.warpAt, warpWidth: S.warpWidth, warpDepth: S.warpDepth,
+      warpAt: warpAsk, warpWidth: S.warpWidth, warpDepth: S.warpDepth,
       lead: opts.lead == null ? Math.min(2.2, seconds * 0.07) : opts.lead,
       tail: opts.tail == null ? Math.min(5.5, seconds * 0.17) : opts.tail,
       hold: opts.hold == null ? 0.65 : opts.hold

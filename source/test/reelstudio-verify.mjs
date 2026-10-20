@@ -939,6 +939,131 @@ console.log("\nThe skipped and the repeated tithis balance");
      tooLong.map(x => x.key + " " + x.longestSkip.toFixed(1) + "h").join(" | "));
 }
 
+console.log("\nEvery reel arrives at its moments rather than revolving past them");
+{
+  /* THE WARP IS NOW THE DEFAULT, not a festival special. A hold already
+     stops the clock dead at the moment a reel is about; what the festival
+     dial added was the approach and the departure. Three things have to hold
+     for that to be honest on sixty reels rather than one:
+
+       the clock never runs backwards, ANYWHERE — this is what caught
+         sim.stop, whose single held event sits at the end of its span and
+         was taking more than the whole run, leaving the segment after it
+         with s1 before s0;
+
+       the run still covers exactly the span it claims, so a reel that says
+         eight hundred years still starts and ends where it says;
+
+       and the deceleration is real — measurably slower at a hold than the
+         reel's own average, or it is decoration. */
+  const r = await pg.evaluate(() => {
+    const out = [];
+    window.SPStories.TEMPLATES.forEach(t => {
+      let R = null;
+      try { R = window.SPStories.build(t.key, { t0: Date.parse("2026-01-01") }); }
+      catch (e) { R = null; }
+      if (!R) { out.push({ key: t.key, bad: "no build" }); return; }
+      const S = window.SPReel, N = 900;
+      let prev = -Infinity, back = 0, worst = 0;
+      for (let i = 0; i <= N; i++) {
+        const c = S.clockAt(R.tl, i / N);
+        if (c.t < prev - 1) { back++; worst = Math.max(worst, prev - c.t); }
+        prev = c.t;
+      }
+      const a = S.clockAt(R.tl, 0).t, b = S.clockAt(R.tl, 1).t;
+      const holds = R.events.filter(e => e.hold).length;
+      /* the clock's rate right at the first hold, against its own mean */
+      let hp = null;
+      R.tl.segs.forEach(g => { if (g.held && hp == null) hp = (g.s0 + g.s1) / 2 / R.tl.seconds; });
+      const rate = (x, y) => Math.abs(S.clockAt(R.tl, y).t - S.clockAt(R.tl, x).t) /
+                             Math.max(1e-9, y - x);
+      const mean = Math.abs(b - a);
+      /* measured in a window the size of the notch, not wider: a wide
+         window averages in the fast flanks either side and reports a
+         deceleration that is not there — or, worse, hides one that is */
+      const near = hp == null ? null
+        : rate(Math.max(0, hp - 0.012), Math.min(1, hp + 0.012)) / (mean || 1);
+      out.push({ key: t.key, holds, warp: !!R.tl.warp, back, worstH: worst / 3600000,
+                 t0ok: Math.abs(a - R.tl.t0) < 1000,
+                 t1ok: Math.abs(b - R.tl.t1) < 1000, near });
+    });
+    return out;
+  });
+  const broken = r.filter(x => x.bad);
+  ok(broken.length === 0, "every template builds", broken.map(x => x.key).join(" | "));
+  const rev = r.filter(x => x.back > 0);
+  ok(rev.length === 0,
+     "no reel's clock runs backwards, across all " + r.length + " of them",
+     rev.map(x => x.key + " " + x.back + " steps, worst " +
+             x.worstH.toFixed(2) + " h").join(" | "));
+  const offSpan = r.filter(x => !x.t0ok || !x.t1ok);
+  ok(offSpan.length === 0,
+     "and every one still covers exactly the span it claims",
+     offSpan.map(x => x.key).join(" | "));
+  /* the rule, stated: a few moments get the warp, many do not */
+  const MAX = await pg.evaluate(() => window.SPReel.WARP_MAX);
+  const wrongGate = r.filter(x =>
+    x.warp !== (x.holds >= 1 && x.holds <= MAX));
+  ok(wrongGate.length === 0,
+     "a reel with one to " + MAX + " moments decelerates into them; one with " +
+     "more keeps an even clock",
+     wrongGate.map(x => x.key + " holds " + x.holds + " warp " + x.warp)
+              .join(" | "));
+  const warped = r.filter(x => x.warp && x.near != null);
+  const notSlow = warped.filter(x => x.near > 0.6);
+  ok(notSlow.length === 0,
+     "and the deceleration is real on all " + warped.length + " of them — " +
+     "median rate at a hold is " +
+     warped.map(x => x.near).sort((a, b) => a - b)[warped.length >> 1].toFixed(2) +
+     " of the reel's own average",
+     notSlow.map(x => x.key + " " + x.near.toFixed(2)).join(" | "));
+}
+
+console.log("\nEvery stage says where its head is, so the arrival lands on it");
+{
+  /* The pulse is drawn from whatever the stage last reported as its live
+     head. A stage that forgets to say loses the pulse silently — the frame
+     still renders, it is just missing the one thing that makes a hold read
+     as an arrival. So every stage is rendered mid-hold and asked. */
+  const r = await pg.evaluate(() => {
+    const seen = {}, out = [];
+    const cv = document.createElement("canvas");
+    cv.width = 540; cv.height = 960;
+    const c = cv.getContext("2d");
+    window.SPStories.TEMPLATES.forEach(t => {
+      let R = null;
+      try { R = window.SPStories.build(t.key, { t0: Date.parse("2026-01-01") }); }
+      catch (e) { return; }
+      if (!R || seen[R.stage]) return;
+      let hp = null;
+      R.tl.segs.forEach(g => {
+        if (g.held && hp == null) hp = (g.s0 + (g.s1 - g.s0) * 0.4) / R.tl.seconds;
+      });
+      if (hp == null) return;              /* no holds: nothing to arrive at */
+      seen[R.stage] = 1;
+      window.SPReel.frameAt(c, 540, 960, R, hp);
+      const h = window.SPReel.headAt();
+      const B = window.SPReel.bands(540, 960, R);
+      out.push({ stage: R.stage, key: t.key, has: !!h,
+                 inside: !!h && h.x >= B.stage.x - 20 &&
+                         h.x <= B.stage.x + B.stage.w + 20 &&
+                         h.y >= B.stage.y - 20 &&
+                         h.y <= B.stage.y + B.stage.h + 20 });
+    });
+    return out;
+  });
+  const quiet = r.filter(x => !x.has);
+  ok(quiet.length === 0,
+     "all " + r.length + " stages with holds report a head: " +
+     r.map(x => x.stage).join(", "),
+     quiet.map(x => x.stage).join(" | "));
+  const outside = r.filter(x => x.has && !x.inside);
+  ok(outside.length === 0,
+     "and every head is inside its own stage band, so the pulse is on the " +
+     "picture rather than over the type",
+     outside.map(x => x.stage).join(" | "));
+}
+
 console.log("\nThe clock slows into the festival and comes out again");
 {
   const r = await pg.evaluate(() => {

@@ -194,6 +194,43 @@
      HOLDS COST TIME, THEY DO NOT SKIP IT. The clock resumes from exactly
      where it paused. That is the difference between a reel a careful viewer
      can check and one they catch out. */
+  /* the most moments a reel can have and still be a reel that arrives at
+     them; above this the clock stays even */
+  var WARP_MAX = 8;
+
+  /* ---- where the live head is, for the arrival pulse ----------------------
+     A hold stops the clock at a moment the reel is about. The festival dial
+     made that moment read as an ARRIVAL rather than a stall by expanding a
+     ring out of it once — and that works on every stage, not just a dial,
+     because every stage has one point that is the current event.
+
+     Rather than teach each stage to draw the pulse, each one simply says
+     where its head is while it draws, and the pulse is drawn afterwards from
+     whatever it last said. One line per stage, one implementation. */
+  var HEAD = null;
+  function head(x, y, r) {
+    if (isFinite(x) && isFinite(y) && isFinite(r) && r > 0)
+      HEAD = { x: x, y: y, r: r };
+  }
+  function arrival(c, G, P, now) {
+    if (!HEAD || !now.held) return;
+    var t = clamp(now.heldP || 0, 0, 1);
+    /* one ring, expanding and fading across the pause; plus a brief swell of
+       light on the head itself as it lands */
+    var grow = 1 + 2.6 * t, fade = (1 - t) * (1 - t);
+    c.save();
+    c.globalAlpha = 0.55 * fade;
+    c.strokeStyle = G.rgba(P.accent, 1);
+    c.lineWidth = Math.max(1, HEAD.r * 0.22 * (1 - t * 0.6));
+    c.beginPath();
+    c.arc(HEAD.x, HEAD.y, HEAD.r * grow, 0, TAU);
+    c.stroke();
+    c.restore();
+    if (t < 0.5)
+      G.glow(c, HEAD.x, HEAD.y, HEAD.r * 1.15, P.hot,
+             { reach: 2.4, core: 0, alpha: 0.42 * (1 - t * 2) });
+  }
+
   function buildTimeline(events, opts) {
     var lead = opts.lead || 0, tail = opts.tail || 0;
     var hold = opts.hold || 0;
@@ -218,18 +255,30 @@
     for (var i = 0; i < events.length; i++) {
       var e = events[i];
       if (!e.hold) continue;
-      var dt = e.t - prevT;
-      var dur = run * (dt / span);
-      segs.push({ s0: s, s1: s + dur, t0: prevT, t1: e.t,
+      /* A HELD EVENT AT THE VERY END MUST NOT EAT MORE THAN THE RUN.
+
+         The approach to a hold is given a share of the run proportional to
+         how much time it covers — which goes wrong when the event sits at
+         or past the end of the span, as the Moon's impact does in sim.stop.
+         The share then came to more than everything, run position went past
+         one, and the segment after it ran BACKWARDS: s1 before s0. Nothing
+         showed while the clock was even, because that last segment spanned
+         no time either; under a warp it inverted and the date stepped back
+         an hour at the close. Both the time and the share are now clamped
+         to what is actually left. */
+      var et = Math.max(prevT, Math.min(e.t, t1));
+      var dt = et - prevT;
+      var dur = Math.max(0, Math.min(run * (dt / span), run - r));
+      segs.push({ s0: s, s1: s + dur, t0: prevT, t1: et,
                   r0: r / run, r1: (r + dur) / run });
       s += dur; r += dur;
-      segs.push({ s0: s, s1: s + hold, t0: e.t, t1: e.t, held: true,
+      segs.push({ s0: s, s1: s + hold, t0: et, t1: et, held: true,
                   r0: r / run, r1: r / run });
       s += hold;
-      prevT = e.t;
+      prevT = et;
     }
-    segs.push({ s0: s, s1: lead + body, t0: prevT, t1: t1,
-                r0: r / run, r1: 1 });
+    segs.push({ s0: s, s1: Math.max(s, lead + body), t0: prevT, t1: t1,
+                r0: Math.min(1, r / run), r1: 1 });
     var moves = segs.filter(function (g) { return !g.held; });
 
     /* THE NOTCH HAS TO SIT ON THE HOLD, not at the middle of the reel.
@@ -247,12 +296,47 @@
        where it wants the clock to linger; the timeline decides exactly where
        that is, because only the timeline knows. */
     var warp = opts.warp || null;
+    var at = [];
+    for (var h2 = 0; h2 < segs.length; h2++)
+      if (segs[h2].held) at.push(segs[h2].r0);
     if (!warp && opts.warpAt != null) {
-      var wat = opts.warpAt;
-      for (var h2 = 0; h2 < segs.length; h2++)
-        if (segs[h2].held && Math.abs(segs[h2].r0 - wat) < 0.15)
-          { wat = segs[h2].r0; break; }
-      warp = makeWarp(wat, opts.warpWidth, opts.warpDepth);
+      if (opts.warpAt === "holds") {
+        /* WHEN A REEL HAS A FEW MOMENTS THAT MATTER, it should arrive at
+           them rather than revolve past them — so the clock decelerates
+           into every hold and accelerates away again. The gate is the
+           count: a reel with thirty marked moments has no single moment to
+           arrive at, and notching all thirty would read as a stutter rather
+           than as emphasis, so it keeps its even clock.
+
+           The notch narrows and shallows as the moments multiply, because
+           three stops in a thirty-second reel can each be luxurious and
+           eight cannot. */
+        if (at.length >= 1 && at.length <= WARP_MAX) {
+          /* THE NOTCH IS AS WIDE AS THE ROOM AROUND IT, not as wide as the
+             count suggests. Two of the thread reels mark their first three
+             meetings, which land inside the first seventh of the run; a
+             notch sized for "three holds" then overlapped all three into
+             one long trough, and the reel crawled through that stretch and
+             sprinted the rest. Sizing it from the smallest real gap keeps
+             consecutive moments distinct, which is what makes them read as
+             three arrivals rather than one slow patch. */
+          var gap = Math.min(at[0] === 0 ? 1 : at[0],
+                             at[at.length - 1] === 1 ? 1 : 1 - at[at.length - 1]);
+          for (var gi = 1; gi < at.length; gi++)
+            gap = Math.min(gap, at[gi] - at[gi - 1]);
+          warp = makeWarp(at,
+            opts.warpWidth || Math.max(0.006, Math.min(0.055, gap * 0.40)),
+            opts.warpDepth || (at.length <= 2 ? 0.90 : 0.82));
+        }
+      } else {
+        /* a requested position snaps to a nearby hold: the story says where
+           it wants the clock to linger, the timeline decides exactly where
+           that is, because only the timeline knows */
+        var wat = opts.warpAt;
+        for (var h3 = 0; h3 < at.length; h3++)
+          if (Math.abs(at[h3] - wat) < 0.15) { wat = at[h3]; break; }
+        warp = makeWarp(wat, opts.warpWidth, opts.warpDepth);
+      }
     }
     return { lead: lead, tail: tail, seconds: opts.seconds, segs: segs,
              holdSeconds: hold, t0: t0, t1: t1, moves: moves, warp: warp };
@@ -282,38 +366,61 @@
      backwards; and it is onto, so the run still covers exactly the span it
      claims. Only the rate changes. */
   function makeWarp(at, width, depth) {
-    var N = 1000, i;
     var d = depth == null ? 0.94 : depth;
     var w = Math.max(1e-4, width == null ? 0.045 : width);
-    at = clamp(at == null ? 0.5 : at, 0.02, 0.98);
-    /* THE GRID IS HUNG ON THE NOTCH, not spread evenly and hoped over.
 
-       A uniform grid puts no sample exactly at the festival, so the map was
-       the identity there only to within half a sample — about twenty minutes
-       of a month-long window, which showed up as the clock stepping backward
-       by an hour as it entered the hold. Two half-grids, meeting exactly at
-       `at` and each normalised onto its own half, make the map pass through
-       (at, at) exactly and stay strictly increasing either side of it. */
-    var ia = N >> 1;
-    var pos = new Float64Array(N + 1), rate = new Float64Array(N + 1),
-        cum = new Float64Array(N + 1);
-    for (i = 0; i <= N; i++) {
-      pos[i] = i <= ia ? at * (i / ia)
-                       : at + (1 - at) * ((i - ia) / (N - ia));
-      var x = (pos[i] - at) / w;
-      rate[i] = 1 / Math.max(0.02, 1 - d * Math.exp(-x * x));
+    /* ONE NOTCH OR MANY. A festival dial has a single moment to arrive at;
+       a thread reel has three meetings, a vakrī reel two turns, a cycle reel
+       two closures. The same deceleration suits all of them, so `at` may be
+       a position or a list of them, and the pieces below are built between
+       whichever ones there are. A reel with thirty moments is excluded
+       upstream: thirty things to arrive at is no things to arrive at. */
+    var ats = (at == null) ? [0.5] : (at.length == null ? [at] : at.slice());
+    /* A NOTCH MAY SIT EXACTLY AT AN END. Nudging it inside the interval
+       instead — which an earlier clamp did — leaves the map a hair off the
+       identity there, and a hold at run position zero then entered against a
+       clock that had already moved: one backward step, in sim.stop. Kept at
+       the end, it coincides with the piece boundary that is already there
+       and is deduped away, so the map is exact by construction. */
+    ats = ats.map(function (x) { return clamp(x, 0, 1); })
+             .sort(function (x, y) { return x - y; })
+             .filter(function (x, i, arr) { return i === 0 || x - arr[i - 1] > 1e-6; });
+
+    function speed(x) {
+      var k = 1;
+      for (var j = 0; j < ats.length; j++) {
+        var u = (x - ats[j]) / w;
+        k -= d * Math.exp(-u * u);
+      }
+      return Math.max(0.02, k);
     }
-    cum[0] = 0;
-    for (i = 1; i <= N; i++)
-      cum[i] = cum[i - 1] + (rate[i] + rate[i - 1]) / 2 * (pos[i] - pos[i - 1]);
-    /* both halves are normalised from the ORIGINAL integral, so `cum[ia]` is
-       read before the loop overwrites it — using it in place silently
-       subtracted the already-normalised value and squeezed the whole of the
-       second half's fast stretch into the last tenth of the reel */
-    var cia = cum[ia], ca = cia || 1, cb = (cum[N] - cia) || 1;
-    for (i = 0; i <= N; i++)
-      cum[i] = i <= ia ? at * (cum[i] / ca)
-                       : at + (1 - at) * ((cum[i] - cia) / cb);
+
+    /* THE GRID IS HUNG ON THE NOTCHES, not spread evenly and hoped over.
+
+       A uniform grid puts no sample exactly at a notch, so the map was the
+       identity there only to within half a sample — about twenty minutes of
+       a month-long window, which showed up as the clock stepping BACKWARD by
+       an hour as it entered the hold. The run is therefore cut at every
+       notch, each piece given its own uniform grid and normalised onto its
+       own interval, which makes the map pass through (at, at) exactly at
+       every one of them and stay strictly increasing in between. */
+    var edges = [0].concat(ats).concat([1]);
+    edges = edges.filter(function (x, i, arr) {
+      return i === 0 || x - arr[i - 1] > 1e-9;
+    });
+    var M = Math.max(40, Math.round(1200 / Math.max(1, edges.length - 1)));
+    var pos = [], cum = [];
+    for (var e = 0; e + 1 < edges.length; e++) {
+      var p0 = edges[e], p1 = edges[e + 1], run = [], acc = [0];
+      for (var i = 0; i <= M; i++) run.push(p0 + (p1 - p0) * (i / M));
+      for (i = 1; i <= M; i++)
+        acc.push(acc[i - 1] +
+          (1 / speed(run[i]) + 1 / speed(run[i - 1])) / 2 * (run[i] - run[i - 1]));
+      var tot = acc[M] || 1;
+      for (i = 0; i <= M; i++) acc[i] = p0 + (p1 - p0) * (acc[i] / tot);
+      for (i = (e === 0 ? 0 : 1); i <= M; i++) { pos.push(run[i]); cum.push(acc[i]); }
+    }
+    var N = pos.length - 1;
     return function (f) {
       if (!(f > 0)) return 0;
       if (f >= 1) return 1;
@@ -322,10 +429,10 @@
         var mid = (lo + hi) >> 1;
         if (cum[mid] < f) lo = mid + 1; else hi = mid;
       }
-      var a = Math.max(0, lo - 1);
-      var span = cum[lo] - cum[a];
-      var t = span > 0 ? (f - cum[a]) / span : 0;
-      return pos[a] + t * (pos[lo] - pos[a]);
+      var a2 = Math.max(0, lo - 1);
+      var span = cum[lo] - cum[a2];
+      var t = span > 0 ? (f - cum[a2]) / span : 0;
+      return pos[a2] + t * (pos[lo] - pos[a2]);
     };
   }
 
@@ -912,6 +1019,7 @@
         if (isFinite(e.lon) && isFinite(e.lat)) {
           var a3 = (e.lon - 90) * R2, q3 = r + e.lat * K;
           var x = g.cx + Math.cos(a3) * q3, y = g.cy + Math.sin(a3) * q3;
+          head(x, y, r * 0.034);
           if (e.band === "central") G.glow(c, x, y, r * 0.030, P.hot,
             { reach: 2.6, core: 0.5 });
           /* AT AMĀVĀSYĀ THE MOON IS UNLIT, and an unlit disc on a dark
@@ -967,6 +1075,7 @@
         c.restore();
         drawBody(c, G, S.aName, ax, ay, g.r * 0.030, P, { progress: p });
         drawBody(c, G, S.bName, bx, by, g.r * 0.036, P, { progress: p });
+        head(bx, by, g.r * 0.036);
       }
       drawBody(c, G, "Sun", g.cx, g.cy, g.r * 0.040, P, { progress: p });
     }
@@ -999,6 +1108,7 @@
         var a = (ev[idx].lon - 90) * R2;
         var x = g.cx + Math.cos(a) * q, y = g.cy + Math.sin(a) * q;
         G.glow(c, x, y, g.r * 0.022, P.hot, { reach: 2.8, core: 0.6 });
+        head(x, y, g.r * (reel.bodyName ? 0.034 : 0.022));
         if (reel.bodyName)
           drawBody(c, G, reel.bodyName, x, y, g.r * 0.034, P, { progress: p });
       }
@@ -1041,6 +1151,7 @@
         var x = g.cx + Math.cos(a) * q, y = g.cy + Math.sin(a) * q;
         drawBody(c, G, reel.bodyName || "Mars", x, y, g.r * 0.038, P,
                  { progress: p });
+        head(x, y, g.r * 0.038);
       }
       drawBody(c, G, "Earth", g.cx, g.cy, g.r * 0.022, P, {});
     }
@@ -1120,6 +1231,7 @@
               r * 0.011, P.accent, 0.85);
         drawBody(c, G, reel.bodyName || "Jupiter", x, y, r * 0.034, P,
                  { progress: p });
+        head(x, y, r * 0.034);
       }
       drawBody(c, G, "Earth", g.cx, g.cy, r * 0.018, P, {});
     }
@@ -1180,6 +1292,7 @@
                    g.cy + Math.sin(sa) * g.r * 1.16);
         c.restore();
       }
+      head(g.cx + O.x[j] * K, g.cy + O.y[j] * K, g.r * 0.030);
       drawBody(c, G, "Moon", g.cx + O.x[j] * K, g.cy + O.y[j] * K,
                g.r * 0.034, P, { progress: p, phase: 150 });
       drawBody(c, G, "Earth", g.cx, g.cy, g.r * 0.030, P, {});
@@ -1307,6 +1420,7 @@
                { phase: ev[idx].phase, progress: p,
                  earthshine: ev[idx].phase < 45 || ev[idx].phase > 315,
                  shineStrong: true });
+      head(x, y, g.r * 0.055);
     }
   };
 
@@ -1457,6 +1571,10 @@
                { reach: 2.4, core: 0, alpha: 0.45 * arr });
       }
 
+      /* the pulse belongs on the ring, where the festival disc is, not on
+         the big Moon in the middle — the middle never moves */
+      head(g.cx + Math.cos(dialAng(L, L.mark)) * ring,
+           g.cy + Math.sin(dialAng(L, L.mark)) * ring, r * 0.070);
       /* the Moon as it is at this instant, large, in the middle */
       drawBody(c, G, "Moon", g.cx, g.cy, r * 0.21, P,
                { phase: L.phaseAt(now.t), progress: p, earthshine: true });
@@ -1647,11 +1765,13 @@
     /* the live layer: the moving head, drawn fresh. It is a handful of
        shapes, so it costs nothing and does not need the cache. */
     var S = STAGES[reel.stage] || S_whirl;
+    HEAD = null;
     if (S.live) {
       c.save();
       S.live(c, G, B.stage, reel, P, now, idx, k, p);
       c.restore();
     }
+    arrival(c, G, P, now);
 
     if (P.dark && reel.grade > 0.002) G.grade(c, W, H, reel.grade);
 
@@ -1773,7 +1893,10 @@
     record: record, markReady: markReady, mark: function () { return MARK; },
     resetTrail: trailReset, trailState: trailState, cancelRecording: cancelRecording, isRecording: isRecording,
     PALETTES: PALETTES, pal: pal, bands: bands, frameAt: frameAt,
-    makeWarp: makeWarp,
+    makeWarp: makeWarp, WARP_MAX: WARP_MAX,
+    /* exposed so the harness can confirm every stage registers a head,
+       which is what the arrival pulse is drawn from */
+    headAt: function () { return HEAD; },
     buildTimeline: buildTimeline, clockAt: clockAt,
     SERIF: SERIF, RASHI: RASHI, dateCaps: dateCaps,
     tracked: tracked, fitTracked: fitTracked, wrapTo: wrapTo, plain: plain,

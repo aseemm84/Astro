@@ -191,8 +191,19 @@
     c.fillText(o.place || "", tx, fy + mk * 0.42);
     c.font = "500 " + Math.round(W * 0.024) + "px " + SANS;
     c.fillStyle = PAL.dim;
-    c.fillText(o.hi ? "ब्राउज़र में गणना — कुछ भी भेजा नहीं जाता"
-                    : "computed in the browser · nothing is sent anywhere",
+    /* WHAT A POSTED CARD OWES ITS VIEWER IS PROVENANCE, NOT A PRIVACY
+       PROMISE. "Computed in the browser, nothing is sent anywhere" is a
+       promise to somebody USING the tool; on a card in a feed it is
+       addressed to nobody, because the viewer did not compute anything.
+       What they can act on is the method — which ayanāṃśa, which
+       convention — because that is what turns a figure into something
+       arguable rather than something to believe. The reels made this change
+       first; the cards follow, so the whole output set says the same thing.
+       The privacy promise stays on the site pages, where it is a promise to
+       the person it concerns. */
+    c.fillText(o.method ||
+               (o.hi ? "लाहिरी अयनांश · सूर्योदय पर तिथि"
+                     : "Lahiri ayanāṃśa · tithi at sunrise"),
                tx, fy + mk * 0.86);
     c.textAlign = "right";
     c.fillStyle = PAL.pale;
@@ -1050,7 +1061,7 @@
     });
 
     NCard.foot(c, W, H, { pad: pad, padR: padR, place: spec.place || "",
-                          hi: spec.hi, });
+                          hi: spec.hi, method: spec.method || null });
     return { w: W, h: H, used: need, room: room, scale: S.u / W };
   };
 
@@ -2319,8 +2330,9 @@
     L.push("REELS \u2014 open the Studio and use the strip; each link carries its own");
     L.push("span, speed, shape, safe layout and this place, and starts recording.");
     L.push("");
-    L.push("Every figure above was computed in the browser for " + S.place.n + ".");
-    L.push("Nothing was sent anywhere. @Nirayana.Soft");
+    L.push("Computed for " + S.place.n + " \u00b7 Lahiri ayan\u0101\u1e43\u015ba " +
+           "\u00b7 tithi at sunrise.");
+    L.push("@Nirayana.Soft");
     return L.join("\n");
   }
 
