@@ -663,6 +663,139 @@ console.log("\nThe bodies are the site's own, not glowing dots");
   }
 }
 
+/* ---- 8g. the festivals ---------------------------------------------------
+   A festival reel is the one place on this site where the output can be
+   checked against something the whole world already knows: the date. If the
+   engine says Dīvālī 2025 is any day but the 20th of October, everything
+   else on the page is beside the point.
+
+   The second check is the one that caught a real defect. A lunar month may
+   not change its NAME in the middle of itself — and it did, because the
+   month was named by back-projecting the Sun to the new moon with mean
+   motions, which flips across a rāśi boundary when the true value sits
+   within half a degree of it. April 2029 ran Chaitra, Vaishakha, Chaitra,
+   Vaishakha on successive stretches of one lunation, and Rāma Navamī went
+   missing in 2029 and 2048 because its rule names a month. */
+console.log("\nThe festival dates are the published ones");
+{
+  /* widely published dates for 2025, as any almanac gives them */
+  const KNOWN = {
+    diwali: "2025-10-20", holi: "2025-03-14", janmashtami: "2025-08-16",
+    mahashivaratri: "2025-02-26", dussehra: "2025-10-02",
+    ramanavami: "2025-04-06", makara: "2025-01-14",
+    navaratri: "2025-09-22", ugadi: "2025-03-30"
+  };
+  const r = await pg.evaluate((known) => {
+    if (!window.SPFest || !window.SPFest.ready()) return { ready: false };
+    const out = { ready: true, got: {} };
+    Object.keys(known).forEach(k => {
+      const d = window.SPFest.datesFor(k, 2025, 1);
+      out.got[k] = (d && d.length) ? d[0].iso : null;
+    });
+    return out;
+  }, KNOWN);
+  ok(r.ready, "the festival rules and the pañcāṅga are on the page");
+  if (r.ready) {
+    const wrong = Object.keys(KNOWN).filter(k => r.got[k] !== KNOWN[k]);
+    ok(wrong.length === 0,
+       "all " + Object.keys(KNOWN).length + " match the published 2025 dates",
+       wrong.map(k => k + ": got " + r.got[k] + " want " + KNOWN[k]).join(" | "));
+  }
+}
+
+console.log("\nA lunar month does not change its name in the middle");
+{
+  const r = await pg.evaluate(() => {
+    const NP = window.NP, P = NP.savedPlace() || NP.PLACES[0];
+    /* walk four years a day at a time, grouping by lunation: a month is the
+       stretch between two new Moons, and every day in it must agree */
+    const bad = [];
+    let curStart = null, curName = null, lastPhase = null;
+    for (let d = 0; d < 365 * 4; d++) {
+      const ms = Date.UTC(2027, 0, 1, 12) + d * 86400000;
+      const D = NP.day(ms, P, { month: true });
+      const ph = D.phase;
+      if (lastPhase != null && ph < lastPhase) {   /* a new Moon passed */
+        curStart = ms; curName = D.masaFestival;
+      } else if (curName != null && D.masaFestival !== curName) {
+        bad.push(new Date(ms).toISOString().slice(0, 10) + ": " +
+                 curName + " -> " + D.masaFestival);
+        curName = D.masaFestival;
+      } else if (curName == null) curName = D.masaFestival;
+      lastPhase = ph;
+    }
+    return { bad: bad.slice(0, 6), n: bad.length };
+  });
+  ok(r.n === 0, "four years of lunations each keep one name throughout",
+     r.bad.join(" | "));
+}
+
+console.log("\nEvery festival reel says true things about its dates");
+{
+  const r = await pg.evaluate(() => {
+    const out = { rules: [], metonic: {}, gaps: {}, lun: null };
+    const NP = window.NP, P = NP.savedPlace() || NP.PLACES[0];
+    window.SPFest.LIST.forEach(q => {
+      const d = window.SPFest.datesFor(q.fest, 2026, 24);
+      if (!d || d.length < 10) { out.rules.push(q.fest + ": too few"); return; }
+      /* the rule, re-applied: the day the reel found must carry the month
+         and tithi the rule names */
+      let rule = null;
+      NP.FESTIVALS.forEach(f => { if (f.key === q.fest) rule = f; });
+      d.forEach(x => {
+        if (rule.solar != null) return;
+        const want = (rule.t instanceof Array) ? rule.t[0] : rule.t;
+        if (rule.after) return;
+        const D = NP.day(x.t, P, { month: true });
+        if (NP.masaIdx(D.masaFestival) !== rule.m)
+          out.rules.push(q.fest + " " + x.iso + ": month " + D.masaFestival);
+        /* A SKIPPED TITHI IS NOT A WRONG DATE. When a tithi begins and ends
+           between two sunrises it is never current at one, and the rule
+           falls to the following day — the kṣaya case the engine handles
+           explicitly. So the sunrise tithi is the rule's own, or the next. */
+        if (!rule.when && D.at.tithi.i !== want &&
+            D.at.tithi.i !== (want + 1) % 30)
+          out.rules.push(q.fest + " " + x.iso + ": tithi " + D.at.tithi.i);
+      });
+      const m = window.SPFest.metonic(d);
+      out.metonic[q.fest] = m ? m.lag : null;
+      out.gaps[q.fest] = (d.gaps || []).map(g => g.why);
+    });
+    /* the lunation reel: thirty moons, the festival's own tithi ringed, and
+       a clock that starts at the new Moon rather than at today */
+    const R = window.SPStories.build("fest.moon.diwali",
+      { t0: Date.parse("2026-06-01") });
+    out.lun = { n: R.lunation.n, mark: R.lunation.mark,
+                startsAtLunation: Math.abs(R.tl.t0 - R.lunation.t0) < 1000,
+                days: (R.tl.t1 - R.tl.t0) / 86400000 };
+    return out;
+  });
+  ok(r.rules.length === 0,
+     "every date a reel plots satisfies the rule it names",
+     r.rules.slice(0, 4).join(" | "));
+  const lunar = Object.keys(r.metonic).filter(k => k !== "makara");
+  const notNineteen = lunar.filter(k => r.metonic[k] !== 19);
+  ok(notNineteen.length === 0,
+     "all " + lunar.length + " lunar festivals return after 19 years — the " +
+     "Metonic cycle, measured from the dates",
+     notNineteen.map(k => k + ": " + r.metonic[k]).join(" | "));
+  const badGaps = Object.keys(r.gaps).filter(k =>
+    r.gaps[k].some(w => !w || w.length < 10));
+  ok(badGaps.length === 0,
+     "a year the rule admits no day is reported with its reason, not dropped",
+     badGaps.join(" | "));
+  ok(r.lun.n === 30, "the lunation ring is thirty tithis");
+  ok(r.lun.mark === 29,
+     "and Dīvālī's ring is on the thirtieth — amāvāsyā, which the rule " +
+     "names, not caturdaśī, which is what sunrise reads that day",
+     "mark " + r.lun.mark);
+  ok(r.lun.startsAtLunation,
+     "the lunation clock starts at that month's new Moon, not at the date " +
+     "the reel was asked for");
+  ok(r.lun.days > 28 && r.lun.days < 31,
+     "and runs one lunation: " + r.lun.days.toFixed(2) + " days");
+}
+
 /* ---- 9. the page -------------------------------------------------------- */
 console.log("\nThe page behaves");
 {

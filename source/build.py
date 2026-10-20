@@ -414,6 +414,12 @@ def build_shared():
                             read(SRC, "js", "sim-scenarios.js") + "\n" +
                             read(SRC, "js", "sp-stories.js") + "\n" +
                             read(SRC, "js", "sp-stories-engines.js") + "\n" +
+                            # the pancanga and the festival RULES, so the
+                            # festival reels search for the day that satisfies
+                            # the rule rather than carrying a table of dates
+                            read(SRC, "js", "panchanga.js") + "\n" +
+                            read(SRC, "js", "festivals.js") + "\n" +
+                            read(SRC, "js", "sp-festivals.js") + "\n" +
                             read(SRC, "js", "sp-reelui.js")),
         "simulation.js": brandify(read(SRC, "js", "sim-engine.js") + "\n" +
                                   read(SRC, "js", "sim-scenarios.js") + "\n" +

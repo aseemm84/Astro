@@ -723,16 +723,22 @@
       ? (last.t - S.events[0].t) / (S.events.length - 1) : 0;
     var endT = S.cover ? S.cover.t1
                        : Math.min(spec.t1, last.t + step * 0.6);
+    /* A STORY MAY NOT START WHERE IT WAS ASKED TO. A lunation reel is a
+       picture of one month, and which month is decided by the festival in
+       it, not by the date the reel was requested on — so its clock has to
+       begin at that month's new Moon. Taking the start from the request
+       instead put the Holī lunation's counter at day minus two hundred. */
+    var startT = S.cover ? S.cover.t0 : spec.t0;
     S.tl = window.SPReel.buildTimeline(S.events, {
-      t0: spec.t0, t1: endT, seconds: seconds,
+      t0: startT, t1: endT, seconds: seconds,
       lead: opts.lead == null ? Math.min(2.2, seconds * 0.07) : opts.lead,
       tail: opts.tail == null ? Math.min(5.5, seconds * 0.17) : opts.tail,
       hold: opts.hold == null ? 0.65 : opts.hold
     });
-    S.years = Math.round((endT - spec.t0) / DAY / 365.2564);
+    S.years = Math.round((endT - startT) / DAY / 365.2564);
     S.askedYears = years;
     S.truncated = S.years < years - 1;
-    S.t0 = spec.t0; S.t1 = endT;
+    S.t0 = startT; S.t1 = endT;
     return S;
   }
 

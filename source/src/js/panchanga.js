@@ -469,7 +469,14 @@
     var pc = window.__kPanchang(su, mo, jd);
     var ayn = 0;
     try { ayn = window.__ayanFor ? window.__ayanFor("lahiri", jd) : 0; } catch (e) {}
-    var MS = window.__kMasa(su, mo, ayn);
+    /* the Sun where it actually was at the new moon that began this lunar
+       month, rather than back-projected with mean motions — see masaOf */
+    var nmSun = null;
+    try {
+      var nm = newMoonNear(sr, -1);
+      if (nm != null) nmSun = sidAt("Sun", nm);
+    } catch (e) { nmSun = null; }
+    var MS = window.__kMasa(su, mo, ayn, nmSun);
 
     var ss = riseSet(sr, P, -1);
     var srNext = riseSet(sr + 3600000, P, +1);

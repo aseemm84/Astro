@@ -410,9 +410,28 @@ var LMONTH=["Vaishakha","Jyeshtha","Ashadha","Shravana","Bhadrapada","Ashwina","
 var RITU={Chaitra:"Vasanta",Vaishakha:"Vasanta",Jyeshtha:"Grishma",Ashadha:"Grishma",
   Shravana:"Varsha",Bhadrapada:"Varsha",Ashwina:"Sharad",Kartika:"Sharad",
   Margashirsha:"Hemanta",Pausha:"Hemanta",Magha:"Shishira",Phalguna:"Shishira"};
-function masaOf(sunSid,moonSid,ayan){
+/* THE MONTH IS NAMED FROM WHERE THE SUN WAS AT THE NEW MOON, and the fourth
+   argument is how to say that exactly.
+
+   Without it this back-projects: take the tithis elapsed since the new moon,
+   multiply by the Sun's MEAN motion and a MEAN tithi length, and subtract.
+   Both means are wrong by a little, and the error grows across the month — so
+   when the Sun stood within about half a degree of a rasi boundary at the new
+   moon, floor(sunAtNM/30) came out one way on some days of that month and the
+   other way on others. The month then changed its NAME in the middle of
+   itself: April 2029 ran Chaitra, Vaishakha, Chaitra, Vaishakha on successive
+   stretches of one lunation, and the festivals whose rule names a month fell
+   through the gap. Rama Navami went missing in 2029 and 2048.
+
+   Callers that know the real conjunction pass the Sun's true sidereal
+   longitude there, which is constant for every day of the month by
+   construction. The approximation stays for callers that have only the two
+   longitudes. */
+function masaOf(sunSid,moonSid,ayan,sunAtNewMoon){
   var elapsed=norm(moonSid-sunSid)/12;
-  var sunAtNM=norm(sunSid-elapsed*0.9856*(29.53/30));
+  var sunAtNM=(sunAtNewMoon!=null&&isFinite(sunAtNewMoon))
+    ? norm(sunAtNewMoon)
+    : norm(sunSid-elapsed*0.9856*(29.53/30));
   var amanta=LMONTH[Math.floor(sunAtNM/30)%12];
   var krishna=(norm(moonSid-sunSid)/12)>=15;
   var trop=norm(sunSid+(ayan||0));
@@ -1314,7 +1333,8 @@ try{ window.__AVT=AVT; window.__ayan=ayanamsa;
    in an IIFE — appended at the end of the file they are outside it and cannot see
    a single one of the functions they call. */
 window.__kPanchang=function(sunSid,moonSid,jd){ return panchang(sunSid,moonSid,jd); };
-window.__kMasa=function(sunSid,moonSid,ayan){ return masaOf(sunSid,moonSid,ayan); };
+window.__kMasa=function(sunSid,moonSid,ayan,sunAtNewMoon){
+  return masaOf(sunSid,moonSid,ayan,sunAtNewMoon); };
 window.__kNak=function(deg){ return nak(deg); };
 window.__kJD=function(ms){ return ms/86400000+2440587.5; };
 /* Geocentric distance in kilometres, and equatorial coordinates of date.

@@ -1000,9 +1000,22 @@
       return;
     }
     if (window.SPBody && window.SPBody.ready()) {
+      /* On a pale ground the unlit half of a Moon is a dark disc with no
+         edge, and a ring of them reads as holes punched in the paper. A thin
+         ink outline is what an engraver would have drawn, and it puts the
+         limb back. */
+      if (P.banded) {
+        c.save();
+        c.globalAlpha = 0.55;
+        c.strokeStyle = G.rgba(P.line, 1);
+        c.lineWidth = Math.max(0.8, r * 0.07);
+        c.beginPath(); c.arc(x, y, r * 1.02, 0, TAU); c.stroke();
+        c.restore();
+      }
       var spin = window.SPBody.spinFor(name, opt.progress || 0, r);
       window.SPBody.draw(c, name, x, y, r, {
         phase: opt.phase, spinDeg: spin,
+        earthshine: opt.earthshine, shineStrong: opt.shineStrong,
         halo: P.dark ? (name === "Sun" ? 0.55 : 0.22) : 0,
         haloCol: name === "Sun" ? P.warm : P.hot,
         haloReach: name === "Sun" ? 3.0 : 2.1,
@@ -1014,8 +1027,151 @@
            { reach: 2.4, core: 0.5 });
   }
 
+
+  /* --- 7. where in the year it falls --------------------------------------
+     THE QUESTION EVERY FESTIVAL REEL IS ACTUALLY ABOUT. Dīvālī is not "the
+     eighth of November". It is the amāvāsyā of Kārtika, and the Gregorian
+     date is a consequence — which is why it wanders across five weeks and
+     why, after nineteen years, it comes back to almost where it started.
+
+     So the ring here is the GREGORIAN YEAR, not the zodiac: January at the
+     top, the months marked, and each year's festival a bead at its own day
+     of the year, spiralling inward with time. The wandering is the subject.
+     The Moon at the live bead is drawn at its real phase for that date, so
+     the rule is visible rather than asserted: Dīvālī's bead is always a new
+     Moon, Holī's always a full one. */
+  var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  var MSTART = [0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334];
+  var S_year = {
+    base: function (c, G, R, reel, P) {
+      var g = geom("whirl", R, reel), r = g.r, i;
+      c.save();
+      c.globalAlpha = P.dark ? 0.55 : 0.8;
+      c.strokeStyle = G.rgba(P.line, 0.8);
+      c.lineWidth = Math.max(1, r * 0.004);
+      c.beginPath(); c.arc(g.cx, g.cy, r, 0, TAU); c.stroke();
+      for (i = 0; i < 12; i++) {
+        var a = (MSTART[i] / 365.25 * 360 - 90) * R2;
+        c.beginPath();
+        c.moveTo(g.cx + Math.cos(a) * r, g.cy + Math.sin(a) * r);
+        c.lineTo(g.cx + Math.cos(a) * r * 0.955, g.cy + Math.sin(a) * r * 0.955);
+        c.stroke();
+      }
+      plain(c);
+      c.fillStyle = G.rgba(P.banded ? P.ink : P.dim, P.banded ? 0.95 : 0.85);
+      c.textAlign = "center";
+      c.textBaseline = "middle";
+      c.font = (P.banded ? "italic " : "600 ") + (r * 0.062).toFixed(1) +
+               "px " + SERIF;
+      for (i = 0; i < 12; i++) {
+        var m = ((MSTART[i] + 15) / 365.25 * 360 - 90) * R2, q = r * 1.085;
+        c.fillText(MONTHS[i], g.cx + Math.cos(m) * q, g.cy + Math.sin(m) * q);
+      }
+      c.restore();
+    },
+    append: function (c, G, R, reel, P, from, to) {
+      var g = geom("whirl", R, reel), ev = reel.events, n = ev.length;
+      for (var i = from; i < to; i++) {
+        var q = g.r * (0.92 - 0.46 * (n > 1 ? i / (n - 1) : 0));
+        var a = (ev[i].doy / 365.25 * 360 - 90) * R2;
+        G.dot(c, g.cx + Math.cos(a) * q, g.cy + Math.sin(a) * q,
+              g.r * (n < 40 ? 0.014 : 0.009), P.gold, P.dark ? 0.85 : 0.9);
+      }
+    },
+    live: function (c, G, R, reel, P, now, idx, k, p) {
+      var g = geom("whirl", R, reel), ev = reel.events, n = ev.length;
+      if (idx < 0 || idx >= n) return;
+      var q = g.r * (0.92 - 0.46 * (n > 1 ? idx / (n - 1) : 0));
+      var a = (ev[idx].doy / 365.25 * 360 - 90) * R2;
+      var x = g.cx + Math.cos(a) * q, y = g.cy + Math.sin(a) * q;
+      c.save();
+      c.globalAlpha = P.dark ? 0.35 : 0.5;
+      c.strokeStyle = G.rgba(P.accent, 1);
+      c.lineWidth = Math.max(1, g.r * 0.003);
+      c.beginPath();
+      c.moveTo(g.cx, g.cy);
+      c.lineTo(g.cx + Math.cos(a) * g.r, g.cy + Math.sin(a) * g.r);
+      c.stroke();
+      c.restore();
+      /* the Moon at the phase the rule demands, which is the rule made
+         visible: an amāvāsyā festival is always a dark disc and a pūrṇimā
+         one always a full disc, and nobody has to take that on trust */
+      drawBody(c, G, "Moon", x, y, g.r * 0.055, P,
+               { phase: ev[idx].phase, progress: p,
+                 earthshine: ev[idx].phase < 45 || ev[idx].phase > 315,
+                 shineStrong: true });
+    }
+  };
+
+  /* --- 8. the lunation -----------------------------------------------------
+     One month of Moons, drawn as the thirty tithis they are, with the
+     festival's own tithi marked. The pointer walks the circle as the clock
+     runs, and the disc under it is the Moon as it actually looked that
+     night. This is the reel that answers "what does the fifteenth of the
+     dark fortnight MEAN" without a word of explanation. */
+  var S_lunation = {
+    base: function (c, G, R, reel, P) {
+      var g = geom("whirl", R, reel), r = g.r, L = reel.lunation, i;
+      c.save();
+      c.globalAlpha = P.dark ? 0.4 : 0.7;
+      c.strokeStyle = G.rgba(P.line, 0.7);
+      c.lineWidth = Math.max(1, r * 0.003);
+      c.beginPath(); c.arc(g.cx, g.cy, r * 0.80, 0, TAU); c.stroke();
+      c.restore();
+      /* the two fortnights named, because the whole grammar of the date is
+         śukla or kṛṣṇa and a ring of moons does not say which half it is in */
+      plain(c);
+      c.save();
+      c.globalAlpha = P.dark ? 0.6 : 0.85;
+      c.fillStyle = G.rgba(P.dim, 1);
+      c.textAlign = "center";
+      c.font = (P.banded ? "italic " : "") + (r * 0.070).toFixed(1) + "px " + SERIF;
+      c.fillText("śukla pakṣa — the Moon fills", g.cx, g.cy - r * 1.12);
+      c.fillText("kṛṣṇa pakṣa — the Moon empties", g.cx, g.cy + r * 1.19);
+      c.restore();
+      for (i = 0; i < L.n; i++) {
+        var a = (i / L.n * 360 - 90) * R2;
+        var x = g.cx + Math.cos(a) * r * 0.80, y = g.cy + Math.sin(a) * r * 0.80;
+        var mark = (i === L.mark);
+        drawBody(c, G, "Moon", x, y, r * (mark ? 0.062 : 0.040), P,
+                 { phase: (i + 0.5) / L.n * 360,
+                   earthshine: i === 0 || i === L.n - 1 ||
+                               (i + 0.5) / L.n * 360 < 30 });
+        if (mark) {
+          c.save();
+          c.globalAlpha = 0.9;
+          c.strokeStyle = G.rgba(P.accent, 1);
+          c.lineWidth = Math.max(1.4, r * 0.006);
+          c.beginPath(); c.arc(x, y, r * 0.088, 0, TAU); c.stroke();
+          c.restore();
+        }
+      }
+    },
+    append: function () {},
+    live: function (c, G, R, reel, P, now, idx, k, p) {
+      var g = geom("whirl", R, reel), r = g.r, L = reel.lunation;
+      var f = clamp((now.t - L.t0) / Math.max(1, L.t1 - L.t0), 0, 1);
+      var a = (f * 360 - 90) * R2;
+      c.save();
+      c.globalAlpha = P.dark ? 0.55 : 0.7;
+      c.strokeStyle = G.rgba(P.accent, 1);
+      c.lineWidth = Math.max(1.2, r * 0.005);
+      c.beginPath();
+      c.moveTo(g.cx, g.cy);
+      c.lineTo(g.cx + Math.cos(a) * r * 0.66, g.cy + Math.sin(a) * r * 0.66);
+      c.stroke();
+      c.restore();
+      /* the Moon as it is at this instant, large, in the middle */
+      drawBody(c, G, "Moon", g.cx, g.cy, r * 0.20, P,
+               { phase: L.phaseAt(now.t), progress: p,
+                 earthshine: true });
+    }
+  };
+
   var STAGES = { nodes: S_nodes, thread: S_thread, whirl: S_whirl,
-                 loops: S_loops, drift: S_drift, orbit: S_orbit };
+                 loops: S_loops, drift: S_drift, orbit: S_orbit,
+                 year: S_year, lunation: S_lunation };
 
   /* how many items a stage has, and how many of them have happened by `now` */
   function countOf(reel) {
@@ -1024,6 +1180,7 @@
       case "loops": return reel.track.t.length;
       case "drift": return reel.drift.t.length;
       case "orbit": return reel.orbit.t.length;
+      case "lunation": return 0;
       default: return reel.events.length;
     }
   }

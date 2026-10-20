@@ -151,9 +151,9 @@
     c.drawImage(cv, x - R, y - R, R * 2, R * 2);
     if (opt.earthshine) {
       c.globalCompositeOperation = "lighter";
-      c.globalAlpha = 0.75;
-      c.strokeStyle = opt.earthshineCol || "rgba(186,200,226,0.95)";
-      c.lineWidth = Math.max(1, R * 0.16);
+      c.globalAlpha = opt.shineStrong ? 1 : 0.75;
+      c.strokeStyle = opt.earthshineCol || "rgba(196,210,236,0.98)";
+      c.lineWidth = Math.max(1.4, R * (opt.shineStrong ? 0.22 : 0.16));
       c.beginPath();
       c.arc(x, y, R * 0.94, 0, 6.283185307179586);
       c.stroke();
