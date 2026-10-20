@@ -358,3 +358,4 @@ else boot();
     navigator.serviceWorker.register("sw.js").catch(function(){});
   });
 })();
+;

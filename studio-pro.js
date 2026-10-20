@@ -1115,6 +1115,7 @@
     norm: norm
   };
 })();
+;
 
 /* ===== Studio Pro — the node registry ====================================
 
@@ -2313,6 +2314,7 @@
     houseOf: houseOf
   };
 })();
+;
 
 /* ===== The almanac card — an ornate pañcāṅga leaf =========================
 
@@ -2903,6 +2905,7 @@
 
   window.SPAlmanac = { draw: draw, inks: inks };
 })();
+;
 
 /* ===== Studio Pro — the stage, and the composers =========================
 
@@ -4684,6 +4687,7 @@
       return { key: K.key, label: K.label, blurb: K.blurb }; }); }
   };
 })();
+;
 
 /* ===== Studio Pro — the long cycles =======================================
 
@@ -5104,6 +5108,7 @@
     document.addEventListener("DOMContentLoaded", publish);
   else setTimeout(publish, 0);
 })();
+;
 
 /* ===== The Sūrya Siddhānta, published into the studio =====================
 
@@ -5553,6 +5558,7 @@
     document.addEventListener("DOMContentLoaded", publish);
   else setTimeout(publish, 0);
 })();
+;
 
 /* ===== Studio Pro / Director Pro — saying what you want ===================
 
@@ -6208,6 +6214,7 @@
     ALIAS: ALIAS, EVENTS: EVENTS, FIGURES: FIGURES, MANNER: MANNER
   };
 })();
+;
 
 /* ===== Saying what you want — the panel ===================================
 
@@ -6433,6 +6440,7 @@
     document.addEventListener("DOMContentLoaded", function () { setTimeout(boot, 60); });
   else setTimeout(boot, 60);
 })();
+;
 
 /* ===== Studio Pro — Director mode =========================================
 
@@ -7465,6 +7473,7 @@
     save: save, load: load, drop: drop, saved: readAll
   };
 })();
+;
 
 /* ===== Studio Pro — the Director panel ====================================
 
@@ -8317,6 +8326,7 @@
     overlay: function (p) { if (D && D.on()) D.overlay(p); }
   };
 })();
+;
 
 /* ===== Studio Pro — the page ==============================================
 
@@ -9473,3 +9483,4 @@
     };
   } catch (e) {}
 })();
+;

@@ -270,3 +270,4 @@
 
   window.NPlaces = NPL;
 })();
+;

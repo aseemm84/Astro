@@ -43,6 +43,7 @@
   window.NMark = { uri: URI, ready: ready,
                    get: function () { return IMG; } };
 })();
+;
 
 /* ===== The light ==========================================================
 
@@ -421,6 +422,7 @@
     _sprites: function () { return SPR_KEYS.length; }
   };
 })();
+;
 
 /* ===== cards.js — the reel strip, and a card you compose yourself ===========
 
@@ -2931,3 +2933,4 @@
     document.addEventListener("DOMContentLoaded", boot);
   else boot();
 })();
+;

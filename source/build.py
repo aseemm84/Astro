@@ -32,6 +32,29 @@ def read(*p):
     with open(os.path.join(*p), encoding="utf-8") as f:
         return f.read()
 
+def jsread(*p):
+    """A JavaScript file, safe to concatenate with the next one.
+
+    EVERY BUNDLE HERE IS FILES GLUED END TO END, and that is a sharper edge
+    than it looks. A file whose last statement has no semicolon does not
+    simply end: if the next file begins with "(" or "[", the parser reads it
+    as a call or an index on whatever the previous file finished with.
+
+    Both vendored muxers end with
+
+        if (typeof module === "object" && ...) Object.assign(module.exports, X)
+
+    and no semicolon. In a browser `module` is undefined, so that branch is
+    never taken -- and the file after it, an IIFE beginning with "(", was
+    parsed as its ARGUMENT and silently never ran. No error, no warning, and
+    the global it defines simply absent. It cost an hour to find, and it
+    would have cost that again the next time anything was vendored.
+
+    So a semicolon goes between every pair, where it is an empty statement
+    and harmless, rather than being left to the last line of whatever was
+    pasted in."""
+    return read(*p).rstrip() + "\n;\n"
+
 def report_bundle():
     """Concatenate the report modules in manifest order. They are slices of one
     closure, not independent files, so order matters and stray files are an error."""
@@ -162,13 +185,13 @@ def build_kundli():
     shell = brandify(shell).replace("<!--LOGO-->", logo_mark())
     parts = [("<!--CSS-->", read(SRC, "css", "app.css"), "style"),
              ("<!--JS0-->", read(VEND, "astronomy.browser.min.js"), "script"),
-             ("<!--JS1-->", read(SRC, "js", "engine.js"), "script"),
+             ("<!--JS1-->", jsread(SRC, "js", "engine.js"), "script"),
              ("<!--JS2-->", report_bundle(), "script"),
              # places.js before ui.js: the form's city search and the motion
              # pane's place picker are the same code now, and the bundle must
              # define it before either uses it.
-             ("<!--JS3-->", read(SRC, "js", "places.js") + "\n" +
-                            read(SRC, "js", "ui.js"), "script")]
+             ("<!--JS3-->", jsread(SRC, "js", "places.js") + "\n" +
+                            jsread(SRC, "js", "ui.js"), "script")]
     stamp = build_stamp([shell] + [b for _, b, _ in parts])
     if "<!--BUILD-->" in shell:
         shell = shell.replace("<!--BUILD-->", stamp)
@@ -193,7 +216,7 @@ def build_pwa(built):
     The stamp covers every other built file, so it is computed here, after they
     exist, rather than from the kundli shell alone."""
     stamp = build_stamp([t for n, t in sorted(built.items())])
-    sw = read(SRC, "js", "sw.js").replace("{{STAMP}}", stamp)
+    sw = jsread(SRC, "js", "sw.js").replace("{{STAMP}}", stamp)
     if "{{STAMP}}" in sw or stamp not in sw:
         raise SystemExit("the service worker did not take the build stamp")
     manifest = {
@@ -307,25 +330,25 @@ def build_shared():
     subject to the restriction that blocks fetch() on file://."""
     return {
         "engine.js": (read(VEND, "astronomy.browser.min.js") + "\n" +
-                      brandify(read(SRC, "js", "engine.js"))),
-        "site.js":   brandify(read(SRC, "js", "site.js")),
+                      brandify(jsread(SRC, "js", "engine.js"))),
+        "site.js":   brandify(jsread(SRC, "js", "site.js")),
         # now.html's own script. Referenced rather than inlined for the same reason
         # site.js is: it is wanted on one page and the rest should not carry it.
-        "now.js":    brandify(read(SRC, "js", "now.js")),
+        "now.js":    brandify(jsread(SRC, "js", "now.js")),
         # The shared day object: now.html and calendar.html are two views of it.
         # Written once because two implementations of "which day is this" would
         # eventually disagree, and for a calendar that is the only thing that
         # matters. festivals.js extends the same window.NP, so they ship as one
         # file and a page cannot load half of the pair.
-        "calendar.js": brandify(read(SRC, "js", "calendar.js")),
+        "calendar.js": brandify(jsread(SRC, "js", "calendar.js")),
         # The city list, loading and search, shared so the calendar does not grow
         # a second copy of "which city is this and what is its offset". Lazy: the
         # 3 MB of rows are fetched only when somebody actually searches.
-        "places.js": brandify(read(SRC, "js", "places.js")),
+        "places.js": brandify(jsread(SRC, "js", "places.js")),
         # studio.html's own script: what is worth posting today, the caption and
         # the image. Loaded only on that page, like now.js and calendar.js.
-        "studio.js": brandify(read(SRC, "js", "brand-mark.js") + "\n" +
-                              read(SRC, "js", "studio.js")),
+        "studio.js": brandify(jsread(SRC, "js", "brand-mark.js") + "\n" +
+                              jsread(SRC, "js", "studio.js")),
         # The reel strip and the card composer. A separate file from studio.js
         # because it is a separate concern and because the Studio's own card
         # keeps working if this one fails to load; it rides on that page because
@@ -334,9 +357,9 @@ def build_shared():
         # sp-glow rides along for the watercolour wash the paper themes
         # share with the reels, so a card and a reel posted together look
         # like one hand made them.
-        "cards.js": brandify(read(SRC, "js", "brand-mark.js") + "\n" +
-                             read(SRC, "js", "sp-glow.js") + "\n" +
-                             read(SRC, "js", "cards.js")),
+        "cards.js": brandify(jsread(SRC, "js", "brand-mark.js") + "\n" +
+                             jsread(SRC, "js", "sp-glow.js") + "\n" +
+                             jsread(SRC, "js", "cards.js")),
         # Studio Pro ships as one file built from six: the node registry, the
         # almanac leaf, the composers that draw from shapes, the Director layer
         # model, its panel, and the page wiring. Six files because they are six
@@ -349,17 +372,17 @@ def build_shared():
         # panel must have published window.SPDirUI by then, and it is simpler
         # to read the file in the order the dependencies run than to rely on
         # that being true.
-        "studio-pro.js": brandify(read(SRC, "js", "ss-engine.js") + "\n" +
-                                  read(SRC, "js", "sp-nodes.js") + "\n" +
-                                  read(SRC, "js", "sp-almanac.js") + "\n" +
-                                  read(SRC, "js", "sp-compose.js") + "\n" +
-                                  read(SRC, "js", "sp-cycles.js") + "\n" +
-                                  read(SRC, "js", "ss-nodes.js") + "\n" +
-                                  read(SRC, "js", "sp-intent.js") + "\n" +
-                                  read(SRC, "js", "sp-intentui.js") + "\n" +
-                                  read(SRC, "js", "sp-director.js") + "\n" +
-                                  read(SRC, "js", "sp-dirui.js") + "\n" +
-                                  read(SRC, "js", "sp-ui.js")),
+        "studio-pro.js": brandify(jsread(SRC, "js", "ss-engine.js") + "\n" +
+                                  jsread(SRC, "js", "sp-nodes.js") + "\n" +
+                                  jsread(SRC, "js", "sp-almanac.js") + "\n" +
+                                  jsread(SRC, "js", "sp-compose.js") + "\n" +
+                                  jsread(SRC, "js", "sp-cycles.js") + "\n" +
+                                  jsread(SRC, "js", "ss-nodes.js") + "\n" +
+                                  jsread(SRC, "js", "sp-intent.js") + "\n" +
+                                  jsread(SRC, "js", "sp-intentui.js") + "\n" +
+                                  jsread(SRC, "js", "sp-director.js") + "\n" +
+                                  jsread(SRC, "js", "sp-dirui.js") + "\n" +
+                                  jsread(SRC, "js", "sp-ui.js")),
         # Director Pro is a keyframe workstation built on Studio Pro's parts:
         # it borrows the node registry, the almanac leaf and all fifteen
         # composers rather than carrying a second set of pictures free to
@@ -367,24 +390,24 @@ def build_shared():
         # renderer, the export and the page — and sp-director rides along
         # because the text tokens live there and a second copy of {tithi} that
         # resolved differently would be exactly the bug this avoids.
-        "director-pro.js": brandify(read(SRC, "js", "ss-engine.js") + "\n" +
-                                    read(SRC, "js", "sp-nodes.js") + "\n" +
-                                    read(SRC, "js", "sp-almanac.js") + "\n" +
-                                    read(SRC, "js", "sp-compose.js") + "\n" +
-                                    read(SRC, "js", "sp-cycles.js") + "\n" +
-                                    read(SRC, "js", "ss-nodes.js") + "\n" +
-                                    read(SRC, "js", "sp-intent.js") + "\n" +
-                                    read(SRC, "js", "sp-intentui.js") + "\n" +
-                                    read(SRC, "js", "sp-director.js") + "\n" +
-                                    read(SRC, "js", "dp-model.js") + "\n" +
-                                    read(SRC, "js", "dp-render.js") + "\n" +
-                                    read(SRC, "js", "dp-export.js") + "\n" +
-                                    read(SRC, "js", "dp-ui.js")),
+        "director-pro.js": brandify(jsread(SRC, "js", "ss-engine.js") + "\n" +
+                                    jsread(SRC, "js", "sp-nodes.js") + "\n" +
+                                    jsread(SRC, "js", "sp-almanac.js") + "\n" +
+                                    jsread(SRC, "js", "sp-compose.js") + "\n" +
+                                    jsread(SRC, "js", "sp-cycles.js") + "\n" +
+                                    jsread(SRC, "js", "ss-nodes.js") + "\n" +
+                                    jsread(SRC, "js", "sp-intent.js") + "\n" +
+                                    jsread(SRC, "js", "sp-intentui.js") + "\n" +
+                                    jsread(SRC, "js", "sp-director.js") + "\n" +
+                                    jsread(SRC, "js", "dp-model.js") + "\n" +
+                                    jsread(SRC, "js", "dp-render.js") + "\n" +
+                                    jsread(SRC, "js", "dp-export.js") + "\n" +
+                                    jsread(SRC, "js", "dp-ui.js")),
         # The Sūrya Siddhānta page carries the engine and its own view. The
         # engine is also inside the two studio bundles, because the nodes it
         # publishes live there — one implementation, three places it is read.
-        "siddhanta.js": brandify(read(SRC, "js", "ss-engine.js") + "\n" +
-                                 read(SRC, "js", "ss-page.js")),
+        "siddhanta.js": brandify(jsread(SRC, "js", "ss-engine.js") + "\n" +
+                                 jsread(SRC, "js", "ss-page.js")),
         # The simulator: a gravitational integrator, the scenario library,
         # the renderer and the page. It needs engine.js beside it for the
         # state vectors the runs start from — the initial conditions are the
@@ -397,50 +420,56 @@ def build_shared():
         # second three is that only a site which has them can make those
         # reels: the Surya Siddhanta's own method, the n-body integrator, and
         # the cycle registry, alongside the modern ephemeris in engine.js.
-        "reel.js": brandify(read(SRC, "js", "brand-mark.js") + "\n" +
-                            read(SRC, "js", "sp-glow.js") + "\n" +
+        "reel.js": brandify(jsread(SRC, "js", "brand-mark.js") + "\n" +
+                            jsread(SRC, "js", "sp-glow.js") + "\n" +
                             # the procedural grahas: every surface generated
                             # and lit from where the Sun actually is. The
                             # reels drew glowing dots before this, which was
                             # both worse and a waste of the best thing here.
-                            read(SRC, "js", "report", "motion",
+                            jsread(SRC, "js", "report", "motion",
                                  "54-motion-bodies.js") + "\n" +
-                            read(SRC, "js", "sp-bodies.js") + "\n" +
-                            read(SRC, "js", "sp-reel.js") + "\n" +
-                            read(SRC, "js", "ss-engine.js") + "\n" +
-                            read(SRC, "js", "sp-nodes.js") + "\n" +
-                            read(SRC, "js", "sp-cycles.js") + "\n" +
-                            read(SRC, "js", "sim-engine.js") + "\n" +
-                            read(SRC, "js", "sim-scenarios.js") + "\n" +
-                            read(SRC, "js", "sp-stories.js") + "\n" +
-                            read(SRC, "js", "sp-stories-engines.js") + "\n" +
+                            jsread(SRC, "js", "sp-bodies.js") + "\n" +
+                            jsread(SRC, "js", "sp-reel.js") + "\n" +
+                            jsread(SRC, "js", "ss-engine.js") + "\n" +
+                            jsread(SRC, "js", "sp-nodes.js") + "\n" +
+                            jsread(SRC, "js", "sp-cycles.js") + "\n" +
+                            jsread(SRC, "js", "sim-engine.js") + "\n" +
+                            jsread(SRC, "js", "sim-scenarios.js") + "\n" +
+                            jsread(SRC, "js", "sp-stories.js") + "\n" +
+                            jsread(SRC, "js", "sp-stories-engines.js") + "\n" +
                             # the pancanga and the festival RULES, so the
                             # festival reels search for the day that satisfies
                             # the rule rather than carrying a table of dates
-                            read(SRC, "js", "panchanga.js") + "\n" +
-                            read(SRC, "js", "festivals.js") + "\n" +
-                            read(SRC, "js", "sp-festivals.js") + "\n" +
+                            jsread(SRC, "js", "panchanga.js") + "\n" +
+                            jsread(SRC, "js", "festivals.js") + "\n" +
+                            jsread(SRC, "js", "sp-festivals.js") + "\n" +
                             # 1347 real stars along the ecliptic, so a
                             # nakshatra drawn out flat is a piece of sky
                             # rather than a diagram with one dot on it
-                            read(SRC, "js", "eclip-stars.js") + "\n" +
+                            jsread(SRC, "js", "eclip-stars.js") + "\n" +
                             # the voiceover script and the caption, in three
                             # languages, rendered from the numbers the reel
                             # actually computed
-                            read(SRC, "js", "sp-script.js") + "\n" +
+                            jsread(SRC, "js", "sp-script.js") + "\n" +
+                            # the exporter: WebCodecs with explicit frame
+                            # timestamps, so a file's duration is a property
+                            # of the reel rather than of the machine
+                            jsread(SRC, "js", "vendor", "mp4-muxer.js") + "\n" +
+                            jsread(SRC, "js", "vendor", "webm-muxer.js") + "\n" +
+                            jsread(SRC, "js", "sp-encode.js") + "\n" +
                             # the chart-independent teaching sets: bhavas,
                             # concepts, nakshatras, rashis. They register as
                             # stories, so the Studio, the recorder and the
                             # export path are the ones every reel uses.
-                            read(SRC, "js", "sp-explain.js") + "\n" +
-                            read(SRC, "js", "sp-reelui.js") + "\n" +
-                            read(SRC, "js", "sp-scriptui.js")),
-        "simulation.js": brandify(read(SRC, "js", "sim-engine.js") + "\n" +
-                                  read(SRC, "js", "sim-scenarios.js") + "\n" +
-                                  read(SRC, "js", "sim-draw.js") + "\n" +
-                                  read(SRC, "js", "sim-ui.js")),
-        "panchanga.js": brandify(read(SRC, "js", "panchanga.js") + "\n" +
-                                 read(SRC, "js", "festivals.js")),
+                            jsread(SRC, "js", "sp-explain.js") + "\n" +
+                            jsread(SRC, "js", "sp-reelui.js") + "\n" +
+                            jsread(SRC, "js", "sp-scriptui.js")),
+        "simulation.js": brandify(jsread(SRC, "js", "sim-engine.js") + "\n" +
+                                  jsread(SRC, "js", "sim-scenarios.js") + "\n" +
+                                  jsread(SRC, "js", "sim-draw.js") + "\n" +
+                                  jsread(SRC, "js", "sim-ui.js")),
+        "panchanga.js": brandify(jsread(SRC, "js", "panchanga.js") + "\n" +
+                                 jsread(SRC, "js", "festivals.js")),
         # cities.js is cities.json with sixteen characters in front of it. The chart
         # page fetches the .json; on file:// fetch is blocked, so it falls back to
         # loading the .js, which is the same data as a script assignment. That made

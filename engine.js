@@ -1803,3 +1803,4 @@ var YOGATARAS_MISSING=[];   /* none — the catalogue is complete */
 /* the wheel's geometry and catalogue are used by the report bundle */
 try{ window.swProject=swProject; window.swRingPath=swRingPath; window.swBandPath=swBandPath;
      window.SW_TILT_DEG=SW_TILT_DEG; window.YOGATARAS=YOGATARAS; window.BRIGHT_STARS=BRIGHT_STARS; }catch(e){}
+;

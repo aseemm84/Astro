@@ -43,6 +43,7 @@
   window.NMark = { uri: URI, ready: ready,
                    get: function () { return IMG; } };
 })();
+;
 
 /* ===== studio.js — what is worth posting, and the picture to post with it ===
 
@@ -975,3 +976,4 @@
     return captionOf(window.__stIdeas[i], window.__stDay);
   };
 })();
+;

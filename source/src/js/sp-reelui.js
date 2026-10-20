@@ -255,27 +255,74 @@
     setTimeout(function () { URL.revokeObjectURL(u); a.remove(); }, 1500);
   }
 
+  /* WHICH EXPORTER, AND WHY IT MATTERS WHICH.
+
+     The WebCodecs path stamps every frame with the time it belongs at, so
+     the file is as long as the reel regardless of how long encoding takes.
+     The MediaRecorder path stamps frames as they arrive, so the file is as
+     long as the ENCODING took — three to four times too long, at seven to
+     ten frames a second. The first is used wherever it exists; the second
+     is kept for browsers without WebCodecs and says plainly what it is,
+     because a file that is silently wrong is worse than one that warns. */
+  function exact() {
+    return !!(window.SPEncode && window.SPEncode.has());
+  }
+  /* Stop has to stop whichever one is running, and the button has to know
+     when there is something to stop — two exporters, one control. */
+  function busyNow() {
+    return window.SPReel.isRecording() ||
+           !!(window.SPEncode && window.SPEncode.busy());
+  }
+  function cancelAnyRecording() {
+    if (window.SPEncode && window.SPEncode.busy()) window.SPEncode.cancel();
+    if (window.SPReel.isRecording()) window.SPReel.cancelRecording();
+  }
   function startRecording() {
-    if (!REEL || window.SPReel.isRecording()) return;
+    if (!REEL) return;
+    if (window.SPReel.isRecording() ||
+        (window.SPEncode && window.SPEncode.busy())) return;
     var cv = $("reel-canvas"), btn = $("reel-rec");
     play(false);
     var fps = +(($("reel-fps") || {}).value || 30);
     if (btn) btn.textContent = "Stop";
-    note("Recording — keep this tab in front.");
-    window.SPReel.record(cv, REEL.seconds, fps, function (p) {
+    var bar = $("reel-prog");
+    function progress(p) { if (bar) bar.value = String(Math.round(p * 100)); }
+    function paint(p) {
       P = p;
       window.SPReel.frameAt(cv.getContext("2d"), W, H, REEL, p);
-      var bar = $("reel-prog");
-      if (bar) bar.value = String(Math.round(p * 100));
-    }, null).then(function (r) {
+    }
+    function done(r) {
       if (btn) btn.textContent = "Record";
-      note("");
-      var ext = r.mime.indexOf("mp4") >= 0 ? "mp4" : "webm";
+      if (!r || r.cancelled) { note(""); return; }
+      var ext = (r.mime || "").indexOf("mp4") >= 0 ? "mp4" : "webm";
       save(r.blob, REEL.key.replace(/\./g, "-") + "." + ext);
-    }).catch(function (e) {
+      note(r.exact
+        ? "Saved — " + r.seconds + "s at " + r.fps + " fps, " + r.codec +
+          " in " + ext.toUpperCase() + "."
+        : "Saved, but this browser cannot stamp frames, so the file runs " +
+          "slower and longer than " + REEL.seconds + "s.", !r.exact);
+    }
+    function failed(e) {
       if (btn) btn.textContent = "Record";
-      note(e.message || "recording failed", true);
-    });
+      note((e && e.message) || "recording failed", true);
+    }
+
+    if (exact()) {
+      note("Encoding — this takes longer than the reel; the file will be " +
+           REEL.seconds + "s either way.");
+      window.SPEncode.encode(cv, {
+        seconds: REEL.seconds, fps: fps, drawAt: paint,
+        onProgress: progress
+      }).then(done).catch(failed);
+      return;
+    }
+    note("Recording — keep this tab in front.");
+    window.SPReel.record(cv, REEL.seconds, fps, function (p) {
+      paint(p); progress(p);
+    }, null).then(function (r) {
+      r.exact = false;
+      done(r);
+    }).catch(failed);
   }
 
   /* ---- boot --------------------------------------------------------------- */
@@ -362,7 +409,7 @@
       play(false); P = (+sc.value) / 1000; drawFrame(); });
     var rc = $("reel-rec");
     if (rc) rc.addEventListener("click", function () {
-      if (window.SPReel.isRecording()) window.SPReel.cancelRecording();
+      if (busyNow()) cancelAnyRecording();
       else startRecording();
     });
     var pn = $("reel-still");

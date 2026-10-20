@@ -530,6 +530,7 @@
     measurePeriod: measurePeriod, measureSynodic: measureSynodic
   };
 })();
+;
 
 /* ===== Counterfactuals, and what follows from them ========================
 
@@ -1223,6 +1224,7 @@
     }
   };
 })();
+;
 
 /* ===== Drawing a counterfactual ===========================================
 
@@ -1604,6 +1606,7 @@
     caption: caption, clock: clock, bodiesOf: bodiesOf
   };
 })();
+;
 
 /* ===== The simulation page ================================================
 
@@ -1877,3 +1880,4 @@
     document.addEventListener("DOMContentLoaded", function () { setTimeout(bind, 60); });
   else setTimeout(bind, 60);
 })();
+;

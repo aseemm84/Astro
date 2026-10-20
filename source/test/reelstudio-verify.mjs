@@ -1185,6 +1185,89 @@ console.log("\nThe place picker changes what it should and nothing else");
 }
 
 /* ---- 9. the page -------------------------------------------------------- */
+console.log("\nA file is as long as the reel says it is");
+{
+  /* THE CHECK THAT WAS MISSING. Nothing had ever opened an exported file
+     and read its duration back, and for as long as that was true the
+     Studio shipped reels three to four times too long, playing at seven to
+     ten frames a second, with the frame-rate control doing nothing at all.
+     MediaRecorder timestamps frames as they ARRIVE, so the file was as long
+     as the encoding took — a property of the machine, not of the reel.
+
+     This records at three sizes and two frame rates and reads the duration
+     off the resulting blob. It is slow by nature: encoding deliberately
+     takes longer than the reel, which is the whole point — the file is the
+     right length anyway. */
+  const r = await pg.evaluate(async () => {
+    if (!window.SPEncode || !window.SPEncode.has())
+      return { skip: "no WebCodecs in this browser" };
+    const R = window.SPStories.build("learn.rashi.1",
+      { t0: Date.parse("2026-01-01") });
+    const rows = [];
+    for (const [W, H, secs, fps] of [[432, 768, 3, 30], [432, 768, 5, 15],
+                                     [1080, 1920, 3, 30]]) {
+      const cv = document.createElement("canvas");
+      cv.width = W; cv.height = H;
+      const c = cv.getContext("2d");
+      const t0 = performance.now();
+      const out = await window.SPEncode.encode(cv, {
+        seconds: secs, fps: fps,
+        drawAt: p => window.SPReel.frameAt(c, W, H, R, p)
+      });
+      const wall = (performance.now() - t0) / 1000;
+      const url = URL.createObjectURL(out.blob);
+      const v = document.createElement("video");
+      v.preload = "metadata"; v.src = url;
+      const dur = await new Promise(res => {
+        v.onloadedmetadata = () => {
+          if (v.duration === Infinity) {
+            v.currentTime = 1e9;
+            v.ontimeupdate = () => { v.ontimeupdate = null; res(v.duration); };
+          } else res(v.duration);
+        };
+        setTimeout(() => res(null), 12000);
+      });
+      URL.revokeObjectURL(url);
+      rows.push({ W, H, secs, fps, dur, wall, bytes: out.blob.size,
+                  codec: out.codec, exact: out.exact, frames: out.frames });
+    }
+    return { rows };
+  });
+
+  if (r.skip) {
+    ok(true, "the exact exporter is unavailable here, so this is skipped: " +
+             r.skip);
+  } else {
+    const bad = r.rows.filter(x => x.dur == null ||
+                                   Math.abs(x.dur - x.secs) > 0.25);
+    ok(bad.length === 0,
+       "every export is the length it was asked for: " +
+       r.rows.map(x => x.secs + "s → " + (x.dur == null ? "?" :
+                  x.dur.toFixed(2) + "s")).join(", "),
+       bad.map(x => x.W + "x" + x.H + " asked " + x.secs + " got " +
+               (x.dur == null ? "unreadable" : x.dur.toFixed(2))).join(" | "));
+    /* and the frame rate is the one asked for, which is what the duration
+       being right actually means once the frame count is fixed */
+    const offFps = r.rows.filter(x => x.dur &&
+      Math.abs(x.frames / x.dur - x.fps) > 1.2);
+    ok(offFps.length === 0,
+       "and runs at the frame rate it was asked for",
+       offFps.map(x => (x.frames / x.dur).toFixed(1) + " vs " + x.fps)
+             .join(" | "));
+    /* the point of the fix, stated: encoding is slower than the reel and
+       that no longer leaks into the file */
+    const slow = r.rows.filter(x => x.wall > x.secs * 1.3);
+    ok(slow.length > 0,
+       "encoding is slower than real time (" +
+       r.rows.map(x => x.wall.toFixed(1) + "s for " + x.secs + "s").join(", ") +
+       ") and the files are right anyway");
+    ok(r.rows.every(x => x.bytes > 20000),
+       "and every file has something in it: " +
+       r.rows.map(x => (x.bytes / 1048576).toFixed(1) + "MB").join(", "));
+  }
+}
+
+
 console.log("\nThe page behaves");
 {
   await pg.setViewportSize({ width: 390, height: 844 });

@@ -1115,6 +1115,7 @@
     norm: norm
   };
 })();
+;
 
 /* ===== The Sūrya Siddhānta page ===========================================
 
@@ -1666,3 +1667,4 @@
     document.addEventListener("DOMContentLoaded", bind);
   else bind();
 })();
+;

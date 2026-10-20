@@ -28,9 +28,9 @@
  *   served by this one even in principle, which is a stronger guarantee than
  *   hoping the revalidation ran.
  *
- * 2026-10-20.f5f6000 is replaced by build.py, which is what makes all of the above true.
+ * 2026-10-20.40f21ac is replaced by build.py, which is what makes all of the above true.
  */
-var CACHE = "nirayana-2026-10-20.f5f6000";
+var CACHE = "nirayana-2026-10-20.40f21ac";
 
 /* Precached on install: the shell a reader needs to have ANY page work offline.
    Deliberately not cities.json — three megabytes is not something to download on
@@ -114,3 +114,4 @@ self.addEventListener("fetch", function (e) {
     })
   );
 });
+;
