@@ -11537,18 +11537,21 @@ function moSunDisc(R,rot){
      The point of a bar here is always that the lengths are real: nineteen
      years of Śani against six of Sūrya is the fact, and a bar that is not to
      scale would be an illustration of a fact rather than the fact. */
-  var S_bar = {
-    base: function () {},
-    append: function (c, G, Rc, reel, P, from, to) {
-      var items = reel.explain.items || [], n = items.length;
+  function barDraw(c, G, Rc, reel, P, from, to, list) {
+    {
+      var items = list || reel.explain.items || [], n = items.length;
       var max = 0;
       items.forEach(function (it) { if (it.value > max) max = it.value; });
       if (!(max > 0)) max = 1;
-      var h = Rc.h * 0.92 / n, lw = Rc.w * 0.30;
+      /* the sub sits past the end of the bar, so the bar can only have what
+         is left after the label on one side and the longest sub on the
+         other — otherwise the figure runs off the frame, which is what the
+         rising time did */
+      var h = Rc.h * 0.92 / n, lw = Rc.w * 0.26, subW = Rc.w * 0.26;
       items.forEach(function (it, i) {
         if (!(it.beat >= from && it.beat < to)) return;
         var y = Rc.y + Rc.h * 0.04 + i * h + h * 0.5;
-        var bw = (Rc.w - lw - Rc.w * 0.16) * (it.value / max);
+        var bw = (Rc.w - lw - subW - Rc.w * 0.06) * (it.value / max);
         c.save();
         RE().plain(c);
         c.textBaseline = "middle";
@@ -11571,8 +11574,48 @@ function moSunDisc(R,rot){
         }
         c.restore();
       });
+    }
+  }
+  var S_bar = {
+    base: function () {},
+    append: function (c, G, Rc, reel, P, from, to) {
+      barDraw(c, G, Rc, reel, P, from, to, null);
     },
     live: function () {}
+  };
+
+  /* ---- a rāśi: the ring above, the measurements below ---------------------
+     A sign wants both pictures. Where it sits on the ring is the half of the
+     answer that is geometry; how long each graha takes to cross it, and how
+     long it takes to rise where you are, is the half that is measured — and
+     the second half is the one nobody is shown. So the stage is split, and
+     an item says which panel it belongs to. */
+  function splitRect(Rc) {
+    return {
+      top: { x: Rc.x, y: Rc.y, w: Rc.w, h: Rc.h * 0.56 },
+      bot: { x: Rc.x, y: Rc.y + Rc.h * 0.58, w: Rc.w, h: Rc.h * 0.42 }
+    };
+  }
+  var S_rashi = {
+    base: function (c, G, Rc, reel, P) {
+      wheelBase(c, G, splitRect(Rc).top, reel, P);
+    },
+    append: function (c, G, Rc, reel, P, from, to) {
+      var S = splitRect(Rc), items = reel.explain.items || [];
+      items.forEach(function (it) {
+        if (it.panel === "bar") return;
+        if (it.beat >= from && it.beat < to) wheelItem(c, G, S.top, reel, P, it);
+      });
+      barDraw(c, G, S.bot, reel, P, from, to,
+              items.filter(function (it) { return it.panel === "bar"; }));
+    },
+    live: function (c, G, Rc, reel, P, now, idx, k) {
+      var note = null;
+      (reel.explain.items || []).forEach(function (it) {
+        if (it.type === "centre" && it.beat < k) note = it;
+      });
+      if (note) centreNote(c, G, splitRect(Rc).top, reel, P, note.text, note.sub);
+    }
   };
 
   /* ---- turning beats into a story ----------------------------------------
@@ -11581,9 +11624,14 @@ function moSunDisc(R,rot){
      inventing a measurement the format does not make. */
   var DAY = 86400000;
   function asStory(E, key) {
+    /* a beat may be written as {lab, say} or as the pair [lab, say] — the
+       sets that are mostly prose use the object, the sets that are mostly
+       data use the pair, and neither should have to care */
     var ev = E.beats.map(function (b, i) {
+      var lab = b.lab != null ? b.lab : b[0];
+      var say = b.say != null ? b.say : b[1];
       return { t: i * DAY, lon: 0, marked: false, hold: false,
-               tally: null, big: b.lab, small: b.say, note: null };
+               tally: null, big: lab, small: say, note: null };
     });
     return {
       key: key, kicker: E.kicker, title: E.title, subtitle: E.subtitle,
@@ -12242,6 +12290,375 @@ function moSunDisc(R,rot){
     };
   }
 
+  /* ---- the twenty-seven nakṣatras ----------------------------------------
+
+     This set exists because of one fact the catalogue records and almost
+     nothing else says out loud: SEVEN OF THE TWENTY-SEVEN JUNCTION STARS DO
+     NOT LIE INSIDE THE EQUAL DIVISION NAMED AFTER THEM.
+
+     The divisions are twenty-seven equal arcs of 13°20′. The yogatārās are
+     real stars, at the longitudes they are actually at. Those two things
+     were never going to line up, and for seven of them they visibly do not
+     — Ārdrā's star is Betelgeuse, which sits in Mṛgaśīrṣā's arc. That is not
+     an error in the scheme or in the catalogue; it is what happens when a
+     naming convention older than the equal division survives the division
+     being made regular. Saying so is more useful than hiding it, and the
+     figure is computed here rather than asserted. */
+
+  var SEG = 40 / 3;                     /* 13°20′ */
+  function nakList() {
+    var Y = window.YOGATARAS;
+    return (Y && Y.length === 27) ? Y : null;
+  }
+  function insideOwn(y) { return Math.floor(norm360(y.sid) / SEG) === y.id; }
+  function norm360(x) { return ((x % 360) + 360) % 360; }
+  /* the gap from the division named after it to the star, signed, in degrees */
+  function strayBy(y) {
+    var lo = y.id * SEG, hi = lo + SEG, x = norm360(y.sid);
+    if (x >= lo && x < hi) return 0;
+    var a = x - lo, b = x - hi;
+    if (a < -180) a += 360; if (a > 180) a -= 360;
+    if (b < -180) b += 360; if (b > 180) b -= 360;
+    return Math.abs(a) < Math.abs(b) ? a : b;
+  }
+  function dms(x) {
+    var d = Math.floor(Math.abs(x)), m = Math.round((Math.abs(x) - d) * 60);
+    if (m === 60) { d++; m = 0; }
+    return (x < 0 ? "−" : "") + d + "°" + (m < 10 ? "0" : "") + m + "′";
+  }
+
+  function nakshatraStory(i) {
+    var Y = nakList();
+    if (!Y) return null;
+    var y = Y[i], lo = i * SEG, hi = lo + SEG;
+    var inside = insideOwn(y), off = strayBy(y);
+    var lord = VIMS[i % 9];
+    var items = [{ beat: 0, type: "split", n: 27, faint: true }];
+    items.push({ beat: 1, type: "arc", from: lo, to: hi, rad: 0.92, hot: true });
+    items.push({ beat: 1, type: "wlabel", at: (lo + hi) / 2, rad: 1.07,
+                 label: y.nak, size: 0.050 });
+    items.push({ beat: 2, type: "mark", at: norm360(y.sid), rad: 0.76,
+                 label: y.star });
+    if (!inside)
+      items.push({ beat: 3, type: "arc",
+                   from: Math.min(norm360(y.sid), off < 0 ? lo : hi),
+                   to: Math.max(norm360(y.sid), off < 0 ? lo : hi),
+                   rad: 0.68, cool: true });
+    items.push({ beat: 3, type: "centre",
+                 text: inside ? "inside its own arc" : "outside, by " + dms(off),
+                 sub: y.bayer + " at " + y.sid.toFixed(2) + "° sidereal" });
+    /* the four pādas, each 3°20′ */
+    for (var q = 0; q < 4; q++)
+      items.push({ beat: 4, type: "ticks", from: lo + q * SEG / 4,
+                   to: lo + q * SEG / 4, step: 1, rad: 0.86, hot: true });
+    items.push({ beat: 5, type: "mark", at: (lo + hi) / 2, rad: 0.50,
+                 label: lord[0] });
+    return {
+      kicker: "Nirayana",
+      title: y.nak,
+      subtitle: "Division " + (i + 1) + " of twenty-seven — " +
+                dms(lo) + " to " + dms(hi) + " — and the star it is named for.",
+      stage: "wheel",
+      palette: "paper",
+      explain: { items: items, divisions: 27 },
+      beats: [
+        ["TWENTY-SEVEN ARCS",
+         "The ring is divided twenty-seven ways, each arc 13°20′ wide. The " +
+         "divisions are exactly equal; nothing in the sky is."],
+        [String(i + 1) + " · " + y.nak.toUpperCase(),
+         y.nak + " is the " + (i + 1) + (i === 0 ? "st" : i === 1 ? "nd" :
+           i === 2 ? "rd" : "th") + " of them, running from " + dms(lo) +
+         " to " + dms(hi) + " of sidereal longitude."],
+        ["NAMED FOR A STAR",
+         "Its yogatārā — junction star — is " + y.star + ", " + y.bayer +
+         ", magnitude " + y.mag.toFixed(2) + ". It lies at " +
+         y.sid.toFixed(2) + "° sidereal."],
+        [inside ? "AND IT IS INSIDE" : "AND IT IS NOT INSIDE",
+         inside
+           ? "That longitude falls within " + y.nak + "'s own arc — as it " +
+             "does for twenty of the twenty-seven, but not for all of them."
+           : "That longitude falls OUTSIDE " + y.nak + "'s own arc, by " +
+             dms(off) + ". Seven of the twenty-seven junction stars do not " +
+             "sit in the division named after them."],
+        ["FOUR PĀDAS",
+         "Each nakṣatra divides into four pādas of 3°20′ — the same 3°20′ " +
+         "that makes a navāṃśa, which is why the two line up."],
+        ["AND A DAŚĀ LORD",
+         "Its Vimśottarī lord is " + lord[0] + ". A Moon born here opens a " +
+         lord[1] + "-year " + lord[0] + " mahādaśā, with however much of it " +
+         "is left."]
+      ],
+      method: "yogatārā longitudes from the HYG catalogue under Lahiri; " +
+              "divisions and daśā lords from BPHS, Vol. 2, Ch. 46, vv. 12–16",
+      closing: {
+        big: y.nak,
+        lines: [
+          dms(lo) + " to " + dms(hi) + ". Yogatārā " + y.star + " (" +
+          y.bayer + ") at " + y.sid.toFixed(2) + "°, " +
+          (inside ? "inside its own arc." : "outside it by " + dms(off) + "."),
+          "Ecliptic latitude " + y.lat.toFixed(1) + "° — which Jyotiṣa " +
+          "ignores and the sky does not. Vimśottarī lord " + lord[0] + ".",
+          "Star positions: HYG (Hipparcos/Yale/Gliese), checked against " +
+          "Swiss Ephemeris and the Yale Bright Star Catalogue. Daśā lords: " +
+          "BPHS, Vol. 2, Ch. 46, vv. 12–16.",
+          "A classical framework for study, not a prediction."
+        ]
+      }
+    };
+  }
+
+  /* ---- the twelve rāśis, measured ----------------------------------------
+
+     Half of what there is to say about a sign is geometry and is on every
+     chart. The other half is a measurement nobody is shown: how long each
+     graha actually takes to cross it, and how long the sign takes to RISE
+     where you are, which is not two hours and is not the same for all
+     twelve. Both are computed here from the ephemeris rather than quoted. */
+
+  /* how long a graha takes to get across one sign, measured by walking it.
+
+     Not the mean motion over thirty degrees: a graha that turns retrograde
+     inside a sign leaves and comes back, and the honest answer is the time
+     from first entry to final exit. So the walk continues past an exit until
+     the graha has stayed out for long enough that it is not coming back. */
+  function crossingDays(name, signIdx, t0, step, settle) {
+    var sid = window.__kSidAt;
+    if (!sid) return null;
+    var lo = signIdx * 30;
+    function into(ms) {                    /* degrees into the sign, or -1 */
+      var x = sid(name, new Date(ms));
+      if (x == null) return -1;
+      var d = norm360(x - lo);
+      return d < 30 ? d : -1;
+    }
+    function inSign(ms) { return into(ms) >= 0; }
+
+    /* FIND THE MIDDLE FIRST, THEN WALK OUT BOTH WAYS.
+
+       Taking the first entry and the first settled exit measures whatever
+       the graha happens to be doing at the start date, and near a boundary
+       that is often a retrograde dip: Śani reported NINE DAYS over Tulā,
+       because it poked in, turned, and backed out again before the real
+       passage years later. Anchoring on a time the graha is unambiguously
+       in the middle of the sign, and then walking back to the first entry
+       and on to the final exit, measures the passage instead of the dip. */
+    var t = t0, guard = 0, cap = 80000, mid = null;
+    while (guard++ < cap) {
+      var d0 = into(t);
+      if (d0 >= 10 && d0 <= 20) { mid = t; break; }
+      t += step;
+    }
+    if (mid == null) return null;
+
+    function edge(dir) {
+      var u = mid, out = null, g2 = 0;
+      while (g2++ < cap) {
+        u += dir * step;
+        if (!inSign(u)) {
+          if (out == null) out = u;
+          if (Math.abs(u - out) >= settle) break;
+        } else out = null;
+      }
+      if (out == null) return null;
+      /* bisect between the last inside sample and the first outside one */
+      var a = out - dir * step, b = out;
+      for (var i = 0; i < 44; i++) {
+        var m = (a + b) / 2;
+        if (inSign(m)) a = m; else b = m;
+      }
+      return b;
+    }
+    var entry = edge(-1), exit = edge(1);
+    if (entry == null || exit == null || !(exit > entry)) return null;
+    return (exit - entry) / 86400000;
+  }
+
+  /* how long the sign takes to rise, measured by watching the ascendant.
+
+     The whole ring rises once a sidereal day, so a single sweep gives all
+     twelve — and at any latitude off the equator they are emphatically not
+     equal, which is the thing worth showing. */
+  var RISE_CACHE = {};
+  function risingMinutes(place) {
+    var asc = window.__kAsc;
+    if (!asc || !place) return null;
+    var key = place.lat.toFixed(3) + "|" + place.lon.toFixed(3);
+    if (RISE_CACHE[key]) return RISE_CACHE[key];
+    var mins = new Array(12), i;
+    for (i = 0; i < 12; i++) mins[i] = 0;
+    var base = { year: 2026, month: 3, day: 21, hour: 0, minute: 0,
+                 tzHours: 0, lat: place.lat, lon: place.lon };
+    var prev = null, step = 2;
+    for (var m = 0; m <= 1440; m += step) {
+      var a = asc(base, m);
+      if (a == null) { prev = null; continue; }
+      var s = Math.floor(norm360(a) / 30) % 12;
+      if (prev != null) mins[prev] += step;
+      prev = s;
+    }
+    RISE_CACHE[key] = mins;
+    return mins;
+  }
+
+  /* mean daily motion, only to choose a sensible walking step */
+  var STEP = { "Sun": 0.25, "Moon": 0.02, "Mars": 1, "Mercury": 0.25,
+               "Jupiter": 2, "Venus": 0.5, "Saturn": 4 };
+  /* how long a graha must stay outside a sign before the walk accepts that
+     the passage is over — comfortably longer than that graha's retrograde
+     excursion back across the boundary */
+  var SETTLE = { "Sun": 20, "Moon": 2, "Mars": 130, "Mercury": 45,
+                 "Jupiter": 210, "Venus": 70, "Saturn": 280 };
+  var CROSS_BODIES = [["Candra", "Moon"], ["Budha", "Mercury"],
+                      ["Śukra", "Venus"], ["Sūrya", "Sun"],
+                      ["Maṅgala", "Mars"], ["Guru", "Jupiter"],
+                      ["Śani", "Saturn"]];
+
+  function spanWords(d) {
+    if (d == null) return "—";
+    if (d < 3) {
+      var h = Math.round(d * 24);
+      return Math.floor(h / 24) ? Math.floor(h / 24) + " d " + (h % 24) + " h"
+                                : h + " h";
+    }
+    if (d < 70) return Math.round(d) + " days";
+    var mo = d / 30.44;
+    if (mo < 22) return mo.toFixed(1) + " months";
+    return (d / 365.2564).toFixed(1) + " years";
+  }
+  function minWords(m) {
+    var h = Math.floor(m / 60), r = Math.round(m % 60);
+    return h ? h + " h " + (r < 10 ? "0" : "") + r + " m" : r + " m";
+  }
+
+  /* rāśi dṛṣṭi, as the aspects page states it: movable signs aspect the
+     fixed except the adjacent one, fixed aspect the movable likewise, and
+     dual signs aspect the other duals */
+  function rashiDrishti(i) {
+    var out = [], j;
+    var mode = MODE[i];
+    for (j = 0; j < 12; j++) {
+      if (j === i) continue;
+      if (mode === "dual") { if (MODE[j] === "dual") out.push(j); }
+      else if (mode === "movable") {
+        if (MODE[j] === "fixed" && (j - i + 12) % 12 !== 1) out.push(j);
+      } else if (mode === "fixed") {
+        if (MODE[j] === "movable" && (i - j + 12) % 12 !== 1) out.push(j);
+      }
+    }
+    return out;
+  }
+
+  function rashiStory(i, place) {
+    var lo = i * 30, hi = lo + 30;
+    var items = [{ beat: 0, type: "split", n: 12 }];
+    items.push({ beat: 0, type: "arc", from: lo, to: hi, rad: 0.92, hot: true });
+    items.push({ beat: 0, type: "wlabel", at: lo + 15, rad: 1.08,
+                 label: SIGN[i], size: 0.060 });
+    var lordBody = { "Sūrya": "Sun", "Candra": "Moon", "Maṅgala": "Mars",
+                     "Budha": "Mercury", "Guru": "Jupiter", "Śukra": "Venus",
+                     "Śani": "Saturn" }[LORD[i]];
+    items.push({ beat: 1, type: "mark", at: lo + 15, rad: 0.74,
+                 body: lordBody });
+    items.push({ beat: 2, type: "centre", text: ELEM[i] + " · " + MODE[i],
+                 sub: (i % 2 === 0 ? "male · odd" : "female · even") });
+    rashiDrishti(i).forEach(function (j) {
+      items.push({ beat: 3, type: "ray", from: lo + 15, to: j * 30 + 15 });
+    });
+
+    /* the measurements */
+    var t0 = Date.UTC(2026, 0, 1), cross = [];
+    CROSS_BODIES.forEach(function (q) {
+      var d = null;
+      try {
+        d = crossingDays(q[1], i, t0, STEP[q[1]] * 86400000,
+                         SETTLE[q[1]] * 86400000);
+      } catch (e) { d = null; }
+      cross.push({ name: q[0], days: d });
+    });
+    var maxD = 0;
+    cross.forEach(function (q) { if (q.days > maxD) maxD = q.days; });
+    cross.forEach(function (q) {
+      items.push({ panel: "bar", beat: 4, label: q.name,
+                   value: q.days == null ? 0 : Math.pow(q.days / (maxD || 1), 0.42),
+                   sub: spanWords(q.days) });
+    });
+    var rise = null;
+    try { rise = risingMinutes(place); } catch (e2) { rise = null; }
+    var riseM = rise ? rise[i] : null;
+    var slowest = null, fastest = null;
+    if (rise) {
+      var o = rise.map(function (v, k) { return [v, k]; })
+                  .sort(function (a, b) { return a[0] - b[0]; });
+      fastest = o[0]; slowest = o[11];
+    }
+    if (riseM != null)
+      items.push({ panel: "bar", beat: 5, label: "rises in",
+                   value: 1, hot: true,
+                   sub: minWords(riseM) });
+
+    var crossWords = cross.map(function (q) {
+      return q.name + " " + spanWords(q.days);
+    }).join(", ");
+
+    return {
+      kicker: "Nirayana",
+      title: SIGN[i],
+      subtitle: "Rāśi " + (i + 1) + " of twelve — " + ELEM[i] + ", " +
+                MODE[i] + ", owned by " + LORD[i] + ".",
+      stage: "rashi",
+      palette: "paper",
+      explain: { items: items, divisions: 12 },
+      beats: [
+        [(i + 1) + " · " + SIGN[i].toUpperCase(),
+         "The zodiac is twelve rāśis of thirty degrees. This is the " +
+         ORD[i] + ", " + SIGN[i] + ", from " + lo + "° to " + hi +
+         "° of sidereal longitude."],
+        ["OWNED BY " + LORD[i].toUpperCase(),
+         SIGN[i] + " is owned by " + LORD[i] + ". A graha standing here is " +
+         "a guest in that graha's house, and is read accordingly."],
+        [ELEM[i].toUpperCase() + " · " + MODE[i].toUpperCase(),
+         "It is a " + ELEM[i] + " sign and a " + MODE[i] + " one, and it is " +
+         (i % 2 === 0 ? "odd, counted male" : "even, counted female") +
+         ". Every graha and every house that falls here takes all of that on."],
+        ["RĀŚI DṚṢṬI",
+         "Under sign aspects — a different system from graha dṛṣṭi — " +
+         SIGN[i] + " aspects " +
+         rashiDrishti(i).map(function (j) { return SIGN[j]; }).join(", ") +
+         "."],
+        ["HOW LONG TO CROSS IT",
+         "Measured on the next passage, first entry to final exit: " +
+         crossWords + ". These are not the sign divided by a mean motion — " +
+         "a graha that turns retrograde near a boundary leaves and comes " +
+         "back, so a passage can take twice what the arithmetic says."],
+        ["AND HOW LONG TO RISE",
+         riseM == null
+           ? "How long a sign takes to rise depends on where you are. Pick a " +
+             "place and the Studio measures it."
+           : SIGN[i] + " takes " + minWords(riseM) + " to rise at " +
+             (place ? place.n : "this latitude") + " — not two hours. " +
+             "Away from the equator the twelve are not equal: here " +
+             SIGN[slowest[1]] + " takes " + minWords(slowest[0]) + " and " +
+             SIGN[fastest[1]] + " only " + minWords(fastest[0]) + "."]
+      ],
+      method: "passages and ascendant measured · Lahiri ayanāṃśa",
+      placeName: place ? place.n : null,
+      closing: {
+        big: SIGN[i],
+        lines: [
+          lo + "° to " + hi + "°. " + ELEM[i] + ", " + MODE[i] + ", owned by " +
+          LORD[i] + ".",
+          "Crossed, first entry to final exit on the next passage: Candra in " +
+          spanWords(cross[0].days) + ", Śani in " + spanWords(cross[6].days) +
+          (riseM == null ? "." : "; it rises in " + minWords(riseM) + " at " +
+            (place ? place.n : "this latitude") + "."),
+          "Classifications: BPHS, Vol. 1, Ch. 4. Crossings and ascendant " +
+          "measured against a modern ephemeris under Lahiri ayanāṃśa.",
+          "A classical framework for study, not a prediction."
+        ]
+      }
+    };
+  }
+
   /* ---- registration -------------------------------------------------------
      Explainers register as stories, so the Studio lists them, the recorder
      records them and the export path is the one every other reel uses. */
@@ -12252,7 +12669,55 @@ function moSunDisc(R,rot){
     window.SPReel.STAGES.wheel = S_wheel;
     window.SPReel.STAGES.row = S_row;
     window.SPReel.STAGES.bar = S_bar;
+    window.SPReel.STAGES.rashi = S_rashi;
     var n = 0;
+    /* the twenty-seven, only if the star catalogue is on the page — a reel
+       page without it should lose this set and nothing else */
+    if (nakList()) {
+      for (var ni = 0; ni < 27; ni++) (function (idx) {
+        var nk = "learn.nakshatra." + (idx + 1);
+        var Y = nakList()[idx];
+        MADE.push(nk);
+        if (window.SPStories.add({
+          key: nk, group: "Learn · the twenty-seven nakṣatras",
+          label: (idx + 1) + " · " + Y.nak,
+          blurb: "13°20′ of the ring, and the star it is named for — " +
+                 Y.star + ", " + (insideOwn(Y) ? "inside" : "outside") +
+                 " its own arc.",
+          years: 1, seconds: 20,
+          build: function (s) {
+            var E = nakshatraStory(idx);
+            if (!E) return null;
+            var S = asStory(E, nk);
+            Object.keys(S).forEach(function (k) { s[k] = S[k]; });
+            return s;
+          }
+        })) n++;
+      })(ni);
+    }
+    /* the twelve, which need a place before they can be measured */
+    for (var ri = 0; ri < 12; ri++) (function (idx) {
+      var rk = "learn.rashi." + (idx + 1);
+      MADE.push(rk);
+      if (window.SPStories.add({
+        key: rk, group: "Learn · the twelve rāśis",
+        label: (idx + 1) + " · " + SIGN[idx],
+        blurb: ELEM[idx] + ", " + MODE[idx] + ", owned by " + LORD[idx] +
+               " — with how long each graha takes to cross it, measured.",
+        years: 1, seconds: 22,
+        build: function (s) {
+          var P = s.place ||
+                  (window.NP && window.NP.savedPlace && window.NP.savedPlace()) ||
+                  (window.NP && window.NP.PLACES && window.NP.PLACES[0]) || null;
+          var E = rashiStory(idx, P);
+          if (!E) return null;
+          var S = asStory(E, rk);
+          Object.keys(S).forEach(function (k) { s[k] = S[k]; });
+          s.placeName = E.placeName;
+          return s;
+        }
+      })) n++;
+    })(ri);
     CONCEPTS.forEach(function (C) {
       var ck = "learn.concept." + C.key;
       var CE = conceptStory(C);

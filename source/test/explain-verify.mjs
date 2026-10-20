@@ -325,6 +325,111 @@ console.log("\nOne explainer in detail");
 }
 
 /* ---- 5. the diamond is the same diamond --------------------------------- */
+console.log("\nThe twenty-seven, against the star catalogue");
+{
+  /* The claim this set exists to make is that seven of the twenty-seven
+     junction stars do not lie in the equal division named after them. It is
+     recomputed here straight from the catalogue's longitudes — floor(sid /
+     13°20′) against the nakṣatra's own index — and matched against both the
+     catalogue's stored flag and what each reel actually says. */
+  const r = await pg.evaluate(() => {
+    const SEG = 40 / 3, out = [];
+    (window.YOGATARAS || []).forEach((y, i) => {
+      const R = window.SPStories.build("learn.nakshatra." + (i + 1),
+        { t0: Date.parse("2026-01-01") });
+      const x = ((y.sid % 360) + 360) % 360;
+      out.push({ i, nak: y.nak, star: y.star,
+                 computed: Math.floor(x / SEG) === y.id,
+                 flagged: !!y.inside,
+                 said: /AND IT IS INSIDE/.test(R.events[3].big),
+                 title: R.title, lord: R.events[5].small });
+    });
+    return out;
+  });
+  ok(r.length === 27, "all twenty-seven are offered: " + r.length);
+  const disagree = r.filter(x => x.computed !== x.flagged);
+  ok(disagree.length === 0,
+     "the catalogue's own inside/outside flag matches the arithmetic on " +
+     "every one", disagree.map(x => x.nak).join(" | "));
+  const misreported = r.filter(x => x.computed !== x.said);
+  ok(misreported.length === 0,
+     "and every reel says what the arithmetic says",
+     misreported.map(x => x.nak).join(" | "));
+  const stray = r.filter(x => !x.computed);
+  ok(stray.length === 7,
+     "seven junction stars fall outside their own division: " +
+     stray.map(x => x.nak + " (" + x.star + ")").join(", "));
+  /* the daśā lord cycles Ketu to Budha from Aśvinī, which is the whole
+     basis of the Vimśottarī balance at birth */
+  const SEQ = ["Ketu", "Śukra", "Sūrya", "Candra", "Maṅgala", "Rāhu", "Guru",
+               "Śani", "Budha"];
+  const wrongLord = r.filter(x =>
+    x.lord.indexOf("lord is " + SEQ[x.i % 9]) < 0);
+  ok(wrongLord.length === 0,
+     "and names the Vimśottarī lord the nakṣatra-lord sequence gives it",
+     wrongLord.map(x => x.nak).join(" | "));
+}
+
+console.log("\nThe twelve, measured rather than quoted");
+{
+  const r = await pg.evaluate(() => {
+    const out = [];
+    for (let i = 1; i <= 12; i++) {
+      const R = window.SPStories.build("learn.rashi." + i,
+        { t0: Date.parse("2026-01-01") });
+      const bars = (R.explain.items || []).filter(x => x.panel === "bar");
+      out.push({ i, title: R.title, bars: bars.map(b => b.label + "|" + b.sub),
+                 place: R.placeName || null, b5: R.events[5].small });
+    }
+    return out;
+  });
+  ok(r.length === 12 && r.every(x => x.bars.length === 8),
+     "every rāśi carries seven measured crossings and a rising time");
+  /* THE RISING TIMES MUST ADD TO ONE SIDEREAL DAY. The whole ring rises
+     once while the Earth turns once against the stars, and nothing in the
+     measurement enforces that — it either comes out or it does not. */
+  const mins = await pg.evaluate(() => {
+    const asc = window.__kAsc, P = window.NP.PLACES[0];
+    const base = { year: 2026, month: 3, day: 21, hour: 0, minute: 0,
+                   tzHours: 0, lat: P.lat, lon: P.lon };
+    const m = new Array(12).fill(0);
+    let prev = null;
+    for (let t = 0; t <= 1440; t += 2) {
+      const a = asc(base, t);
+      const s = Math.floor((((a % 360) + 360) % 360) / 30) % 12;
+      if (prev != null) m[prev] += 2;
+      prev = s;
+    }
+    return m;
+  });
+  const total = mins.reduce((a, b) => a + b, 0);
+  ok(Math.abs(total - 1436) < 12,
+     "the twelve rising times add to one sidereal day: " + total +
+     " minutes against 1436");
+  const spread = Math.max(...mins) - Math.min(...mins);
+  ok(spread > 20,
+     "and they are not equal — " + spread + " minutes between the longest " +
+     "and the shortest, which is what a latitude does to a zodiac");
+  const badOrder = r.filter(x => {
+    const g = {};
+    x.bars.forEach(b => { g[b.split("|")[0]] = b.split("|")[1]; });
+    return !/d |h$/.test(g["Candra"] || "") || !/year/.test(g["Śani"] || "");
+  });
+  ok(badOrder.length === 0,
+     "Candra crosses every sign in days and Śani in years, measured",
+     badOrder.map(x => x.title).join(" | "));
+  /* Sūrya takes a sidereal month over any sign — a figure anyone can check,
+     and one nothing in the walk is told to produce */
+  const sun = r.map(x => {
+    const b = x.bars.find(q => q.indexOf("Sūrya|") === 0) || "";
+    return parseFloat(b.split("|")[1]);
+  });
+  const offSun = sun.filter(d => !(d >= 29 && d <= 32));
+  ok(offSun.length === 0,
+     "and Sūrya takes 29 to 32 days over each of the twelve: " +
+     sun.join(", "), offSun.join(" | "));
+}
+
 console.log("\nThe chart geometry agrees with the composer's");
 {
   await pg.goto("file://" + ROOT + "/director-pro.html");
