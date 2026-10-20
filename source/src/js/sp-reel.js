@@ -209,22 +209,150 @@
       run = body - holdTotal;
     }
     var segs = [], s = lead, span = Math.max(1, t1 - t0);
-    var prevT = t0;
+    var prevT = t0, r = 0;
+    /* RUN SPACE: the position along the moving part of the reel, with the
+       holds taken out. A warp is a reparametrisation of the moving part, so
+       it has to be measured in a space the holds do not stretch — otherwise
+       the notch and the hold drift apart and the clock jumps across the
+       pause. Each moving segment therefore carries its run-space bounds. */
     for (var i = 0; i < events.length; i++) {
       var e = events[i];
       if (!e.hold) continue;
       var dt = e.t - prevT;
       var dur = run * (dt / span);
-      segs.push({ s0: s, s1: s + dur, t0: prevT, t1: e.t });
-      s += dur;
-      segs.push({ s0: s, s1: s + hold, t0: e.t, t1: e.t, held: true });
+      segs.push({ s0: s, s1: s + dur, t0: prevT, t1: e.t,
+                  r0: r / run, r1: (r + dur) / run });
+      s += dur; r += dur;
+      segs.push({ s0: s, s1: s + hold, t0: e.t, t1: e.t, held: true,
+                  r0: r / run, r1: r / run });
       s += hold;
       prevT = e.t;
     }
-    segs.push({ s0: s, s1: lead + body, t0: prevT, t1: t1 });
+    segs.push({ s0: s, s1: lead + body, t0: prevT, t1: t1,
+                r0: r / run, r1: 1 });
+    var moves = segs.filter(function (g) { return !g.held; });
+
+    /* THE NOTCH HAS TO SIT ON THE HOLD, not at the middle of the reel.
+
+       A story asks for the clock to slow "at the festival" and names a
+       position — a half, say. But the hold is placed where the festival
+       falls in TIME, and the tithis around it are unequal, so the middle
+       tithi's boundary is hours away from the middle of the window. With the
+       notch at a half and the hold a fraction either side, the warped clock
+       and the frozen clock disagreed at the junction: entering the hold, the
+       date jumped twenty-six hours BACKWARDS, which is the one thing a reel
+       claiming to be computed must never do.
+
+       So a requested position snaps to a nearby hold. The story still says
+       where it wants the clock to linger; the timeline decides exactly where
+       that is, because only the timeline knows. */
+    var warp = opts.warp || null;
+    if (!warp && opts.warpAt != null) {
+      var wat = opts.warpAt;
+      for (var h2 = 0; h2 < segs.length; h2++)
+        if (segs[h2].held && Math.abs(segs[h2].r0 - wat) < 0.15)
+          { wat = segs[h2].r0; break; }
+      warp = makeWarp(wat, opts.warpWidth, opts.warpDepth);
+    }
     return { lead: lead, tail: tail, seconds: opts.seconds, segs: segs,
-             holdSeconds: hold, t0: t0, t1: t1 };
+             holdSeconds: hold, t0: t0, t1: t1, moves: moves, warp: warp };
   }
+  /* ---- the warp -----------------------------------------------------------
+     A REEL MAY RUN ITS CLOCK AT A VARYING RATE, and for a festival dial it
+     should: fast through the ordinary days, slowing almost to a stop at the
+     tithi the whole reel is about, then away again. The dial becomes a thing
+     that arrives somewhere rather than a thing that revolves.
+
+     This is a reparametrisation of the clock, not a change to the data. The
+     speed curve is one minus a Gaussian notch at the festival; the map from
+     playhead to time is the running integral of its RECIPROCAL, normalised
+     and inverted. Built once into a table of a thousand samples and read by
+     binary search, so the per-frame cost is a few comparisons.
+
+     THE RECIPROCAL IS THE WHOLE TRICK, and getting it the wrong way round
+     does exactly the opposite of what is wanted. The returned map answers
+     "which time does this playhead position show", so its slope is the
+     clock's speed. Integrating the speed itself and inverting gives a slope
+     of one over the speed — the dial then sprinted through the festival and
+     crawled through the ordinary days, which is what the first build did.
+     Integrating one over the speed makes the slope the speed again.
+
+     Two properties are kept, because losing either would make the reel
+     dishonest: the map is strictly increasing, so the clock never runs
+     backwards; and it is onto, so the run still covers exactly the span it
+     claims. Only the rate changes. */
+  function makeWarp(at, width, depth) {
+    var N = 1000, i;
+    var d = depth == null ? 0.94 : depth;
+    var w = Math.max(1e-4, width == null ? 0.045 : width);
+    at = clamp(at == null ? 0.5 : at, 0.02, 0.98);
+    /* THE GRID IS HUNG ON THE NOTCH, not spread evenly and hoped over.
+
+       A uniform grid puts no sample exactly at the festival, so the map was
+       the identity there only to within half a sample — about twenty minutes
+       of a month-long window, which showed up as the clock stepping backward
+       by an hour as it entered the hold. Two half-grids, meeting exactly at
+       `at` and each normalised onto its own half, make the map pass through
+       (at, at) exactly and stay strictly increasing either side of it. */
+    var ia = N >> 1;
+    var pos = new Float64Array(N + 1), rate = new Float64Array(N + 1),
+        cum = new Float64Array(N + 1);
+    for (i = 0; i <= N; i++) {
+      pos[i] = i <= ia ? at * (i / ia)
+                       : at + (1 - at) * ((i - ia) / (N - ia));
+      var x = (pos[i] - at) / w;
+      rate[i] = 1 / Math.max(0.02, 1 - d * Math.exp(-x * x));
+    }
+    cum[0] = 0;
+    for (i = 1; i <= N; i++)
+      cum[i] = cum[i - 1] + (rate[i] + rate[i - 1]) / 2 * (pos[i] - pos[i - 1]);
+    /* both halves are normalised from the ORIGINAL integral, so `cum[ia]` is
+       read before the loop overwrites it — using it in place silently
+       subtracted the already-normalised value and squeezed the whole of the
+       second half's fast stretch into the last tenth of the reel */
+    var cia = cum[ia], ca = cia || 1, cb = (cum[N] - cia) || 1;
+    for (i = 0; i <= N; i++)
+      cum[i] = i <= ia ? at * (cum[i] / ca)
+                       : at + (1 - at) * ((cum[i] - cia) / cb);
+    return function (f) {
+      if (!(f > 0)) return 0;
+      if (f >= 1) return 1;
+      var lo = 0, hi = N;
+      while (lo < hi) {
+        var mid = (lo + hi) >> 1;
+        if (cum[mid] < f) lo = mid + 1; else hi = mid;
+      }
+      var a = Math.max(0, lo - 1);
+      var span = cum[lo] - cum[a];
+      var t = span > 0 ? (f - cum[a]) / span : 0;
+      return pos[a] + t * (pos[lo] - pos[a]);
+    };
+  }
+
+  /* RUN SPACE BACK TO A DATE, ALONG THE SEGMENTS RATHER THAN STRAIGHT.
+
+     Interpolating the warped position between the first and last date is
+     only right if the events are evenly spaced in time, and on a tithi dial
+     they are emphatically not: a tithi runs twenty to twenty-seven hours, so
+     the arithmetic midpoint of the window is hours away from the middle
+     tithi's boundary. The clock therefore jumped — backwards, at the worst
+     possible moment — as it entered the hold on the festival.
+
+     Walking the same piecewise-linear segments the unwarped clock uses makes
+     the two agree exactly at every boundary, holds included. */
+  function runTime(tl, x) {
+    var m = tl.moves;
+    if (!m || !m.length) return lerp(tl.t0, tl.t1, x);
+    for (var i = 0; i < m.length; i++) {
+      var g = m[i];
+      if (x <= g.r1 || i === m.length - 1) {
+        var w = g.r1 > g.r0 ? (x - g.r0) / (g.r1 - g.r0) : 1;
+        return lerp(g.t0, g.t1, clamp(w, 0, 1));
+      }
+    }
+    return tl.t1;
+  }
+
   function clockAt(tl, p) {
     var s = p * tl.seconds;
     if (s <= tl.lead) return { t: tl.t0, phase: "open",
@@ -236,6 +364,14 @@
       var g = tl.segs[i];
       if (s <= g.s1 || i === tl.segs.length - 1) {
         var f = g.s1 > g.s0 ? (s - g.s0) / (g.s1 - g.s0) : 1;
+        /* the warp applies to the RUN as a whole, in run space, so it is
+           continuous across the holds rather than restarting per segment */
+        if (tl.warp && !g.held && g.r1 != null) {
+          var whole = g.r0 + clamp(f, 0, 1) * (g.r1 - g.r0);
+          var wf = tl.warp(clamp(whole, 0, 1));
+          return { t: runTime(tl, wf), phase: "run", held: false,
+                   heldP: 0, warped: true, rawF: whole };
+        }
         return { t: lerp(g.t0, g.t1, clamp(f, 0, 1)), phase: "run",
                  held: !!g.held, heldP: g.held ? clamp(f, 0, 1) : 0 };
       }
@@ -341,17 +477,26 @@
     c.fillStyle = P.gold;
     c.font = "600 " + (W * 0.0245).toFixed(1) + "px " + SERIF;
     tracked(c, handle, x, baseY - W * 0.019, W * 0.0245 * 0.06, "left");
-    plain(c);
-    c.globalAlpha = 0.56 * fade;
-    c.fillStyle = P.dim;
-    c.font = (W * 0.0165).toFixed(1) + "px " + SERIF;
-    c.fillText(reel.foot, x, baseY + W * 0.006);
+    if (reel.foot) {
+      plain(c);
+      c.globalAlpha = 0.56 * fade;
+      c.fillStyle = P.dim;
+      c.font = (W * 0.0165).toFixed(1) + "px " + SERIF;
+      c.fillText(reel.foot, x, baseY + W * 0.006);
+    }
     c.restore();
-    /* A REEL THAT DEPENDS ON A PLACE SAYS WHICH PLACE. A festival's date is
-       the day whose sunrise carries a tithi, and sunrise is local: the same
-       Dīvālī falls on different Gregorian days in Delhi and in New York. A
-       date posted without its place is a date that cannot be checked. */
-    if (reel.placeName) {
+    /* WHAT A POSTED FRAME OWES ITS VIEWER IS PROVENANCE, NOT A PRIVACY
+       PROMISE. "Computed in your browser, nothing sent outside" is a promise
+       to somebody USING the tool; on a reel in a feed it is addressed to
+       nobody, because the viewer did not compute anything. What they can act
+       on is the place, the method and the hand that made it — those are what
+       turn a date into something arguable rather than something to believe.
+       The privacy promise stays on the site pages, where it is a promise to
+       the person it concerns. */
+    var prov = [];
+    if (reel.placeName) prov.push("computed for " + reel.placeName);
+    if (reel.method) prov.push(reel.method);
+    if (prov.length) {
       c.save();
       plain(c);
       c.globalAlpha = 0.62 * fade;
@@ -359,8 +504,7 @@
       c.textAlign = "center";
       c.font = (P.banded ? "italic " : "") + (W * 0.0185).toFixed(1) +
                "px " + SERIF;
-      c.fillText("computed for " + reel.placeName, W / 2,
-                 B.tally.y + W * 0.028);
+      c.fillText(prov.join(" \u00b7 "), W / 2, B.tally.y + W * 0.028);
       c.restore();
     }
   }
@@ -391,13 +535,38 @@
   function drawCaption(c, W, H, B, reel, P, now, idx) {
     if (idx < 0) return;
     var e = reel.events[idx];
-    var age = (now.t - e.t) / DAY;
-    var inP = smooth(clamp(age / Math.max(0.4, reel.fadeDays), 0, 1));
-    var a = inP;
-    if (idx + 1 < reel.events.length) {
-      var gap = (reel.events[idx + 1].t - e.t) / DAY;
-      var toGo = (reel.events[idx + 1].t - now.t) / DAY;
-      if (toGo < gap * 0.12) a *= clamp(toGo / (gap * 0.12), 0, 1);
+    var nxt = idx + 1 < reel.events.length ? reel.events[idx + 1] : null;
+    var a;
+    /* HOW THE CAPTION FADES, AND WHY A WARPED CLOCK NEEDS ITS OWN RULE.
+
+       Normally the fade is measured in days of clock, which is the same as
+       screen time because the clock runs at a constant rate. Under a warp it
+       is not: the dial crawls through the festival, so the next boundary
+       stays a few hours away for seconds on end, the out-fade reads that as
+       "about to change" and holds the caption at almost zero — fading out
+       precisely the line the whole reel exists to show.
+
+       So a warped reel fades on the FRACTION of the current interval
+       elapsed, which is scale-free: a tenth of a tithi is a tenth of
+       whatever screen time that tithi was given, fast or slow. */
+    if (now.held) {
+      /* a hold freezes the clock ON the event, so an elapsed-fraction fade
+         would read zero for the whole pause — the one moment the caption
+         must be up. It eases in on the pause's own progress instead. */
+      a = smooth(clamp((now.heldP || 0) / 0.12, 0, 1));
+    } else if (reel.tl && reel.tl.warp && nxt) {
+      var span = Math.max(1, nxt.t - e.t);
+      var fr = clamp((now.t - e.t) / span, 0, 1);
+      a = smooth(clamp(fr / 0.10, 0, 1));
+      if (fr > 0.92) a *= clamp((1 - fr) / 0.08, 0, 1);
+    } else {
+      var age = (now.t - e.t) / DAY;
+      a = smooth(clamp(age / Math.max(0.4, reel.fadeDays), 0, 1));
+      if (nxt) {
+        var gap = (nxt.t - e.t) / DAY;
+        var toGo = (nxt.t - now.t) / DAY;
+        if (toGo < gap * 0.12) a *= clamp(toGo / (gap * 0.12), 0, 1);
+      }
     }
     if (a <= 0.004) return;
     var y = B.cap.y + W * 0.055;
@@ -1126,40 +1295,59 @@
      runs, and the disc under it is the Moon as it actually looked that
      night. This is the reel that answers "what does the fifteenth of the
      dark fortnight MEAN" without a word of explanation. */
+  /* THE FESTIVAL SITS AT TWELVE O'CLOCK. Every angle on this dial is
+     measured from the marked disc, not from the start of the window — the
+     subject goes where the eye goes, and the fifteen either side then fall
+     symmetrically left and right. */
+  function dialAng(L, i) {
+    return ((i - L.mark) / L.n * 360 - 90) * R2;
+  }
   var S_lunation = {
     base: function (c, G, R, reel, P) {
       var g = geom("whirl", R, reel), r = g.r, L = reel.lunation, i;
+      var ring = r * 0.80;
+      /* THE RIM IS BROKEN WHERE THE MONTH IS. Thirty-one tithis is longer
+         than a lunation, so for almost every festival this ring crosses a
+         new Moon — and a continuous circle would claim a continuity the
+         month does not have. The gap is drawn where the crossing falls, and
+         the two halves are labelled along their own arcs rather than by two
+         captions pinned to the top and bottom. */
+      var gapAt = (L.cross != null && L.cross > 0) ? L.cross : -1;
       c.save();
       c.globalAlpha = P.dark ? 0.4 : 0.7;
       c.strokeStyle = G.rgba(P.line, 0.7);
       c.lineWidth = Math.max(1, r * 0.003);
-      c.beginPath(); c.arc(g.cx, g.cy, r * 0.80, 0, TAU); c.stroke();
+      if (gapAt < 0) { c.beginPath(); c.arc(g.cx, g.cy, ring, 0, TAU); c.stroke(); }
+      else {
+        var ga = dialAng(L, gapAt - 0.5);
+        c.beginPath();
+        c.arc(g.cx, g.cy, ring, ga + 0.055, ga - 0.055 + TAU);
+        c.stroke();
+      }
       c.restore();
-      /* the two fortnights named, because the whole grammar of the date is
-         śukla or kṛṣṇa and a ring of moons does not say which half it is in */
-      plain(c);
-      c.save();
-      c.globalAlpha = P.dark ? 0.6 : 0.85;
-      c.fillStyle = G.rgba(P.dim, 1);
-      c.textAlign = "center";
-      c.font = (P.banded ? "italic " : "") + (r * 0.070).toFixed(1) + "px " + SERIF;
-      c.fillText("śukla pakṣa — the Moon fills", g.cx, g.cy - r * 1.12);
-      c.fillText("kṛṣṇa pakṣa — the Moon empties", g.cx, g.cy + r * 1.19);
-      c.restore();
+
+      /* the two fortnights, set along the rim at the angles they really
+         occupy: śukla is wherever the indices run 0..14 */
+      labelArc(c, G, P, g.cx, g.cy, ring * 0.60, L, 0, 14,
+               "śukla — filling");
+      labelArc(c, G, P, g.cx, g.cy, ring * 0.60, L, 15, 29,
+               "kṛṣṇa — emptying");
+
       for (i = 0; i < L.n; i++) {
-        var a = (i / L.n * 360 - 90) * R2;
-        var x = g.cx + Math.cos(a) * r * 0.80, y = g.cy + Math.sin(a) * r * 0.80;
+        var a = dialAng(L, i);
+        var x = g.cx + Math.cos(a) * ring, y = g.cy + Math.sin(a) * ring;
         var mark = (i === L.mark);
-        drawBody(c, G, "Moon", x, y, r * (mark ? 0.062 : 0.040), P,
-                 { phase: (i + 0.5) / L.n * 360,
-                   earthshine: i === 0 || i === L.n - 1 ||
-                               (i + 0.5) / L.n * 360 < 30 });
+        var ii = L.idx ? L.idx[i] : i;
+        drawBody(c, G, "Moon", x, y, r * (mark ? 0.070 : 0.042), P,
+                 { phase: (ii + 0.5) / 30 * 360,
+                   earthshine: ii === 0 || ii === 29 ||
+                               (ii + 0.5) / 30 * 360 < 30 });
         if (mark) {
           c.save();
           c.globalAlpha = 0.9;
           c.strokeStyle = G.rgba(P.accent, 1);
           c.lineWidth = Math.max(1.4, r * 0.006);
-          c.beginPath(); c.arc(x, y, r * 0.088, 0, TAU); c.stroke();
+          c.beginPath(); c.arc(x, y, r * 0.096, 0, TAU); c.stroke();
           c.restore();
         }
       }
@@ -1167,11 +1355,9 @@
     append: function () {},
     live: function (c, G, R, reel, P, now, idx, k, p) {
       var g = geom("whirl", R, reel), r = g.r, L = reel.lunation;
-      /* THE POINTER IS DRIVEN BY WHICH TITHI IS CURRENT, not by how far
-         through the month the clock has run. The discs are equally spaced
-         because the ring is a dial of thirty tithis; the tithis themselves
-         are not equal, so a linear sweep drifts off them — by most of a disc
-         at the quarters, which is exactly where somebody checks. */
+      var ring = r * 0.80;
+      /* the pointer walks by TITHI, not by elapsed time: the discs are
+         equally spaced and the tithis are not */
       var f;
       if (L.starts && L.starts.length > L.n) {
         var k2 = 0;
@@ -1182,22 +1368,118 @@
       } else {
         f = clamp((now.t - L.t0) / Math.max(1, L.t1 - L.t0), 0, 1);
       }
-      var a = (f * 360 - 90) * R2;
+      var a = dialAng(L, f * L.n);
+
+      /* A COMET RATHER THAN A HAND. The dial slows into the centre, and a
+         rigid spoke makes that read as a stall; a trail that shortens as the
+         sweep slows makes it read as arriving. The trail length IS the
+         speed, so it is telling the truth about the clock. */
+      var near = Math.abs(f - L.mark / L.n);
+      var speed = clamp(1 - 0.94 * Math.exp(-Math.pow(near / 0.06, 2)), 0.06, 1);
+      var tail = 0.085 * speed + 0.004;
       c.save();
-      c.globalAlpha = P.dark ? 0.55 : 0.7;
+      c.lineCap = "round";
+      /* the trail lies ALONG the rim it is sweeping, not across the dial. A
+         radial spoke smeared through a few angles reads as a wedge stuck to
+         the middle; an arc behind the head reads as motion round the ring,
+         which is the motion there actually is. */
       c.strokeStyle = G.rgba(P.accent, 1);
-      c.lineWidth = Math.max(1.2, r * 0.005);
+      for (var s2 = 0; s2 < 16; s2++) {
+        var f0 = f - tail * (s2 / 16), f1 = f - tail * ((s2 + 1) / 16);
+        var w2 = 1 - s2 / 16;
+        c.globalAlpha = (P.dark ? 0.42 : 0.34) * w2 * w2;
+        c.lineWidth = Math.max(0.8, r * 0.009 * w2);
+        c.beginPath();
+        c.arc(g.cx, g.cy, ring, dialAng(L, f1 * L.n), dialAng(L, f0 * L.n));
+        c.stroke();
+      }
+      /* a thin spoke to the middle, so the dial still reads as a clock */
+      c.globalAlpha = (P.dark ? 0.22 : 0.18);
+      c.lineWidth = Math.max(0.8, r * 0.0035);
       c.beginPath();
-      c.moveTo(g.cx, g.cy);
-      c.lineTo(g.cx + Math.cos(a) * r * 0.66, g.cy + Math.sin(a) * r * 0.66);
+      c.moveTo(g.cx + Math.cos(a) * r * 0.25, g.cy + Math.sin(a) * r * 0.25);
+      c.lineTo(g.cx + Math.cos(a) * ring * 0.93,
+               g.cy + Math.sin(a) * ring * 0.93);
       c.stroke();
       c.restore();
+      /* the head */
+      G.glow(c, g.cx + Math.cos(a) * ring, g.cy + Math.sin(a) * ring,
+             r * 0.030, P.hot, { reach: 2.2, core: 0.35, alpha: 0.55 });
+
+      /* each disc lights as the sweep passes it and fades behind — one flare
+         per tithi boundary, which is a real event and not an ornament */
+      for (var i2 = 0; i2 < L.n; i2++) {
+        var d2 = f - i2 / L.n;
+        if (d2 < 0 || d2 > 0.055) continue;
+        var w2 = 1 - d2 / 0.055;
+        var ai = dialAng(L, i2);
+        G.glow(c, g.cx + Math.cos(ai) * ring, g.cy + Math.sin(ai) * ring,
+               r * 0.052 * w2, P.hot, { reach: 2.6, core: 0, alpha: 0.5 * w2 });
+      }
+
+      /* arrival: at the centre the ringed disc swells and a ring expands
+         out of it once, then settles */
+      var mf = L.mark / L.n;
+      var arr = clamp(1 - Math.abs(f - mf) / 0.05, 0, 1);
+      if (arr > 0.001) {
+        var am = dialAng(L, L.mark);
+        var mx = g.cx + Math.cos(am) * ring, my = g.cy + Math.sin(am) * ring;
+        c.save();
+        c.globalAlpha = 0.55 * arr;
+        c.strokeStyle = G.rgba(P.accent, 1);
+        c.lineWidth = Math.max(1, r * 0.004);
+        c.beginPath();
+        c.arc(mx, my, r * (0.096 + 0.10 * (1 - arr)), 0, TAU);
+        c.stroke();
+        c.restore();
+        G.glow(c, mx, my, r * 0.085 * arr, P.hot,
+               { reach: 2.4, core: 0, alpha: 0.45 * arr });
+      }
+
       /* the Moon as it is at this instant, large, in the middle */
-      drawBody(c, G, "Moon", g.cx, g.cy, r * 0.20, P,
-               { phase: L.phaseAt(now.t), progress: p,
-                 earthshine: true });
+      drawBody(c, G, "Moon", g.cx, g.cy, r * 0.21, P,
+               { phase: L.phaseAt(now.t), progress: p, earthshine: true });
     }
   };
+
+  /* A caption for the stretch of dial holding tithi indices `from`..`to`.
+
+     WHY THE RUN IS FOUND RATHER THAN BRACKETED. On a centred dial the
+     sequence wraps: a Dīvālī ring reads kṛṣṇa 14…29 and then śukla 0…14, so
+     śukla's indices appear at BOTH ends of the array. Taking the first and
+     last position matching the range therefore spanned the whole ring and
+     put both labels at the same place — the top. So this walks the ring and
+     keeps the LONGEST contiguous run, which is the pakṣa's own arc.
+
+     The text stays horizontal. Set along the arc it is geometrically
+     honest, but a two-word caption rotated to the vertical is unreadable at
+     a glance, which is all a reel gets; and placed outside the ring it runs
+     off a 1080-wide frame. It sits inside the ring instead, in the clear
+     band between the rim and the Moon at the centre. */
+  function labelArc(c, G, P, cx, cy, rad, L, from, to, text) {
+    if (!L.idx) return;
+    var bf = -1, bl = -1, f = -1, i, inr;
+    for (i = 0; i < L.n; i++) {
+      inr = L.idx[i] >= from && L.idx[i] <= to;
+      if (inr && f < 0) f = i;
+      if (!inr || i === L.n - 1) {
+        var l = inr ? i : i - 1;
+        if (f >= 0 && (bf < 0 || l - f > bl - bf)) { bf = f; bl = l; }
+        f = -1;
+      }
+    }
+    if (bf < 0 || bl <= bf) return;
+    var ang = dialAng(L, (bf + bl) / 2);
+    c.save();
+    plain(c);
+    c.globalAlpha = P.dark ? 0.55 : 0.8;
+    c.fillStyle = G.rgba(P.dim, 1);
+    c.textAlign = "center";
+    c.textBaseline = "middle";
+    c.font = (P.banded ? "italic " : "") + (rad * 0.070).toFixed(1) + "px " + SERIF;
+    c.fillText(text, cx + Math.cos(ang) * rad, cy + Math.sin(ang) * rad);
+    c.restore();
+  }
 
   var STAGES = { nodes: S_nodes, thread: S_thread, whirl: S_whirl,
                  loops: S_loops, drift: S_drift, orbit: S_orbit,
@@ -1470,6 +1752,7 @@
     record: record, markReady: markReady, mark: function () { return MARK; },
     resetTrail: trailReset, trailState: trailState, cancelRecording: cancelRecording, isRecording: isRecording,
     PALETTES: PALETTES, pal: pal, bands: bands, frameAt: frameAt,
+    makeWarp: makeWarp,
     buildTimeline: buildTimeline, clockAt: clockAt,
     SERIF: SERIF, RASHI: RASHI, dateCaps: dateCaps,
     tracked: tracked, fitTracked: fitTracked, wrapTo: wrapTo,

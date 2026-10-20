@@ -358,6 +358,7 @@
         : ev0.length + " of them across " + span + " years, each placed in " +
           "the Gregorian year it fell in."),
       stage: "year",
+      method: "Lahiri ayanāṃśa · tithi at sunrise",
       cover: { t0: ev0[0].t, t1: ev0[ev0.length - 1].t },
       events: ev,
       tallyKeys: ["years"],
@@ -432,90 +433,146 @@
   }
 
   /* ---- story 2: the lunation --------------------------------------------- */
+  /* ---- story 2: the dial =================================================
+
+     THIRTY-ONE TITHIS, WITH THE FESTIVAL IN THE MIDDLE.
+
+     The first version drew one lunation: new Moon at the top, full Moon at
+     the bottom, the festival wherever its index happened to fall — which for
+     Dīvālī is one disc short of all the way round. It explained the month
+     well and made a poor poster, because the subject was never where the eye
+     goes.
+
+     So the window is now centred: the festival's tithi at twelve o'clock,
+     fifteen before it and fifteen after. That is thirty-one, which is more
+     than a month — and the honest consequence is that the ring CROSSES a new
+     Moon for every festival except one falling at the exact middle of its
+     month. The reel does not hide that. The crossing is drawn as a break in
+     the rim, both months are named on the card, and the pakṣa labels are
+     arcs following the real halves rather than two captions pinned to the
+     top and bottom of a wheel that no longer has its boundary there.
+
+     The clock is warped to match: fast through the ordinary days, slowing
+     almost to a stop at the centre, then away. See makeWarp. */
   function lunationStory(spec) {
     var place = spec.place;
     var ev0 = datesFor(spec.fest, new Date(spec.t0).getUTCFullYear(), 3,
                        spec.place);
     if (!ev0 || !ev0.length) return null;
     var hit = ev0[0];
-    /* the lunation that CONTAINS the festival: from the new Moon before to
-       the new Moon after, found from the elongation rather than assumed to
-       be 29.53 days long, because it is not */
-    var t0 = prevNew(hit.t), t1 = nextNew(hit.t);
-    if (t0 == null || t1 == null) return null;
-    var n = 30;
-    /* MARK THE TITHI THE RULE NAMES, not the one at sunrise.
 
-       Dīvālī is Kārtika amāvāsyā — tithi thirty — but the rule asks about
-       pradoṣa, the hour after sunset, and at sunrise that day it is still
-       caturdaśī. Marking the sunrise tithi therefore ringed the twenty-ninth
-       Moon on a reel whose subject is the thirtieth. The gap between the two
-       is not an inconvenience to be smoothed over: it is exactly why the
-       rule names a window, and the caption now says so. */
+    /* MARK THE TITHI THE RULE NAMES, not the one at sunrise. Dīvālī is
+       Kārtika amāvāsyā — tithi thirty — but the rule asks about pradoṣa, and
+       at sunrise that day it is still caturdaśī. */
     var rule = null;
     NP().FESTIVALS.forEach(function (f) { if (f.key === spec.fest) rule = f; });
     var ruleT = rule ? tithiOf(rule) : null;
     var ti = ruleT == null ? (hit.tithi == null ? 0 : hit.tithi) : ruleT;
-    var sunriseT = hit.tithi;
-    var starts = [];
-    for (var j = 0; j < n; j++) starts.push(tithiStart(t0, t1, j));
-    starts.push(t1);
 
-    /* WHICH DAY DOES A TITHI BELONG TO? Not the day it begins on.
+    /* the festival's own tithi interval, then fifteen out each way. The
+       boundaries are solved from the elongation, so they carry across the new
+       Moon without any special case: tithi index is taken modulo thirty and
+       the time just keeps going. */
+    var HALF = 15, n = HALF * 2 + 1;
+    var centre = tithiBoundaryNear(hit.t, ti);
+    if (centre == null) return null;
+    /* EVERY BOUNDARY IN ONE SCAN, rather than stepping from one to the next.
 
-       A pañcāṅga labels a tithi by the day whose SUNRISE it holds, which is
-       the whole reason a tithi can be skipped (it begins and ends between
-       two sunrises) or repeated (it covers two). Captioning each tithi with
-       the instant it started put six of the nine festivals a day early —
-       caught only because the reel was finally checked against the day the
-       calendar page draws.
+       Stepping asked "where is the boundary with index i+1, near a guess a
+       day away", and that is a question with more than one answer: it landed
+       back on the boundary it started from, or stepped over it, often enough
+       to leave five of Dussehra's thirty-one tithis looking skipped when at
+       most one ever is. Scanning forward and catching every crossing of a
+       multiple of twelve degrees has no guess in it at all. */
+    var all = tithiBoundaries(centre - 20 * DAY, centre + 20 * DAY);
+    var ci = -1, cbest = Infinity;
+    for (var ai = 0; ai < all.length; ai++) {
+      var dd = Math.abs(all[ai].t - centre);
+      if (dd < cbest) { cbest = dd; ci = ai; }
+    }
+    if (ci < HALF || ci + HALF + 1 >= all.length) return null;
+    var starts = [], idx = [];
+    for (var k = -HALF; k <= HALF + 1; k++) {
+      starts.push(all[ci + k].t);
+      if (k <= HALF) idx.push(all[ci + k].i);
+    }
+    var t0 = starts[0], t1 = starts[starts.length - 1];
 
-       So the lunation is walked once, a day at a time, and each tithi is
-       given the day whose sunrise carries it. A tithi with no such day is a
-       kṣaya tithi, and the reel says so rather than inventing a date. */
-    var dayOf = {}, skipped = {};
+    /* which day carries each tithi: the day whose SUNRISE it holds, which is
+       how a pañcāṅga labels one and the reason a tithi can be skipped */
+    /* TWO SIDES OF ONE FACT. A tithi runs 20 to 27 hours, so some hold two
+       sunrises and some hold none — vṛddhi and kṣaya, the repeated and the
+       skipped. They come in pairs inside a window like this: every tithi
+       that takes two days costs another tithi its day. Counting only the
+       skipped ones made the arithmetic look broken, so both are recorded. */
+    var dayOf = {}, skipped = {}, twice = {};
     var P2 = place || NP().savedPlace() || NP().PLACES[0];
-    for (var d2 = t0 - DAY; d2 < t1 + DAY; d2 += DAY) {
+    /* RE-ANCHOR ON EACH SUNRISE RATHER THAN STEP A FIXED DAY.
+
+       Stepping a flat 86 400 000 ms from an arbitrary instant asks for the
+       pañcāṅga of whatever day that instant lands in, and sunrise drifts
+       against that grid: two consecutive samples can fall inside the same
+       local day, which silently drops a sunrise and makes the tithi holding
+       it look skipped. Mahāśivarātri's window reported a kṣaya tithi
+       twenty-five hours long — and a tithi longer than a day always contains
+       a sunrise, which is what gave the bug away.
+
+       Advancing a day from the sunrise just found cannot drift, because
+       every step is measured from a real sunrise rather than from the
+       starting guess. */
+    var sr2 = null, guard = 0;
+    var d2 = t0 - 2 * DAY;
+    while (d2 < t1 + DAY && guard++ < 80) {
       var D2 = null;
-      try { D2 = NP().day(d2, P2, { month: true }); } catch (e4) { continue; }
-      if (!D2 || !D2.at || !D2.at.tithi) continue;
-      var sr2 = D2.sunrise || d2;
-      /* WHICH INTERVAL does this sunrise fall in? Taking "the first day whose
-         sunrise tithi is i" looks equivalent and is not: the lunation opens
-         AND closes on an amāvāsyā, so for Dīvālī that rule picked the
-         amāvāsyā a month early. The sunrise is placed in the interval that
-         actually contains it. */
-      var k2 = -1;
-      for (var q2 = 0; q2 < n; q2++)
-        if (sr2 >= starts[q2] && sr2 < starts[q2 + 1]) { k2 = q2; break; }
-      if (k2 < 0) continue;
-      if (dayOf[k2] == null) dayOf[k2] = sr2;
+      try { D2 = NP().day(d2, P2, { month: true }); } catch (e4) { d2 += DAY; continue; }
+      if (!D2 || !D2.sunrise) { d2 += DAY; continue; }
+      var s2 = D2.sunrise;
+      if (sr2 == null || s2 > sr2 + 6 * 3600000) {
+        sr2 = s2;
+        for (var q2 = 0; q2 < n; q2++)
+          if (s2 >= starts[q2] && s2 < starts[q2 + 1]) {
+            if (dayOf[q2] == null) dayOf[q2] = s2; else twice[q2] = true;
+            break;
+          }
+      }
+      /* always move on, and never by less than half a day, so a repeated
+         sunrise cannot stall the walk — and never by a jump long enough to
+         clear the next one, which is what lost a sunrise and invented a
+         second kṣaya tithi in most of these windows */
+      d2 = Math.max(s2 + DAY, d2 + DAY / 2);
     }
     for (var k3 = 0; k3 < n; k3++) if (dayOf[k3] == null) skipped[k3] = true;
-    /* The marked tithi keeps its own sunrise day in the DATA — overwriting
-       it would be a second opinion about a fact the engine already settled.
-       What the reel shows on that disc is the festival's date, because that
-       is what the reel is about, and the line under it names both when they
-       differ. Dussehra is observed on the 20th; daśamī holds at sunrise on
-       the 21st; the rule asks about aparāhna, and that gap is the reason the
-       rule names a window at all. */
+
+    /* where the new Moon falls inside the window, if it does */
+    var cross = -1;
+    for (var c2 = 0; c2 < n; c2++) if (idx[c2] === 0 && c2 > 0) cross = c2;
+    var months = [];
+    [t0 + 3600000, t1 - 3600000].forEach(function (tm) {
+      try {
+        var D3 = NP().day(tm, P2, { month: true });
+        var nm = D3.masaFestival;
+        if (nm && months.indexOf(nm) < 0) months.push(nm);
+      } catch (e5) {}
+    });
 
     var ev = [];
     for (var i = 0; i < n; i++) {
+      var mark = (i === HALF);
       var tt = dayOf[i] != null ? dayOf[i] : starts[i];
-      var mark = (i === ti);
+      var ii = idx[i];
       ev.push({
-        /* the TIMELINE runs on the tithi's own start, which is monotonic by
-           construction; the date PRINTED is a separate question, answered
-           just above */
-        t: starts[i], lon: 0, marked: mark, hold: mark || i === 0,
+        t: starts[i], lon: 0, marked: mark, hold: mark,
         tally: mark ? "the day" : "tithis",
         big: mark ? capsDate(hit.t) : (skipped[i] ? "SKIPPED" : capsDate(tt)),
-        small: "Tithi " + (i < 15 ? "śukla " + (i + 1) : "kṛṣṇa " + (i - 14)) +
+        small: "Tithi " + (ii < 15 ? "śukla " + (ii + 1) : "kṛṣṇa " + (ii - 14)) +
                (mark ? " — " + hit.name : "") +
                (skipped[i]
                  ? " — a kṣaya tithi: it begins and ends between two " +
                    "sunrises, so no day carries it"
+                 : "") +
+               (twice[i] && !mark
+                 ? " — a vṛddhi tithi: it is running at two sunrises, so two " +
+                   "days carry it, and another tithi gets none"
                  : "") +
                (mark && !skipped[i] && dayOf[i] != null &&
                 capsDate(dayOf[i]) !== capsDate(hit.t)
@@ -525,21 +582,27 @@
                      ? windowName(hit.when) : "another window")
                  : ""),
         note: mark ? hit.name.toUpperCase()
-                   : (i === 0 ? "ONE MONTH, THIRTY TITHIS" : null)
+                   : (i === 0 ? "FIFTEEN TITHIS EITHER SIDE" : null)
       });
     }
     return {
       kicker: "Nirayana",
       title: spec.label,
-      subtitle: "One lunar month, drawn as the thirty Moons it is. The ring " +
-                "marks the tithi the rule names.",
+      subtitle: "Thirty-one tithis with " + spec.label + " at the centre — " +
+                "fifteen before it and fifteen after, each Moon at its real " +
+                "phase.",
       stage: "lunation",
       cover: { t0: t0, t1: t1 },
-      lunation: { t0: t0, t1: t1, n: n, mark: ti, phaseAt: phaseAt,
-                  starts: starts, dayOf: dayOf, skipped: skipped },
+      lunation: { t0: t0, t1: t1, n: n, mark: HALF, phaseAt: phaseAt,
+                  starts: starts, idx: idx, dayOf: dayOf, skipped: skipped,
+                  twice: twice,
+                  cross: cross, centred: true },
+      /* the clock slows almost to a stop at the centre */
+      warpAt: 0.5, warpWidth: 0.055, warpDepth: 0.94,
       events: ev,
       tallyKeys: ["tithis", "the day"],
       clockMode: "days",
+      method: "Lahiri ayanāṃśa",
       closing: {
         big: hit.name + " — " + hit.iso,
         lines: [
@@ -547,21 +610,97 @@
           "A tithi is not a day. It is the time the Moon takes to gain 12° on " +
           "the Sun, which runs from about 20 to 27 hours — so a tithi can " +
           "skip a sunrise or span two, and that is why the rule names a " +
-          "window and not a clock time." +
-          (sunriseT != null && ruleT != null && sunriseT !== ruleT
-            ? " On " + hit.iso + " the sunrise tithi is still the one before: " +
-              "the rule is satisfied " +
-              (rule && rule.when ? "at " + windowName(rule.when)
-                                 : "later in the day") + "."
-            : ""),
+          "window and not a clock time.",
+          (months.length > 1
+            ? "Thirty-one tithis is longer than a month, so this ring crosses " +
+              "a new Moon: it runs from " + months[0] + " into " +
+              months[months.length - 1] + ", and the break in the rim is " +
+              "where one ends and the next begins."
+            : "These thirty-one all fall inside " + (months[0] || "one month") +
+              "."),
           hit.contested
             ? "This rule is contested: " + (hit.note || "published pañcāṅgas differ.")
             : "Source: " + hit.source
         ]
       },
-      placeName: (spec.place || NP().savedPlace() || NP().PLACES[0]).n
+      placeName: P2.n
     };
   }
+
+  /* the instant tithi `want` begins, nearest to `ms` — the elongation
+     reaching 12·want, found by stepping to a bracket and bisecting */
+  function tithiBoundaryNear(ms, want) {
+    var target = want * 12;
+    function off(t) {
+      var d = phaseAt(t) - target;
+      while (d > 180) d -= 360;
+      while (d < -180) d += 360;
+      return d;
+    }
+    var t = ms, prev = off(t);
+    var dir = prev > 0 ? -1 : 1;
+    for (var i = 0; i < 40; i++) {
+      var tn = t + dir * 0.4 * DAY, cur = off(tn);
+      if ((prev <= 0) !== (cur <= 0)) {
+        var lo = Math.min(t, tn), hi = Math.max(t, tn);
+        for (var k = 0; k < 50 && hi - lo > 20000; k++) {
+          var mid = (lo + hi) / 2;
+          if (off(mid) <= 0) { if (dir > 0) lo = mid; else hi = mid; }
+          else { if (dir > 0) hi = mid; else lo = mid; }
+        }
+        return (lo + hi) / 2;
+      }
+      t = tn; prev = cur;
+    }
+    return null;
+  }
+  /* every tithi boundary in a span: each instant the elongation crosses a
+     multiple of twelve degrees, with the index of the tithi it opens */
+  function tithiBoundaries(from, to) {
+    var out = [], step = 0.2 * DAY;
+    var prev = phaseAt(from), t = from;
+    for (var g = 0; g < 400 && t < to; g++) {
+      var tn = t + step, cur = phaseAt(tn);
+      var pk = Math.floor(prev / 12), ck = Math.floor(cur / 12);
+      if (cur < prev) ck += 30;                      /* crossed the new Moon */
+      for (var m = pk + 1; m <= ck; m++) {
+        var target = (m % 30) * 12;
+        var lo = t, hi = tn;
+        for (var b = 0; b < 48 && hi - lo > 20000; b++) {
+          var mid = (lo + hi) / 2, v = phaseAt(mid);
+          var below = (m % 30 === 0)
+            ? (v > 180)            /* approaching the wrap from below 360 */
+            : (v < target);
+          if (below) lo = mid; else hi = mid;
+        }
+        out.push({ t: (lo + hi) / 2, i: ((m % 30) + 30) % 30 });
+      }
+      t = tn; prev = cur;
+    }
+    return out;
+  }
+
+  /* k tithi boundaries on from `from`, forwards or backwards */
+  function stepTithi(from, k) {
+    if (k === 0) return from;
+    var t = from, dir = k > 0 ? 1 : -1;
+    for (var i = 0; i < Math.abs(k); i++) {
+      var want = phaseAt(t) + dir * 12;
+      var guess = t + dir * 1.0 * DAY;
+      var got = tithiBoundaryNear(guess, Math.round(norm360(want) / 12) % 30);
+      if (got == null) return null;
+      /* guard against landing back on the same boundary */
+      if (dir > 0 && got <= t + 3600000) got = tithiBoundaryNear(t + 1.6 * DAY,
+        Math.round(norm360(want) / 12) % 30);
+      if (dir < 0 && got >= t - 3600000) got = tithiBoundaryNear(t - 1.6 * DAY,
+        Math.round(norm360(want) / 12) % 30);
+      if (got == null) return null;
+      t = got;
+    }
+    return t;
+  }
+  function norm360(d) { d %= 360; return d < 0 ? d + 360 : d; }
+
   /* THE THIRTY TITHIS ARE NOT THIRTY EQUAL SLICES.
 
      A tithi is the time the Moon takes to gain twelve degrees on the Sun,

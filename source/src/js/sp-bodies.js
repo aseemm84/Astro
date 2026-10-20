@@ -151,11 +151,16 @@
     c.drawImage(cv, x - R, y - R, R * 2, R * 2);
     if (opt.earthshine) {
       c.globalCompositeOperation = "lighter";
-      c.globalAlpha = opt.shineStrong ? 1 : 0.75;
-      c.strokeStyle = opt.earthshineCol || "rgba(196,210,236,0.98)";
-      c.lineWidth = Math.max(1.4, R * (opt.shineStrong ? 0.22 : 0.16));
+      /* EARTHSHINE IS A HINT, NOT A HOOP. At reel sizes a bright annulus
+         around a new Moon stops reading as a dark limb catching light and
+         starts reading as a ring drawn on the frame — a row of them looked
+         like beads threaded on the dial rather than Moons. Thin and dim
+         enough to find the limb, not enough to become the subject. */
+      c.globalAlpha = opt.shineStrong ? 0.62 : 0.38;
+      c.strokeStyle = opt.earthshineCol || "rgba(176,192,222,0.95)";
+      c.lineWidth = Math.max(1, R * (opt.shineStrong ? 0.10 : 0.07));
       c.beginPath();
-      c.arc(x, y, R * 0.94, 0, 6.283185307179586);
+      c.arc(x, y, R * 0.965, 0, 6.283185307179586);
       c.stroke();
     }
     c.restore();

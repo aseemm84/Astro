@@ -766,6 +766,9 @@ console.log("\nEvery festival reel says true things about its dates");
     const R = window.SPStories.build("fest.moon.diwali",
       { t0: Date.parse("2026-06-01") });
     out.lun = { n: R.lunation.n, mark: R.lunation.mark,
+                markIdx: R.lunation.idx[R.lunation.mark],
+                before: R.lunation.mark,
+                after: R.lunation.n - 1 - R.lunation.mark,
                 startsAtLunation: Math.abs(R.tl.t0 - R.lunation.t0) < 1000,
                 days: (R.tl.t1 - R.tl.t0) / 86400000 };
     return out;
@@ -784,14 +787,17 @@ console.log("\nEvery festival reel says true things about its dates");
   ok(badGaps.length === 0,
      "a year the rule admits no day is reported with its reason, not dropped",
      badGaps.join(" | "));
-  ok(r.lun.n === 30, "the lunation ring is thirty tithis");
-  ok(r.lun.mark === 29,
-     "and Dīvālī's ring is on the thirtieth — amāvāsyā, which the rule " +
-     "names, not caturdaśī, which is what sunrise reads that day",
-     "mark " + r.lun.mark);
+  ok(r.lun.n === 31, "the lunation ring is thirty-one tithis");
+  ok(r.lun.mark === 15 && r.lun.before === r.lun.after,
+     "with the festival in the middle: " + r.lun.before + " tithis before it " +
+     "and " + r.lun.after + " after");
+  ok(r.lun.markIdx === 29,
+     "and the marked tithi is amāvāsyā, which the rule names, not caturdaśī, " +
+     "which is what sunrise reads that day",
+     "idx " + r.lun.markIdx);
   ok(r.lun.startsAtLunation,
-     "the lunation clock starts at that month's new Moon, not at the date " +
-     "the reel was asked for");
+     "the clock covers exactly the ring it draws, rather than the span the " +
+     "reel was asked for");
   ok(r.lun.days > 28 && r.lun.days < 31,
      "and runs one lunation: " + r.lun.days.toFixed(2) + " days");
 }
@@ -865,10 +871,13 @@ console.log("\nThe lunation's tithis are the real ones");
   const r = await pg.evaluate(() => {
     const L = window.SPStories.build("fest.moon.diwali",
       { t0: Date.parse("2026-01-01") }).lunation;
-    /* tithi i begins when the Moon has gained 12i degrees on the Sun */
+    /* A tithi begins when the Moon has gained a multiple of twelve degrees
+       on the Sun — and on a centred ring the multiple is the tithi's OWN
+       index, not its position in the array. The ring starts fifteen tithis
+       before the festival, so position zero is rarely tithi zero. */
     let worst = 0, longest = 0, shortest = 1e9;
     for (let i = 1; i < L.n; i++) {
-      const want = i * 12;
+      const want = L.idx[i] * 12;
       let got = L.phaseAt(L.starts[i]);
       let d = Math.abs(got - want);
       if (d > 180) d = 360 - d;
@@ -887,6 +896,74 @@ console.log("\nThe lunation's tithis are the real ones");
   ok(r.longest - r.shortest > 2,
      "and they are genuinely unequal — " + r.shortest.toFixed(1) + " to " +
      r.longest.toFixed(1) + " hours, which is why equal slices were wrong");
+}
+
+console.log("\nThe skipped and the repeated tithis balance");
+{
+  /* A window of thirty-one tithis is about thirty and a half days, so it
+     holds about one tithi more than it has sunrises. Every tithi that
+     catches two sunrises — vṛddhi — must cost another tithi its day. If the
+     books do not balance, a sunrise has been dropped, which is exactly the
+     bug that made Mahāśivarātri report a twenty-five-hour kṣaya tithi. */
+  const r = await pg.evaluate(() => {
+    const out = [];
+    window.SPStories.TEMPLATES
+      .filter(s => s.key.indexOf("fest.moon.") === 0)
+      .forEach(s => {
+        const L = window.SPStories.build(s.key,
+          { t0: Date.parse("2026-01-01") }).lunation;
+        const k = Object.keys(L.skipped).length;
+        const v = Object.keys(L.twice).length;
+        const filled = Object.keys(L.dayOf).length;
+        let longestSkip = 0;
+        for (let i = 0; i < L.n; i++)
+          if (L.skipped[i])
+            longestSkip = Math.max(longestSkip,
+              (L.starts[i + 1] - L.starts[i]) / 3600000);
+        out.push({ key: s.key.replace("fest.moon.", ""), k: k, v: v,
+                   filled: filled, n: L.n, longestSkip: longestSkip });
+      });
+    return out;
+  });
+  const unbalanced = r.filter(x => x.filled + x.k !== x.n || x.k - x.v < 0 ||
+                                   x.k - x.v > 1);
+  ok(unbalanced.length === 0,
+     "every tithi either has a day or is counted as skipped, and the skipped " +
+     "outnumber the repeated by at most one",
+     unbalanced.map(x => x.key + " k" + x.k + " v" + x.v + " f" + x.filled)
+               .join(" | "));
+  const tooLong = r.filter(x => x.longestSkip >= 24);
+  ok(tooLong.length === 0,
+     "and no skipped tithi is longer than a day, since one that long always " +
+     "contains a sunrise",
+     tooLong.map(x => x.key + " " + x.longestSkip.toFixed(1) + "h").join(" | "));
+}
+
+console.log("\nThe clock slows into the festival and comes out again");
+{
+  const r = await pg.evaluate(() => {
+    const R = window.SPStories.build("fest.moon.diwali",
+      { t0: Date.parse("2026-01-01") });
+    const at = p => window.SPReel.clockAt(R.tl, p).t;
+    const rate = (a, b) => Math.abs(at(b) - at(a)) / 86400000 / (b - a);
+    /* where the clock reaches the marked tithi, in playhead terms */
+    const centre = R.lunation.starts[R.lunation.mark];
+    let arrive = 0;
+    for (let p = 0; p <= 1; p += 0.002) if (at(p) <= centre) arrive = p;
+    let back = 0;
+    for (let i = 1; i <= 500; i++)
+      if (at(i / 500) < at((i - 1) / 500) - 1000) back++;
+    return { early: rate(0.12, 0.20), slow: rate(arrive - 0.01, arrive + 0.01),
+             late: rate(0.72, 0.80), arrive: arrive, back: back,
+             t0: at(0), t1: at(1), span0: R.tl.t0, span1: R.tl.t1 };
+  });
+  ok(r.slow < r.early / 4 && r.slow < r.late / 4,
+     "the dial crawls through the festival — " + r.slow.toFixed(2) +
+     " days per unit playhead against " + r.early.toFixed(2) + " before and " +
+     r.late.toFixed(2) + " after");
+  ok(r.back === 0, "the warped clock never runs backwards", r.back + " steps");
+  ok(Math.abs(r.t0 - r.span0) < 1000 && Math.abs(r.t1 - r.span1) < 1000,
+     "and still covers exactly the span it claims, start to finish");
 }
 
 console.log("\nA caption names the tithi the rule names");
@@ -963,12 +1040,23 @@ console.log("\nThe place picker changes what it should and nothing else");
     const T = window.SPStories.build("thread.earth-venus",
       { t0: Date.parse("2026-01-01") });
     const without = litRow(T);
-    return { withPlace, without };
+    return { withPlace, without, place: R.placeName || null,
+             noPlace: T.placeName || null, method: T.method || null,
+             festMethod: R.method || null };
   });
   ok(ink.withPlace > 300,
      "and the frame prints it: " + ink.withPlace + " lit pixels on that line");
-  ok(ink.without < ink.withPlace / 2,
-     "while a reel with no place leaves the line empty (" + ink.without + ")");
+  /* THE LINE IS PROVENANCE, NOT A PRIVACY NOTICE. It used to carry the same
+     promise on every reel, which told a viewer nothing about the picture
+     they were looking at; now it says where the reel was computed for and by
+     what method. A reel that does not depend on a place says only the
+     method, so the line is never empty — what must be absent is the place. */
+  ok(ink.without > 200,
+     "a reel with no place still names its method on that line (" +
+     ink.without + " lit pixels)");
+  ok(!ink.noPlace && !!ink.method && !!ink.place && !!ink.festMethod,
+     "and it is the method alone: \"" + ink.method + "\" against \"" +
+     "computed for " + ink.place + " · " + ink.festMethod + "\"");
 }
 
 /* ---- 9. the page -------------------------------------------------------- */

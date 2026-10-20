@@ -96,6 +96,7 @@
       subtitle: sa + ", computed twice — once by the Siddhānta's own method " +
                 "and once by a modern ephemeris. The gap is drawn.",
       stage: "drift",
+      method: "Sūrya Siddhānta against a modern ephemeris",
       bodyName: body,
       cover: { t0: ts[0], t1: ts[ts.length - 1] },
       drift: { lon: lon, err: err, t: ts, scale: scale, lo: lo, hi: hi },
@@ -247,6 +248,7 @@
       subtitle: "Every eclipse the fifth-century method foresees, against " +
                 "every one that happens.",
       stage: "nodes",
+      method: "Sūrya Siddhānta against a modern ephemeris",
       /* this reel mixes solar and lunar predictions, so there is no single
          phase to draw the Moon at; `full` is deliberately absent rather than
          guessed. It was briefly set to an undefined `full`, which threw
@@ -365,6 +367,7 @@
       title: spec.title || sc.label,
       subtitle: sc.question,
       stage: "orbit",
+      method: "velocity Verlet from the real sky",
       clockMode: "days",
       cover: { t0: ts[0], t1: ts[ts.length - 1] },
       orbit: { x: x, y: y, t: ts, sun: { x: sx, y: sy },
@@ -430,6 +433,7 @@
       subtitle: V.n + " of them in " + yrs.toFixed(0) + " years. Where do " +
                 "they fall?",
       stage: "whirl",
+      method: "sidereal rāśi · Lahiri ayanāṃśa",
       events: ev,
       tallyKeys: [V.what || "events"],
       closing: {
