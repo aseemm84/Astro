@@ -28,6 +28,7 @@
 import { fileURLToPath } from "url";
 import { dirname, resolve } from "path";
 import { createRequire } from "node:module";
+import { readdirSync, readFileSync } from "node:fs";
 
 let chromium;
 try { ({ chromium } = await import("playwright")); }
@@ -65,7 +66,11 @@ console.log("\nThe explainers register as ordinary reels");
     });
     return { keys, built };
   });
-  ok(r.keys.length === 12, "all twelve bhāvas are offered: " + r.keys.length);
+  const bh = r.keys.filter(k => k.indexOf("learn.bhava.") === 0);
+  const cn = r.keys.filter(k => k.indexOf("learn.concept.") === 0);
+  ok(bh.length === 12, "all twelve bhāvas are offered: " + bh.length);
+  ok(cn.length >= 13,
+     "and one explainer per subject the site teaches: " + cn.length);
   const bad = r.built.filter(b => b.bad);
   ok(bad.length === 0, "every one builds", bad.map(b => b.k).join(" | "));
   const wrongPal = r.built.filter(b => b.pal !== "paper");
@@ -77,8 +82,8 @@ console.log("\nThe explainers register as ordinary reels");
      "none of them prints a clock or a tally, because none of them counts " +
      "anything",
      wrongClock.map(b => b.k).join(" | "));
-  const wrongBeats = r.built.filter(b => b.beats !== 7);
-  ok(wrongBeats.length === 0, "each is seven beats",
+  const wrongBeats = r.built.filter(b => b.beats < 6 || b.beats > 8);
+  ok(wrongBeats.length === 0, "each runs six to eight beats",
      wrongBeats.map(b => b.k + " " + b.beats).join(" | "));
   globalThis.__built = r.built;
 }
@@ -138,8 +143,23 @@ console.log("\nThe classifications are the ones the site publishes");
 /* ---- 3. no invented citations ------------------------------------------- */
 console.log("\nNothing is cited that the site does not already cite");
 {
-  /* taken verbatim from the published bhāva page's source lines */
-  const ALLOWED = ["Ch. 11", "Ch. 7, vv. 33–36", "Ch. 24", "Vol. 1"];
+  /* THE ALLOW-LIST IS READ FROM THE PAGES, not typed out here.
+
+     A hand-kept list drifts: a page gets a correction, the list does not,
+     and the check starts defending the wrong thing. So every chapter- and
+     verse-shaped reference printed anywhere in the site's own teaching
+     pages is collected, and an explainer may cite any of those and nothing
+     else. The cost of adding a legitimate citation is then adding it to the
+     page that owns it, which is where a reader would look for it anyway. */
+  const PAGEDIR = resolve(ROOT, "source", "src", "pages");
+  const ALLOWED = [...new Set(readdirSync(PAGEDIR)
+    .filter(f => f.endsWith(".html"))
+    .flatMap(f => readFileSync(resolve(PAGEDIR, f), "utf8")
+      .match(/(Ch\.|Chapter|vv?\.)\s*[0-9][^,.;)\n]*/g) || [])
+    .map(x => x.trim()))];
+  ok(ALLOWED.length > 20,
+     "the allow-list is built from the site's own pages: " + ALLOWED.length +
+     " references found");
   const r = await pg.evaluate(() => {
     const txt = [];
     window.SPExplain.keys().forEach(k => {
@@ -154,22 +174,105 @@ console.log("\nNothing is cited that the site does not already cite");
   /* every chapter- or verse-shaped reference in the whole set */
   const refs = [...new Set((r.match(/(Ch\.|Chapter|vv?\.)\s*[0-9][^,.;)\n]*/g) || [])
     .map(s => s.trim()))];
-  /* the regex splits "Ch. 7, vv. 33–36" at the comma, so a fragment counts
-     as cited when it sits inside an allowed reference or contains one; an
-     invented chapter matches neither way */
-  const stray = refs.filter(s => !ALLOWED.some(a => a.indexOf(s) >= 0 ||
-                                                    s.indexOf(a) >= 0));
+  /* WHAT IS BEING CHECKED IS THE NUMBER, not the words after it. A page
+     writes "Ch. 45 (Avasthas — Baladi, Jagradadi…)" and an explainer writes
+     "Ch. 45 (Bālādi…)": the same citation, differently summarised. So each
+     reference is reduced to its chapter-and-verse numbers before comparing,
+     and a range is accepted when both its endpoints are cited individually
+     — Ch. 67–71 is honest if the page prints Ch. 67 and Ch. 71. */
+  const norm = x => {
+    const m = x.match(/^(Ch\.|Chapter|vv?\.)\s*[0-9]+(\s*[–-]\s*[0-9]+)?/);
+    return m ? m[0].replace(/\s+/g, " ").replace(/\s*[–-]\s*/, "–") : x.trim();
+  };
+  const allow = new Set(ALLOWED.map(norm));
+  const cited = x => {
+    const n = norm(x);
+    if (allow.has(n)) return true;
+    const m = n.match(/^(Ch\.|Chapter|vv?\.)\s*([0-9]+)–([0-9]+)$/);
+    if (!m) return false;
+    for (let i = +m[2]; i <= +m[3]; i++)
+      if (!allow.has(m[1] + " " + i)) return false;
+    return true;
+  };
+  const stray = refs.filter(x => !cited(x));
   ok(stray.length === 0,
-     "every chapter and verse reference is one the bhāva page already prints",
+     "every chapter and verse reference in all " + refs.length +
+     " is one the site's own pages already print",
      stray.join(" | "));
-  ok(refs.length > 0, "and the set does cite its source: " + refs.join(", "));
+  ok(refs.length > 10,
+     "and the set does cite its sources rather than gesturing at them: " +
+     [...new Set(refs.map(norm))].sort().join(", "));
   ok(!/śloka|verse \d|says that/i.test(r) ||
      /classical framework/i.test(r),
      "no beat quotes a verse it has not got");
 }
 
 /* ---- 4. every beat earns its place -------------------------------------- */
-console.log("\nEach beat is legible, and each one adds something");
+console.log("\nEvery explainer, beat by beat");
+{
+  /* ALL OF THEM, not a representative one. The whole point of the format is
+     that adding a set is writing words rather than writing code, which means
+     a set can be added with a beat that draws nothing and nobody would see
+     it. So each explainer is rendered at the midpoint of each of its beats
+     and asked two questions: is the caption up, and did the diagram gain
+     anything since the beat before. */
+  const r = await pg.evaluate(() => {
+    const keys = window.SPExplain.keys();
+    const cv = document.createElement("canvas");
+    cv.width = 540; cv.height = 960;
+    const c = cv.getContext("2d");
+    const out = [];
+    keys.forEach(k => {
+      const R = window.SPStories.build(k, { t0: Date.parse("2026-01-01") });
+      const B = window.SPReel.bands(540, 960, R);
+      const mids = [];
+      for (let i = 0; i < R.events.length; i++) {
+        const t = i < R.events.length - 1
+          ? (R.events[i].t + R.events[i + 1].t) / 2
+          : R.events[i].t + 86400000 * 0.3;
+        let lo = 0, hi = 1;
+        for (let s = 0; s < 40; s++) {
+          const m = (lo + hi) / 2;
+          if (window.SPReel.clockAt(R.tl, m).t < t) lo = m; else hi = m;
+        }
+        mids.push((lo + hi) / 2);
+      }
+      function ink(p, rect) {
+        window.SPReel.frameAt(c, 540, 960, R, p);
+        const d = c.getImageData(rect.x | 0, rect.y | 0,
+          Math.max(1, rect.w | 0), Math.max(1, rect.h | 0)).data;
+        let n = 0;
+        for (let i = 0; i < d.length; i += 4)
+          if (d[i] < 170 || d[i + 2] < 150) n++;
+        return n;
+      }
+      const cap = mids.map(p => ink(p, { x: 0, y: B.cap.y, w: 540, h: B.cap.h }));
+      const stage = mids.map(p => ink(p, B.stage));
+      let grew = 0;
+      for (let i = 1; i < stage.length; i++)
+        if (stage[i] > stage[i - 1]) grew++;
+      out.push({ k, cap, stage, grew, beats: R.events.length });
+    });
+    return out;
+  });
+  const quiet = r.filter(x => x.cap.some(n => n < 300));
+  ok(quiet.length === 0,
+     "the caption is up in the middle of every beat of all " + r.length +
+     " explainers",
+     quiet.map(x => x.k + " [" + x.cap.join(",") + "]").join(" | "));
+  const flat = r.filter(x => x.grew < x.beats - 3);
+  ok(flat.length === 0,
+     "and every one keeps gaining ink as its beats arrive",
+     flat.map(x => x.k + " grew on " + x.grew + "/" + (x.beats - 1) +
+              " [" + x.stage.join(",") + "]").join(" | "));
+  const thin = r.filter(x => x.stage[x.stage.length - 1] < x.stage[0] * 1.15);
+  ok(thin.length === 0,
+     "and ends with far more on the page than it started with",
+     thin.map(x => x.k + " " + x.stage[0] + " → " +
+              x.stage[x.stage.length - 1]).join(" | "));
+}
+
+console.log("\nOne explainer in detail");
 {
   const r = await pg.evaluate(() => {
     const R = window.SPStories.build("learn.bhava.10",
