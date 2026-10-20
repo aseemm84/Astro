@@ -796,6 +796,114 @@ console.log("\nEvery festival reel says true things about its dates");
      "and runs one lunation: " + r.lun.days.toFixed(2) + " days");
 }
 
+/* ---- 8g2. the reel and the calendar must not disagree --------------------
+   THE CHECK THAT SHOULD HAVE BEEN HERE FIRST. Two engines on one site that
+   name different days for Dussehra is the worst failure this project can
+   have, and it happened: the calendar said the 20th of October 2026 and the
+   lunation reel captioned the 19th.
+
+   Neither was wrong about the festival. The reel divided the lunation into
+   thirty EQUAL slices, and tithis are not equal — the sixth tithi of Āśvina
+   2026 covers two sunrises, which pushes every tithi after it a day late. So
+   every date the reel prints is now checked against the day NP.festivalsOn
+   names, which is the day the calendar page draws. */
+console.log("\nEvery date a reel prints is the date the calendar gives");
+{
+  const r = await pg.evaluate(() => {
+    const bad = [], NP = window.NP;
+    const P = NP.savedPlace() || NP.PLACES[2];
+    function engineDay(key, year) {
+      const d = window.SPFest.datesFor(key, year, 1, P);
+      return (d && d.length) ? d[0].iso : null;
+    }
+    function iso(ms) { return new Date(ms).toISOString().slice(0, 10); }
+    window.SPFest.LIST.forEach(q => {
+      for (let y = 2026; y <= 2029; y++) {
+        const want = engineDay(q.fest, y);
+        if (!want) continue;
+        /* the "why does it move" reel: the caption for that year */
+        const W = window.SPStories.build("fest.when." + q.fest,
+          { t0: Date.UTC(y, 0, 1), years: 4, place: P });
+        if (W) {
+          const e = W.events.filter(x => new Date(x.t).getUTCFullYear() === y)[0];
+          if (e && iso(e.t) !== want)
+            bad.push(q.fest + " " + y + ": when-reel " + iso(e.t) +
+                     " vs engine " + want);
+        }
+        if (y !== 2026) continue;
+        /* the lunation reel: the caption on the ringed tithi, and its card */
+        const L = window.SPStories.build("fest.moon." + q.fest,
+          { t0: Date.UTC(y, 0, 1), place: P });
+        if (!L) continue;
+        const m = L.events[L.lunation.mark];
+        if (!m) { bad.push(q.fest + ": no marked tithi"); continue; }
+        /* the date the reel PRINTS, which is the thing a viewer reads — the
+           event's own timestamp is the tithi's start and is a different
+           quantity */
+        const MON = ["JAN","FEB","MAR","APR","MAY","JUN",
+                     "JUL","AUG","SEP","OCT","NOV","DEC"];
+        const w = new Date(want + "T12:00:00Z");
+        const shown = w.getUTCDate() + " " + MON[w.getUTCMonth()] + " " +
+                      w.getUTCFullYear();
+        if (m.big !== shown)
+          bad.push(q.fest + " " + y + ": lunation ring prints " + m.big +
+                   " vs engine " + shown);
+        if (L.closing.big.indexOf(want) < 0)
+          bad.push(q.fest + " " + y + ": closing card " + L.closing.big +
+                   " vs engine " + want);
+      }
+    });
+    return { bad: bad.slice(0, 6), n: bad.length };
+  });
+  ok(r.n === 0,
+     "every festival reel agrees with NP.festivalsOn, which is what the " +
+     "calendar draws", r.bad.join(" | "));
+}
+
+console.log("\nThe lunation's tithis are the real ones");
+{
+  const r = await pg.evaluate(() => {
+    const L = window.SPStories.build("fest.moon.diwali",
+      { t0: Date.parse("2026-01-01") }).lunation;
+    /* tithi i begins when the Moon has gained 12i degrees on the Sun */
+    let worst = 0, longest = 0, shortest = 1e9;
+    for (let i = 1; i < L.n; i++) {
+      const want = i * 12;
+      let got = L.phaseAt(L.starts[i]);
+      let d = Math.abs(got - want);
+      if (d > 180) d = 360 - d;
+      worst = Math.max(worst, d);
+      const len = (L.starts[i + 1] - L.starts[i]) / 3600000;
+      if (isFinite(len) && len > 0) {
+        longest = Math.max(longest, len);
+        shortest = Math.min(shortest, len);
+      }
+    }
+    return { worst, longest, shortest };
+  });
+  ok(r.worst < 0.05,
+     "each tithi starts where the elongation says it does, to " +
+     r.worst.toFixed(4) + "°");
+  ok(r.longest - r.shortest > 2,
+     "and they are genuinely unequal — " + r.shortest.toFixed(1) + " to " +
+     r.longest.toFixed(1) + " hours, which is why equal slices were wrong");
+}
+
+console.log("\nA caption names the tithi the rule names");
+{
+  const r = await pg.evaluate(() => {
+    const W = window.SPStories.build("fest.when.dussehra",
+      { t0: Date.parse("2026-01-01") });
+    const e = W.events[0];
+    return { small: e.small, big: e.big };
+  });
+  ok(/Daśamī/.test(r.small),
+     "Vijayadaśamī's caption says daśamī: " + r.small);
+  ok(/at sunrise still/.test(r.small),
+     "and says what sunrise read instead, which is why the rule names a " +
+     "window");
+}
+
 /* ---- 8h. the place -------------------------------------------------------
    A control that does nothing is worse than no control. The picker is only
    worth having if moving it moves the dates — so this checks that it does,

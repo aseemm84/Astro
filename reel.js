@@ -2477,7 +2477,21 @@ function moSunDisc(R,rot){
     append: function () {},
     live: function (c, G, R, reel, P, now, idx, k, p) {
       var g = geom("whirl", R, reel), r = g.r, L = reel.lunation;
-      var f = clamp((now.t - L.t0) / Math.max(1, L.t1 - L.t0), 0, 1);
+      /* THE POINTER IS DRIVEN BY WHICH TITHI IS CURRENT, not by how far
+         through the month the clock has run. The discs are equally spaced
+         because the ring is a dial of thirty tithis; the tithis themselves
+         are not equal, so a linear sweep drifts off them — by most of a disc
+         at the quarters, which is exactly where somebody checks. */
+      var f;
+      if (L.starts && L.starts.length > L.n) {
+        var k2 = 0;
+        while (k2 < L.n && L.starts[k2 + 1] <= now.t) k2++;
+        var a0 = L.starts[k2], a1 = L.starts[k2 + 1];
+        var frac = (a1 > a0) ? clamp((now.t - a0) / (a1 - a0), 0, 1) : 0;
+        f = clamp((k2 + frac) / L.n, 0, 1);
+      } else {
+        f = clamp((now.t - L.t0) / Math.max(1, L.t1 - L.t0), 0, 1);
+      }
       var a = (f * 360 - 90) * R2;
       c.save();
       c.globalAlpha = P.dark ? 0.55 : 0.7;
@@ -9967,10 +9981,10 @@ function moSunDisc(R,rot){
       var touched = q && (q.from === want || q.to === want);
       return "the tithi fell on " + iso + " but " +
              (touched
-               ? "covered only part of " + rule.when +
+               ? "covered only part of " + windowName(rule.when) +
                  " — a close call, which published almanacs settle by " +
                  "convention rather than by computation"
-               : "never reached " + rule.when);
+               : "never reached " + windowName(rule.when));
     }
     return "the tithi did not fall in that month at all";
   }
@@ -10021,14 +10035,27 @@ function moSunDisc(R,rot){
     if (!ev0 || ev0.length < 3) return null;
     var lo = 999, hi = -999;
     ev0.forEach(function (q) { lo = Math.min(lo, q.doy); hi = Math.max(hi, q.doy); });
+    /* NAME THE TITHI THE RULE NAMES. Dussehra is śukla daśamī prevailing at
+       aparāhna; at sunrise that day it is still navamī. Captioning the
+       sunrise tithi therefore printed "Vijayadaśamī — Āśvina śukla Navamī",
+       which contradicts itself in its own two lines. */
+    var ruleT = null, ruleWhen = null;
+    NP().FESTIVALS.forEach(function (f) {
+      if (f.key === spec.fest) { ruleT = tithiOf(f); ruleWhen = f.when || null; }
+    });
     var ev = ev0.map(function (q, i) {
+      var named = ruleT != null ? tithiName(ruleT) : null;
+      var differs = ruleT != null && q.tithi != null && q.tithi !== ruleT;
       return {
         t: q.t, lon: 0, doy: q.doy, phase: q.phase,
         marked: true, hold: i < 2,
         tally: "years",
         big: capsDate(q.t),
-        small: q.masa + " " + (q.paksha ? q.paksha + " " : "") +
-               (q.tithiName || ""),
+        small: q.masa + " " + (named || ((q.paksha ? q.paksha + " " : "") +
+               (q.tithiName || ""))) +
+               (differs
+                 ? " — at sunrise still " + (q.tithiName || "the one before")
+                 : ""),
         note: i === 0 ? "THE RULE: " + shortRule(q) : null,
         rule: q.rule, source: q.source, contested: q.contested,
         name: q.name
@@ -10131,6 +10158,17 @@ function moSunDisc(R,rot){
       placeName: (spec.place || NP().savedPlace() || NP().PLACES[0]).n
     };
   }
+  /* "śukla daśamī", from the index, using the engine's own names */
+  function tithiName(i) {
+    var N = NP().NAMES;
+    if (!N) return null;
+    return (i < 15 ? "śukla " + N.tithi[i] : "kṛṣṇa " + N.tithiK[i - 15]);
+  }
+  /* the engine's window keys, as the rest of the site spells them */
+  var WINDOW = { pradosha: "pradoṣa", nishita: "niśīta", aparahna: "aparāhna",
+                 arunodaya: "aruṇodaya", sunrise: "sunrise",
+                 madhyahna: "madhyāhna" };
+  function windowName(w) { return WINDOW[w] || w; }
   function shortRule(q) {
     return ((q.masa || "") + " " + (q.paksha || "") + " " +
             (q.tithiName || "")).trim().toUpperCase();
@@ -10144,6 +10182,7 @@ function moSunDisc(R,rot){
 
   /* ---- story 2: the lunation --------------------------------------------- */
   function lunationStory(spec) {
+    var place = spec.place;
     var ev0 = datesFor(spec.fest, new Date(spec.t0).getUTCFullYear(), 3,
                        spec.place);
     if (!ev0 || !ev0.length) return null;
@@ -10167,16 +10206,73 @@ function moSunDisc(R,rot){
     var ruleT = rule ? tithiOf(rule) : null;
     var ti = ruleT == null ? (hit.tithi == null ? 0 : hit.tithi) : ruleT;
     var sunriseT = hit.tithi;
+    var starts = [];
+    for (var j = 0; j < n; j++) starts.push(tithiStart(t0, t1, j));
+    starts.push(t1);
+
+    /* WHICH DAY DOES A TITHI BELONG TO? Not the day it begins on.
+
+       A pañcāṅga labels a tithi by the day whose SUNRISE it holds, which is
+       the whole reason a tithi can be skipped (it begins and ends between
+       two sunrises) or repeated (it covers two). Captioning each tithi with
+       the instant it started put six of the nine festivals a day early —
+       caught only because the reel was finally checked against the day the
+       calendar page draws.
+
+       So the lunation is walked once, a day at a time, and each tithi is
+       given the day whose sunrise carries it. A tithi with no such day is a
+       kṣaya tithi, and the reel says so rather than inventing a date. */
+    var dayOf = {}, skipped = {};
+    var P2 = place || NP().savedPlace() || NP().PLACES[0];
+    for (var d2 = t0 - DAY; d2 < t1 + DAY; d2 += DAY) {
+      var D2 = null;
+      try { D2 = NP().day(d2, P2, { month: true }); } catch (e4) { continue; }
+      if (!D2 || !D2.at || !D2.at.tithi) continue;
+      var sr2 = D2.sunrise || d2;
+      /* WHICH INTERVAL does this sunrise fall in? Taking "the first day whose
+         sunrise tithi is i" looks equivalent and is not: the lunation opens
+         AND closes on an amāvāsyā, so for Dīvālī that rule picked the
+         amāvāsyā a month early. The sunrise is placed in the interval that
+         actually contains it. */
+      var k2 = -1;
+      for (var q2 = 0; q2 < n; q2++)
+        if (sr2 >= starts[q2] && sr2 < starts[q2 + 1]) { k2 = q2; break; }
+      if (k2 < 0) continue;
+      if (dayOf[k2] == null) dayOf[k2] = sr2;
+    }
+    for (var k3 = 0; k3 < n; k3++) if (dayOf[k3] == null) skipped[k3] = true;
+    /* The marked tithi keeps its own sunrise day in the DATA — overwriting
+       it would be a second opinion about a fact the engine already settled.
+       What the reel shows on that disc is the festival's date, because that
+       is what the reel is about, and the line under it names both when they
+       differ. Dussehra is observed on the 20th; daśamī holds at sunrise on
+       the 21st; the rule asks about aparāhna, and that gap is the reason the
+       rule names a window at all. */
+
     var ev = [];
     for (var i = 0; i < n; i++) {
-      var tt = t0 + (t1 - t0) * (i / n);
+      var tt = dayOf[i] != null ? dayOf[i] : starts[i];
       var mark = (i === ti);
       ev.push({
-        t: tt, lon: 0, marked: mark, hold: mark || i === 0,
+        /* the TIMELINE runs on the tithi's own start, which is monotonic by
+           construction; the date PRINTED is a separate question, answered
+           just above */
+        t: starts[i], lon: 0, marked: mark, hold: mark || i === 0,
         tally: mark ? "the day" : "tithis",
-        big: capsDate(tt),
+        big: mark ? capsDate(hit.t) : (skipped[i] ? "SKIPPED" : capsDate(tt)),
         small: "Tithi " + (i < 15 ? "śukla " + (i + 1) : "kṛṣṇa " + (i - 14)) +
-               (mark ? " — " + hit.name : ""),
+               (mark ? " — " + hit.name : "") +
+               (skipped[i]
+                 ? " — a kṣaya tithi: it begins and ends between two " +
+                   "sunrises, so no day carries it"
+                 : "") +
+               (mark && !skipped[i] && dayOf[i] != null &&
+                capsDate(dayOf[i]) !== capsDate(hit.t)
+                 ? " — it holds at sunrise on " + capsDate(dayOf[i]) +
+                   ", but the rule asks about " +
+                   (hit.when && hit.when !== "sunrise"
+                     ? windowName(hit.when) : "another window")
+                 : ""),
         note: mark ? hit.name.toUpperCase()
                    : (i === 0 ? "ONE MONTH, THIRTY TITHIS" : null)
       });
@@ -10188,7 +10284,8 @@ function moSunDisc(R,rot){
                 "marks the tithi the rule names.",
       stage: "lunation",
       cover: { t0: t0, t1: t1 },
-      lunation: { t0: t0, t1: t1, n: n, mark: ti, phaseAt: phaseAt },
+      lunation: { t0: t0, t1: t1, n: n, mark: ti, phaseAt: phaseAt,
+                  starts: starts, dayOf: dayOf, skipped: skipped },
       events: ev,
       tallyKeys: ["tithis", "the day"],
       clockMode: "days",
@@ -10203,7 +10300,8 @@ function moSunDisc(R,rot){
           (sunriseT != null && ruleT != null && sunriseT !== ruleT
             ? " On " + hit.iso + " the sunrise tithi is still the one before: " +
               "the rule is satisfied " +
-              (rule && rule.when ? "at " + rule.when : "later in the day") + "."
+              (rule && rule.when ? "at " + windowName(rule.when)
+                                 : "later in the day") + "."
             : ""),
           hit.contested
             ? "This rule is contested: " + (hit.note || "published pañcāṅgas differ.")
@@ -10213,6 +10311,33 @@ function moSunDisc(R,rot){
       placeName: (spec.place || NP().savedPlace() || NP().PLACES[0]).n
     };
   }
+  /* THE THIRTY TITHIS ARE NOT THIRTY EQUAL SLICES.
+
+     A tithi is the time the Moon takes to gain twelve degrees on the Sun,
+     and that runs from about twenty to twenty-seven hours depending on where
+     both are in their orbits. Dividing a lunation into thirty equal parts
+     therefore puts most of them on the wrong day: in Āśvina 2026 the sixth
+     tithi covers two sunrises, which pushes everything after it a day later,
+     and the equal-slice reel captioned Vijayadaśamī the 19th of October
+     while its own closing card said the 20th.
+
+     So each tithi's start is SOLVED for: the instant the elongation reaches
+     twelve degrees times its index, found by bisection on the same ephemeris
+     the rest of the site uses. The ring stays equally spaced, because it is
+     a dial of thirty tithis and not a timeline — but every date on it is the
+     real one, and the pointer is driven by which tithi is current rather
+     than by how far through the month the clock has run. */
+  function tithiStart(t0, t1, i) {
+    if (i <= 0) return t0;
+    var target = i * 12;
+    var lo = t0, hi = t1;
+    for (var k = 0; k < 60 && hi - lo > 30000; k++) {
+      var mid = (lo + hi) / 2;
+      if (phaseAt(mid) < target) lo = mid; else hi = mid;
+    }
+    return (lo + hi) / 2;
+  }
+
   function phaseAt(ms) {
     if (!window.__kSidAt) return 180;
     var s = window.__kSidAt("Sun", new Date(ms));

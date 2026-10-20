@@ -1167,7 +1167,21 @@
     append: function () {},
     live: function (c, G, R, reel, P, now, idx, k, p) {
       var g = geom("whirl", R, reel), r = g.r, L = reel.lunation;
-      var f = clamp((now.t - L.t0) / Math.max(1, L.t1 - L.t0), 0, 1);
+      /* THE POINTER IS DRIVEN BY WHICH TITHI IS CURRENT, not by how far
+         through the month the clock has run. The discs are equally spaced
+         because the ring is a dial of thirty tithis; the tithis themselves
+         are not equal, so a linear sweep drifts off them — by most of a disc
+         at the quarters, which is exactly where somebody checks. */
+      var f;
+      if (L.starts && L.starts.length > L.n) {
+        var k2 = 0;
+        while (k2 < L.n && L.starts[k2 + 1] <= now.t) k2++;
+        var a0 = L.starts[k2], a1 = L.starts[k2 + 1];
+        var frac = (a1 > a0) ? clamp((now.t - a0) / (a1 - a0), 0, 1) : 0;
+        f = clamp((k2 + frac) / L.n, 0, 1);
+      } else {
+        f = clamp((now.t - L.t0) / Math.max(1, L.t1 - L.t0), 0, 1);
+      }
       var a = (f * 360 - 90) * R2;
       c.save();
       c.globalAlpha = P.dark ? 0.55 : 0.7;
