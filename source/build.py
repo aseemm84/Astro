@@ -420,6 +420,11 @@ def build_shared():
                             read(SRC, "js", "panchanga.js") + "\n" +
                             read(SRC, "js", "festivals.js") + "\n" +
                             read(SRC, "js", "sp-festivals.js") + "\n" +
+                            # the chart-independent teaching sets: bhavas,
+                            # concepts, nakshatras, rashis. They register as
+                            # stories, so the Studio, the recorder and the
+                            # export path are the ones every reel uses.
+                            read(SRC, "js", "sp-explain.js") + "\n" +
                             read(SRC, "js", "sp-reelui.js")),
         "simulation.js": brandify(read(SRC, "js", "sim-engine.js") + "\n" +
                                   read(SRC, "js", "sim-scenarios.js") + "\n" +

@@ -690,7 +690,12 @@
 
     var seconds = opts.seconds || T.seconds;
     S.key = key;
-    S.pal = window.SPReel.pal(opts.palette || "gold");
+    /* A STORY MAY OWN ITS PALETTE. Most do not care and take the Studio's
+       choice, but an explainer is drawn as ink on paper — banded signs,
+       italic serif, no additive exposure — and rendering one on black would
+       not be a different mood, it would be a different drawing. An explicit
+       request still wins. */
+    S.pal = window.SPReel.pal(opts.palette || S.palette || "gold");
     S.seconds = seconds;
     /* the handle is the brand line; the provenance line above it carries the
        place and the method. See drawFoot. */

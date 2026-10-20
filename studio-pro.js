@@ -4644,6 +4644,10 @@
 
   window.SPStage = {
     S: S, PALS: PALS, RATIOS: RATIOS, SAFE: SAFE, renderTo: renderTo,
+    /* exposed so the explainer's copy of the North Indian centroids can be
+       checked against this one — the two files are loaded by different pages
+       and the table is duplicated rather than shared */
+    NORTH: NORTH,
     /* the private helpers Director composes with — one implementation of
        text fitting, one star field, one caption band, one set of guides */
     kit: {

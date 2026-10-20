@@ -384,7 +384,20 @@
      largest share it can while leaving the caption room to be read at arm's
      length on a phone — which, measured rather than guessed, means the
      caption's own date line is never smaller than 3.1% of the frame width. */
-  function bands(W, H) {
+  function bands(W, H, reel) {
+    /* AN EXPLAINER HAS NO TALLY AND NO CLOCK, so it gets their space. The
+       measurement reels need the gap under the caption: a running count and
+       a day number live there. An explainer counts nothing, and leaving the
+       lower fifth of the frame empty made the page look like a reel with its
+       numbers missing rather than a page of teaching. */
+    if (reel && reel.explain)
+      return {
+        title: { y: H * 0.035, h: H * 0.105 },
+        stage: { x: W * 0.045, y: H * 0.150, w: W * 0.910, h: H * 0.545 },
+        cap: { y: H * 0.715, h: H * 0.190 },
+        tally: { y: H * 0.902 },
+        foot: { y: H * 0.948 }
+      };
     return {
       title: { y: H * 0.035, h: H * 0.105 },
       stage: { x: W * 0.045, y: H * 0.160, w: W * 0.910, h: H * 0.470 },
@@ -513,6 +526,9 @@
      single element that most makes a long run feel long, because it is the
      only thing on the frame moving continuously. */
   function drawClock(c, W, H, B, reel, P, now) {
+    /* an explainer has no clock to show: its beats are an argument, not a
+       span of time, and a running day count would be inventing one */
+    if (reel.clockMode === "none") return;
     var yrs = (now.t - reel.tl.t0) / DAY / 365.2564;
     var txt;
     if (reel.clockMode === "year") txt = String(new Date(now.t).getUTCFullYear());
@@ -554,11 +570,15 @@
          would read zero for the whole pause — the one moment the caption
          must be up. It eases in on the pause's own progress instead. */
       a = smooth(clamp((now.heldP || 0) / 0.12, 0, 1));
-    } else if (reel.tl && reel.tl.warp && nxt) {
+    } else if (nxt && ((reel.tl && reel.tl.warp) || reel.explain)) {
+      /* An explainer uses the same rule for a different reason: a beat is a
+         slide, and a slide that is legible for only the middle half of its
+         time on screen is a slide nobody finishes reading. */
       var span = Math.max(1, nxt.t - e.t);
       var fr = clamp((now.t - e.t) / span, 0, 1);
-      a = smooth(clamp(fr / 0.10, 0, 1));
-      if (fr > 0.92) a *= clamp((1 - fr) / 0.08, 0, 1);
+      var up = reel.explain ? 0.07 : 0.10, dn = reel.explain ? 0.96 : 0.92;
+      a = smooth(clamp(fr / up, 0, 1));
+      if (fr > dn) a *= clamp((1 - fr) / (1 - dn), 0, 1);
     } else {
       var age = (now.t - e.t) / DAY;
       a = smooth(clamp(age / Math.max(0.4, reel.fadeDays), 0, 1));
@@ -584,7 +604,8 @@
       c.globalAlpha = a;
       c.font = (P.banded ? "italic " : "") + (W * 0.0265).toFixed(1) + "px " + SERIF;
       var ls = wrapTo(c, e.small, W * 0.82);
-      for (var i = 0; i < Math.min(2, ls.length); i++) {
+      var maxL = reel.capLines || 2;
+      for (var i = 0; i < Math.min(maxL, ls.length); i++) {
         c.fillText(ls[i], W / 2, y); y += W * 0.031;
       }
     }
@@ -1589,7 +1610,7 @@
      trail is composited one way or the other, and everything above it is the
      same either way. */
   function frameAt(c, W, H, reel, p) {
-    var G = window.SPGlow, P = reel.pal, B = bands(W, H);
+    var G = window.SPGlow, P = reel.pal, B = bands(W, H, reel);
     p = clamp(p, 0, 1);
     var now = clockAt(reel.tl, p);
 
@@ -1755,7 +1776,8 @@
     makeWarp: makeWarp,
     buildTimeline: buildTimeline, clockAt: clockAt,
     SERIF: SERIF, RASHI: RASHI, dateCaps: dateCaps,
-    tracked: tracked, fitTracked: fitTracked, wrapTo: wrapTo,
+    tracked: tracked, fitTracked: fitTracked, wrapTo: wrapTo, plain: plain,
+    geom: geom, drawFoot: drawFoot, STAGES: STAGES,
     norm: norm, clamp: clamp, smooth: smooth, DAY: DAY
   };
 })();
