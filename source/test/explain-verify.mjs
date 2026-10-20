@@ -73,9 +73,17 @@ console.log("\nThe explainers register as ordinary reels");
      "and one explainer per subject the site teaches: " + cn.length);
   const bad = r.built.filter(b => b.bad);
   ok(bad.length === 0, "every one builds", bad.map(b => b.k).join(" | "));
-  const wrongPal = r.built.filter(b => b.pal !== "paper");
+  /* THE PALETTE FOLLOWS THE SUBJECT. Most explainers are ink and wash on
+     paper, which is what a diagram of an idea wants. The sets that draw the
+     actual sky are not diagrams — they are star charts, and a star chart on
+     parchment is a contradiction: a star is a white point on black, and
+     there is no honest way to print one the other way up. So the sky sets
+     are on a dark palette and everything else is on paper. */
+  const SKY = k => /learn\.(nakshatra|rashi)\./.test(k);
+  const wrongPal = r.built.filter(b =>
+    b.pal !== (SKY(b.k) ? "gold" : "paper"));
   ok(wrongPal.length === 0,
-     "each is drawn on paper, not on black — the format is ink and wash",
+     "the sky sets are drawn on black and the rest on paper",
      wrongPal.map(b => b.k + " " + b.pal).join(" | "));
   const wrongClock = r.built.filter(b => b.clock !== "none" || b.tally !== 0);
   ok(wrongClock.length === 0,
@@ -237,13 +245,29 @@ console.log("\nEvery explainer, beat by beat");
         }
         mids.push((lo + hi) / 2);
       }
-      function ink(p, rect) {
+      /* INK IS WHAT CHANGED SINCE THE EMPTY STAGE, not darkness and not
+         contrast with a nominal background. Counting dark pixels works on
+         paper and inverts completely on black, where the background IS dark
+         and every mark is light; counting contrast with the palette's bg
+         then counts the whole watercolour wash as ink on the paper sets. A
+         per-pixel difference against this reel's own first frame means the
+         same thing on every palette: how much of the panel is no longer
+         empty. The threshold clears the seeded grain, whose amplitude is a
+         few counts. */
+      function grab(p, rect) {
         window.SPReel.frameAt(c, 540, 960, R, p);
-        const d = c.getImageData(rect.x | 0, rect.y | 0,
+        return c.getImageData(rect.x | 0, rect.y | 0,
           Math.max(1, rect.w | 0), Math.max(1, rect.h | 0)).data;
+      }
+      const refs = {};
+      function ink(p, rect) {
+        const key = rect.x + "," + rect.y + "," + rect.w + "," + rect.h;
+        if (!refs[key]) refs[key] = new Uint8ClampedArray(grab(0, rect));
+        const d = grab(p, rect), z = refs[key];
         let n = 0;
         for (let i = 0; i < d.length; i += 4)
-          if (d[i] < 170 || d[i + 2] < 150) n++;
+          if (Math.abs(d[i] - z[i]) + Math.abs(d[i + 1] - z[i + 1]) +
+              Math.abs(d[i + 2] - z[i + 2]) > 46) n++;
         return n;
       }
       const cap = mids.map(p => ink(p, { x: 0, y: B.cap.y, w: 540, h: B.cap.h }));
@@ -251,7 +275,8 @@ console.log("\nEvery explainer, beat by beat");
       let grew = 0;
       for (let i = 1; i < stage.length; i++)
         if (stage[i] > stage[i - 1]) grew++;
-      out.push({ k, cap, stage, grew, beats: R.events.length });
+      out.push({ k, cap, stage, grew, beats: R.events.length,
+                 area: Math.max(1, (B.stage.w | 0) * (B.stage.h | 0)) });
     });
     return out;
   });
@@ -265,9 +290,17 @@ console.log("\nEvery explainer, beat by beat");
      "and every one keeps gaining ink as its beats arrive",
      flat.map(x => x.k + " grew on " + x.grew + "/" + (x.beats - 1) +
               " [" + x.stage.join(",") + "]").join(" | "));
-  const thin = r.filter(x => x.stage[x.stage.length - 1] < x.stage[0] * 1.15);
+  /* MEASURED AS GROWTH, NOT AS A RATIO. A sky set's first beat already
+     lays down the band and its boundaries, so its baseline is most of the
+     panel and a ratio test demands the stars double a chart that is
+     already drawn. What matters is that the reel ends with meaningfully
+     more on it than it began with — at least a hundredth of the panel. */
+  const area = r.length ? r[0].area : 1;
+  const thin = r.filter(x =>
+    x.stage[x.stage.length - 1] - x.stage[0] < area * 0.01);
   ok(thin.length === 0,
-     "and ends with far more on the page than it started with",
+     "and ends with at least a hundredth of the panel more on it than it " +
+     "started with",
      thin.map(x => x.k + " " + x.stage[0] + " → " +
               x.stage[x.stage.length - 1]).join(" | "));
 }
@@ -325,6 +358,52 @@ console.log("\nOne explainer in detail");
 }
 
 /* ---- 5. the diamond is the same diamond --------------------------------- */
+console.log("\nThe shipped star catalogue is the one that was verified");
+{
+  /* THE WHOLE SKY SET RESTS ON THIS FILE. eclip-stars.js was generated from
+     HYG by a script that is not in the repository, so the only thing that
+     can be checked here is the thing that matters: run the twenty-seven
+     junction stars the site already ships — themselves verified against
+     Swiss Ephemeris, PyEphem and the Yale Bright Star Catalogue — against
+     the new catalogue, and every one must come back at the longitude and
+     latitude star-catalogue.js already states. If the ecliptic conversion,
+     the ayanamsa or the packing were wrong, they would not. */
+  const r = await pg.evaluate(() => {
+    const A = window.ECLIP_STARS, L = window.ECLIP_LABELS, Y = window.YOGATARAS;
+    if (!A || !Y) return { bad: "catalogue missing" };
+    const stars = [];
+    for (let i = 0; i + 3 < A.length; i += 4)
+      stars.push({ s: A[i] / 1000, l: A[i + 1] / 1000, m: A[i + 2] / 10,
+                   b: A[i + 3] >= 0 ? L[A[i + 3]] : "" });
+    let worst = 0, missing = [];
+    Y.forEach(y => {
+      const cand = stars.filter(x => x.b === y.bayer || x.b === y.star);
+      if (!cand.length) { missing.push(y.nak); return; }
+      const c = cand.reduce((a, b) =>
+        Math.abs(((b.s - y.sid + 180) % 360) - 180) <
+        Math.abs(((a.s - y.sid + 180) % 360) - 180) ? b : a);
+      worst = Math.max(worst,
+        Math.abs(((c.s - y.sid + 180) % 360) - 180) * 3600,
+        Math.abs(c.l - y.lat) * 3600);
+    });
+    /* and the field is actually a field */
+    const SEG = 40 / 3, per = new Array(27).fill(0);
+    stars.forEach(x => { per[Math.floor(((x.s % 360) + 360) % 360 / SEG)]++; });
+    return { n: stars.length, worst, missing,
+             minPer: Math.min(...per), maxPer: Math.max(...per) };
+  });
+  ok(!r.bad, "the catalogue is on the page", r.bad);
+  ok(r.n > 1000, "it carries " + r.n + " stars along the ecliptic");
+  ok(r.missing.length === 0,
+     "all twenty-seven junction stars are in it", r.missing.join(" | "));
+  ok(r.worst < 1,
+     "and it reproduces every one of them to under an arcsecond — worst " +
+     r.worst.toFixed(2) + "″ against the catalogue the site already shipped");
+  ok(r.minPer >= 20,
+     "every nakṣatra window holds a real field: " + r.minPer + " to " +
+     r.maxPer + " stars");
+}
+
 console.log("\nThe twenty-seven, against the star catalogue");
 {
   /* The claim this set exists to make is that seven of the twenty-seven
@@ -341,8 +420,14 @@ console.log("\nThe twenty-seven, against the star catalogue");
       out.push({ i, nak: y.nak, star: y.star,
                  computed: Math.floor(x / SEG) === y.id,
                  flagged: !!y.inside,
-                 said: /AND IT IS INSIDE/.test(R.events[3].big),
-                 title: R.title, lord: R.events[5].small });
+                 /* searched across the whole reel rather than pinned to a
+                    beat index: the set has been reworked once already and a
+                    check that breaks on a reordering is a check that gets
+                    loosened rather than read */
+                 said: R.events.some(e => /OWN STAR IS INSIDE/.test(e.big)),
+                 saidNot: R.events.some(e => /IS NOT INSIDE/.test(e.big)),
+                 title: R.title,
+                 lord: R.events.map(e => e.small).join(" ") });
     });
     return out;
   });
@@ -351,9 +436,10 @@ console.log("\nThe twenty-seven, against the star catalogue");
   ok(disagree.length === 0,
      "the catalogue's own inside/outside flag matches the arithmetic on " +
      "every one", disagree.map(x => x.nak).join(" | "));
-  const misreported = r.filter(x => x.computed !== x.said);
+  const misreported = r.filter(x => x.computed !== x.said ||
+                                    x.computed === x.saidNot);
   ok(misreported.length === 0,
-     "and every reel says what the arithmetic says",
+     "and every reel says what the arithmetic says, once and unambiguously",
      misreported.map(x => x.nak).join(" | "));
   const stray = r.filter(x => !x.computed);
   ok(stray.length === 7,
@@ -364,7 +450,7 @@ console.log("\nThe twenty-seven, against the star catalogue");
   const SEQ = ["Ketu", "Śukra", "Sūrya", "Candra", "Maṅgala", "Rāhu", "Guru",
                "Śani", "Budha"];
   const wrongLord = r.filter(x =>
-    x.lord.indexOf("lord is " + SEQ[x.i % 9]) < 0);
+    x.lord.indexOf(SEQ[x.i % 9] + " mahādaśā") < 0);
   ok(wrongLord.length === 0,
      "and names the Vimśottarī lord the nakṣatra-lord sequence gives it",
      wrongLord.map(x => x.nak).join(" | "));

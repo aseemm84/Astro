@@ -45,8 +45,10 @@
   ];
 
   function boxOf(Rc) {
-    var s = Math.min(Rc.w * 0.86, Rc.h * 0.90);
-    return { x: Rc.x + (Rc.w - s) / 2, y: Rc.y + (Rc.h - s) / 2 + Rc.h * 0.01,
+    /* the keyword line is drawn below the box, so the box cannot have the
+       whole panel — it was printing over its own bottom edge */
+    var s = Math.min(Rc.w * 0.86, Rc.h * 0.80);
+    return { x: Rc.x + (Rc.w - s) / 2, y: Rc.y + (Rc.h - s) / 2 - Rc.h * 0.04,
              s: s };
   }
   function cellAt(F, i) {
@@ -178,7 +180,8 @@
         c.font = (P.banded ? "italic " : "") + (F.s * 0.040).toFixed(1) +
                  "px " + RE().SERIF;
         var ls = RE().wrapTo(c, D.keywords, Rc.w * 0.94);
-        var y = F.y + F.s + F.s * 0.075;
+        var y = Math.min(F.y + F.s + F.s * 0.075,
+                         Rc.y + Rc.h - F.s * 0.055);
         for (var i = 0; i < Math.min(2, ls.length); i++) {
           c.fillText(ls[i], Rc.x + Rc.w / 2, y); y += F.s * 0.052;
         }
@@ -308,20 +311,43 @@
   var ORD = ["first", "second", "third", "fourth", "fifth", "sixth",
              "seventh", "eighth", "ninth", "tenth", "eleventh", "twelfth"];
 
+  /* HOW FAR ROUND A BHĀVA BEGINS. A house is not a stretch of sky in its
+     own right: it is thirty degrees counted from the Lagna, and under whole
+     signs it begins exactly where its sign does. So the arc is drawn
+     relative to the Lagna rather than against a fixed longitude, which is
+     the one way to show a bhāva's geometry without pretending to a chart
+     the viewer has not given. */
   function bhavaStory(B) {
     var ks = classesOf(B.n);
     var why = CLASSWHY[ks[0]];
+    var from = (B.n - 1) * 30, to = from + 30;
+    var sibs = housesOfClasses(ks);
+    /* EACH CLASS HAS ITS OWN GEOMETRY, and lumping them together said
+       things that are not true: the tenth is both a kendra and an upacaya,
+       and "those houses are ninety degrees apart" is right about the
+       kendras and wrong about the upacayas. Each class is described on its
+       own terms. */
+    var STEP = { "Kendra": ", ninety degrees apart",
+                 "Trikoṇa": ", a hundred and twenty degrees apart",
+                 "Māraka": "" };
+    var classGeom = ks.map(function (kk) {
+      return "the " + CLASSES[kk].map(function (h) { return ORD[h - 1]; })
+               .join(", the ") + " are " + kk + (STEP[kk] || "");
+    }).join("; ");
     var beats = [
       { lab: "THE TWELVE",
         say: "A bhāva is an arena of life, counted from the Lagna. Twelve of " +
-             "them cover the whole of experience." },
+             "them cover the whole of experience — and under whole signs each " +
+             "is exactly thirty degrees." },
       { lab: B.n + " · " + B.name.toUpperCase(),
-        say: "The " + ORD[B.n - 1] + " is " + B.name + " — “" +
-             B.lit + "”." },
+        say: "The " + ORD[B.n - 1] + " is " + B.name + " — “" + B.lit +
+             "”. It begins " + from + "° from the Lagna and runs to " + to +
+             "°." },
       { lab: "WHAT IT CARRIES",
         say: B.key.charAt(0).toUpperCase() + B.key.slice(1) + "." },
       { lab: ks.join(" · ").toUpperCase(),
-        say: "By class it is " + B.cls + ": " + why + "." },
+        say: "By class it is " + B.cls + ": " + why + ". " +
+             classGeom.charAt(0).toUpperCase() + classGeom.slice(1) + "." },
       { lab: "KĀRAKA",
         say: "Its chief kāraka — the natural significator of these " +
              "matters — is " + B.karaka + "." },
@@ -333,23 +359,44 @@
         say: "No bhāva is read alone. The lord's condition, the occupants, " +
              "the aspects and the daśā decide what actually arrives." }
     ];
+    var ring = [{ beat: 0, type: "split", n: 12 }];
+    for (var rh = 1; rh <= 12; rh++)
+      ring.push({ beat: 0, type: "wlabel", at: (rh - 1) * 30 + 15, rad: 1.12,
+                  label: String(rh), size: 0.052, cool: true });
+    ring.push({ beat: 0, type: "wlabel", at: 0, rad: 1.30, label: "Lagna",
+                size: 0.058 });
+    ring.push({ beat: 1, type: "wedge", from: from, to: to, hot: true });
+    ring.push({ beat: 1, type: "wlabel", at: from + 15, rad: 1.12,
+                label: String(B.n), size: 0.082 });
+    ring.push({ beat: 1, type: "wlabel", at: from + 3.5, rad: 0.50,
+                label: from + "°", size: 0.048, cool: true });
+    ring.push({ beat: 1, type: "wlabel", at: to - 3.5, rad: 0.50,
+                label: to + "°", size: 0.048, cool: true });
+    sibs.forEach(function (h) {
+      if (h === B.n) return;
+      ring.push({ beat: 3, type: "wedge", from: (h - 1) * 30, to: h * 30,
+                  cool: true });
+      ring.push({ beat: 3, type: "wlabel", at: (h - 1) * 30 + 15, rad: 1.12,
+                  label: String(h), size: 0.060, cool: true });
+    });
     return {
       kicker: "Nirayana",
       title: B.name,
-      subtitle: "The " + ORD[B.n - 1] + " bhāva — “" + B.lit +
-                "” — built from its parts.",
-      stage: "bhava",
+      subtitle: "The " + ORD[B.n - 1] + " bhāva — “" + B.lit + "” — " + from +
+                "° to " + to + "° from the Lagna, built from its parts.",
+      stage: "bhavaring",
       palette: "paper",
       explain: { house: B.n, keywords: B.key, karakaBody: B.body,
-                 classHouses: housesOfClasses(ks), classes: ks },
+                 classHouses: sibs, classes: ks, items: ring,
+                 divisions: 12, from: from, to: to, noBands: true },
       beats: beats,
-      method: "BPHS, Vol. 1 — bhāva significations and Ch. 7, " +
-              "vv. 33–36",
+      method: "BPHS, Vol. 1 — bhāva significations and Ch. 7, vv. 33–36",
       closing: {
         big: B.n + " · " + B.name,
         lines: [
           B.key + ".",
-          "Kāraka: " + B.karaka + ". Class: " + ks.join(", ") + ".",
+          from + "° to " + to + "° from the Lagna. Kāraka: " + B.karaka +
+          ". Class: " + ks.join(", ") + ".",
           "Significations and kārakas: BPHS, Vol. 1 — bhāva " +
           "significations (Ch. 11 onward). Classes: Vol. 1, Ch. 7, " +
           "vv. 33–36. The lord in each bhāva: Vol. 1, Ch. 24.",
@@ -394,7 +441,11 @@
     c.save();
     /* the banded ground: on paper each rāśi gets its own wash, which is what
        makes the ring read as twelve things rather than one circle */
-    if (P.signs && n === 12) {
+    /* A BHĀVA RING IS NOT A ZODIAC. Houses are counted from the Lagna, so
+       painting the twelve sectors in the rāśi washes would be colouring them
+       by a sign that is not there — and it drowned the pale wedges the class
+       beat draws. The bands are opt-out. */
+    if (P.signs && n === 12 && !D.noBands) {
       for (i = 0; i < 12; i++) {
         c.beginPath();
         c.moveTo(g.cx, g.cy);
@@ -478,6 +529,21 @@
       c.globalAlpha = it.alpha == null ? 0.8 : it.alpha;
       c.fillStyle = col;
       c.beginPath(); c.arc(Dp.x, Dp.y, u * (it.size || 0.012), 0, TAU); c.fill();
+    } else if (it.type === "wedge") {
+      /* A FILLED CONE, NOT A STROKED ARC. An arc on the rim says "this much
+         of the edge"; a bhāva or a rāśi is the whole sector, centre
+         outwards, and the cone is the only shape that says so. */
+      c.globalAlpha = it.cool ? (P.dark ? 0.10 : 0.09) : (P.dark ? 0.26 : 0.17);
+      c.fillStyle = G.rgba(it.cool ? P.dim : P.gold, 1);
+      c.beginPath();
+      c.moveTo(g.cx, g.cy);
+      c.arc(g.cx, g.cy, u, wAng(it.from), wAng(it.to));
+      c.closePath();
+      c.fill();
+      c.globalAlpha = it.cool ? 0.45 : 0.9;
+      c.strokeStyle = G.rgba(it.cool ? P.dim : P.gold, 1);
+      c.lineWidth = Math.max(1.4, u * (it.cool ? 0.004 : 0.008));
+      c.stroke();
     } else if (it.type === "ring") {
       c.globalAlpha = it.alpha == null ? 0.7 : it.alpha;
       c.strokeStyle = G.rgba(it.cool ? P.dim : (P.line || P.dim), 1);
@@ -504,7 +570,8 @@
       var W1 = wXY(g, it.at, u * (it.rad || 0.86));
       c.globalAlpha = 0.9;
       c.fillStyle = G.rgba(it.cool ? P.dim : P.ink, 1);
-      c.font = (P.banded ? "italic " : "") + (u * (it.size || 0.056)).toFixed(1) +
+      c.font = (P.banded ? "italic " : "") +
+               (Math.max(u * (it.size || 0.056), Rc.w * 0.019)).toFixed(1) +
                "px " + RE().SERIF;
       c.fillText(it.label, W1.x, W1.y);
     }
@@ -688,12 +755,299 @@
      long it takes to rise where you are, is the half that is measured — and
      the second half is the one nobody is shown. So the stage is split, and
      an item says which panel it belongs to. */
-  function splitRect(Rc) {
+  function splitRect(Rc, topShare) {
+    var t = topShare == null ? 0.56 : topShare;
     return {
-      top: { x: Rc.x, y: Rc.y, w: Rc.w, h: Rc.h * 0.56 },
-      bot: { x: Rc.x, y: Rc.y + Rc.h * 0.58, w: Rc.w, h: Rc.h * 0.42 }
+      top: { x: Rc.x, y: Rc.y, w: Rc.w, h: Rc.h * t },
+      bot: { x: Rc.x, y: Rc.y + Rc.h * (t + 0.02), w: Rc.w,
+             h: Rc.h * (0.98 - t) }
     };
   }
+  /* THE SKY GETS THE ROOM. A star chart needs height — latitude is the axis
+     that carries the structure — and the bars underneath are eight short
+     rows that read fine in a third of the frame. Splitting it evenly left
+     the chart squat and the lower half empty for the first four beats. */
+  function skySplit(Rc) { return splitRect(Rc, 0.70); }
+  /* ---- a stretch of the zodiac, drawn out flat ----------------------------
+
+     A RING CANNOT SHOW A NAKṢATRA. Thirteen degrees and twenty minutes is a
+     twenty-seventh of a circle; at reel size that is a sliver, and the one
+     thing worth looking at inside it — where the stars actually are — has
+     nowhere to be drawn, because a ring has no room across its width. So
+     the arc is cut out and laid flat: longitude across the frame, ecliptic
+     latitude up and down it, the boundaries as two labelled verticals and
+     the ecliptic itself as a horizontal through the middle.
+
+     That is a star chart, and what goes on it is the sky. `eclip-stars.js`
+     carries every star brighter than magnitude 5.4 within 34° of the
+     ecliptic — 1347 of them, thirty to ninety in any nakṣatra's window — so
+     the question "is the star this division is named for actually inside
+     it?" is asked against a real field rather than against one dot.
+
+     LATITUDE IS COMPRESSED and the drawing says so. A window twenty degrees
+     wide and twenty degrees tall would be square; the frame is not, and the
+     interesting structure is all within a few degrees of the ecliptic. */
+
+  function starsIn(lo, hi, latLim) {
+    var A = window.ECLIP_STARS, L = window.ECLIP_LABELS || [];
+    if (!A) return [];
+    var out = [], i;
+    for (i = 0; i + 3 < A.length; i += 4) {
+      var s = A[i] / 1000, b = A[i + 1] / 1000;
+      if (Math.abs(b) > latLim) continue;
+      var d = norm360(s - lo);
+      if (d > norm360(hi - lo)) continue;
+      out.push({ sid: s, lat: b, mag: A[i + 2] / 10,
+                 label: A[i + 3] >= 0 ? L[A[i + 3]] : "" });
+    }
+    return out;
+  }
+
+  function stripGeom(Rc, D) {
+    var m = Rc.w * 0.085;                     /* room for the edge labels */
+    return { x: Rc.x + m, y: Rc.y, w: Rc.w - 2 * m, h: Rc.h,
+             mid: Rc.y + Rc.h * 0.46,
+             latScale: (Rc.h * 0.40) / (D.latLim || 9) };
+  }
+  /* longitude to x, with the window running left to right */
+  function sx(g, D, lon) {
+    return g.x + g.w * (norm360(lon - D.from) / D.span);
+  }
+  function sy(g, lat) { return g.mid - lat * g.latScale; }
+
+  var S_strip = {
+    base: function (c, G, Rc, reel, P) {
+      var D = reel.explain, g = stripGeom(Rc, D);
+      c.save();
+      /* the band itself, so the chart reads as a cut-out of something */
+      c.globalAlpha = P.dark ? 0.35 : 0.5;
+      c.fillStyle = G.rgba(P.band || P.bg, 1);
+      c.fillRect(g.x, g.y, g.w, g.h);
+      /* the ecliptic — the line the whole scheme is measured along */
+      c.globalAlpha = P.dark ? 0.5 : 0.7;
+      c.strokeStyle = G.rgba(P.line || P.dim, 1);
+      c.lineWidth = Math.max(1, Rc.w * 0.0022);
+      c.setLineDash([Rc.w * 0.016, Rc.w * 0.012]);
+      c.beginPath();
+      c.moveTo(g.x, g.mid); c.lineTo(g.x + g.w, g.mid); c.stroke();
+      c.setLineDash([]);
+      RE().plain(c);
+      c.globalAlpha = 0.7;
+      c.fillStyle = G.rgba(P.dim, 1);
+      c.textAlign = "left";
+      c.textBaseline = "alphabetic";
+      c.font = (P.banded ? "italic " : "") + (Rc.w * 0.021).toFixed(1) +
+               "px " + RE().SERIF;
+      c.fillText("the ecliptic", g.x + Rc.w * 0.008, g.mid - Rc.w * 0.009);
+      /* THE LATITUDE SCALE, PRINTED. Longitude and latitude cannot share a
+         scale in a frame this shape — the window is twenty-odd degrees wide
+         and the band would have to be as tall again — so latitude is
+         compressed, and a chart that compresses an axis without saying so
+         is a chart that is lying about a shape. */
+      c.globalAlpha = 0.55;
+      c.textAlign = "right";
+      var lim = D.latLim || 9;
+      c.fillText("+" + lim.toFixed(0) + "\u00b0 latitude",
+                 g.x + g.w - Rc.w * 0.008, g.y + Rc.w * 0.022);
+      c.fillText("\u2212" + lim.toFixed(0) + "\u00b0",
+                 g.x + g.w - Rc.w * 0.008, g.y + g.h - Rc.w * 0.012);
+      c.restore();
+    },
+    append: function (c, G, Rc, reel, P, from, to) {
+      var D = reel.explain, g = stripGeom(Rc, D), b;
+      for (b = from; b < to; b++) (D.stripBeats || []).forEach(function (it) {
+        if (it.beat !== b) return;
+        stripItem(c, G, Rc, reel, P, g, it);
+      });
+    },
+    live: function () {}
+  };
+
+  function stripItem(c, G, Rc, reel, P, g, it) {
+    var D = reel.explain, u = Rc.w;
+    c.save();
+    RE().plain(c);
+    c.textBaseline = "middle";
+    if (it.type === "edge") {
+      /* a boundary, with the longitude it actually is */
+      var X = sx(g, D, it.at);
+      c.globalAlpha = 0.95;
+      c.strokeStyle = G.rgba(P.gold, 1);
+      c.lineWidth = Math.max(2, u * 0.005);
+      c.beginPath(); c.moveTo(X, g.y); c.lineTo(X, g.y + g.h); c.stroke();
+      c.globalAlpha = 0.95;
+      c.fillStyle = G.rgba(P.gold, 1);
+      c.textAlign = it.side === "right" ? "left" : "right";
+      c.font = (P.banded ? "italic 600 " : "600 ") + (u * 0.028).toFixed(1) +
+               "px " + RE().SERIF;
+      c.fillText(dms(it.at), X + (it.side === "right" ? u * 0.012 : -u * 0.012),
+                 g.y + g.h * 0.085);
+    } else if (it.type === "span") {
+      /* the arc itself, as a wash between its two boundaries */
+      var x0 = sx(g, D, it.from), x1 = sx(g, D, it.to);
+      /* A WASH, NOT A SLAB. At the alpha this started on, the arc's tint
+         was brighter than the stars inside it, and the picture became a
+         coloured rectangle with some dots on it rather than a piece of sky
+         with a boundary drawn across it. */
+      c.globalAlpha = P.dark ? 0.045 : 0.075;
+      c.fillStyle = G.rgba(it.cool ? P.dim : P.gold, 1);
+      c.fillRect(Math.min(x0, x1), g.y, Math.abs(x1 - x0), g.h);
+    } else if (it.type === "divide") {
+      var Xd = sx(g, D, it.at);
+      c.globalAlpha = 0.6;
+      c.strokeStyle = G.rgba(P.accent || P.gold, 1);
+      c.lineWidth = Math.max(1, u * 0.0028);
+      c.setLineDash([u * 0.012, u * 0.010]);
+      c.beginPath(); c.moveTo(Xd, g.y); c.lineTo(Xd, g.y + g.h); c.stroke();
+      c.setLineDash([]);
+    } else if (it.type === "name") {
+      c.globalAlpha = it.cool ? 0.55 : 0.95;
+      c.fillStyle = G.rgba(it.cool ? P.dim : P.ink, 1);
+      c.textAlign = "center";
+      c.font = (P.banded ? "italic 600 " : "600 ") +
+               (u * (it.size || 0.030)).toFixed(1) + "px " + RE().SERIF;
+      /* a neighbour's name can land past the edge of the window; clamped,
+         so a label never hangs off the frame */
+      var nx = Math.max(Rc.x + u * 0.09,
+                        Math.min(Rc.x + Rc.w - u * 0.09, sx(g, D, it.at)));
+      c.fillText(it.text, nx, g.y + g.h * (it.yf == null ? 0.07 : it.yf));
+    } else if (it.type === "stars") {
+      /* the circled star carries its own name from the ring item; naming it
+         again from the field printed it twice, overlapping itself */
+      var skip = it.skip == null ? null : it.skip;
+      /* the field: size by magnitude, because that is the only honest way
+         to draw a star — the eye reads a big dot as a bright star and
+         there is nothing else a dot can mean */
+      /* LABELS ARE DROPPED WHEN THEY WOULD COLLIDE. A real field puts
+         several bright stars within a degree of each other — κ and ο Sco
+         sit almost on top of one another — and two names drawn over each
+         other are worse than one name and a dot. Brightest first, and a
+         name is skipped if it lands on one already placed. */
+      var placed = [];
+      var field = starsIn(D.from, norm360(D.from + D.span), D.latLim || 9)
+        .slice().sort(function (a, b) { return a.mag - b.mag; });
+      field.forEach(function (s) {
+          var X = sx(g, D, s.sid), Y = sy(g, s.lat);
+          var r = u * (0.0040 + 0.0062 * Math.max(0, (5.4 - s.mag) / 5.4));
+          if (P.dark) {
+            G.dot(c, X, Y, r, P.ink, 0.95);
+            if (s.mag < 3) G.glow(c, X, Y, r * 2.2, P.ink,
+                                  { reach: 2.2, core: 0, alpha: 0.30 });
+          } else {
+            c.globalAlpha = 0.85;
+            c.fillStyle = G.rgba(P.ink, 1);
+            c.beginPath(); c.arc(X, Y, r, 0, TAU); c.fill();
+          }
+          var clash = false;
+          for (var pi = 0; pi < placed.length; pi++)
+            if (Math.abs(placed[pi][0] - X) < u * 0.105 &&
+                Math.abs(placed[pi][1] - Y) < u * 0.026) { clash = true; break; }
+          if (s.label && s.label !== skip && !clash &&
+              s.mag <= (it.nameTo == null ? 3.2 : it.nameTo)) {
+            placed.push([X, Y]);
+            c.globalAlpha = 0.72;
+            c.fillStyle = G.rgba(P.dim, 1);
+            c.textAlign = "left";
+            c.font = (P.banded ? "italic " : "") + (u * 0.020).toFixed(1) +
+                     "px " + RE().SERIF;
+            c.fillText(s.label, X + r + u * 0.007, Y);
+          }
+        });
+    } else if (it.type === "ring") {
+      /* one star circled — the junction star the division is named for */
+      var Xr = sx(g, D, it.at), Yr = sy(g, it.lat);
+      Yr = Math.max(g.y + u * 0.03, Math.min(g.y + g.h - u * 0.03, Yr));
+      c.globalAlpha = 0.95;
+      c.strokeStyle = G.rgba(it.cool ? P.dim : P.hot, 1);
+      c.lineWidth = Math.max(1.6, u * 0.004);
+      c.beginPath(); c.arc(Xr, Yr, u * 0.026, 0, TAU); c.stroke();
+      if (it.text) {
+        c.globalAlpha = 0.95;
+        c.fillStyle = G.rgba(P.ink, 1);
+        c.textAlign = "center";
+        c.font = (P.banded ? "italic 600 " : "600 ") + (u * 0.026).toFixed(1) +
+                 "px " + RE().SERIF;
+        c.fillText(it.text, Xr, Yr - u * 0.046);
+      }
+    } else if (it.type === "verdict") {
+      c.textAlign = "center";
+      c.font = (P.banded ? "italic 600 " : "600 ") + (u * 0.040).toFixed(1) +
+               "px " + RE().SERIF;
+      var vw = c.measureText(it.text).width, vy = g.y + g.h * 0.862;
+      var gr = c.createLinearGradient(g.x + g.w / 2 - vw / 2 - u * 0.06, 0,
+                                      g.x + g.w / 2 + vw / 2 + u * 0.06, 0);
+      gr.addColorStop(0, G.rgba(P.bg, 0));
+      gr.addColorStop(0.18, G.rgba(P.bg, P.dark ? 0.88 : 0.9));
+      gr.addColorStop(0.82, G.rgba(P.bg, P.dark ? 0.88 : 0.9));
+      gr.addColorStop(1, G.rgba(P.bg, 0));
+      c.globalAlpha = 1;
+      c.fillStyle = gr;
+      c.fillRect(g.x + g.w / 2 - vw / 2 - u * 0.06, vy - u * 0.030,
+                 vw + u * 0.12, u * 0.058);
+      c.globalAlpha = 0.95;
+      c.fillStyle = G.rgba(P.hot || P.gold, 1);
+      c.fillText(it.text, g.x + g.w / 2, vy);
+    }
+    c.restore();
+  }
+
+  /* ---- a sign: the sky above, the measurements below ----------------------
+     The rāśi reels want both halves of the answer. Where the sign is and
+     what is in it is a piece of sky, which is the strip; how long each
+     graha takes to cross it and how long it takes to rise is a set of bars.
+     The stage runs the one above the other, and an item says which panel it
+     belongs to. */
+  var S_skystrip = {
+    base: function (c, G, Rc, reel, P) {
+      S_strip.base(c, G, skySplit(Rc).top, reel, P);
+    },
+    append: function (c, G, Rc, reel, P, from, to) {
+      var S = skySplit(Rc), D = reel.explain;
+      var g = stripGeom(S.top, D);
+      (D.stripBeats || []).forEach(function (it) {
+        if (it.panel === "bar") return;
+        if (it.beat >= from && it.beat < to)
+          stripItem(c, G, S.top, reel, P, g, it);
+      });
+      barDraw(c, G, S.bot, reel, P, from, to,
+              (D.stripBeats || []).filter(function (it) {
+                return it.panel === "bar"; }));
+    },
+    live: function (c, G, Rc, reel, P, now, idx, k) {
+      /* the sign's lord, drawn as the body it is, once the beat naming it
+         has arrived — the only thing on this stage that is not a star */
+      var D = reel.explain;
+      if (k < 4 || !D.lordBody || !window.SPBody || !window.SPBody.ready()) return;
+      var S = skySplit(Rc), g = stripGeom(S.top, D);
+      window.SPBody.draw(c, D.lordBody,
+                         sx(g, D, D.signIdx * 30 + 15), g.y + g.h * 0.30,
+                         Rc.w * 0.040, { phase: 180, halo: P.dark ? 0.25 : 0 });
+    }
+  };
+
+  /* ---- a bhāva: the chart above, the geometry below -----------------------
+     The diamond says which cell; the ring says what a house actually is —
+     thirty degrees counted from the Lagna, with the ones that share its
+     class standing at the angle that defines the class. */
+  function bhavaSplit(Rc) { return splitRect(Rc, 0.50); }
+  var S_bhavaring = {
+    base: function (c, G, Rc, reel, P) {
+      var S = bhavaSplit(Rc);
+      S_bhava.base(c, G, S.top, reel, P);
+      wheelBase(c, G, S.bot, reel, P);
+    },
+    append: function (c, G, Rc, reel, P, from, to) {
+      var S = bhavaSplit(Rc), D = reel.explain;
+      S_bhava.append(c, G, S.top, reel, P, from, to);
+      (D.items || []).forEach(function (it) {
+        if (it.beat >= from && it.beat < to) wheelItem(c, G, S.bot, reel, P, it);
+      });
+    },
+    live: function (c, G, Rc, reel, P, now, idx, k, p) {
+      S_bhava.live(c, G, bhavaSplit(Rc).top, reel, P, now, idx, k, p);
+    }
+  };
+
   var S_rashi = {
     base: function (c, G, Rc, reel, P) {
       wheelBase(c, G, splitRect(Rc).top, reel, P);
@@ -1425,80 +1779,129 @@
     return (x < 0 ? "−" : "") + d + "°" + (m < 10 ? "0" : "") + m + "′";
   }
 
+  /* NAVĀṂŚA SIGNS OF THE FOUR PĀDAS. A pāda is 3°20′, which is exactly a
+     navāṃśa, so the two schemes line up: the navāṃśa sign of a pāda is the
+     sign its own ninth falls in. Computed from the longitude rather than
+     quoted from a table, so it cannot drift from the varga engine. */
+  function padaSign(lon) { return Math.floor(norm360(lon) / (30 / 9)) % 12; }
+
   function nakshatraStory(i) {
     var Y = nakList();
     if (!Y) return null;
     var y = Y[i], lo = i * SEG, hi = lo + SEG;
     var inside = insideOwn(y), off = strayBy(y);
     var lord = VIMS[i % 9];
-    var items = [{ beat: 0, type: "split", n: 27, faint: true }];
-    items.push({ beat: 1, type: "arc", from: lo, to: hi, rad: 0.92, hot: true });
-    items.push({ beat: 1, type: "wlabel", at: (lo + hi) / 2, rad: 1.07,
-                 label: y.nak, size: 0.050 });
-    items.push({ beat: 2, type: "mark", at: norm360(y.sid), rad: 0.76,
-                 label: y.star });
-    if (!inside)
-      items.push({ beat: 3, type: "arc",
-                   from: Math.min(norm360(y.sid), off < 0 ? lo : hi),
-                   to: Math.max(norm360(y.sid), off < 0 ? lo : hi),
-                   rad: 0.68, cool: true });
-    items.push({ beat: 3, type: "centre",
-                 text: inside ? "inside its own arc" : "outside, by " + dms(off),
-                 sub: y.bayer + " at " + y.sid.toFixed(2) + "° sidereal" });
-    /* the four pādas, each 3°20′ */
-    for (var q = 0; q < 4; q++)
-      items.push({ beat: 4, type: "ticks", from: lo + q * SEG / 4,
-                   to: lo + q * SEG / 4, step: 1, rad: 0.86, hot: true });
-    items.push({ beat: 5, type: "mark", at: (lo + hi) / 2, rad: 0.50,
-                 label: lord[0] });
+    var prev = Y[(i + 26) % 27], next = Y[(i + 1) % 27];
+
+    /* the window the strip shows: the arc, plus a third of it either side,
+       so the neighbours are visible and the boundaries are not at the edge */
+    var pad = SEG * 0.38, from = norm360(lo - pad), span = SEG + 2 * pad;
+    /* THE BAND HAS TO HOLD THE STAR THE DIVISION IS NAMED FOR. Nine degrees
+       either side of the ecliptic covers most of the zodiac's traffic, and
+       leaves Śravaṇa's Altair at +29° and Mūla's Shaula at −14° off the
+       bottom of the chart — the one star the reel circles, drawn outside
+       the picture. The band is sized per nakṣatra to contain it. */
+    var latLim = Math.max(9, Math.min(34, Math.abs(y.lat) + 4));
+
+    var inWin = starsIn(from, norm360(from + span), latLim);
+    var inArc = inWin.filter(function (s) {
+      return norm360(s.sid - lo) < SEG;
+    });
+
+    /* which rāśi, and whether the arc straddles two of them */
+    var s0 = Math.floor(lo / 30) % 12, s1 = Math.floor((hi - 1e-9) / 30) % 12;
+    var signText = s0 === s1 ? SIGN[s0]
+      : SIGN[s0] + " and " + SIGN[s1] + " — it straddles the boundary at " +
+        dms((s0 + 1) * 30);
+
+    var st = [];
+    st.push({ beat: 0, type: "span", from: lo, to: hi });
+    st.push({ beat: 0, type: "edge", at: lo, side: "left" });
+    st.push({ beat: 0, type: "edge", at: hi, side: "right" });
+    st.push({ beat: 0, type: "name", at: (lo + hi) / 2, text: y.nak,
+              size: 0.040 });
+    st.push({ beat: 1, type: "name", at: norm360(lo - pad * 0.55),
+              text: prev.nak, cool: true, size: 0.024, yf: 0.155 });
+    st.push({ beat: 1, type: "name", at: norm360(hi + pad * 0.55),
+              text: next.nak, cool: true, size: 0.024, yf: 0.155 });
+    st.push({ beat: 2, type: "stars", skip: y.star });
+    st.push({ beat: 3, type: "ring", at: norm360(y.sid), lat: y.lat,
+              text: y.star, cool: inside ? false : true });
+    st.push({ beat: 3, type: "verdict",
+              text: inArc.length + " of " + inWin.length +
+                    " in this stretch fall inside" });
+    for (var q = 1; q < 4; q++)
+      st.push({ beat: 4, type: "divide", at: lo + q * SEG / 4 });
+    for (q = 0; q < 4; q++)
+      st.push({ beat: 4, type: "name", at: lo + (q + 0.5) * SEG / 4,
+                text: SIGN[padaSign(lo + (q + 0.5) * SEG / 4)],
+                size: 0.024, yf: 0.955 });
+    st.push({ beat: 5, type: "span", from: s0 * 30, to: (s0 + 1) * 30,
+              cool: true });
+    st.push({ beat: 5, type: "name", at: lo + SEG * 0.5, text: signText.split(" ")[0],
+              size: 0.026, yf: 0.17, cool: true });
+
     return {
       kicker: "Nirayana",
       title: y.nak,
-      subtitle: "Division " + (i + 1) + " of twenty-seven — " +
-                dms(lo) + " to " + dms(hi) + " — and the star it is named for.",
-      stage: "wheel",
-      palette: "paper",
-      explain: { items: items, divisions: 27 },
+      subtitle: "Division " + (i + 1) + " of twenty-seven — " + dms(lo) +
+                " to " + dms(hi) + " — against the sky that is actually there.",
+      stage: "strip",
+      palette: "gold",
+      explain: { from: from, span: span, latLim: latLim, stripBeats: st },
       beats: [
-        ["TWENTY-SEVEN ARCS",
-         "The ring is divided twenty-seven ways, each arc 13°20′ wide. The " +
-         "divisions are exactly equal; nothing in the sky is."],
-        [String(i + 1) + " · " + y.nak.toUpperCase(),
-         y.nak + " is the " + (i + 1) + (i === 0 ? "st" : i === 1 ? "nd" :
-           i === 2 ? "rd" : "th") + " of them, running from " + dms(lo) +
-         " to " + dms(hi) + " of sidereal longitude."],
-        ["NAMED FOR A STAR",
-         "Its yogatārā — junction star — is " + y.star + ", " + y.bayer +
-         ", magnitude " + y.mag.toFixed(2) + ". It lies at " +
-         y.sid.toFixed(2) + "° sidereal."],
-        [inside ? "AND IT IS INSIDE" : "AND IT IS NOT INSIDE",
-         inside
-           ? "That longitude falls within " + y.nak + "'s own arc — as it " +
-             "does for twenty of the twenty-seven, but not for all of them."
-           : "That longitude falls OUTSIDE " + y.nak + "'s own arc, by " +
-             dms(off) + ". Seven of the twenty-seven junction stars do not " +
-             "sit in the division named after them."],
+        ["" + (i + 1) + " · " + y.nak.toUpperCase(),
+         "The ring is cut into twenty-seven equal arcs of 13°20′. " +
+         "This is the " + (i + 1) + (i === 0 ? "st" : i === 1 ? "nd" :
+           i === 2 ? "rd" : "th") + ", drawn out flat: longitude across, " +
+         "the ecliptic through the middle."],
+        ["BETWEEN TWO NEIGHBOURS",
+         "It runs from " + dms(lo) + " to " + dms(hi) + " of sidereal " +
+         "longitude, with " + prev.nak + " before it and " + next.nak +
+         " after."],
+        ["AND HERE IS THE SKY",
+         "Every star in this stretch brighter than magnitude 5.4 and within " +
+         latLim + "° of the ecliptic: " + inWin.length + " of them. The " +
+         "divisions are exactly equal. Nothing up there is."],
+        [inside ? "ITS OWN STAR IS INSIDE" : "ITS OWN STAR IS NOT INSIDE",
+         "The yogatārā — the junction star the division is " +
+         "named for — is " + y.star + ", " + y.bayer + ", at " +
+         y.sid.toFixed(2) + "°. " +
+         (inside
+           ? "It falls inside " + y.nak + "'s own arc, with " + inArc.length +
+             " of the " + inWin.length + " stars here."
+           : "It falls OUTSIDE, by " + dms(off) + ". Seven of the " +
+             "twenty-seven junction stars sit in a division that is not " +
+             "the one named after them.")],
         ["FOUR PĀDAS",
-         "Each nakṣatra divides into four pādas of 3°20′ — the same 3°20′ " +
-         "that makes a navāṃśa, which is why the two line up."],
-        ["AND A DAŚĀ LORD",
-         "Its Vimśottarī lord is " + lord[0] + ". A Moon born here opens a " +
-         lord[1] + "-year " + lord[0] + " mahādaśā, with however much of it " +
-         "is left."]
+         "Each nakṣatra divides into four pādas of 3°20′ " +
+         "— which is exactly a navāṃśa, so the two " +
+         "schemes line up. These four fall in " +
+         [0, 1, 2, 3].map(function (q2) {
+           return SIGN[padaSign(lo + (q2 + 0.5) * SEG / 4)];
+         }).join(", ") + "."],
+        ["AND IT SITS IN " + SIGN[s0].toUpperCase(),
+         "By rāśi the arc lies in " + signText + "."],
+        ["ITS DAŚĀ LORD IS " + lord[0].toUpperCase(),
+         "A Moon born here opens a " + lord[1] + "-year " + lord[0] +
+         " mahādaśā — with however much of it is left, " +
+         "set by how far through the arc the Moon has gone."]
       ],
-      method: "yogatārā longitudes from the HYG catalogue under Lahiri; " +
-              "divisions and daśā lords from BPHS, Vol. 2, Ch. 46, vv. 12–16",
+      method: "HYG catalogue under Lahiri · BPHS, Vol. 2, Ch. 46, " +
+              "vv. 12–16",
       closing: {
         big: y.nak,
         lines: [
-          dms(lo) + " to " + dms(hi) + ". Yogatārā " + y.star + " (" +
-          y.bayer + ") at " + y.sid.toFixed(2) + "°, " +
+          dms(lo) + " to " + dms(hi) + ", in " + SIGN[s0] + ". Yogatārā " +
+          y.star + " (" + y.bayer + ") at " + y.sid.toFixed(2) + "°, " +
+          "ecliptic latitude " + y.lat.toFixed(1) + "° — " +
           (inside ? "inside its own arc." : "outside it by " + dms(off) + "."),
-          "Ecliptic latitude " + y.lat.toFixed(1) + "° — which Jyotiṣa " +
-          "ignores and the sky does not. Vimśottarī lord " + lord[0] + ".",
-          "Star positions: HYG (Hipparcos/Yale/Gliese), checked against " +
-          "Swiss Ephemeris and the Yale Bright Star Catalogue. Daśā lords: " +
-          "BPHS, Vol. 2, Ch. 46, vv. 12–16.",
+          inArc.length + " of the " + inWin.length + " catalogued stars in " +
+          "this stretch of sky fall inside the division. " +
+          "Vimśottarī lord " + lord[0] + ", " + lord[1] + " years.",
+          "Star positions: HYG (Hipparcos/Yale/Gliese), J2000, sidereal " +
+          "under Lahiri. Daśā lords: BPHS, Vol. 2, Ch. 46, " +
+          "vv. 12–16.",
           "A classical framework for study, not a prediction."
         ]
       }
@@ -1648,22 +2051,48 @@
 
   function rashiStory(i, place) {
     var lo = i * 30, hi = lo + 30;
-    var items = [{ beat: 0, type: "split", n: 12 }];
-    items.push({ beat: 0, type: "arc", from: lo, to: hi, rad: 0.92, hot: true });
-    items.push({ beat: 0, type: "wlabel", at: lo + 15, rad: 1.08,
-                 label: SIGN[i], size: 0.060 });
-    var lordBody = { "Sūrya": "Sun", "Candra": "Moon", "Maṅgala": "Mars",
-                     "Budha": "Mercury", "Guru": "Jupiter", "Śukra": "Venus",
-                     "Śani": "Saturn" }[LORD[i]];
-    items.push({ beat: 1, type: "mark", at: lo + 15, rad: 0.74,
-                 body: lordBody });
-    items.push({ beat: 2, type: "centre", text: ELEM[i] + " · " + MODE[i],
-                 sub: (i % 2 === 0 ? "male · odd" : "female · even") });
-    rashiDrishti(i).forEach(function (j) {
-      items.push({ beat: 3, type: "ray", from: lo + 15, to: j * 30 + 15 });
-    });
+    /* the window: the sign plus a sixth of it either side, so the two
+       boundaries sit inside the frame with their neighbours visible */
+    var pad = 5, from = norm360(lo - pad), span = 30 + 2 * pad;
+    var latLim = 12;
+    var inWin = starsIn(from, norm360(from + span), latLim);
+    var inArc = inWin.filter(function (s) { return norm360(s.sid - lo) < 30; });
 
-    /* the measurements */
+    /* which nakṣatras fall in the sign: a rāśi is 2¼ of them, which is the
+       fact that makes the two schemes awkward to hold in the head at once */
+    var Y = nakList();
+    var naks = [], whole = 0, k;
+    for (k = 0; k < 27; k++) {
+      var nlo = k * SEG, nhi = nlo + SEG;
+      if (nhi > lo + 1e-9 && nlo < hi - 1e-9) {
+        var full = nlo >= lo - 1e-9 && nhi <= hi + 1e-9;
+        if (full) whole++;
+        naks.push({ i: k, lo: nlo, hi: nhi, full: full,
+                    name: Y ? Y[k].nak : String(k + 1) });
+      }
+    }
+
+    var st = [];
+    st.push({ beat: 0, type: "span", from: lo, to: hi });
+    st.push({ beat: 0, type: "edge", at: lo, side: "left" });
+    st.push({ beat: 0, type: "edge", at: hi, side: "right" });
+    st.push({ beat: 0, type: "name", at: lo + 15, text: SIGN[i], size: 0.040 });
+    st.push({ beat: 0, type: "name", at: norm360(lo - pad * 0.6),
+              text: SIGN[(i + 11) % 12], cool: true, size: 0.022, yf: 0.155 });
+    st.push({ beat: 0, type: "name", at: norm360(hi + pad * 0.6),
+              text: SIGN[(i + 1) % 12], cool: true, size: 0.022, yf: 0.155 });
+    st.push({ beat: 1, type: "stars" });
+    naks.forEach(function (n) {
+      st.push({ beat: 2, type: "divide", at: n.lo });
+      st.push({ beat: 2, type: "name", at: Math.max(lo, n.lo) / 2 +
+                Math.min(hi, n.hi) / 2, text: n.name, size: 0.021,
+                cool: !n.full, yf: 0.955 });
+    });
+    st.push({ beat: 2, type: "verdict",
+              text: whole + " nakṣatras whole, " + (naks.length - whole) +
+                    " cut by its edges" });
+
+    /* the measurements, as before — the half of a sign nobody is shown */
     var t0 = Date.UTC(2026, 0, 1), cross = [];
     CROSS_BODIES.forEach(function (q) {
       var d = null;
@@ -1676,81 +2105,90 @@
     var maxD = 0;
     cross.forEach(function (q) { if (q.days > maxD) maxD = q.days; });
     cross.forEach(function (q) {
-      items.push({ panel: "bar", beat: 4, label: q.name,
-                   value: q.days == null ? 0 : Math.pow(q.days / (maxD || 1), 0.42),
-                   sub: spanWords(q.days) });
+      st.push({ panel: "bar", beat: 4, label: q.name,
+                value: q.days == null ? 0 : Math.pow(q.days / (maxD || 1), 0.42),
+                sub: spanWords(q.days) });
     });
     var rise = null;
     try { rise = risingMinutes(place); } catch (e2) { rise = null; }
     var riseM = rise ? rise[i] : null;
     var slowest = null, fastest = null;
     if (rise) {
-      var o = rise.map(function (v, k) { return [v, k]; })
-                  .sort(function (a, b) { return a[0] - b[0]; });
+      var o = rise.map(function (v, q2) { return [v, q2]; })
+                  .sort(function (x, y2) { return x[0] - y2[0]; });
       fastest = o[0]; slowest = o[11];
     }
     if (riseM != null)
-      items.push({ panel: "bar", beat: 5, label: "rises in",
-                   value: 1, hot: true,
-                   sub: minWords(riseM) });
+      st.push({ panel: "bar", beat: 5, label: "rises in", value: 1, hot: true,
+                sub: minWords(riseM) });
 
     var crossWords = cross.map(function (q) {
       return q.name + " " + spanWords(q.days);
     }).join(", ");
+    var lordBody = { "Sūrya": "Sun", "Candra": "Moon", "Maṅgala": "Mars",
+                     "Budha": "Mercury", "Guru": "Jupiter", "Śukra": "Venus",
+                     "Śani": "Saturn" }[LORD[i]];
 
     return {
       kicker: "Nirayana",
       title: SIGN[i],
-      subtitle: "Rāśi " + (i + 1) + " of twelve — " + ELEM[i] + ", " +
-                MODE[i] + ", owned by " + LORD[i] + ".",
-      stage: "rashi",
-      palette: "paper",
-      explain: { items: items, divisions: 12 },
+      subtitle: "Rāśi " + (i + 1) + " of twelve — " + lo + "° to " + hi +
+                "° — the sky in it, and how long it takes to cross.",
+      stage: "skystrip",
+      palette: "gold",
+      explain: { from: from, span: span, latLim: latLim, stripBeats: st,
+                 items: st, lordBody: lordBody, signIdx: i },
       beats: [
         [(i + 1) + " · " + SIGN[i].toUpperCase(),
          "The zodiac is twelve rāśis of thirty degrees. This is the " +
-         ORD[i] + ", " + SIGN[i] + ", from " + lo + "° to " + hi +
-         "° of sidereal longitude."],
-        ["OWNED BY " + LORD[i].toUpperCase(),
-         SIGN[i] + " is owned by " + LORD[i] + ". A graha standing here is " +
-         "a guest in that graha's house, and is read accordingly."],
-        [ELEM[i].toUpperCase() + " · " + MODE[i].toUpperCase(),
-         "It is a " + ELEM[i] + " sign and a " + MODE[i] + " one, and it is " +
+         ORD[i] + ", " + SIGN[i] + ", running from " + lo + "° to " + hi +
+         "° of sidereal longitude — drawn out flat, with " +
+         SIGN[(i + 11) % 12] + " before it and " + SIGN[(i + 1) % 12] +
+         " after."],
+        ["THE SKY IN IT",
+         "Every star in the window brighter than magnitude 5.4 and within " +
+         latLim + "° of the ecliptic: " + inWin.length + ", of which " +
+         inArc.length + " fall inside " + SIGN[i] + " itself."],
+        ["AND THE NAKṢATRAS ACROSS IT",
+         "Thirty degrees is two and a quarter nakṣatras, so the two schemes " +
+         "never line up: " + whole + " sit whole inside " + SIGN[i] + " and " +
+         (naks.length - whole) + " are cut by its edges."],
+        ["OWNED BY " + LORD[i].toUpperCase() + ", " + ELEM[i].toUpperCase() +
+         ", " + MODE[i].toUpperCase(),
+         SIGN[i] + " is owned by " + LORD[i] + ". It is a " + ELEM[i] +
+         " sign and a " + MODE[i] + " one, " +
          (i % 2 === 0 ? "odd, counted male" : "even, counted female") +
-         ". Every graha and every house that falls here takes all of that on."],
-        ["RĀŚI DṚṢṬI",
-         "Under sign aspects — a different system from graha dṛṣṭi — " +
-         SIGN[i] + " aspects " +
-         rashiDrishti(i).map(function (j) { return SIGN[j]; }).join(", ") +
-         "."],
+         " — and under rāśi dṛṣṭi it aspects " +
+         rashiDrishti(i).map(function (j) { return SIGN[j]; }).join(", ") + "."],
         ["HOW LONG TO CROSS IT",
          "Measured on the next passage, first entry to final exit: " +
-         crossWords + ". These are not the sign divided by a mean motion — " +
-         "a graha that turns retrograde near a boundary leaves and comes " +
-         "back, so a passage can take twice what the arithmetic says."],
+         crossWords + ". Not the sign divided by a mean motion — a graha " +
+         "that turns retrograde near a boundary leaves and comes back."],
         ["AND HOW LONG TO RISE",
          riseM == null
            ? "How long a sign takes to rise depends on where you are. Pick a " +
              "place and the Studio measures it."
            : SIGN[i] + " takes " + minWords(riseM) + " to rise at " +
-             (place ? place.n : "this latitude") + " — not two hours. " +
-             "Away from the equator the twelve are not equal: here " +
+             (place ? place.n : "this latitude") + " — not two hours. Away " +
+             "from the equator the twelve are not equal: here " +
              SIGN[slowest[1]] + " takes " + minWords(slowest[0]) + " and " +
              SIGN[fastest[1]] + " only " + minWords(fastest[0]) + "."]
       ],
-      method: "passages and ascendant measured · Lahiri ayanāṃśa",
+      method: "HYG catalogue under Lahiri · passages and ascendant measured",
       placeName: place ? place.n : null,
       closing: {
         big: SIGN[i],
         lines: [
           lo + "° to " + hi + "°. " + ELEM[i] + ", " + MODE[i] + ", owned by " +
-          LORD[i] + ".",
+          LORD[i] + ". " + whole + " nakṣatras whole inside it, " +
+          (naks.length - whole) + " cut by its edges.",
           "Crossed, first entry to final exit on the next passage: Candra in " +
           spanWords(cross[0].days) + ", Śani in " + spanWords(cross[6].days) +
           (riseM == null ? "." : "; it rises in " + minWords(riseM) + " at " +
             (place ? place.n : "this latitude") + "."),
-          "Classifications: BPHS, Vol. 1, Ch. 4. Crossings and ascendant " +
-          "measured against a modern ephemeris under Lahiri ayanāṃśa.",
+          "Classifications: BPHS, Vol. 1, Ch. 4. Stars: HYG, J2000, sidereal " +
+          "under Lahiri. Passages and ascendant measured against a modern " +
+          "ephemeris.",
           "A classical framework for study, not a prediction."
         ]
       }
@@ -1768,6 +2206,9 @@
     window.SPReel.STAGES.row = S_row;
     window.SPReel.STAGES.bar = S_bar;
     window.SPReel.STAGES.rashi = S_rashi;
+    window.SPReel.STAGES.strip = S_strip;
+    window.SPReel.STAGES.skystrip = S_skystrip;
+    window.SPReel.STAGES.bhavaring = S_bhavaring;
     var n = 0;
     /* the twenty-seven, only if the star catalogue is on the page — a reel
        page without it should lose this set and nothing else */

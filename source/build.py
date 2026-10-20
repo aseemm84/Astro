@@ -420,6 +420,10 @@ def build_shared():
                             read(SRC, "js", "panchanga.js") + "\n" +
                             read(SRC, "js", "festivals.js") + "\n" +
                             read(SRC, "js", "sp-festivals.js") + "\n" +
+                            # 1347 real stars along the ecliptic, so a
+                            # nakshatra drawn out flat is a piece of sky
+                            # rather than a diagram with one dot on it
+                            read(SRC, "js", "eclip-stars.js") + "\n" +
                             # the chart-independent teaching sets: bhavas,
                             # concepts, nakshatras, rashis. They register as
                             # stories, so the Studio, the recorder and the
