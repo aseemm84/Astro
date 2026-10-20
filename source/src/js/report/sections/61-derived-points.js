@@ -91,8 +91,17 @@ function derivedPointsSection(D) {
   });
   rows.push({
     t: "Avayogi point", src: "tradition", v: dpDeg(av), nak: anak,
-    w: "186°40′ on from the Yogi point — six nakṣatras away. Its nakṣatra " +
-       "lord is the Avayogi" + (anak && anak.lord ? " — here " + esc(anak.lord) : "") + "."
+    /* 186°40′ is FOURTEEN nakṣatras, not six. The line used to say six, and
+       the arithmetic underneath was right the whole time: fourteen steps
+       round a ring of twenty-seven lands five on in the cycle of nine daśā
+       lords, so the Avayogi IS the sixth Vimśottarī lord counting the Yogi's
+       own as the first — which is presumably where "six" came from. Both
+       numbers are now stated, because the one that matters depends on
+       whether you are counting nakṣatras or lords. */
+    w: "186°40′ on from the Yogi point — fourteen nakṣatras on, which lands " +
+       "five steps along the cycle of nine daśā lords, so its lord is the " +
+       "sixth counting the Yogi's own as the first. That lord is the " +
+       "Avayogi" + (anak && anak.lord ? " — here " + esc(anak.lord) : "") + "."
   });
 
   if (lag != null) {

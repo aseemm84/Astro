@@ -1416,7 +1416,35 @@ table.reeltbl td:first-child{width:38%;color:var(--muted)}
 #reel-place .npres{position:absolute;z-index:40;left:0;right:0;max-height:260px;
   overflow:auto;background:#fff;border:1px solid var(--line);border-radius:8px;
   box-shadow:0 10px 30px rgba(10,12,24,.18)}
-</style></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Reel Studio</h1><p class="sub">A question, the computation that answers it, and the figure it draws.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html" class="active">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#stories">The stories</a><a href="#closing">How it ends</a><a href="#honest">What the pictures do and don't mean</a></aside><main><p class="reelintro">A reel here is not a template with your data poured into
+
+/* ---- the script and caption panel on the reel page ---------------------- */
+.reelscript{margin:12px 0 26px}
+.sctabs{gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.sctab{appearance:none;border:1px solid #ddd0ad;background:#fbf6e8;color:var(--ink);
+  border-radius:999px;padding:7px 15px;font:inherit;font-size:.78rem;cursor:pointer;
+  min-height:34px}
+.sctab[aria-selected="true"]{background:var(--gold);border-color:var(--gold);color:#241c08;
+  font-weight:600}
+.scbar{align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 10px}
+.scnote{font-size:.74rem;color:var(--muted)}
+.scnote.tight{color:#8a4b12}
+.scbeats{list-style:none;margin:0;padding:0;counter-reset:scb}
+.scbeats li{display:grid;grid-template-columns:3.2rem 1fr;gap:10px;padding:9px 0;
+  border-top:1px solid #efe4cd}
+.scbeats li:first-child{border-top:0}
+.scbeats .sct{font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums;
+  padding-top:2px}
+.scbeats li.over .sct{color:#8a4b12;font-weight:600}
+.scbeats .scs{font-size:.92rem;line-height:1.5}
+.sccap{white-space:pre-wrap;word-break:break-word;background:#fbf6e8;
+  border:1px solid #ecdcae;border-left:3px solid var(--gold);border-radius:6px;
+  padding:12px 14px;font:inherit;font-size:.86rem;line-height:1.5;margin:6px 0 10px}
+@media (prefers-color-scheme:dark){
+  .sctab{background:#1d1a14;border-color:#3a3328}
+  .sccap{background:#1d1a14;border-color:#3a3328}
+  .scbeats li{border-top-color:#332c21}
+}
+</style></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Reel Studio</h1><p class="sub">A question, the computation that answers it, and the figure it draws.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html" class="active">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#stories">The stories</a><a href="#script">The script, and the caption</a><a href="#closing">How it ends</a><a href="#honest">What the pictures do and don't mean</a></aside><main><p class="reelintro">A reel here is not a template with your data poured into
 it. It is a <b>question</b> and the computation that answers it: the finder
 runs over the span you choose, and what the reel shows is what it found. If a
 span holds four events the reel is four events long, and if it holds none the
@@ -1480,6 +1508,34 @@ page says so rather than inventing a rhythm.</p>
       <span class="reelwhen" id="reel-when"></span>
     </div>
   </div>
+</div>
+
+<h2 id="script">The script, and the caption</h2>
+<p>A reel is half of a post. This is the other half, generated from the same
+numbers the picture was drawn from — so a line cannot drift from the frame it
+is read over. The timings are measured against this reel's own clock,
+deceleration into holds included.</p>
+
+<div class="reelscript" id="reel-script">
+  <div class="reelrow sctabs" id="sc-langs" role="tablist"></div>
+  <div class="reelrow scbar">
+    <span class="scnote" id="sc-fit"></span>
+    <button type="button" class="reelbtn ghost" id="sc-apply">Set the reel to
+      that length</button>
+  </div>
+  <ol class="scbeats" id="sc-beats"></ol>
+  <h3 class="reelsub">Caption</h3>
+  <pre class="sccap" id="sc-cap"></pre>
+  <div class="reelrow">
+    <button type="button" class="reelbtn" id="sc-copycap">Copy the caption</button>
+    <button type="button" class="reelbtn ghost" id="sc-copyscript">Copy the
+      script</button>
+    <span class="scnote" id="sc-copied" hidden>Copied.</span>
+  </div>
+  <p class="reelnote2">Yoni, gaṇa and nāḍī are later tradition, not BPHS, and
+  the caption says so where it uses them. The only claim made about the
+  thirty-six points is arithmetic: tārā 3 + yoni 4 + gaṇa 6 + nāḍī 8 = 21 of
+  36 are fixed by the birth star alone. Nothing here matches two people.</p>
 </div>
 
 <h2 id="closing">How it ends</h2>

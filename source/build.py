@@ -424,12 +424,17 @@ def build_shared():
                             # nakshatra drawn out flat is a piece of sky
                             # rather than a diagram with one dot on it
                             read(SRC, "js", "eclip-stars.js") + "\n" +
+                            # the voiceover script and the caption, in three
+                            # languages, rendered from the numbers the reel
+                            # actually computed
+                            read(SRC, "js", "sp-script.js") + "\n" +
                             # the chart-independent teaching sets: bhavas,
                             # concepts, nakshatras, rashis. They register as
                             # stories, so the Studio, the recorder and the
                             # export path are the ones every reel uses.
                             read(SRC, "js", "sp-explain.js") + "\n" +
-                            read(SRC, "js", "sp-reelui.js")),
+                            read(SRC, "js", "sp-reelui.js") + "\n" +
+                            read(SRC, "js", "sp-scriptui.js")),
         "simulation.js": brandify(read(SRC, "js", "sim-engine.js") + "\n" +
                                   read(SRC, "js", "sim-scenarios.js") + "\n" +
                                   read(SRC, "js", "sim-draw.js") + "\n" +

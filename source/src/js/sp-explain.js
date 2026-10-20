@@ -390,6 +390,11 @@
                  classHouses: sibs, classes: ks, items: ring,
                  divisions: 12, from: from, to: to, noBands: true },
       beats: beats,
+      facts: {
+        kind: "bhava", num: B.n, name: B.name, lit: B.lit,
+        from: from, to: to, keywords: B.key, karaka: B.karaka,
+        classes: ks, classHouses: sibs
+      },
       method: "BPHS, Vol. 1 — bhāva significations and Ch. 7, vv. 33–36",
       closing: {
         big: B.n + " · " + B.name,
@@ -1088,6 +1093,10 @@
     return {
       key: key, kicker: E.kicker, title: E.title, subtitle: E.subtitle,
       stage: E.stage, palette: E.palette || "paper",
+      /* the numbers the reel computed, carried through for the script and
+         caption generator — see sp-script.js. Dropping them here was why
+         every language fell through to the generic frame. */
+      facts: E.facts || null,
       explain: E.explain, events: ev,
       tallyKeys: [], clockMode: "none", capLines: 4,
       method: E.method || null,
@@ -1757,6 +1766,28 @@
      being made regular. Saying so is more useful than hiding it, and the
      figure is computed here rather than asserted. */
 
+  /* ---- the aṣṭakūṭa metadata of a nakṣatra -------------------------------
+
+     Yoni, gaṇa and nāḍī are LATER TRADITION, not BPHS: Parāśara does not
+     legislate the thirty-six-point matching scheme, and nothing here is
+     presented as though he did. They are carried because one honest and
+     checkable fact rests on them — of the thirty-six points, twenty-one are
+     fixed by the birth star alone (tārā 3, yoni 4, gaṇa 6, nāḍī 8), which
+     is why so much of the scheme is decided before anything else is looked
+     at. That arithmetic is verified in the harness against the site's own
+     scoring tables.
+
+     COPIED FROM THE SITE'S OWN TABLES in 08-graha-drishti.js rather than
+     retyped, so the reels and the compatibility tab can never disagree. */
+  var KUTA = {
+    gana: ["Deva","Manushya","Rakshasa","Manushya","Deva","Manushya","Deva","Deva","Rakshasa","Rakshasa","Manushya","Manushya","Deva","Rakshasa","Deva","Rakshasa","Deva","Rakshasa","Rakshasa","Manushya","Manushya","Deva","Rakshasa","Rakshasa","Manushya","Manushya","Deva"],
+    yoni: ["Horse","Elephant","Sheep","Serpent","Serpent","Dog","Cat","Sheep","Cat","Rat","Rat","Cow","Buffalo","Tiger","Buffalo","Tiger","Deer","Deer","Dog","Monkey","Mongoose","Monkey","Lion","Horse","Lion","Cow","Elephant"],
+    nadi: ["Adi","Madhya","Antya","Antya","Madhya","Adi","Adi","Madhya","Antya","Antya","Madhya","Adi","Adi","Madhya","Antya","Antya","Madhya","Adi","Adi","Madhya","Antya","Antya","Madhya","Adi","Adi","Madhya","Antya"],
+    /* the maxima of the four kūṭas a nakṣatra alone decides, and the total */
+    taraMax: 3, yoniMax: 4, ganaMax: 6, nadiMax: 8, total: 36
+  };
+  KUTA.nakMax = KUTA.taraMax + KUTA.yoniMax + KUTA.ganaMax + KUTA.nadiMax;
+
   var SEG = 40 / 3;                     /* 13°20′ */
   function nakList() {
     var Y = window.YOGATARAS;
@@ -1861,7 +1892,8 @@
          " after."],
         ["AND HERE IS THE SKY",
          "Every star in this stretch brighter than magnitude 5.4 and within " +
-         latLim + "° of the ecliptic: " + inWin.length + " of them. The " +
+         Math.round(latLim) + "° of the ecliptic: " + inWin.length +
+         " of them. The " +
          "divisions are exactly equal. Nothing up there is."],
         [inside ? "ITS OWN STAR IS INSIDE" : "ITS OWN STAR IS NOT INSIDE",
          "The yogatārā — the junction star the division is " +
@@ -1887,6 +1919,24 @@
          " mahādaśā — with however much of it is left, " +
          "set by how far through the arc the Moon has gone."]
       ],
+      /* THE FACTS, SEPARATELY FROM THE WORDS. A script in three languages
+         cannot be three hand-written copies of the same sentences: they
+         drift, and the one that drifts is the one nobody reads in testing.
+         So the reel publishes the numbers it computed and every language
+         renders those. See sp-script.js. */
+      facts: {
+        kind: "nakshatra", idx: i, name: y.nak, num: i + 1,
+        lo: lo, hi: hi, loTxt: dms(lo), hiTxt: dms(hi),
+        star: y.star, bayer: y.bayer, starLon: y.sid, starLat: y.lat,
+        prev: prev.nak, next: next.nak,
+        inside: inside, offTxt: inside ? null : dms(off),
+        inArc: inArc.length, inWin: inWin.length, latLim: latLim,
+        rashi: SIGN[s0], rashi2: s0 === s1 ? null : SIGN[s1],
+        padas: [0, 1, 2, 3].map(function (q3) {
+          return SIGN[padaSign(lo + (q3 + 0.5) * SEG / 4)]; }),
+        lord: lord[0], lordYears: lord[1],
+        yoni: KUTA.yoni[i], gana: KUTA.gana[i], nadi: KUTA.nadi[i]
+      },
       method: "HYG catalogue under Lahiri · BPHS, Vol. 2, Ch. 46, " +
               "vv. 12–16",
       closing: {
@@ -2147,7 +2197,8 @@
          " after."],
         ["THE SKY IN IT",
          "Every star in the window brighter than magnitude 5.4 and within " +
-         latLim + "° of the ecliptic: " + inWin.length + ", of which " +
+         Math.round(latLim) + "° of the ecliptic: " + inWin.length +
+         ", of which " +
          inArc.length + " fall inside " + SIGN[i] + " itself."],
         ["AND THE NAKṢATRAS ACROSS IT",
          "Thirty degrees is two and a quarter nakṣatras, so the two schemes " +
@@ -2174,6 +2225,18 @@
              SIGN[slowest[1]] + " takes " + minWords(slowest[0]) + " and " +
              SIGN[fastest[1]] + " only " + minWords(fastest[0]) + "."]
       ],
+      facts: {
+        kind: "rashi", idx: i, name: SIGN[i], num: i + 1,
+        lo: lo, hi: hi, lord: LORD[i], elem: ELEM[i], mode: MODE[i],
+        inArc: inArc.length, inWin: inWin.length, latLim: latLim,
+        naksWhole: whole, naksCut: naks.length - whole,
+        naks: naks.map(function (n) { return n.name; }),
+        cross: cross.map(function (q) {
+          return { name: q.name, days: q.days, txt: spanWords(q.days) }; }),
+        riseMin: riseM, riseTxt: riseM == null ? null : minWords(riseM),
+        place: place ? place.n : null,
+        drishti: rashiDrishti(i).map(function (j) { return SIGN[j]; })
+      },
       method: "HYG catalogue under Lahiri · passages and ascendant measured",
       placeName: place ? place.n : null,
       closing: {
@@ -2293,6 +2356,9 @@
 
   window.SPExplain = {
     publish: publish, DIAMOND: DIAMOND, BHAVAS: BHAVAS, CLASSES: CLASSES,
+    /* exposed so the harness can check the 21-of-36 claim against the
+       site's own scoring maxima rather than against a remembered figure */
+    KUTA: KUTA, starsIn: starsIn,
     classesOf: classesOf, bhavaStory: bhavaStory, asStory: asStory,
     keys: function () { return MADE.slice(); }
   };

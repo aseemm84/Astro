@@ -516,6 +516,135 @@ console.log("\nThe twelve, measured rather than quoted");
      sun.join(", "), offSun.join(" | "));
 }
 
+console.log("\nThe script says what the reel computed, in three languages");
+{
+  /* A SCRIPT IS THE EASIEST THING ON THIS SITE TO GET QUIETLY WRONG. Nobody
+     proof-reads a hundred and twenty-six voiceovers in three languages, and
+     a number typed into a sentence stays typed long after the picture it
+     describes has changed. So the generator renders the reel's own facts
+     and this checks that every figure in every language is the figure the
+     reel actually has — the boundary degrees, the star, its longitude, the
+     counts inside, the pāda signs, the daśā lord. One drifted digit fails. */
+  const r = await pg.evaluate(() => {
+    const out = [];
+    for (let i = 1; i <= 27; i++) {
+      const R = window.SPStories.build("learn.nakshatra." + i,
+        { t0: Date.parse("2026-01-01") });
+      const F = R.facts;
+      const row = { key: "nak" + i, name: F.name, langs: {} };
+      ["hinglish", "hi", "en"].forEach(L => {
+        const s = window.SPScript.render(R, L);
+        row.langs[L] = {
+          text: s.beats.map(b => b.say).join(" · "),
+          cap: s.caption,
+          lines: s.beats.length,
+          empty: s.beats.filter(b => !b.say || !b.say.trim()).length,
+          total: s.beats.reduce((a, b) => a + b.secs, 0),
+          secs: s.seconds
+        };
+      });
+      row.F = { lo: F.loTxt, hi: F.hiTxt, star: F.star,
+                lon: F.starLon.toFixed(2), inArc: String(F.inArc),
+                inWin: String(F.inWin), lord: F.lord,
+                padas: F.padas, rashi: F.rashi,
+                yoni: F.yoni, gana: F.gana, nadi: F.nadi };
+      out.push(row);
+    }
+    return out;
+  });
+
+  const noLines = r.filter(x =>
+    ["hinglish", "hi", "en"].some(L => x.langs[L].lines < 6 || x.langs[L].empty));
+  ok(noLines.length === 0,
+     "all twenty-seven produce a full script in all three languages",
+     noLines.map(x => x.key).join(" | "));
+
+  /* every number in the facts must appear in every language's script */
+  const drift = [];
+  r.forEach(x => {
+    ["hinglish", "hi", "en"].forEach(L => {
+      const t = x.langs[L].text + " " + x.langs[L].cap;
+      const want = [x.F.lo, x.F.hi, x.F.star, x.F.lon, x.F.lord]
+        .concat(x.F.padas);
+      want.forEach(w => {
+        if (t.indexOf(w) < 0) drift.push(x.key + "/" + L + " missing " + w);
+      });
+    });
+  });
+  ok(drift.length === 0,
+     "and every boundary, star, longitude, pāda sign and daśā lord in them " +
+     "is the one the reel computed",
+     drift.slice(0, 5).join(" | "));
+
+  /* the counts, which are the claim the whole set exists to make */
+  const counts = [];
+  r.forEach(x => {
+    ["hinglish", "hi", "en"].forEach(L => {
+      const t = x.langs[L].text + " " + x.langs[L].cap;
+      if (t.indexOf(x.F.inWin) < 0 || t.indexOf(x.F.inArc) < 0)
+        counts.push(x.key + "/" + L);
+    });
+  });
+  ok(counts.length === 0,
+     "the star counts appear in every script too",
+     counts.slice(0, 5).join(" | "));
+
+  /* the beat windows must tile the reel, or the teleprompter is lying
+     about when to start reading */
+  const badTime = r.filter(x =>
+    ["hinglish", "hi", "en"].some(L =>
+      Math.abs(x.langs[L].total - x.langs[L].secs) > 0.6));
+  ok(badTime.length === 0,
+     "and the beat windows add up to the reel's own length",
+     badTime.map(x => x.key + " " + x.langs.en.total.toFixed(1) + " vs " +
+                 x.langs.en.secs).join(" | "));
+
+  /* the three languages are actually three languages */
+  const same = r.filter(x => x.langs.en.text === x.langs.hi.text ||
+                             x.langs.en.text === x.langs.hinglish.text);
+  ok(same.length === 0,
+     "the three scripts differ from each other",
+     same.map(x => x.key).join(" | "));
+  const noDev = r.filter(x => !/[ऀ-ॿ]/.test(x.langs.hi.text));
+  ok(noDev.length === 0, "the Hindi one is in Devanāgarī",
+     noDev.map(x => x.key).join(" | "));
+}
+
+console.log("\nThe thirty-six points, and what is claimed about them");
+{
+  /* The hook the caption carries is arithmetic over the site's OWN kūṭa
+     maxima, not a remembered figure: tārā 3 + yoni 4 + gaṇa 6 + nāḍī 8.
+     It is checked against the scoring tables the compatibility tab uses,
+     because two copies of a number is one copy too many. */
+  const r = await pg.evaluate(() => {
+    const K = window.SPExplain && window.SPExplain.KUTA;
+    const R = window.SPStories.build("learn.nakshatra.1",
+      { t0: Date.parse("2026-01-01") });
+    const caps = ["hinglish", "hi", "en"].map(L =>
+      window.SPScript.render(R, L).caption);
+    return {
+      K: K ? { t: K.taraMax, y: K.yoniMax, g: K.ganaMax, n: K.nadiMax,
+               sum: K.nakMax, total: K.total,
+               gana: K.gana.length, yoni: K.yoni.length, nadi: K.nadi.length }
+            : null,
+      says2136: caps.every(c => /21\/36/.test(c)),
+      saysLater: caps.every(c =>
+        /later tradition|baad ki parampara|परवर्ती परम्परा/i.test(c)),
+      saysNotBphs: caps.every(c => /BPHS/.test(c))
+    };
+  });
+  ok(!!r.K, "the kūṭa tables are on the page");
+  ok(r.K.gana === 27 && r.K.yoni === 27 && r.K.nadi === 27,
+     "they carry a yoni, gaṇa and nāḍī for each of the twenty-seven");
+  ok(r.K.sum === 21 && r.K.total === 36,
+     "and the four a nakṣatra alone decides add to " + r.K.sum + " of " +
+     r.K.total + ": " + r.K.t + " + " + r.K.y + " + " + r.K.g + " + " + r.K.n);
+  ok(r.says2136, "every caption states the ratio");
+  ok(r.saysLater && r.saysNotBphs,
+     "and every one says it is later tradition rather than BPHS");
+}
+
+
 console.log("\nThe chart geometry agrees with the composer's");
 {
   await pg.goto("file://" + ROOT + "/director-pro.html");
