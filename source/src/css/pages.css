@@ -1390,3 +1390,9 @@ table.reeltbl td:first-child{width:38%;color:var(--muted)}
   .reelchip,.reelbtn,.reelfield input,.reelfield select{min-height:42px}
   #reel-scrub,.reelslider input{height:42px}
 }
+.reelnote2{font-size:.75rem;color:var(--muted);line-height:1.55;margin:4px 0 7px}
+#reel-place{position:relative;margin:2px 0 6px}
+#reel-place .npfind{width:100%}
+#reel-place .npres{position:absolute;z-index:40;left:0;right:0;max-height:260px;
+  overflow:auto;background:#fff;border:1px solid var(--line);border-radius:8px;
+  box-shadow:0 10px 30px rgba(10,12,24,.18)}

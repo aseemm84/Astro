@@ -347,6 +347,22 @@
     c.font = (W * 0.0165).toFixed(1) + "px " + SERIF;
     c.fillText(reel.foot, x, baseY + W * 0.006);
     c.restore();
+    /* A REEL THAT DEPENDS ON A PLACE SAYS WHICH PLACE. A festival's date is
+       the day whose sunrise carries a tithi, and sunrise is local: the same
+       Dīvālī falls on different Gregorian days in Delhi and in New York. A
+       date posted without its place is a date that cannot be checked. */
+    if (reel.placeName) {
+      c.save();
+      plain(c);
+      c.globalAlpha = 0.62 * fade;
+      c.fillStyle = G().rgba(P.dim, 1);
+      c.textAlign = "center";
+      c.font = (P.banded ? "italic " : "") + (W * 0.0185).toFixed(1) +
+               "px " + SERIF;
+      c.fillText("computed for " + reel.placeName, W / 2,
+                 B.tally.y + W * 0.028);
+      c.restore();
+    }
   }
 
   /* The year counter: large, ghosted, sitting behind the caption. It is the

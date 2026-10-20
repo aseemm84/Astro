@@ -220,10 +220,22 @@
       if (!D.at || !D.at.tithi) continue;
       if (D.at.tithi.i !== want) continue;
       if (NP().masaIdx(D.masaFestival) !== rule.m) continue;
-      return rule.when
-        ? "the tithi fell on " + new Date(ms).toISOString().slice(0, 10) +
-          " but never covered " + rule.when
-        : "the tithi fell on " + new Date(ms).toISOString().slice(0, 10);
+      var iso = new Date(ms).toISOString().slice(0, 10);
+      if (!rule.when) return "the tithi fell on " + iso;
+      /* NEAR-MISS OR NOWHERE NEAR? The engine asks what tithi holds at the
+         MIDDLE of the window. A tithi that covers part of it but not the
+         middle is a close call that almanacs settle by convention; one that
+         does not touch it at all is a different animal. Saying which is the
+         difference between a hole and a finding. */
+      var q = null;
+      try { q = NP().tithiAt(D, rule.when); } catch (e3) { q = null; }
+      var touched = q && (q.from === want || q.to === want);
+      return "the tithi fell on " + iso + " but " +
+             (touched
+               ? "covered only part of " + rule.when +
+                 " — a close call, which published almanacs settle by " +
+                 "convention rather than by computation"
+               : "never reached " + rule.when);
     }
     return "the tithi did not fall in that month at all";
   }

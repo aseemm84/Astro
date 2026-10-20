@@ -15,6 +15,13 @@ page says so rather than inventing a rhythm.</p>
       <label class="reelfield"><span>Starts</span>
         <input id="reel-start" type="date"></label>
     </div>
+
+    <h3 class="reelsub">The place</h3>
+    <p class="reelnote2" id="reel-placewhy">A tithi at sunrise is a local
+    fact, so a festival's date is too. The orbit and cycle reels do not
+    depend on where you are; the festival ones do, and they print the place
+    they were computed for.</p>
+    <div id="reel-place" class="npsearch"></div>
     <label class="reelslider"><span>Years <b id="reel-years-out">20 yr</b></span>
       <input id="reel-years" type="range" min="2" max="800" step="1" value="20"></label>
     <label class="reelslider"><span>Length <b id="reel-seconds-out">34 s</b></span>
@@ -81,5 +88,10 @@ says it is a band.</p>
 the same ephemeris the charts use. Nothing is sent anywhere, and the page
 works with no network at all once it has loaded.</p>
 
+<!-- places.js first: deferred scripts run in document order, so the city
+     search is defined before the Studio looks for it. The 3 MB town list it
+     can load is still lazy — nobody who does not type into the box pays for
+     it. -->
+<script src="places.js" defer></script>
 <script src="engine.js" defer></script>
 <script src="reel.js" defer></script>

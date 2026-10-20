@@ -1410,6 +1410,12 @@ table.reeltbl td:first-child{width:38%;color:var(--muted)}
   .reelchip,.reelbtn,.reelfield input,.reelfield select{min-height:42px}
   #reel-scrub,.reelslider input{height:42px}
 }
+.reelnote2{font-size:.75rem;color:var(--muted);line-height:1.55;margin:4px 0 7px}
+#reel-place{position:relative;margin:2px 0 6px}
+#reel-place .npfind{width:100%}
+#reel-place .npres{position:absolute;z-index:40;left:0;right:0;max-height:260px;
+  overflow:auto;background:#fff;border:1px solid var(--line);border-radius:8px;
+  box-shadow:0 10px 30px rgba(10,12,24,.18)}
 </style></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Reel Studio</h1><p class="sub">A question, the computation that answers it, and the figure it draws.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html" class="active">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#stories">The stories</a><a href="#closing">How it ends</a><a href="#honest">What the pictures do and don't mean</a></aside><main><p class="reelintro">A reel here is not a template with your data poured into
 it. It is a <b>question</b> and the computation that answers it: the finder
 runs over the span you choose, and what the reel shows is what it found. If a
@@ -1427,6 +1433,13 @@ page says so rather than inventing a rhythm.</p>
       <label class="reelfield"><span>Starts</span>
         <input id="reel-start" type="date"></label>
     </div>
+
+    <h3 class="reelsub">The place</h3>
+    <p class="reelnote2" id="reel-placewhy">A tithi at sunrise is a local
+    fact, so a festival's date is too. The orbit and cycle reels do not
+    depend on where you are; the festival ones do, and they print the place
+    they were computed for.</p>
+    <div id="reel-place" class="npsearch"></div>
     <label class="reelslider"><span>Years <b id="reel-years-out">20 yr</b></span>
       <input id="reel-years" type="range" min="2" max="800" step="1" value="20"></label>
     <label class="reelslider"><span>Length <b id="reel-seconds-out">34 s</b></span>
@@ -1493,6 +1506,11 @@ says it is a band.</p>
 the same ephemeris the charts use. Nothing is sent anywhere, and the page
 works with no network at all once it has loaded.</p>
 
+<!-- places.js first: deferred scripts run in document order, so the city
+     search is defined before the Studio looks for it. The 3 MB town list it
+     can load is still lazy — nobody who does not type into the box pays for
+     it. -->
+<script src="places.js" defer></script>
 <script src="engine.js" defer></script>
 <script src="reel.js" defer></script>
 </main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p><b>How the numbers are worked out:</b> <a href="kundli-technical-report.html">the chart engine, in detail</a> &mdash; the ephemeris, the ayanāṃśa modes, the sunrise convention and what each divisional chart is computed from.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>

@@ -26,6 +26,7 @@
   var REEL = null, P = 0, PLAY = false, RAF = null, T0 = 0;
   var KEY = null, YEARS = null, SECONDS = null, PALETTE = "gold";
   var START = Date.now();
+  var PLACE = null;
   var BUILDING = false;
 
   /* The preview canvas is 1080×1920 internally whatever its CSS size, so
@@ -107,7 +108,7 @@
     if (!T) return;
     if (BUILDING) { AGAIN = then || true; return; }
     var key = KEY, years = YEARS || T.years, seconds = SECONDS || T.seconds;
-    var palette = PALETTE, start = START;
+    var palette = PALETTE, start = START, place = PLACE;
     BUILDING = true;
     play(false);
     note("Computing " + T.label + " — " + years + " years of ephemeris…");
@@ -116,7 +117,8 @@
       var t = performance.now(), R = null;
       try {
         R = window.SPStories.build(key, {
-          t0: start, years: years, seconds: seconds, palette: palette
+          t0: start, years: years, seconds: seconds, palette: palette,
+          place: place
         });
       } catch (e) { R = null; }
       BUILDING = false;
@@ -139,6 +141,20 @@
       play(true);
       if (then) then();
     }, 24);
+  }
+
+  /* the note changes with the story, because the honest thing to say about
+     the place differs between a reel that uses it and one that cannot */
+  function placeNote() {
+    var n = $("reel-placewhy");
+    if (!n) return;
+    var usesPlace = KEY && KEY.indexOf("fest.") === 0;
+    n.textContent = usesPlace
+      ? "This reel is computed for " + (PLACE ? PLACE.n : "—") +
+        ". A tithi at sunrise is a local fact, so the festival's date is too " +
+        "— and the frame says which place it used."
+      : "A tithi at sunrise is a local fact, so a festival's date is too. " +
+        "This reel does not depend on where you are; the festival ones do.";
   }
 
   function note(m, bad) {
@@ -199,7 +215,7 @@
           b.addEventListener("click", function () {
             KEY = t.key; YEARS = null; SECONDS = null;
             syncSpan(t);
-            picker(); blurb(t); rebuild();
+            picker(); blurb(t); placeNote(); rebuild();
           });
           wrap.appendChild(b);
         });
@@ -288,6 +304,32 @@
         if (REEL) { REEL.pal = window.SPReel.pal(PALETTE); drawFrame(); }
       });
     }
+    /* THE PLACE, for the reels that have one.
+
+       A festival's date is the day whose sunrise carries a tithi, and
+       sunrise is local — Dīvālī can fall on different Gregorian days in
+       Abu Dhabi and in Kolkata. The orbit, thread and cycle reels have no
+       place at all, and saying so is better than offering a control that
+       does nothing: the note beside the picker says which reels it moves,
+       and a reel that uses it prints the place on the frame. */
+    var ph = $("reel-place");
+    if (ph && window.NPlaces && window.NP) {
+      var saved = window.NP.savedPlace();
+      PLACE = saved || window.NP.PLACES[2] || window.NP.PLACES[0];
+      window.NPlaces.picker({
+        host: ph, value: PLACE, label: "Place",
+        quick: (saved ? [saved] : []).concat(window.NP.PLACES),
+        refMs: function () { return START; },
+        onPick: function (p) {
+          PLACE = p;
+          try { window.NP.cacheClear(); } catch (e) {}
+          placeNote();
+          rebuild();
+        }
+      });
+      placeNote();
+    }
+
     var st = $("reel-start");
     if (st) {
       st.value = new Date(START).toISOString().slice(0, 10);
@@ -336,6 +378,8 @@
 
     try {
       window.__reel = {
+        place: function (p) { PLACE = p; placeNote(); rebuild(); },
+        placeName: function () { return PLACE ? PLACE.n : null; },
         choose: function (k, opt) {
           KEY = k;
           YEARS = opt && opt.years || null;

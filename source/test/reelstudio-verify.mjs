@@ -796,6 +796,73 @@ console.log("\nEvery festival reel says true things about its dates");
      "and runs one lunation: " + r.lun.days.toFixed(2) + " days");
 }
 
+/* ---- 8h. the place -------------------------------------------------------
+   A control that does nothing is worse than no control. The picker is only
+   worth having if moving it moves the dates — so this checks that it does,
+   against a place far enough away for the answer to differ, and that a reel
+   which used it says so on the frame. */
+console.log("\nThe place picker changes what it should and nothing else");
+{
+  const r = await pg.evaluate(() => {
+    const out = {};
+    out.hasInput = !!document.querySelector("#reel-place .npfind");
+    const DEL = window.NP.PLACES[2];
+    const NYC = { n: "New York, US", lat: 40.7128, lon: -74.0060, tz: -5 };
+    const a = window.SPFest.datesFor("diwali", 2026, 6, DEL).map(q => q.iso);
+    const b = window.SPFest.datesFor("diwali", 2026, 6, NYC).map(q => q.iso);
+    out.delhi = a; out.nyc = b;
+    out.differ = a.filter((x, i) => b[i] && x !== b[i]).length;
+    /* the cache must be per place, or the second lookup returns the first */
+    const a2 = window.SPFest.datesFor("diwali", 2026, 6, DEL).map(q => q.iso);
+    out.stable = a2.join() === a.join();
+    /* a place-dependent reel carries the name; a thread reel does not */
+    const F = window.SPStories.build("fest.when.diwali",
+      { t0: Date.parse("2026-01-01"), place: NYC });
+    const T = window.SPStories.build("thread.earth-venus",
+      { t0: Date.parse("2026-01-01") });
+    out.festPlace = F.placeName;
+    out.threadPlace = T.placeName || null;
+    return out;
+  });
+  ok(r.hasInput, "the picker is on the page");
+  ok(r.differ > 0,
+     "moving the place moves the dates: Delhi " + r.delhi.join(" ") +
+     " against New York " + r.nyc.join(" "));
+  ok(r.stable, "and the cache is per place, not shared between them");
+  ok(/New York/.test(r.festPlace || ""),
+     "a festival reel carries the place it was computed for", r.festPlace);
+  ok(!r.threadPlace,
+     "a reel that does not depend on a place does not claim one",
+     String(r.threadPlace));
+
+  /* and the frame actually prints it */
+  const ink = await pg.evaluate(() => {
+    const cv = document.getElementById("reel-canvas");
+    const c = cv.getContext("2d");
+    const R = window.SPStories.build("fest.when.diwali",
+      { t0: Date.parse("2026-01-01"), place: window.NP.PLACES[2] });
+    function litRow(reel) {
+      window.SPReel.frameAt(c, 1080, 1920, reel, 0.5);
+      const B = window.SPReel.bands(1080, 1920);
+      const y = Math.round(B.tally.y + 1080 * 0.014);
+      const d = c.getImageData(0, y, 1080, Math.round(1080 * 0.03)).data;
+      let n = 0;
+      for (let i = 0; i < d.length; i += 4)
+        if (d[i] > 40 || d[i + 1] > 40) n++;
+      return n;
+    }
+    const withPlace = litRow(R);
+    const T = window.SPStories.build("thread.earth-venus",
+      { t0: Date.parse("2026-01-01") });
+    const without = litRow(T);
+    return { withPlace, without };
+  });
+  ok(ink.withPlace > 300,
+     "and the frame prints it: " + ink.withPlace + " lit pixels on that line");
+  ok(ink.without < ink.withPlace / 2,
+     "while a reel with no place leaves the line empty (" + ink.without + ")");
+}
+
 /* ---- 9. the page -------------------------------------------------------- */
 console.log("\nThe page behaves");
 {

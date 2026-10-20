@@ -1657,6 +1657,22 @@ function moSunDisc(R,rot){
     c.font = (W * 0.0165).toFixed(1) + "px " + SERIF;
     c.fillText(reel.foot, x, baseY + W * 0.006);
     c.restore();
+    /* A REEL THAT DEPENDS ON A PLACE SAYS WHICH PLACE. A festival's date is
+       the day whose sunrise carries a tithi, and sunrise is local: the same
+       Dīvālī falls on different Gregorian days in Delhi and in New York. A
+       date posted without its place is a date that cannot be checked. */
+    if (reel.placeName) {
+      c.save();
+      plain(c);
+      c.globalAlpha = 0.62 * fade;
+      c.fillStyle = G().rgba(P.dim, 1);
+      c.textAlign = "center";
+      c.font = (P.banded ? "italic " : "") + (W * 0.0185).toFixed(1) +
+               "px " + SERIF;
+      c.fillText("computed for " + reel.placeName, W / 2,
+                 B.tally.y + W * 0.028);
+      c.restore();
+    }
   }
 
   /* The year counter: large, ghosted, sitting behind the caption. It is the
@@ -9939,10 +9955,22 @@ function moSunDisc(R,rot){
       if (!D.at || !D.at.tithi) continue;
       if (D.at.tithi.i !== want) continue;
       if (NP().masaIdx(D.masaFestival) !== rule.m) continue;
-      return rule.when
-        ? "the tithi fell on " + new Date(ms).toISOString().slice(0, 10) +
-          " but never covered " + rule.when
-        : "the tithi fell on " + new Date(ms).toISOString().slice(0, 10);
+      var iso = new Date(ms).toISOString().slice(0, 10);
+      if (!rule.when) return "the tithi fell on " + iso;
+      /* NEAR-MISS OR NOWHERE NEAR? The engine asks what tithi holds at the
+         MIDDLE of the window. A tithi that covers part of it but not the
+         middle is a close call that almanacs settle by convention; one that
+         does not touch it at all is a different animal. Saying which is the
+         difference between a hole and a finding. */
+      var q = null;
+      try { q = NP().tithiAt(D, rule.when); } catch (e3) { q = null; }
+      var touched = q && (q.from === want || q.to === want);
+      return "the tithi fell on " + iso + " but " +
+             (touched
+               ? "covered only part of " + rule.when +
+                 " — a close call, which published almanacs settle by " +
+                 "convention rather than by computation"
+               : "never reached " + rule.when);
     }
     return "the tithi did not fall in that month at all";
   }
@@ -10307,6 +10335,7 @@ function moSunDisc(R,rot){
   var REEL = null, P = 0, PLAY = false, RAF = null, T0 = 0;
   var KEY = null, YEARS = null, SECONDS = null, PALETTE = "gold";
   var START = Date.now();
+  var PLACE = null;
   var BUILDING = false;
 
   /* The preview canvas is 1080×1920 internally whatever its CSS size, so
@@ -10388,7 +10417,7 @@ function moSunDisc(R,rot){
     if (!T) return;
     if (BUILDING) { AGAIN = then || true; return; }
     var key = KEY, years = YEARS || T.years, seconds = SECONDS || T.seconds;
-    var palette = PALETTE, start = START;
+    var palette = PALETTE, start = START, place = PLACE;
     BUILDING = true;
     play(false);
     note("Computing " + T.label + " — " + years + " years of ephemeris…");
@@ -10397,7 +10426,8 @@ function moSunDisc(R,rot){
       var t = performance.now(), R = null;
       try {
         R = window.SPStories.build(key, {
-          t0: start, years: years, seconds: seconds, palette: palette
+          t0: start, years: years, seconds: seconds, palette: palette,
+          place: place
         });
       } catch (e) { R = null; }
       BUILDING = false;
@@ -10420,6 +10450,20 @@ function moSunDisc(R,rot){
       play(true);
       if (then) then();
     }, 24);
+  }
+
+  /* the note changes with the story, because the honest thing to say about
+     the place differs between a reel that uses it and one that cannot */
+  function placeNote() {
+    var n = $("reel-placewhy");
+    if (!n) return;
+    var usesPlace = KEY && KEY.indexOf("fest.") === 0;
+    n.textContent = usesPlace
+      ? "This reel is computed for " + (PLACE ? PLACE.n : "—") +
+        ". A tithi at sunrise is a local fact, so the festival's date is too " +
+        "— and the frame says which place it used."
+      : "A tithi at sunrise is a local fact, so a festival's date is too. " +
+        "This reel does not depend on where you are; the festival ones do.";
   }
 
   function note(m, bad) {
@@ -10480,7 +10524,7 @@ function moSunDisc(R,rot){
           b.addEventListener("click", function () {
             KEY = t.key; YEARS = null; SECONDS = null;
             syncSpan(t);
-            picker(); blurb(t); rebuild();
+            picker(); blurb(t); placeNote(); rebuild();
           });
           wrap.appendChild(b);
         });
@@ -10569,6 +10613,32 @@ function moSunDisc(R,rot){
         if (REEL) { REEL.pal = window.SPReel.pal(PALETTE); drawFrame(); }
       });
     }
+    /* THE PLACE, for the reels that have one.
+
+       A festival's date is the day whose sunrise carries a tithi, and
+       sunrise is local — Dīvālī can fall on different Gregorian days in
+       Abu Dhabi and in Kolkata. The orbit, thread and cycle reels have no
+       place at all, and saying so is better than offering a control that
+       does nothing: the note beside the picker says which reels it moves,
+       and a reel that uses it prints the place on the frame. */
+    var ph = $("reel-place");
+    if (ph && window.NPlaces && window.NP) {
+      var saved = window.NP.savedPlace();
+      PLACE = saved || window.NP.PLACES[2] || window.NP.PLACES[0];
+      window.NPlaces.picker({
+        host: ph, value: PLACE, label: "Place",
+        quick: (saved ? [saved] : []).concat(window.NP.PLACES),
+        refMs: function () { return START; },
+        onPick: function (p) {
+          PLACE = p;
+          try { window.NP.cacheClear(); } catch (e) {}
+          placeNote();
+          rebuild();
+        }
+      });
+      placeNote();
+    }
+
     var st = $("reel-start");
     if (st) {
       st.value = new Date(START).toISOString().slice(0, 10);
@@ -10617,6 +10687,8 @@ function moSunDisc(R,rot){
 
     try {
       window.__reel = {
+        place: function (p) { PLACE = p; placeNote(); rebuild(); },
+        placeName: function () { return PLACE ? PLACE.n : null; },
         choose: function (k, opt) {
           KEY = k;
           YEARS = opt && opt.years || null;
