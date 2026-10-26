@@ -348,5 +348,12 @@
   else boot();
 
   window.SPGocharaUI = { run: run, reading: showReading,
-                         current: function () { return R; } };
+                         current: function () { return R; },
+                         /* the Workstation's Gochara view shows the natal
+                            reading inline rather than making the reader
+                            change tabs for it, so the renderer is shared
+                            rather than written twice */
+                         readingHtml: renderReading,
+                         yearHtml: renderYear,
+                         badge: badge, dstr: dstr };
 })();

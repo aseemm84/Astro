@@ -109,7 +109,15 @@
     var lines = ["M0,0 L400,400", "M400,0 L0,400",
                  "M200,0 L400,200 L200,400 L0,200 Z"];
     lines.forEach(function (d, i) {
-      o += '<path d="' + d + '" class="wsline' + (anim ? " wsdraw" : "") +
+      /* pathLength="1" normalises every path to one unit, so the
+         stroke-dasharray that animates the draw is 1 regardless of the
+         real geometry. Without it the dasharray has to be a guess, and
+         the guess was 620 while the inner diamond is 1131 units round —
+         so 511 units of it could never be drawn and the chart finished
+         with two of its four inner edges missing. Measured, not
+         estimated: getTotalLength on each path. */
+      o += '<path d="' + d + '" pathLength="1" class="wsline' +
+        (anim ? " wsdraw" : "") +
         '" style="animation-delay:' + (i * 90) + 'ms"/>';
     });
     o += '<rect x="0" y="0" width="400" height="400" class="wsframe"/>';
@@ -240,8 +248,164 @@
      first, and getElementById returns the first match, so opening the
      Rāśiphal tab found the Gochara tab's host, moved nothing, and showed
      an empty panel. */
+
+  /* ---- the transit charts ------------------------------------------------
+     A list of ingress dates is a timetable; a chart is where a transit
+     becomes legible. Three are drawn, and each answers a different
+     question:
+
+       1. गोचर चक्र — where the grahas actually are, by rāśi. True with or
+          without a birth chart, which is why it is first.
+       2. लग्न से गोचर — the same sky counted as houses from the natal
+          lagna, which is how a transit is read against the chart.
+       3. चन्द्र से गोचर — counted from the natal Moon, which is the frame
+          the classical gochara rules are stated in.
+
+     Two and three need a chart and say so rather than appearing empty. */
+  function transitCharts(R, D) {
+    var G = window.SPGochara;
+    if (!G || !R) return "";
+    var jd = (R.jd0 + R.jd1) / 2;
+    var now = G.dateToJd(new Date());
+    /* the present moment if the year contains it, otherwise mid-year —
+       "now" is what a reader means by a transit chart when it applies */
+    var at = (now >= R.jd0 && now < R.jd1) ? now : jd;
+    var isNow = (at === now);
+    var pos = {};
+    R.bodyList.forEach(function (b) { pos[b] = G.signAtJd(R, b, at); });
+
+    function occBy(base) {
+      var o = {};
+      R.bodyList.forEach(function (b) {
+        var h = ((pos[b] - base) % 12 + 12) % 12 + 1;
+        (o[h] = o[h] || []).push(GL[b] || b);
+      });
+      return o;
+    }
+    var out = [];
+    var oA = occBy(0);
+    out.push(diamond("ws-go-rasi",
+      function (h) { return (h - 1) % 12; },
+      function (h) { return oA[h] || []; },
+      "गोचर चक्र · transit by rāśi",
+      { sub: (isNow ? "at this moment" : "mid-" + R.year) +
+             " — Meṣa first, no chart needed" }));
+
+    if (D) {
+      var LS = D.LS;
+      var oL = occBy(LS);
+      /* the natal lagna's own grahas, shown faint, so the reader can see
+         which transit is landing on which natal placement */
+      var natal = {};
+      (D.planets || []).forEach(function (p) {
+        (natal[p.house] = natal[p.house] || []).push(GL[p.en]);
+      });
+      out.push(diamond("ws-go-lagna",
+        function (h) { return (LS + h - 1) % 12; },
+        function (h) {
+          var a = (oL[h] || []).slice();
+          if (h === 1) a.unshift("Lg");
+          if (natal[h] && natal[h].length)
+            a.push("· " + natal[h].join(" "));
+          return a;
+        },
+        "लग्न से गोचर · from the natal lagna",
+        { sub: "transits in houses, natal placements after the dot" }));
+
+      var MS = D.P && D.P.Moon && D.P.Moon.sign;
+      if (MS != null) {
+        var oM = occBy(MS);
+        out.push(diamond("ws-go-chandra",
+          function (h) { return (MS + h - 1) % 12; },
+          function (h) { var a = (oM[h] || []).slice();
+                         if (h === 1) a.unshift("Ca"); return a; },
+          "चन्द्र से गोचर · from the natal Moon",
+          { sub: "the frame the classical gochara rules are stated in" }));
+      }
+    }
+    return '<div class="wsgocharts">' + out.join("") + '</div>' +
+      (D ? "" : '<p class="knote">Two more charts — the same sky counted ' +
+        'from the natal lagna and from the natal Moon — appear once a ' +
+        'chart is cast. The rāśi chart above needs none.</p>');
+  }
+
+  /* ---- what is next ------------------------------------------------------
+     The one fact a transit panel is usually opened for. Taken from the
+     computed events rather than from a separate lookup, so it cannot
+     disagree with the table underneath it. */
+  function nextEvents(R, n) {
+    var G = window.SPGochara;
+    var now = G.dateToJd(new Date());
+    var up = R.events.filter(function (e) { return e.jd >= now; });
+    /* a year wholly in the past has no "next"; the first events of that
+       year are what a reader wants instead, and the label says which */
+    var future = up.length > 0;
+    var list = (future ? up : R.events).slice(0, n || 4);
+    if (!list.length) return "";
+    var P = window.SPRashiphal;
+    var UI = window.SPGocharaUI;
+    var cards = list.map(function (e, i) {
+      var what;
+      if (e.kind === "ingress")
+        what = "enters <b>" + esc(SA[e.to]) + "</b>" +
+               (e.retro ? ' <span class="wsretro">retrograde</span>' : "");
+      else if (e.kind === "retro")
+        what = '<span class="wsretro">turns retrograde</span> in ' +
+               esc(SA[e.sign]);
+      else what = "turns direct in " + esc(SA[e.sign]);
+      var days = Math.round(e.jd - now);
+      return '<div class="wsnext' + (i === 0 ? " lead" : "") + '">' +
+        '<div class="wsnextg">' + esc((P && P.DEV[e.body]) || e.body) +
+        '</div><div class="wsnextw">' + what + '</div>' +
+        '<div class="wsnextd">' + esc(UI.dstr(e.jd)) +
+        (future ? '<span>' + (days === 0 ? "today"
+          : days > 0 ? "in " + days + " day" + (days === 1 ? "" : "s")
+          : "") + '</span>' : "") + '</div></div>';
+    }).join("");
+    return '<h4 class="gosub">' + (future ? "What happens next"
+      : "The year\u2019s first events") + '</h4>' +
+      '<div class="wsnextrow">' + cards + '</div>';
+  }
+
   function viewGochara(key) {
     return '<div class="wsgo" id="ws-host-' + key + '"></div>';
+  }
+
+  /* the Gochara view's own content, rebuilt whenever a year is computed */
+  function gocharaExtras() {
+    var host = $("ws-extra-gochara");
+    if (!host) return;
+    var R = (window.SPGocharaUI && window.SPGocharaUI.current &&
+             window.SPGocharaUI.current()) || null;
+    if (!R) {
+      host.innerHTML = '<p class="wsneed">Pick a year and press ' +
+        '<b>Compute the year</b>. Every ingress and station is found from ' +
+        'this engine\u2019s own ephemeris — no chart needed.</p>';
+      return;
+    }
+    var D = chart();
+    var html = nextEvents(R, 4) +
+      '<h4 class="gosub">The sky, as three charts</h4>' +
+      transitCharts(R, D);
+    /* with a chart loaded, the reading for THIS nativity belongs here
+       rather than only under the twelve-rāśi tab: a reader with a chart
+       open wants their own reading, not a menu of twelve */
+    if (D && window.SPRashiphal && window.SPGocharaUI &&
+        window.SPGocharaUI.readingHtml) {
+      var MS = D.P && D.P.Moon && D.P.Moon.sign;
+      if (MS != null) {
+        try {
+          var r = window.SPRashiphal.read(R, MS, D);
+          html += '<h4 class="gosub">Read for this chart ' +
+            '<span class="wsdim">\u2014 Candra in ' + esc(SA[MS]) +
+            '</span></h4>' +
+            '<div class="wsownread">' +
+            window.SPGocharaUI.readingHtml(r) + '</div>';
+        } catch (e) {}
+      }
+    }
+    host.innerHTML = html;
+    stagger(host);
   }
 
   /* ---- view 4: every graha's exact position ------------------------------ */
@@ -313,6 +477,36 @@
     return out.length ? out.join("") :
       need("Cast a chart to fill the " + label + " view.");
   }
+  /* ---- everything the builder computes -----------------------------------
+     The thematic views above are a reading order: the five or six sections
+     that belong together, in the order you would want them. This one is the
+     completeness guarantee — the whole report, all forty-odd sections, so
+     nothing the builder computes is unreachable from the Workstation.
+
+     It is a copy of the live report rather than a second rendering of it,
+     which is what makes the guarantee hold: a section added to the builder
+     appears here the day it is added, without this file being touched. */
+  function everything() {
+    var host = $("k-out");
+    if (!host) return need("Cast a chart to fill this view.");
+    var secs = host.querySelectorAll("section[id^=ks-]");
+    if (!secs.length) return need("Cast a chart to fill this view.");
+    var nav = [], body = [];
+    for (var i = 0; i < secs.length; i++) {
+      var h = secs[i].querySelector("h3, h2, h4");
+      var label = h ? h.textContent.trim() : secs[i].id.replace(/^ks-/, "");
+      nav.push('<a href="#" data-wsjump="' + esc(secs[i].id) + '">' +
+               esc(label) + '</a>');
+      body.push(secs[i].outerHTML);
+    }
+    return '<p class="knote">Every section the builder computes — ' +
+      secs.length + ' of them — in the report\u2019s own order. The tabs ' +
+      'either side of this one are reading orders through the same ' +
+      'material; this is the whole of it.</p>' +
+      '<nav class="wsjump">' + nav.join("") + '</nav>' +
+      '<div class="wsfull">' + body.join("") + '</div>';
+  }
+
   function need(msg) {
     return '<p class="wsneed">' + esc(msg) + '</p>';
   }
@@ -550,6 +744,33 @@
   }
 
   /* ---- rendering a view -------------------------------------------------- */
+  /* ---- kinetic loading ----------------------------------------------------
+     A pane that simply appears has no sense of being computed. Its top-level
+     blocks are brought in one after another on a short stagger, which reads
+     as the panel assembling itself rather than as a page repainting — and
+     costs one class and one inline delay per block.
+
+     Capped at sixteen blocks: past that the last one would arrive late
+     enough to feel like a stall rather than a flourish, and the reader is
+     scrolling by then anyway. Off entirely under reduced motion. */
+  function stagger(host) {
+    if (!host || calm()) return;
+    var kids = host.children, n = 0;
+    for (var i = 0; i < kids.length && n < 16; i++) {
+      var el = kids[i];
+      if (!el.getBoundingClientRect) continue;
+      el.classList.add("wsin");
+      el.style.animationDelay = (n * 42) + "ms";
+      n++;
+    }
+    setTimeout(function () {
+      for (var j = 0; j < kids.length; j++) {
+        kids[j].classList.remove("wsin");
+        kids[j].style.animationDelay = "";
+      }
+    }, 1400);
+  }
+
   function render(key) {
     var host = $("wp-" + key);
     if (!host) return;
@@ -569,11 +790,13 @@
                           "ks-ista-and-kasta-phala",
                           "ks-sodasavarga-strength", "ks-yogas"],
                           "strength and yoga"); break;
+      case "purna":     html = everything(); break;
       case "sav":       html = borrow(["ks-ashtakavarga",
                           "ks-divisional-ashtakavarga", "ks-kaksa-transit"],
                           "ashtakavarga"); break;
       default:          html = "";
     }
+    park();
     host.innerHTML = html;
     /* a pane that took a moment to build says so for that moment */
     var sweep = document.createElement("div");
@@ -584,23 +807,56 @@
     }, 700);
     BUILT[key] = true;
     if (key === "kundli") wireChart();
+    if (key === "purna") wireJump();
     if (key === "gochara" || key === "rashiphal") moveGochara(key);
+    stagger(host);
   }
 
   /* The Gochara and Rāśiphal panels are the builder's own markup and its
      own script. Rather than reimplement them, the page moves the live
      nodes into whichever view is open — one instance, one set of
      listeners, no second copy to drift. */
+  /* The Gochara and Rāśiphal panels are LIVE nodes with their own
+     listeners, moved into whichever view is open rather than copied. That
+     means a host must never be wiped while it still holds them: setting
+     innerHTML destroys the nodes, and the next move then finds nothing.
+     Clicking the open tab a second time did exactly that and emptied the
+     panel — 13,381 characters to 45. Everything is parked back here
+     before any wipe. */
+  function park() {
+    var off = $("ws-offstage");
+    if (!off) return;
+    ["ws-gobar", "go-out", "ws-rpbar", "rp-out",
+     "ws-extra-gochara"].forEach(function (id) {
+      var n = $(id);
+      if (n && n.parentNode !== off) off.appendChild(n);
+    });
+  }
+
   function moveGochara(key) {
     var host = $("ws-host-" + key);
     if (!host) return;
+    /* order matters and is set here rather than left to whatever the
+       parking happened to leave behind: the control bar, then this view's
+       own content, then the engine's long event tables */
     var ids = key === "gochara"
-      ? ["ws-gobar", "go-out"]
+      ? ["ws-gobar", "@extra", "go-out"]
       : ["ws-rpbar", "rp-out"];
     ids.forEach(function (id) {
+      if (id === "@extra") {
+        var ex = $("ws-extra-gochara");
+        if (!ex) {
+          ex = document.createElement("div");
+          ex.id = "ws-extra-gochara";
+          ex.className = "wsextra";
+        }
+        host.appendChild(ex);
+        return;
+      }
       var n = $(id);
       if (n) host.appendChild(n);
     });
+    if (key === "gochara") gocharaExtras();
     /* the year must be computed before a reading can exist, so the
        Rāśiphal view says so rather than showing an empty box */
     if (key === "rashiphal") {
@@ -611,6 +867,20 @@
           'that year\u2019s transits counted from each rāśi, so there is ' +
           'nothing to read until the year is scanned.</p>';
     }
+  }
+
+  function wireJump() {
+    var host = $("wp-purna");
+    if (!host || host.__j) return;
+    host.__j = true;
+    host.addEventListener("click", function (e) {
+      var a = e.target.closest && e.target.closest("[data-wsjump]");
+      if (!a) return;
+      e.preventDefault();
+      var t = host.querySelector("#" + a.getAttribute("data-wsjump"));
+      if (t) t.scrollIntoView({ block: "start",
+                                behavior: calm() ? "auto" : "smooth" });
+    });
   }
 
   function wireChart() {
@@ -731,6 +1001,19 @@
     status();
     /* a cast finishes asynchronously; the report lands in #k-out and the
        views that borrow from it need rebuilding when it does */
+    /* a year computed in the Gochara view changes what that view has to
+       show, so the extras are rebuilt when the year changes as well as
+       when the chart does */
+    var seenYear = null;
+    setInterval(function () {
+      var R = (window.SPGocharaUI && window.SPGocharaUI.current &&
+               window.SPGocharaUI.current()) || null;
+      var y = R && R.year;
+      if (y === seenYear) return;
+      seenYear = y;
+      if (VIEW === "gochara") gocharaExtras();
+    }, 500);
+
     var seen = null;
     setInterval(function () {
       var D = chart();

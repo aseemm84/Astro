@@ -264,6 +264,86 @@ is(ser.reportHasDerived !== false,
    (ser.reportHasSripati ? ", Śrīpati cusps included" : ""));
 ok("payload is " + ser.kb + " KB");
 
+/* ---- 6. the Workstation's own panes ------------------------------------- */
+head("6. The Workstation panes");
+/* Both of these were real bugs, and both are the kind that a screenshot of
+   a freshly-opened tab would never show. */
+const panes = await pg.evaluate(async () => {
+  const tabs = ["kundli", "gochara", "rashiphal", "ganita", "shifts",
+                "varga", "dasha", "bala", "purna", "sav"];
+  const click = (t) => {
+    const n = document.querySelector("[data-wstab=" + t + "]");
+    if (n) n.click();
+  };
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  const out = { lost: [], empty: [], first: {} };
+  for (const t of tabs) {
+    click(t); await wait(480);
+    const host = document.getElementById("wp-" + t);
+    const a = host ? host.innerHTML.length : 0;
+    out.first[t] = a;
+    if (a < 300) out.empty.push(t + " (" + a + ")");
+    /* click the SAME tab again: the Gochara and Rāśiphal panels are live
+       nodes moved into their host, and wiping a host that still held them
+       destroyed them — 13,381 characters to 45 */
+    click(t); await wait(480);
+    const c = host ? host.innerHTML.length : 0;
+    if (c < a * 0.5) out.lost.push(t + " (" + a + " \u2192 " + c + ")");
+  }
+  return out;
+});
+is(panes.empty.length === 0, "all ten panes render with content" +
+   (panes.empty.length ? " \u2014 empty: " + panes.empty.join(", ") : ""));
+is(panes.lost.length === 0,
+   "and none of them empties when its own tab is clicked a second time" +
+   (panes.lost.length ? " \u2014 lost: " + panes.lost.join(", ") : ""));
+is((panes.first.purna || 0) > 100000,
+   "the Pūrṇa pane carries the whole report, not a summary (" +
+   Math.round((panes.first.purna || 0) / 1024) + " KB)");
+
+const full = await pg.evaluate(() => ({
+  sections: document.querySelectorAll("#wp-purna section[id^=ks-]").length,
+  inReport: document.querySelectorAll("#k-out section[id^=ks-]").length,
+  jumps: document.querySelectorAll("#wp-purna .wsjump a").length
+}));
+is(full.sections === full.inReport && full.sections > 30,
+   "every one of the builder's " + full.inReport + " report sections is " +
+   "reachable in the Workstation — the completeness guarantee, checked " +
+   "by counting rather than by listing");
+is(full.jumps === full.sections,
+   "with a jump link for each");
+
+/* The Gochara panel's nodes are PARKED off-stage whenever another view is
+   open — that is how the same live controls serve two views without being
+   duplicated. So it has to be the active tab when it is measured; the
+   first version of this check ran after the loop had ended on another tab
+   and found an empty pane that was not empty. */
+await pg.click("[data-wstab=gochara]");
+await pg.waitForTimeout(700);
+const goch = await pg.evaluate(() => ({
+  charts: document.querySelectorAll("#wp-gochara .wschart").length,
+  next: document.querySelectorAll("#wp-gochara .wsnext").length,
+  read: !!document.querySelector("#wp-gochara .wsownread")
+}));
+is(goch.charts >= 3, "the Gochara pane draws its transit charts (" +
+   goch.charts + "): by rāśi, from the natal lagna, from the natal Moon");
+is(goch.next > 0, "and the events coming next (" + goch.next + ")");
+is(goch.read, "and the reading for THIS chart, not a menu of twelve");
+
+/* every animated chart path must be able to finish: a literal dasharray
+   is a guess about geometry, and the guess was 620 against a 1131-unit
+   inner diamond, so two of its four edges never drew */
+const draw = await pg.evaluate(() => {
+  const ps = document.querySelectorAll("#wp-kundli .wsline");
+  let bad = 0;
+  ps.forEach((n) => { if (n.getAttribute("pathLength") !== "1") bad++; });
+  return { n: ps.length, bad: bad };
+});
+is(draw.n > 0 && draw.bad === 0,
+   "every animated chart line declares pathLength=1, so the draw " +
+   "animation completes whatever the path's real length (" + draw.n +
+   " paths)");
+
 head("The page behaves");
 is(errs.length === 0, "no console errors" +
    (errs.length ? " — " + errs[0].slice(0, 160) : ""));

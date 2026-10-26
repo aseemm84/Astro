@@ -988,7 +988,11 @@ tr.spfrail td{background:rgba(180,82,82,.08)}
 .wsdim{color:var(--muted-2);font-size:12px}
 .wsretro{color:#a1493a;font-weight:600}
 @media(prefers-reduced-motion:no-preference){
-  .wsdraw{stroke-dasharray:620;stroke-dashoffset:620;
+  /* one unit, because the paths declare pathLength="1". A literal length
+     here has to be a guess, and the guess was 620 while the inner diamond
+     measures 1131 units round — so 511 units of it never drew and the
+     chart finished with inner edges missing. */
+  .wsdraw{stroke-dasharray:1;stroke-dashoffset:1;
     animation:wsdrawline .7s ease-out forwards}
   @keyframes wsdrawline{to{stroke-dashoffset:0}}
   .wspop{opacity:0;animation:wspopin .3s cubic-bezier(.34,1.56,.64,1) forwards}
