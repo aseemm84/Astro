@@ -1455,6 +1455,14 @@ window.__kEclip=function(name,ms){
   var ev=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[key],date,true));
   return {lon:norm(ev.elon-ayanamsa(jd)), trop:norm(ev.elon), lat:ev.elat};
 };
+/* The Śrīpati construction, exposed from the engine under the name the
+   build spec asks for. The arithmetic lives in the report module that owns
+   it; this is the door, so a caller that has the engine and nothing else
+   can still build the houses. */
+window.calculateSripatiHouses=function(ascSid,mcSid){
+  if(window.SPSripati&&window.SPSripati.build) return window.SPSripati.build(ascSid,mcSid);
+  return null;
+};
 window.__kSidAt=function(name,date){
   var jd=date.getTime()/86400000+2440587.5, ay=ayanamsa(jd);
   if(name==="Rahu") return norm(meanNode(jd)-ay);

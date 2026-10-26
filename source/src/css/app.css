@@ -41,7 +41,9 @@ table.tbl td b{color:#1b1e33}
 .card:hover{border-color:var(--gold);transform:translateY(-2px)}
 .card .n{font-size:11px;color:var(--muted)}.card h3{margin:2px 0 5px;font-size:17px;color:#1b1e33}.card p{font-size:13px;color:#4a4e68;margin:0}
 .card.tool{background:linear-gradient(160deg,#20264a,#2b3358);border-color:#39406a}.card.tool h3,.card.tool .n{color:#fff}.card.tool p{color:#c9cce4}
-footer{border-top:1px solid var(--line);background:#f5f5fb;color:var(--muted);font-size:12.5px;padding:24px clamp(16px,5vw,64px) 46px}
+/* --muted on this ground measures 4.48:1, a hair under the WCAG line;
+   the darker companion clears it on every page at once */
+footer{border-top:1px solid var(--line);background:#f5f5fb;color:var(--muted-2);font-size:12.5px;padding:24px clamp(16px,5vw,64px) 46px}
 footer .wrap{max-width:100ch;margin:0 auto}footer b{color:#454963}footer p{margin:0 0 8px;max-width:none}
 a{color:#2b5fa5}a:hover{color:var(--gold)}
 .pill{display:inline-block;font-size:11px;font-weight:600;padding:1px 8px;border-radius:999px;background:var(--soft);color:#4a4e68;margin-left:5px}
@@ -909,3 +911,97 @@ tr.spfrail td{background:rgba(180,82,82,.08)}
   overflow:hidden}
 .spbar i{display:block;height:100%;background:var(--gold)}
 .kgood{color:#1c6b46;font-weight:600}
+
+/* ---- the sixteen-division matrix --------------------------------------- */
+.svwrap{max-height:none}
+.svtbl{font-size:12.5px}
+.svtbl th{position:sticky;top:0;background:var(--surface,var(--paper));z-index:1}
+.svname{color:var(--muted-2);font-weight:400;font-size:11.5px;display:block}
+.svkarya{color:var(--muted-2);font-size:12px;min-width:150px}
+.svcell{white-space:nowrap;font-size:12px}
+.svconc li{margin:0 0 3px}
+
+/* ===== The Kinetic Workstation ===========================================
+   Tokenised throughout, so the four palettes carry it with no generated
+   overrides. Every animation is behind prefers-reduced-motion. */
+.wsbody main{padding-bottom:80px}
+.wsintake{margin-bottom:8px}
+.wsdeckwrap{position:sticky;top:44px;z-index:12;margin:18px 0 6px;
+  background:var(--surface,var(--paper));padding:8px 0 6px;
+  border-bottom:1px solid var(--line)}
+.wsdeck{display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin;
+  padding-bottom:2px}
+.wstab{font:inherit;font-size:12.5px;white-space:nowrap;padding:7px 13px;
+  border-radius:999px;border:1px solid var(--line);background:var(--soft);
+  color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:7px;
+  transition:background .18s,border-color .18s,color .18s}
+.wstab:hover{border-color:var(--gold)}
+.wstab[aria-current=true]{background:var(--gold);border-color:var(--gold);
+  color:var(--accent-ink,#231c07);font-weight:600}
+.wsico{font-size:13px;line-height:1}
+.wsstatus{font-size:13px;color:var(--muted-2);margin:8px 0 14px;
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.wsjsonmsg{color:var(--mine-edge,#1c6b46);font-weight:600;font-size:12px}
+.wspanel{display:none}
+.wspanel.on{display:block;animation:wsin .3s cubic-bezier(.16,1,.3,1) both}
+@keyframes wsin{from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:none}}
+.wsneed{font-size:13.5px;color:var(--muted-2);background:var(--soft);
+  border:1px dashed var(--line);border-radius:10px;padding:14px 16px}
+.wsrow2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:10px 0}
+@media(max-width:780px){.wsrow2{grid-template-columns:1fr}}
+.wschart{margin:0}
+.wschart figcaption{font-size:12px;font-weight:700;margin:0 0 6px;
+  display:flex;flex-direction:column;gap:1px}
+.wschart figcaption span{font-weight:400;color:var(--muted-2);font-size:11.5px}
+.wssvg{width:100%;height:auto;display:block}
+.wsbg{fill:var(--chart-fill,#fbf8f0)}
+.wsframe{fill:none;stroke:var(--chart-line,#1d2340);stroke-width:2.5}
+.wsline{fill:none;stroke:var(--chart-line,#1d2340);stroke-width:1.4}
+.wshn{font-size:10px;fill:var(--muted-2);text-anchor:middle}
+.wshs{font-size:11px;fill:var(--chart-text,#20233a);text-anchor:middle;
+  font-weight:600}
+.wshp{font-size:11.5px;fill:var(--chart-text,#20233a);text-anchor:middle;
+  font-weight:700}
+.wshouse{fill:transparent;cursor:pointer;transition:fill .22s;outline:none}
+.wshouse:hover{fill:var(--chart-glow,rgba(201,162,75,.18))}
+.wshouse:focus-visible{fill:var(--chart-glow,rgba(201,162,75,.18));
+  stroke:var(--gold);stroke-width:2}
+.wshouse.on{fill:var(--chart-glow,rgba(201,162,75,.26));
+  stroke:var(--gold);stroke-width:2.2}
+.wsbeam{stroke:var(--note-edge,#2b5fa5);stroke-width:2;
+  stroke-dasharray:6 6;opacity:.85}
+.wsinspect{margin-top:14px}
+.wshint{font-size:13px;color:var(--muted-2);background:var(--soft);
+  border-left:3px solid var(--gold);border-radius:0 9px 9px 0;
+  padding:10px 13px;margin:0}
+.wsinsp h4{font-family:var(--serif);font-size:17px;margin:0 0 8px;
+  display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
+.wsinsp h4 span{font-family:var(--sans);font-size:12.5px;
+  color:var(--muted-2);font-weight:400}
+.wsdl{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;margin:0;
+  font-size:13.5px}
+.wsdl dt{font-weight:600;color:var(--muted-2);font-size:12px;
+  text-transform:uppercase;letter-spacing:.04em;padding-top:2px}
+.wsdl dd{margin:0}
+.wswarn{color:#a1493a;font-weight:600}
+.wsdim{color:var(--muted-2);font-size:12px}
+.wsretro{color:#a1493a;font-weight:600}
+@media(prefers-reduced-motion:no-preference){
+  .wsdraw{stroke-dasharray:620;stroke-dashoffset:620;
+    animation:wsdrawline .7s ease-out forwards}
+  @keyframes wsdrawline{to{stroke-dashoffset:0}}
+  .wspop{opacity:0;animation:wspopin .3s cubic-bezier(.34,1.56,.64,1) forwards}
+  @keyframes wspopin{0%{opacity:0}100%{opacity:1}}
+  .wsflow{animation:wsbeamflow 1s linear infinite}
+  @keyframes wsbeamflow{to{stroke-dashoffset:-12}}
+}
+@media(prefers-reduced-motion:reduce){
+  .wspanel.on{animation:none}
+}
+/* the Gochara controls are parked here and moved into whichever view is
+   open, so there is one instance with one set of listeners rather than a
+   copy per page */
+.wsoffstage{position:absolute;left:-9999px;width:1px;height:1px;
+  overflow:hidden}
+.wsgo .gobar{margin-top:0}

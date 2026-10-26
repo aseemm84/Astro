@@ -207,6 +207,47 @@ def build_kundli():
     print("  build id %s" % stamp)
     return shell
 
+def build_workstation():
+    """The Kinetic Workstation — a second page over the same engines.
+
+    It shares the kundli page's form markup and its ui.js, so a chart cast
+    here is cast by exactly the same code, and shares every report module,
+    so no panel on it is a second implementation of a panel on the builder.
+    The builder itself is untouched: this function reads the same parts and
+    writes a different file.
+    """
+    shell = read(SRC, "kinetic-workstation.shell.html")
+    desc = ("One surface for the whole chart: Sripati bhava-chalita beside "
+            "whole-sign, a year of real planetary transits for any year, "
+            "twelve Chandra-rashi readings, all sixteen divisional charts, "
+            "and the strength and dasha panels. Computed in your browser.")
+    for tok in ("<!--HEAD-->", "{{NAV}}", "<!--CSS-->", "<!--THEMEJS-->",
+                "<!--JS0-->", "<!--JS1-->", "<!--JS2-->", "<!--JS3-->"):
+        if tok not in shell:
+            raise SystemExit("token %s missing from the workstation shell" % tok)
+    shell = shell.replace("<!--HEAD-->",
+                          head_meta(desc, "kinetic-workstation.html",
+                                    "Kinetic Workstation — " + BRAND["name"]))
+    shell = shell.replace("{{NAV}}", nav_html("kinetic-workstation.html"))
+    shell = shell.replace("{{FOOTER}}", read(SRC, "pages", "_footer.html"))
+    shell = brandify(shell).replace("<!--LOGO-->", logo_mark())
+    parts = [("<!--CSS-->", read(SRC, "css", "app.css") + "\n" +
+                            read(SRC, "css", "theme-auto.css") + "\n" +
+                            read(SRC, "css", "theme.css"), "style"),
+             ("<!--THEMEJS-->", read(SRC, "js", "theme.js"), "script"),
+             ("<!--JS0-->", read(VEND, "astronomy.browser.min.js"), "script"),
+             ("<!--JS1-->", jsread(SRC, "js", "engine.js"), "script"),
+             ("<!--JS2-->", report_bundle(), "script"),
+             ("<!--JS3-->", jsread(SRC, "js", "places.js") + "\n" +
+                            jsread(SRC, "js", "ui.js") + "\n" +
+                            jsread(SRC, "js", "sp-voice.js") + "\n" +
+                            jsread(SRC, "js", "sp-gocharaui.js") + "\n" +
+                            jsread(SRC, "js", "sp-workstation.js"), "script")]
+    for tok, body, tag in parts:
+        shell = shell.replace(tok, "<%s>%s</%s>" % (tag, brandify(body), tag))
+    return shell
+
+
 def build_pwa(built):
     """The manifest and the service worker.
 
@@ -689,7 +730,8 @@ def main():
     # builds straight into the files GitHub Pages serves. Override with --out.
     default_out = os.path.dirname(ROOT) if os.path.basename(ROOT) == "source" else ROOT
     outdir = args[args.index("--out") + 1] if "--out" in args else default_out
-    built = {"kundli.html": build_kundli()}
+    built = {"kundli.html": build_kundli(),
+             "kinetic-workstation.html": build_workstation()}
     built.update(build_pages())
     built.update(build_shared())
     built.update(build_adopted())

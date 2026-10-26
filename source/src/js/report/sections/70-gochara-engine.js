@@ -204,9 +204,65 @@
     return d;
   }
 
+  /* ---- the mid-year snapshot --------------------------------------------
+     A year is a span, and a span has no planetary positions — so a reader
+     who asks "where is everything in 2027" needs one instant to look at.
+     Noon UTC on 1 July is the convention: it is the middle of the year to
+     within a few hours, and fixing it means two people comparing notes are
+     looking at the same sky. Degrees are given within the rāśi, which is
+     how a Jyotiṣa table is read, and the whole longitude is carried too so
+     nothing has to be reconstructed from the formatting. */
+  function dms(x) {
+    var d = Math.floor(x), m = Math.floor((x - d) * 60);
+    var sec = Math.round((((x - d) * 60) - m) * 60);
+    if (sec === 60) { sec = 0; m += 1; }
+    if (m === 60) { m = 0; d += 1; }
+    return d + "\u00b0" + (m < 10 ? "0" : "") + m + "\u2032" +
+           (sec < 10 ? "0" : "") + sec + "\u2033";
+  }
+  function snapshot(y, when) {
+    var jd = when == null
+      ? dateToJd(new Date(Date.UTC(y, 6, 1, 12, 0, 0)))
+      : when;
+    return BODIES.map(function (b) {
+      var lon = sid(b, jd);
+      if (lon == null) return { body: b, lon: null };
+      var sg = signOf(lon), sp = speed(b, jd);
+      return { body: b, lon: lon, sign: sg, deg: lon - sg * 30,
+               dms: dms(lon - sg * 30), speed: sp,
+               retro: sp != null && sp < 0,
+               /* the nodes are retrograde by construction in the mean
+                  reckoning, and saying so is more useful than a ℞ that
+                  looks like news */
+               alwaysRetro: (b === "Rahu" || b === "Ketu") };
+    });
+  }
+
   window.SPGochara = {
+    snapshot: snapshot, dms: dms,
     BODIES: BODIES, year: year, sid: sid, speed: speed, signOf: signOf,
     signAtJd: signAtJd, daysInSign: daysInSign,
     jdToDate: jdToDate, dateToJd: dateToJd
+  };
+
+  /* The name the build spec asks for, over the same engine. One
+     implementation, two doors: the spec's door takes an ayanāṃśa key and
+     sets it before scanning, because an ingress time is meaningless
+     without saying which ayanāṃśa drew the boundary. */
+  window.VarshikGochara = {
+    calculateYearTransits: function (targetYear, ayanamsaKey) {
+      if (ayanamsaKey && window.__setAyan) {
+        try { window.__setAyan(ayanamsaKey); } catch (e) {}
+      }
+      var R = year(targetYear, { moon: true });
+      return {
+        year: R.year, jdStart: R.jd0, jdEnd: R.jd1,
+        ayanamsa: (window.__ayan ? window.__ayan(R.jd0) : null),
+        ayanamsaKey: ayanamsaKey || null,
+        events: R.events, spans: R.spans, bodies: R.bodies,
+        midYear: snapshot(targetYear),
+        midYearJd: dateToJd(new Date(Date.UTC(targetYear, 6, 1, 12, 0, 0)))
+      };
+    }
   };
 })();

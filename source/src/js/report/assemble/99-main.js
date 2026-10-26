@@ -227,6 +227,13 @@ window.buildKundliReport=function(J){
        work from the same object the report does rather than deriving a
        second one that might disagree with it */
     chart:function(){ return D; },
+    /* The report's modules live inside one bundle scope, so a separate
+       script on the page cannot see them. The Workstation renders several
+       of its views from exactly these functions rather than reimplementing
+       them — one implementation, so the two pages can never disagree. */
+    sripatiPane:function(){ return sripatiPane(D); },
+    shodashavarga:function(){ return shodashavargaSection(D); },
+    shodashavargaMatrix:function(){ return shodashavargaMatrix(D); },
     events:function(list){ try{ return eventsAnalyze(D,list||[]); }catch(e){ return paneErr("Life events",e); } },
     match:function(J2,opt){ return matchHtml(D,J2,opt||{}); },
     dayBlock:function(lat,lon,tz,label){ return dayBlock(D,lat,lon,tz,label); }

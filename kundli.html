@@ -61,7 +61,9 @@ table.tbl td b{color:#1b1e33}
 .card:hover{border-color:var(--gold);transform:translateY(-2px)}
 .card .n{font-size:11px;color:var(--muted)}.card h3{margin:2px 0 5px;font-size:17px;color:#1b1e33}.card p{font-size:13px;color:#4a4e68;margin:0}
 .card.tool{background:linear-gradient(160deg,#20264a,#2b3358);border-color:#39406a}.card.tool h3,.card.tool .n{color:#fff}.card.tool p{color:#c9cce4}
-footer{border-top:1px solid var(--line);background:#f5f5fb;color:var(--muted);font-size:12.5px;padding:24px clamp(16px,5vw,64px) 46px}
+/* --muted on this ground measures 4.48:1, a hair under the WCAG line;
+   the darker companion clears it on every page at once */
+footer{border-top:1px solid var(--line);background:#f5f5fb;color:var(--muted-2);font-size:12.5px;padding:24px clamp(16px,5vw,64px) 46px}
 footer .wrap{max-width:100ch;margin:0 auto}footer b{color:#454963}footer p{margin:0 0 8px;max-width:none}
 a{color:#2b5fa5}a:hover{color:var(--gold)}
 .pill{display:inline-block;font-size:11px;font-weight:600;padding:1px 8px;border-radius:999px;background:var(--soft);color:#4a4e68;margin-left:5px}
@@ -930,6 +932,100 @@ tr.spfrail td{background:rgba(180,82,82,.08)}
 .spbar i{display:block;height:100%;background:var(--gold)}
 .kgood{color:#1c6b46;font-weight:600}
 
+/* ---- the sixteen-division matrix --------------------------------------- */
+.svwrap{max-height:none}
+.svtbl{font-size:12.5px}
+.svtbl th{position:sticky;top:0;background:var(--surface,var(--paper));z-index:1}
+.svname{color:var(--muted-2);font-weight:400;font-size:11.5px;display:block}
+.svkarya{color:var(--muted-2);font-size:12px;min-width:150px}
+.svcell{white-space:nowrap;font-size:12px}
+.svconc li{margin:0 0 3px}
+
+/* ===== The Kinetic Workstation ===========================================
+   Tokenised throughout, so the four palettes carry it with no generated
+   overrides. Every animation is behind prefers-reduced-motion. */
+.wsbody main{padding-bottom:80px}
+.wsintake{margin-bottom:8px}
+.wsdeckwrap{position:sticky;top:44px;z-index:12;margin:18px 0 6px;
+  background:var(--surface,var(--paper));padding:8px 0 6px;
+  border-bottom:1px solid var(--line)}
+.wsdeck{display:flex;gap:6px;overflow-x:auto;scrollbar-width:thin;
+  padding-bottom:2px}
+.wstab{font:inherit;font-size:12.5px;white-space:nowrap;padding:7px 13px;
+  border-radius:999px;border:1px solid var(--line);background:var(--soft);
+  color:var(--ink);cursor:pointer;display:flex;align-items:center;gap:7px;
+  transition:background .18s,border-color .18s,color .18s}
+.wstab:hover{border-color:var(--gold)}
+.wstab[aria-current=true]{background:var(--gold);border-color:var(--gold);
+  color:var(--accent-ink,#231c07);font-weight:600}
+.wsico{font-size:13px;line-height:1}
+.wsstatus{font-size:13px;color:var(--muted-2);margin:8px 0 14px;
+  display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.wsjsonmsg{color:var(--mine-edge,#1c6b46);font-weight:600;font-size:12px}
+.wspanel{display:none}
+.wspanel.on{display:block;animation:wsin .3s cubic-bezier(.16,1,.3,1) both}
+@keyframes wsin{from{opacity:0;transform:translateY(8px)}
+  to{opacity:1;transform:none}}
+.wsneed{font-size:13.5px;color:var(--muted-2);background:var(--soft);
+  border:1px dashed var(--line);border-radius:10px;padding:14px 16px}
+.wsrow2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:10px 0}
+@media(max-width:780px){.wsrow2{grid-template-columns:1fr}}
+.wschart{margin:0}
+.wschart figcaption{font-size:12px;font-weight:700;margin:0 0 6px;
+  display:flex;flex-direction:column;gap:1px}
+.wschart figcaption span{font-weight:400;color:var(--muted-2);font-size:11.5px}
+.wssvg{width:100%;height:auto;display:block}
+.wsbg{fill:var(--chart-fill,#fbf8f0)}
+.wsframe{fill:none;stroke:var(--chart-line,#1d2340);stroke-width:2.5}
+.wsline{fill:none;stroke:var(--chart-line,#1d2340);stroke-width:1.4}
+.wshn{font-size:10px;fill:var(--muted-2);text-anchor:middle}
+.wshs{font-size:11px;fill:var(--chart-text,#20233a);text-anchor:middle;
+  font-weight:600}
+.wshp{font-size:11.5px;fill:var(--chart-text,#20233a);text-anchor:middle;
+  font-weight:700}
+.wshouse{fill:transparent;cursor:pointer;transition:fill .22s;outline:none}
+.wshouse:hover{fill:var(--chart-glow,rgba(201,162,75,.18))}
+.wshouse:focus-visible{fill:var(--chart-glow,rgba(201,162,75,.18));
+  stroke:var(--gold);stroke-width:2}
+.wshouse.on{fill:var(--chart-glow,rgba(201,162,75,.26));
+  stroke:var(--gold);stroke-width:2.2}
+.wsbeam{stroke:var(--note-edge,#2b5fa5);stroke-width:2;
+  stroke-dasharray:6 6;opacity:.85}
+.wsinspect{margin-top:14px}
+.wshint{font-size:13px;color:var(--muted-2);background:var(--soft);
+  border-left:3px solid var(--gold);border-radius:0 9px 9px 0;
+  padding:10px 13px;margin:0}
+.wsinsp h4{font-family:var(--serif);font-size:17px;margin:0 0 8px;
+  display:flex;gap:9px;align-items:baseline;flex-wrap:wrap}
+.wsinsp h4 span{font-family:var(--sans);font-size:12.5px;
+  color:var(--muted-2);font-weight:400}
+.wsdl{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;margin:0;
+  font-size:13.5px}
+.wsdl dt{font-weight:600;color:var(--muted-2);font-size:12px;
+  text-transform:uppercase;letter-spacing:.04em;padding-top:2px}
+.wsdl dd{margin:0}
+.wswarn{color:#a1493a;font-weight:600}
+.wsdim{color:var(--muted-2);font-size:12px}
+.wsretro{color:#a1493a;font-weight:600}
+@media(prefers-reduced-motion:no-preference){
+  .wsdraw{stroke-dasharray:620;stroke-dashoffset:620;
+    animation:wsdrawline .7s ease-out forwards}
+  @keyframes wsdrawline{to{stroke-dashoffset:0}}
+  .wspop{opacity:0;animation:wspopin .3s cubic-bezier(.34,1.56,.64,1) forwards}
+  @keyframes wspopin{0%{opacity:0}100%{opacity:1}}
+  .wsflow{animation:wsbeamflow 1s linear infinite}
+  @keyframes wsbeamflow{to{stroke-dashoffset:-12}}
+}
+@media(prefers-reduced-motion:reduce){
+  .wspanel.on{animation:none}
+}
+/* the Gochara controls are parked here and moved into whichever view is
+   open, so there is one instance with one set of listeners rather than a
+   copy per page */
+.wsoffstage{position:absolute;left:-9999px;width:1px;height:1px;
+  overflow:hidden}
+.wsgo .gobar{margin-top:0}
+
 /* ===== Generated theme overrides =====================================
    Written by source/tools/gen-theme-overrides.py from the literal
    colours in app.css and pages.css. Do not edit by hand: regenerate.
@@ -942,7 +1038,7 @@ tr.spfrail td{background:rgba(180,82,82,.08)}
    that flips from light to dark takes its text with it.
    ================================================================= */
 
-/* surfaces the stylesheets paint light (133) */
+/* surfaces the stylesheets paint light (136) */
 :where(html[data-theme]) #reel-place .npres,
 :where(html[data-theme]) #si-text:focus,
 :where(html[data-theme]) #ss-drift,
@@ -981,6 +1077,9 @@ tr.spfrail td{background:rgba(180,82,82,.08)}
 :where(html[data-theme]) .dptlane,
 :where(html[data-theme]) .dptscene,
 :where(html[data-theme]) .ex,
+:where(html[data-theme]) .gotier-bphs,
+:where(html[data-theme]) .gotier-comm,
+:where(html[data-theme]) .gotier-later,
 :where(html[data-theme]) .inchart,
 :where(html[data-theme]) .k-btn.sec,
 :where(html[data-theme]) .k-card,
@@ -1116,7 +1215,7 @@ tr.spfrail td{background:rgba(180,82,82,.08)}
   border-color:var(--border-2);
 }
 
-/* text given a dark literal ink and no surface of its own (103) */
+/* text given a dark literal ink and no surface of its own (109) */
 :where(html[data-theme]) #kprintdoc,
 :where(html[data-theme]) #kprintdoc .prby,
 :where(html[data-theme]) #kprintdoc .prconv,
@@ -1147,6 +1246,8 @@ tr.spfrail td{background:rgba(180,82,82,.08)}
 :where(html[data-theme]) .dptokb,
 :where(html[data-theme]) .dptrow.on .dptname,
 :where(html[data-theme]) .dpwarn li.bad,
+:where(html[data-theme]) .goretro,
+:where(html[data-theme]) .gotick,
 :where(html[data-theme]) .hero-pts li,
 :where(html[data-theme]) .inchart h4,
 :where(html[data-theme]) .inchart h4 span,
@@ -1165,6 +1266,7 @@ tr.spfrail td{background:rgba(180,82,82,.08)}
 :where(html[data-theme]) .k-form label,
 :where(html[data-theme]) .k-retro,
 :where(html[data-theme]) .k-skynote,
+:where(html[data-theme]) .kgood,
 :where(html[data-theme]) .kreport .gbcheck.bad,
 :where(html[data-theme]) .kreport .gbcheck.ok,
 :where(html[data-theme]) .kreport .kanote b:first-child,
@@ -1208,10 +1310,13 @@ tr.spfrail td{background:rgba(180,82,82,.08)}
 :where(html[data-theme]) .spdtokb,
 :where(html[data-theme]) .spdtrow.on .spdtname,
 :where(html[data-theme]) .spdwarn li.bad,
+:where(html[data-theme]) .spwarn,
 :where(html[data-theme]) .src span,
 :where(html[data-theme]) .stfacts li,
 :where(html[data-theme]) .strec,
 :where(html[data-theme]) .stslide.rm,
+:where(html[data-theme]) .wsretro,
+:where(html[data-theme]) .wswarn,
 :where(html[data-theme]) a,
 :where(html[data-theme]) aside.onpage a,
 :where(html[data-theme]) details.k-raw summary,
@@ -1514,6 +1619,11 @@ html[data-theme] .spwarn{color:var(--caution-edge)}
 html[data-theme] .kgood{color:var(--mine-edge)}
 html[data-theme] .spbar i{background:var(--accent)}
 
+html[data-theme] .wsdeckwrap{background:var(--surface);
+  border-bottom-color:var(--border)}
+html[data-theme] .wswarn,html[data-theme] .wsretro{color:var(--caution-edge)}
+html[data-theme] .wsjsonmsg{color:var(--mine-edge)}
+
 /* ---- the switcher itself ------------------------------------------------ */
 .themepick{display:inline-flex;align-items:center;gap:6px;
   font:inherit;font-size:12px}
@@ -1678,7 +1788,7 @@ html[data-theme] nav.site .themepick select option{
     return true;
   }, list: THEMES };
 })();
-</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Nirayana Kundli 2.0</h1><p class="sub">A full sidereal chart computed in your browser, now with Śrīpati bhāva-chalita as a house system of its own, a year of real transits for any year, and twelve Candra-rāśi readings that need no chart at all.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html" class="active">Kundli 2.0</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#cast">Cast a chart now</a><a href="#gochara">Vārṣika Gochara</a><a href="#rashiphal">Twelve rāśi readings</a><a href="#what">What a kundli is</a><a href="#need">What you need</a><a href="#how">How a chart is cast</a><a href="#read">How to read what comes back</a><a href="#limits">Accuracy, attribution & limits</a></aside><main><p class="lead">A <b>kundli</b> (janma-kundali) is a birth chart: a map of the sky at the exact moment and place of birth, projected onto the twelve bhavas counted from the Lagna. Enter the birth details and the whole chart is computed below, in this browser. Everything after it explains what a chart is and how it is cast.</p><h2 id="cast">Cast a chart now</h2><p>Everything is computed <b>in your browser</b> — nothing is sent anywhere, and the page works offline.</p>
+</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Nirayana Kundli 2.0</h1><p class="sub">A full sidereal chart computed in your browser, now with Śrīpati bhāva-chalita as a house system of its own, a year of real transits for any year, and twelve Candra-rāśi readings that need no chart at all.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html" class="active">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#cast">Cast a chart now</a><a href="#gochara">Vārṣika Gochara</a><a href="#rashiphal">Twelve rāśi readings</a><a href="#what">What a kundli is</a><a href="#need">What you need</a><a href="#how">How a chart is cast</a><a href="#read">How to read what comes back</a><a href="#limits">Accuracy, attribution & limits</a></aside><main><p class="lead">A <b>kundli</b> (janma-kundali) is a birth chart: a map of the sky at the exact moment and place of birth, projected onto the twelve bhavas counted from the Lagna. Enter the birth details and the whole chart is computed below, in this browser. Everything after it explains what a chart is and how it is cast.</p><h2 id="cast">Cast a chart now</h2><p>Everything is computed <b>in your browser</b> — nothing is sent anywhere, and the page works offline.</p>
 <div id="k-inputs">
 <div class="k-form">
   <div class="k-full"><label for="k-name">Name (optional — appears on the report)</label><input type="text" id="k-name" placeholder="e.g. Aseem Mehrotra" autocomplete="off"></div>
@@ -3238,6 +3348,14 @@ window.__kEclip=function(name,ms){
   var date=new Date(ms), jd=ms/86400000+2440587.5;
   var ev=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[key],date,true));
   return {lon:norm(ev.elon-ayanamsa(jd)), trop:norm(ev.elon), lat:ev.elat};
+};
+/* The Śrīpati construction, exposed from the engine under the name the
+   build spec asks for. The arithmetic lives in the report module that owns
+   it; this is the door, so a caller that has the engine and nothing else
+   can still build the houses. */
+window.calculateSripatiHouses=function(ascSid,mcSid){
+  if(window.SPSripati&&window.SPSripati.build) return window.SPSripati.build(ascSid,mcSid);
+  return null;
 };
 window.__kSidAt=function(name,date){
   var jd=date.getTime()/86400000+2440587.5, ay=ayanamsa(jd);
@@ -5626,6 +5744,145 @@ function vargaAvSection(D){
     'varga\'s own lagna and the varga positions of the planets. Used to test whether a division\'s houses are '+
     'supported, not just occupied. The grand total is 337 in every chart, as it must be.</p>'+blocks;
 }
+/* ===== The Shodaśavarga matrix — all sixteen divisions at once ============
+
+   WHAT THIS ADDS over what the builder already had. The sixteen divisional
+   mappings have been in the engine from the start, and several of the
+   vargas have a panel of their own. What was missing is the thing a reader
+   actually wants in front of them: one grid, sixteen rows by eleven
+   columns, every graha in every division, so the eye can run DOWN a column
+   and see where one graha is consistently strong, and ACROSS a row and see
+   whether a division is crowded.
+
+   That reading is the whole point of the sixteen-fold scheme. Vimśopaka
+   strength exists precisely because a graha's dignity in one chart means
+   little and its dignity across the set means a great deal. A page that
+   shows the divisions one at a time makes the comparison impossible.
+
+   WHAT IS NOT CLAIMED. The divisions themselves are BPHS Ch. 6, and the
+   arithmetic is the engine's, unchanged — this file computes nothing new,
+   it only arranges. The kārya line for each division (what it is read FOR)
+   is the standard association of the tradition: BPHS names the divisions
+   and gives their construction, and the topical assignments are developed
+   in the commentarial and later literature. The column is labelled
+   accordingly rather than being passed off as a verse.
+
+   A NOTE ON D30. Trimśāṃśa has no 30th part in the ordinary sense — the
+   division is into five unequal parts ruled by the five non-luminaries, so
+   its cells never show Karka or Siṃha. That is correct, not a gap, and the
+   footnote says so because it looks like a bug. */
+
+var SV16 = [
+  ["D1",  "Rāśi",           "the body and the whole life"],
+  ["D2",  "Horā",           "wealth and sustenance"],
+  ["D3",  "Drekkāṇa",       "siblings, courage, vitality"],
+  ["D4",  "Caturthāṃśa",    "fixed property, home, fortune"],
+  ["D7",  "Saptāṃśa",       "progeny and what issues from one"],
+  ["D9",  "Navāṃśa",        "dharma, the spouse, inner ripening"],
+  ["D10", "Daśāṃśa",        "action in the world, profession"],
+  ["D12", "Dvādaśāṃśa",     "parents and lineage"],
+  ["D16", "Ṣoḍaśāṃśa",      "vehicles, comforts, contentment"],
+  ["D20", "Viṃśāṃśa",       "spiritual practice, upāsanā"],
+  ["D24", "Caturviṃśāṃśa",  "learning and what is studied"],
+  ["D27", "Saptaviṃśāṃśa",  "constitutional strength and weakness"],
+  ["D30", "Triṃśāṃśa",      "ariṣṭa — the sources of difficulty"],
+  ["D40", "Khavedāṃśa",     "maternal legacy, auspicious effects"],
+  ["D45", "Akṣavedāṃśa",    "paternal legacy, conduct, character"],
+  ["D60", "Ṣaṣṭyāṃśa",      "the karmic totality, root causation"]
+];
+function norm360(x){ return ((x % 360) + 360) % 360; }
+var SV_BODIES = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus",
+                 "Saturn", "Rahu", "Ketu"];
+
+/* the matrix as data, so the exporter and the page share one source */
+function shodashavargaMatrix(D) {
+  if (!D || !D.planets) return null;
+  var bySid = {};
+  D.planets.forEach(function (p) { bySid[p.en] = p.sid; });
+  var ascSid = D.lagna && D.lagna.sidereal_deg;
+  return SV16.map(function (v) {
+    var code = v[0];
+    var row = { varga: code, name: v[1], karya: v[2], cells: {} };
+    /* vargaLagna is the report bundle's own copy of the sixteen
+       constructions; the engine's vargaSign is inside the engine's scope
+       and not reachable from here. The two are the same arithmetic — the
+       harness checks a sample of cells against the engine to make sure
+       they stay that way. */
+    row.cells.Lagna = (ascSid == null) ? null : vargaLagna(code, norm360(ascSid));
+    SV_BODIES.forEach(function (b) {
+      row.cells[b] = (bySid[b] == null) ? null
+                   : vargaLagna(code, norm360(bySid[b]));
+    });
+    return row;
+  });
+}
+
+/* how often each graha lands in the same rāśi across the sixteen — the
+   number the grid exists to let someone read off, computed so it cannot
+   be read off wrongly */
+function vargaConcentration(M) {
+  if (!M) return null;
+  var out = {};
+  ["Lagna"].concat(SV_BODIES).forEach(function (b) {
+    var count = {}, best = null, bestN = 0;
+    M.forEach(function (r) {
+      var s = r.cells[b];
+      if (s == null) return;
+      count[s] = (count[s] || 0) + 1;
+      if (count[s] > bestN) { bestN = count[s]; best = s; }
+    });
+    out[b] = { sign: best, times: bestN, of: M.length };
+  });
+  return out;
+}
+
+function shodashavargaSection(D) {
+  var M = shodashavargaMatrix(D);
+  if (!M) return "";
+  var C = vargaConcentration(M);
+  var cols = ["Lagna"].concat(SV_BODIES);
+
+  var head = '<tr><th>Varga</th><th>Kārya</th>' +
+    cols.map(function (b) {
+      return '<th>' + esc(b === "Lagna" ? "Lagna" : (GL[b] || b)) + '</th>';
+    }).join("") + '</tr>';
+
+  var rows = M.map(function (r) {
+    return '<tr><td><b>' + r.varga + '</b> <span class="svname">' +
+      esc(r.name) + '</span></td><td class="svkarya">' + esc(r.karya) +
+      '</td>' + cols.map(function (b) {
+        var s = r.cells[b];
+        return '<td class="svcell">' + (s == null ? "—" : SA[s]) + '</td>';
+      }).join("") + '</tr>';
+  }).join("");
+
+  var conc = cols.map(function (b) {
+    var c = C[b];
+    if (!c || c.sign == null) return "";
+    return '<li><b>' + esc(b === "Lagna" ? "Lagna" : b) + '</b> falls in ' +
+      SA[c.sign] + ' in <b>' + c.times + '</b> of the ' + c.of +
+      ' divisions</li>';
+  }).join("");
+
+  return '<p class="knote">All sixteen divisions of BPHS Ch. 6 at once. ' +
+    'Read a <b>column</b> downward to see where one graha keeps landing ' +
+    'across the set — that repetition is what vimśopaka strength measures ' +
+    'and what a single divisional chart cannot show. Read a <b>row</b> ' +
+    'across to see how crowded one division is.</p>' +
+    '<div class="goscroll svwrap"><table class="ktbl gotbl svtbl"><thead>' +
+    head + '</thead><tbody>' + rows + '</tbody></table></div>' +
+    '<h4 class="ksub">Where each lands most often</h4>' +
+    '<ul class="golist svconc">' + conc + '</ul>' +
+    '<p class="knote">The division constructions are BPHS Ch. 6 and the ' +
+    'arithmetic is the engine’s, unchanged. The <b>kārya</b> column — ' +
+    'what each division is read <i>for</i> — is the standard association ' +
+    'of the tradition rather than a line from the verses, which name the ' +
+    'divisions and give their construction. <b>Triṃśāṃśa (D30)</b> is ' +
+    'divided into five unequal parts ruled by the five non-luminaries, so ' +
+    'its cells never show Karka or Siṃha; that is the construction, not a ' +
+    'gap. Verse numbers in the uploaded scan are OCR-affected; confirm ' +
+    'them in the PDF.</p>';
+}
 /* --- Yogini dasha (36-year cycle) --- */
 var YOGINI=[["Maṅgalā","Moon",1],["Piṅgalā","Sun",2],["Dhānyā","Jupiter",3],["Bhrāmarī","Mars",4],
             ["Bhadrikā","Mercury",5],["Ulkā","Saturn",6],["Siddhā","Venus",7],["Saṅkaṭā","Rahu",8]];
@@ -5978,10 +6235,66 @@ function nextIngress(en,jd){
     return d;
   }
 
+  /* ---- the mid-year snapshot --------------------------------------------
+     A year is a span, and a span has no planetary positions — so a reader
+     who asks "where is everything in 2027" needs one instant to look at.
+     Noon UTC on 1 July is the convention: it is the middle of the year to
+     within a few hours, and fixing it means two people comparing notes are
+     looking at the same sky. Degrees are given within the rāśi, which is
+     how a Jyotiṣa table is read, and the whole longitude is carried too so
+     nothing has to be reconstructed from the formatting. */
+  function dms(x) {
+    var d = Math.floor(x), m = Math.floor((x - d) * 60);
+    var sec = Math.round((((x - d) * 60) - m) * 60);
+    if (sec === 60) { sec = 0; m += 1; }
+    if (m === 60) { m = 0; d += 1; }
+    return d + "\u00b0" + (m < 10 ? "0" : "") + m + "\u2032" +
+           (sec < 10 ? "0" : "") + sec + "\u2033";
+  }
+  function snapshot(y, when) {
+    var jd = when == null
+      ? dateToJd(new Date(Date.UTC(y, 6, 1, 12, 0, 0)))
+      : when;
+    return BODIES.map(function (b) {
+      var lon = sid(b, jd);
+      if (lon == null) return { body: b, lon: null };
+      var sg = signOf(lon), sp = speed(b, jd);
+      return { body: b, lon: lon, sign: sg, deg: lon - sg * 30,
+               dms: dms(lon - sg * 30), speed: sp,
+               retro: sp != null && sp < 0,
+               /* the nodes are retrograde by construction in the mean
+                  reckoning, and saying so is more useful than a ℞ that
+                  looks like news */
+               alwaysRetro: (b === "Rahu" || b === "Ketu") };
+    });
+  }
+
   window.SPGochara = {
+    snapshot: snapshot, dms: dms,
     BODIES: BODIES, year: year, sid: sid, speed: speed, signOf: signOf,
     signAtJd: signAtJd, daysInSign: daysInSign,
     jdToDate: jdToDate, dateToJd: dateToJd
+  };
+
+  /* The name the build spec asks for, over the same engine. One
+     implementation, two doors: the spec's door takes an ayanāṃśa key and
+     sets it before scanning, because an ingress time is meaningless
+     without saying which ayanāṃśa drew the boundary. */
+  window.VarshikGochara = {
+    calculateYearTransits: function (targetYear, ayanamsaKey) {
+      if (ayanamsaKey && window.__setAyan) {
+        try { window.__setAyan(ayanamsaKey); } catch (e) {}
+      }
+      var R = year(targetYear, { moon: true });
+      return {
+        year: R.year, jdStart: R.jd0, jdEnd: R.jd1,
+        ayanamsa: (window.__ayan ? window.__ayan(R.jd0) : null),
+        ayanamsaKey: ayanamsaKey || null,
+        events: R.events, spans: R.spans, bodies: R.bodies,
+        midYear: snapshot(targetYear),
+        midYearJd: dateToJd(new Date(Date.UTC(targetYear, 6, 1, 12, 0, 0)))
+      };
+    }
   };
 })();
 /* ===== Twelve Candra-rāśi readings of a year's transits ===================
@@ -6208,6 +6521,210 @@ function nextIngress(en,jd){
     return out.length ? out : null;
   }
 
+
+  /* ---- tier 3: Guru's transit and its vedha ------------------------------
+     The build spec supplies the five obstruction pairs, which is how they
+     come to be here at all: the uploaded Santhanam edition prints its
+     gochara vedha table as a figure whose numerals did not survive the
+     scan, so these could not be read from it. They are the standard pairs
+     of later gochara practice — Phaladeepika and the texts that follow it
+     — and they are labelled as that, not as Parāśara.
+
+     The rule reads: Guru transiting one of his favourable houses from the
+     Moon has that favour obstructed if a graha OTHER THAN THE SUN occupies
+     the paired house at the same time. The Sun is excepted, which is why
+     the pairing is stated as "non-Sun planet". */
+  var GURU_VEDHA = { 2: 12, 5: 4, 7: 3, 9: 10, 11: 8 };
+
+  function guruGochara(R, moonSign) {
+    var G = window.SPGochara;
+    return (R.spans.Jupiter || []).map(function (s) {
+      var h = houseFrom(s.sign, moonSign);
+      var good = GOOD.Jupiter.indexOf(h) >= 0;
+      var vh = GURU_VEDHA[h] || null;
+      var mid = (s.from + s.to) / 2;
+      var blockers = [];
+      if (good && vh) {
+        var vSign = (moonSign + vh - 1) % 12;
+        R.bodyList.forEach(function (b) {
+          if (b === "Jupiter" || b === "Sun") return;
+          if (G.signAtJd(R, b, mid) === vSign) blockers.push(DEV[b]);
+        });
+      }
+      return { house: h, sign: s.sign, from: s.from, to: s.to,
+               days: s.to - s.from, favourable: good,
+               vedhaHouse: vh, blockers: blockers,
+               clear: good && !blockers.length, tier: "later" };
+    });
+  }
+
+  /* ---- tier 3: the nodal axis -------------------------------------------
+     Rāhu and Ketu are always opposite, so what they transit is an AXIS
+     rather than two placements, and the pair of houses is the unit a
+     reading works with. */
+  function nodalAxis(R, moonSign) {
+    var G = window.SPGochara;
+    return (R.spans.Rahu || []).map(function (s) {
+      var rh = houseFrom(s.sign, moonSign);
+      var kh = ((rh + 5) % 12) + 1;
+      return { rahuHouse: rh, ketuHouse: kh,
+               rahuSign: s.sign, ketuSign: (s.sign + 6) % 12,
+               from: s.from, to: s.to, days: s.to - s.from,
+               axis: rh + "\u2013" + kh,
+               upachaya: (rh === 3 || rh === 6 || rh === 10 || rh === 11),
+               tier: "later" };
+    });
+  }
+
+  /* ---- tier 3: the Sarvāṣṭakavarga reception ----------------------------
+     The 28-bindu line is a convention of later practice, not a figure from
+     the Parāśara verses — BPHS Ch. 70 compares rekhās between rāśis rather
+     than against a fixed threshold. It is useful and it is labelled.
+     Needs a chart, like everything ashtakavarga. */
+  function savReception(R, moonSign, D) {
+    if (!D || !D.av || !D.av.sarva) return null;
+    var sav = D.av.sarva, out = [];
+    ["Saturn", "Jupiter"].forEach(function (b) {
+      (R.spans[b] || []).forEach(function (s) {
+        var n = sav[s.sign];
+        out.push({ body: b, name: DEV[b], sign: s.sign, bindus: n,
+                   house: houseFrom(s.sign, moonSign),
+                   from: s.from, to: s.to, days: s.to - s.from,
+                   reception: n >= 28 ? "buffered"
+                            : (n <= 25 ? "thin" : "middling"),
+                   tier: "later" });
+      });
+    });
+    return out.length ? out : null;
+  }
+
+  /* ---- the four pillars --------------------------------------------------
+     The spec asks for four structured readings rather than one block of
+     prose, and the reason is sound: a reader wants the part that bears on
+     the thing they came about. What each pillar says is assembled from the
+     rules already computed above — it adds no new doctrine, it only sorts
+     the same findings by the area of life the classical significations
+     attach them to. Every line keeps the conditional voice, and the
+     factors it rests on travel with it so the reader can see the working
+     rather than be told a conclusion. */
+  function pillars(r) {
+    var find = function (b) {
+      for (var i = 0; i < r.grahas.length; i++)
+        if (r.grahas[i].body === b) return r.grahas[i];
+      return null;
+    };
+    var sat = find("Saturn"), jup = find("Jupiter"), rah = find("Rahu");
+    var guruClear = r.guru.filter(function (g) { return g.clear; });
+    var guruBlocked = r.guru.filter(function (g) {
+      return g.favourable && g.blockers.length;
+    });
+    var ss = r.sani.filter(function (s) {
+      return [12, 1, 2].indexOf(s.house) >= 0;
+    });
+    var dhaiya = r.sani.filter(function (s) {
+      return [4, 8].indexOf(s.house) >= 0;
+    });
+    var savJ = (r.sav || []).filter(function (x) { return x.body === "Jupiter"; });
+    var savS = (r.sav || []).filter(function (x) { return x.body === "Saturn"; });
+
+    function savLine(list) {
+      if (!list || !list.length) return null;
+      var worst = list.slice().sort(function (a, b) { return a.bindus - b.bindus; })[0];
+      return SIGNS[worst.sign] + " carries " + worst.bindus +
+             " sarvāṣṭakavarga bindus" +
+             (worst.bindus >= 28 ? ", which later practice reads as a " +
+               "well-received sign" : worst.bindus <= 25 ?
+               ", which later practice reads as thin reception" :
+               ", which is middling");
+    }
+
+    return [
+      {
+        key: "karma", title: "Career & karma",
+        factors: [
+          sat ? "Śani in the " + sat.mainHouse + "th from the rāśi" : null,
+          jup ? "Guru in the " + jup.mainHouse + "th" : null,
+          guruClear.length ? "Guru's favourable transit is unobstructed" : null,
+          guruBlocked.length ? "Guru's favourable transit is obstructed from the " +
+            guruBlocked[0].vedhaHouse + "th by " +
+            guruBlocked[0].blockers.join(", ") : null
+        ].filter(Boolean),
+        text: (sat && [3, 6, 10, 11].indexOf(sat.mainHouse) >= 0)
+          ? "Śani stands in an upacaya house from the rāśi, which the " +
+            "gochara literature reads as the placement where effort " +
+            "compounds rather than drains — traditionally associated with " +
+            "work that is held to and outlasts competition."
+          : (ss.length
+            ? "Śani is running a Sade Sati phase, which later tradition " +
+              "reads as a period of being held to what has actually been " +
+              "built rather than to what was claimed. It is described as " +
+              "demanding rather than adverse, and the texts attach the " +
+              "weight to responsibility rather than to loss."
+            : "Śani is in neither an upacaya house nor a named phase from " +
+              "this rāśi, so the classical rules give the year no " +
+              "particular professional signature from him.")
+      },
+      {
+        key: "dhana", title: "Wealth & liquidity",
+        factors: [
+          jup ? "Guru in the " + jup.mainHouse + "th" : null,
+          savLine(savJ), savLine(savS),
+          ss.filter(function (s) { return s.house === 2; }).length
+            ? "Śani is in the 2nd, the last Sade Sati phase" : null
+        ].filter(Boolean),
+        text: (!r.sav)
+          ? "The ashtakavarga layer that the texts actually use for this — " +
+            "how many bindus the transited rāśi carries — needs a chart. " +
+            "Without one, only the house positions above can be read."
+          : (savJ.length && savJ[0].bindus >= 28
+            ? "Guru transits a well-received rāśi by the bindu count, " +
+              "which later practice treats as a buffer that amplifies a " +
+              "benefic transit and softens a difficult one."
+            : "The bindu counts for the rāśis Guru and Śani transit are " +
+              "not in the range later practice calls well-received, which " +
+              "is read as a reason for ordinary caution rather than as a " +
+              "forecast of loss.")
+      },
+      {
+        key: "sambandha", title: "Karmic axis & relationships",
+        factors: [
+          r.nodes.length ? "Rāhu–Ketu on the " + r.nodes[0].axis + " axis" : null,
+          rah ? "Rāhu in the " + rah.mainHouse + "th" : null
+        ].filter(Boolean),
+        text: r.nodes.length
+          ? (r.nodes[0].upachaya
+            ? "The nodal axis falls across upacaya ground from this rāśi. " +
+              "Later tradition reads Rāhu there as favouring competition, " +
+              "reach and visibility, with Ketu opposite withdrawing from " +
+              "the matters of its own house."
+            : "The nodal axis runs " + r.nodes[0].axis + " from this rāśi. " +
+              "The classical reading attaches partnership, inherited or " +
+              "shared resources and detachment to this pairing, " +
+              "depending on which end carries the house in question.")
+          : "Rāhu does not change rāśi during the year, so the axis is " +
+            "steady throughout.",
+      },
+      {
+        key: "swasthya", title: "Constitution & routine",
+        factors: [
+          dhaiya.length ? dhaiya[0].title : null,
+          ss.length ? "a Sade Sati phase is running" : null,
+          sat ? "Śani in the " + sat.mainHouse + "th" : null
+        ].filter(Boolean),
+        text: (dhaiya.length || ss.length)
+          ? "The classical texts attach fatigue and the cost of " +
+            "accumulated strain to these Śani conditions, and the " +
+            "traditional counsel is regularity — sleep, food and work kept " +
+            "to a rhythm — rather than any intervention. This is a " +
+            "reflective framework and not medical guidance; anything that " +
+            "actually concerns your health belongs with a clinician."
+          : "None of the Śani conditions later tradition associates with " +
+            "strain are running from this rāśi this year. Nothing here is " +
+            "medical guidance in either direction."
+      }
+    ];
+  }
+
   /* ---- the whole reading ------------------------------------------------ */
   function read(R, moonSign, D) {
     var G = window.SPGochara;
@@ -6225,18 +6742,24 @@ function nextIngress(en,jd){
         goodHouses: GOOD[b] || []
       };
     });
-    return {
+    var out = {
       year: R.year, moonSign: moonSign,
       signName: SIGNS[moonSign], lord: LORD[moonSign],
       grahas: grahas,
       sani: saniPhases(R, moonSign),
       sunVedha: sunVedha(R, moonSign),
+      guru: guruGochara(R, moonSign),
+      nodes: nodalAxis(R, moonSign),
+      sav: savReception(R, moonSign, D),
       ashtaka: ashtaka(R, moonSign, D)
     };
+    out.pillars = pillars(out);
+    return out;
   }
 
   window.SPRashiphal = {
     SIGNS: SIGNS, LORD: LORD, GOOD: GOOD, DEV: DEV,
+    GURU_VEDHA: GURU_VEDHA,
     read: read, houseFrom: houseFrom, fmt: fmt, days: days
   };
 })();
@@ -20623,6 +21146,13 @@ window.buildKundliReport=function(J){
        work from the same object the report does rather than deriving a
        second one that might disagree with it */
     chart:function(){ return D; },
+    /* The report's modules live inside one bundle scope, so a separate
+       script on the page cannot see them. The Workstation renders several
+       of its views from exactly these functions rather than reimplementing
+       them — one implementation, so the two pages can never disagree. */
+    sripatiPane:function(){ return sripatiPane(D); },
+    shodashavarga:function(){ return shodashavargaSection(D); },
+    shodashavargaMatrix:function(){ return shodashavargaMatrix(D); },
     events:function(list){ try{ return eventsAnalyze(D,list||[]); }catch(e){ return paneErr("Life events",e); } },
     match:function(J2,opt){ return matchHtml(D,J2,opt||{}); },
     dayBlock:function(lat,lon,tz,label){ return dayBlock(D,lat,lon,tz,label); }
@@ -22286,4 +22816,4 @@ window.buildKundliReport=function(J){
 })();
 ;
 </script>
-<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-26.0c8321f</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>
+<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-26.27205e1</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>

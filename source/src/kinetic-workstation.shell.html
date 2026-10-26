@@ -1,0 +1,123 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Kinetic Workstation — {{BRAND}}</title><!--HEAD--><!--CSS--><!--THEMEJS--></head><body class="wsbody"><header class="masthead"><a class="lhbrand" href="index.html" aria-label="{{BRAND}} — home"><span class="lhmarkwrap"><!--LOGO--></span><span class="lhword"><span class="lhname">{{BRAND}}</span><span class="lhdeva">{{BRAND_DEVA}}</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Kinetic Workstation</h1><p class="sub">One surface for the whole chart: Śrīpati chalita beside whole-sign, a year of real transits, twelve rāśi readings, all sixteen divisions, and the strength and daśā panels — computed in this browser, nothing sent anywhere.</p></header><nav class="site">{{NAV}}</nav>
+<div class="layout onecol wide"><main>
+
+<section class="wsintake">
+<h2 id="cast">Birth data</h2>
+<p class="klead">Every panel below reads from one chart. The <b>Gochara</b> and <b>12 Rāśiphal</b> tabs work with no chart at all — a year of transits is a fact about the sky — so you can open those straight away.</p>
+<div id="k-inputs">
+<div class="k-form">
+  <div class="k-full"><label for="k-name">Name (optional — appears on the report)</label><input type="text" id="k-name" placeholder="e.g. Aseem Mehrotra" autocomplete="off"></div>
+  <div><label for="k-dob">Date of birth</label><input type="date" id="k-dob"></div>
+  <div><label for="k-tob">Time of birth (24-hour)</label><input type="time" id="k-tob" step="60"></div>
+  <div class="k-full"><label for="k-search">Search any city worldwide</label>
+    <div class="k-searchrow"><input type="text" id="k-search" placeholder="Type a city name, e.g. Moradabad, Bengaluru, Lisbon" autocomplete="off">
+    <button type="button" class="k-btn sec" id="k-searchbtn">Search</button></div>
+    <div id="k-results" class="k-results"></div>
+    <p class="k-note" id="k-searchnote">Searches a built-in list of 34,000 cities held on this site — no external service. Sets the coordinates and the UTC offset that applied on your birth date, including historical daylight saving.</p></div>
+  <div class="k-full"><label for="k-city">…or pick from the short list</label><select id="k-city"></select></div>
+  <div><label for="k-lat">Latitude (°, North +)</label><input type="number" id="k-lat" step="0.0001" placeholder="28.6139"></div>
+  <div><label for="k-lon">Longitude (°, East +)</label><input type="number" id="k-lon" step="0.0001" placeholder="77.2090"></div>
+  <div><label for="k-tz">UTC offset (hours)</label><input type="number" id="k-tz" step="0.25" placeholder="5.5"></div>
+</div>
+<div class="k-actions">
+  <button class="k-btn" id="k-go">Cast the chart</button>
+  <button class="k-btn sec" id="k-here" title="Uses the device&rsquo;s position and clock to cast a chart for this place and this moment">Here &amp; now</button>
+  <button class="k-btn sec" id="k-now" title="Sets only the date and time, leaving the place as it is">Now</button>
+  <button class="k-btn sec" id="k-clear">Clear</button>
+  <button class="k-btn sec" id="k-print" style="display:none">Print / Save as PDF</button>
+  <button class="k-btn sec" id="k-dl" style="display:none">Download JSON</button>
+  <button class="k-btn sec" id="k-save" style="display:none" title="A tiny file holding only the birth data and settings">Save chart</button>
+  <button class="k-btn sec" id="k-link" style="display:none" title="A link that reopens this exact chart">Copy link</button>
+  <button class="k-btn sec" id="k-open">Open saved chart</button>
+  <input type="file" id="k-openfile" accept=".json,application/json" hidden>
+  <span class="k-note">Sidereal &middot; Lahiri ayanamsha &middot; whole-sign houses</span>
+</div>
+<p class="k-note">The city search sets the UTC offset that applied on the birth date, including historical daylight saving. If you type coordinates by hand, set the offset yourself.</p>
+<details class="k-raw" id="k-settings"><summary>Settings &middot; ayanāṃśa, nodes, chart source</summary><div class="k-form" style="margin-top:8px"><div class="k-full"><label for="k-ayan">Ayanāṃśa</label>
+    <select id="k-ayan">
+      <option value="lahiri" selected>Lahiri (Chitrapakṣa) — the Indian civil standard</option>
+      <option value="raman">Raman</option>
+      <option value="kp">Krishnamurti (KP)</option>
+      <option value="truechitra">True Chitrapakṣa (Spica fixed at 180°)</option>
+    </select>
+    <p class="k-note">Changes every sidereal position in the report. Lahiri is the default and everything
+    on this site is validated against it; the others are offered so the choice is visible rather than hidden.</p></div>
+  <div class="k-full"><label for="k-node">Lunar nodes</label>
+    <select id="k-node">
+      <option value="mean" selected>Mean node — the smoothed average, the usual Jyotiṣa choice</option>
+      <option value="true">True node — the instantaneous node, which wobbles and can turn direct</option>
+    </select></div>
+  <div class="k-full"><label for="k-src">Chart source</label>
+    <select id="k-src">
+      <option value="local" selected>Built-in engine (computed in your browser — no network)</option>
+      <option value="api">Remote chart engine (cross-check against a second source)</option>
+    </select></div></div></details>
+<p class="k-note" id="k-herenote"><b>Here &amp; now</b> asks the browser where this device is and casts a chart for that place at the present moment &mdash; useful for a praśna question, or simply to see the sky as it stands. The position comes from the browser, the clock and the UTC offset from the device, and the nearest town from the city list already on this page; nothing is sent anywhere. It needs the site to be open over https, so it will not work from a file opened directly off disk.</p>
+</div><!-- /#k-inputs -->
+<!-- Once a chart is cast the form folds into this one line, so the report starts at the top of
+     the screen instead of below a form you have finished with. Edit brings the form back. -->
+<div class="k-chip" id="k-chip" hidden>
+  <div class="k-chipmain">
+    <span class="k-chipwho" id="k-chipwho"></span>
+    <span class="k-chipwhen" id="k-chipwhen"></span>
+  </div>
+  <div class="k-chipacts" id="k-chipacts">
+    <button type="button" class="k-btn sec" id="k-edit">Edit</button>
+  </div>
+  <p class="k-chipnote" id="k-chipnote" hidden></p>
+</div>
+<div class="k-status" id="k-status"></div>
+<!-- Fifteen of the animations need no birth data at all: they are about the sky,
+     not about a person. Until now they sat behind a cast chart only because the
+     Motion tab happens to live inside the chart report. This opens them. -->
+<div class="k-sky" id="k-sky"><button type="button" class="k-btn sec" id="k-skygo">Watch the sky &mdash; no birth data needed</button><span class="k-skynote">Fifteen of the animations are about the sky rather than about you: the eclipses, the tilt of the Moon&rsquo;s path, the pa&ntilde;c&amacr;&ndash;a&#7749;ga, the phases. The nine that read your chart stay behind the form above, and each says why.</span></div>
+</section>
+
+<div class="wsdeckwrap"><div class="wsdeck" role="tablist" aria-label="Workstation views"><button type="button" class="wstab" data-wstab="kundli" aria-current="true"><span class="wsico" aria-hidden="true">☸️</span>Kundli &amp; Śrīpati Chalit</button><button type="button" class="wstab" data-wstab="gochara"><span class="wsico" aria-hidden="true">🪐</span>Vārṣika Gochara</button><button type="button" class="wstab" data-wstab="rashiphal"><span class="wsico" aria-hidden="true">🌙</span>12 Candra Rāśiphal</button><button type="button" class="wstab" data-wstab="ganita"><span class="wsico" aria-hidden="true">📐</span>9-Graha Pūra Gaṇita</button><button type="button" class="wstab" data-wstab="shifts"><span class="wsico" aria-hidden="true">⚖️</span>Śrīpati Chalit Shifts</button><button type="button" class="wstab" data-wstab="varga"><span class="wsico" aria-hidden="true">📊</span>Shodaśavarga D1–D60</button><button type="button" class="wstab" data-wstab="dasha"><span class="wsico" aria-hidden="true">⏳</span>Daśā Timelines</button><button type="button" class="wstab" data-wstab="bala"><span class="wsico" aria-hidden="true">💪</span>Ṣaḍbala &amp; Yogas</button><button type="button" class="wstab" data-wstab="sav"><span class="wsico" aria-hidden="true">🔢</span>Sarvāṣṭakavarga</button></div></div>
+<p class="wsstatus" id="ws-status">Cast a chart above, or open <b>Vārṣika Gochara</b> — that one needs no chart.</p>
+<div class="wsviews"><section class="wspanel on" id="wp-kundli" data-wspanel="kundli"></section><section class="wspanel" id="wp-gochara" data-wspanel="gochara"></section><section class="wspanel" id="wp-rashiphal" data-wspanel="rashiphal"></section><section class="wspanel" id="wp-ganita" data-wspanel="ganita"></section><section class="wspanel" id="wp-shifts" data-wspanel="shifts"></section><section class="wspanel" id="wp-varga" data-wspanel="varga"></section><section class="wspanel" id="wp-dasha" data-wspanel="dasha"></section><section class="wspanel" id="wp-bala" data-wspanel="bala"></section><section class="wspanel" id="wp-sav" data-wspanel="sav"></section></div>
+
+<div class="wsoffstage" id="ws-offstage" aria-hidden="true">
+<!-- The scaffold ui.js writes to unconditionally. It is carried rather
+     than guarded against, because the alternative is editing ui.js, and
+     ui.js is what casts the chart on the production builder — a page this
+     work is under orders not to regress. Same markup, same ids, parked
+     off-screen; the Workstation shows these through its own views. -->
+<h3 id="k-result"></h3>
+<div id="k-rawwrap" style="display:none"><button type="button" id="k-copy"></button><span id="k-copymsg"></span><pre id="k-raw"></pre></div>
+<input type="url" id="k-proxy">
+<h2 id="gochara">Vārṣika Gochara — a year of transits</h2>
+<p><b>This needs no birth chart.</b> Gochara is where the nine grahas
+actually are, so a year of it is a fact about the sky rather than about any
+person. Pick a year and every rāśi ingress, every retrograde station and
+every return to direct motion is computed from the same ephemeris that
+casts the charts above — not copied from a table, so it follows whichever
+ayanāṃśa you have selected.</p>
+<div class="gobar">
+  <label for="go-year">Year
+    <input type="number" id="go-year" min="1800" max="2200" step="1" value="2027"></label>
+  <button type="button" class="k-btn" id="go-run">Compute the year</button>
+  <label class="gochk"><input type="checkbox" id="go-moon"> include the Moon
+    (about 160 ingresses)</label>
+  <span class="k-status" id="go-status"></span>
+</div>
+<div id="go-out"></div>
+
+<h2 id="rashiphal">Twelve Candra-rāśi readings</h2>
+<p>The same year read from each janma-rāśi in turn: which bhāva each graha
+occupies counted from that rāśi, for how long, and which of the classical
+gochara conditions are running. Every rule says which tier it comes from —
+a BPHS verse, a note by the translator of this edition, or later tradition
+— because transit doctrine is where those three are most often blurred
+together.</p>
+<div class="gobar">
+  <label for="rp-sign">Janma-rāśi (Moon sign)
+    <select id="rp-sign"></select></label>
+  <span class="k-status" id="rp-status"></span>
+</div>
+<div id="rp-out"></div></div>
+<div id="k-skyout"></div>
+<div id="k-out" hidden></div>
+</main></div>
+<footer>{{FOOTER}}</footer>
+<!--JS0--><!--JS1--><!--JS2--><!--JS3--><script src="site.js" defer></script></body></html>

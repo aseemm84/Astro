@@ -1457,7 +1457,7 @@ table.reeltbl td:first-child{width:38%;color:var(--muted)}
    that flips from light to dark takes its text with it.
    ================================================================= */
 
-/* surfaces the stylesheets paint light (133) */
+/* surfaces the stylesheets paint light (136) */
 :where(html[data-theme]) #reel-place .npres,
 :where(html[data-theme]) #si-text:focus,
 :where(html[data-theme]) #ss-drift,
@@ -1496,6 +1496,9 @@ table.reeltbl td:first-child{width:38%;color:var(--muted)}
 :where(html[data-theme]) .dptlane,
 :where(html[data-theme]) .dptscene,
 :where(html[data-theme]) .ex,
+:where(html[data-theme]) .gotier-bphs,
+:where(html[data-theme]) .gotier-comm,
+:where(html[data-theme]) .gotier-later,
 :where(html[data-theme]) .inchart,
 :where(html[data-theme]) .k-btn.sec,
 :where(html[data-theme]) .k-card,
@@ -1631,7 +1634,7 @@ table.reeltbl td:first-child{width:38%;color:var(--muted)}
   border-color:var(--border-2);
 }
 
-/* text given a dark literal ink and no surface of its own (103) */
+/* text given a dark literal ink and no surface of its own (109) */
 :where(html[data-theme]) #kprintdoc,
 :where(html[data-theme]) #kprintdoc .prby,
 :where(html[data-theme]) #kprintdoc .prconv,
@@ -1662,6 +1665,8 @@ table.reeltbl td:first-child{width:38%;color:var(--muted)}
 :where(html[data-theme]) .dptokb,
 :where(html[data-theme]) .dptrow.on .dptname,
 :where(html[data-theme]) .dpwarn li.bad,
+:where(html[data-theme]) .goretro,
+:where(html[data-theme]) .gotick,
 :where(html[data-theme]) .hero-pts li,
 :where(html[data-theme]) .inchart h4,
 :where(html[data-theme]) .inchart h4 span,
@@ -1680,6 +1685,7 @@ table.reeltbl td:first-child{width:38%;color:var(--muted)}
 :where(html[data-theme]) .k-form label,
 :where(html[data-theme]) .k-retro,
 :where(html[data-theme]) .k-skynote,
+:where(html[data-theme]) .kgood,
 :where(html[data-theme]) .kreport .gbcheck.bad,
 :where(html[data-theme]) .kreport .gbcheck.ok,
 :where(html[data-theme]) .kreport .kanote b:first-child,
@@ -1723,10 +1729,13 @@ table.reeltbl td:first-child{width:38%;color:var(--muted)}
 :where(html[data-theme]) .spdtokb,
 :where(html[data-theme]) .spdtrow.on .spdtname,
 :where(html[data-theme]) .spdwarn li.bad,
+:where(html[data-theme]) .spwarn,
 :where(html[data-theme]) .src span,
 :where(html[data-theme]) .stfacts li,
 :where(html[data-theme]) .strec,
 :where(html[data-theme]) .stslide.rm,
+:where(html[data-theme]) .wsretro,
+:where(html[data-theme]) .wswarn,
 :where(html[data-theme]) a,
 :where(html[data-theme]) aside.onpage a,
 :where(html[data-theme]) details.k-raw summary,
@@ -2029,6 +2038,11 @@ html[data-theme] .spwarn{color:var(--caution-edge)}
 html[data-theme] .kgood{color:var(--mine-edge)}
 html[data-theme] .spbar i{background:var(--accent)}
 
+html[data-theme] .wsdeckwrap{background:var(--surface);
+  border-bottom-color:var(--border)}
+html[data-theme] .wswarn,html[data-theme] .wsretro{color:var(--caution-edge)}
+html[data-theme] .wsjsonmsg{color:var(--mine-edge)}
+
 /* ---- the switcher itself ------------------------------------------------ */
 .themepick{display:inline-flex;align-items:center;gap:6px;
   font:inherit;font-size:12px}
@@ -2193,7 +2207,7 @@ html[data-theme] nav.site .themepick select option{
     return true;
   }, list: THEMES };
 })();
-</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Sūrya Siddhānta</h1><p class="sub">The same sky, computed the older way — and the distance between the two, drawn.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html" class="active">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#what">What this is, and what it is not</a><a href="#params">The parameters it uses</a><a href="#now">The two skies</a><a href="#working">The working, step by step</a><a href="#trig">Its own trigonometry</a><a href="#day">The day where you are standing</a><a href="#panchanga">The pañcāṅga, the old way</a><a href="#eclipses">Eclipses</a><a href="#drift">The drift</a><a href="#absent">What is not here</a><a href="#use">Using it</a></aside><main><p class="ssnote">Everything on this page is computed in your browser, twice —
+</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Sūrya Siddhānta</h1><p class="sub">The same sky, computed the older way — and the distance between the two, drawn.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html" class="active">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#what">What this is, and what it is not</a><a href="#params">The parameters it uses</a><a href="#now">The two skies</a><a href="#working">The working, step by step</a><a href="#trig">Its own trigonometry</a><a href="#day">The day where you are standing</a><a href="#panchanga">The pañcāṅga, the old way</a><a href="#eclipses">Eclipses</a><a href="#drift">The drift</a><a href="#absent">What is not here</a><a href="#use">Using it</a></aside><main><p class="ssnote">Everything on this page is computed in your browser, twice —
 once the way the Sūrya Siddhānta does it and once with this site's modern
 ephemeris — so the two can be set beside each other.</p>
 

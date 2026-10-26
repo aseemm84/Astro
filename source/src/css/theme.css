@@ -288,6 +288,11 @@ html[data-theme] .spwarn{color:var(--caution-edge)}
 html[data-theme] .kgood{color:var(--mine-edge)}
 html[data-theme] .spbar i{background:var(--accent)}
 
+html[data-theme] .wsdeckwrap{background:var(--surface);
+  border-bottom-color:var(--border)}
+html[data-theme] .wswarn,html[data-theme] .wsretro{color:var(--caution-edge)}
+html[data-theme] .wsjsonmsg{color:var(--mine-edge)}
+
 /* ---- the switcher itself ------------------------------------------------ */
 .themepick{display:inline-flex;align-items:center;gap:6px;
   font:inherit;font-size:12px}

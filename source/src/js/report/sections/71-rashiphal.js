@@ -222,6 +222,210 @@
     return out.length ? out : null;
   }
 
+
+  /* ---- tier 3: Guru's transit and its vedha ------------------------------
+     The build spec supplies the five obstruction pairs, which is how they
+     come to be here at all: the uploaded Santhanam edition prints its
+     gochara vedha table as a figure whose numerals did not survive the
+     scan, so these could not be read from it. They are the standard pairs
+     of later gochara practice — Phaladeepika and the texts that follow it
+     — and they are labelled as that, not as Parāśara.
+
+     The rule reads: Guru transiting one of his favourable houses from the
+     Moon has that favour obstructed if a graha OTHER THAN THE SUN occupies
+     the paired house at the same time. The Sun is excepted, which is why
+     the pairing is stated as "non-Sun planet". */
+  var GURU_VEDHA = { 2: 12, 5: 4, 7: 3, 9: 10, 11: 8 };
+
+  function guruGochara(R, moonSign) {
+    var G = window.SPGochara;
+    return (R.spans.Jupiter || []).map(function (s) {
+      var h = houseFrom(s.sign, moonSign);
+      var good = GOOD.Jupiter.indexOf(h) >= 0;
+      var vh = GURU_VEDHA[h] || null;
+      var mid = (s.from + s.to) / 2;
+      var blockers = [];
+      if (good && vh) {
+        var vSign = (moonSign + vh - 1) % 12;
+        R.bodyList.forEach(function (b) {
+          if (b === "Jupiter" || b === "Sun") return;
+          if (G.signAtJd(R, b, mid) === vSign) blockers.push(DEV[b]);
+        });
+      }
+      return { house: h, sign: s.sign, from: s.from, to: s.to,
+               days: s.to - s.from, favourable: good,
+               vedhaHouse: vh, blockers: blockers,
+               clear: good && !blockers.length, tier: "later" };
+    });
+  }
+
+  /* ---- tier 3: the nodal axis -------------------------------------------
+     Rāhu and Ketu are always opposite, so what they transit is an AXIS
+     rather than two placements, and the pair of houses is the unit a
+     reading works with. */
+  function nodalAxis(R, moonSign) {
+    var G = window.SPGochara;
+    return (R.spans.Rahu || []).map(function (s) {
+      var rh = houseFrom(s.sign, moonSign);
+      var kh = ((rh + 5) % 12) + 1;
+      return { rahuHouse: rh, ketuHouse: kh,
+               rahuSign: s.sign, ketuSign: (s.sign + 6) % 12,
+               from: s.from, to: s.to, days: s.to - s.from,
+               axis: rh + "\u2013" + kh,
+               upachaya: (rh === 3 || rh === 6 || rh === 10 || rh === 11),
+               tier: "later" };
+    });
+  }
+
+  /* ---- tier 3: the Sarvāṣṭakavarga reception ----------------------------
+     The 28-bindu line is a convention of later practice, not a figure from
+     the Parāśara verses — BPHS Ch. 70 compares rekhās between rāśis rather
+     than against a fixed threshold. It is useful and it is labelled.
+     Needs a chart, like everything ashtakavarga. */
+  function savReception(R, moonSign, D) {
+    if (!D || !D.av || !D.av.sarva) return null;
+    var sav = D.av.sarva, out = [];
+    ["Saturn", "Jupiter"].forEach(function (b) {
+      (R.spans[b] || []).forEach(function (s) {
+        var n = sav[s.sign];
+        out.push({ body: b, name: DEV[b], sign: s.sign, bindus: n,
+                   house: houseFrom(s.sign, moonSign),
+                   from: s.from, to: s.to, days: s.to - s.from,
+                   reception: n >= 28 ? "buffered"
+                            : (n <= 25 ? "thin" : "middling"),
+                   tier: "later" });
+      });
+    });
+    return out.length ? out : null;
+  }
+
+  /* ---- the four pillars --------------------------------------------------
+     The spec asks for four structured readings rather than one block of
+     prose, and the reason is sound: a reader wants the part that bears on
+     the thing they came about. What each pillar says is assembled from the
+     rules already computed above — it adds no new doctrine, it only sorts
+     the same findings by the area of life the classical significations
+     attach them to. Every line keeps the conditional voice, and the
+     factors it rests on travel with it so the reader can see the working
+     rather than be told a conclusion. */
+  function pillars(r) {
+    var find = function (b) {
+      for (var i = 0; i < r.grahas.length; i++)
+        if (r.grahas[i].body === b) return r.grahas[i];
+      return null;
+    };
+    var sat = find("Saturn"), jup = find("Jupiter"), rah = find("Rahu");
+    var guruClear = r.guru.filter(function (g) { return g.clear; });
+    var guruBlocked = r.guru.filter(function (g) {
+      return g.favourable && g.blockers.length;
+    });
+    var ss = r.sani.filter(function (s) {
+      return [12, 1, 2].indexOf(s.house) >= 0;
+    });
+    var dhaiya = r.sani.filter(function (s) {
+      return [4, 8].indexOf(s.house) >= 0;
+    });
+    var savJ = (r.sav || []).filter(function (x) { return x.body === "Jupiter"; });
+    var savS = (r.sav || []).filter(function (x) { return x.body === "Saturn"; });
+
+    function savLine(list) {
+      if (!list || !list.length) return null;
+      var worst = list.slice().sort(function (a, b) { return a.bindus - b.bindus; })[0];
+      return SIGNS[worst.sign] + " carries " + worst.bindus +
+             " sarvāṣṭakavarga bindus" +
+             (worst.bindus >= 28 ? ", which later practice reads as a " +
+               "well-received sign" : worst.bindus <= 25 ?
+               ", which later practice reads as thin reception" :
+               ", which is middling");
+    }
+
+    return [
+      {
+        key: "karma", title: "Career & karma",
+        factors: [
+          sat ? "Śani in the " + sat.mainHouse + "th from the rāśi" : null,
+          jup ? "Guru in the " + jup.mainHouse + "th" : null,
+          guruClear.length ? "Guru's favourable transit is unobstructed" : null,
+          guruBlocked.length ? "Guru's favourable transit is obstructed from the " +
+            guruBlocked[0].vedhaHouse + "th by " +
+            guruBlocked[0].blockers.join(", ") : null
+        ].filter(Boolean),
+        text: (sat && [3, 6, 10, 11].indexOf(sat.mainHouse) >= 0)
+          ? "Śani stands in an upacaya house from the rāśi, which the " +
+            "gochara literature reads as the placement where effort " +
+            "compounds rather than drains — traditionally associated with " +
+            "work that is held to and outlasts competition."
+          : (ss.length
+            ? "Śani is running a Sade Sati phase, which later tradition " +
+              "reads as a period of being held to what has actually been " +
+              "built rather than to what was claimed. It is described as " +
+              "demanding rather than adverse, and the texts attach the " +
+              "weight to responsibility rather than to loss."
+            : "Śani is in neither an upacaya house nor a named phase from " +
+              "this rāśi, so the classical rules give the year no " +
+              "particular professional signature from him.")
+      },
+      {
+        key: "dhana", title: "Wealth & liquidity",
+        factors: [
+          jup ? "Guru in the " + jup.mainHouse + "th" : null,
+          savLine(savJ), savLine(savS),
+          ss.filter(function (s) { return s.house === 2; }).length
+            ? "Śani is in the 2nd, the last Sade Sati phase" : null
+        ].filter(Boolean),
+        text: (!r.sav)
+          ? "The ashtakavarga layer that the texts actually use for this — " +
+            "how many bindus the transited rāśi carries — needs a chart. " +
+            "Without one, only the house positions above can be read."
+          : (savJ.length && savJ[0].bindus >= 28
+            ? "Guru transits a well-received rāśi by the bindu count, " +
+              "which later practice treats as a buffer that amplifies a " +
+              "benefic transit and softens a difficult one."
+            : "The bindu counts for the rāśis Guru and Śani transit are " +
+              "not in the range later practice calls well-received, which " +
+              "is read as a reason for ordinary caution rather than as a " +
+              "forecast of loss.")
+      },
+      {
+        key: "sambandha", title: "Karmic axis & relationships",
+        factors: [
+          r.nodes.length ? "Rāhu–Ketu on the " + r.nodes[0].axis + " axis" : null,
+          rah ? "Rāhu in the " + rah.mainHouse + "th" : null
+        ].filter(Boolean),
+        text: r.nodes.length
+          ? (r.nodes[0].upachaya
+            ? "The nodal axis falls across upacaya ground from this rāśi. " +
+              "Later tradition reads Rāhu there as favouring competition, " +
+              "reach and visibility, with Ketu opposite withdrawing from " +
+              "the matters of its own house."
+            : "The nodal axis runs " + r.nodes[0].axis + " from this rāśi. " +
+              "The classical reading attaches partnership, inherited or " +
+              "shared resources and detachment to this pairing, " +
+              "depending on which end carries the house in question.")
+          : "Rāhu does not change rāśi during the year, so the axis is " +
+            "steady throughout.",
+      },
+      {
+        key: "swasthya", title: "Constitution & routine",
+        factors: [
+          dhaiya.length ? dhaiya[0].title : null,
+          ss.length ? "a Sade Sati phase is running" : null,
+          sat ? "Śani in the " + sat.mainHouse + "th" : null
+        ].filter(Boolean),
+        text: (dhaiya.length || ss.length)
+          ? "The classical texts attach fatigue and the cost of " +
+            "accumulated strain to these Śani conditions, and the " +
+            "traditional counsel is regularity — sleep, food and work kept " +
+            "to a rhythm — rather than any intervention. This is a " +
+            "reflective framework and not medical guidance; anything that " +
+            "actually concerns your health belongs with a clinician."
+          : "None of the Śani conditions later tradition associates with " +
+            "strain are running from this rāśi this year. Nothing here is " +
+            "medical guidance in either direction."
+      }
+    ];
+  }
+
   /* ---- the whole reading ------------------------------------------------ */
   function read(R, moonSign, D) {
     var G = window.SPGochara;
@@ -239,18 +443,24 @@
         goodHouses: GOOD[b] || []
       };
     });
-    return {
+    var out = {
       year: R.year, moonSign: moonSign,
       signName: SIGNS[moonSign], lord: LORD[moonSign],
       grahas: grahas,
       sani: saniPhases(R, moonSign),
       sunVedha: sunVedha(R, moonSign),
+      guru: guruGochara(R, moonSign),
+      nodes: nodalAxis(R, moonSign),
+      sav: savReception(R, moonSign, D),
       ashtaka: ashtaka(R, moonSign, D)
     };
+    out.pillars = pillars(out);
+    return out;
   }
 
   window.SPRashiphal = {
     SIGNS: SIGNS, LORD: LORD, GOOD: GOOD, DEV: DEV,
+    GURU_VEDHA: GURU_VEDHA,
     read: read, houseFrom: houseFrom, fmt: fmt, days: days
   };
 })();
