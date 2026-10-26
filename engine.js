@@ -1459,6 +1459,10 @@ window.__kEclip=function(name,ms){
    build spec asks for. The arithmetic lives in the report module that owns
    it; this is the door, so a caller that has the engine and nothing else
    can still build the houses. */
+/* The report bundle needs the aspect formula itself, not only the Drik Bala it feeds,
+   to publish a quantitative graha-drishti matrix. Exported rather than copied, so the
+   matrix and Drik Bala can never disagree. */
+window.sphutaDrishti=sphutaDrishti;
 window.calculateSripatiHouses=function(ascSid,mcSid){
   if(window.SPSripati&&window.SPSripati.build) return window.SPSripati.build(ascSid,mcSid);
   return null;

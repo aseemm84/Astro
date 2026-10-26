@@ -3804,6 +3804,10 @@ window.__kEclip=function(name,ms){
    build spec asks for. The arithmetic lives in the report module that owns
    it; this is the door, so a caller that has the engine and nothing else
    can still build the houses. */
+/* The report bundle needs the aspect formula itself, not only the Drik Bala it feeds,
+   to publish a quantitative graha-drishti matrix. Exported rather than copied, so the
+   matrix and Drik Bala can never disagree. */
+window.sphutaDrishti=sphutaDrishti;
 window.calculateSripatiHouses=function(ascSid,mcSid){
   if(window.SPSripati&&window.SPSripati.build) return window.SPSripati.build(ascSid,mcSid);
   return null;
@@ -21650,6 +21654,217 @@ function skpConventions(J,D){
     note:c.note||null};
 }
 
+/* ===== three layers the revised spec asks for in a shape the export did not have =====
+
+   Viṃśopaka under all four schemes, a functional status drawn from the enum the
+   analyst reads, and a quantitative dṛṣṭi matrix rather than a list of targets. */
+
+/* --- Viṃśopaka: BPHS Vol. 1 Ch. 7, vv. 17–25 ---------------------------------
+   Three of the four weight sets are stated outright in the verses and are not in
+   doubt:
+
+     Ṣaḍvarga   (vv. 17–19)  Rāśi 6, Horā 2, Drekkāṇa 4, Navāṃśa 5,
+                             Dvādaśāṃśa 2, Triṃśāṃśa 1                     = 20
+     Daśavarga  (v. 20)      Rāśi 3, Ṣaṣṭyāṃśa 5, the other eight 1½ each  = 20
+     Ṣoḍaśavarga(vv. 21–25)  Rāśi 3½, Navāṃśa 3, Ṣoḍaśāṃśa 2, Ṣaṣṭyāṃśa 4,
+                             Horā 1, Drekkāṇa 1, Triṃśāṃśa 1,
+                             the remaining nine ½ each                     = 20
+
+   Saptavarga is the one that did not survive the scan. The verse in the uploaded
+   edition reads "5, 2, 3, 2t, 412, 2 and 1" — two of the seven figures are OCR
+   damage, and the translator's own table has been scrambled column-wise on the same
+   page. Read in the verse's own order that is Rāśi 5, Horā 2, Drekkāṇa 3,
+   Navāṃśa 2½, Dvādaśāṃśa 4½, Triṃśāṃśa 2, Saptāṃśa 1; read down the table's rows it
+   is Navāṃśa 4½ and Saptāṃśa 2½ instead. Both sum to 20 and nothing in the page
+   settles which is which, so both are computed and neither is presented as the
+   reading. Please verify these two figures against the PDF before leaning on the
+   Saptavarga score. */
+var SKP_VIM_SCHEMES={
+  shadvarga:{weights:{D1:6,D2:2,D3:4,D9:5,D12:2,D30:1},
+    source:"BPHS Vol. 1, Ch. 7, vv. 17–19", certain:true},
+  saptavarga:{weights:{D1:5,D2:2,D3:3,D9:2.5,D12:4.5,D30:2,D7:1},
+    source:"BPHS Vol. 1, Ch. 7, vv. 17–19 (verse order)", certain:false,
+    alternative:{D1:5,D2:2,D3:3,D9:4.5,D12:2,D30:1,D7:2.5},
+    alternative_source:"BPHS-Santhanam edition, Ch. 7, translator's table (row order)"},
+  dasavarga:{weights:{D1:3,D2:1.5,D3:1.5,D7:1.5,D9:1.5,D10:1.5,D12:1.5,D16:1.5,D30:1.5,D60:5},
+    source:"BPHS Vol. 1, Ch. 7, v. 20", certain:true},
+  shodashavarga:{weights:{D1:3.5,D2:1,D3:1,D4:0.5,D7:0.5,D9:3,D10:0.5,D12:0.5,D16:2,
+    D20:0.5,D24:0.5,D27:0.5,D30:1,D40:0.5,D45:0.5,D60:4},
+    source:"BPHS Vol. 1, Ch. 7, vv. 21–25", certain:true}
+};
+/* Varga Viśva — v. 25. Own 20, extreme friend 18, friend 15, equal 10, enemy 7,
+   sworn enemy 5, out of 20. Exaltation and moolatrikona divisions count as own; a
+   debilitated division is read as the sworn enemy's. */
+var SKP_VIM_VISWA={exalted:20, moolatrikona:20, own:20, own_sign:20,
+  greatfriend:18, great_friend:18, friend:15, neutral:10, enemy:7,
+  greatenemy:5, great_enemy:5, debilitated:5};
+
+/* The translator's note under vv. 21–25 is explicit that the pañcadhā compound
+   relation of Ch. 3 vv. 57–58 is what decides a division's dignity here, not the
+   naisargika relation alone. So a friendship read off the varga lord is modified by
+   the tātkālika relation — which the Ch. 3 note insists is taken from the rāśi chart,
+   never from the divisional one. Exaltation, moolatrikona and own-sign divisions are
+   dignities in their own right and are not modified. */
+function skpHouseOf(J){
+  var ls=J.lagna&&J.lagna.rashi?J.lagna.rashi.idx:null, h={};
+  if(ls==null) return h;
+  (J.grahas||[]).forEach(function(g){
+    if(!g.rashi||g.rashi.idx==null) return;
+    h[EN[g.key]||g.key]=((g.rashi.idx-ls)%12+12)%12+1;
+  });
+  return h;
+}
+function skpPanchadha(graha,sign,houseOf){
+  var dg=dignity(graha,sign,null);
+  if(dg!=="friend"&&dg!=="enemy"&&dg!=="neutral") return dg;
+  var lord=LORD[sign];
+  if(lord===graha||houseOf[graha]==null||houseOf[lord]==null) return dg;
+  var dist=((houseOf[lord]-houseOf[graha])%12+12)%12+1;
+  var temp=([2,3,4,10,11,12].indexOf(dist)>=0)?"friend":"enemy";
+  if(dg==="friend"&&temp==="friend") return "greatfriend";
+  if(dg==="enemy"&&temp==="enemy")   return "greatenemy";
+  if(dg==="neutral")                 return temp;
+  if(dg!==temp)                      return "neutral";
+  return dg;
+}
+
+function skpVimsopakaOne(J,graha,weights,houseOf){
+  var got=0, max=0, rows=[];
+  (J.vargas||[]).forEach(function(v){
+    var w=weights[v.varga]; if(w==null) return;
+    var sign=(v.positions||{})[graha];
+    if(sign==null){
+      /* vargas are keyed by Sanskrit name; fall back to the English one */
+      for(var kk in (v.positions||{})) if((EN[kk]||kk)===graha) sign=v.positions[kk];
+    }
+    if(sign==null) return;
+    max+=w;
+    var dg=skpPanchadha(graha,sign,houseOf||{}), viswa=SKP_VIM_VISWA[dg];
+    if(viswa==null) viswa=10;            /* a node owns nothing; treat as equal's */
+    var pts=w*viswa/20;
+    got+=pts;
+    rows.push({varga:v.varga, swaviswa:w, sign:sign, dignity:dg,
+               varga_viswa:viswa, points:Math.round(pts*1e4)/1e4});
+  });
+  if(!max) return null;
+  /* v. 26-27: under 5 not capable of good, 5-10 some good, 10-15 mediocre,
+     above 15 wholly favourable. */
+  var grade=got>15?"wholly favourable":got>10?"mediocre":
+            got>5?"some good effects":"not capable of good";
+  return {score_of_20:Math.round(got*1e4)/1e4, max_possible:max,
+          percent:Math.round(got/max*1000)/10, grade:grade, divisions:rows};
+}
+function skpVimsopaka(J){
+  var out={}, houseOf=skpHouseOf(J);
+  Object.keys(SKP_VIM_SCHEMES).forEach(function(name){
+    var S=SKP_VIM_SCHEMES[name], per={};
+    ORD.slice(0,7).forEach(function(g){
+      var r=skpVimsopakaOne(J,g,S.weights,houseOf);
+      if(!r) return;
+      if(S.alternative){
+        var alt=skpVimsopakaOne(J,g,S.alternative,houseOf);
+        if(alt) r.alternative_reading={score_of_20:alt.score_of_20, grade:alt.grade};
+      }
+      per[g]=r;
+    });
+    out[name]={source:S.source, weights:S.weights, grahas:per,
+      reading_certain:!!S.certain};
+    if(S.alternative){
+      out[name].alternative_weights=S.alternative;
+      out[name].alternative_source=S.alternative_source;
+      out[name].caution="Two of the seven Saptavarga figures did not survive the scan of "+
+        "the uploaded edition, and the translator's table on the same page is scrambled. "+
+        "Both readings are given; neither is asserted. Verify against the PDF before use.";
+    }
+  });
+  out.note="Each score is Σ(swaviśva × vargaviśva ÷ 20) over the scheme's "+
+    "divisions, per BPHS Ch. 7 vv. 26–27. A graha continuously in its own vargas "+
+    "scores the full 20. Grades follow the same verses. Rāhu and Ketu own no rāśi, "+
+    "so they are left out rather than given a dignity the text does not assign them.";
+  return out;
+}
+
+/* --- functional status, from the enum the analyst reads ---------------------- */
+function skpFunctionalStatus(J,prior){
+  var ls=J.lagna&&J.lagna.rashi?J.lagna.rashi.idx:null; if(ls==null) return prior||null;
+  var NAT={Sun:"malefic",Moon:"benefic",Mars:"malefic",Mercury:"benefic",
+           Jupiter:"benefic",Venus:"benefic",Saturn:"malefic",Rahu:"malefic",Ketu:"malefic"};
+  var KENDRA=[1,4,7,10], TRIKONA=[1,5,9], DUSTHANA=[6,8,12], MARAKA=[2,7];
+  var out={};
+  (J.grahas||[]).forEach(function(g){
+    var n=EN[g.key]||g.key, owns=[];
+    for(var h=1;h<=12;h++){ if(LORD[(ls+h-1)%12]===n) owns.push(h); }
+    var k=owns.some(function(h){return KENDRA.indexOf(h)>=0;}),
+        t=owns.some(function(h){return TRIKONA.indexOf(h)>=0;}),
+        d=owns.some(function(h){return DUSTHANA.indexOf(h)>=0;}),
+        m=owns.some(function(h){return MARAKA.indexOf(h)>=0;});
+    var st;
+    if(k&&t)        st="yogakaraka";
+    else if(d&&!t)  st="functional_malefic";
+    else if(t)      st="functional_benefic";
+    else if(m)      st="maraka";
+    else            st="neutral";
+    out[n]={status:st, natural:NAT[n]||null, owns_houses:owns,
+      yogakaraka:!!(k&&t), maraka:!!m,
+      kendra_lord:k, trikona_lord:t, dusthana_lord:d,
+      relation_to_lagna_lord:(prior&&prior[n])||null,
+      basis:owns.length?("lord of "+owns.join(", ")+" from the lagna"):
+                        "owns no house from this lagna"};
+  });
+  out.note="The single status value is the enum the analyst reads, resolved by "+
+    "precedence: yogakāraka (owns both an angle and a trine) → functional_malefic "+
+    "(owns a duṣṭhāna and no trine) → functional_benefic (owns a trine) → māraka "+
+    "(owns the 2nd or 7th and nothing stronger) → neutral. The underlying flags are "+
+    "given separately because a graha can be more than one at once. "+
+    "Yogakāraka and māraka are Parāśara's own categories; "+
+    "\"functional benefic\" and \"functional malefic\" are later tradition's "+
+    "vocabulary — BPHS judges a lord by what it owns together with its strength, "+
+    "placement and associations, not by lordship alone, so the single label is a "+
+    "convenience and not a verdict. relation_to_lagna_lord carries the pañcadhā "+
+    "compound relation the standard export put under this key.";
+  return out;
+}
+
+/* --- graha dṛṣṭi as a matrix of virūpas ------------------------------------- */
+function skpGrahaDrishti(J,prior){
+  if(typeof window==="undefined"||typeof window.sphutaDrishti!=="function") return prior||null;
+  var sd=window.sphutaDrishti, lon={}, BEN=["Jupiter","Venus","Mercury","Moon"];
+  (J.grahas||[]).forEach(function(g){ lon[EN[g.key]||g.key]=g.sidereal_deg; });
+  if(J.lagna) lon.Lagna=J.lagna.sidereal_deg;
+  var bodies=ORD.filter(function(n){ return lon[n]!=null; });
+  var matrix={}, received={};
+  bodies.forEach(function(a){
+    matrix[a]={};
+    bodies.concat(lon.Lagna!=null?["Lagna"]:[]).forEach(function(b){
+      if(a===b) return;
+      var v=sd(a,lon[a],lon[b]);
+      if(v>0){
+        matrix[a][b]=Math.round(v*1e4)/1e4;
+        received[b]=received[b]||{total:0, benefic:0, malefic:0, from:{}};
+        received[b].from[a]=Math.round(v*1e4)/1e4;
+        received[b].total+=v;
+        if(BEN.indexOf(a)>=0) received[b].benefic+=v; else received[b].malefic+=v;
+      }
+    });
+  });
+  Object.keys(received).forEach(function(b){
+    var r=received[b];
+    r.total=Math.round(r.total*1e4)/1e4;
+    r.benefic=Math.round(r.benefic*1e4)/1e4;
+    r.malefic=Math.round(r.malefic*1e4)/1e4;
+    r.net=Math.round((r.benefic-r.malefic)*1e4)/1e4;
+  });
+  return {unit:"virupas, 0–60", source:"BPHS Vol. 1, Ch. 26, vv. 1–12 (Sphuṭa Dṛṣṭi)",
+    special_allowances:"Maṅgala +15 across the 4th and 8th, Guru +30 across the 5th "+
+      "and 9th, Śani +45 across the 3rd and 10th, as the sage specifies.",
+    cast:matrix, received:received,
+    whole_sign_view:prior||null,
+    note:"cast[a][b] is the virupas a throws on b, by exact longitude rather than by "+
+      "whole sign, so a graha near a sign boundary reads differently here than in the "+
+      "house-count view kept under whole_sign_view. This is the same formula that feeds "+
+      "Drik Bala in Ṣaḍbala, where each value is quartered and signed."};
+}
+
 /* ---- the payload ---- */
 function buildJyotishaPayload(J){
   if(!J||!J.input) throw new Error("buildJyotishaPayload needs a cast chart with an input block");
@@ -21693,7 +21908,10 @@ function buildJyotishaPayload(J){
          "them with the whole-sign houses to see which grahas shift.",
     houses:D.sripati.houses||null};
   if(!derived.combust) derived.combust=skpCombust(J);
-  if(!derived.status) derived.status=skpStatus(J);
+  derived.status=skpFunctionalStatus(J,D.status)||skpStatus(J);
+  derived.vimsopaka=skpVimsopaka(J)||D.vimsopaka;
+  derived.vimsopaka_shodashavarga_flat=D.vimsopaka||null;
+  derived.graha_drishti=skpGrahaDrishti(J,D.graha_drishti)||D.graha_drishti;
 
   derived.payload_note=
     "This file is the analyst-skill view of the same cast. Field names follow the "+

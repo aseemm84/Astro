@@ -25,15 +25,19 @@ const ok = (name, cond, extra) => {
 const DIGNITY = ["exalted","moolatrikona","own_sign","great_friend","friend",
                  "neutral","enemy","great_enemy","debilitated"];
 const YOGACAT = ["Raja","Dhana","Nabhasa","Chandra","Surya","Arishta","Other"];
-const DERIVED_REQ = ["guide","conventions","sensitivity","houses","combust","chalit",
-  "status","bhava_bala","vimsopaka","ishta_kashta","graha_drishti","rashi_drishti",
-  "argala","ashtakavarga_shodhana","divisional_ashtakavarga","vimshottari_tree",
-  "running_dasha","panchanga_at_birth","avakhada","upagrahas","special_lagnas",
-  "karakamsha","sripati","as_of"];
+/* the revised spec promotes avasthas_full, ashtottari and yogini to required */
+const DERIVED_REQ = ["guide","conventions","sensitivity","as_of","houses","chalit",
+  "combust","status","avasthas_full","bhava_bala","vimsopaka","ishta_kashta",
+  "graha_drishti","rashi_drishti","argala","ashtakavarga_shodhana",
+  "divisional_ashtakavarga","vimshottari_tree","running_dasha","ashtottari","yogini",
+  "panchanga_at_birth","avakhada","upagrahas","special_lagnas","karakamsha","sripati"];
+const STATUS_ENUM = ["yogakaraka","functional_benefic","neutral","functional_malefic","maraka"];
+const VIM_SCHEMES = ["shadvarga","saptavarga","dasavarga","shodashavarga"];
 const GRAHA_REQ = ["longitude_nirayana","rashi_index","rashi_name","degree_in_rashi",
   "nakshatra_name","nakshatra_pada","speed_deg_per_day","is_retrograde","dignity"];
 const META_REQ = ["name","datetime_utc","julian_day","latitude","longitude","timezone_offset"];
-const MANDATORY_VARGAS = ["D1","D9","D10","D4","D7","D12","D2","D3","D30","D60"];
+const MANDATORY_VARGAS = ["D1","D2","D3","D4","D7","D9","D10","D12","D16","D20",
+                          "D24","D27","D30","D40","D45","D60"];
 
 const browser = await chromium.launch();
 const pg = await browser.newPage();
@@ -250,6 +254,135 @@ console.log("\nderived");
      ["true","mean"].includes(P.derived.conventions.node_reckoning));
   ok("sripati gives madhyas and sandhis",
      P.derived.sripati.bhava_madhya.length === 12 && P.derived.sripati.bhava_sandhi.length === 12);
+}
+
+console.log("\nfunctional status");
+{
+  const st = P.derived.status, grahas = Object.keys(st).filter(k => k !== "note");
+  ok("all nine grahas classified", grahas.length === 9, grahas.length + "");
+  const bad = grahas.filter(n => !STATUS_ENUM.includes(st[n].status));
+  ok("status is in the enum", bad.length === 0, bad.map(n => n + "=" + st[n].status).join(" "));
+  ok("every graha states its basis", grahas.every(n => typeof st[n].basis === "string"));
+  ok("the underlying flags are kept, not collapsed",
+     grahas.every(n => typeof st[n].yogakaraka === "boolean" &&
+                       typeof st[n].maraka === "boolean" &&
+                       Array.isArray(st[n].owns_houses)));
+  ok("the panchadha relation the export held is not lost",
+     grahas.some(n => typeof st[n].relation_to_lagna_lord === "string"));
+  /* Mina lagna: the lagna is both an angle and a trine, so its lord is yogakaraka;
+     Jupiter owns 1 and 10, Mercury 4 and 7, Mars 2 and 9, the Moon 5. */
+  ok("the lagna lord comes out yogakaraka", st.Jupiter.status === "yogakaraka",
+     "Jupiter = " + st.Jupiter.status);
+  ok("ownership agrees with the lagna", st.Jupiter.owns_houses.join(",") === "1,10" &&
+     st.Mercury.owns_houses.join(",") === "4,7" && st.Moon.owns_houses.join(",") === "5",
+     JSON.stringify({ J: st.Jupiter.owns_houses, Me: st.Mercury.owns_houses, Mo: st.Moon.owns_houses }));
+  ok("the 2nd and 7th lords are flagged maraka",
+     grahas.filter(n => st[n].maraka).every(n => st[n].owns_houses.some(h => h === 2 || h === 7)) &&
+     grahas.some(n => st[n].maraka));
+  ok("the nodes own nothing and stay neutral",
+     st.Rahu.owns_houses.length === 0 && st.Rahu.status === "neutral");
+  ok("the note says which labels are Parashara's and which are not",
+     /later tradition/.test(st.note) && /yogak/.test(st.note));
+}
+
+console.log("\nvimsopaka, four schemes");
+{
+  const V = P.derived.vimsopaka;
+  for (const k of VIM_SCHEMES) ok("scheme present: " + k, V[k] != null);
+  let bad = [], sums = [];
+  for (const k of VIM_SCHEMES) {
+    const sch = V[k];
+    const w = Object.values(sch.weights).reduce((a, x) => a + x, 0);
+    if (Math.abs(w - 20) > 1e-9) sums.push(k + " weights sum to " + w);
+    if (!/BPHS/.test(sch.source || "")) bad.push(k + " has no source");
+    const g = Object.keys(sch.grahas);
+    if (g.length !== 7) bad.push(k + " covers " + g.length + " grahas");
+    for (const n of g) {
+      const r = sch.grahas[n];
+      if (!(r.score_of_20 >= 0 && r.score_of_20 <= 20)) bad.push(k + "." + n + " out of range");
+      const tot = r.divisions.reduce((a, d) => a + d.points, 0);
+      if (Math.abs(tot - r.score_of_20) > 5e-4) bad.push(k + "." + n + " parts != total");
+      for (const d of r.divisions) {
+        const want = d.swaviswa * d.varga_viswa / 20;
+        if (Math.abs(d.points - want) > 5e-4) bad.push(k + "." + n + "." + d.varga);
+      }
+    }
+  }
+  ok("every scheme's weights sum to 20", sums.length === 0, sums.join(" "));
+  ok("every scheme cites BPHS and covers the seven", bad.length === 0, bad.slice(0, 6).join(" "));
+  ok("each score is the sum of swavisva x vargavisva / 20", bad.length === 0);
+  /* the six Shadvarga weights are stated outright in vv. 17-19 */
+  ok("Shadvarga weights are the verse's 6,2,4,5,2,1",
+     JSON.stringify(V.shadvarga.weights) ===
+     JSON.stringify({ D1: 6, D2: 2, D3: 4, D9: 5, D12: 2, D30: 1 }));
+  /* v. 20: Rasi 3, Shashtiamsa 5, the other eight one and a half */
+  ok("Dasavarga is 3 + 5 + eight at 1.5",
+     V.dasavarga.weights.D1 === 3 && V.dasavarga.weights.D60 === 5 &&
+     Object.values(V.dasavarga.weights).filter(x => x === 1.5).length === 8);
+  ok("Shodashavarga is the sixteen-division set",
+     Object.keys(V.shodashavarga.weights).length === 16 &&
+     V.shodashavarga.weights.D1 === 3.5 && V.shodashavarga.weights.D60 === 4);
+  ok("Saptavarga is flagged uncertain and carries both readings",
+     V.saptavarga.reading_certain === false && V.saptavarga.alternative_weights &&
+     /verify/i.test(V.saptavarga.caution || ""));
+  ok("the alternative Saptavarga reading also sums to 20",
+     Math.abs(Object.values(V.saptavarga.alternative_weights).reduce((a, x) => a + x, 0) - 20) < 1e-9);
+  ok("every graha carries the alternative Saptavarga score",
+     Object.values(V.saptavarga.grahas).every(r => r.alternative_reading &&
+       typeof r.alternative_reading.score_of_20 === "number"));
+  ok("a graha in its own varga throughout would score 20",
+     Object.values(V.shodashavarga.grahas).every(r => r.max_possible === 20));
+  ok("the flat Shodashavarga score the export already had is still there",
+     Array.isArray(P.derived.vimsopaka_shodashavarga_flat));
+  /* the one scheme the export already computed must agree with the new one */
+  const flat = {}; P.derived.vimsopaka_shodashavarga_flat.forEach(r => flat[r.graha] = r.score_of_20);
+  const drift = Object.keys(flat).filter(n =>
+    Math.abs(flat[n] - V.shodashavarga.grahas[n].score_of_20) > 1e-6);
+  ok("the new Shodashavarga score equals the export's own", drift.length === 0,
+     drift.map(n => n + ": " + flat[n] + " vs " + V.shodashavarga.grahas[n].score_of_20).join(" "));
+}
+
+console.log("\ngraha drishti matrix");
+{
+  const G = P.derived.graha_drishti;
+  ok("the matrix is quantitative", G.cast && typeof G.cast === "object" && !Array.isArray(G.cast));
+  ok("the unit is named", /virupa/i.test(G.unit || ""));
+  ok("the source is cited", /Ch\. 26/.test(G.source || ""));
+  ok("the whole-sign view is kept alongside", Array.isArray(G.whole_sign_view));
+  let bad = [];
+  for (const [a, row] of Object.entries(G.cast))
+    for (const [b, v] of Object.entries(row)) {
+      if (a === b) bad.push("self " + a);
+      if (!(v > 0 && v <= 60)) bad.push(a + "->" + b + "=" + v);
+    }
+  ok("every value is a virupa in (0,60]", bad.length === 0, bad.slice(0, 5).join(" "));
+  ok("nine aspecting bodies", Object.keys(G.cast).length === 9, Object.keys(G.cast).length + "");
+  ok("the lagna is aspected but does not aspect",
+     !G.cast.Lagna && Object.values(G.cast).some(r => r.Lagna != null));
+  /* received must be the transpose of cast, and its parts must add up */
+  let tx = [];
+  for (const [b, r] of Object.entries(G.received)) {
+    for (const [a, v] of Object.entries(r.from)) if (G.cast[a][b] !== v) tx.push(a + "->" + b);
+    const sum = Object.values(r.from).reduce((x, y) => x + y, 0);
+    if (Math.abs(sum - r.total) > 5e-4) tx.push(b + " total");
+    if (Math.abs(r.benefic + r.malefic - r.total) > 5e-4) tx.push(b + " split");
+    if (Math.abs(r.benefic - r.malefic - r.net) > 5e-4) tx.push(b + " net");
+  }
+  ok("received is the transpose of cast and its parts add up", tx.length === 0, tx.slice(0, 5).join(" "));
+  /* the matrix must be the same formula that feeds Drik Bala: each aspect quartered
+     and signed. Rebuilt here from the matrix and checked against Shadbala. */
+  const BEN = ["Jupiter", "Venus", "Mercury", "Moon"];
+  let drift = [];
+  for (const [n, sb] of Object.entries(P.shadbala.planets)) {
+    const r = P.derived.graha_drishti.received[n];
+    let drik = 0;
+    if (r) for (const [a, v] of Object.entries(r.from)) drik += (BEN.includes(a) ? v : -v) / 4;
+    if (Math.abs(drik - sb.drik_bala_virupas) > 5e-3)
+      drift.push(n + ": " + drik.toFixed(3) + " vs " + sb.drik_bala_virupas.toFixed(3));
+  }
+  ok("the matrix reproduces Drik Bala exactly", drift.length === 0, drift.join("  "));
+  /* the sage's special allowances must actually be in the numbers */
+  ok("the special allowances are named", /Maṅgala|Guru|Śani/.test(G.special_allowances || ""));
 }
 
 console.log("\ndasha tree");
