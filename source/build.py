@@ -185,7 +185,8 @@ def build_kundli():
     shell = brandify(shell).replace("<!--LOGO-->", logo_mark())
     parts = [("<!--CSS-->", read(SRC, "css", "app.css") + "\n" +
                             read(SRC, "css", "theme-auto.css") + "\n" +
-                            read(SRC, "css", "theme.css"), "style"),
+                            read(SRC, "css", "theme.css") + "\n" +
+                            read(SRC, "css", "cosmos.css"), "style"),
              ("<!--THEMEJS-->", read(SRC, "js", "theme.js"), "script"),
              ("<!--JS0-->", read(VEND, "astronomy.browser.min.js"), "script"),
              ("<!--JS1-->", jsread(SRC, "js", "engine.js"), "script"),
@@ -195,7 +196,8 @@ def build_kundli():
              # define it before either uses it.
              ("<!--JS3-->", jsread(SRC, "js", "places.js") + "\n" +
                             jsread(SRC, "js", "ui.js") + "\n" +
-                            jsread(SRC, "js", "sp-gocharaui.js"), "script")]
+                            jsread(SRC, "js", "sp-gocharaui.js") + "\n" +
+                            jsread(SRC, "js", "sp-cosmos.js"), "script")]
     stamp = build_stamp([shell] + [b for _, b, _ in parts])
     if "<!--BUILD-->" in shell:
         shell = shell.replace("<!--BUILD-->", stamp)
@@ -233,7 +235,8 @@ def build_workstation():
     shell = brandify(shell).replace("<!--LOGO-->", logo_mark())
     parts = [("<!--CSS-->", read(SRC, "css", "app.css") + "\n" +
                             read(SRC, "css", "theme-auto.css") + "\n" +
-                            read(SRC, "css", "theme.css"), "style"),
+                            read(SRC, "css", "theme.css") + "\n" +
+                            read(SRC, "css", "cosmos.css"), "style"),
              ("<!--THEMEJS-->", read(SRC, "js", "theme.js"), "script"),
              ("<!--JS0-->", read(VEND, "astronomy.browser.min.js"), "script"),
              ("<!--JS1-->", jsread(SRC, "js", "engine.js"), "script"),
@@ -242,6 +245,7 @@ def build_workstation():
                             jsread(SRC, "js", "ui.js") + "\n" +
                             jsread(SRC, "js", "sp-voice.js") + "\n" +
                             jsread(SRC, "js", "sp-gocharaui.js") + "\n" +
+                            jsread(SRC, "js", "sp-cosmos.js") + "\n" +
                             jsread(SRC, "js", "sp-workstation.js"), "script")]
     for tok, body, tag in parts:
         shell = shell.replace(tok, "<%s>%s</%s>" % (tag, brandify(body), tag))

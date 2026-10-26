@@ -1,0 +1,229 @@
+/* ===== The look ==========================================================
+
+   Six things, in the order they matter to how the page feels:
+
+     1. a sky behind the content, on the dark palettes only;
+     2. glass for the panels that float on it;
+     3. a moment of ceremony when a chart is cast;
+     4. ornamented, bilingual section headings;
+     5. the chart wheels drawn as light rather than as ink;
+     6. meters, where there is a real ratio to show.
+
+   WHAT IS DELIBERATELY RESTRAINED. The glow is on the chart, the headings
+   and the active control, and nowhere else — a page where everything
+   glows reads as a page where nothing is important. Body text keeps its
+   contrast and its plain background, because the thing being made
+   beautiful is a reference work and it still has to be read for an hour at
+   a time. Every effect here is additive and sits behind a palette or a
+   motion query, so the default page is exactly what it was. */
+
+/* ---- 1. the sky ---------------------------------------------------------- */
+.cosmos{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  /* the canvas carries the stars; the gradient under it is the depth */
+  background:
+    radial-gradient(1200px 700px at 78% -10%, rgba(80,96,168,.22), transparent 62%),
+    radial-gradient(900px 600px at 12% 108%, rgba(132,96,180,.16), transparent 60%);
+  opacity:.9;
+  animation:cosmosin 1.1s ease-out both;
+}
+@keyframes cosmosin{from{opacity:0}to{opacity:.9}}
+html[data-theme="peetambari"] .cosmos{
+  background:
+    radial-gradient(1200px 700px at 78% -10%, rgba(176,140,40,.16), transparent 62%),
+    radial-gradient(900px 600px at 12% 108%, rgba(120,90,20,.14), transparent 60%)}
+html[data-theme="emerald"] .cosmos{
+  background:
+    radial-gradient(1200px 700px at 78% -10%, rgba(30,140,110,.20), transparent 62%),
+    radial-gradient(900px 600px at 12% 108%, rgba(20,110,90,.16), transparent 60%)}
+/* everything the page draws sits above the sky */
+html[data-theme] .masthead,html[data-theme] nav.site,
+html[data-theme] .layout,html[data-theme] footer{position:relative;z-index:1}
+@media(prefers-reduced-motion:reduce){.cosmos{animation:none}}
+
+/* ---- 2. glass ------------------------------------------------------------
+   Only on the dark palettes: a frosted panel over white paper is a smudge.
+   The rim light is what sells it — a single hairline of the accent along
+   the top edge, the way a real pane catches a room. */
+html[data-theme="midnight"] .k-form,
+html[data-theme="peetambari"] .k-form,
+html[data-theme="emerald"] .k-form,
+html[data-theme="midnight"] .gobar,
+html[data-theme="peetambari"] .gobar,
+html[data-theme="emerald"] .gobar{
+  position:relative;
+  background:linear-gradient(180deg,
+    rgba(255,255,255,.055),rgba(255,255,255,.018));
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:16px;
+  box-shadow:0 18px 50px -24px rgba(0,0,0,.9),
+             inset 0 1px 0 rgba(255,255,255,.10);
+  backdrop-filter:blur(10px) saturate(1.1);
+  -webkit-backdrop-filter:blur(10px) saturate(1.1)}
+html[data-theme="midnight"] .k-form::before,
+html[data-theme="peetambari"] .k-form::before,
+html[data-theme="emerald"] .k-form::before{
+  content:"";position:absolute;left:14%;right:14%;top:-1px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  opacity:.75}
+
+/* ---- 3. the casting ceremony --------------------------------------------- */
+body.casting{overflow:hidden}
+.castover{
+  position:fixed;inset:0;z-index:90;display:grid;place-items:center;
+  /* nearly opaque: the first version let the finished report show through
+     and the two competed, which made the ceremony read as a smudge over
+     the page rather than as a moment of its own */
+  background:radial-gradient(1000px 680px at 50% 40%,
+    rgba(9,12,26,.975),rgba(2,4,10,.995) 68%);
+  backdrop-filter:blur(7px) saturate(.6);
+  -webkit-backdrop-filter:blur(7px) saturate(.6);
+  animation:castin .36s ease-out both;padding:24px}
+.castover.gone{animation:castout .42s ease-in both}
+@keyframes castin{from{opacity:0}to{opacity:1}}
+@keyframes castout{from{opacity:1}to{opacity:0}}
+.castinner{text-align:center;max-width:460px}
+.castwheelwrap{display:grid;place-items:center;margin:0 0 18px}
+.castwheel{width:min(74vw,360px);height:auto;overflow:visible;
+  filter:drop-shadow(0 0 26px rgba(245,158,11,.22))}
+.castring{fill:none;stroke:rgba(245,158,11,.42);stroke-width:1.1}
+.castring2{fill:none;stroke:rgba(255,255,255,.12);stroke-width:.8}
+.castspoke{stroke:rgba(245,158,11,.30);stroke-width:.8}
+.casttrail{fill:none;stroke-width:1.4;opacity:.42;stroke-linecap:round}
+.castbody circle{filter:drop-shadow(0 0 7px currentColor)}
+.castglyph{font-size:11px;text-anchor:middle;font-weight:700;
+  paint-order:stroke;stroke:rgba(0,0,0,.65);stroke-width:2.4px}
+.castline{font-family:var(--deva);font-size:clamp(17px,4.4vw,22px);
+  color:#f3e7c8;margin:0 0 4px;font-weight:600;
+  text-shadow:0 0 22px rgba(245,158,11,.30)}
+.castsub{font-size:13px;color:#9aa6c4;margin:0 0 12px;letter-spacing:.02em}
+.castdate{font-family:var(--mono);font-size:clamp(18px,5vw,26px);
+  color:var(--accent,#f59e0b);margin:0 0 10px;font-variant-numeric:tabular-nums;
+  text-shadow:0 0 20px rgba(245,158,11,.35)}
+.casthint{font-size:11.5px;color:#7f89a6;margin:0;line-height:1.5;
+  max-width:36ch;margin-inline:auto}
+@media(prefers-reduced-motion:reduce){
+  .castover,.castover.gone{animation:none}
+  .castwheel{filter:none}
+}
+@media print{.castover{display:none !important}}
+
+/* ---- 4. ornamented headings ----------------------------------------------
+   A small sigil and a rule that fades out, with the Devanāgarī name beside
+   the English where the page has one. The ornament is drawn in CSS rather
+   than fetched, because this site fetches nothing. */
+/* --accent is a SURFACE gold on the light palettes — gold-on-white
+   measured 2.32:1 here. --src-key is the gold meant to be read as text,
+   and is defined dark on light grounds and bright on dark ones. */
+.kdeva{font-family:var(--deva);font-weight:600;opacity:.95;
+  margin-left:.45em;font-size:.82em;color:var(--src-key)}
+html[data-theme="midnight"] h2,html[data-theme="peetambari"] h2,
+html[data-theme="emerald"] h2{
+  position:relative;border-bottom:none;padding-bottom:10px;
+  text-shadow:0 0 30px rgba(245,158,11,.18)}
+html[data-theme="midnight"] h2::after,html[data-theme="peetambari"] h2::after,
+html[data-theme="emerald"] h2::after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:1px;
+  background:linear-gradient(90deg,var(--accent),
+    color-mix(in srgb,var(--accent) 30%,transparent) 38%,transparent 72%)}
+html[data-theme="midnight"] h2::before,html[data-theme="peetambari"] h2::before,
+html[data-theme="emerald"] h2::before{
+  content:"";position:absolute;left:0;bottom:-3px;width:7px;height:7px;
+  border-radius:50%;background:var(--accent);
+  box-shadow:0 0 12px var(--accent)}
+
+/* ---- 5. the wheels, drawn as light ----------------------------------------
+   The report's charts are an SVG with a painted ground and ink lines. On a
+   dark palette that is a sheet of paper stapled to the night; these turn
+   the same SVG into line art that glows. Nothing about the geometry
+   changes — only how it is painted. */
+html[data-theme="midnight"] .kchartsvg,
+html[data-theme="peetambari"] .kchartsvg,
+html[data-theme="emerald"] .kchartsvg,
+html[data-theme="midnight"] .wssvg,
+html[data-theme="peetambari"] .wssvg,
+html[data-theme="emerald"] .wssvg{
+  filter:drop-shadow(0 0 16px color-mix(in srgb,var(--accent) 26%,transparent))}
+html[data-theme="midnight"] .kchartsvg rect[fill="#fbf8f0"],
+html[data-theme="peetambari"] .kchartsvg rect[fill="#fbf8f0"],
+html[data-theme="emerald"] .kchartsvg rect[fill="#fbf8f0"]{
+  fill:rgba(255,255,255,.028)}
+html[data-theme="midnight"] .kchartsvg [stroke="#1d2340"],
+html[data-theme="peetambari"] .kchartsvg [stroke="#1d2340"],
+html[data-theme="emerald"] .kchartsvg [stroke="#1d2340"]{
+  stroke:color-mix(in srgb,var(--accent) 62%,transparent)}
+html[data-theme="midnight"] .kchartsvg text,
+html[data-theme="peetambari"] .kchartsvg text,
+html[data-theme="emerald"] .kchartsvg text{fill:var(--text)}
+html[data-theme="midnight"] .kchartsvg .hp,
+html[data-theme="peetambari"] .kchartsvg .hp,
+html[data-theme="emerald"] .kchartsvg .hp{
+  fill:var(--accent-soft);
+  filter:drop-shadow(0 0 5px color-mix(in srgb,var(--accent) 55%,transparent))}
+html[data-theme="midnight"] .kchartsvg .hs,
+html[data-theme="peetambari"] .kchartsvg .hs,
+html[data-theme="emerald"] .kchartsvg .hs{fill:var(--text-soft)}
+/* The South Indian grid paints a cell per rāśi and fills the lagna's cell
+   with a cream highlight. Unthemed, that one square stayed a lit tile on
+   an otherwise dark board — caught by looking at a rendered chart rather
+   than at the stylesheet, because the fill is an SVG attribute and no CSS
+   rule mentions it. */
+html[data-theme="midnight"] .kchartsvg rect[fill="#f4edda"],
+html[data-theme="peetambari"] .kchartsvg rect[fill="#f4edda"],
+html[data-theme="emerald"] .kchartsvg rect[fill="#f4edda"]{
+  fill:color-mix(in srgb,var(--accent) 16%,transparent)}
+html[data-theme="midnight"] .kchartsvg .sp,
+html[data-theme="peetambari"] .kchartsvg .sp,
+html[data-theme="emerald"] .kchartsvg .sp{
+  fill:var(--accent-soft);
+  filter:drop-shadow(0 0 5px color-mix(in srgb,var(--accent) 55%,transparent))}
+html[data-theme="midnight"] .kchartsvg .ss,
+html[data-theme="peetambari"] .kchartsvg .ss,
+html[data-theme="emerald"] .kchartsvg .ss{fill:var(--text-soft)}
+html[data-theme="midnight"] .kchartsvg .sh,
+html[data-theme="peetambari"] .kchartsvg .sh,
+html[data-theme="emerald"] .kchartsvg .sh{fill:var(--muted-2)}
+html[data-theme="midnight"] .kchartsvg .slag,
+html[data-theme="peetambari"] .kchartsvg .slag,
+html[data-theme="emerald"] .kchartsvg .slag{fill:var(--accent)}
+/* the workstation's own wheels already use tokens; they get the glow only */
+html[data-theme="midnight"] .wsbg,
+html[data-theme="peetambari"] .wsbg,
+html[data-theme="emerald"] .wsbg{fill:rgba(255,255,255,.028)}
+html[data-theme="midnight"] .wshp,
+html[data-theme="peetambari"] .wshp,
+html[data-theme="emerald"] .wshp{
+  filter:drop-shadow(0 0 5px color-mix(in srgb,var(--accent) 55%,transparent))}
+
+/* ---- 6. meters -----------------------------------------------------------
+   For the places where the page already computes a real ratio — ṣaḍbala
+   against its requirement, bindus out of eight, a cusp's distance from its
+   madhya. A bar is read at a glance where a number is read at a pause. */
+.kmeter{display:inline-flex;align-items:center;gap:8px;min-width:110px}
+.kmeter i{display:block;height:7px;border-radius:5px;flex:1;
+  background:var(--soft);border:1px solid var(--line);overflow:hidden;
+  position:relative}
+.kmeter i::after{content:"";position:absolute;inset:0;width:var(--v,0%);
+  border-radius:4px;background:linear-gradient(90deg,
+    color-mix(in srgb,var(--accent) 65%,transparent),var(--accent));
+  transition:width .5s cubic-bezier(.16,1,.3,1)}
+html[data-theme="midnight"] .kmeter i::after,
+html[data-theme="peetambari"] .kmeter i::after,
+html[data-theme="emerald"] .kmeter i::after{
+  box-shadow:0 0 10px color-mix(in srgb,var(--accent) 45%,transparent)}
+.kmeter b{font-variant-numeric:tabular-nums;font-size:12px;
+  color:var(--text-soft);font-weight:600;min-width:34px;text-align:right}
+@media(prefers-reduced-motion:reduce){.kmeter i::after{transition:none}}
+
+/* ---- the cast button, which is the one thing on the page to press -------- */
+html[data-theme="midnight"] #k-go,
+html[data-theme="peetambari"] #k-go,
+html[data-theme="emerald"] #k-go{
+  position:relative;
+  box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 45%,transparent),
+             0 10px 30px -12px color-mix(in srgb,var(--accent) 70%,transparent)}
+html[data-theme="midnight"] #k-go:hover,
+html[data-theme="peetambari"] #k-go:hover,
+html[data-theme="emerald"] #k-go:hover{
+  box-shadow:0 0 0 1px var(--accent),
+             0 14px 40px -12px color-mix(in srgb,var(--accent) 85%,transparent)}
