@@ -276,6 +276,12 @@ def build_pwa(built):
         "start_url": "./index.html",
         "scope": "./",
         "display": "standalone",
+        # window-controls-overlay lets an installed desktop window put its
+        # own chrome in the title bar strip instead of leaving a dead band
+        # above the app — it is what makes an installed PWA stop looking
+        # like a browser with the address bar hidden. Browsers that do not
+        # support it fall through to standalone.
+        "display_override": ["window-controls-overlay", "standalone"],
         "background_color": "#fbfaf7",
         "theme_color": BRAND["navy"],
         "icons": [
@@ -286,9 +292,14 @@ def build_pwa(built):
              "purpose": "maskable"}
         ],
         "shortcuts": [
+            {"name": "Kinetic Workstation", "url": "./kinetic-workstation.html"},
             {"name": "Build a chart", "url": "./kundli.html"},
             {"name": "Hindu time now", "url": "./now.html"}
-        ]
+        ],
+        # the categories an app store or launcher files it under
+        "categories": ["education", "reference", "utilities"],
+        "lang": "en",
+        "dir": "ltr"
     }
     return {"sw.js": sw,
             "manifest.webmanifest": json.dumps(manifest, ensure_ascii=False, indent=2) + "\n"}

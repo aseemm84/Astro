@@ -5,6 +5,10 @@
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": [
+    "window-controls-overlay",
+    "standalone"
+  ],
   "background_color": "#fbfaf7",
   "theme_color": "#1d2340",
   "icons": [
@@ -32,6 +36,10 @@
   ],
   "shortcuts": [
     {
+      "name": "Kinetic Workstation",
+      "url": "./kinetic-workstation.html"
+    },
+    {
       "name": "Build a chart",
       "url": "./kundli.html"
     },
@@ -39,5 +47,12 @@
       "name": "Hindu time now",
       "url": "./now.html"
     }
-  ]
+  ],
+  "categories": [
+    "education",
+    "reference",
+    "utilities"
+  ],
+  "lang": "en",
+  "dir": "ltr"
 }
