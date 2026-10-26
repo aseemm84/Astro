@@ -21870,6 +21870,31 @@ function skpGrahaDrishti(J,prior){
 var SKP_FIRST=["guide","conventions","sensitivity","panchanga_at_birth","houses",
                "status","sripati","chalit","as_of"];
 
+/* The standard export's reading_order is written for a person — "grahas with dignity
+   and avastha". A parser wants the paths. Both are kept: the prose under
+   reading_order_prose, and the dotted paths a reader can resolve directly. */
+function skpGuide(D){
+  var g=(D&&D.guide)||{}, out={};
+  for(var k in g) out[k]=g[k];
+  out.reading_order_prose=g.reading_order||null;
+  out.reading_order=[
+    "derived.conventions","derived.sensitivity","meta","grahas",
+    "derived.houses","derived.chalit","derived.status","derived.sripati",
+    "vargas.D1","vargas.D9","vargas.D10","shadbala.planets",
+    "derived.vimsopaka","derived.bhava_bala","derived.ishta_kashta",
+    "derived.graha_drishti","derived.rashi_drishti","derived.argala",
+    "ashtakavarga","derived.ashtakavarga_shodhana","yogas",
+    "derived.running_dasha","derived.vimshottari_tree","derived.as_of"
+  ];
+  out.caution="Read derived.conventions and derived.sensitivity before anything else. "+
+    "Vargas and anything built on them are the first figures a birth-time error moves, "+
+    "so no divisional reading is safe without the sensitivity block. derived.as_of "+
+    "describes the sky at the moment the file was written and is not part of the "+
+    "nativity. Every figure in this file is computed from the engine output in the same "+
+    "file; none is supplied by hand, and none should be.";
+  return out;
+}
+
 /* ---- the payload ---- */
 function buildJyotishaPayload(J){
   if(!J||!J.input) throw new Error("buildJyotishaPayload needs a cast chart with an input block");
@@ -21900,6 +21925,7 @@ function buildJyotishaPayload(J){
      useful order. */
   var derived={};
   SKP_FIRST.forEach(function(k){ if(D[k]!=null) derived[k]=D[k]; });
+  if(derived.guide) derived.guide=skpGuide(D);
   /* then the whole derived layer, unchanged, and the renamed views over the top */
   for(var k in D) if(derived[k]===undefined) derived[k]=D[k];
   derived.panchanga_at_birth=skpPanchanga(J,D);

@@ -227,6 +227,26 @@ console.log("\nreading order");
      Object.keys(J.derived).every(k => keys.includes(k)));
 }
 
+console.log("\nguide");
+{
+  const g = P.derived.guide;
+  ok("reading_order is a list of resolvable paths",
+     Array.isArray(g.reading_order) && g.reading_order.length > 10);
+  /* every path named must actually resolve in this file */
+  const resolve = p => p.split(".").reduce((o, k) => (o == null ? o : o[k]), P);
+  const dead = g.reading_order.filter(p => resolve(p) == null);
+  ok("every path in reading_order resolves", dead.length === 0, dead.join(" "));
+  ok("conventions and sensitivity are read first",
+     g.reading_order[0] === "derived.conventions" && g.reading_order[1] === "derived.sensitivity");
+  ok("the prose order a person reads is kept", Array.isArray(g.reading_order_prose));
+  ok("the units dictionary names degrees, signs, houses, virupas and Julian Day",
+     /0-360/.test(g.units.longitudes) && /0-11/.test(g.units.signs) &&
+     /1-12/.test(g.units.houses) && /[Vv]irupa/.test(g.units.strength) &&
+     /Julian/.test(g.units.times));
+  ok("the caution says as_of is not the nativity", /not part of the nativity/.test(g.caution));
+  ok("the caution says no figure is supplied by hand", /none is supplied by hand/.test(g.caution));
+}
+
 console.log("\nyogas");
 ok("yogas is a non-empty array", Array.isArray(P.yogas) && P.yogas.length > 0, P.yogas.length + "");
 {
