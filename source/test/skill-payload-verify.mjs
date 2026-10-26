@@ -53,7 +53,10 @@ const got = await pg.evaluate(() => {
   J.derived = window.__deriveForExport(J);
   let P = null, err = null;
   try { P = window.buildJyotishaPayload(J); } catch (e) { err = e.message; }
-  return { J, P, err, hasBuilder: typeof window.buildJyotishaPayload === "function" };
+  const printed = document.querySelector("#limits ~ p code.k-inline, code.k-inline");
+  return { J, P, err, hasBuilder: typeof window.buildJyotishaPayload === "function",
+           pageBuild: window.__kBuild || null,
+           printedBuild: printed ? printed.textContent.trim() : null };
 });
 
 console.log("\nanalyst payload");
@@ -61,7 +64,7 @@ ok("builder is exposed", got.hasBuilder);
 ok("builder did not throw", !got.err, got.err);
 if (!got.P) { console.log("\nno payload — stopping"); await browser.close(); process.exit(1); }
 
-const P = got.P, J = got.J;
+const P = got.P, J = got.J, pageBuild = got.pageBuild;
 
 console.log("\ntop level");
 for (const k of ["meta","grahas","vargas","shadbala","ashtakavarga","yogas","derived"])
@@ -469,6 +472,12 @@ console.log("\nnothing was lost on the way across");
   ok("the original input block is kept verbatim",
      JSON.stringify(P.input) === JSON.stringify(J.input));
   ok("the payload says what it is", /LearnHoroJyotishaChartPayload/.test(P.meta.schema));
+  /* a downloaded file must be able to say which build wrote it, so that "is this
+     current?" is answerable from the file rather than from the repository */
+  ok("meta.build records the build that wrote the file",
+     /^\d{4}-\d{2}-\d{2}\.[0-9a-f]{7}$/.test(P.meta.build || ""), P.meta.build);
+  ok("meta.build matches the build id the page prints",
+     P.meta.build === pageBuild, P.meta.build + " vs " + pageBuild);
 }
 
 console.log("\npage health");

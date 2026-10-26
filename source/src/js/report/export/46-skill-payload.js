@@ -537,6 +537,10 @@ function buildJyotishaPayload(J){
     schema:"LearnHoroJyotishaChartPayload",
     schema_version:"1.1",
     engine:J.substrate_stamp||null,
+    /* Which build of the page wrote this file. The id changes whenever the page's
+       contents change, so an audit of a downloaded file can say whether it is current
+       without anyone having to compare it against the repository. */
+    build:(typeof window!=="undefined"&&window.__kBuild)||null,
     generated_utc:(D.as_of&&D.as_of.generated_iso)||new Date().toISOString()
   };
 

@@ -201,6 +201,11 @@ def build_kundli():
     stamp = build_stamp([shell] + [b for _, b, _ in parts])
     if "<!--BUILD-->" in shell:
         shell = shell.replace("<!--BUILD-->", stamp)
+    # The page already prints the build id for a reader. Put it where the exporters
+    # can reach it too, so a downloaded file says which build wrote it and nobody has
+    # to grep the repo to find out whether a file is current.
+    shell = shell.replace("</head>",
+        '<script>window.__kBuild=%s;</script></head>' % json.dumps(stamp))
     for tok, body, tag in parts:
         if tok not in shell:
             raise SystemExit("token %s missing from the shell" % tok)
@@ -247,6 +252,13 @@ def build_workstation():
                             jsread(SRC, "js", "sp-gocharaui.js") + "\n" +
                             jsread(SRC, "js", "sp-cosmos.js") + "\n" +
                             jsread(SRC, "js", "sp-workstation.js"), "script")]
+    # Same build id as the other pages: content-derived, and reachable from JS so a
+    # downloaded payload records which build produced it.
+    stamp = build_stamp([shell] + [b for _, b, _ in parts])
+    if "<!--BUILD-->" in shell:
+        shell = shell.replace("<!--BUILD-->", stamp)
+    shell = shell.replace("</head>",
+        '<script>window.__kBuild=%s;</script></head>' % json.dumps(stamp))
     for tok, body, tag in parts:
         shell = shell.replace(tok, "<%s>%s</%s>" % (tag, brandify(body), tag))
     return shell
