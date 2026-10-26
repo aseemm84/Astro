@@ -141,6 +141,17 @@
     if (cs) cs.addEventListener("click", function () {
       copy(scriptText(), cs);
     });
+    /* ---- the voiceover text ----------------------------------------------
+       The same beats with everything a voice would read out as noise taken
+       off them: a synthesiser handed "3. [12.4s] Mūla, 240°–253°20′" says the
+       numbers and the brackets, and then says "Moola" wrong. SPScript.speech
+       is the only text in this panel built to be read rather than looked at,
+       so it gets its own button rather than sharing one with the script. */
+    var sy = $("sc-copysay");
+    if (sy) sy.addEventListener("click", function () {
+      var R = window.__reel && window.__reel.reel && window.__reel.reel();
+      copy(R ? window.SPScript.speech(R, LANG) : "", sy);
+    });
     if (ap) ap.addEventListener("click", function () {
       var want = parseFloat(ap.dataset.secs || "0");
       var sl = $("reel-seconds");

@@ -105,6 +105,116 @@
     return out;
   }
 
+  /* ---- the same names in Devanāgarī --------------------------------------
+
+     A Hindi script with "Meṣa" and "Mūla" in Latin letters in the middle of
+     it defeats the one reason to narrate from Devanāgarī at all: a Hindi
+     voice reading Devanāgarī gets every Sanskrit term right by
+     construction, and the same voice reading IAST mangles all of them.
+
+     COPIED FROM 49-motion-lang.js rather than retyped, so the reels, the
+     animations and the pages cannot drift from one another. */
+  var DEV = {
+    rasi: ["मेष","वृषभ","मिथुन","कर्क","सिंह","कन्या","तुला","वृश्चिक","धनु","मकर","कुम्भ","मीन"],
+    nak: ["अश्विनी","भरणी","कृत्तिका","रोहिणी","मृगशिरा","आर्द्रा","पुनर्वसु","पुष्य","आश्लेषा","मघा","पूर्वा फाल्गुनी","उत्तरा फाल्गुनी","हस्त","चित्रा","स्वाती","विशाखा","अनुराधा","ज्येष्ठा","मूल","पूर्वाषाढा","उत्तराषाढा","श्रवण","धनिष्ठा","शतभिषा","पूर्व भाद्रपद","उत्तर भाद्रपद","रेवती"],
+    graha: {Sun:"सूर्य",Moon:"चन्द्र",Mars:"मंगल",Mercury:"बुध",Jupiter:"गुरु",Venus:"शुक्र",Saturn:"शनि",Rahu:"राहु",Ketu:"केतु"}
+  };
+  /* IAST to Devanāgarī for the handful of names the templates substitute */
+  var DEV_OF = {};
+  (function () {
+    var EN_RASI = ["Meṣa","Vṛṣabha","Mithuna","Karka","Siṃha","Kanyā",
+                   "Tulā","Vṛścika","Dhanus","Makara","Kumbha","Mīna"];
+    var EN_GRAHA = {"Sūrya":"Sun","Candra":"Moon","Maṅgala":"Mars",
+                    "Budha":"Mercury","Guru":"Jupiter","Śukra":"Venus",
+                    "Śani":"Saturn","Rāhu":"Rahu","Ketu":"Ketu"};
+    EN_RASI.forEach(function (n, i) { DEV_OF[n] = DEV.rasi[i]; });
+    Object.keys(EN_GRAHA).forEach(function (n) {
+      DEV_OF[n] = DEV.graha[EN_GRAHA[n]];
+    });
+  })();
+  /* the bhāva names themselves: Sanskrit either way, so this is spelling
+     rather than translation, and a Hindi voice needs the Devanāgarī to say
+     "Āyus" and "Kalatra" as Sanskrit rather than as English */
+  ["Tanu","Dhana","Sahaja","Sukha","Putra","Ripu","Kalatra","Āyus",
+   "Bhāgya","Karma","Lābha","Vyaya"].forEach(function (n, i) {
+    DEV_OF[n] = ["तनु","धन","सहज","सुख","पुत्र","रिपु","कलत्र","आयु",
+                 "भाग्य","कर्म","लाभ","व्यय"][i];
+  });
+
+  function dev(name) { return DEV_OF[name] || name; }
+  /* elements, modalities and spans in Hindi. The reel's own figures are
+     English strings built for the caption band; a Hindi line carrying
+     "fire, dual" and "20.2 months" is half-translated, which reads worse
+     than either language on its own. These render from the numbers in the
+     facts rather than from those strings. */
+  /* The twelve bhāvas in Hindi. The significations are the same ones the
+     English template carries, translated — not a different reading of the
+     houses. A Hindi line that says "Karma — action. Ye sambhalta hai:
+     profession, status, authority" is not a Hindi line, and the whole point
+     of narrating from this tab is that a Hindi voice says the Sanskrit
+     correctly. */
+  var HI_CLASS = {
+    "Kendra": "केन्द्र", "Trikoṇa": "त्रिकोण", "Panaphara": "पणफर",
+    "Āpoklima": "आपोक्लिम", "Upacaya": "उपचय", "Dusthāna": "दुःस्थान",
+    "Māraka": "मारक"
+  };
+  var HI_BHAVA = {
+    1:  { lit: "शरीर", kw: "शरीर, रूप, ओज, स्वभाव, बुद्धि, यश — सम्पूर्ण जीवन",
+          ka: "लग्नेश, तथा सूर्य" },
+    2:  { lit: "धन", kw: "संचित धन, कुटुम्ब, भोजन, वाणी, मुख — और एक मारक भाव",
+          ka: "गुरु" },
+    3:  { lit: "साथ जन्मा", kw: "पराक्रम, छोटे भाई-बहन, हाथ, संवाद, लघु यात्रा, प्रयास",
+          ka: "मंगल" },
+    4:  { lit: "सुख", kw: "माता, गृह, भूमि, वाहन, शिक्षा, आंतरिक शान्ति, विषयों का अन्त",
+          ka: "चन्द्र, तथा शिक्षा के लिए बुध" },
+    5:  { lit: "संतान", kw: "संतान, बुद्धि, मन्त्र और मनोबल, प्रेम, सट्टा, पूर्व पुण्य",
+          ka: "गुरु" },
+    6:  { lit: "शत्रु", kw: "शत्रु, रोग, ऋण, वाद-विवाद, सेवा, प्रतिस्पर्धा",
+          ka: "मंगल और शनि" },
+    7:  { lit: "जीवनसाथी", kw: "जीवनसाथी, विवाह, साझेदारी, व्यापार, विदेश-निवास",
+          ka: "शुक्र" },
+    8:  { lit: "आयु", kw: "आयु, उलट-फेर, जीर्ण रोग, उत्तराधिकार और दूसरों का धन, गुप्त विषय",
+          ka: "शनि" },
+    9:  { lit: "भाग्य", kw: "भाग्य, धर्म, पिता, गुरु, उच्च विद्या, तीर्थ, दीर्घ यात्रा",
+          ka: "गुरु, तथा पिता के लिए सूर्य" },
+    10: { lit: "कार्य", kw: "आजीविका, प्रतिष्ठा, अधिकार, कर्म, कीर्ति, शासन",
+          ka: "सूर्य, बुध, गुरु और शनि — चारों मिलकर" },
+    11: { lit: "लाभ", kw: "लाभ, आय, बड़े भाई-बहन, सम्पर्क, पूर्ण हुई आशाएँ",
+          ka: "गुरु" },
+    12: { lit: "व्यय", kw: "व्यय, हानि, विदेश, एकान्त, चरण, मोक्ष",
+          ka: "शनि, तथा शयन-सुख के लिए शुक्र" }
+  };
+
+  var HI_ELEM = { fire: "अग्नि", earth: "पृथ्वी", air: "वायु", water: "जल" };
+  var HI_MODE = { movable: "चर", fixed: "स्थिर", dual: "द्विस्वभाव" };
+  function hiB(F, k) {
+    var r = HI_BHAVA[F.num];
+    if (r && r[k]) return r[k];
+    return k === "lit" ? F.lit : (k === "kw" ? F.keywords : F.karaka);
+  }
+
+  function hiSpan(d) {
+    if (d == null) return "—";
+    if (d < 3) {
+      var h = Math.round(d * 24), dd = Math.floor(h / 24);
+      return dd ? dd + " दिन " + (h % 24) + " घंटे" : h + " घंटे";
+    }
+    if (d < 70) return Math.round(d) + " दिन";
+    var mo = d / 30.44;
+    if (mo < 22) return mo.toFixed(1) + " माह";
+    return (d / 365.2564).toFixed(1) + " वर्ष";
+  }
+  function hiMins(m) {
+    if (m == null) return "—";
+    var h = Math.floor(m / 60), r = Math.round(m % 60);
+    return h ? h + " घंटे " + r + " मिनट" : r + " मिनट";
+  }
+
+  /* the nakṣatra names are published for the story builders, which know the
+     index but not this table */
+  try { window.MO_DEV_NAK = DEV.nak; } catch (e) {}
+  function devList(a) { return a.map(dev); }
+
   /* ---- the words ---------------------------------------------------------
      One function per language per subject, each a template over the facts.
      A missing template falls through to the generic frame rather than to an
@@ -120,8 +230,8 @@
         return [
           F.num + ". " + F.name + " — seema " + F.loTxt + " se " + F.hiTxt +
             ", nirayan bhog. Ye rahi woh patti aasman ki, seedhi kholkar.",
-          "Iske aage " + F.name + " aur peeche-aage ke padosi — poora " +
-            "13°20' ka khaana, do lakeeron ke beech.",
+          "Do sunehri lakeeron ke beech poora 13°20' ka khaana — pehle " +
+            F.prev + ", baad me " + F.next + ".",
           "Ab asli taare. Is patti mein " + F.inWin + " taare hain, magnitude " +
             "5.4 tak, kranti-vritt se " + F.latLim.toFixed(0) + "° ke andar.",
           F.inside
@@ -142,9 +252,10 @@
       },
       hi: function (F) {
         return [
-          F.num + ". " + F.name + " — सीमा " + F.loTxt + " से " + F.hiTxt +
+          F.num + ". " + (F.nakDev || F.name) + " — सीमा " + F.loTxt + " से " + F.hiTxt +
             ", निरयण भोग। यह रही आकाश की वह पट्टी, सीधी खोलकर।",
-          "दो सुनहरी रेखाओं के बीच पूरा 13°20' का खाना, और दोनों ओर पड़ोसी नक्षत्र।",
+          "दो सुनहरी रेखाओं के बीच पूरा 13°20' का खाना — पहले " +
+            (F.prevDev || F.prev) + ", बाद में " + (F.nextDev || F.next) + "।",
           "अब असली तारे। इस पट्टी में " + F.inWin + " तारे हैं, कांति " +
             "5.4 तक, क्रांतिवृत्त से " + F.latLim.toFixed(0) + "° के भीतर।",
           F.inside
@@ -155,10 +266,10 @@
               F.bayer + ", " + F.starLon.toFixed(2) + "° — वह अपने खाने से " +
               F.offTxt + " बाहर है। सत्ताईस में से सात के साथ यही है।",
           "चार पाद, प्रत्येक 3°20' — जो ठीक एक नवांश है। इनके नवांश: " +
-            padaList(F) + "।",
-          "राशि से यह " + F.rashi + " में पड़ता है" +
-            (F.rashi2 ? " और " + F.rashi2 + " तक जाता है।" : "।"),
-          "दशा का स्वामी " + F.lord + " — " + F.lordYears + " वर्ष की महादशा, " +
+            devList(F.padas).join(" · ") + "।",
+          "राशि से यह " + dev(F.rashi) + " में पड़ता है" +
+            (F.rashi2 ? " और " + dev(F.rashi2) + " तक जाता है।" : "।"),
+          "दशा का स्वामी " + dev(F.lord) + " — " + F.lordYears + " वर्ष की महादशा, " +
             "जितनी शेष हो उतनी। Stellarium में स्वयं जाँच लीजिए।"
         ];
       }
@@ -190,19 +301,21 @@
       hi: function (F) {
         var c = F.cross;
         return [
-          F.num + ". " + F.name + " — " + F.lo + "° से " + F.hi +
+          F.num + ". " + dev(F.name) + " — " + F.lo + "° से " + F.hi +
             "°, तीस अंश। यही पट्टी है, सीधी खोलकर।",
           "इस खिड़की में " + F.inWin + " तारे हैं; " + F.inArc + " " +
-            F.name + " के भीतर।",
+            dev(F.name) + " के भीतर।",
           "तीस अंश अर्थात् सवा दो नक्षत्र — इसीलिए दोनों व्यवस्थाएँ कभी नहीं मिलतीं। " +
             F.naksWhole + " पूरे भीतर, " + F.naksCut + " किनारों से कटे।",
-          F.name + " का स्वामी " + F.lord + ", तत्व " + F.elem + ", " +
-            F.mode + " राशि।",
+          dev(F.name) + " का स्वामी " + dev(F.lord) + ", तत्व " +
+            (HI_ELEM[F.elem] || F.elem) + ", " +
+            (HI_MODE[F.mode] || F.mode) + " राशि।",
           "प्रत्येक ग्रह इसे पार करने में कितना लेता है — मापा हुआ, प्रथम प्रवेश से " +
             "अंतिम निकास तक: " +
-            c.map(function (q) { return q.name + " " + q.txt; }).join(", ") + "।",
+            c.map(function (q) { return dev(q.name) + " " + hiSpan(q.days); })
+             .join(", ") + "।",
           F.riseTxt
-            ? F.name + " को उदित होने में " + F.riseTxt + " लगते हैं" +
+            ? dev(F.name) + " को उदित होने में " + hiMins(F.riseMin) + " लगते हैं" +
               (F.place ? " (" + F.place + ")" : "") + " — दो घंटे नहीं।"
             : "उदय काल स्थान पर निर्भर है।"
         ];
@@ -227,11 +340,13 @@
       hi: function (F) {
         return [
           "भाव अर्थात् जीवन का एक क्षेत्र, लग्न से गिना हुआ। बारह भाव सम्पूर्ण अनुभव को ढक लेते हैं।",
-          F.num + ". " + F.name + " — " + F.lit + "। लग्न से " + F.from +
-            "° पर आरम्भ, " + F.to + "° तक।",
-          "यह सँभालता है: " + F.keywords + "।",
-          "वर्ग से यह " + F.classes.join(" और ") + " है।",
-          "इसका कारक — स्वाभाविक सूचक — " + F.karaka + "।",
+          F.num + ". " + dev(F.name) + " — " + hiB(F, "lit") + "। लग्न से " +
+            F.from + "° पर आरम्भ, " + F.to + "° तक।",
+          "यह सँभालता है: " + hiB(F, "kw") + "।",
+          "वर्ग से यह " +
+            F.classes.map(function (c) { return HI_CLASS[c] || c; })
+             .join(" और ") + " है।",
+          "इसका कारक — स्वाभाविक सूचक — " + hiB(F, "ka") + "।",
           "इसका स्वामी जहाँ भी जाए, ये विषय साथ ले जाता है।",
           "कोई भाव अकेले नहीं पढ़ा जाता। स्वामी की स्थिति, बैठे ग्रह, दृष्टि और दशा — " +
             "सब मिलकर तय करते हैं।"
@@ -295,6 +410,158 @@
     return (s.match(/[aeiouāīūṛēō]+/gi) || []).length;
   }
   function readSecs(s, lang) { return syllables(s, lang) / 4.0; }
+
+  /* ---- text a speech engine can actually read ---------------------------
+
+     The teleprompter is for a human eye: it carries the beat number and the
+     seconds that beat is on screen, because that is what tells you how fast
+     to read. Paste that into a text-to-speech engine and it dutifully says
+     "one, four point seven seconds" before every line.
+
+     It is not only the timings. A reel's own notation is written for a
+     reader and is hostile to a voice:
+
+       13°20′      read as "thirteen twenty", or silently dropped
+       λ Sco       the Greek letter skipped entirely
+       Jyeṣṭhā     the diacritics mangled or spelt out
+       —  ·        no pause where the sentence wants one
+
+     So this is a second rendering of the same lines with nothing in it that
+     is not meant to be said. The degrees are spoken, the Greek letters are
+     named, and the Sanskrit is respelt phonetically — for the Latin scripts
+     only. The Devanāgarī one is left alone, because a Hindi voice reading
+     Devanāgarī gets every one of those terms right by construction, which
+     is the whole reason that script is the one to narrate from. */
+
+  var GREEK_SAY = {
+    "α": "alpha", "β": "beta", "γ": "gamma", "δ": "delta", "ε": "epsilon",
+    "ζ": "zeta", "η": "eta", "θ": "theta", "ι": "iota", "κ": "kappa",
+    "λ": "lambda", "μ": "mu", "ν": "nu", "ξ": "xi", "ο": "omicron",
+    "π": "pi", "ρ": "rho", "σ": "sigma", "τ": "tau", "υ": "upsilon",
+    "φ": "phi", "χ": "chi", "ψ": "psi", "ω": "omega",
+    "¹": " one", "²": " two", "³": " three", "⁴": " four", "⁵": " five"
+  };
+
+  /* IAST to something an Indian-English voice says correctly. The rules are
+     character-level and safe, because every one of these characters is
+     non-ASCII and so appears only in a Sanskrit term — "catalogue" cannot
+     be caught by them. The one rule that is NOT safe is c → ch, which is
+     right for Sanskrit (Candra is "Chandra") and wrong for English, so it
+     is applied only to words that carry a diacritic, plus a short list of
+     Sanskrit words that happen not to. */
+  var IAST_SAY = [
+    [/ṝ/g, "ree"], [/ṛ/g, "ri"], [/ḹ/g, "lree"], [/ḷ/g, "lri"],
+    [/ā/g, "aa"], [/ī/g, "ee"], [/ū/g, "oo"], [/ē/g, "e"], [/ō/g, "o"],
+    [/ṅ/g, "ng"], [/ñ/g, "ny"], [/ṇ/g, "n"], [/ṃ/g, "n"], [/ṁ/g, "n"],
+    [/ś/g, "sh"], [/ṣ/g, "sh"], [/ṭ/g, "t"], [/ḍ/g, "d"], [/ḥ/g, "h"],
+    [/Ṝ/g, "Ree"], [/Ṛ/g, "Ri"], [/Ā/g, "Aa"], [/Ī/g, "Ee"], [/Ū/g, "Oo"],
+    [/Ṅ/g, "Ng"], [/Ñ/g, "Ny"], [/Ṇ/g, "N"], [/Ṃ/g, "N"],
+    [/Ś/g, "Sh"], [/Ṣ/g, "Sh"], [/Ṭ/g, "T"], [/Ḍ/g, "D"]
+  ];
+  var DIACRITIC = /[āīūṛṝḷḹṅñṇṃṁśṣṭḍḥĀĪŪṚṜṄÑṆṂŚṢṬḌ]/;
+  /* Sanskrit words with no diacritic to mark them, where c is still "ch" */
+  var SAY_C = /^(Candra|Caitra|Caturtha|Citra|Cara)/;
+
+  function sayWord(w) {
+    var had = DIACRITIC.test(w) || SAY_C.test(w);
+    var out = w;
+    IAST_SAY.forEach(function (r) { out = out.replace(r[0], r[1]); });
+    if (had) {
+      out = out.replace(/jñ/g, "gy").replace(/Jñ/g, "Gy");
+      out = out.replace(/c/g, "ch").replace(/C/g, "Ch");
+      out = out.replace(/chh/g, "ch").replace(/Chh/g, "Ch");
+    }
+    /* "Jyeshthaa" and "mahaadashaa" are right but clumsy; a word-final
+       double a is the one place the doubling buys nothing, because a voice
+       lengthens a final a anyway */
+    out = out.replace(/aa\b/g, "a");
+    return out;
+  }
+
+  function sayDegrees(t, lang) {
+    var deg = lang === "hi" ? " अंश" : " degrees";
+    var min = lang === "hi" ? " कला" : " minutes";
+    /* 253°20′ → 253 degrees 20 minutes; 240°00′ → 240 degrees, because
+       "zero minutes" is noise nobody says out loud */
+    t = t.replace(/(\d+)°\s*0{1,2}['′]/g, "$1" + deg);
+    t = t.replace(/(\d+)°\s*(\d+)['′]/g, "$1" + deg + " $2" + min);
+    t = t.replace(/(\d+(?:\.\d+)?)°/g, "$1" + deg);
+    return t;
+  }
+
+  /* "2 d 11 h" is a caption band's abbreviation: it fits where "2 days 11
+     hours" would not, and a voice reads it out as the letters dee and aitch.
+     The number before each one decides the plural, and a unit that is
+     already a word is left alone. */
+  /* A Bayer designation is written "β Ari" and read "beta Arietis": the
+     letter belongs to the constellation, so the constellation is spoken in
+     the genitive. Left as the three-letter abbreviation a voice says "airy"
+     for Ari and "sko" for Sco, which is not a star name in any language.
+     Only the constellations the star list actually reaches are here; an
+     abbreviation this table does not know is left alone rather than
+     guessed at. */
+  var CONSTEL_SAY = {
+    Ari: "Arietis", Tau: "Tauri", Ori: "Orionis", Gem: "Geminorum",
+    Hya: "Hydrae", Leo: "Leonis", Crv: "Corvi", Vir: "Virginis",
+    Boo: "Bo\u00f6tis", Lib: "Librae", Sco: "Scorpii", Sgr: "Sagittarii",
+    Aql: "Aquilae", Del: "Delphini", Aqr: "Aquarii", Peg: "Pegasi",
+    Psc: "Piscium", Cnc: "Cancri", Cap: "Capricorni", Oph: "Ophiuchi",
+    Sct: "Scuti", Cet: "Ceti", Eri: "Eridani", CMa: "Canis Majoris",
+    CMi: "Canis Minoris", Lup: "Lupi", Crt: "Crateris", Sex: "Sextantis"
+  };
+  function sayStars(t) {
+    return t.replace(/\b([A-Z][A-Za-z]{2})\b/g, function (all, a) {
+      return CONSTEL_SAY[a] || all;
+    });
+  }
+
+  var UNIT_SAY = {
+    en: { d: ["day", "days"], h: ["hour", "hours"], m: ["minute", "minutes"],
+          s: ["second", "seconds"], y: ["year", "years"] },
+    hi: { d: ["दिन", "दिन"], h: ["घंटा", "घंटे"], m: ["मिनट", "मिनट"],
+          s: ["सेकंड", "सेकंड"], y: ["वर्ष", "वर्ष"] }
+  };
+  function sayUnits(t, lang) {
+    var tab = UNIT_SAY[lang === "hi" ? "hi" : "en"];
+    return t.replace(/(\d+(?:\.\d+)?)\s*([dhmsy])\b(?!['’])/g,
+      function (all, n, u) {
+        var w = tab[u];
+        if (!w) return all;
+        return n + " " + (parseFloat(n) === 1 ? w[0] : w[1]);
+      });
+  }
+
+  function speakable(line, lang) {
+    var t = line;
+    t = sayDegrees(t, lang);
+    t = sayUnits(t, lang);
+    t = sayStars(t);
+    Object.keys(GREEK_SAY).forEach(function (g) {
+      t = t.split(g).join(GREEK_SAY[g]);
+    });
+    if (lang !== "hi")
+      t = t.replace(/[^\s,.;:!?()"'—·]+/g, sayWord);
+    /* punctuation that is a pause when read and a mark when seen */
+    /* a minus sign is a word when spoken; the hyphen that joins two words
+       is not, so only one in front of a number is touched */
+    t = t.replace(/[\u2212-]\s*(?=\d)/g, lang === "hi" ? "\u090b\u0923 " : "minus ");
+    t = t.replace(/\s*[—–]\s*/g, ", ");
+    t = t.replace(/\s*·\s*/g, ", ");
+    t = t.replace(/\s*:\s*/g, ": ");
+    t = t.replace(/\s{2,}/g, " ").trim();
+    /* a line always ends in something that makes the voice stop */
+    if (!/[.!?।]$/.test(t)) t += ".";
+    return t;
+  }
+
+  /* the whole reel as one block of speech: one paragraph per beat, nothing
+     else, ready to paste into a phone's dictation shortcut */
+  function speech(reel, lang) {
+    var r = render(reel, lang);
+    if (!r) return "";
+    return r.beats.map(function (b) { return speakable(b.say, lang); })
+            .join("\n\n");
+  }
 
   /* ---- the caption -------------------------------------------------------
      Everything a viewer would need to check the claim, and the question
@@ -437,5 +704,6 @@
 
   window.SPScript = { LANGS: LANGS, render: render, beatTimes: beatTimes,
                       readSecs: readSecs, syllables: syllables,
-                      suggestSeconds: suggestSeconds };
+                      suggestSeconds: suggestSeconds,
+                      speech: speech, speakable: speakable };
 })();

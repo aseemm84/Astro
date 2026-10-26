@@ -1492,6 +1492,23 @@ page says so rather than inventing a rhythm.</p>
     <progress id="reel-prog" value="0" max="100" class="reelprog"></progress>
     <p class="reelnote" id="reel-note" hidden></p>
 
+    <h3 class="reelsub">Voice</h3>
+    <div class="reelrow">
+      <label class="reelbtn ghost" for="reel-voice">Choose a voice file</label>
+      <input type="file" id="reel-voice" accept="audio/*,.m4a,.wav,.mp3,.aac"
+             hidden>
+      <button type="button" id="reel-voicefit" class="reelbtn ghost" hidden>Set
+        the reel to the voice</button>
+      <button type="button" id="reel-voiceoff" class="reelbtn ghost"
+              hidden>Remove</button>
+    </div>
+    <p class="reelnote" id="reel-voicenote" hidden></p>
+    <p class="reelnote2">Optional, and it never leaves this machine — the file
+    is decoded in the page and written into the export here. Nothing is
+    uploaded. The reel bends to the voice rather than the other way round: the
+    file's real length is measured and offered back, so no sentence is cut in
+    half. M4A, WAV and MP3 decode; <span class="mono">.caf</span> does not.</p>
+
     <h3 class="reelsub">What was found</h3>
     <div id="reel-stats"></div>
   </div>
@@ -1530,8 +1547,24 @@ deceleration into holds included.</p>
     <button type="button" class="reelbtn" id="sc-copycap">Copy the caption</button>
     <button type="button" class="reelbtn ghost" id="sc-copyscript">Copy the
       script</button>
+    <button type="button" class="reelbtn ghost" id="sc-copysay">Copy for
+      voiceover</button>
     <span class="scnote" id="sc-copied" hidden>Copied.</span>
   </div>
+  <p class="reelnote2">“Copy the script” is for reading off the screen: it keeps
+  the beat numbers and the second marks. <strong>“Copy for voiceover” is for a
+  machine to read aloud</strong> — numbers, marks and the bar dividers are gone,
+  <span class="mono">253°20′</span> becomes “253 degrees 20 minutes”, λ becomes
+  “lambda”, and on the two Latin tabs the diacritics are respelt the way they
+  sound. Nothing is left in it that is not meant to be spoken. The
+  <strong>हिंदी</strong> tab is the one to narrate: a Hindi voice reading
+  Devanāgarī pronounces every Sanskrit term correctly by construction, where an
+  English voice reading <span class="mono">Mūla</span> will not.</p>
+  <p class="reelnote2">If you are using the iPhone Shortcut (Get Clipboard →
+  Make Spoken Audio from Text → Save File), add one more action after the spoken
+  audio: <strong>Encode Media</strong>, set to Audio Only, M4A. Safari and Chrome
+  cannot decode the <span class="mono">.caf</span> file the Shortcut saves on its
+  own; M4A and WAV both import here.</p>
   <p class="reelnote2">Yoni, gaṇa and nāḍī are later tradition, not BPHS, and
   the caption says so where it uses them. The only claim made about the
   thirty-six points is arithmetic: tārā 3 + yoni 4 + gaṇa 6 + nāḍī 8 = 21 of

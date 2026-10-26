@@ -11185,6 +11185,116 @@ try{window.ECLIP_LABELS=ECLIP_LABELS;window.ECLIP_STARS=ECLIP_STARS;}catch(e){}
     return out;
   }
 
+  /* ---- the same names in Devanāgarī --------------------------------------
+
+     A Hindi script with "Meṣa" and "Mūla" in Latin letters in the middle of
+     it defeats the one reason to narrate from Devanāgarī at all: a Hindi
+     voice reading Devanāgarī gets every Sanskrit term right by
+     construction, and the same voice reading IAST mangles all of them.
+
+     COPIED FROM 49-motion-lang.js rather than retyped, so the reels, the
+     animations and the pages cannot drift from one another. */
+  var DEV = {
+    rasi: ["मेष","वृषभ","मिथुन","कर्क","सिंह","कन्या","तुला","वृश्चिक","धनु","मकर","कुम्भ","मीन"],
+    nak: ["अश्विनी","भरणी","कृत्तिका","रोहिणी","मृगशिरा","आर्द्रा","पुनर्वसु","पुष्य","आश्लेषा","मघा","पूर्वा फाल्गुनी","उत्तरा फाल्गुनी","हस्त","चित्रा","स्वाती","विशाखा","अनुराधा","ज्येष्ठा","मूल","पूर्वाषाढा","उत्तराषाढा","श्रवण","धनिष्ठा","शतभिषा","पूर्व भाद्रपद","उत्तर भाद्रपद","रेवती"],
+    graha: {Sun:"सूर्य",Moon:"चन्द्र",Mars:"मंगल",Mercury:"बुध",Jupiter:"गुरु",Venus:"शुक्र",Saturn:"शनि",Rahu:"राहु",Ketu:"केतु"}
+  };
+  /* IAST to Devanāgarī for the handful of names the templates substitute */
+  var DEV_OF = {};
+  (function () {
+    var EN_RASI = ["Meṣa","Vṛṣabha","Mithuna","Karka","Siṃha","Kanyā",
+                   "Tulā","Vṛścika","Dhanus","Makara","Kumbha","Mīna"];
+    var EN_GRAHA = {"Sūrya":"Sun","Candra":"Moon","Maṅgala":"Mars",
+                    "Budha":"Mercury","Guru":"Jupiter","Śukra":"Venus",
+                    "Śani":"Saturn","Rāhu":"Rahu","Ketu":"Ketu"};
+    EN_RASI.forEach(function (n, i) { DEV_OF[n] = DEV.rasi[i]; });
+    Object.keys(EN_GRAHA).forEach(function (n) {
+      DEV_OF[n] = DEV.graha[EN_GRAHA[n]];
+    });
+  })();
+  /* the bhāva names themselves: Sanskrit either way, so this is spelling
+     rather than translation, and a Hindi voice needs the Devanāgarī to say
+     "Āyus" and "Kalatra" as Sanskrit rather than as English */
+  ["Tanu","Dhana","Sahaja","Sukha","Putra","Ripu","Kalatra","Āyus",
+   "Bhāgya","Karma","Lābha","Vyaya"].forEach(function (n, i) {
+    DEV_OF[n] = ["तनु","धन","सहज","सुख","पुत्र","रिपु","कलत्र","आयु",
+                 "भाग्य","कर्म","लाभ","व्यय"][i];
+  });
+
+  function dev(name) { return DEV_OF[name] || name; }
+  /* elements, modalities and spans in Hindi. The reel's own figures are
+     English strings built for the caption band; a Hindi line carrying
+     "fire, dual" and "20.2 months" is half-translated, which reads worse
+     than either language on its own. These render from the numbers in the
+     facts rather than from those strings. */
+  /* The twelve bhāvas in Hindi. The significations are the same ones the
+     English template carries, translated — not a different reading of the
+     houses. A Hindi line that says "Karma — action. Ye sambhalta hai:
+     profession, status, authority" is not a Hindi line, and the whole point
+     of narrating from this tab is that a Hindi voice says the Sanskrit
+     correctly. */
+  var HI_CLASS = {
+    "Kendra": "केन्द्र", "Trikoṇa": "त्रिकोण", "Panaphara": "पणफर",
+    "Āpoklima": "आपोक्लिम", "Upacaya": "उपचय", "Dusthāna": "दुःस्थान",
+    "Māraka": "मारक"
+  };
+  var HI_BHAVA = {
+    1:  { lit: "शरीर", kw: "शरीर, रूप, ओज, स्वभाव, बुद्धि, यश — सम्पूर्ण जीवन",
+          ka: "लग्नेश, तथा सूर्य" },
+    2:  { lit: "धन", kw: "संचित धन, कुटुम्ब, भोजन, वाणी, मुख — और एक मारक भाव",
+          ka: "गुरु" },
+    3:  { lit: "साथ जन्मा", kw: "पराक्रम, छोटे भाई-बहन, हाथ, संवाद, लघु यात्रा, प्रयास",
+          ka: "मंगल" },
+    4:  { lit: "सुख", kw: "माता, गृह, भूमि, वाहन, शिक्षा, आंतरिक शान्ति, विषयों का अन्त",
+          ka: "चन्द्र, तथा शिक्षा के लिए बुध" },
+    5:  { lit: "संतान", kw: "संतान, बुद्धि, मन्त्र और मनोबल, प्रेम, सट्टा, पूर्व पुण्य",
+          ka: "गुरु" },
+    6:  { lit: "शत्रु", kw: "शत्रु, रोग, ऋण, वाद-विवाद, सेवा, प्रतिस्पर्धा",
+          ka: "मंगल और शनि" },
+    7:  { lit: "जीवनसाथी", kw: "जीवनसाथी, विवाह, साझेदारी, व्यापार, विदेश-निवास",
+          ka: "शुक्र" },
+    8:  { lit: "आयु", kw: "आयु, उलट-फेर, जीर्ण रोग, उत्तराधिकार और दूसरों का धन, गुप्त विषय",
+          ka: "शनि" },
+    9:  { lit: "भाग्य", kw: "भाग्य, धर्म, पिता, गुरु, उच्च विद्या, तीर्थ, दीर्घ यात्रा",
+          ka: "गुरु, तथा पिता के लिए सूर्य" },
+    10: { lit: "कार्य", kw: "आजीविका, प्रतिष्ठा, अधिकार, कर्म, कीर्ति, शासन",
+          ka: "सूर्य, बुध, गुरु और शनि — चारों मिलकर" },
+    11: { lit: "लाभ", kw: "लाभ, आय, बड़े भाई-बहन, सम्पर्क, पूर्ण हुई आशाएँ",
+          ka: "गुरु" },
+    12: { lit: "व्यय", kw: "व्यय, हानि, विदेश, एकान्त, चरण, मोक्ष",
+          ka: "शनि, तथा शयन-सुख के लिए शुक्र" }
+  };
+
+  var HI_ELEM = { fire: "अग्नि", earth: "पृथ्वी", air: "वायु", water: "जल" };
+  var HI_MODE = { movable: "चर", fixed: "स्थिर", dual: "द्विस्वभाव" };
+  function hiB(F, k) {
+    var r = HI_BHAVA[F.num];
+    if (r && r[k]) return r[k];
+    return k === "lit" ? F.lit : (k === "kw" ? F.keywords : F.karaka);
+  }
+
+  function hiSpan(d) {
+    if (d == null) return "—";
+    if (d < 3) {
+      var h = Math.round(d * 24), dd = Math.floor(h / 24);
+      return dd ? dd + " दिन " + (h % 24) + " घंटे" : h + " घंटे";
+    }
+    if (d < 70) return Math.round(d) + " दिन";
+    var mo = d / 30.44;
+    if (mo < 22) return mo.toFixed(1) + " माह";
+    return (d / 365.2564).toFixed(1) + " वर्ष";
+  }
+  function hiMins(m) {
+    if (m == null) return "—";
+    var h = Math.floor(m / 60), r = Math.round(m % 60);
+    return h ? h + " घंटे " + r + " मिनट" : r + " मिनट";
+  }
+
+  /* the nakṣatra names are published for the story builders, which know the
+     index but not this table */
+  try { window.MO_DEV_NAK = DEV.nak; } catch (e) {}
+  function devList(a) { return a.map(dev); }
+
   /* ---- the words ---------------------------------------------------------
      One function per language per subject, each a template over the facts.
      A missing template falls through to the generic frame rather than to an
@@ -11200,8 +11310,8 @@ try{window.ECLIP_LABELS=ECLIP_LABELS;window.ECLIP_STARS=ECLIP_STARS;}catch(e){}
         return [
           F.num + ". " + F.name + " — seema " + F.loTxt + " se " + F.hiTxt +
             ", nirayan bhog. Ye rahi woh patti aasman ki, seedhi kholkar.",
-          "Iske aage " + F.name + " aur peeche-aage ke padosi — poora " +
-            "13°20' ka khaana, do lakeeron ke beech.",
+          "Do sunehri lakeeron ke beech poora 13°20' ka khaana — pehle " +
+            F.prev + ", baad me " + F.next + ".",
           "Ab asli taare. Is patti mein " + F.inWin + " taare hain, magnitude " +
             "5.4 tak, kranti-vritt se " + F.latLim.toFixed(0) + "° ke andar.",
           F.inside
@@ -11222,9 +11332,10 @@ try{window.ECLIP_LABELS=ECLIP_LABELS;window.ECLIP_STARS=ECLIP_STARS;}catch(e){}
       },
       hi: function (F) {
         return [
-          F.num + ". " + F.name + " — सीमा " + F.loTxt + " से " + F.hiTxt +
+          F.num + ". " + (F.nakDev || F.name) + " — सीमा " + F.loTxt + " से " + F.hiTxt +
             ", निरयण भोग। यह रही आकाश की वह पट्टी, सीधी खोलकर।",
-          "दो सुनहरी रेखाओं के बीच पूरा 13°20' का खाना, और दोनों ओर पड़ोसी नक्षत्र।",
+          "दो सुनहरी रेखाओं के बीच पूरा 13°20' का खाना — पहले " +
+            (F.prevDev || F.prev) + ", बाद में " + (F.nextDev || F.next) + "।",
           "अब असली तारे। इस पट्टी में " + F.inWin + " तारे हैं, कांति " +
             "5.4 तक, क्रांतिवृत्त से " + F.latLim.toFixed(0) + "° के भीतर।",
           F.inside
@@ -11235,10 +11346,10 @@ try{window.ECLIP_LABELS=ECLIP_LABELS;window.ECLIP_STARS=ECLIP_STARS;}catch(e){}
               F.bayer + ", " + F.starLon.toFixed(2) + "° — वह अपने खाने से " +
               F.offTxt + " बाहर है। सत्ताईस में से सात के साथ यही है।",
           "चार पाद, प्रत्येक 3°20' — जो ठीक एक नवांश है। इनके नवांश: " +
-            padaList(F) + "।",
-          "राशि से यह " + F.rashi + " में पड़ता है" +
-            (F.rashi2 ? " और " + F.rashi2 + " तक जाता है।" : "।"),
-          "दशा का स्वामी " + F.lord + " — " + F.lordYears + " वर्ष की महादशा, " +
+            devList(F.padas).join(" · ") + "।",
+          "राशि से यह " + dev(F.rashi) + " में पड़ता है" +
+            (F.rashi2 ? " और " + dev(F.rashi2) + " तक जाता है।" : "।"),
+          "दशा का स्वामी " + dev(F.lord) + " — " + F.lordYears + " वर्ष की महादशा, " +
             "जितनी शेष हो उतनी। Stellarium में स्वयं जाँच लीजिए।"
         ];
       }
@@ -11270,19 +11381,21 @@ try{window.ECLIP_LABELS=ECLIP_LABELS;window.ECLIP_STARS=ECLIP_STARS;}catch(e){}
       hi: function (F) {
         var c = F.cross;
         return [
-          F.num + ". " + F.name + " — " + F.lo + "° से " + F.hi +
+          F.num + ". " + dev(F.name) + " — " + F.lo + "° से " + F.hi +
             "°, तीस अंश। यही पट्टी है, सीधी खोलकर।",
           "इस खिड़की में " + F.inWin + " तारे हैं; " + F.inArc + " " +
-            F.name + " के भीतर।",
+            dev(F.name) + " के भीतर।",
           "तीस अंश अर्थात् सवा दो नक्षत्र — इसीलिए दोनों व्यवस्थाएँ कभी नहीं मिलतीं। " +
             F.naksWhole + " पूरे भीतर, " + F.naksCut + " किनारों से कटे।",
-          F.name + " का स्वामी " + F.lord + ", तत्व " + F.elem + ", " +
-            F.mode + " राशि।",
+          dev(F.name) + " का स्वामी " + dev(F.lord) + ", तत्व " +
+            (HI_ELEM[F.elem] || F.elem) + ", " +
+            (HI_MODE[F.mode] || F.mode) + " राशि।",
           "प्रत्येक ग्रह इसे पार करने में कितना लेता है — मापा हुआ, प्रथम प्रवेश से " +
             "अंतिम निकास तक: " +
-            c.map(function (q) { return q.name + " " + q.txt; }).join(", ") + "।",
+            c.map(function (q) { return dev(q.name) + " " + hiSpan(q.days); })
+             .join(", ") + "।",
           F.riseTxt
-            ? F.name + " को उदित होने में " + F.riseTxt + " लगते हैं" +
+            ? dev(F.name) + " को उदित होने में " + hiMins(F.riseMin) + " लगते हैं" +
               (F.place ? " (" + F.place + ")" : "") + " — दो घंटे नहीं।"
             : "उदय काल स्थान पर निर्भर है।"
         ];
@@ -11307,11 +11420,13 @@ try{window.ECLIP_LABELS=ECLIP_LABELS;window.ECLIP_STARS=ECLIP_STARS;}catch(e){}
       hi: function (F) {
         return [
           "भाव अर्थात् जीवन का एक क्षेत्र, लग्न से गिना हुआ। बारह भाव सम्पूर्ण अनुभव को ढक लेते हैं।",
-          F.num + ". " + F.name + " — " + F.lit + "। लग्न से " + F.from +
-            "° पर आरम्भ, " + F.to + "° तक।",
-          "यह सँभालता है: " + F.keywords + "।",
-          "वर्ग से यह " + F.classes.join(" और ") + " है।",
-          "इसका कारक — स्वाभाविक सूचक — " + F.karaka + "।",
+          F.num + ". " + dev(F.name) + " — " + hiB(F, "lit") + "। लग्न से " +
+            F.from + "° पर आरम्भ, " + F.to + "° तक।",
+          "यह सँभालता है: " + hiB(F, "kw") + "।",
+          "वर्ग से यह " +
+            F.classes.map(function (c) { return HI_CLASS[c] || c; })
+             .join(" और ") + " है।",
+          "इसका कारक — स्वाभाविक सूचक — " + hiB(F, "ka") + "।",
           "इसका स्वामी जहाँ भी जाए, ये विषय साथ ले जाता है।",
           "कोई भाव अकेले नहीं पढ़ा जाता। स्वामी की स्थिति, बैठे ग्रह, दृष्टि और दशा — " +
             "सब मिलकर तय करते हैं।"
@@ -11375,6 +11490,158 @@ try{window.ECLIP_LABELS=ECLIP_LABELS;window.ECLIP_STARS=ECLIP_STARS;}catch(e){}
     return (s.match(/[aeiouāīūṛēō]+/gi) || []).length;
   }
   function readSecs(s, lang) { return syllables(s, lang) / 4.0; }
+
+  /* ---- text a speech engine can actually read ---------------------------
+
+     The teleprompter is for a human eye: it carries the beat number and the
+     seconds that beat is on screen, because that is what tells you how fast
+     to read. Paste that into a text-to-speech engine and it dutifully says
+     "one, four point seven seconds" before every line.
+
+     It is not only the timings. A reel's own notation is written for a
+     reader and is hostile to a voice:
+
+       13°20′      read as "thirteen twenty", or silently dropped
+       λ Sco       the Greek letter skipped entirely
+       Jyeṣṭhā     the diacritics mangled or spelt out
+       —  ·        no pause where the sentence wants one
+
+     So this is a second rendering of the same lines with nothing in it that
+     is not meant to be said. The degrees are spoken, the Greek letters are
+     named, and the Sanskrit is respelt phonetically — for the Latin scripts
+     only. The Devanāgarī one is left alone, because a Hindi voice reading
+     Devanāgarī gets every one of those terms right by construction, which
+     is the whole reason that script is the one to narrate from. */
+
+  var GREEK_SAY = {
+    "α": "alpha", "β": "beta", "γ": "gamma", "δ": "delta", "ε": "epsilon",
+    "ζ": "zeta", "η": "eta", "θ": "theta", "ι": "iota", "κ": "kappa",
+    "λ": "lambda", "μ": "mu", "ν": "nu", "ξ": "xi", "ο": "omicron",
+    "π": "pi", "ρ": "rho", "σ": "sigma", "τ": "tau", "υ": "upsilon",
+    "φ": "phi", "χ": "chi", "ψ": "psi", "ω": "omega",
+    "¹": " one", "²": " two", "³": " three", "⁴": " four", "⁵": " five"
+  };
+
+  /* IAST to something an Indian-English voice says correctly. The rules are
+     character-level and safe, because every one of these characters is
+     non-ASCII and so appears only in a Sanskrit term — "catalogue" cannot
+     be caught by them. The one rule that is NOT safe is c → ch, which is
+     right for Sanskrit (Candra is "Chandra") and wrong for English, so it
+     is applied only to words that carry a diacritic, plus a short list of
+     Sanskrit words that happen not to. */
+  var IAST_SAY = [
+    [/ṝ/g, "ree"], [/ṛ/g, "ri"], [/ḹ/g, "lree"], [/ḷ/g, "lri"],
+    [/ā/g, "aa"], [/ī/g, "ee"], [/ū/g, "oo"], [/ē/g, "e"], [/ō/g, "o"],
+    [/ṅ/g, "ng"], [/ñ/g, "ny"], [/ṇ/g, "n"], [/ṃ/g, "n"], [/ṁ/g, "n"],
+    [/ś/g, "sh"], [/ṣ/g, "sh"], [/ṭ/g, "t"], [/ḍ/g, "d"], [/ḥ/g, "h"],
+    [/Ṝ/g, "Ree"], [/Ṛ/g, "Ri"], [/Ā/g, "Aa"], [/Ī/g, "Ee"], [/Ū/g, "Oo"],
+    [/Ṅ/g, "Ng"], [/Ñ/g, "Ny"], [/Ṇ/g, "N"], [/Ṃ/g, "N"],
+    [/Ś/g, "Sh"], [/Ṣ/g, "Sh"], [/Ṭ/g, "T"], [/Ḍ/g, "D"]
+  ];
+  var DIACRITIC = /[āīūṛṝḷḹṅñṇṃṁśṣṭḍḥĀĪŪṚṜṄÑṆṂŚṢṬḌ]/;
+  /* Sanskrit words with no diacritic to mark them, where c is still "ch" */
+  var SAY_C = /^(Candra|Caitra|Caturtha|Citra|Cara)/;
+
+  function sayWord(w) {
+    var had = DIACRITIC.test(w) || SAY_C.test(w);
+    var out = w;
+    IAST_SAY.forEach(function (r) { out = out.replace(r[0], r[1]); });
+    if (had) {
+      out = out.replace(/jñ/g, "gy").replace(/Jñ/g, "Gy");
+      out = out.replace(/c/g, "ch").replace(/C/g, "Ch");
+      out = out.replace(/chh/g, "ch").replace(/Chh/g, "Ch");
+    }
+    /* "Jyeshthaa" and "mahaadashaa" are right but clumsy; a word-final
+       double a is the one place the doubling buys nothing, because a voice
+       lengthens a final a anyway */
+    out = out.replace(/aa\b/g, "a");
+    return out;
+  }
+
+  function sayDegrees(t, lang) {
+    var deg = lang === "hi" ? " अंश" : " degrees";
+    var min = lang === "hi" ? " कला" : " minutes";
+    /* 253°20′ → 253 degrees 20 minutes; 240°00′ → 240 degrees, because
+       "zero minutes" is noise nobody says out loud */
+    t = t.replace(/(\d+)°\s*0{1,2}['′]/g, "$1" + deg);
+    t = t.replace(/(\d+)°\s*(\d+)['′]/g, "$1" + deg + " $2" + min);
+    t = t.replace(/(\d+(?:\.\d+)?)°/g, "$1" + deg);
+    return t;
+  }
+
+  /* "2 d 11 h" is a caption band's abbreviation: it fits where "2 days 11
+     hours" would not, and a voice reads it out as the letters dee and aitch.
+     The number before each one decides the plural, and a unit that is
+     already a word is left alone. */
+  /* A Bayer designation is written "β Ari" and read "beta Arietis": the
+     letter belongs to the constellation, so the constellation is spoken in
+     the genitive. Left as the three-letter abbreviation a voice says "airy"
+     for Ari and "sko" for Sco, which is not a star name in any language.
+     Only the constellations the star list actually reaches are here; an
+     abbreviation this table does not know is left alone rather than
+     guessed at. */
+  var CONSTEL_SAY = {
+    Ari: "Arietis", Tau: "Tauri", Ori: "Orionis", Gem: "Geminorum",
+    Hya: "Hydrae", Leo: "Leonis", Crv: "Corvi", Vir: "Virginis",
+    Boo: "Bo\u00f6tis", Lib: "Librae", Sco: "Scorpii", Sgr: "Sagittarii",
+    Aql: "Aquilae", Del: "Delphini", Aqr: "Aquarii", Peg: "Pegasi",
+    Psc: "Piscium", Cnc: "Cancri", Cap: "Capricorni", Oph: "Ophiuchi",
+    Sct: "Scuti", Cet: "Ceti", Eri: "Eridani", CMa: "Canis Majoris",
+    CMi: "Canis Minoris", Lup: "Lupi", Crt: "Crateris", Sex: "Sextantis"
+  };
+  function sayStars(t) {
+    return t.replace(/\b([A-Z][A-Za-z]{2})\b/g, function (all, a) {
+      return CONSTEL_SAY[a] || all;
+    });
+  }
+
+  var UNIT_SAY = {
+    en: { d: ["day", "days"], h: ["hour", "hours"], m: ["minute", "minutes"],
+          s: ["second", "seconds"], y: ["year", "years"] },
+    hi: { d: ["दिन", "दिन"], h: ["घंटा", "घंटे"], m: ["मिनट", "मिनट"],
+          s: ["सेकंड", "सेकंड"], y: ["वर्ष", "वर्ष"] }
+  };
+  function sayUnits(t, lang) {
+    var tab = UNIT_SAY[lang === "hi" ? "hi" : "en"];
+    return t.replace(/(\d+(?:\.\d+)?)\s*([dhmsy])\b(?!['’])/g,
+      function (all, n, u) {
+        var w = tab[u];
+        if (!w) return all;
+        return n + " " + (parseFloat(n) === 1 ? w[0] : w[1]);
+      });
+  }
+
+  function speakable(line, lang) {
+    var t = line;
+    t = sayDegrees(t, lang);
+    t = sayUnits(t, lang);
+    t = sayStars(t);
+    Object.keys(GREEK_SAY).forEach(function (g) {
+      t = t.split(g).join(GREEK_SAY[g]);
+    });
+    if (lang !== "hi")
+      t = t.replace(/[^\s,.;:!?()"'—·]+/g, sayWord);
+    /* punctuation that is a pause when read and a mark when seen */
+    /* a minus sign is a word when spoken; the hyphen that joins two words
+       is not, so only one in front of a number is touched */
+    t = t.replace(/[\u2212-]\s*(?=\d)/g, lang === "hi" ? "\u090b\u0923 " : "minus ");
+    t = t.replace(/\s*[—–]\s*/g, ", ");
+    t = t.replace(/\s*·\s*/g, ", ");
+    t = t.replace(/\s*:\s*/g, ": ");
+    t = t.replace(/\s{2,}/g, " ").trim();
+    /* a line always ends in something that makes the voice stop */
+    if (!/[.!?।]$/.test(t)) t += ".";
+    return t;
+  }
+
+  /* the whole reel as one block of speech: one paragraph per beat, nothing
+     else, ready to paste into a phone's dictation shortcut */
+  function speech(reel, lang) {
+    var r = render(reel, lang);
+    if (!r) return "";
+    return r.beats.map(function (b) { return speakable(b.say, lang); })
+            .join("\n\n");
+  }
 
   /* ---- the caption -------------------------------------------------------
      Everything a viewer would need to check the claim, and the question
@@ -11517,7 +11784,8 @@ try{window.ECLIP_LABELS=ECLIP_LABELS;window.ECLIP_STARS=ECLIP_STARS;}catch(e){}
 
   window.SPScript = { LANGS: LANGS, render: render, beatTimes: beatTimes,
                       readSecs: readSecs, syllables: syllables,
-                      suggestSeconds: suggestSeconds };
+                      suggestSeconds: suggestSeconds,
+                      speech: speech, speakable: speakable };
 })();
 ;
 
@@ -15182,6 +15450,110 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
 })();
 ;
 
+/* ===== The voice track ====================================================
+
+   WHAT THIS IS FOR. The Studio can write a correct silent file. A reel with
+   a voice over it is a different thing to watch, and there is no way to make
+   one in a browser without a voice from somewhere: speechSynthesis speaks
+   out of the speakers and offers no route to an AudioBuffer or a MediaStream,
+   so it cannot be captured, and every service that would return an audio file
+   is a network request this site does not make. The voice therefore comes in
+   as a file the user already has — from a phone's own Shortcut, read by the
+   system voice off the "Copy for voiceover" text — and this file's whole job
+   is to turn that file into an AudioBuffer the encoder can place on the same
+   clock as the frames.
+
+   WHY THE DURATION IS READ RATHER THAN ASSUMED. A voice is as long as it is.
+   Trimming it to fit the reel cuts a sentence in half; stretching the reel by
+   guesswork leaves the last beat silent or the voice running over black. So
+   the file is decoded, its real length measured, and the reel is offered that
+   length. The reel bends to the voice, never the other way round.
+
+   WHY CAF IS REJECTED BY NAME. A Shortcut's "Make Spoken Audio from Text"
+   saves Core Audio Format, which Chrome and Safari both refuse to decode —
+   measured, not assumed: decodeAudioData throws EncodingError on it while the
+   same speech as WAV decodes in full. A message that says "could not decode"
+   sends someone looking for a fault in the reel; a message that names the
+   format and the one extra Shortcut action that fixes it does not. */
+
+(function () {
+  "use strict";
+
+  var BUF = null;      /* the decoded voice, or null */
+  var NAME = "";
+  var CTX = null;
+
+  function ctx() {
+    if (CTX) return CTX;
+    var C = window.AudioContext || window.webkitAudioContext;
+    if (!C) return null;
+    CTX = new C();
+    return CTX;
+  }
+
+  /* ---- what will and will not decode -------------------------------------
+     The browser is the authority on this, so the extension is used only to
+     explain a failure, never to refuse a file that might have worked. */
+  var HOPELESS = { caf: "Core Audio (.caf)", aiff: "AIFF", aif: "AIFF",
+                   amr: "AMR", wma: "Windows Media Audio" };
+  function ext(name) {
+    var m = /\.([a-z0-9]+)$/i.exec(name || "");
+    return m ? m[1].toLowerCase() : "";
+  }
+
+  function why(name) {
+    var e = ext(name), h = HOPELESS[e];
+    if (h)
+      return h + " cannot be decoded by any browser. If this came from the " +
+             "iPhone Shortcut, add an “Encode Media” action after " +
+             "“Make Spoken Audio from Text”, set to Audio Only, " +
+             "M4A — then save that. M4A, WAV and MP3 all work here.";
+    return "this file could not be decoded as audio. M4A, WAV and MP3 work " +
+           "here; .caf, which the iPhone Shortcut saves by default, does not.";
+  }
+
+  /* ---- taking the file ---------------------------------------------------- */
+  function load(file) {
+    var C = ctx();
+    if (!C) return Promise.reject(new Error("this browser has no audio engine"));
+    if (!file) return Promise.reject(new Error("no file"));
+    return file.arrayBuffer().then(function (ab) {
+      return new Promise(function (resolve, reject) {
+        /* the callback form, because Safari's promise form is younger than
+           its callback form and this has to work on an old Mac */
+        var ok = function (buf) { resolve(buf); };
+        var no = function () { reject(new Error(why(file.name))); };
+        try {
+          var r = C.decodeAudioData(ab, ok, no);
+          if (r && r.then) r.then(ok, no);
+        } catch (e) { no(); }
+      });
+    }).then(function (buf) {
+      BUF = buf; NAME = file.name || "voice";
+      return info();
+    });
+  }
+
+  function info() {
+    if (!BUF) return null;
+    return { name: NAME, seconds: BUF.duration,
+             rate: BUF.sampleRate, channels: BUF.numberOfChannels };
+  }
+  function buffer() { return BUF; }
+  function clear() { BUF = null; NAME = ""; }
+
+  /* the length to set the reel to: the voice, plus a breath at the end so
+     the last word is not cut off by the final frame */
+  function fitSeconds() {
+    if (!BUF) return null;
+    return Math.ceil(BUF.duration + 0.4);
+  }
+
+  window.SPVoice = { load: load, info: info, buffer: buffer, clear: clear,
+                     fitSeconds: fitSeconds, why: why };
+})();
+;
+
 /* ===== The explainer format ==============================================
 
    Every other reel on this site is a measurement: a question, the
@@ -17113,6 +17485,11 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
         lo: lo, hi: hi, loTxt: dms(lo), hiTxt: dms(hi),
         star: y.star, bayer: y.bayer, starLon: y.sid, starLat: y.lat,
         prev: prev.nak, next: next.nak,
+        /* the same three in Devanāgarī, for the Hindi script — a Hindi
+           voice reading IAST mangles every one of them */
+        nakDev: (window.MO_DEV_NAK || [])[i] || null,
+        prevDev: (window.MO_DEV_NAK || [])[(i + 26) % 27] || null,
+        nextDev: (window.MO_DEV_NAK || [])[(i + 1) % 27] || null,
         inside: inside, offTxt: inside ? null : dms(off),
         inArc: inArc.length, inWin: inWin.length, latLim: latLim,
         rashi: SIGN[s0], rashi2: s0 === s1 ? null : SIGN[s1],
@@ -17832,6 +18209,94 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
     if (window.SPEncode && window.SPEncode.busy()) window.SPEncode.cancel();
     if (window.SPReel.isRecording()) window.SPReel.cancelRecording();
   }
+  /* ---- the voice file -----------------------------------------------------
+     The decoding and the diagnosis live in SPVoice; this is the row of
+     controls over it. The length is the one number worth showing, because
+     it is the number that decides whether the reel has to change. */
+  function voiceNote(msg, bad) {
+    var n = $("reel-voicenote");
+    if (!n) return;
+    n.hidden = !msg;
+    n.textContent = msg || "";
+    n.classList.toggle("warn", !!bad);
+  }
+  function voiceShow() {
+    var i = window.SPVoice && window.SPVoice.info();
+    var f = $("reel-voicefit"), x = $("reel-voiceoff");
+    if (f) f.hidden = !i;
+    if (x) x.hidden = !i;
+    if (!i) { voiceNote(""); return; }
+    var want = window.SPVoice.fitSeconds();
+    var mine = REEL ? REEL.seconds : null;
+    /* the sample rate is deliberately not shown: decodeAudioData resamples
+       to the AudioContext's rate, so what comes back is this machine's
+       number rather than the file's, and printing it as the file's is a
+       small lie that would send someone looking for a fault */
+    /* Three cases worth distinguishing, because only one of them is a
+       problem. A voice longer than the reel loses its last words, which is
+       the one that has to be fixed. A voice that ends a little early is a
+       breath, not a fault. A voice that ends a long way early leaves the
+       reel playing to silence, which is worth saying but is not an error.
+       The suggestion is offered only where there is something to gain:
+       advising 7s on a reel already set to 8 reads as a bug in the advice. */
+    var over = (mine == null) ? 0 : i.seconds - mine, msg;
+    var gain = (mine == null) || over > 0.1 || -over > 2;
+    if (mine == null) msg = "";
+    else if (over > 0.1)
+      msg = " The reel is " + mine + "s, so the last " + over.toFixed(1) +
+            "s of the voice would be cut off — " + want + "s fits it.";
+    else if (-over > 2)
+      msg = " The reel is " + mine + "s, so it plays on for " +
+            (-over).toFixed(1) + "s after the voice ends.";
+    else msg = " It fits the reel as it is.";
+    voiceNote(i.name + " — " + i.seconds.toFixed(1) + "s, " +
+      (i.channels > 1 ? "stereo" : "mono") + "." + msg);
+    if (f) {
+      f.dataset.secs = String(want);
+      /* nothing to set when the reel is already right */
+      f.hidden = !gain;
+    }
+  }
+  function bindVoice() {
+    var inp = $("reel-voice");
+    if (!inp) return;
+    if (!(window.SPVoice && window.AudioContext)) {
+      /* no audio engine at all: say so once rather than offering a control
+         that cannot work */
+      var lab = document.querySelector('label[for="reel-voice"]');
+      if (lab) lab.hidden = true;
+      voiceNote("This browser has no audio engine, so a voice cannot be " +
+                "decoded here.", true);
+      return;
+    }
+    inp.addEventListener("change", function () {
+      var f = inp.files && inp.files[0];
+      if (!f) return;
+      voiceNote("Decoding " + f.name + "…");
+      window.SPVoice.load(f).then(voiceShow).catch(function (e) {
+        window.SPVoice.clear();
+        voiceShow();
+        voiceNote((e && e.message) || "that file could not be decoded", true);
+      });
+      inp.value = "";
+    });
+    var off = $("reel-voiceoff");
+    if (off) off.addEventListener("click", function () {
+      window.SPVoice.clear(); voiceShow();
+    });
+    var fit = $("reel-voicefit");
+    if (fit) fit.addEventListener("click", function () {
+      var want = parseFloat(fit.dataset.secs || "0");
+      var sl = $("reel-seconds");
+      if (!want || !sl) return;
+      sl.value = String(Math.min(parseFloat(sl.max),
+                                 Math.max(parseFloat(sl.min), want)));
+      sl.dispatchEvent(new Event("input", { bubbles: true }));
+      sl.dispatchEvent(new Event("change", { bubbles: true }));
+      setTimeout(voiceShow, 60);
+    });
+  }
+
   function startRecording() {
     if (!REEL) return;
     if (window.SPReel.isRecording() ||
@@ -17853,7 +18318,8 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
       save(r.blob, REEL.key.replace(/\./g, "-") + "." + ext);
       note(r.exact
         ? "Saved — " + r.seconds + "s at " + r.fps + " fps, " + r.codec +
-          " in " + ext.toUpperCase() + "."
+          " in " + ext.toUpperCase() +
+          (r.audioCodec ? " with the voice in " + r.audioCodec : "") + "."
         : "Saved, but this browser cannot stamp frames, so the file runs " +
           "slower and longer than " + REEL.seconds + "s.", !r.exact);
     }
@@ -17862,15 +18328,22 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
       note((e && e.message) || "recording failed", true);
     }
 
+    var voice = (window.SPVoice && window.SPVoice.buffer()) || null;
     if (exact()) {
       note("Encoding — this takes longer than the reel; the file will be " +
-           REEL.seconds + "s either way.");
+           REEL.seconds + "s either way." +
+           (voice ? " The voice goes in with it." : ""));
       window.SPEncode.encode(cv, {
         seconds: REEL.seconds, fps: fps, drawAt: paint,
-        onProgress: progress
+        onProgress: progress, audio: voice
       }).then(done).catch(failed);
       return;
     }
+    /* the old recorder cannot place a track against frames it did not
+       timestamp, so a voice is dropped rather than put out of sync */
+    if (voice)
+      note("This browser cannot stamp frames, so the voice would drift. " +
+           "Recording without it.", true);
     note("Recording — keep this tab in front.");
     window.SPReel.record(cv, REEL.seconds, fps, function (p) {
       paint(p); progress(p);
@@ -17969,6 +18442,8 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
     });
     var pn = $("reel-still");
     if (pn) pn.addEventListener("click", stillPNG);
+
+    bindVoice();
 
     window.addEventListener("resize", function () { fit(); drawFrame(); });
 
@@ -18149,6 +18624,17 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
     });
     if (cs) cs.addEventListener("click", function () {
       copy(scriptText(), cs);
+    });
+    /* ---- the voiceover text ----------------------------------------------
+       The same beats with everything a voice would read out as noise taken
+       off them: a synthesiser handed "3. [12.4s] Mūla, 240°–253°20′" says the
+       numbers and the brackets, and then says "Moola" wrong. SPScript.speech
+       is the only text in this panel built to be read rather than looked at,
+       so it gets its own button rather than sharing one with the script. */
+    var sy = $("sc-copysay");
+    if (sy) sy.addEventListener("click", function () {
+      var R = window.__reel && window.__reel.reel && window.__reel.reel();
+      copy(R ? window.SPScript.speech(R, LANG) : "", sy);
     });
     if (ap) ap.addEventListener("click", function () {
       var want = parseFloat(ap.dataset.secs || "0");

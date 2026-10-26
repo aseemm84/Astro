@@ -1929,6 +1929,11 @@
         lo: lo, hi: hi, loTxt: dms(lo), hiTxt: dms(hi),
         star: y.star, bayer: y.bayer, starLon: y.sid, starLat: y.lat,
         prev: prev.nak, next: next.nak,
+        /* the same three in Devanāgarī, for the Hindi script — a Hindi
+           voice reading IAST mangles every one of them */
+        nakDev: (window.MO_DEV_NAK || [])[i] || null,
+        prevDev: (window.MO_DEV_NAK || [])[(i + 26) % 27] || null,
+        nextDev: (window.MO_DEV_NAK || [])[(i + 1) % 27] || null,
         inside: inside, offTxt: inside ? null : dms(off),
         inArc: inArc.length, inWin: inWin.length, latLim: latLim,
         rashi: SIGN[s0], rashi2: s0 === s1 ? null : SIGN[s1],

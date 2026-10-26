@@ -277,6 +277,94 @@
     if (window.SPEncode && window.SPEncode.busy()) window.SPEncode.cancel();
     if (window.SPReel.isRecording()) window.SPReel.cancelRecording();
   }
+  /* ---- the voice file -----------------------------------------------------
+     The decoding and the diagnosis live in SPVoice; this is the row of
+     controls over it. The length is the one number worth showing, because
+     it is the number that decides whether the reel has to change. */
+  function voiceNote(msg, bad) {
+    var n = $("reel-voicenote");
+    if (!n) return;
+    n.hidden = !msg;
+    n.textContent = msg || "";
+    n.classList.toggle("warn", !!bad);
+  }
+  function voiceShow() {
+    var i = window.SPVoice && window.SPVoice.info();
+    var f = $("reel-voicefit"), x = $("reel-voiceoff");
+    if (f) f.hidden = !i;
+    if (x) x.hidden = !i;
+    if (!i) { voiceNote(""); return; }
+    var want = window.SPVoice.fitSeconds();
+    var mine = REEL ? REEL.seconds : null;
+    /* the sample rate is deliberately not shown: decodeAudioData resamples
+       to the AudioContext's rate, so what comes back is this machine's
+       number rather than the file's, and printing it as the file's is a
+       small lie that would send someone looking for a fault */
+    /* Three cases worth distinguishing, because only one of them is a
+       problem. A voice longer than the reel loses its last words, which is
+       the one that has to be fixed. A voice that ends a little early is a
+       breath, not a fault. A voice that ends a long way early leaves the
+       reel playing to silence, which is worth saying but is not an error.
+       The suggestion is offered only where there is something to gain:
+       advising 7s on a reel already set to 8 reads as a bug in the advice. */
+    var over = (mine == null) ? 0 : i.seconds - mine, msg;
+    var gain = (mine == null) || over > 0.1 || -over > 2;
+    if (mine == null) msg = "";
+    else if (over > 0.1)
+      msg = " The reel is " + mine + "s, so the last " + over.toFixed(1) +
+            "s of the voice would be cut off — " + want + "s fits it.";
+    else if (-over > 2)
+      msg = " The reel is " + mine + "s, so it plays on for " +
+            (-over).toFixed(1) + "s after the voice ends.";
+    else msg = " It fits the reel as it is.";
+    voiceNote(i.name + " — " + i.seconds.toFixed(1) + "s, " +
+      (i.channels > 1 ? "stereo" : "mono") + "." + msg);
+    if (f) {
+      f.dataset.secs = String(want);
+      /* nothing to set when the reel is already right */
+      f.hidden = !gain;
+    }
+  }
+  function bindVoice() {
+    var inp = $("reel-voice");
+    if (!inp) return;
+    if (!(window.SPVoice && window.AudioContext)) {
+      /* no audio engine at all: say so once rather than offering a control
+         that cannot work */
+      var lab = document.querySelector('label[for="reel-voice"]');
+      if (lab) lab.hidden = true;
+      voiceNote("This browser has no audio engine, so a voice cannot be " +
+                "decoded here.", true);
+      return;
+    }
+    inp.addEventListener("change", function () {
+      var f = inp.files && inp.files[0];
+      if (!f) return;
+      voiceNote("Decoding " + f.name + "…");
+      window.SPVoice.load(f).then(voiceShow).catch(function (e) {
+        window.SPVoice.clear();
+        voiceShow();
+        voiceNote((e && e.message) || "that file could not be decoded", true);
+      });
+      inp.value = "";
+    });
+    var off = $("reel-voiceoff");
+    if (off) off.addEventListener("click", function () {
+      window.SPVoice.clear(); voiceShow();
+    });
+    var fit = $("reel-voicefit");
+    if (fit) fit.addEventListener("click", function () {
+      var want = parseFloat(fit.dataset.secs || "0");
+      var sl = $("reel-seconds");
+      if (!want || !sl) return;
+      sl.value = String(Math.min(parseFloat(sl.max),
+                                 Math.max(parseFloat(sl.min), want)));
+      sl.dispatchEvent(new Event("input", { bubbles: true }));
+      sl.dispatchEvent(new Event("change", { bubbles: true }));
+      setTimeout(voiceShow, 60);
+    });
+  }
+
   function startRecording() {
     if (!REEL) return;
     if (window.SPReel.isRecording() ||
@@ -298,7 +386,8 @@
       save(r.blob, REEL.key.replace(/\./g, "-") + "." + ext);
       note(r.exact
         ? "Saved — " + r.seconds + "s at " + r.fps + " fps, " + r.codec +
-          " in " + ext.toUpperCase() + "."
+          " in " + ext.toUpperCase() +
+          (r.audioCodec ? " with the voice in " + r.audioCodec : "") + "."
         : "Saved, but this browser cannot stamp frames, so the file runs " +
           "slower and longer than " + REEL.seconds + "s.", !r.exact);
     }
@@ -307,15 +396,22 @@
       note((e && e.message) || "recording failed", true);
     }
 
+    var voice = (window.SPVoice && window.SPVoice.buffer()) || null;
     if (exact()) {
       note("Encoding — this takes longer than the reel; the file will be " +
-           REEL.seconds + "s either way.");
+           REEL.seconds + "s either way." +
+           (voice ? " The voice goes in with it." : ""));
       window.SPEncode.encode(cv, {
         seconds: REEL.seconds, fps: fps, drawAt: paint,
-        onProgress: progress
+        onProgress: progress, audio: voice
       }).then(done).catch(failed);
       return;
     }
+    /* the old recorder cannot place a track against frames it did not
+       timestamp, so a voice is dropped rather than put out of sync */
+    if (voice)
+      note("This browser cannot stamp frames, so the voice would drift. " +
+           "Recording without it.", true);
     note("Recording — keep this tab in front.");
     window.SPReel.record(cv, REEL.seconds, fps, function (p) {
       paint(p); progress(p);
@@ -414,6 +510,8 @@
     });
     var pn = $("reel-still");
     if (pn) pn.addEventListener("click", stillPNG);
+
+    bindVoice();
 
     window.addEventListener("resize", function () { fit(); drawFrame(); });
 

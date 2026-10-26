@@ -457,6 +457,7 @@ def build_shared():
                             jsread(SRC, "js", "vendor", "mp4-muxer.js") + "\n" +
                             jsread(SRC, "js", "vendor", "webm-muxer.js") + "\n" +
                             jsread(SRC, "js", "sp-encode.js") + "\n" +
+                            jsread(SRC, "js", "sp-voice.js") + "\n" +
                             # the chart-independent teaching sets: bhavas,
                             # concepts, nakshatras, rashis. They register as
                             # stories, so the Studio, the recorder and the
