@@ -241,6 +241,7 @@ window.buildKundliReport=function(J){
     ["sky","Sky",function(){ return skyPane(D,J); }],
     ["starwheel","Star wheel",function(){ return starWheelPane(D,J); }],
     ["motion","Motion",function(){ return motionPane(D,J); }],
+    ["sripati","Śrīpati",function(){ return pane(function(){ return sripatiPane(D); },"Śrīpati"); }],
     ["btime","Birth-time check",function(){ return birthTimePane(D); }],
     ["match","Compatibility",function(){ return matchPane(); }],
     ["full","Full report",function(){ return '<div class="krprint">'+

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Build a Vedic Birth Chart Free — Nirayana</title><meta name="description" content="Cast a full Vedic birth chart free in your browser. Sidereal positions, sixteen vargas, Ṣaḍbala, Aṣṭakavarga, Viṃśottarī daśā and twenty-one animated sky scenes — computed locally, nothing sent anywhere.">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Nirayana Kundli 2.0 — Vedic Birth Chart, Śrīpati & Gochara — Nirayana</title><meta name="description" content="Cast a full Vedic birth chart free in your browser. Sidereal positions, sixteen vargas, Ṣaḍbala, Aṣṭakavarga, Viṃśottarī daśā and twenty-one animated sky scenes — computed locally, nothing sent anywhere.">
 <link rel="canonical" href="https://aseemm84.github.io/Astro/kundli.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Nirayana">
@@ -866,11 +866,12 @@ html.navlock,html.navlock body{overflow:hidden}
 .gobar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;
   margin:12px 0 14px;padding:11px 13px;border:1px solid var(--line);
   border-radius:11px;background:var(--soft)}
+#go-status,#rp-status{color:var(--muted-2)}
 .gobar label{font-size:13px;font-weight:600;display:flex;gap:7px;
   align-items:center}
 .gobar input[type=number]{font:inherit;font-size:14px;width:92px;
   padding:6px 8px;border:1px solid var(--line);border-radius:7px}
-.gobar .gochk{font-weight:400;font-size:12.5px;color:var(--muted)}
+.gobar .gochk{font-weight:400;font-size:12.5px;color:var(--muted-2)}
 .gotbl{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 4px}
 .gotbl th{text-align:left;font-size:11px;letter-spacing:.05em;
   text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);
@@ -909,10 +910,25 @@ html.navlock,html.navlock body{overflow:hidden}
 .gocell{border:1px solid var(--line);border-radius:9px;padding:7px 8px;
   min-height:62px;background:var(--soft);display:flex;flex-direction:column;
   gap:2px}
-.gocellh{font-size:10.5px;font-weight:700;color:var(--muted)}
+.gocellh{font-size:10.5px;font-weight:700;color:var(--muted-2)}
 .gocells{font-size:12.5px;font-weight:600}
 .gocellp{font-size:12px;color:var(--ink);line-height:1.35}
 @media(max-width:620px){.gogrid{grid-template-columns:repeat(3,1fr)}}
+
+/* ---- the Śrīpati pane --------------------------------------------------- */
+.spcharts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0}
+@media(max-width:720px){.spcharts{grid-template-columns:1fr}}
+.sptbl td{font-size:13px}
+.spmad{white-space:nowrap}
+.spdiff{color:var(--muted);font-size:11.5px}
+tr.spfrail td{background:rgba(180,82,82,.08)}
+.spwarn{color:#a1493a;font-weight:700;font-size:11px;text-transform:uppercase;
+  letter-spacing:.04em}
+.spbar{display:inline-block;width:78px;height:8px;border-radius:5px;
+  background:var(--soft);border:1px solid var(--line);vertical-align:middle;
+  overflow:hidden}
+.spbar i{display:block;height:100%;background:var(--gold)}
+.kgood{color:#1c6b46;font-weight:600}
 
 /* ===== Generated theme overrides =====================================
    Written by source/tools/gen-theme-overrides.py from the literal
@@ -1250,6 +1266,10 @@ html.navlock,html.navlock body{overflow:hidden}
   --text-soft:#4a4e68;        /* captions, sidebars */
   --border:#e7e7f0;
   --border-2:#d8d8e6;
+  /* --muted measures 4.44:1 on the panel ground, a hair under the WCAG
+     line; small print uses this instead. Found by measurement, not by
+     looking — the difference is invisible and the failure is not. */
+  --muted-2:#5a5e78;
   --accent:#c9a24b;           /* the gold rule and the active state */
   --accent-soft:#e7d19a;
   --accent-ink:#231c07;       /* text on the accent */
@@ -1277,6 +1297,7 @@ html.navlock,html.navlock body{overflow:hidden}
    The mockup's own default: near-black with a blue cast, amber accent, and
    a sky-blue used for the dṛṣṭi beams. */
 html[data-theme="midnight"]{
+  --muted-2:#a8b4c6;
   --night:#040711; --night2:#0b1024; --paper:#040711; --ink:#f1f5f9;
   --muted:#94a3b8; --line:#1e293b; --soft:#0b1024;
   --gold:#f59e0b; --gold-soft:#fcd34d;
@@ -1299,6 +1320,7 @@ html[data-theme="midnight"]{
    Named for the yellow silk: a warm near-black ground with the whole text
    in shades of yellow, and peacock blue-green as the second colour. */
 html[data-theme="peetambari"]{
+  --muted-2:#d6bf64;
   --night:#0c0a09; --night2:#1c1611; --paper:#0c0a09; --ink:#fef08a;
   --muted:#bfa94d; --line:#332a16; --soft:#1a1509;
   --gold:#facc15; --gold-soft:#fef9c3;
@@ -1321,6 +1343,7 @@ html[data-theme="peetambari"]{
    Warm paper and dark ink: within a hair of the palette the site was
    written in, so this is the default and overrides almost nothing. */
 html[data-theme="paper"]{
+  --muted-2:#4a463f;
   /* The legacy tokens matter as much as the new ones. Leaving --muted and
      --gold at their original values put a dozen captions at 4.01:1 and the
      Studio's main button at 2.63:1 against this warmer, darker ground —
@@ -1345,6 +1368,7 @@ html[data-theme="paper"]{
 
 /* ---- Emerald Forest ---------------------------------------------------- */
 html[data-theme="emerald"]{
+  --muted-2:#a4ddc2;
   --night:#022c22; --night2:#043d2f; --paper:#022c22; --ink:#ecfdf5;
   --muted:#8dd3b4; --line:#0b4a39; --soft:#03352a;
   --gold:#fbbf24; --gold-soft:#fde68a;
@@ -1484,6 +1508,11 @@ html[data-theme] .gotier-later{background:var(--ex-bg);color:var(--accent);
 html[data-theme] .gotbl tr.gogood td{background:var(--mine-bg)}
 html[data-theme] .gotick{color:var(--mine-edge)}
 html[data-theme] .goretro{color:var(--caution-edge)}
+
+html[data-theme] tr.spfrail td{background:var(--caution-bg)}
+html[data-theme] .spwarn{color:var(--caution-edge)}
+html[data-theme] .kgood{color:var(--mine-edge)}
+html[data-theme] .spbar i{background:var(--accent)}
 
 /* ---- the switcher itself ------------------------------------------------ */
 .themepick{display:inline-flex;align-items:center;gap:6px;
@@ -1649,7 +1678,7 @@ html[data-theme] nav.site .themepick select option{
     return true;
   }, list: THEMES };
 })();
-</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Build a Kundli</h1><p class="sub">How a birth chart is cast in the sidereal zodiac — and a tool that computes a full chart in your browser and links each planet into the padas reference.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html" class="active">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#cast">Cast a chart now</a><a href="#what">What a kundli is</a><a href="#need">What you need</a><a href="#how">How a chart is cast</a><a href="#read">How to read what comes back</a><a href="#limits">Accuracy, attribution & limits</a></aside><main><p class="lead">A <b>kundli</b> (janma-kundali) is a birth chart: a map of the sky at the exact moment and place of birth, projected onto the twelve bhavas counted from the Lagna. Enter the birth details and the whole chart is computed below, in this browser. Everything after it explains what a chart is and how it is cast.</p><h2 id="cast">Cast a chart now</h2><p>Everything is computed <b>in your browser</b> — nothing is sent anywhere, and the page works offline.</p>
+</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Nirayana Kundli 2.0</h1><p class="sub">A full sidereal chart computed in your browser, now with Śrīpati bhāva-chalita as a house system of its own, a year of real transits for any year, and twelve Candra-rāśi readings that need no chart at all.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html" class="active">Kundli 2.0</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#cast">Cast a chart now</a><a href="#gochara">Vārṣika Gochara</a><a href="#rashiphal">Twelve rāśi readings</a><a href="#what">What a kundli is</a><a href="#need">What you need</a><a href="#how">How a chart is cast</a><a href="#read">How to read what comes back</a><a href="#limits">Accuracy, attribution & limits</a></aside><main><p class="lead">A <b>kundli</b> (janma-kundali) is a birth chart: a map of the sky at the exact moment and place of birth, projected onto the twelve bhavas counted from the Lagna. Enter the birth details and the whole chart is computed below, in this browser. Everything after it explains what a chart is and how it is cast.</p><h2 id="cast">Cast a chart now</h2><p>Everything is computed <b>in your browser</b> — nothing is sent anywhere, and the page works offline.</p>
 <div id="k-inputs">
 <div class="k-form">
   <div class="k-full"><label for="k-name">Name (optional — appears on the report)</label><input type="text" id="k-name" placeholder="e.g. Aseem Mehrotra" autocomplete="off"></div>
@@ -6394,6 +6423,182 @@ function nextIngress(en,jd){
 
   window.SPSripati = { build: build, analyse: analyse };
 })();
+/* ===== The Śrīpati pane ===================================================
+
+   The cusp arithmetic is next door in 72-sripati.js; this is what a reader
+   does with it. Three things, in the order they are useful:
+
+   1. THE TWO CHARTS SIDE BY SIDE. Whole-sign and Śrīpati, drawn the same
+      way, so the disagreement is visible before it is described. If the
+      two charts look identical the reader can stop reading, which is a
+      perfectly good outcome and the commonest one.
+
+   2. THE SHIFT REPORT. Exactly which grahas the two systems place
+      differently, and — the part that decides whether the difference
+      matters — how far each sits from the junction it crossed. A graha
+      three degrees past a sandhi is a marginal call that a different
+      ayanāṃśa or a four-minute birth-time correction would reverse. One
+      sitting fifteen degrees inside its house is not. Software that
+      reports the shift without the distance is reporting half the fact.
+
+   3. THE CUSP TABLE AND THE INSPECTOR. Every bhāva's madhya, its sandhis,
+      its width, its occupants under both systems, and the lord of the rāśi
+      its madhya falls in. Clicking a row opens that one house.
+
+   WHY THE WIDTHS ARE PRINTED. The whole argument for Śrīpati over equal
+   houses is that the quadrants are unequal, so the houses should be.
+   Measured at Abu Dhabi for a mid-afternoon birth the quadrants come out
+   94.8° and 85.2° and the houses 28.4° to 31.6°; at high latitude the
+   spread is far wider, and at the equator at an equinox it vanishes and
+   Śrīpati agrees with equal houses exactly. Printing
+   the widths turns a table that looks arbitrary into the consequence of the
+   geometry, and shows the reader when Śrīpati and whole-sign are bound to
+   disagree. */
+
+function sripatiPane(D) {
+  var A = window.SPSripati && window.SPSripati.analyse(D);
+  if (!A)
+    return '<p class="knote">Śrīpati houses are built from the ascendant ' +
+      'and the meridian, and this chart has no meridian — which happens ' +
+      'with incomplete input and at latitudes where the ecliptic does not ' +
+      'cross the horizon in the ordinary way. Rather than invent one, the ' +
+      'pane stops here. The whole-sign chart above is unaffected.</p>';
+
+  var LS = D.LS, o = [];
+
+  o.push('<p class="klead">Śrīpati bhāva-chalita takes the four angles — ' +
+    'the lagna, the meridian and their opposites — and trisects each ' +
+    'quadrant in longitude. The trisection points are the <b>bhāva ' +
+    'madhya</b>, the middle of each house; the <b>bhāva sandhi</b>, where ' +
+    'one house ends and the next begins, is the midpoint between ' +
+    'consecutive madhyas. A graha belongs to the house whose madhya it ' +
+    'lies nearest.</p>');
+
+  /* the honest note about what the uploaded edition does and does not say */
+  o.push('<div class="src"><span>Source</span> The uploaded Santhanam ' +
+    'translation does not give this construction as a Parāśara verse, and ' +
+    'this page does not claim it does — Śrīpati’s method is its own ' +
+    'paddhati. What the edition does give is the doctrine the cusps are ' +
+    'FOR: a graha <i>on</i> the cusp gives the full effect of that bhāva, ' +
+    'one <i>at</i> the sandhi gives none of it, and between them the ' +
+    'effect varies over about 15° — which the translator flags as a ' +
+    'passage the Benares (Chaukhambha) edition carries among its special ' +
+    'hints, in Vol. 1, Ch. 5. Bhāva Bala in Ch. 27 is likewise reckoned ' +
+    'against the meridian, the nadir, the ascendant or the descendant, so ' +
+    'the text’s own strength arithmetic presumes an angular frame. ' +
+    'Verse numbers in the uploaded scan are OCR-affected; confirm them in ' +
+    'the PDF.</div>');
+
+  /* ---- the two charts ---------------------------------------------------- */
+  var occW = {}, occS = {};
+  A.rows.forEach(function (r) {
+    (occW[r.whole] = occW[r.whole] || []).push(GL[r.body] + (r.retro ? "℞" : ""));
+    (occS[r.sripati] = occS[r.sripati] || []).push(GL[r.body] + (r.retro ? "℞" : ""));
+  });
+  var cW = northChart(function (h) { return (LS + h - 1) % 12; },
+    function (h) { var a = (occW[h] || []).slice(); if (h === 1) a.unshift("Lg"); return a; },
+    "Whole-sign", "the frame the rest of this report reads from");
+  var cS = northChart(function (h) { return A.houses[h - 1].sign; },
+    function (h) { var a = (occS[h] || []).slice(); if (h === 1) a.unshift("Lg"); return a; },
+    "Śrīpati bhāva-chalita", "quadrants trisected between the angles");
+  o.push('<div class="kcharts spcharts">' + cW + cS + '</div>');
+
+  /* ---- the shift report --------------------------------------------------- */
+  o.push('<h4 class="ksub">What the two systems disagree about</h4>');
+  if (!A.shifts.length) {
+    o.push('<p class="kgood">Nothing. Every graha falls in the same bhāva ' +
+      'under both systems, so a Śrīpati reading of this chart would place ' +
+      'each one exactly where the whole-sign reading already does.</p>');
+  } else {
+    o.push('<table class="ktbl gotbl"><thead><tr><th>Graha</th>' +
+      '<th>Whole-sign</th><th>Śrīpati</th><th>From the madhya</th>' +
+      '<th>How near the junction</th></tr></thead><tbody>' +
+      A.shifts.map(function (r) {
+        var d = Math.abs(r.fromMadhya);
+        /* distance to the nearer sandhi tells the reader how fragile the
+           call is far better than distance from the madhya alone */
+        var near = Math.min(
+          ((r.lon - A.houses[r.sripati - 1].sandhiStart) % 360 + 360) % 360,
+          ((A.houses[r.sripati - 1].sandhiEnd - r.lon) % 360 + 360) % 360);
+        var frail = near < 3;
+        return '<tr' + (frail ? ' class="spfrail"' : '') + '><td><b>' +
+          esc(r.body) + '</b></td><td class="knum">' + r.whole + '</td>' +
+          '<td class="knum">' + r.sripati + '</td>' +
+          '<td class="knum">' + (r.fromMadhya >= 0 ? "+" : "") +
+          r.fromMadhya.toFixed(2) + '°</td><td class="knum">' +
+          near.toFixed(2) + '°' + (frail ?
+            ' <span class="spwarn">marginal</span>' : '') + '</td></tr>';
+      }).join("") + '</tbody></table>');
+    var frailN = A.shifts.filter(function (r) {
+      var near = Math.min(
+        ((r.lon - A.houses[r.sripati - 1].sandhiStart) % 360 + 360) % 360,
+        ((A.houses[r.sripati - 1].sandhiEnd - r.lon) % 360 + 360) % 360);
+      return near < 3;
+    }).length;
+    o.push('<p class="knote">' + A.shifts.length + ' graha' +
+      (A.shifts.length > 1 ? 's sit' : ' sits') + ' in a different bhāva ' +
+      'under the two systems' + (frailN ?
+        ', and ' + frailN + ' of those ' + (frailN > 1 ? "are" : "is") +
+        ' within three degrees of a junction — close enough that a ' +
+        'different ayanāṃśa, or a birth time a few minutes out, would ' +
+        'move ' + (frailN > 1 ? "them" : "it") + ' back' : '') + '. ' +
+      'This is why the shift is reported with its distance rather than on ' +
+      'its own.</p>');
+  }
+
+  /* ---- the cusp table ----------------------------------------------------- */
+  o.push('<h4 class="ksub">The twelve bhāvas</h4>');
+  o.push('<table class="ktbl gotbl sptbl"><thead><tr><th>Bhāva</th>' +
+    '<th>Sandhi (start)</th><th>Madhya (cusp)</th><th>Sandhi (end)</th>' +
+    '<th>Width</th><th>Rāśi of the madhya</th><th>Lord</th>' +
+    '<th>Occupants</th></tr></thead><tbody>' +
+    A.houses.map(function (h) {
+      return '<tr><td><b>' + h.house + '</b></td>' +
+        '<td>' + SA[Math.floor(h.sandhiStart / 30) % 12] + ' ' + dm(h.sandhiStart % 30) + '</td>' +
+        '<td class="spmad"><b>' + SA[h.sign] + ' ' + dm(h.madhya % 30) + '</b></td>' +
+        '<td>' + SA[Math.floor(h.sandhiEnd / 30) % 12] + ' ' + dm(h.sandhiEnd % 30) + '</td>' +
+        '<td class="knum">' + h.width.toFixed(2) + '°</td>' +
+        '<td>' + SA[h.sign] + (h.sign !== h.wholeSign ?
+          ' <span class="spdiff">(whole-sign: ' + SA[h.wholeSign] + ')</span>' : '') + '</td>' +
+        '<td>' + esc(LORD[h.sign]) + '</td>' +
+        '<td>' + (h.occupants.join(", ") || "—") + '</td></tr>';
+    }).join("") + '</tbody></table>');
+
+  /* ---- why the houses are uneven ------------------------------------------ */
+  o.push('<p class="klegend">The four quadrants of this chart measure ' +
+    A.quadrants.map(function (q) { return q.toFixed(1) + "°"; }).join(" · ") +
+    ' — MC to lagna, lagna to IC, IC to descendant, descendant to MC. ' +
+    'Trisecting them gives houses from ' + A.narrowest.toFixed(1) + '° to ' +
+    A.widest.toFixed(1) + '° wide. That spread is the whole argument for ' +
+    'the method: the quadrants are unequal because of the latitude and the ' +
+    'obliquity, so houses that follow them are unequal too. At the equator ' +
+    'and at the equinox they would all be 30° and Śrīpati would agree with ' +
+    'equal houses exactly.</p>');
+
+  /* ---- the 15° rule, applied ---------------------------------------------- */
+  o.push('<h4 class="ksub">How near each graha sits to its cusp</h4>');
+  o.push('<table class="ktbl gotbl"><thead><tr><th>Graha</th><th>Bhāva</th>' +
+    '<th>From the madhya</th><th>Effect for that bhāva</th></tr></thead>' +
+    '<tbody>' + A.rows.map(function (r) {
+      var pct = r.strength == null ? null : Math.round(r.strength * 100);
+      return '<tr><td><b>' + esc(r.body) + '</b></td>' +
+        '<td class="knum">' + r.sripati + '</td>' +
+        '<td class="knum">' + (r.fromMadhya >= 0 ? "+" : "") +
+        r.fromMadhya.toFixed(2) + '°</td>' +
+        '<td>' + (pct == null ? "—" :
+          '<span class="spbar"><i style="width:' + pct + '%"></i></span> ' +
+          pct + '%') + '</td></tr>';
+    }).join("") + '</tbody></table>');
+  o.push('<p class="knote">Read as the edition states it: full on the ' +
+    'madhya, nothing at the sandhi, and a proportion between — over 15°, ' +
+    'or over half the house where the house is narrower than 30°, since ' +
+    'the text is explicit that a graha at the sandhi gives no result for ' +
+    'that bhāva. This is a weight for reading, not a score, and it says ' +
+    'nothing about whether the graha is strong in itself — that is ' +
+    'ṣaḍbala, which this report computes separately.</p>');
+
+  return o.join("");
+}
 /* ================= 1. At a glance ================= */
 function glancePane(D,J){
   var LS=D.LS, ll=LORD[LS], lp=D.P[ll], mo=D.P.Moon, items=[];
@@ -20432,6 +20637,7 @@ window.buildKundliReport=function(J){
     ["sky","Sky",function(){ return skyPane(D,J); }],
     ["starwheel","Star wheel",function(){ return starWheelPane(D,J); }],
     ["motion","Motion",function(){ return motionPane(D,J); }],
+    ["sripati","Śrīpati",function(){ return pane(function(){ return sripatiPane(D); },"Śrīpati"); }],
     ["btime","Birth-time check",function(){ return birthTimePane(D); }],
     ["match","Compatibility",function(){ return matchPane(); }],
     ["full","Full report",function(){ return '<div class="krprint">'+
@@ -22080,4 +22286,4 @@ window.buildKundliReport=function(J){
 })();
 ;
 </script>
-<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-26.af0a824</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>
+<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-26.0c8321f</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>

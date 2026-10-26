@@ -846,11 +846,12 @@ html.navlock,html.navlock body{overflow:hidden}
 .gobar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;
   margin:12px 0 14px;padding:11px 13px;border:1px solid var(--line);
   border-radius:11px;background:var(--soft)}
+#go-status,#rp-status{color:var(--muted-2)}
 .gobar label{font-size:13px;font-weight:600;display:flex;gap:7px;
   align-items:center}
 .gobar input[type=number]{font:inherit;font-size:14px;width:92px;
   padding:6px 8px;border:1px solid var(--line);border-radius:7px}
-.gobar .gochk{font-weight:400;font-size:12.5px;color:var(--muted)}
+.gobar .gochk{font-weight:400;font-size:12.5px;color:var(--muted-2)}
 .gotbl{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 4px}
 .gotbl th{text-align:left;font-size:11px;letter-spacing:.05em;
   text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);
@@ -889,7 +890,22 @@ html.navlock,html.navlock body{overflow:hidden}
 .gocell{border:1px solid var(--line);border-radius:9px;padding:7px 8px;
   min-height:62px;background:var(--soft);display:flex;flex-direction:column;
   gap:2px}
-.gocellh{font-size:10.5px;font-weight:700;color:var(--muted)}
+.gocellh{font-size:10.5px;font-weight:700;color:var(--muted-2)}
 .gocells{font-size:12.5px;font-weight:600}
 .gocellp{font-size:12px;color:var(--ink);line-height:1.35}
 @media(max-width:620px){.gogrid{grid-template-columns:repeat(3,1fr)}}
+
+/* ---- the Śrīpati pane --------------------------------------------------- */
+.spcharts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:12px 0}
+@media(max-width:720px){.spcharts{grid-template-columns:1fr}}
+.sptbl td{font-size:13px}
+.spmad{white-space:nowrap}
+.spdiff{color:var(--muted);font-size:11.5px}
+tr.spfrail td{background:rgba(180,82,82,.08)}
+.spwarn{color:#a1493a;font-weight:700;font-size:11px;text-transform:uppercase;
+  letter-spacing:.04em}
+.spbar{display:inline-block;width:78px;height:8px;border-radius:5px;
+  background:var(--soft);border:1px solid var(--line);vertical-align:middle;
+  overflow:hidden}
+.spbar i{display:block;height:100%;background:var(--gold)}
+.kgood{color:#1c6b46;font-weight:600}
