@@ -204,6 +204,29 @@ ok("bav_by_planet is an object of seven",
      bav.every(b => b.total === b.bindus.reduce((a, x) => a + x, 0)));
 }
 
+console.log("\nreading order");
+{
+  /* The orientation blocks must come out in front of the matrices, and must be
+     reachable by a reader that only gets the first part of the file. Measured on the
+     serialised bytes, not on the object, because that is what a reader sees. */
+  const raw = JSON.stringify(P, null, 2);
+  const keys = Object.keys(P.derived);
+  for (const k of ["guide", "conventions", "sensitivity"])
+    ok(k + " is in the first six derived keys", keys.indexOf(k) < 6,
+       "position " + keys.indexOf(k));
+  const at = k => raw.indexOf('"' + k + '":', raw.indexOf('"derived"'));
+  const deep = ["vimshottari_tree", "graha_drishti", "vimsopaka", "divisional_ashtakavarga"];
+  const early = ["guide", "conventions", "sensitivity"];
+  const lastEarly = Math.max(...early.map(at)), firstDeep = Math.min(...deep.map(at));
+  ok("every orientation block precedes every matrix", lastEarly < firstDeep,
+     lastEarly + " vs " + firstDeep);
+  ok("orientation sits in the first fifth of the file",
+     lastEarly / raw.length < 0.2, (100 * lastEarly / raw.length).toFixed(1) + "%");
+  ok("no derived key was lost or duplicated in the reorder",
+     keys.length === new Set(keys).size &&
+     Object.keys(J.derived).every(k => keys.includes(k)));
+}
+
 console.log("\nyogas");
 ok("yogas is a non-empty array", Array.isArray(P.yogas) && P.yogas.length > 0, P.yogas.length + "");
 {

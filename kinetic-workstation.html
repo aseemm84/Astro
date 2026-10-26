@@ -21865,6 +21865,11 @@ function skpGrahaDrishti(J,prior){
       "Drik Bala in Ṣaḍbala, where each value is quartered and signed."};
 }
 
+/* Read first: units and conventions before the figures they describe, and the
+   birth-time sensitivity before anything fine enough to be moved by it. */
+var SKP_FIRST=["guide","conventions","sensitivity","panchanga_at_birth","houses",
+               "status","sripati","chalit","as_of"];
+
 /* ---- the payload ---- */
 function buildJyotishaPayload(J){
   if(!J||!J.input) throw new Error("buildJyotishaPayload needs a cast chart with an input block");
@@ -21886,9 +21891,17 @@ function buildJyotishaPayload(J){
     generated_utc:(D.as_of&&D.as_of.generated_iso)||new Date().toISOString()
   };
 
+  /* Key order is insertion order, and JSON.stringify keeps it. The three blocks a
+     reader needs BEFORE it starts — what the units are, which conventions were used,
+     and which figures a birth-time error would move — were landing 66% to 98% into a
+     640 KB file, behind the matrices. Anything that reads the file in parts, or stops
+     early, met the matrices first and the orientation last or not at all. Put them in
+     front. Nothing is added or removed by this; the same keys come out in a more
+     useful order. */
   var derived={};
-  /* carry the whole derived layer through unchanged, then overlay the renamed views */
-  for(var k in D) derived[k]=D[k];
+  SKP_FIRST.forEach(function(k){ if(D[k]!=null) derived[k]=D[k]; });
+  /* then the whole derived layer, unchanged, and the renamed views over the top */
+  for(var k in D) if(derived[k]===undefined) derived[k]=D[k];
   derived.panchanga_at_birth=skpPanchanga(J,D);
   derived.running_dasha=skpRunningDasha(D)||D.running_dasha||null;
   derived.vimshottari_tree=skpDashaTree(D)||D.vimshottari_tree||null;
