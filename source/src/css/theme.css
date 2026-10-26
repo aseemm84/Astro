@@ -1,0 +1,303 @@
+/* ===== The four themes ====================================================
+
+   WHAT THESE ARE. Vedic Midnight, Krishna Peetāmbarī, Rishi Paper and
+   Emerald Forest. One is chosen on any page and remembered for every page,
+   so the site is read in the palette the reader picked rather than in the
+   one the stylesheet happened to be written in.
+
+   WHY THIS FILE IS ADDITIVE AND NEVER SUBTRACTIVE. The site's two
+   stylesheets carry some six hundred and sixty literal colours against
+   twelve tokens — counted, not estimated. Tokenising all of them would
+   touch every rule on every page to deliver a feature that changes none of
+   their behaviour, and a mistake anywhere would show up as an unreadable
+   page somewhere nobody looked. So nothing here edits an existing rule.
+   The default palette is the one the site already had, and each theme is a
+   block of overrides under its own attribute selector. A theme can make a
+   page look wrong; it cannot make the untouched page look wrong, which is
+   the property that makes this safe to ship.
+
+   WHY RISHI PAPER IS THE LIGHT ONE. It is very nearly the palette the site
+   was built in — warm paper, dark ink, a gold rule — so it is the default
+   and costs nothing. The three dark palettes are the real work: every
+   surface that was assumed to be a white card has to be told otherwise.
+
+   THE FONTS. The mockup these palettes come from loads Cinzel, Inter,
+   JetBrains Mono and Noto Sans Devanāgarī from Google. This site makes no
+   network requests of any kind, so the stacks below ask for those faces by
+   name — a reader who happens to have them installed gets them — and fall
+   through to the faces that ship with the machine. The Devanāgarī stack is
+   listed ahead of the Latin one everywhere Devanāgarī can appear, because
+   a Latin-first stack renders Hindi in whatever the browser picks last. */
+
+:root{
+  /* the surfaces, named by what they are for rather than by their colour,
+     so a theme can invert them without the names lying */
+  --surface:#fbfbfd;          /* the page itself */
+  --surface-2:#f4f4fb;        /* a panel on the page */
+  --surface-3:#ffffff;        /* a card lifted off the panel */
+  --text:#20233a;             /* body text */
+  --text-strong:#1b1e33;      /* headings */
+  --text-soft:#4a4e68;        /* captions, sidebars */
+  --border:#e7e7f0;
+  --border-2:#d8d8e6;
+  --accent:#c9a24b;           /* the gold rule and the active state */
+  --accent-soft:#e7d19a;
+  --accent-ink:#231c07;       /* text on the accent */
+  --chrome:#191d33;           /* masthead and nav */
+  --chrome-2:#252a49;
+  --chrome-text:#f3f2ec;
+  --chrome-link:#c7cbe4;
+  /* the four callouts: source, note, mine, example, caution */
+  --src-bg:#f7f6ef;      --src-line:#ece7d4;  --src-key:#8a6d1f;
+  --note-bg:#eef2f7;     --note-line:#dbe3ee;  --note-edge:#6f86b0;
+  --mine-bg:#f0f6f1;     --mine-line:#d8e7db;  --mine-edge:#4f8c5f;
+  --ex-bg:#fbf6e8;       --ex-line:#ecdcae;
+  --caution-bg:#fbeeee;  --caution-line:#ecc1c1; --caution-edge:#b45252;
+  /* chart ink: a wheel is drawn in these, never in a literal colour */
+  --chart-line:#4a4e68;  --chart-fill:#ffffff;  --chart-text:#20233a;
+  --chart-glow:rgba(201,162,75,.22);
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --deva:"Noto Sans Devanagari","Nirmala UI","Kohinoor Devanagari",
+         "Mangal",system-ui,sans-serif;
+  --display:"Cinzel","Iowan Old Style","Palatino Linotype",Palatino,
+            Georgia,serif;
+}
+
+/* ---- Vedic Midnight -----------------------------------------------------
+   The mockup's own default: near-black with a blue cast, amber accent, and
+   a sky-blue used for the dṛṣṭi beams. */
+html[data-theme="midnight"]{
+  --night:#040711; --night2:#0b1024; --paper:#040711; --ink:#f1f5f9;
+  --muted:#94a3b8; --line:#1e293b; --soft:#0b1024;
+  --gold:#f59e0b; --gold-soft:#fcd34d;
+  --surface:#040711; --surface-2:#0b1024; --surface-3:#111a33;
+  --text:#f1f5f9; --text-strong:#ffffff; --text-soft:#94a3b8;
+  --border:#1e293b; --border-2:#2b3a55;
+  --accent:#f59e0b; --accent-soft:#fcd34d; --accent-ink:#1a1204;
+  --chrome:#02040c; --chrome-2:#0b1024; --chrome-text:#f1f5f9;
+  --chrome-link:#b6c2d9;
+  --src-bg:#0e1526;  --src-line:#263450;  --src-key:#fcd34d;
+  --note-bg:#0c1524; --note-line:#24344d; --note-edge:#38bdf8;
+  --mine-bg:#07160f; --mine-line:#1d3a2a; --mine-edge:#34d399;
+  --ex-bg:#17120a;   --ex-line:#3d2f12;
+  --caution-bg:#1b0d0d; --caution-line:#452020; --caution-edge:#f87171;
+  --chart-line:#94a3b8; --chart-fill:#0b1024; --chart-text:#f1f5f9;
+  --chart-glow:rgba(245,158,11,.28);
+}
+
+/* ---- Krishna Peetāmbarī -------------------------------------------------
+   Named for the yellow silk: a warm near-black ground with the whole text
+   in shades of yellow, and peacock blue-green as the second colour. */
+html[data-theme="peetambari"]{
+  --night:#0c0a09; --night2:#1c1611; --paper:#0c0a09; --ink:#fef08a;
+  --muted:#bfa94d; --line:#332a16; --soft:#1a1509;
+  --gold:#facc15; --gold-soft:#fef9c3;
+  --surface:#0c0a09; --surface-2:#1a1509; --surface-3:#241c0c;
+  --text:#fef08a; --text-strong:#fffbeb; --text-soft:#c9b25a;
+  --border:#332a16; --border-2:#4a3d1f;
+  --accent:#facc15; --accent-soft:#fef9c3; --accent-ink:#1a1403;
+  --chrome:#07060a; --chrome-2:#161208; --chrome-text:#fef9c3;
+  --chrome-link:#d9c37a;
+  --src-bg:#191307;  --src-line:#3b3015;  --src-key:#fde047;
+  --note-bg:#061412; --note-line:#14433c; --note-edge:#2dd4bf;
+  --mine-bg:#08150c; --mine-line:#1d3a22; --mine-edge:#4ade80;
+  --ex-bg:#1d1608;   --ex-line:#473916;
+  --caution-bg:#1c0e08; --caution-line:#4a2415; --caution-edge:#fb923c;
+  --chart-line:#c9b25a; --chart-fill:#120e05; --chart-text:#fef08a;
+  --chart-glow:rgba(250,204,21,.30);
+}
+
+/* ---- Rishi Paper --------------------------------------------------------
+   Warm paper and dark ink: within a hair of the palette the site was
+   written in, so this is the default and overrides almost nothing. */
+html[data-theme="paper"]{
+  /* The legacy tokens matter as much as the new ones. Leaving --muted and
+     --gold at their original values put a dozen captions at 4.01:1 and the
+     Studio's main button at 2.63:1 against this warmer, darker ground —
+     every one of them found by measurement, none of them visible in a
+     screenshot of the page's top half. */
+  --paper:#f7f3e8; --ink:#292524; --soft:#efe9d8; --line:#ded5bd;
+  --muted:#57534e; --gold:#8a5306; --gold-soft:#b07c2a;
+  --night:#292524; --night2:#3f3a36;
+  --surface:#f7f3e8; --surface-2:#efe9d8; --surface-3:#fffdf6;
+  --text:#292524; --text-strong:#1c1917; --text-soft:#57534e;
+  --border:#ded5bd; --border-2:#cdc2a5;
+  /* #a16207 measured 4.44:1 against this ground on the big call to
+     action — a hair under the line, so it is darkened until it clears */
+  --accent:#8a5306; --accent-soft:#d9bb73; --accent-ink:#fffdf6;
+  --chrome:#292524; --chrome-2:#3f3a36; --chrome-text:#f7f3e8;
+  --chrome-link:#ded5bd;
+  --src-bg:#f2ecda;  --src-line:#ddd2b4;  --src-key:#7a5c12;
+  --ex-bg:#f4eeda;   --ex-line:#ddcea6;
+  --chart-line:#57534e; --chart-fill:#fffdf6; --chart-text:#292524;
+  --chart-glow:rgba(161,98,7,.18);
+}
+
+/* ---- Emerald Forest ---------------------------------------------------- */
+html[data-theme="emerald"]{
+  --night:#022c22; --night2:#043d2f; --paper:#022c22; --ink:#ecfdf5;
+  --muted:#8dd3b4; --line:#0b4a39; --soft:#03352a;
+  --gold:#fbbf24; --gold-soft:#fde68a;
+  --surface:#022c22; --surface-2:#03352a; --surface-3:#064435;
+  --text:#ecfdf5; --text-strong:#ffffff; --text-soft:#8dd3b4;
+  --border:#0b4a39; --border-2:#116b52;
+  --accent:#fbbf24; --accent-soft:#fde68a; --accent-ink:#11210c;
+  --chrome:#01201a; --chrome-2:#043d2f; --chrome-text:#ecfdf5;
+  --chrome-link:#a7e3c8;
+  --src-bg:#04372b;  --src-line:#0e5440;  --src-key:#fde68a;
+  --note-bg:#032e2e; --note-line:#0c4a4a; --note-edge:#22d3ee;
+  --mine-bg:#043528; --mine-line:#0e5a3f; --mine-edge:#4ade80;
+  --ex-bg:#1a2e09;   --ex-line:#38500f;
+  --caution-bg:#2a1410; --caution-line:#5a2a1e; --caution-edge:#fb923c;
+  --chart-line:#8dd3b4; --chart-fill:#03352a; --chart-text:#ecfdf5;
+  --chart-glow:rgba(251,191,36,.26);
+}
+
+/* ===== What the themes have to say out loud ================================
+   Everything below applies only when a theme is set, so the untouched site
+   is byte-for-byte what it was. Each block names the thing the stylesheet
+   hardcoded and the token that should have been there. */
+
+/* The five card rules on the Now, Studio and Strength pages are written
+   `background:var(--card,#fff)` against a --card that is never defined, so
+   they resolve to white. Defining it is better than overriding each of
+   them: the fallback was already the hook, it just had nothing on it. */
+html[data-theme]{--card:var(--surface-3)}
+
+html[data-theme] body{background:var(--surface);color:var(--text)}
+html[data-theme] h2{color:var(--text-strong);border-bottom-color:var(--accent)}
+html[data-theme] h3,html[data-theme] h4{color:var(--text-strong)}
+html[data-theme] p.lead{color:var(--text-soft)}
+html[data-theme] a{color:var(--accent)}
+html[data-theme] aside.onpage a{color:var(--text-soft);
+  border-left-color:var(--border)}
+html[data-theme] aside.onpage a:hover{color:var(--accent);
+  border-left-color:var(--accent)}
+html[data-theme] nav.site{background:var(--chrome);
+  border-bottom-color:var(--border-2)}
+html[data-theme] nav.site a{color:var(--chrome-link)}
+html[data-theme] nav.site a:hover{background:var(--chrome-2);
+  color:var(--chrome-text)}
+html[data-theme] nav.site a.active{background:var(--accent);
+  color:var(--accent-ink)}
+html[data-theme] .masthead{color:var(--chrome-text);
+  border-bottom-color:var(--accent)}
+html[data-theme] .masthead h1{color:var(--chrome-text)}
+html[data-theme] .masthead p.sub{color:var(--chrome-link)}
+/* the brand lockup and the eyebrow sit on the masthead's dark gradient in
+   every palette, so they keep light ink in every palette rather than
+   following --text, which the light palette turns dark */
+html[data-theme] .masthead .eyebrow{color:var(--accent-soft)}
+html[data-theme] .masthead .lhname{color:var(--accent-soft)}
+html[data-theme] .masthead .lhdeva{color:var(--accent)}
+html[data-theme="paper"] .masthead .lhname{color:#e8cf95}
+html[data-theme="paper"] .masthead .lhdeva{color:#d9bb73}
+html[data-theme="paper"] .masthead .eyebrow{color:#d9bb73}
+html[data-theme] .term{background:var(--surface-2);
+  border-left-color:var(--accent)}
+html[data-theme] .src{background:var(--src-bg);border-color:var(--src-line);
+  color:var(--text-soft)}
+html[data-theme] .src span{color:var(--src-key)}
+html[data-theme] .note{background:var(--note-bg);
+  border-color:var(--note-line);border-left-color:var(--note-edge)}
+html[data-theme] .mine{background:var(--mine-bg);
+  border-color:var(--mine-line);border-left-color:var(--mine-edge)}
+html[data-theme] .ex{background:var(--ex-bg);border-color:var(--ex-line);
+  border-left-color:var(--accent)}
+html[data-theme] .caution{background:var(--caution-bg);
+  border-color:var(--caution-line);border-left-color:var(--caution-edge)}
+
+/* tables, which are the site's main way of showing a calculation. At
+   :where() weight, because a page that colours one column or one row for a
+   reason should keep doing so. */
+:where(html[data-theme]) table{color:var(--text)}
+:where(html[data-theme]) th{background:var(--surface-2);
+  color:var(--text-strong);border-color:var(--border)}
+:where(html[data-theme]) td{border-color:var(--border)}
+:where(html[data-theme]) tr:nth-child(even) td{background:var(--surface-2)}
+
+/* The panels, cards and wells are NOT listed here. They are generated into
+   theme-auto.css from the stylesheets' own colours, at :where() specificity
+   so that a deeper rule still wins. A hand-written `html[data-theme] .card`
+   scores (0,2,1) and so beat the generated `.card.tool` at (0,2,0), turning
+   the one dark gradient card on the home page into a light card with its
+   white heading still white. Generic surfaces belong to the generator;
+   this file keeps the things that need a judgement. */
+
+/* inputs: a white field on a near-black page is a lamp */
+html[data-theme] input,html[data-theme] select,html[data-theme] textarea{
+  background:var(--surface-3);color:var(--text);
+  border-color:var(--border-2)}
+:where(html[data-theme]) label{color:var(--text-soft)}
+/* the picker's label is a <label>, so the generic rule above claims it and
+   would put page ink on the dark nav; it needs the chrome's ink at a
+   weight that wins */
+html[data-theme] nav.site .themepick label,
+html[data-theme] nav.site .themepickl{color:var(--chrome-link)}
+nav.site .themepickl{color:#c7cbe4}
+html[data-theme] input::placeholder,
+html[data-theme] textarea::placeholder{color:var(--text-soft)}
+
+/* the chart wheels: these are SVG drawn from CSS currentColor where they
+   can be, and the tokens above where they cannot */
+html[data-theme] .kchart,html[data-theme] .chart{color:var(--chart-line)}
+html[data-theme] .kchart text,html[data-theme] .chart text{
+  fill:var(--chart-text)}
+html[data-theme] .kchart .cell,html[data-theme] .chart .cell{
+  fill:var(--chart-fill)}
+
+/* ---- selected states -----------------------------------------------------
+   A chip, tab or button that marks itself selected paints the accent and
+   puts ink on it. The two have to move together: the stylesheets write the
+   surface as var(--gold) and the ink as a literal, so a palette that
+   changes one without the other gives a light chip with light text. These
+   are asserted as a pair, which is the only form in which they are
+   correct. */
+html[data-theme] .sctab[aria-selected="true"],
+html[data-theme] .reelchip.on,html[data-theme] .simchip.on,
+html[data-theme] .spv.on,html[data-theme] .stbtn,
+html[data-theme] .ktabs button[aria-selected="true"]{
+  background:var(--accent);border-color:var(--accent);
+  color:var(--accent-ink)}
+html[data-theme] .stbtn.sec{background:var(--surface-3);color:var(--text);
+  border-color:var(--border-2)}
+
+/* ---- the switcher itself ------------------------------------------------ */
+.themepick{display:inline-flex;align-items:center;gap:6px;
+  font:inherit;font-size:12px}
+.themepick select{font:inherit;font-size:12px;padding:3px 6px;
+  border-radius:6px;border:1px solid var(--border-2);
+  background:var(--surface-3);color:var(--text)}
+/* the label inherits from body, and the nav is dark in every palette
+   including the untouched site — so without this it is ink on near-black.
+   The contrast harness caught it at 1.08:1 before a human would have. */
+nav.site .themepick{margin-left:auto;padding:0 2px;color:#c7cbe4}
+html[data-theme] nav.site .themepick{color:var(--chrome-link)}
+nav.site .themepick select{background:rgba(255,255,255,.08);
+  color:var(--chrome-link);border-color:rgba(255,255,255,.18)}
+nav.site .themepick select option{color:#20233a;background:#fff}
+html[data-theme] nav.site .themepick select option{
+  color:var(--text);background:var(--surface-3)}
+
+/* ---- print -------------------------------------------------------------
+   A printed chart is read on paper, and paper is white whatever the screen
+   was. Every theme prints as ink on white; nobody wants Vedic Midnight
+   coming out of a laser printer. */
+@media print{
+  html[data-theme] body,html[data-theme] .masthead{
+    background:#fff !important;color:#000 !important}
+  html[data-theme] h2,html[data-theme] h3,html[data-theme] h4,
+  html[data-theme] .masthead h1{color:#000 !important}
+  html[data-theme] .src,html[data-theme] .note,html[data-theme] .mine,
+  html[data-theme] .ex,html[data-theme] .caution,html[data-theme] .term,
+  html[data-theme] th,html[data-theme] td,html[data-theme] tr:nth-child(even) td,
+  html[data-theme] .card,html[data-theme] .panel,html[data-theme] .box,
+  html[data-theme] .kcard,html[data-theme] .kpanel,html[data-theme] .kbox,
+  html[data-theme] .kwell,html[data-theme] .ksec,html[data-theme] .ktile{
+    background:#fff !important;color:#000 !important;
+    border-color:#999 !important}
+  html[data-theme] .kchart text,html[data-theme] .chart text{
+    fill:#000 !important}
+  html[data-theme] .kchart,html[data-theme] .chart{color:#333 !important}
+  .themepick{display:none !important}
+}

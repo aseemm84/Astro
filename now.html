@@ -1444,7 +1444,730 @@ table.reeltbl td:first-child{width:38%;color:var(--muted)}
   .sccap{background:#1d1a14;border-color:#3a3328}
   .scbeats li{border-top-color:#332c21}
 }
-</style></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Hindu time, now</h1><p class="sub">The five limbs of the day as they stand, for the place you choose — computed in your browser, with no birth chart needed.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html" class="active">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#pancanga">The five limbs, and the month</a><a href="#strip">The tithi either side of now</a><a href="#later">Divisions of the daylight</a><a href="#why">Why the day begins at sunrise</a></aside><main><p class="lead">This is the Hindu time <b>right now</b>, for the place you choose: the five limbs of the day with the moment each one ends, the lunar month in both reckonings, the season and the half-year, sunrise and sunset &mdash; and, kept separate because they are later tradition rather than BPHS, the divisions of the daylight that practice uses. Nothing here needs a birth chart.</p>
+
+/* ===== Generated theme overrides =====================================
+   Written by source/tools/gen-theme-overrides.py from the literal
+   colours in app.css and pages.css. Do not edit by hand: regenerate.
+
+   Every selector below paints an opaque background with a literal
+   colour, so under a palette it would keep that colour while the text
+   on it changed — a white card with white text, or a near-black strip
+   with near-black text. Each is repointed at the token it should have
+   used. The colour is set as well as the surface, because a surface
+   that flips from light to dark takes its text with it.
+   ================================================================= */
+
+/* surfaces the stylesheets paint light (133) */
+:where(html[data-theme]) #reel-place .npres,
+:where(html[data-theme]) #si-text:focus,
+:where(html[data-theme]) #ss-drift,
+:where(html[data-theme]) .cadhika,
+:where(html[data-theme]) .calm th,
+:where(html[data-theme]) .calm tr:hover td,
+:where(html[data-theme]) .card,
+:where(html[data-theme]) .caution,
+:where(html[data-theme]) .ccell,
+:where(html[data-theme]) .ccell.cfull,
+:where(html[data-theme]) .ccell.cnew,
+:where(html[data-theme]) .ccell.csel,
+:where(html[data-theme]) .ccell:hover,
+:where(html[data-theme]) .cnav button,
+:where(html[data-theme]) .crux td,
+:where(html[data-theme]) .csank,
+:where(html[data-theme]) .csel,
+:where(html[data-theme]) .ctag,
+:where(html[data-theme]) .ctag.ctagwarn,
+:where(html[data-theme]) .cupari,
+:where(html[data-theme]) .cvbtn,
+:where(html[data-theme]) .cyd.cyadhika,
+:where(html[data-theme]) .cyear,
+:where(html[data-theme]) .dpbtn,
+:where(html[data-theme]) .dpchip,
+:where(html[data-theme]) .dplayer,
+:where(html[data-theme]) .dplayer.on,
+:where(html[data-theme]) .dppane,
+:where(html[data-theme]) .dpscene,
+:where(html[data-theme]) .dpscene.on,
+:where(html[data-theme]) .dptag.dpa,
+:where(html[data-theme]) .dptag.dpb,
+:where(html[data-theme]) .dptag.dpc,
+:where(html[data-theme]) .dptag.dpt,
+:where(html[data-theme]) .dptkey:hover,
+:where(html[data-theme]) .dptlane,
+:where(html[data-theme]) .dptscene,
+:where(html[data-theme]) .ex,
+:where(html[data-theme]) .inchart,
+:where(html[data-theme]) .k-btn.sec,
+:where(html[data-theme]) .k-card,
+:where(html[data-theme]) .k-chip,
+:where(html[data-theme]) .k-err,
+:where(html[data-theme]) .k-form,
+:where(html[data-theme]) .k-form input,
+:where(html[data-theme]) .k-form select,
+:where(html[data-theme]) .k-results button,
+:where(html[data-theme]) .k-results button:hover,
+:where(html[data-theme]) .kreport .gbpanel,
+:where(html[data-theme]) .kreport .kanote,
+:where(html[data-theme]) .kreport .kbox,
+:where(html[data-theme]) .kreport .kbox.kwarn,
+:where(html[data-theme]) .kreport .kcard,
+:where(html[data-theme]) .kreport .kev-form,
+:where(html[data-theme]) .kreport .kev-form input,
+:where(html[data-theme]) .kreport .kev-form select,
+:where(html[data-theme]) .kreport .kgi,
+:where(html[data-theme]) .kreport .kipanel,
+:where(html[data-theme]) .kreport .kk-asp,
+:where(html[data-theme]) .kreport .kk-at,
+:where(html[data-theme]) .kreport .kk-own,
+:where(html[data-theme]) .kreport .kmbar,
+:where(html[data-theme]) .kreport .kpath,
+:where(html[data-theme]) .kreport .kpath-nav button span,
+:where(html[data-theme]) .kreport .kpbar,
+:where(html[data-theme]) .kreport .kstep-try,
+:where(html[data-theme]) .kreport .ktabs,
+:where(html[data-theme]) .kreport .ktabs button,
+:where(html[data-theme]) .kreport .ktabs button:hover,
+:where(html[data-theme]) .kreport .ktabsel,
+:where(html[data-theme]) .kreport .moband,
+:where(html[data-theme]) .kreport .monum,
+:where(html[data-theme]) .kreport .moscene,
+:where(html[data-theme]) .kreport .motext,
+:where(html[data-theme]) .kreport .sensb.sens-hi,
+:where(html[data-theme]) .kreport .sensb.sens-lo,
+:where(html[data-theme]) .kreport .sensb.sens-mid,
+:where(html[data-theme]) .kreport .skysel,
+:where(html[data-theme]) .kreport .skytoggle button,
+:where(html[data-theme]) .kreport .skyv,
+:where(html[data-theme]) .kreport .swhb,
+:where(html[data-theme]) .kreport .swhb.sec,
+:where(html[data-theme]) .kreport .swhb:hover,
+:where(html[data-theme]) .kreport .swhchip,
+:where(html[data-theme]) .kreport .swhgrp,
+:where(html[data-theme]) .kreport button.gbq:focus,
+:where(html[data-theme]) .kreport button.gbq:hover,
+:where(html[data-theme]) .kreport details.kdt-cur>summary,
+:where(html[data-theme]) .kreport details.kdt-md,
+:where(html[data-theme]) .kreport table.ktbl tr.khl td,
+:where(html[data-theme]) .mine,
+:where(html[data-theme]) .note,
+:where(html[data-theme]) .npfind,
+:where(html[data-theme]) .npres button,
+:where(html[data-theme]) .npres button:focus-visible,
+:where(html[data-theme]) .npres button:hover,
+:where(html[data-theme]) .onpage-m,
+:where(html[data-theme]) .reelbtn.ghost,
+:where(html[data-theme]) .reelchip,
+:where(html[data-theme]) .reelclosing,
+:where(html[data-theme]) .sccap,
+:where(html[data-theme]) .sctab,
+:where(html[data-theme]) .simchip,
+:where(html[data-theme]) .simnoise,
+:where(html[data-theme]) .sipanel,
+:where(html[data-theme]) .sirecipe:hover,
+:where(html[data-theme]) .siwhy,
+:where(html[data-theme]) .spbtn.primary,
+:where(html[data-theme]) .spbtn.rec,
+:where(html[data-theme]) .spchip.rel,
+:where(html[data-theme]) .spdinsp,
+:where(html[data-theme]) .spdlayer,
+:where(html[data-theme]) .spdlayer.on,
+:where(html[data-theme]) .spdx:hover,
+:where(html[data-theme]) .spnote,
+:where(html[data-theme]) .sppane,
+:where(html[data-theme]) .sprow.live,
+:where(html[data-theme]) .spsec,
+:where(html[data-theme]) .sptimewrap,
+:where(html[data-theme]) .src,
+:where(html[data-theme]) .stbtn.sec,
+:where(html[data-theme]) .stcmove button,
+:where(html[data-theme]) .stcrow input,
+:where(html[data-theme]) .stcrow textarea,
+:where(html[data-theme]) .strank,
+:where(html[data-theme]) .strsec,
+:where(html[data-theme]) .stsel,
+:where(html[data-theme]) .stslide,
+:where(html[data-theme]) .stslide.on,
+:where(html[data-theme]) body,
+:where(html[data-theme]) code.k-inline,
+:where(html[data-theme]) footer,
+:where(html[data-theme]) table.stahead tr:hover td{
+  background:var(--surface-3);
+  color:var(--text);
+  border-color:var(--border);
+}
+
+/* surfaces the stylesheets paint dark (29) */
+:where(html[data-theme]) #reel-canvas,
+:where(html[data-theme]) #sim-canvas,
+:where(html[data-theme]) #sim-discs,
+:where(html[data-theme]) .card.tool,
+:where(html[data-theme]) .cyd.cynew,
+:where(html[data-theme]) .dpbtn.primary:hover,
+:where(html[data-theme]) .dpbtn.rec,
+:where(html[data-theme]) .dpplayhead,
+:where(html[data-theme]) .dpstagebox,
+:where(html[data-theme]) .dpthumb,
+:where(html[data-theme]) .dptitle,
+:where(html[data-theme]) .dptopbar .dpbtn,
+:where(html[data-theme]) .dptopbar select,
+:where(html[data-theme]) .k-btn.big,
+:where(html[data-theme]) .k-btn.big:hover,
+:where(html[data-theme]) .k-btn:hover,
+:where(html[data-theme]) .kreport .kmbar i,
+:where(html[data-theme]) .kreport .kmbar span,
+:where(html[data-theme]) .kreport .kpbar span,
+:where(html[data-theme]) .kreport .mostage,
+:where(html[data-theme]) .reelbtn:hover,
+:where(html[data-theme]) .simbtn:hover,
+:where(html[data-theme]) .spstagebox,
+:where(html[data-theme]) .sptile canvas,
+:where(html[data-theme]) body.mostudio .mostage,
+:where(html[data-theme]) details.k-raw pre,
+:where(html[data-theme]) nav.site,
+:where(html[data-theme]) nav.site a:hover,
+:where(html[data-theme]) pre.k-code{
+  background:var(--chrome-2);
+  color:var(--chrome-text);
+  border-color:var(--border-2);
+}
+
+/* text given a dark literal ink and no surface of its own (103) */
+:where(html[data-theme]) #kprintdoc,
+:where(html[data-theme]) #kprintdoc .prby,
+:where(html[data-theme]) #kprintdoc .prconv,
+:where(html[data-theme]) #kprintdoc .prfoot,
+:where(html[data-theme]) #kprintdoc .prh span,
+:where(html[data-theme]) #kprintdoc .prname,
+:where(html[data-theme]) #kprintdoc .prnote,
+:where(html[data-theme]) #kprintdoc .prsub,
+:where(html[data-theme]) #kprintdoc .prwm,
+:where(html[data-theme]) #kprintdoc .sensb,
+:where(html[data-theme]) #ss-now td.num.warn,
+:where(html[data-theme]) .calm small,
+:where(html[data-theme]) .calm td b,
+:where(html[data-theme]) .card h3,
+:where(html[data-theme]) .card p,
+:where(html[data-theme]) .cdrow b,
+:where(html[data-theme]) .cdrow i,
+:where(html[data-theme]) .cfestname,
+:where(html[data-theme]) .cfestname i,
+:where(html[data-theme]) .clabel i,
+:where(html[data-theme]) .cnak,
+:where(html[data-theme]) .cnote,
+:where(html[data-theme]) .cplacenote,
+:where(html[data-theme]) .cprintonly,
+:where(html[data-theme]) .cwarn,
+:where(html[data-theme]) .dpnote.warn,
+:where(html[data-theme]) .dpprop.anim .dpproplab,
+:where(html[data-theme]) .dptokb,
+:where(html[data-theme]) .dptrow.on .dptname,
+:where(html[data-theme]) .dpwarn li.bad,
+:where(html[data-theme]) .hero-pts li,
+:where(html[data-theme]) .inchart h4,
+:where(html[data-theme]) .inchart h4 span,
+:where(html[data-theme]) .inchart li,
+:where(html[data-theme]) .inchart li b,
+:where(html[data-theme]) .inchart-f,
+:where(html[data-theme]) .inchart-f a,
+:where(html[data-theme]) .inchart-x,
+:where(html[data-theme]) .inchart-x:hover,
+:where(html[data-theme]) .k-card .sub,
+:where(html[data-theme]) .k-card .val,
+:where(html[data-theme]) .k-chipwhen,
+:where(html[data-theme]) .k-chipwho,
+:where(html[data-theme]) .k-copymsg,
+:where(html[data-theme]) .k-errdet,
+:where(html[data-theme]) .k-form label,
+:where(html[data-theme]) .k-retro,
+:where(html[data-theme]) .k-skynote,
+:where(html[data-theme]) .kreport .gbcheck.bad,
+:where(html[data-theme]) .kreport .gbcheck.ok,
+:where(html[data-theme]) .kreport .kanote b:first-child,
+:where(html[data-theme]) .kreport .kasrc a,
+:where(html[data-theme]) .kreport .kbad,
+:where(html[data-theme]) .kreport .kcard .s,
+:where(html[data-theme]) .kreport .kev-del,
+:where(html[data-theme]) .kreport .kev-form label,
+:where(html[data-theme]) .kreport .kgo,
+:where(html[data-theme]) .kreport .kgood,
+:where(html[data-theme]) .kreport .kindex-links a,
+:where(html[data-theme]) .kreport .kmid,
+:where(html[data-theme]) .kreport .kpath-nav button,
+:where(html[data-theme]) .kreport .ksub,
+:where(html[data-theme]) .kreport .sensb,
+:where(html[data-theme]) .kreport .wlitem b.wl-g,
+:where(html[data-theme]) .kreport .wlitem b.wl-s,
+:where(html[data-theme]) .kreport .wlitem b.wl-u,
+:where(html[data-theme]) .kreport td.ylater,
+:where(html[data-theme]) .moread li,
+:where(html[data-theme]) .moreadf,
+:where(html[data-theme]) .moreadh,
+:where(html[data-theme]) .nowcard b,
+:where(html[data-theme]) .nowhint,
+:where(html[data-theme]) .nowlab,
+:where(html[data-theme]) .nownote,
+:where(html[data-theme]) .nowplace,
+:where(html[data-theme]) .nowsub,
+:where(html[data-theme]) .onpage-m-list a,
+:where(html[data-theme]) .pill,
+:where(html[data-theme]) .reelclosing h4,
+:where(html[data-theme]) .reelnote.bad,
+:where(html[data-theme]) .scbeats li.over .sct,
+:where(html[data-theme]) .scnote.tight,
+:where(html[data-theme]) .sibad,
+:where(html[data-theme]) .sigood,
+:where(html[data-theme]) .simhead,
+:where(html[data-theme]) .simjy td:first-child,
+:where(html[data-theme]) .simmoral,
+:where(html[data-theme]) .spdcell.to,
+:where(html[data-theme]) .spdtokb,
+:where(html[data-theme]) .spdtrow.on .spdtname,
+:where(html[data-theme]) .spdwarn li.bad,
+:where(html[data-theme]) .src span,
+:where(html[data-theme]) .stfacts li,
+:where(html[data-theme]) .strec,
+:where(html[data-theme]) .stslide.rm,
+:where(html[data-theme]) a,
+:where(html[data-theme]) aside.onpage a,
+:where(html[data-theme]) details.k-raw summary,
+:where(html[data-theme]) footer b,
+:where(html[data-theme]) h2,
+:where(html[data-theme]) h3,
+:where(html[data-theme]) p.lead,
+:where(html[data-theme]) table.tbl td b{
+  color:var(--text);
+}
+
+
+/* ===== The four themes ====================================================
+
+   WHAT THESE ARE. Vedic Midnight, Krishna Peetāmbarī, Rishi Paper and
+   Emerald Forest. One is chosen on any page and remembered for every page,
+   so the site is read in the palette the reader picked rather than in the
+   one the stylesheet happened to be written in.
+
+   WHY THIS FILE IS ADDITIVE AND NEVER SUBTRACTIVE. The site's two
+   stylesheets carry some six hundred and sixty literal colours against
+   twelve tokens — counted, not estimated. Tokenising all of them would
+   touch every rule on every page to deliver a feature that changes none of
+   their behaviour, and a mistake anywhere would show up as an unreadable
+   page somewhere nobody looked. So nothing here edits an existing rule.
+   The default palette is the one the site already had, and each theme is a
+   block of overrides under its own attribute selector. A theme can make a
+   page look wrong; it cannot make the untouched page look wrong, which is
+   the property that makes this safe to ship.
+
+   WHY RISHI PAPER IS THE LIGHT ONE. It is very nearly the palette the site
+   was built in — warm paper, dark ink, a gold rule — so it is the default
+   and costs nothing. The three dark palettes are the real work: every
+   surface that was assumed to be a white card has to be told otherwise.
+
+   THE FONTS. The mockup these palettes come from loads Cinzel, Inter,
+   JetBrains Mono and Noto Sans Devanāgarī from Google. This site makes no
+   network requests of any kind, so the stacks below ask for those faces by
+   name — a reader who happens to have them installed gets them — and fall
+   through to the faces that ship with the machine. The Devanāgarī stack is
+   listed ahead of the Latin one everywhere Devanāgarī can appear, because
+   a Latin-first stack renders Hindi in whatever the browser picks last. */
+
+:root{
+  /* the surfaces, named by what they are for rather than by their colour,
+     so a theme can invert them without the names lying */
+  --surface:#fbfbfd;          /* the page itself */
+  --surface-2:#f4f4fb;        /* a panel on the page */
+  --surface-3:#ffffff;        /* a card lifted off the panel */
+  --text:#20233a;             /* body text */
+  --text-strong:#1b1e33;      /* headings */
+  --text-soft:#4a4e68;        /* captions, sidebars */
+  --border:#e7e7f0;
+  --border-2:#d8d8e6;
+  --accent:#c9a24b;           /* the gold rule and the active state */
+  --accent-soft:#e7d19a;
+  --accent-ink:#231c07;       /* text on the accent */
+  --chrome:#191d33;           /* masthead and nav */
+  --chrome-2:#252a49;
+  --chrome-text:#f3f2ec;
+  --chrome-link:#c7cbe4;
+  /* the four callouts: source, note, mine, example, caution */
+  --src-bg:#f7f6ef;      --src-line:#ece7d4;  --src-key:#8a6d1f;
+  --note-bg:#eef2f7;     --note-line:#dbe3ee;  --note-edge:#6f86b0;
+  --mine-bg:#f0f6f1;     --mine-line:#d8e7db;  --mine-edge:#4f8c5f;
+  --ex-bg:#fbf6e8;       --ex-line:#ecdcae;
+  --caution-bg:#fbeeee;  --caution-line:#ecc1c1; --caution-edge:#b45252;
+  /* chart ink: a wheel is drawn in these, never in a literal colour */
+  --chart-line:#4a4e68;  --chart-fill:#ffffff;  --chart-text:#20233a;
+  --chart-glow:rgba(201,162,75,.22);
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --deva:"Noto Sans Devanagari","Nirmala UI","Kohinoor Devanagari",
+         "Mangal",system-ui,sans-serif;
+  --display:"Cinzel","Iowan Old Style","Palatino Linotype",Palatino,
+            Georgia,serif;
+}
+
+/* ---- Vedic Midnight -----------------------------------------------------
+   The mockup's own default: near-black with a blue cast, amber accent, and
+   a sky-blue used for the dṛṣṭi beams. */
+html[data-theme="midnight"]{
+  --night:#040711; --night2:#0b1024; --paper:#040711; --ink:#f1f5f9;
+  --muted:#94a3b8; --line:#1e293b; --soft:#0b1024;
+  --gold:#f59e0b; --gold-soft:#fcd34d;
+  --surface:#040711; --surface-2:#0b1024; --surface-3:#111a33;
+  --text:#f1f5f9; --text-strong:#ffffff; --text-soft:#94a3b8;
+  --border:#1e293b; --border-2:#2b3a55;
+  --accent:#f59e0b; --accent-soft:#fcd34d; --accent-ink:#1a1204;
+  --chrome:#02040c; --chrome-2:#0b1024; --chrome-text:#f1f5f9;
+  --chrome-link:#b6c2d9;
+  --src-bg:#0e1526;  --src-line:#263450;  --src-key:#fcd34d;
+  --note-bg:#0c1524; --note-line:#24344d; --note-edge:#38bdf8;
+  --mine-bg:#07160f; --mine-line:#1d3a2a; --mine-edge:#34d399;
+  --ex-bg:#17120a;   --ex-line:#3d2f12;
+  --caution-bg:#1b0d0d; --caution-line:#452020; --caution-edge:#f87171;
+  --chart-line:#94a3b8; --chart-fill:#0b1024; --chart-text:#f1f5f9;
+  --chart-glow:rgba(245,158,11,.28);
+}
+
+/* ---- Krishna Peetāmbarī -------------------------------------------------
+   Named for the yellow silk: a warm near-black ground with the whole text
+   in shades of yellow, and peacock blue-green as the second colour. */
+html[data-theme="peetambari"]{
+  --night:#0c0a09; --night2:#1c1611; --paper:#0c0a09; --ink:#fef08a;
+  --muted:#bfa94d; --line:#332a16; --soft:#1a1509;
+  --gold:#facc15; --gold-soft:#fef9c3;
+  --surface:#0c0a09; --surface-2:#1a1509; --surface-3:#241c0c;
+  --text:#fef08a; --text-strong:#fffbeb; --text-soft:#c9b25a;
+  --border:#332a16; --border-2:#4a3d1f;
+  --accent:#facc15; --accent-soft:#fef9c3; --accent-ink:#1a1403;
+  --chrome:#07060a; --chrome-2:#161208; --chrome-text:#fef9c3;
+  --chrome-link:#d9c37a;
+  --src-bg:#191307;  --src-line:#3b3015;  --src-key:#fde047;
+  --note-bg:#061412; --note-line:#14433c; --note-edge:#2dd4bf;
+  --mine-bg:#08150c; --mine-line:#1d3a22; --mine-edge:#4ade80;
+  --ex-bg:#1d1608;   --ex-line:#473916;
+  --caution-bg:#1c0e08; --caution-line:#4a2415; --caution-edge:#fb923c;
+  --chart-line:#c9b25a; --chart-fill:#120e05; --chart-text:#fef08a;
+  --chart-glow:rgba(250,204,21,.30);
+}
+
+/* ---- Rishi Paper --------------------------------------------------------
+   Warm paper and dark ink: within a hair of the palette the site was
+   written in, so this is the default and overrides almost nothing. */
+html[data-theme="paper"]{
+  /* The legacy tokens matter as much as the new ones. Leaving --muted and
+     --gold at their original values put a dozen captions at 4.01:1 and the
+     Studio's main button at 2.63:1 against this warmer, darker ground —
+     every one of them found by measurement, none of them visible in a
+     screenshot of the page's top half. */
+  --paper:#f7f3e8; --ink:#292524; --soft:#efe9d8; --line:#ded5bd;
+  --muted:#57534e; --gold:#8a5306; --gold-soft:#b07c2a;
+  --night:#292524; --night2:#3f3a36;
+  --surface:#f7f3e8; --surface-2:#efe9d8; --surface-3:#fffdf6;
+  --text:#292524; --text-strong:#1c1917; --text-soft:#57534e;
+  --border:#ded5bd; --border-2:#cdc2a5;
+  /* #a16207 measured 4.44:1 against this ground on the big call to
+     action — a hair under the line, so it is darkened until it clears */
+  --accent:#8a5306; --accent-soft:#d9bb73; --accent-ink:#fffdf6;
+  --chrome:#292524; --chrome-2:#3f3a36; --chrome-text:#f7f3e8;
+  --chrome-link:#ded5bd;
+  --src-bg:#f2ecda;  --src-line:#ddd2b4;  --src-key:#7a5c12;
+  --ex-bg:#f4eeda;   --ex-line:#ddcea6;
+  --chart-line:#57534e; --chart-fill:#fffdf6; --chart-text:#292524;
+  --chart-glow:rgba(161,98,7,.18);
+}
+
+/* ---- Emerald Forest ---------------------------------------------------- */
+html[data-theme="emerald"]{
+  --night:#022c22; --night2:#043d2f; --paper:#022c22; --ink:#ecfdf5;
+  --muted:#8dd3b4; --line:#0b4a39; --soft:#03352a;
+  --gold:#fbbf24; --gold-soft:#fde68a;
+  --surface:#022c22; --surface-2:#03352a; --surface-3:#064435;
+  --text:#ecfdf5; --text-strong:#ffffff; --text-soft:#8dd3b4;
+  --border:#0b4a39; --border-2:#116b52;
+  --accent:#fbbf24; --accent-soft:#fde68a; --accent-ink:#11210c;
+  --chrome:#01201a; --chrome-2:#043d2f; --chrome-text:#ecfdf5;
+  --chrome-link:#a7e3c8;
+  --src-bg:#04372b;  --src-line:#0e5440;  --src-key:#fde68a;
+  --note-bg:#032e2e; --note-line:#0c4a4a; --note-edge:#22d3ee;
+  --mine-bg:#043528; --mine-line:#0e5a3f; --mine-edge:#4ade80;
+  --ex-bg:#1a2e09;   --ex-line:#38500f;
+  --caution-bg:#2a1410; --caution-line:#5a2a1e; --caution-edge:#fb923c;
+  --chart-line:#8dd3b4; --chart-fill:#03352a; --chart-text:#ecfdf5;
+  --chart-glow:rgba(251,191,36,.26);
+}
+
+/* ===== What the themes have to say out loud ================================
+   Everything below applies only when a theme is set, so the untouched site
+   is byte-for-byte what it was. Each block names the thing the stylesheet
+   hardcoded and the token that should have been there. */
+
+/* The five card rules on the Now, Studio and Strength pages are written
+   `background:var(--card,#fff)` against a --card that is never defined, so
+   they resolve to white. Defining it is better than overriding each of
+   them: the fallback was already the hook, it just had nothing on it. */
+html[data-theme]{--card:var(--surface-3)}
+
+html[data-theme] body{background:var(--surface);color:var(--text)}
+html[data-theme] h2{color:var(--text-strong);border-bottom-color:var(--accent)}
+html[data-theme] h3,html[data-theme] h4{color:var(--text-strong)}
+html[data-theme] p.lead{color:var(--text-soft)}
+html[data-theme] a{color:var(--accent)}
+html[data-theme] aside.onpage a{color:var(--text-soft);
+  border-left-color:var(--border)}
+html[data-theme] aside.onpage a:hover{color:var(--accent);
+  border-left-color:var(--accent)}
+html[data-theme] nav.site{background:var(--chrome);
+  border-bottom-color:var(--border-2)}
+html[data-theme] nav.site a{color:var(--chrome-link)}
+html[data-theme] nav.site a:hover{background:var(--chrome-2);
+  color:var(--chrome-text)}
+html[data-theme] nav.site a.active{background:var(--accent);
+  color:var(--accent-ink)}
+html[data-theme] .masthead{color:var(--chrome-text);
+  border-bottom-color:var(--accent)}
+html[data-theme] .masthead h1{color:var(--chrome-text)}
+html[data-theme] .masthead p.sub{color:var(--chrome-link)}
+/* the brand lockup and the eyebrow sit on the masthead's dark gradient in
+   every palette, so they keep light ink in every palette rather than
+   following --text, which the light palette turns dark */
+html[data-theme] .masthead .eyebrow{color:var(--accent-soft)}
+html[data-theme] .masthead .lhname{color:var(--accent-soft)}
+html[data-theme] .masthead .lhdeva{color:var(--accent)}
+html[data-theme="paper"] .masthead .lhname{color:#e8cf95}
+html[data-theme="paper"] .masthead .lhdeva{color:#d9bb73}
+html[data-theme="paper"] .masthead .eyebrow{color:#d9bb73}
+html[data-theme] .term{background:var(--surface-2);
+  border-left-color:var(--accent)}
+html[data-theme] .src{background:var(--src-bg);border-color:var(--src-line);
+  color:var(--text-soft)}
+html[data-theme] .src span{color:var(--src-key)}
+html[data-theme] .note{background:var(--note-bg);
+  border-color:var(--note-line);border-left-color:var(--note-edge)}
+html[data-theme] .mine{background:var(--mine-bg);
+  border-color:var(--mine-line);border-left-color:var(--mine-edge)}
+html[data-theme] .ex{background:var(--ex-bg);border-color:var(--ex-line);
+  border-left-color:var(--accent)}
+html[data-theme] .caution{background:var(--caution-bg);
+  border-color:var(--caution-line);border-left-color:var(--caution-edge)}
+
+/* tables, which are the site's main way of showing a calculation. At
+   :where() weight, because a page that colours one column or one row for a
+   reason should keep doing so. */
+:where(html[data-theme]) table{color:var(--text)}
+:where(html[data-theme]) th{background:var(--surface-2);
+  color:var(--text-strong);border-color:var(--border)}
+:where(html[data-theme]) td{border-color:var(--border)}
+:where(html[data-theme]) tr:nth-child(even) td{background:var(--surface-2)}
+
+/* The panels, cards and wells are NOT listed here. They are generated into
+   theme-auto.css from the stylesheets' own colours, at :where() specificity
+   so that a deeper rule still wins. A hand-written `html[data-theme] .card`
+   scores (0,2,1) and so beat the generated `.card.tool` at (0,2,0), turning
+   the one dark gradient card on the home page into a light card with its
+   white heading still white. Generic surfaces belong to the generator;
+   this file keeps the things that need a judgement. */
+
+/* inputs: a white field on a near-black page is a lamp */
+html[data-theme] input,html[data-theme] select,html[data-theme] textarea{
+  background:var(--surface-3);color:var(--text);
+  border-color:var(--border-2)}
+:where(html[data-theme]) label{color:var(--text-soft)}
+/* the picker's label is a <label>, so the generic rule above claims it and
+   would put page ink on the dark nav; it needs the chrome's ink at a
+   weight that wins */
+html[data-theme] nav.site .themepick label,
+html[data-theme] nav.site .themepickl{color:var(--chrome-link)}
+nav.site .themepickl{color:#c7cbe4}
+html[data-theme] input::placeholder,
+html[data-theme] textarea::placeholder{color:var(--text-soft)}
+
+/* the chart wheels: these are SVG drawn from CSS currentColor where they
+   can be, and the tokens above where they cannot */
+html[data-theme] .kchart,html[data-theme] .chart{color:var(--chart-line)}
+html[data-theme] .kchart text,html[data-theme] .chart text{
+  fill:var(--chart-text)}
+html[data-theme] .kchart .cell,html[data-theme] .chart .cell{
+  fill:var(--chart-fill)}
+
+/* ---- selected states -----------------------------------------------------
+   A chip, tab or button that marks itself selected paints the accent and
+   puts ink on it. The two have to move together: the stylesheets write the
+   surface as var(--gold) and the ink as a literal, so a palette that
+   changes one without the other gives a light chip with light text. These
+   are asserted as a pair, which is the only form in which they are
+   correct. */
+html[data-theme] .sctab[aria-selected="true"],
+html[data-theme] .reelchip.on,html[data-theme] .simchip.on,
+html[data-theme] .spv.on,html[data-theme] .stbtn,
+html[data-theme] .ktabs button[aria-selected="true"]{
+  background:var(--accent);border-color:var(--accent);
+  color:var(--accent-ink)}
+html[data-theme] .stbtn.sec{background:var(--surface-3);color:var(--text);
+  border-color:var(--border-2)}
+
+/* ---- the switcher itself ------------------------------------------------ */
+.themepick{display:inline-flex;align-items:center;gap:6px;
+  font:inherit;font-size:12px}
+.themepick select{font:inherit;font-size:12px;padding:3px 6px;
+  border-radius:6px;border:1px solid var(--border-2);
+  background:var(--surface-3);color:var(--text)}
+/* the label inherits from body, and the nav is dark in every palette
+   including the untouched site — so without this it is ink on near-black.
+   The contrast harness caught it at 1.08:1 before a human would have. */
+nav.site .themepick{margin-left:auto;padding:0 2px;color:#c7cbe4}
+html[data-theme] nav.site .themepick{color:var(--chrome-link)}
+nav.site .themepick select{background:rgba(255,255,255,.08);
+  color:var(--chrome-link);border-color:rgba(255,255,255,.18)}
+nav.site .themepick select option{color:#20233a;background:#fff}
+html[data-theme] nav.site .themepick select option{
+  color:var(--text);background:var(--surface-3)}
+
+/* ---- print -------------------------------------------------------------
+   A printed chart is read on paper, and paper is white whatever the screen
+   was. Every theme prints as ink on white; nobody wants Vedic Midnight
+   coming out of a laser printer. */
+@media print{
+  html[data-theme] body,html[data-theme] .masthead{
+    background:#fff !important;color:#000 !important}
+  html[data-theme] h2,html[data-theme] h3,html[data-theme] h4,
+  html[data-theme] .masthead h1{color:#000 !important}
+  html[data-theme] .src,html[data-theme] .note,html[data-theme] .mine,
+  html[data-theme] .ex,html[data-theme] .caution,html[data-theme] .term,
+  html[data-theme] th,html[data-theme] td,html[data-theme] tr:nth-child(even) td,
+  html[data-theme] .card,html[data-theme] .panel,html[data-theme] .box,
+  html[data-theme] .kcard,html[data-theme] .kpanel,html[data-theme] .kbox,
+  html[data-theme] .kwell,html[data-theme] .ksec,html[data-theme] .ktile{
+    background:#fff !important;color:#000 !important;
+    border-color:#999 !important}
+  html[data-theme] .kchart text,html[data-theme] .chart text{
+    fill:#000 !important}
+  html[data-theme] .kchart,html[data-theme] .chart{color:#333 !important}
+  .themepick{display:none !important}
+}
+</style><script>/* ===== Choosing a theme ===================================================
+
+   Two halves that must not be merged. The first runs before anything is
+   painted and does one thing: put the remembered theme on <html>. It is
+   inlined into the document head by the build, ahead of the stylesheet,
+   because a theme applied after first paint is a white flash followed by a
+   dark page — on a dark palette that flash is the brightest thing the
+   reader sees, and it happens on every single navigation. The second half
+   builds the control and can run whenever the page is ready, because by
+   then the colours are already right.
+
+   WHY LOCALSTORAGE AND NOT A COOKIE OR A QUERY STRING. This site runs from
+   a folder of files on someone's own machine as happily as from a server.
+   There is no server to set a cookie and no router to carry a query string,
+   so the reader's choice lives in the one store a file:// page can write.
+   It can throw — a private window, blocked site data — so every touch of
+   it is wrapped, and a store that cannot be read simply means the default
+   palette rather than a broken page.
+
+   THE DEFAULT IS NO ATTRIBUTE AT ALL, not "paper". Every themed rule in
+   theme.css hangs off html[data-theme], so a reader who has never chosen
+   gets the stylesheet exactly as it was written, with none of the theme
+   layer in play. That is what makes the feature safe: it cannot change the
+   site for anyone who has not asked it to. */
+
+(function () {
+  "use strict";
+
+  var KEY = "nirayana.theme";
+  var THEMES = [
+    ["", "Site default"],
+    ["midnight", "Vedic Midnight"],
+    ["peetambari", "Krishna Peetāmbarī"],
+    ["paper", "Rishi Paper"],
+    ["emerald", "Emerald Forest"]
+  ];
+  /* the colour the browser paints its own chrome with, so the phone's
+     status bar is not a white stripe above a black page */
+  var BAR = { midnight: "#02040c", peetambari: "#07060a",
+              paper: "#292524", emerald: "#01201a", "": "#1d2340" };
+
+  function known(t) {
+    for (var i = 0; i < THEMES.length; i++) if (THEMES[i][0] === t) return true;
+    return false;
+  }
+  function read() {
+    try {
+      var v = window.localStorage.getItem(KEY);
+      return known(v) ? v : "";
+    } catch (e) { return ""; }
+  }
+  function write(t) {
+    try {
+      if (t) window.localStorage.setItem(KEY, t);
+      else window.localStorage.removeItem(KEY);
+    } catch (e) {}
+  }
+
+  /* ---- the half that must run before paint ------------------------------ */
+  function apply(t) {
+    var h = document.documentElement;
+    if (t) h.setAttribute("data-theme", t);
+    else h.removeAttribute("data-theme");
+    /* a dark palette has to tell the browser so, or form controls and
+       scrollbars are drawn light on top of it */
+    h.style.colorScheme = (t && t !== "paper") ? "dark" : "light";
+    var m = document.querySelector('meta[name="theme-color"]');
+    if (m) m.setAttribute("content", BAR[t] || BAR[""]);
+    try {
+      window.dispatchEvent(new CustomEvent("nirayana:theme", { detail: t }));
+    } catch (e) {}
+  }
+
+  apply(read());
+
+  /* ---- the control ------------------------------------------------------ */
+  function mount() {
+    var nav = document.querySelector("nav.site");
+    if (!nav || nav.querySelector(".themepick")) return;
+    var cur = read();
+    var wrap = document.createElement("div");
+    wrap.className = "themepick";
+    var id = "theme-pick";
+    var lab = document.createElement("label");
+    lab.setAttribute("for", id);
+    lab.textContent = "Theme";
+    lab.className = "themepickl";
+    var sel = document.createElement("select");
+    sel.id = id;
+    THEMES.forEach(function (t) {
+      var o = document.createElement("option");
+      o.value = t[0]; o.textContent = t[1];
+      if (t[0] === cur) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.addEventListener("change", function () {
+      write(sel.value); apply(sel.value);
+    });
+    wrap.appendChild(lab); wrap.appendChild(sel);
+    nav.appendChild(wrap);
+  }
+
+  /* another tab of the same site changing the theme should change this one:
+     the reader thinks of it as one setting, not one per tab */
+  try {
+    window.addEventListener("storage", function (e) {
+      if (e && e.key === KEY) {
+        var t = read();
+        apply(t);
+        var s = document.getElementById("theme-pick");
+        if (s) s.value = t;
+      }
+    });
+  } catch (e) {}
+
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", mount);
+  else mount();
+
+  window.NTheme = { get: read, set: function (t) {
+    if (!known(t)) return false; write(t); apply(t);
+    var s = document.getElementById("theme-pick"); if (s) s.value = t;
+    return true;
+  }, list: THEMES };
+})();
+</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Hindu time, now</h1><p class="sub">The five limbs of the day as they stand, for the place you choose — computed in your browser, with no birth chart needed.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html" class="active">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Build a Kundli</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#pancanga">The five limbs, and the month</a><a href="#strip">The tithi either side of now</a><a href="#later">Divisions of the daylight</a><a href="#why">Why the day begins at sunrise</a></aside><main><p class="lead">This is the Hindu time <b>right now</b>, for the place you choose: the five limbs of the day with the moment each one ends, the lunar month in both reckonings, the season and the half-year, sunrise and sunset &mdash; and, kept separate because they are later tradition rather than BPHS, the divisions of the daylight that practice uses. Nothing here needs a birth chart.</p>
 
 <div class="nowbar">
   <span class="nowlab"><label for="nowplace">Place</label></span>

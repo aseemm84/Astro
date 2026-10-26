@@ -183,7 +183,10 @@ def build_kundli():
         raise SystemExit("token {{NAV}} missing from the kundli shell")
     shell = shell.replace("{{NAV}}", nav_html("kundli.html"))
     shell = brandify(shell).replace("<!--LOGO-->", logo_mark())
-    parts = [("<!--CSS-->", read(SRC, "css", "app.css"), "style"),
+    parts = [("<!--CSS-->", read(SRC, "css", "app.css") + "\n" +
+                            read(SRC, "css", "theme-auto.css") + "\n" +
+                            read(SRC, "css", "theme.css"), "style"),
+             ("<!--THEMEJS-->", read(SRC, "js", "theme.js"), "script"),
              ("<!--JS0-->", read(VEND, "astronomy.browser.min.js"), "script"),
              ("<!--JS1-->", jsread(SRC, "js", "engine.js"), "script"),
              ("<!--JS2-->", report_bundle(), "script"),
@@ -485,7 +488,18 @@ def build_shared():
 
 def build_pages():
     shell  = read(SRC, "pages", "_shell.html")
-    css    = read(SRC, "css", "pages.css")
+    # the theme layer comes after the page stylesheet so its overrides win
+    # without !important, and the picker's script is inlined into the head
+    # rather than deferred: a theme applied after first paint is a white
+    # flash on every navigation, which on a dark palette is the brightest
+    # thing on the page.
+    # order matters: the generated overrides come first so the hand-written
+    # ones in theme.css, which have the same specificity, win where the two
+    # name the same selector.
+    css    = (read(SRC, "css", "pages.css") + "\n" +
+              read(SRC, "css", "theme-auto.css") + "\n" +
+              read(SRC, "css", "theme.css"))
+    themejs = read(SRC, "js", "theme.js")
     footer = read(SRC, "pages", "_footer.html")
     meta   = json.load(open(os.path.join(SRC, "pages", "_meta.json"), encoding="utf-8"))
     out = {}
@@ -500,7 +514,8 @@ def build_pages():
                          "".join('<a href="#%s">%s</a>' % (i, re.sub(r"<[^>]+>", "", t))
                                  for i, t in secs) + "</aside>")
         out[href] = brandify(
-                     shell.replace("{{CSS}}", css).replace("{{TITLE}}", brandify(m["title"]))
+                     shell.replace("{{CSS}}", css).replace("{{THEMEJS}}", themejs)
+                          .replace("{{TITLE}}", brandify(m["title"]))
                           .replace("{{HEAD}}", head_meta(m["desc"], href, brandify(m["title"])))
                           .replace("{{H1}}", m["h1"]).replace("{{SUB}}", m["sub"])
                           .replace("{{NAV}}", nav_html(href))
