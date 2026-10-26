@@ -227,3 +227,154 @@ html[data-theme="peetambari"] #k-go:hover,
 html[data-theme="emerald"] #k-go:hover{
   box-shadow:0 0 0 1px var(--accent),
              0 14px 40px -12px color-mix(in srgb,var(--accent) 85%,transparent)}
+
+/* ===== App shell =========================================================
+   WHAT SEPARATES SOFTWARE FROM A WEB PAGE, in the order a reader notices:
+
+     1. the window does not scroll. A page scrolls as one long sheet; an
+        application holds its chrome still and scrolls only the panel you
+        are working in. This is the single biggest cue, and everything else
+        is detail beside it.
+     2. the context never leaves. Whose chart this is, cast for when and
+        where, stays on screen in every view — because in an application
+        you are always working ON something, and a page that makes you
+        scroll up to remember whose chart you are reading is a document.
+     3. the controls are a rail, not prose. Dense, bilingual, one of them
+        lit.
+
+   APPLIED ONLY TO THE WORKSTATION. The builder stays a reference page that
+   happens to compute, read top to bottom, because that is what it is for
+   and forcing it into a window would make it worse. Two shapes, each
+   suiting its own job.
+
+   AND ONLY WHERE THERE IS ROOM. Below 900px the shell unlocks and becomes
+   an ordinary scrolling page again: a fixed-height app on a phone means a
+   table in a 200px well, which is worse than a page. */
+@media (min-width:900px){
+  body.wsapp{height:100vh;height:100dvh;overflow:hidden;
+    display:flex;flex-direction:column}
+  /* the masthead collapses to a slim title bar: an application spends its
+     vertical space on content, not on a banner */
+  body.wsapp .masthead{padding:10px clamp(16px,4vw,34px) 9px;
+    display:flex;align-items:center;gap:16px;flex:0 0 auto}
+  body.wsapp .masthead .eyebrow,body.wsapp .masthead p.sub{display:none}
+  body.wsapp .masthead h1{font-size:17px;margin:0;line-height:1.2;
+    letter-spacing:.01em}
+  body.wsapp .masthead .lhbrand{margin:0}
+  body.wsapp .masthead .lhmarkwrap svg,
+  body.wsapp .masthead .lhmarkwrap img{width:26px;height:26px}
+  body.wsapp .masthead .lhname{font-size:18px}
+  body.wsapp .masthead .lhdeva{font-size:11px}
+  body.wsapp nav.site{flex:0 0 auto}
+  body.wsapp .layout{flex:1 1 auto;min-height:0;display:flex;
+    max-width:none;padding:0 clamp(12px,2.4vw,26px)}
+  body.wsapp main{flex:1 1 auto;min-height:0;display:flex;
+    flex-direction:column;padding:0}
+  body.wsapp footer{display:none}
+  /* the intake collapses once a chart exists — in an application the form
+     is a dialogue you are finished with, not a permanent fixture */
+  body.wsapp.wshaschart .wsintake{display:none}
+  body.wsapp .wsintake{flex:0 0 auto;overflow:auto;max-height:62vh;
+    padding-right:4px}
+  body.wsapp .wsdeckwrap{position:static;flex:0 0 auto;margin:0;
+    padding:8px 0 7px}
+  body.wsapp .wsstatus{flex:0 0 auto;margin:0 0 8px}
+  body.wsapp .wsviews{flex:1 1 auto;min-height:0;position:relative}
+  /* THE scroll surface: one pane, not the document */
+  body.wsapp .wspanel.on{position:absolute;inset:0;overflow:auto;
+    padding:2px 10px 26px 2px;scrollbar-width:thin}
+  body.wsapp .wspanel.on::-webkit-scrollbar{width:10px}
+  body.wsapp .wspanel.on::-webkit-scrollbar-thumb{
+    background:var(--border-2);border-radius:6px;
+    border:3px solid transparent;background-clip:padding-box}
+}
+
+/* ---- the context bar ----------------------------------------------------
+   Name, then the facts that identify the cast, then the actions. It is a
+   title bar, so it is quiet: one accent, small type, tabular numerals. */
+.wsbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:9px 13px;margin:10px 0 0;border-radius:12px;
+  border:1px solid var(--line);background:var(--soft)}
+.wsbarname{font-family:var(--serif);font-size:17px;font-weight:600;
+  color:var(--text-strong);white-space:nowrap}
+.wsbarname:empty::before{content:"Untitled chart";color:var(--muted-2);
+  font-style:italic;font-weight:400}
+.wsbarfacts{display:flex;gap:7px 16px;flex-wrap:wrap;flex:1 1 auto;
+  font-size:11.5px;color:var(--text-soft);min-width:0}
+.wsbarfacts b{color:var(--text);font-weight:600;
+  font-variant-numeric:tabular-nums}
+.wsbarfacts span{white-space:nowrap}
+.wsbaracts{display:flex;gap:6px;flex:0 0 auto}
+.wsact{font:inherit;font-size:11.5px;padding:5px 11px;border-radius:999px;
+  border:1px solid var(--border-2);background:transparent;color:var(--text);
+  cursor:pointer;white-space:nowrap}
+.wsact:hover{border-color:var(--accent)}
+.wsact.on{background:var(--accent);border-color:var(--accent);
+  color:var(--accent-ink);font-weight:600}
+html[data-theme="midnight"] .wsbar,html[data-theme="peetambari"] .wsbar,
+html[data-theme="emerald"] .wsbar{
+  background:linear-gradient(180deg,rgba(255,255,255,.055),
+    rgba(255,255,255,.015));
+  border-color:rgba(255,255,255,.10);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+
+/* ---- the bilingual rail -------------------------------------------------- */
+.wstab{flex-direction:column;gap:1px;padding:6px 14px;line-height:1.15}
+.wstabhi{font-family:var(--deva);font-size:13px;font-weight:600}
+.wstabla{font-size:9.5px;letter-spacing:.07em;text-transform:uppercase;
+  opacity:.72;font-weight:600}
+.wstab[aria-current=true] .wstabla{opacity:.85}
+
+/* ---- the computing shimmer on a view change ------------------------------
+   A pane that takes a moment to build should say so for that moment. It is
+   one sweep, not a spinner, because a spinner implies waiting and this is
+   usually over before it is noticed. */
+.wscalc{position:absolute;left:0;right:0;top:0;height:2px;overflow:hidden;
+  z-index:3;pointer-events:none}
+.wscalc::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);
+  transform:translateX(-100%);animation:wssweep .62s ease-in-out}
+@keyframes wssweep{to{transform:translateX(100%)}}
+@media(prefers-reduced-motion:reduce){.wscalc{display:none}}
+
+/* ---- section headers, with the citation in the same line of sight ------- */
+.wshead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;
+  margin:4px 0 10px;padding-bottom:7px;
+  border-bottom:1px solid var(--line)}
+.wsheadsig{width:16px;height:16px;border-radius:50%;flex:0 0 auto;
+  align-self:center;
+  background:radial-gradient(circle at 50% 50%,var(--accent) 0 32%,
+    transparent 34%),
+    conic-gradient(from 0deg,var(--accent),transparent 28%,var(--accent) 50%,
+    transparent 78%,var(--accent));
+  opacity:.85}
+.wsheadhi{font-family:var(--deva);font-size:17px;font-weight:600;
+  color:var(--text-strong)}
+.wsheaden{font-size:13.5px;color:var(--text-soft)}
+.wsheadcite{margin-left:auto;font-size:10.5px;letter-spacing:.05em;
+  text-transform:uppercase;font-weight:700;color:var(--src-key);
+  border:1px solid var(--src-line);background:var(--src-bg);
+  padding:2px 9px;border-radius:999px;white-space:nowrap}
+
+@media print{
+  body.wsapp{height:auto;overflow:visible;display:block}
+  body.wsapp .wspanel.on{position:static;overflow:visible}
+  .wsbaracts,.wsdeckwrap{display:none !important}
+}
+
+/* the site nav is a reference-site affordance; in the app shell it folds
+   to one line so the vertical space goes to the work */
+@media (min-width:900px){
+  body.wsapp nav.site{max-height:38px;overflow:hidden;
+    flex-wrap:nowrap;align-items:center}
+  body.wsapp nav.site a{flex:0 0 auto}
+}
+
+/* the Workstation draws its own wheels from tokens, and --chart-line is a
+   slate meant for ink on paper; on the dark palettes they take the accent
+   so the two pages’ charts match */
+html[data-theme="midnight"] .wsline,html[data-theme="peetambari"] .wsline,
+html[data-theme="emerald"] .wsline,
+html[data-theme="midnight"] .wsframe,html[data-theme="peetambari"] .wsframe,
+html[data-theme="emerald"] .wsframe{
+  stroke:color-mix(in srgb,var(--accent) 58%,transparent)}

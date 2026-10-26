@@ -248,13 +248,19 @@
   function viewGanita(D) {
     if (!D) return need("A chart is needed for this view.");
     var rows = (D.planets || []).map(function (p) {
-      var n = p.nak || {};
+      /* the chart carries nak as a STRING and pada as its own field, and
+         the dignity under `dig` — the first version of this table read
+         p.nak.name and p.dignity and printed a column of em-dashes for
+         every graha, which looked like missing data rather than a wrong
+         field name */
+      var nak = p.nak ? (p.nak + (p.pada ? " · " + p.pada : "")) : "—";
+      var dig = p.dig || p.status || "—";
       return '<tr><td><b>' + esc(p.en) + '</b></td>' +
         '<td>' + esc(SA[p.sign]) + '</td>' +
         '<td class="knum">' + fmtDeg(p.sid - p.sign * 30) + '</td>' +
         '<td class="knum">' + p.sid.toFixed(4) + '°</td>' +
-        '<td>' + esc(n.name || "—") + (n.pada ? " · " + n.pada : "") + '</td>' +
-        '<td>' + esc(p.dignity || "—") + '</td>' +
+        '<td>' + esc(nak) + '</td>' +
+        '<td>' + esc(dig) + '</td>' +
         '<td class="knum">' + (p.speed == null ? "—" :
           p.speed.toFixed(4) + "°/d") + '</td>' +
         '<td>' + (p.retro ? '<span class="wsretro">vakrī</span>' : "mārgī") +
@@ -452,6 +458,97 @@
     return out;
   }
 
+
+  /* ---- the context bar ----------------------------------------------------
+     In an application you are always working ON something, and the thing
+     you are working on does not scroll away. This is the chart's identity
+     — whose, cast for when and where, and the two facts that identify a
+     cast to anyone who knows what they are looking at: the janma nakṣatra
+     with its pāda, and the ayanāṃśa that drew the boundaries.
+
+     Every figure here is read from the chart that is loaded. Nothing is
+     formatted into it that the chart does not carry, because a title bar
+     that invents a detail is worse than one that omits it. */
+  function pad2(n) { return (n < 10 ? "0" : "") + n; }
+
+  function contextBar() {
+    var bar = $("ws-bar");
+    if (!bar) return;
+    var D = chart();
+    if (!D) { bar.hidden = true;
+              document.body.classList.remove("wshaschart"); return; }
+    bar.hidden = false;
+    document.body.classList.add("wshaschart");
+
+    var i = D.input || {};
+    var nameEl = $("wsb-name");
+    if (nameEl) nameEl.textContent = (i.name || "").trim();
+
+    var bits = [];
+    function add(label, val) {
+      if (val == null || val === "") return;
+      bits.push('<span>' + esc(label) + ' <b>' + esc(val) + '</b></span>');
+    }
+    /* The cast itself. The chart carries the input as separate fields —
+       year, month, day, hour, minute, tzHours — not as formatted strings,
+       so the formatting happens here. The first version of this bar read
+       i.date and i.time, which do not exist, and printed nothing at all
+       where the whole point of the bar is to say which cast this is. */
+    if (i.year != null) {
+      add("Born", i.year + "-" + pad2(i.month) + "-" + pad2(i.day) +
+          " · " + pad2(i.hour) + ":" + pad2(i.minute));
+    }
+    if (i.lat != null && i.lon != null)
+      add("", (+i.lat).toFixed(4) + "°, " + (+i.lon).toFixed(4) + "°");
+    if (i.tzHours != null)
+      add("UTC", (i.tzHours >= 0 ? "+" : "") + i.tzHours);
+    /* the facts that identify the computation to anyone who knows what
+       they are looking at: the janma nakṣatra with its pāda, and which
+       ayanāṃśa drew the boundaries */
+    try {
+      var M = D.P && D.P.Moon;
+      if (M && M.nak)
+        add("Janma nakṣatra", M.nak + (M.pada ? " (" + M.pada + ")" : ""));
+    } catch (e) {}
+    if (i.ayanamsa) add("", String(i.ayanamsa).replace(/^./,
+      function (c) { return c.toUpperCase(); }));
+    try {
+      if (window.__ayan && D.jd != null)
+        add("Ayanāṃśa", window.__ayan(D.jd).toFixed(4) + "°");
+    } catch (e) {}
+    try {
+      if (D.lagna && D.lagna.sidereal_deg != null) {
+        var L = D.lagna.sidereal_deg;
+        add("Lagna", SA[Math.floor(L / 30) % 12] + " " +
+            fmtDeg(L % 30));
+      }
+    } catch (e) {}
+    var f = $("wsb-facts");
+    if (f) f.innerHTML = bits.join("");
+  }
+
+  function wireBar() {
+    var j = $("wsb-json");
+    if (j && !j.__w) { j.__w = true; j.addEventListener("click", copyJson); }
+    var pr = $("wsb-print");
+    if (pr && !pr.__w) {
+      pr.__w = true;
+      pr.addEventListener("click", function () { window.print(); });
+    }
+    var nw = $("wsb-new");
+    if (nw && !nw.__w) {
+      nw.__w = true;
+      nw.addEventListener("click", function () {
+        /* reveal the intake again rather than reloading: the form keeps
+           what was typed, which is what someone adjusting a birth time
+           by four minutes actually wants */
+        document.body.classList.remove("wshaschart");
+        var f = document.querySelector(".wsintake");
+        if (f) f.scrollIntoView({ block: "start" });
+      });
+    }
+  }
+
   /* ---- rendering a view -------------------------------------------------- */
   function render(key) {
     var host = $("wp-" + key);
@@ -478,6 +575,13 @@
       default:          html = "";
     }
     host.innerHTML = html;
+    /* a pane that took a moment to build says so for that moment */
+    var sweep = document.createElement("div");
+    sweep.className = "wscalc";
+    host.insertBefore(sweep, host.firstChild);
+    setTimeout(function () {
+      sweep.parentNode && sweep.parentNode.removeChild(sweep);
+    }, 700);
     BUILT[key] = true;
     if (key === "kundli") wireChart();
     if (key === "gochara" || key === "rashiphal") moveGochara(key);
@@ -557,10 +661,12 @@
     var s = $("ws-status");
     if (!s) return;
     var D = chart();
-    s.innerHTML = D
-      ? 'Chart loaded — every view is live. <button type="button" ' +
-        'class="k-btn sec wsjson" id="ws-json">Copy the Super-JSON</button>' +
-        '<span class="wsjsonmsg" id="ws-jsonmsg"></span>'
+    /* with a chart loaded the context bar already carries the identity
+       and the actions, so this line has nothing left to say and is got
+       out of the way — two rows saying the same thing is how an app
+       starts looking like a page again */
+    s.hidden = !!D;
+    s.innerHTML = D ? '<span class="wsjsonmsg" id="ws-jsonmsg"></span>'
       : 'Cast a chart above, or open <b>Vārṣika Gochara</b> — that one ' +
         'needs no chart.';
     var btn = $("ws-json");
@@ -575,7 +681,7 @@
       if (m0) m0.textContent = "could not serialise: " + (e && e.message);
       return;
     }
-    var msg = $("ws-jsonmsg");
+    var msg = $("ws-jsonmsg") || $("wsb-msg");
     function done() {
       if (msg) {
         msg.textContent = "Copied — " +
@@ -617,6 +723,9 @@
       tabs[i].addEventListener("click", function () {
         show(this.getAttribute("data-wstab"));
       });
+    document.body.classList.add("wsapp");
+    wireBar();
+    contextBar();
     var want = (location.hash || "").replace("#", "");
     show(document.getElementById("wp-" + want) ? want : "kundli");
     status();
@@ -629,6 +738,7 @@
       if (id === seen) return;
       seen = id;
       BUILT = {};
+      contextBar();
       status();
       render(VIEW);
     }, 700);
