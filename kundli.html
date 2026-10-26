@@ -859,6 +859,61 @@ html.navlock,html.navlock body{overflow:hidden}
 .k-skyarrive{border-left:3px solid var(--gold,#c9a24b);padding:8px 0 8px 12px;
   margin:0 0 10px;background:rgba(201,162,75,.07);border-radius:0 8px 8px 0}
 
+/* ===== Gochara and Rāśiphal ==============================================
+   Two panels that work with no chart, so they sit on the page rather than
+   inside the report's tabs. Everything here is tokenised from the start —
+   the theme generator should never have to come back for it. */
+.gobar{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;
+  margin:12px 0 14px;padding:11px 13px;border:1px solid var(--line);
+  border-radius:11px;background:var(--soft)}
+.gobar label{font-size:13px;font-weight:600;display:flex;gap:7px;
+  align-items:center}
+.gobar input[type=number]{font:inherit;font-size:14px;width:92px;
+  padding:6px 8px;border:1px solid var(--line);border-radius:7px}
+.gobar .gochk{font-weight:400;font-size:12.5px;color:var(--muted)}
+.gotbl{width:100%;border-collapse:collapse;font-size:13.5px;margin:6px 0 4px}
+.gotbl th{text-align:left;font-size:11px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);
+  padding:5px 8px;font-weight:700}
+.gotbl td{padding:5px 8px;border-bottom:1px solid var(--line);
+  vertical-align:top}
+.gotbl tr.gogood td{background:rgba(79,140,95,.09)}
+.gotick{color:#4f8c5f;font-weight:700}
+.goscroll{max-height:460px;overflow:auto;border:1px solid var(--line);
+  border-radius:10px;padding:0 4px}
+.godate{white-space:nowrap;font-variant-numeric:tabular-nums}
+.gotime{display:block;font-size:11px;color:var(--muted)}
+.godim{color:var(--muted);font-weight:400}
+.goretro{color:#a1493a;font-weight:600}
+.godates{font-variant-numeric:tabular-nums;font-weight:600}
+.gotext{color:var(--ink);font-size:13.5px}
+.gosub{font-family:var(--serif);font-size:16px;margin:20px 0 6px;
+  display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.golist{margin:4px 0 8px;padding-left:20px;font-size:13.5px}
+.golist li{margin:0 0 8px;line-height:1.5}
+.gonote{font-size:12.5px}
+.gocaution{margin-top:18px}
+.gohead{margin-top:6px}
+/* the tier badge: the whole point of the panel is that you can see which
+   kind of statement you are reading without leaving the line you are on */
+.gotier{font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  font-weight:700;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.gotier-bphs{background:#eaf3ec;color:#1f4f33;border:1px solid #c6ddcb}
+.gotier-comm{background:#eef2f7;color:#2b4a72;border:1px solid #cfdcec}
+.gotier-later{background:#f7f2e4;color:#6b5312;border:1px solid #e3d6ad}
+.gotier-calc{background:var(--soft);color:var(--muted);border:1px solid var(--line)}
+/* the twelve-house grid, in the plain layout: four across, which reads as
+   a chart without pretending to be a North Indian diamond */
+.gogrid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;
+  margin:10px 0 4px}
+.gocell{border:1px solid var(--line);border-radius:9px;padding:7px 8px;
+  min-height:62px;background:var(--soft);display:flex;flex-direction:column;
+  gap:2px}
+.gocellh{font-size:10.5px;font-weight:700;color:var(--muted)}
+.gocells{font-size:12.5px;font-weight:600}
+.gocellp{font-size:12px;color:var(--ink);line-height:1.35}
+@media(max-width:620px){.gogrid{grid-template-columns:repeat(3,1fr)}}
+
 /* ===== Generated theme overrides =====================================
    Written by source/tools/gen-theme-overrides.py from the literal
    colours in app.css and pages.css. Do not edit by hand: regenerate.
@@ -1417,6 +1472,19 @@ html[data-theme] .ktabs button[aria-selected="true"]{
 html[data-theme] .stbtn.sec{background:var(--surface-3);color:var(--text);
   border-color:var(--border-2)}
 
+
+/* the gochara tier badges: three tinted chips that have to stay legible on
+   every ground, so each palette gets its own rather than a shared wash */
+html[data-theme] .gotier-bphs{background:var(--mine-bg);color:var(--mine-edge);
+  border-color:var(--mine-line)}
+html[data-theme] .gotier-comm{background:var(--note-bg);color:var(--note-edge);
+  border-color:var(--note-line)}
+html[data-theme] .gotier-later{background:var(--ex-bg);color:var(--accent);
+  border-color:var(--ex-line)}
+html[data-theme] .gotbl tr.gogood td{background:var(--mine-bg)}
+html[data-theme] .gotick{color:var(--mine-edge)}
+html[data-theme] .goretro{color:var(--caution-edge)}
+
 /* ---- the switcher itself ------------------------------------------------ */
 .themepick{display:inline-flex;align-items:center;gap:6px;
   font:inherit;font-size:12px}
@@ -1651,6 +1719,38 @@ html[data-theme] nav.site .themepick select option{
 <div class="k-sky" id="k-sky"><button type="button" class="k-btn sec" id="k-skygo">Watch the sky &mdash; no birth data needed</button><span class="k-skynote">Fifteen of the animations are about the sky rather than about you: the eclipses, the tilt of the Moon&rsquo;s path, the pa&ntilde;c&amacr;&ndash;a&#7749;ga, the phases. The nine that read your chart stay behind the form above, and each says why.</span></div>
 <div id="k-skyout"></div>
 <div id="k-out"></div>
+
+<h2 id="gochara">Vārṣika Gochara — a year of transits</h2>
+<p><b>This needs no birth chart.</b> Gochara is where the nine grahas
+actually are, so a year of it is a fact about the sky rather than about any
+person. Pick a year and every rāśi ingress, every retrograde station and
+every return to direct motion is computed from the same ephemeris that
+casts the charts above — not copied from a table, so it follows whichever
+ayanāṃśa you have selected.</p>
+<div class="gobar">
+  <label for="go-year">Year
+    <input type="number" id="go-year" min="1800" max="2200" step="1" value="2027"></label>
+  <button type="button" class="k-btn" id="go-run">Compute the year</button>
+  <label class="gochk"><input type="checkbox" id="go-moon"> include the Moon
+    (about 160 ingresses)</label>
+  <span class="k-status" id="go-status"></span>
+</div>
+<div id="go-out"></div>
+
+<h2 id="rashiphal">Twelve Candra-rāśi readings</h2>
+<p>The same year read from each janma-rāśi in turn: which bhāva each graha
+occupies counted from that rāśi, for how long, and which of the classical
+gochara conditions are running. Every rule says which tier it comes from —
+a BPHS verse, a note by the translator of this edition, or later tradition
+— because transit doctrine is where those three are most often blurred
+together.</p>
+<div class="gobar">
+  <label for="rp-sign">Janma-rāśi (Moon sign)
+    <select id="rp-sign"></select></label>
+  <span class="k-status" id="rp-status"></span>
+</div>
+<div id="rp-out"></div>
+
 <details class="k-raw" id="k-rawwrap" style="display:none"><summary>Show the full raw API response (advanced)</summary><div class="k-rawbar"><button type="button" class="k-btn sec" id="k-copy">Copy JSON</button><span class="k-copymsg" id="k-copymsg"></span></div><pre id="k-raw"></pre></details>
 <details class="k-raw" id="k-adv"><summary>Advanced &middot; proxy URL (use if the direct call is blocked)</summary><div style="margin-top:8px"><label for="k-proxy" style="display:block;font-size:12px;font-weight:600;color:var(--text-soft,#4a4e68);margin-bottom:4px">Proxy endpoint URL</label><input type="url" id="k-proxy" placeholder="https://your-worker.workers.dev" style="width:100%;max-width:540px;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px"><p class="k-note">Only needed when the chart source is set to the external service, which requires a CORS proxy. The built-in engine does not use this. Stored only in this browser.</p></div></details>
 <p class="lead">A <b>kundli</b> (janma-kundali) is a birth chart: a map of the sky at the exact moment and place of birth, projected onto the twelve bhavas counted from the Lagna. This page explains how a chart is cast, then lets you compute a real one and follow each piece into the reference pages.</p><p class="term"><b>Kundli / Janma-kundali</b> — birth chart &mdash; the positions of the nine grahas, the Lagna and the twelve bhavas at the birth instant, expressed in the sidereal (nirayana) zodiac.</p><h2 id="what">What a kundli is</h2><p>Vedic astrology reads the chart in the <b>sidereal</b> zodiac, measured from a fixed star point rather than the moving equinox. The difference between the two zodiacs at a given date is the <b>ayanamsha</b>; subtracting it from an ordinary (tropical) position gives the sidereal position Jyotisha uses. The chart is then a set of nine grahas seated in twelve rashis, read as twelve bhavas from the rising sign.</p><h2 id="need">What you need</h2><ul><li><b>Date of birth</b> &mdash; the calendar date.</li><li><b>Exact time of birth</b> &mdash; to the minute if possible. This is the most important input: the Lagna moves about one degree every four minutes, and the finest divisions (D60) change every ~30 seconds.</li><li><b>Place of birth</b> &mdash; resolved to latitude, longitude, and the UTC offset in force there at that date.</li></ul><div class="caution"><b>Handle with care.</b> Everything on this page is a <b>study aid</b> for learning BPHS method, not a prediction or a judgement about any person. Because results hinge on birth time, treat a chart cast from an uncertain time as provisional &mdash; and take medical, legal, financial or personal decisions to a qualified professional, never to a chart.</div><h2 id="how">How a chart is cast</h2><ol><li><b>Fix the exact birth instant.</b> Combine the date, the clock time, and the UTC offset that applied at that place and date. Errors here propagate into everything downstream.</li><li><b>Compute sidereal positions.</b> An ephemeris gives each graha&rsquo;s longitude; subtract the <b>ayanamsha</b> (Lahiri by default) to place it in the sidereal zodiac. See <a href="rashis.html">Rashis</a> and <a href="dignity.html">Dignity</a>.</li><li><b>Find the Lagna.</b> From the instant and the coordinates, determine the sign and degree rising in the east &mdash; the anchor of the chart. See <a href="lagna.html">Lagna</a>.</li><li><b>Place the grahas.</b> Seat each planet in its rashi and read its <b>nakshatra and pada</b>. See the <a href="108-nakshatra-padas.html">108 Padas</a> tool and <a href="grahas.html">Grahas</a>.</li><li><b>Build the bhavas and vargas.</b> Count the twelve houses from the Lagna (whole-sign by default), then derive the divisional charts &mdash; D9, D10 and the rest. See <a href="bhavas.html">Bhavas</a> and <a href="vargas.html">Vargas</a>.</li><li><b>Start the dasha clock.</b> From the Moon&rsquo;s nakshatra, compute the Vimshottari balance at birth and the sequence of periods. See <a href="dashas.html">Dashas</a>.</li></ol><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 3&ndash;6 (sidereal positions, rashis, dignity, vargas) and Vol. 2, Ch. 46 (Vimshottari from the Moon&rsquo;s nakshatra). The casting arithmetic itself is standard astronomy; BPHS supplies the framework the numbers are read within.</p><div class="note"><b>Translator / commentary.</b> This site&rsquo;s stated defaults are the sidereal zodiac, Lahiri/Chitrapaksha ayanamsha, whole-sign houses and Vimshottari dasha. The engine below uses the sidereal zodiac with Lahiri ayanamsha, so its output matches those defaults; note that other software using a different ayanamsha or house system will differ slightly.</div><script>/*! astronomy-engine v2 — MIT License — https://github.com/cosinekitty/astronomy */
@@ -5643,6 +5743,657 @@ function nextIngress(en,jd){
   return null;
 }
 
+/* ===== Varṣika Gochara — the transits of a year ===========================
+
+   WHAT THIS IS AND WHAT MAKES IT DIFFERENT FROM EVERYTHING ELSE IN THIS
+   BUILDER. Every other panel here answers a question about one chart. This
+   one answers a question about the sky: where the nine grahas go during a
+   given year, when exactly each enters a new rāśi, and when each turns
+   retrograde and direct again. It needs no birth data at all. Someone who
+   has never cast a chart can ask what 2027 looks like and get an answer,
+   and the twelve Candra-rāśi readings built on top of it are the same
+   arithmetic read from twelve different starting signs.
+
+   WHY THE TIMES ARE FOUND RATHER THAN TABULATED. A transit table copied
+   from an almanac is a table for one ayanāṃśa, one node convention and one
+   time zone, and it is wrong the moment any of those is changed. Here every
+   instant is computed from the same ephemeris that casts the charts, with
+   whatever ayanāṃśa is currently selected, by bracketing the event and
+   bisecting to the minute. Change the ayanāṃśa and the ingress times move,
+   because they should: an ingress is the moment a longitude crosses a
+   boundary, and the ayanāṃśa is where the boundary is.
+
+   THE TRAP A COARSE SCAN FALLS INTO. A planet near a sign boundary may
+   cross it, turn retrograde, cross back, and cross a third time weeks
+   later — Mercury does this routinely, Mars and Saturn do it at every
+   station near a cusp. A scan that samples monthly and reports "the sign
+   changed" finds one ingress where there were three, and the two it drops
+   are the interesting ones. So the step is small enough that no excursion
+   can hide inside it, and the result is checked by replaying it: walking
+   the year through the returned events has to reproduce the sign the
+   ephemeris actually reports on every day of that year. That check is in
+   the harness, and it failed the first time.
+
+   WHAT IS DELIBERATELY NOT HERE. No prediction. This file computes WHEN
+   things happen. What any of it is held to mean belongs to the rule engine
+   next door, which labels every rule with the tier it comes from. */
+
+(function () {
+  "use strict";
+
+  var BODIES = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus",
+                "Saturn", "Rahu", "Ketu"];
+  /* the scan step for each body, in days. Chosen from how fast the body can
+     move: the step must be short enough that the body cannot enter and
+     leave a sign between two samples. The Moon crosses a sign in about two
+     and a quarter days, so a quarter day is ample; Mercury's retrograde
+     loops are the reason the inner planets get a half day rather than a
+     whole one. */
+  var STEP = { Moon: 0.25, Mercury: 0.5, Venus: 0.5, Sun: 0.5, Mars: 0.5,
+               Jupiter: 1, Saturn: 1, Rahu: 1, Ketu: 1 };
+  /* the nodes are always retrograde in the mean reckoning this engine uses,
+     so a station search on them would return nothing and cost time */
+  var STATIONS = ["Mercury", "Venus", "Mars", "Jupiter", "Saturn"];
+
+  function jdToDate(jd) { return new Date((jd - 2440587.5) * 86400000); }
+  function dateToJd(d) { return d.getTime() / 86400000 + 2440587.5; }
+
+  function sid(name, jd) {
+    try { return window.__kSidAt(name, jdToDate(jd)); }
+    catch (e) { return null; }
+  }
+  function signOf(lon) { return lon == null ? null : Math.floor(lon / 30) % 12; }
+
+  /* Speed by central difference. An hour either side is wide enough that
+     the ephemeris's own rounding does not dominate and narrow enough that
+     the second derivative does not matter, which is what a station needs:
+     at a station the speed is passing through zero and the curvature is
+     what carries it across. */
+  function speed(name, jd) {
+    var h = 1 / 24;
+    var a = sid(name, jd - h), b = sid(name, jd + h);
+    if (a == null || b == null) return null;
+    var d = b - a;
+    while (d > 180) d -= 360;
+    while (d < -180) d += 360;
+    return d / (2 * h);
+  }
+
+  /* ---- finding the instant ----------------------------------------------
+     Bisection on a bracket that is known to contain exactly one crossing,
+     to one minute. Forty iterations would be pointless: the ephemeris is
+     not that good, and a minute is finer than any use this is put to. */
+  function bisect(test, lo, hi) {
+    var want = test(lo);
+    for (var i = 0; i < 40 && (hi - lo) > 1 / 1440; i++) {
+      var mid = (lo + hi) / 2;
+      if (test(mid) === want) lo = mid; else hi = mid;
+    }
+    return hi;
+  }
+
+  /* ---- the year ---------------------------------------------------------
+     Scanned per body, because the step differs per body and a shared step
+     would be the Moon's for everything. */
+  function ingresses(name, jd0, jd1) {
+    var st = STEP[name] || 1, out = [];
+    var prevJd = jd0, prevSign = signOf(sid(name, jd0));
+    if (prevSign == null) return out;
+    for (var jd = jd0 + st; jd <= jd1 + st; jd += st) {
+      var t = Math.min(jd, jd1);
+      var s = signOf(sid(name, t));
+      if (s == null) break;
+      if (s !== prevSign) {
+        /* the bracket holds one crossing; which sign it enters is read
+           after the fact rather than assumed, because a retrograde
+           crossing enters the sign BEHIND */
+        var at = bisect(function (x) { return signOf(sid(name, x)); },
+                        prevJd, t);
+        var sp = speed(name, at);
+        out.push({ kind: "ingress", body: name, jd: at,
+                   from: prevSign, to: signOf(sid(name, at + 1 / 1440)),
+                   retro: sp != null && sp < 0 });
+        prevSign = s;
+      }
+      prevJd = t;
+      if (t >= jd1) break;
+    }
+    return out;
+  }
+
+  function stations(name, jd0, jd1) {
+    if (STATIONS.indexOf(name) < 0) return [];
+    var st = STEP[name] || 1, out = [];
+    var prevJd = jd0, prevSp = speed(name, jd0);
+    if (prevSp == null) return out;
+    for (var jd = jd0 + st; jd <= jd1 + st; jd += st) {
+      var t = Math.min(jd, jd1);
+      var sp = speed(name, t);
+      if (sp == null) break;
+      if ((sp < 0) !== (prevSp < 0)) {
+        var at = bisect(function (x) { return speed(name, x) < 0; },
+                        prevJd, t);
+        out.push({ kind: sp < 0 ? "retro" : "direct", body: name, jd: at,
+                   sign: signOf(sid(name, at)), lon: sid(name, at) });
+        prevSp = sp;
+      }
+      prevJd = t;
+      if (t >= jd1) break;
+    }
+    return out;
+  }
+
+  /* ---- the whole year, merged ------------------------------------------- */
+  var CACHE = {};
+  function year(y, opts) {
+    opts = opts || {};
+    var withMoon = !!opts.moon;
+    var key = y + "|" + (withMoon ? "m" : "") + "|" +
+              (window.__ayan ? Math.round(window.__ayan(
+                 dateToJd(new Date(Date.UTC(y, 6, 1)))) * 1e6) : 0);
+    if (CACHE[key]) return CACHE[key];
+
+    var jd0 = dateToJd(new Date(Date.UTC(y, 0, 1, 0, 0, 0)));
+    var jd1 = dateToJd(new Date(Date.UTC(y + 1, 0, 1, 0, 0, 0)));
+    var events = [], bodies = {};
+    BODIES.forEach(function (b) {
+      if (b === "Moon" && !withMoon) return;
+      var ing = ingresses(b, jd0, jd1);
+      var sta = stations(b, jd0, jd1);
+      events = events.concat(ing, sta);
+      bodies[b] = { ingresses: ing, stations: sta,
+                    start: sid(b, jd0), startSign: signOf(sid(b, jd0)) };
+    });
+    events.sort(function (a, b) { return a.jd - b.jd; });
+
+    /* where each body sits through the year, as spans rather than events:
+       this is what a reading needs ("Guru is in Meṣa from March"), and
+       deriving it here means the reading cannot disagree with the list */
+    var spans = {};
+    BODIES.forEach(function (b) {
+      if (!bodies[b]) return;
+      var cur = { sign: bodies[b].startSign, from: jd0, to: jd1 };
+      var arr = [];
+      bodies[b].ingresses.forEach(function (e) {
+        cur.to = e.jd; arr.push(cur);
+        cur = { sign: e.to, from: e.jd, to: jd1 };
+      });
+      arr.push(cur);
+      spans[b] = arr;
+    });
+
+    var R = { year: y, jd0: jd0, jd1: jd1, events: events,
+              bodies: bodies, spans: spans,
+              bodyList: BODIES.filter(function (b) { return !!bodies[b]; }) };
+    CACHE[key] = R;
+    return R;
+  }
+
+  /* the sign a body occupies at an instant, read from the spans rather than
+     recomputed: a reading and the timeline beside it must never disagree */
+  function signAtJd(R, body, jd) {
+    var sp = R.spans[body];
+    if (!sp) return signOf(sid(body, jd));
+    for (var i = 0; i < sp.length; i++)
+      if (jd >= sp[i].from && jd < sp[i].to) return sp[i].sign;
+    return sp[sp.length - 1].sign;
+  }
+
+  /* how long a body spends in each sign during the year, in days — the
+     figure that decides whether a transit is the year's theme or a
+     fortnight of it */
+  function daysInSign(R, body, sign) {
+    var sp = R.spans[body], d = 0;
+    if (!sp) return 0;
+    sp.forEach(function (s) { if (s.sign === sign) d += (s.to - s.from); });
+    return d;
+  }
+
+  window.SPGochara = {
+    BODIES: BODIES, year: year, sid: sid, speed: speed, signOf: signOf,
+    signAtJd: signAtJd, daysInSign: daysInSign,
+    jdToDate: jdToDate, dateToJd: dateToJd
+  };
+})();
+/* ===== Twelve Candra-rāśi readings of a year's transits ===================
+
+   WHAT THIS DOES. Takes the year computed next door and reads it from each
+   of the twelve Moon signs in turn: which house each graha occupies counted
+   from that sign, for how long, whether the classical gochara rules call
+   that placement favourable, and which of the named Śani conditions are
+   running. No birth data is needed, because none of this depends on any
+   chart — a janma-rāśi is a starting point for counting, not a horoscope.
+
+   WHY EVERY RULE CARRIES A TIER. This project's whole discipline is that a
+   BPHS verse, a note by the translator and later tradition are three
+   different kinds of statement and must never be presented as one. Transit
+   doctrine is exactly where that collapses in popular astrology: "Sade
+   Sati" is quoted as though Parāśara wrote it, and he did not. So each rule
+   below carries the tier it belongs to, the page prints that tier beside
+   it, and a reader can see at a glance which claims rest on the uploaded
+   translation and which are later practice.
+
+   WHAT THE UPLOADED EDITION ACTUALLY CONTAINS, having been read rather than
+   assumed:
+
+     * Vol. 2, Ch. 70 gives genuine BPHS transit doctrine, and it is
+       ashtakavarga doctrine: a graha passing through a rāśi carrying more
+       rekhās in its own ashtakavarga after Trikoṇa and Ekādhipatya
+       śodhana is read as favourable for that graha's significations, with
+       a worked example on the Moon's 4th house and the mother. That rule
+       needs a chart, so it is applied only when one is loaded — and then
+       it is the strongest thing on the page, because it is the only tier-1
+       rule here.
+
+     * Vol. 1, Ch. 31, in the translator's notes on Argala, sets out
+       Gochara Vedha and states one pair in words: the Sun in the 3rd from
+       the Moon transits favourably, that favour is curbed if another graha
+       simultaneously transits the 9th from the Moon, Śani excepted, and
+       the vedha lifts the moment a companion joins the Sun in the 3rd.
+       That pair is implemented. The rest of the table is printed in the
+       uploaded scan as a figure whose numerals did not survive OCR, so the
+       other vedha pairs are NOT invented here; the page says so and points
+       the reader at the PDF.
+
+     * Sade Sati, Kaṇṭaka/Ardhāṣṭama Śani and Aṣṭama Śani are named and
+       used throughout later tradition. They are labelled as such.
+
+   WHAT IS NOT DONE. No event is predicted, no date is called good or bad
+   for a decision, and nothing here is phrased as something that will
+   happen. A transit is a condition the classical texts attach a tendency
+   to, and the wording keeps it that way. */
+
+(function () {
+  "use strict";
+
+  var SIGNS = ["Meṣa", "Vṛṣabha", "Mithuna", "Karka", "Siṃha", "Kanyā",
+               "Tulā", "Vṛścika", "Dhanus", "Makara", "Kumbha", "Mīna"];
+  var LORD = ["Maṅgala", "Śukra", "Budha", "Candra", "Sūrya", "Budha",
+              "Śukra", "Maṅgala", "Guru", "Śani", "Śani", "Guru"];
+
+  /* ---- tier 3: the classical gochara "benefic places" -------------------
+     The houses, counted from the janma-rāśi, in which each graha's transit
+     is traditionally read as favourable. These are the standard lists of
+     the gochara literature. The uploaded Santhanam edition presents them
+     in Vol. 1, Ch. 31 as a figure; the numerals in that figure did not
+     survive the scan, so these are given as later tradition and the reader
+     is told to confirm the edition's own table in the PDF rather than take
+     this page's word for it. */
+  var GOOD = {
+    Sun:     [3, 6, 10, 11],
+    Moon:    [1, 3, 6, 7, 10, 11],
+    Mars:    [3, 6, 11],
+    Mercury: [2, 4, 6, 8, 10, 11],
+    Jupiter: [2, 5, 7, 9, 11],
+    Venus:   [1, 2, 3, 4, 5, 8, 9, 11, 12],
+    Saturn:  [3, 6, 11],
+    Rahu:    [3, 6, 11],
+    Ketu:    [3, 6, 11]
+  };
+  var DEV = { Sun: "Sūrya", Moon: "Candra", Mars: "Maṅgala",
+              Mercury: "Budha", Jupiter: "Guru", Venus: "Śukra",
+              Saturn: "Śani", Rahu: "Rāhu", Ketu: "Ketu" };
+
+  function houseFrom(sign, moonSign) {
+    return ((sign - moonSign) % 12 + 12) % 12 + 1;
+  }
+  function fmt(jd) {
+    var d = window.SPGochara.jdToDate(jd);
+    return d.toISOString().slice(0, 10);
+  }
+  function days(n) {
+    if (n >= 60) return Math.round(n / 30.44) + " months";
+    return Math.round(n) + " days";
+  }
+
+  /* ---- the spans of a graha through the houses of this rāśi ------------- */
+  function housesOf(R, body, moonSign) {
+    var sp = R.spans[body] || [];
+    return sp.map(function (s) {
+      return { house: houseFrom(s.sign, moonSign), sign: s.sign,
+               from: s.from, to: s.to, days: s.to - s.from };
+    });
+  }
+
+  /* ---- tier 3: the Śani conditions --------------------------------------
+     Named in later tradition, computed here from the real transit rather
+     than from a table of years: the phases begin and end when Śani
+     actually crosses, retrogrades included, which is why a phase can be
+     entered twice. */
+  var SS_PHASE = {
+    12: ["Sade Sati — first phase (12th from the Moon)",
+         "Later tradition reads this as the opening stretch: expense, " +
+         "matters at a distance, sleep and solitude, and a general " +
+         "re-sorting of obligations."],
+    1:  ["Sade Sati — middle phase (Śani over the janma-rāśi)",
+         "Traditionally the most demanding stretch of the three, read as " +
+         "a period of endurance, and of being held to what one has " +
+         "actually built."],
+    2:  ["Sade Sati — last phase (2nd from the Moon)",
+         "Read as the settling stretch, bearing on family, speech and " +
+         "the consolidation of resources."],
+    4:  ["Kaṇṭaka Śani / Ardhāṣṭama Śani (4th from the Moon)",
+         "Later tradition attaches this to home, land, vehicles and the " +
+         "mother, and reads it as a period that asks for patience with " +
+         "domestic matters."],
+    8:  ["Aṣṭama Śani (8th from the Moon)",
+         "Read as a period of upheaval and of things long postponed " +
+         "coming due. The classical texts treat the 8th as the house of " +
+         "what is hidden rather than as a forecast of harm."]
+  };
+
+  function saniPhases(R, moonSign) {
+    var out = [];
+    housesOf(R, "Saturn", moonSign).forEach(function (s) {
+      var p = SS_PHASE[s.house];
+      if (!p) return;
+      out.push({ house: s.house, title: p[0], text: p[1],
+                 sign: s.sign, from: s.from, to: s.to, days: s.days,
+                 tier: "later" });
+    });
+    /* consecutive spans in the same house happen when Śani retrogrades
+       back across a cusp and returns; they are one period, not three */
+    var merged = [];
+    out.forEach(function (s) {
+      var l = merged[merged.length - 1];
+      if (l && l.house === s.house) { l.to = s.to; l.days += s.days; }
+      else merged.push(s);
+    });
+    return merged;
+  }
+
+  /* ---- tier 2: the one vedha pair the uploaded edition states in words --
+     "the Sun in the 3rd house from the Moon during transit will be
+     favourable. But his favourable disposition will remain curbed if
+     simultaneously the 9th from the Moon is transited by another planet
+     (than of course Saturn, which is an exception)." — and the vedha lifts
+     when a companion joins the Sun in the 3rd. Implemented exactly that
+     far and no further. */
+  function sunVedha(R, moonSign) {
+    var G = window.SPGochara;
+    var third = (moonSign + 2) % 12, ninth = (moonSign + 8) % 12;
+    var spans = (R.spans.Sun || []).filter(function (s) {
+      return s.sign === third;
+    });
+    return spans.map(function (s) {
+      var mid = (s.from + s.to) / 2;
+      var blockers = [], companions = [];
+      R.bodyList.forEach(function (b) {
+        if (b === "Sun") return;
+        var sg = G.signAtJd(R, b, mid);
+        if (sg === ninth && b !== "Saturn") blockers.push(DEV[b]);
+        if (sg === third) companions.push(DEV[b]);
+      });
+      return { from: s.from, to: s.to, blockers: blockers,
+               companions: companions,
+               state: !blockers.length ? "clear"
+                      : (companions.length ? "lifted" : "obstructed"),
+               tier: "commentary" };
+    });
+  }
+
+  /* ---- tier 1: the ashtakavarga rule, when a chart is loaded ------------
+     BPHS Vol. 2, Ch. 70. The bindus come from the chart that is open; with
+     no chart there is nothing to read, and the page says so rather than
+     substituting a number. */
+  function ashtaka(R, moonSign, D) {
+    if (!D || !D.av || !D.av.bhinna) return null;
+    var out = [];
+    /* the rekhās the text means are the ones AFTER Trikoṇa śodhana — "if
+       the number of rekha is larger in any rasi after Trikona Shodhana,
+       there will be gains ... when Mars passes through that rasi in
+       transit". The builder already computes śodhana for its own
+       ashtakavarga section, so the figure used here is the same one the
+       reader can check on that page rather than a second opinion. Both are
+       carried, because the raw bindu count is what most software shows and
+       a reader comparing the two should be able to see why they differ. */
+    var occupied = null;
+    try {
+      occupied = new Array(12).fill(false);
+      (D.planets || []).forEach(function (p) {
+        if (p && p.sign != null) occupied[p.sign] = true;
+      });
+    } catch (e) { occupied = null; }
+
+    ["Saturn", "Jupiter", "Mars", "Sun", "Venus", "Mercury"].forEach(function (b) {
+      var row = null;
+      D.av.bhinna.forEach(function (x) { if (x.graha === b) row = x; });
+      if (!row || !row.bindus) return;
+      var raw = row.bindus;
+      var red = raw;
+      try {
+        if (typeof trikonaShodhana === "function") {
+          red = trikonaShodhana(raw);
+          if (occupied && typeof ekadhipatyaShodhana === "function")
+            red = ekadhipatyaShodhana(red, occupied);
+        }
+      } catch (e) { red = raw; }
+      (R.spans[b] || []).forEach(function (s) {
+        out.push({ body: b, name: DEV[b], sign: s.sign,
+                   bindus: raw[s.sign], reduced: red[s.sign],
+                   house: houseFrom(s.sign, moonSign),
+                   from: s.from, to: s.to, days: s.to - s.from,
+                   tier: "bphs" });
+      });
+    });
+    return out.length ? out : null;
+  }
+
+  /* ---- the whole reading ------------------------------------------------ */
+  function read(R, moonSign, D) {
+    var G = window.SPGochara;
+    var grahas = R.bodyList.map(function (b) {
+      var hs = housesOf(R, b, moonSign);
+      /* the house this graha spends most of the year in is the one a
+         reading is actually about */
+      var best = hs.slice().sort(function (x, y) { return y.days - x.days; })[0];
+      return {
+        body: b, name: DEV[b], spans: hs,
+        mainHouse: best ? best.house : null,
+        mainSign: best ? best.sign : null,
+        mainDays: best ? best.days : 0,
+        favourable: best ? (GOOD[b] || []).indexOf(best.house) >= 0 : false,
+        goodHouses: GOOD[b] || []
+      };
+    });
+    return {
+      year: R.year, moonSign: moonSign,
+      signName: SIGNS[moonSign], lord: LORD[moonSign],
+      grahas: grahas,
+      sani: saniPhases(R, moonSign),
+      sunVedha: sunVedha(R, moonSign),
+      ashtaka: ashtaka(R, moonSign, D)
+    };
+  }
+
+  window.SPRashiphal = {
+    SIGNS: SIGNS, LORD: LORD, GOOD: GOOD, DEV: DEV,
+    read: read, houseFrom: houseFrom, fmt: fmt, days: days
+  };
+})();
+/* ===== Śrīpati bhāva-chalita, as a house system rather than a table ======
+
+   WHAT CHANGED AND WHY. The builder already printed a Śrīpati cusp table:
+   twelve midpoints, twelve junctions, who sits where. That is enough to
+   look at and not enough to USE. A house system is only a house system if
+   you can read the whole chart through it — ask which bhāva a graha really
+   occupies, which lord really owns the house a graha sits in, and what the
+   answer would have been under whole-sign. This file supplies that: one
+   object that answers those questions, and the shift report that falls out
+   of comparing it with whole-sign.
+
+   WHAT ŚRĪPATI ACTUALLY IS, and what the uploaded edition does and does not
+   say about it. The method takes the four angles — lagna, the meridian
+   (MC), and their opposites — and trisects each quadrant in longitude, so
+   the twelve divisions are unequal whenever the quadrants are. Those
+   trisection points are the bhāva MADHYA, the middle of each house, and the
+   bhāva SANDHI, the junction where one house ends and the next begins, is
+   the midpoint between consecutive madhyas. A graha belongs to the house
+   whose madhya it is nearest — equivalently, the house whose sandhis it
+   falls between.
+
+   The uploaded Santhanam translation does not give this construction as a
+   Parāśara verse, and this file does not claim it does. What it does give,
+   and what makes the construction worth having, is the doctrine the cusps
+   are FOR:
+
+     * "The planet on the cusp of a house will give full effects due to the
+       bhava concerned. The one in Bhava Sandhi (end of house) gives no
+       results due to that bhava." The translator flags this as a passage
+       the Benares (Chaukhambha) edition carries among its special hints,
+       and adds that a planet within 15° past the cusp has its effects for
+       that bhāva diminishing, and one before the cusp but within 15° has
+       them proportionately increasing. That is a rule about DISTANCE FROM
+       THE MADHYA, and it is unusable without a madhya — which is the whole
+       argument for computing one. It is implemented below as a strength
+       figure, labelled with its edition.
+
+     * Bhāva Bala in Ch. 27 is reckoned by deducting the meridian, the
+       nadir, the ascendant or the descendant from the bhāva according to
+       which rāśi it falls in — so the text's own strength arithmetic
+       presumes an angular, not a whole-sign, frame.
+
+   Whole-sign remains the frame the rest of the builder judges from, which
+   is the right default for a Parāśarī reading. This gives the second
+   opinion, says exactly where the two differ, and labels every claim. */
+
+(function () {
+  "use strict";
+
+  function arc(a, b) { return ((b - a) % 360 + 360) % 360; }
+
+  /* ---- the construction -------------------------------------------------
+     Returns null when there is no meridian to work from. That happens at
+     extreme latitudes and with incomplete input, and a house system that
+     quietly invents a meridian is worse than one that declines. */
+  function build(ascSid, mcSid) {
+    if (ascSid == null || mcSid == null) return null;
+    var mad = new Array(13);
+    mad[1] = ascSid;
+    mad[10] = mcSid;
+    mad[7] = (ascSid + 180) % 360;
+    mad[4] = (mcSid + 180) % 360;
+    /* MC → Asc gives 11 and 12; Asc → IC gives 2 and 3; the other six are
+       the opposites, which is what keeps opposite houses exactly 180°
+       apart — a property the trisection would lose if all four quadrants
+       were divided independently */
+    var q1 = arc(mcSid, ascSid) / 3;
+    mad[11] = (mcSid + q1) % 360;
+    mad[12] = (mcSid + 2 * q1) % 360;
+    var q2 = arc(ascSid, mad[4]) / 3;
+    mad[2] = (ascSid + q2) % 360;
+    mad[3] = (ascSid + 2 * q2) % 360;
+    mad[5] = (mad[11] + 180) % 360;
+    mad[6] = (mad[12] + 180) % 360;
+    mad[8] = (mad[2] + 180) % 360;
+    mad[9] = (mad[3] + 180) % 360;
+
+    var sandhi = new Array(13);
+    for (var h = 1; h <= 12; h++) {
+      var nxt = mad[h === 12 ? 1 : h + 1];
+      sandhi[h] = (mad[h] + arc(mad[h], nxt) / 2) % 360;
+    }
+
+    function houseOf(lon) {
+      if (lon == null) return null;
+      for (var h = 1; h <= 12; h++) {
+        var lo = sandhi[h === 1 ? 12 : h - 1], hi = sandhi[h];
+        if (arc(lo, lon) < arc(lo, hi)) return h;
+      }
+      return 1;
+    }
+
+    /* the span of a house, and where in it a longitude falls: 0 at the
+       opening sandhi, 1 at the closing one, 0.5 on the madhya */
+    function place(lon) {
+      var h = houseOf(lon);
+      if (h == null) return null;
+      var lo = sandhi[h === 1 ? 12 : h - 1], hi = sandhi[h];
+      var width = arc(lo, hi);
+      var into = arc(lo, lon);
+      /* signed distance from the madhya, negative before it */
+      var d = arc(mad[h], lon);
+      if (d > 180) d -= 360;
+      return { house: h, width: width, into: into,
+               frac: width ? into / width : 0,
+               fromMadhya: d, madhya: mad[h],
+               sandhiStart: lo, sandhiEnd: hi };
+    }
+
+    /* ---- the 15° rule, as the Benares edition states it -----------------
+       Full effect on the madhya; nothing at the sandhi; and between them a
+       proportion. The text gives 15° as the span over which the effect
+       falls away, so a house narrower than 30° reaches its sandhi before
+       the 15° is used up — in that case the sandhi wins, because the text
+       is explicit that a graha AT the sandhi gives no result for that
+       bhāva. The figure is a weight for reading, not a score. */
+    function cuspStrength(lon) {
+      var p = place(lon);
+      if (!p) return null;
+      var d = Math.abs(p.fromMadhya);
+      var half = Math.min(15, p.width / 2);
+      var w = half <= 0 ? 0 : Math.max(0, 1 - d / half);
+      return { frac: w, degFromMadhya: p.fromMadhya,
+               atSandhi: w <= 0.001, house: p.house };
+    }
+
+    return { madhya: mad, sandhi: sandhi, houseOf: houseOf, place: place,
+             cuspStrength: cuspStrength, asc: ascSid, mc: mcSid };
+  }
+
+  /* ---- reading a whole chart through it ---------------------------------
+     The shift report is the point: a list of exactly which grahas the two
+     systems disagree about, with how far from the junction each sits, so a
+     reader can see whether the disagreement is marginal or wholesale. */
+  function analyse(D) {
+    var S = build(D && D.lagna && D.lagna.sidereal_deg, D && D.mcSid);
+    if (!S) return null;
+    var LS = D.LS;
+    var rows = [], shifts = [];
+    (D.planets || []).forEach(function (p) {
+      var pl = S.place(p.sid);
+      var cs = S.cuspStrength(p.sid);
+      var whole = p.house;
+      var row = { body: p.en, lon: p.sid, sign: p.sign, retro: !!p.retro,
+                  sripati: pl.house, whole: whole,
+                  moved: pl.house !== whole,
+                  fromMadhya: pl.fromMadhya,
+                  strength: cs ? cs.frac : null,
+                  atSandhi: cs ? cs.atSandhi : false,
+                  /* which lord owns the house it lands in, under each
+                     system — the thing that actually changes a reading */
+                  sripatiSign: Math.floor(pl.madhya / 30) % 12,
+                  wholeSign: (LS + whole - 1) % 12 };
+      rows.push(row);
+      if (row.moved) shifts.push(row);
+    });
+
+    var houses = [];
+    for (var h = 1; h <= 12; h++) {
+      var lo = S.sandhi[h === 1 ? 12 : h - 1], hi = S.sandhi[h];
+      houses.push({
+        house: h, madhya: S.madhya[h], sandhiStart: lo, sandhiEnd: hi,
+        width: arc(lo, hi), sign: Math.floor(S.madhya[h] / 30) % 12,
+        wholeSign: (LS + h - 1) % 12,
+        occupants: rows.filter(function (r) { return r.sripati === h; })
+                       .map(function (r) { return r.body; }),
+        wholeOccupants: rows.filter(function (r) { return r.whole === h; })
+                            .map(function (r) { return r.body; })
+      });
+    }
+    /* a quadrant that is far from 90° is the reason the houses are
+       uneven, and saying so turns an odd-looking table into an
+       explanation */
+    var quads = [arc(S.madhya[10], S.madhya[1]), arc(S.madhya[1], S.madhya[4]),
+                 arc(S.madhya[4], S.madhya[7]), arc(S.madhya[7], S.madhya[10])];
+    return { S: S, rows: rows, shifts: shifts, houses: houses,
+             quadrants: quads,
+             widest: Math.max.apply(null, houses.map(function (h) { return h.width; })),
+             narrowest: Math.min.apply(null, houses.map(function (h) { return h.width; })) };
+  }
+
+  window.SPSripati = { build: build, analyse: analyse };
+})();
 /* ================= 1. At a glance ================= */
 function glancePane(D,J){
   var LS=D.LS, ll=LORD[LS], lp=D.P[ll], mo=D.P.Moon, items=[];
@@ -19662,6 +20413,11 @@ window.buildKundliReport=function(J){
   var full=H.join("").replace('<!--KINDEX-->', sectionIndex());
   // runtime hooks for the interactive panes (events, compatibility, today's tools)
   window.__kApi={
+    /* the derived chart itself, so the panels that were added later — the
+       Śrīpati reading and the gochara layer that needs a natal Moon — can
+       work from the same object the report does rather than deriving a
+       second one that might disagree with it */
+    chart:function(){ return D; },
     events:function(list){ try{ return eventsAnalyze(D,list||[]); }catch(e){ return paneErr("Life events",e); } },
     match:function(J2,opt){ return matchHtml(D,J2,opt||{}); },
     dayBlock:function(lat,lon,tz,label){ return dayBlock(D,lat,lon,tz,label); }
@@ -20969,5 +21725,359 @@ window.buildKundliReport=function(J){
   }
 })();
 ;
+
+/* ===== The Gochara and Rāśiphal panels ====================================
+
+   These two sections are the only part of this builder that works with no
+   chart at all, which is the point of them: a year of transits is a fact
+   about the sky, and a reading counted from a janma-rāśi needs the rāśi and
+   nothing else. Someone who has never entered a birth time can open the
+   page, pick a year, pick their Moon sign and get the whole of it.
+
+   WHEN A CHART IS LOADED the panels get strictly more: the natal Moon's
+   rāśi is selected for them, and the one tier-1 rule here — the
+   ashtakavarga transit doctrine of BPHS Vol. 2 Ch. 70 — can finally be
+   applied, because it needs that chart's bindus. Nothing that was visible
+   without a chart disappears when one arrives.
+
+   WHY THE TIER LABELS ARE IN THE MARKUP AND NOT IN A FOOTNOTE. A reader
+   scrolling a page of transit readings will not scroll back to a key. Each
+   claim carries its own badge, in the same line of sight as the claim. */
+
+(function () {
+  "use strict";
+
+  function $(id) { return document.getElementById(id); }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
+      return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c];
+    });
+  }
+  function el(tag, cls, html) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (html != null) e.innerHTML = html;
+    return e;
+  }
+
+  var TIER = {
+    bphs: ["bphs", "BPHS text"],
+    commentary: ["comm", "Translator’s note"],
+    later: ["later", "Later tradition"],
+    computed: ["calc", "Computed here"]
+  };
+  function badge(t) {
+    var x = TIER[t] || TIER.computed;
+    return '<span class="gotier gotier-' + x[0] + '">' + esc(x[1]) + '</span>';
+  }
+
+  function dstr(jd) {
+    var d = window.SPGochara.jdToDate(jd);
+    return d.toLocaleDateString(undefined,
+      { year: "numeric", month: "short", day: "numeric" });
+  }
+  function tstr(jd) {
+    var d = window.SPGochara.jdToDate(jd);
+    return d.toISOString().slice(11, 16) + " UTC";
+  }
+
+  var SIGNS = null, R = null, YEAR = null;
+
+  /* ---- the year's timeline ---------------------------------------------- */
+  function renderYear(R) {
+    var P = window.SPRashiphal;
+    SIGNS = P.SIGNS;
+    var out = [];
+
+    out.push('<p class="klegend">' + R.events.length + ' events in ' + R.year +
+      ', computed to the minute by bisecting the ephemeris. Times are UTC. ' +
+      'A graha that crosses a boundary, turns retrograde and crosses back ' +
+      'appears once for each crossing — which is the honest account, and ' +
+      'the one a printed table usually flattens.</p>');
+
+    /* where everything starts the year */
+    var rows = R.bodyList.map(function (b) {
+      var sp = R.spans[b];
+      var where = sp.map(function (s) {
+        return esc(SIGNS[s.sign]) + ' <span class="godim">' +
+          Math.round(s.to - s.from) + 'd</span>';
+      }).join(' → ');
+      return '<tr><td><b>' + esc(P.DEV[b]) + '</b></td><td>' + where +
+        '</td><td class="knum">' + R.bodies[b].ingresses.length + '</td>' +
+        '<td class="knum">' + R.bodies[b].stations.length + '</td></tr>';
+    });
+    out.push('<h3 class="ksub">Where each graha spends the year</h3>');
+    out.push('<table class="ktbl gotbl"><thead><tr><th>Graha</th>' +
+      '<th>Rāśi through the year</th><th>Ingresses</th><th>Stations</th>' +
+      '</tr></thead><tbody>' + rows.join("") + '</tbody></table>');
+
+    /* the chronological list */
+    var ev = R.events.map(function (e) {
+      var what;
+      if (e.kind === "ingress")
+        what = 'enters <b>' + esc(SIGNS[e.to]) + '</b>' +
+               (e.retro ? ' <span class="goretro">while retrograde</span>' : '');
+      else if (e.kind === "retro")
+        what = '<span class="goretro">turns retrograde</span> in ' +
+               esc(SIGNS[e.sign]);
+      else
+        what = 'turns direct in ' + esc(SIGNS[e.sign]);
+      return '<tr><td class="godate">' + esc(dstr(e.jd)) +
+        '<span class="gotime">' + esc(tstr(e.jd)) + '</span></td>' +
+        '<td><b>' + esc(P.DEV[e.body]) + '</b></td><td>' + what + '</td></tr>';
+    });
+    out.push('<h3 class="ksub">Every ingress and station, in order</h3>');
+    out.push('<div class="goscroll"><table class="ktbl gotbl"><thead><tr>' +
+      '<th>When</th><th>Graha</th><th>What</th></tr></thead><tbody>' +
+      ev.join("") + '</tbody></table></div>');
+    return out.join("");
+  }
+
+  /* ---- one rāśi's reading ----------------------------------------------- */
+  function renderReading(r) {
+    var P = window.SPRashiphal;
+    var out = [];
+
+    out.push('<div class="gohead"><h3 class="ksub">' + esc(r.signName) +
+      ' <span class="godim">· lord ' + esc(r.lord) + ' · ' + r.year +
+      '</span></h3></div>');
+
+    /* the chart of the year, drawn from the Moon sign as the first house */
+    out.push(chandraChart(r));
+
+    /* Śani first: it is what anyone reading a year of transits came for */
+    if (r.sani.length) {
+      out.push('<h4 class="gosub">Śani through the year ' + badge("later") +
+        '</h4>');
+      out.push('<ul class="golist">' + r.sani.map(function (s) {
+        return '<li><b>' + esc(s.title) + '</b> — ' + esc(SIGNS[s.sign]) +
+          ', <span class="godates">' + esc(dstr(s.from)) + ' to ' +
+          esc(dstr(s.to)) + '</span> (' + esc(P.days(s.days)) + ')<br>' +
+          '<span class="gotext">' + esc(s.text) + '</span></li>';
+      }).join("") + '</ul>');
+      out.push('<p class="knote gonote">These names — Sade Sati, Kaṇṭaka ' +
+        'Śani, Aṣṭama Śani — belong to later tradition, not to the ' +
+        'Parāśara verses. The <i>dates</i> are computed from Śani’s real ' +
+        'motion, retrogrades included, which is why a phase can be entered, ' +
+        'left and entered again within one year where an almanac table ' +
+        'shows a single block.</p>');
+    } else {
+      out.push('<h4 class="gosub">Śani through the year ' + badge("later") +
+        '</h4><p class="gotext">Śani occupies none of the houses later ' +
+        'tradition names for this rāśi in ' + r.year +
+        ' — neither the 12th, 1st or 2nd of Sade Sati, nor the 4th or 8th.</p>');
+    }
+
+    /* every graha, with the classical favourable houses */
+    out.push('<h4 class="gosub">Each graha, counted from ' +
+      esc(r.signName) + ' ' + badge("later") + '</h4>');
+    out.push('<table class="ktbl gotbl"><thead><tr><th>Graha</th>' +
+      '<th>Bhāva from the rāśi</th><th>Rāśi</th><th>For</th>' +
+      '<th>Favourable houses</th></tr></thead><tbody>' +
+      r.grahas.map(function (g) {
+        return '<tr' + (g.favourable ? ' class="gogood"' : '') + '><td><b>' +
+          esc(g.name) + '</b></td><td class="knum">' + g.mainHouse +
+          (g.favourable ? ' <span class="gotick">✓</span>' : '') + '</td>' +
+          '<td>' + esc(SIGNS[g.mainSign]) + '</td>' +
+          '<td class="knum">' + esc(P.days(g.mainDays)) + '</td>' +
+          '<td class="godim">' + g.goodHouses.join(", ") + '</td></tr>';
+      }).join("") + '</tbody></table>');
+    out.push('<p class="knote gonote">The favourable-house lists are the ' +
+      'standard gochara table of later practice. The uploaded Santhanam ' +
+      'edition carries it in Vol. 1, Ch. 31 among the translator’s notes ' +
+      'on Argala, but prints it as a figure whose numerals did not survive ' +
+      'the scan — so confirm the edition’s own table in the PDF rather ' +
+      'than taking this page’s word for it.</p>');
+
+    /* the one vedha pair the edition states in words */
+    out.push('<h4 class="gosub">Vedha on Sūrya’s third-house transit ' +
+      badge("commentary") + '</h4>');
+    if (!r.sunVedha.length) {
+      out.push('<p class="gotext">Sūrya does not transit the 3rd from ' +
+        esc(r.signName) + ' inside ' + r.year + '.</p>');
+    } else {
+      out.push('<ul class="golist">' + r.sunVedha.map(function (v) {
+        var s;
+        if (v.state === "clear")
+          s = 'no graha in the 9th, so the transit stands unobstructed';
+        else if (v.state === "lifted")
+          s = 'obstructed from the 9th by ' + esc(v.blockers.join(", ")) +
+              ', but ' + esc(v.companions.join(", ")) + ' joins Sūrya in ' +
+              'the 3rd, and the uploaded text says the vedha lifts while ' +
+              'he has a companion';
+        else
+          s = 'obstructed from the 9th by ' + esc(v.blockers.join(", "));
+        return '<li><span class="godates">' + esc(dstr(v.from)) + ' to ' +
+          esc(dstr(v.to)) + '</span> — ' + s + '</li>';
+      }).join("") + '</ul>');
+    }
+    out.push('<p class="knote gonote">This is the one vedha pair the ' +
+      'uploaded translation states in words rather than in a figure: Sūrya ' +
+      'in the 3rd from the Moon transits favourably, that favour is curbed ' +
+      'if another graha simultaneously transits the 9th — Śani excepted — ' +
+      'and it is restored while a companion sits with him in the 3rd. The ' +
+      'remaining pairs are in the same illegible figure, so they are not ' +
+      'guessed at here.</p>');
+
+    /* the only tier-1 rule on the page */
+    out.push('<h4 class="gosub">Ashtakavarga on the transit ' +
+      badge("bphs") + '</h4>');
+    if (!r.ashtaka) {
+      out.push('<p class="gotext">This is the one rule here that comes ' +
+        'from the Parāśara verses rather than from later practice, and it ' +
+        'is the one that needs a chart: BPHS Vol. 2, Ch. 70 reads a graha ' +
+        'passing through a rāśi carrying more rekhās in its own ' +
+        'ashtakavarga as favourable for that graha’s significations. ' +
+        'The bindus belong to a particular horoscope, so there is nothing ' +
+        'to read until one is cast above. Everything else on this page ' +
+        'works without one.</p>');
+    } else {
+      out.push('<table class="ktbl gotbl"><thead><tr><th>Graha</th>' +
+        '<th>Transits</th><th>Bhāva</th><th>Bindus</th>' +
+        '<th>After śodhana</th><th>For</th></tr></thead><tbody>' +
+        r.ashtaka.map(function (a) {
+          var good = a.reduced >= 4;
+          return '<tr' + (good ? ' class="gogood"' : '') + '><td><b>' +
+            esc(a.name) + '</b></td><td>' + esc(SIGNS[a.sign]) + '</td>' +
+            '<td class="knum">' + a.house + '</td>' +
+            '<td class="knum">' + a.bindus + '</td>' +
+            '<td class="knum">' + a.reduced + '</td>' +
+            '<td class="knum">' + esc(P.days(a.days)) + '</td></tr>';
+        }).join("") + '</tbody></table>');
+      out.push('<p class="knote gonote">Rekhās in each graha’s own ' +
+        'bhinnāṣṭakavarga, shown both raw and after Trikoṇa and ' +
+        'Ekādhipatya śodhana — the text’s rule is stated after śodhana, ' +
+        'while most software shows the raw count, and a reader comparing ' +
+        'the two should be able to see why they differ. Source: BPHS, ' +
+        'Vol. 2, Ch. 70. Verse numbers in the uploaded scan are ' +
+        'OCR-affected; confirm them in the PDF.</p>');
+    }
+
+    out.push('<div class="caution gocaution"><b>Read this as doctrine, not ' +
+      'as forecast.</b> A transit is a condition the classical texts attach ' +
+      'a tendency to. Nothing here is a statement that an event will ' +
+      'happen, and none of it should carry weight in a decision about ' +
+      'health, money, law or safety — for those, ask someone qualified in ' +
+      'that field.</div>');
+    return out.join("");
+  }
+
+  /* ---- the Candra chart: the Moon's rāśi as the first house ------------- */
+  function chandraChart(r) {
+    var P = window.SPRashiphal;
+    var mid = (R.jd0 + R.jd1) / 2;
+    var occ = {};
+    R.bodyList.forEach(function (b) {
+      var h = P.houseFrom(window.SPGochara.signAtJd(R, b, mid), r.moonSign);
+      (occ[h] = occ[h] || []).push(P.DEV[b]);
+    });
+    var cells = [];
+    for (var h = 1; h <= 12; h++) {
+      var sg = (r.moonSign + h - 1) % 12;
+      cells.push('<div class="gocell"><span class="gocellh">' + h + '</span>' +
+        '<span class="gocells">' + esc(SIGNS[sg]) + '</span>' +
+        '<span class="gocellp">' + esc((occ[h] || []).join(" ")) + '</span>' +
+        '</div>');
+    }
+    return '<div class="gochart"><div class="gogrid">' + cells.join("") +
+      '</div><p class="klegend">The year’s grahas placed in the twelve ' +
+      'bhāvas counted from ' + esc(r.signName) + ', taken at the middle of ' +
+      r.year + '. A graha that changes rāśi during the year sits in the ' +
+      'bhāva it holds at mid-year; the table above gives its full path.</p>' +
+      '</div>';
+  }
+
+  /* ---- wiring ------------------------------------------------------------ */
+  function natalMoonSign() {
+    try {
+      var D = window.__kApi && window.__kApi.chart && window.__kApi.chart();
+      if (D && D.P && D.P.Moon && D.P.Moon.sign != null) return D.P.Moon.sign;
+    } catch (e) {}
+    return null;
+  }
+  function natalChart() {
+    try { return window.__kApi && window.__kApi.chart && window.__kApi.chart(); }
+    catch (e) { return null; }
+  }
+
+  function fillSigns() {
+    var sel = $("rp-sign");
+    if (!sel || sel.options.length) return;
+    window.SPRashiphal.SIGNS.forEach(function (s, i) {
+      var o = document.createElement("option");
+      o.value = String(i); o.textContent = s;
+      sel.appendChild(o);
+    });
+  }
+
+  function showReading() {
+    if (!R) return;
+    var sel = $("rp-sign"), out = $("rp-out");
+    if (!sel || !out) return;
+    var i = parseInt(sel.value, 10) || 0;
+    var r = window.SPRashiphal.read(R, i, natalChart());
+    out.innerHTML = renderReading(r);
+    var st = $("rp-status");
+    if (st) {
+      var m = natalMoonSign();
+      st.textContent = (m === i && m != null)
+        ? "this is the natal Moon’s rāśi of the chart above"
+        : "";
+    }
+  }
+
+  function run() {
+    var y = parseInt(($("go-year") || {}).value, 10);
+    if (!y || y < 1800 || y > 2200) {
+      var s0 = $("go-status");
+      if (s0) s0.textContent = "Enter a year between 1800 and 2200.";
+      return;
+    }
+    var st = $("go-status");
+    if (st) st.textContent = "Computing…";
+    var moon = !!($("go-moon") || {}).checked;
+    /* let the status paint before a third of a second of arithmetic */
+    setTimeout(function () {
+      try {
+        R = window.SPGochara.year(y, { moon: moon });
+        YEAR = y;
+        $("go-out").innerHTML = renderYear(R);
+        fillSigns();
+        var m = natalMoonSign();
+        if (m != null && $("rp-sign")) $("rp-sign").value = String(m);
+        showReading();
+        if (st) st.textContent = R.events.length + " events";
+      } catch (e) {
+        if (st) st.textContent = "could not compute: " + (e && e.message);
+      }
+    }, 10);
+  }
+
+  function boot() {
+    if (!$("go-run")) return;
+    if (!window.SPGochara || !window.SPRashiphal) { setTimeout(boot, 200); return; }
+    fillSigns();
+    $("go-run").addEventListener("click", run);
+    var sel = $("rp-sign");
+    if (sel) sel.addEventListener("change", showReading);
+    var yr = $("go-year");
+    if (yr && !yr.value) yr.value = String(new Date().getFullYear());
+    /* a chart cast after the year was computed should re-colour the
+       reading, because a chart unlocks the ashtakavarga rule */
+    window.addEventListener("nirayana:chart", function () {
+      var m = natalMoonSign();
+      if (m != null && $("rp-sign")) $("rp-sign").value = String(m);
+      showReading();
+    });
+  }
+
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", boot);
+  else boot();
+
+  window.SPGocharaUI = { run: run, reading: showReading,
+                         current: function () { return R; } };
+})();
+;
 </script>
-<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-26.9d9ecc9</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>
+<h2 id="read">How to read what comes back</h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits</h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-10-26.af0a824</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. The optional cross-check fetches a second opinion from <a href="https://bharatephemeris.com" target="_blank" rel="noopener">bharatephemeris.com</a>, an independent third-party service whose uptime and terms are outside this site&rsquo;s control.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>

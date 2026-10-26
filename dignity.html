@@ -2003,6 +2003,19 @@ html[data-theme] .ktabs button[aria-selected="true"]{
 html[data-theme] .stbtn.sec{background:var(--surface-3);color:var(--text);
   border-color:var(--border-2)}
 
+
+/* the gochara tier badges: three tinted chips that have to stay legible on
+   every ground, so each palette gets its own rather than a shared wash */
+html[data-theme] .gotier-bphs{background:var(--mine-bg);color:var(--mine-edge);
+  border-color:var(--mine-line)}
+html[data-theme] .gotier-comm{background:var(--note-bg);color:var(--note-edge);
+  border-color:var(--note-line)}
+html[data-theme] .gotier-later{background:var(--ex-bg);color:var(--accent);
+  border-color:var(--ex-line)}
+html[data-theme] .gotbl tr.gogood td{background:var(--mine-bg)}
+html[data-theme] .gotick{color:var(--mine-edge)}
+html[data-theme] .goretro{color:var(--caution-edge)}
+
 /* ---- the switcher itself ------------------------------------------------ */
 .themepick{display:inline-flex;align-items:center;gap:6px;
   font:inherit;font-size:12px}

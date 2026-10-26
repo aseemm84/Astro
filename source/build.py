@@ -194,7 +194,8 @@ def build_kundli():
              # pane's place picker are the same code now, and the bundle must
              # define it before either uses it.
              ("<!--JS3-->", jsread(SRC, "js", "places.js") + "\n" +
-                            jsread(SRC, "js", "ui.js"), "script")]
+                            jsread(SRC, "js", "ui.js") + "\n" +
+                            jsread(SRC, "js", "sp-gocharaui.js"), "script")]
     stamp = build_stamp([shell] + [b for _, b, _ in parts])
     if "<!--BUILD-->" in shell:
         shell = shell.replace("<!--BUILD-->", stamp)

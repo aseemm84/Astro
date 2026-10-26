@@ -68,6 +68,38 @@
 <div class="k-sky" id="k-sky"><button type="button" class="k-btn sec" id="k-skygo">Watch the sky &mdash; no birth data needed</button><span class="k-skynote">Fifteen of the animations are about the sky rather than about you: the eclipses, the tilt of the Moon&rsquo;s path, the pa&ntilde;c&amacr;&ndash;a&#7749;ga, the phases. The nine that read your chart stay behind the form above, and each says why.</span></div>
 <div id="k-skyout"></div>
 <div id="k-out"></div>
+
+<h2 id="gochara">Vārṣika Gochara — a year of transits</h2>
+<p><b>This needs no birth chart.</b> Gochara is where the nine grahas
+actually are, so a year of it is a fact about the sky rather than about any
+person. Pick a year and every rāśi ingress, every retrograde station and
+every return to direct motion is computed from the same ephemeris that
+casts the charts above — not copied from a table, so it follows whichever
+ayanāṃśa you have selected.</p>
+<div class="gobar">
+  <label for="go-year">Year
+    <input type="number" id="go-year" min="1800" max="2200" step="1" value="2027"></label>
+  <button type="button" class="k-btn" id="go-run">Compute the year</button>
+  <label class="gochk"><input type="checkbox" id="go-moon"> include the Moon
+    (about 160 ingresses)</label>
+  <span class="k-status" id="go-status"></span>
+</div>
+<div id="go-out"></div>
+
+<h2 id="rashiphal">Twelve Candra-rāśi readings</h2>
+<p>The same year read from each janma-rāśi in turn: which bhāva each graha
+occupies counted from that rāśi, for how long, and which of the classical
+gochara conditions are running. Every rule says which tier it comes from —
+a BPHS verse, a note by the translator of this edition, or later tradition
+— because transit doctrine is where those three are most often blurred
+together.</p>
+<div class="gobar">
+  <label for="rp-sign">Janma-rāśi (Moon sign)
+    <select id="rp-sign"></select></label>
+  <span class="k-status" id="rp-status"></span>
+</div>
+<div id="rp-out"></div>
+
 <details class="k-raw" id="k-rawwrap" style="display:none"><summary>Show the full raw API response (advanced)</summary><div class="k-rawbar"><button type="button" class="k-btn sec" id="k-copy">Copy JSON</button><span class="k-copymsg" id="k-copymsg"></span></div><pre id="k-raw"></pre></details>
 <details class="k-raw" id="k-adv"><summary>Advanced &middot; proxy URL (use if the direct call is blocked)</summary><div style="margin-top:8px"><label for="k-proxy" style="display:block;font-size:12px;font-weight:600;color:var(--text-soft,#4a4e68);margin-bottom:4px">Proxy endpoint URL</label><input type="url" id="k-proxy" placeholder="https://your-worker.workers.dev" style="width:100%;max-width:540px;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px"><p class="k-note">Only needed when the chart source is set to the external service, which requires a CORS proxy. The built-in engine does not use this. Stored only in this browser.</p></div></details>
 <p class="lead">A <b>kundli</b> (janma-kundali) is a birth chart: a map of the sky at the exact moment and place of birth, projected onto the twelve bhavas counted from the Lagna. This page explains how a chart is cast, then lets you compute a real one and follow each piece into the reference pages.</p><p class="term"><b>Kundli / Janma-kundali</b> — birth chart &mdash; the positions of the nine grahas, the Lagna and the twelve bhavas at the birth instant, expressed in the sidereal (nirayana) zodiac.</p><h2 id="what">What a kundli is</h2><p>Vedic astrology reads the chart in the <b>sidereal</b> zodiac, measured from a fixed star point rather than the moving equinox. The difference between the two zodiacs at a given date is the <b>ayanamsha</b>; subtracting it from an ordinary (tropical) position gives the sidereal position Jyotisha uses. The chart is then a set of nine grahas seated in twelve rashis, read as twelve bhavas from the rising sign.</p><h2 id="need">What you need</h2><ul><li><b>Date of birth</b> &mdash; the calendar date.</li><li><b>Exact time of birth</b> &mdash; to the minute if possible. This is the most important input: the Lagna moves about one degree every four minutes, and the finest divisions (D60) change every ~30 seconds.</li><li><b>Place of birth</b> &mdash; resolved to latitude, longitude, and the UTC offset in force there at that date.</li></ul><div class="caution"><b>Handle with care.</b> Everything on this page is a <b>study aid</b> for learning BPHS method, not a prediction or a judgement about any person. Because results hinge on birth time, treat a chart cast from an uncertain time as provisional &mdash; and take medical, legal, financial or personal decisions to a qualified professional, never to a chart.</div><h2 id="how">How a chart is cast</h2><ol><li><b>Fix the exact birth instant.</b> Combine the date, the clock time, and the UTC offset that applied at that place and date. Errors here propagate into everything downstream.</li><li><b>Compute sidereal positions.</b> An ephemeris gives each graha&rsquo;s longitude; subtract the <b>ayanamsha</b> (Lahiri by default) to place it in the sidereal zodiac. See <a href="rashis.html">Rashis</a> and <a href="dignity.html">Dignity</a>.</li><li><b>Find the Lagna.</b> From the instant and the coordinates, determine the sign and degree rising in the east &mdash; the anchor of the chart. See <a href="lagna.html">Lagna</a>.</li><li><b>Place the grahas.</b> Seat each planet in its rashi and read its <b>nakshatra and pada</b>. See the <a href="108-nakshatra-padas.html">108 Padas</a> tool and <a href="grahas.html">Grahas</a>.</li><li><b>Build the bhavas and vargas.</b> Count the twelve houses from the Lagna (whole-sign by default), then derive the divisional charts &mdash; D9, D10 and the rest. See <a href="bhavas.html">Bhavas</a> and <a href="vargas.html">Vargas</a>.</li><li><b>Start the dasha clock.</b> From the Moon&rsquo;s nakshatra, compute the Vimshottari balance at birth and the sequence of periods. See <a href="dashas.html">Dashas</a>.</li></ol><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 3&ndash;6 (sidereal positions, rashis, dignity, vargas) and Vol. 2, Ch. 46 (Vimshottari from the Moon&rsquo;s nakshatra). The casting arithmetic itself is standard astronomy; BPHS supplies the framework the numbers are read within.</p><div class="note"><b>Translator / commentary.</b> This site&rsquo;s stated defaults are the sidereal zodiac, Lahiri/Chitrapaksha ayanamsha, whole-sign houses and Vimshottari dasha. The engine below uses the sidereal zodiac with Lahiri ayanamsha, so its output matches those defaults; note that other software using a different ayanamsha or house system will differ slightly.</div><!--JS0-->

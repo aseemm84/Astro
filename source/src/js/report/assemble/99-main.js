@@ -222,6 +222,11 @@ window.buildKundliReport=function(J){
   var full=H.join("").replace('<!--KINDEX-->', sectionIndex());
   // runtime hooks for the interactive panes (events, compatibility, today's tools)
   window.__kApi={
+    /* the derived chart itself, so the panels that were added later — the
+       Śrīpati reading and the gochara layer that needs a natal Moon — can
+       work from the same object the report does rather than deriving a
+       second one that might disagree with it */
+    chart:function(){ return D; },
     events:function(list){ try{ return eventsAnalyze(D,list||[]); }catch(e){ return paneErr("Life events",e); } },
     match:function(J2,opt){ return matchHtml(D,J2,opt||{}); },
     dayBlock:function(lat,lon,tz,label){ return dayBlock(D,lat,lon,tz,label); }
