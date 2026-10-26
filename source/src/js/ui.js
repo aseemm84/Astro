@@ -300,7 +300,7 @@
        initReport consumes pendingTab. */
     currentTab="overview";
     initReport();
-    ["k-print","k-dl","k-save","k-link"].forEach(function(id){
+    ["k-print","k-dl","k-dl-skill","k-save","k-link"].forEach(function(id){
       var b=$(id); if(b) b.style.display=""; });
     /* Leave the birth particulars where the reference pages can find them — about
        250 bytes, no chart data, recomputed there in milliseconds. This browser
@@ -535,7 +535,7 @@
     var chip=$("k-chip"); if(chip) chip.hidden=true;
     var n=$("k-chipnote"); if(n) n.hidden=true;
     document.body.classList.remove("kcast","kedit");
-    ["k-print","k-dl","k-save","k-link"].forEach(function(id){
+    ["k-print","k-dl","k-dl-skill","k-save","k-link"].forEach(function(id){
       var b=$(id); if(b) b.style.display="none"; });
     lastHash="";
     if(location.hash){ try{ history.replaceState(null,"",location.pathname+location.search); }
@@ -563,6 +563,22 @@
       a.href=u; a.download=nm+"-chart.json"; document.body.appendChild(a); a.click();
       document.body.removeChild(a); setTimeout(function(){URL.revokeObjectURL(u);},1000);
     }catch(e){ alert("Could not download: "+e.message); }
+  });
+  /* A second download: the same cast in the shape an external analysis skill asks
+     for — grahas and vargas keyed by name, strength fields suffixed with their unit,
+     a meta block. Nothing is recomputed; see 46-skill-payload.js. */
+  var sbtn=$("k-dl-skill");
+  if(sbtn) sbtn.addEventListener("click",function(){
+    if(!window.__kdata) return;
+    if(!window.buildJyotishaPayload){ alert("The analyst payload builder did not load."); return; }
+    try{
+      var nm=(window.__kname||"kundli").replace(/[^a-zA-Z0-9]+/g,"-").toLowerCase();
+      var pay=window.buildJyotishaPayload(window.__kdata);
+      var blob=new Blob([JSON.stringify(pay,null,2)],{type:"application/json"});
+      var u=URL.createObjectURL(blob), a=document.createElement("a");
+      a.href=u; a.download=nm+"-analyst.json"; document.body.appendChild(a); a.click();
+      document.body.removeChild(a); setTimeout(function(){URL.revokeObjectURL(u);},1000);
+    }catch(e){ alert("Could not build the analyst payload: "+e.message); }
   });
   document.addEventListener("click",function(ev){
     var b=ev.target&&ev.target.closest?ev.target.closest("[data-kdt]"):null; if(!b)return;
@@ -716,7 +732,7 @@
       (tz!==""?(' <span class="kmut">UTC'+(+tz>=0?"+":"")+(+tz)+'</span>'):"");
     /* The output buttons belong with the chart, not with the form that produced it. */
     var acts=$("k-chipacts");
-    ["k-print","k-dl","k-save","k-link"].forEach(function(id){
+    ["k-print","k-dl","k-dl-skill","k-save","k-link"].forEach(function(id){
       var b=$(id); if(b&&b.parentNode!==acts) acts.appendChild(b); });
     chip.hidden=false;
     document.body.classList.add("kcast");

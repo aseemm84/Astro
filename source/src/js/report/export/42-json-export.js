@@ -7,21 +7,24 @@
 function jxRound(x,n){ return x==null?null:Math.round(x*Math.pow(10,n||4))/Math.pow(10,n||4); }
 function jxSign(lon){ return Math.floor(((lon%360)+360)%360/30)%12; }
 
-function jxPanchanga(D){
+/* The lunar-month and ṛtu tables (LMONTH, RITU) live in engine.js, which is not part
+   of the report bundle — reaching for them here threw, and the whole block vanished
+   into the caller's catch. The engine has already named the month and the ṛtu in
+   birth_panchanga, so take them from there instead of keeping a second copy of the
+   tables that could drift from the first. */
+function jxPanchanga(D,J){
   var s=D.P.Sun, m=D.P.Moon; if(!s||!m) return null;
   var i=D.input, pc=panchanga(s.sid,m.sid);
   var ni=nakOf(m.sid);
+  var bp=(J&&J.birth_panchanga)||{};
   var VARAS=["Ravivara","Somavara","Mangalavara","Budhavara","Guruvara","Shukravara","Shanivara"];
-  var elapsed=(((m.sid-s.sid)%360+360)%360)/12;
-  var sunAtNM=((s.sid-elapsed*0.9856*(29.53/30))%360+360)%360;
-  var amanta=LMONTH[Math.floor(sunAtNM/30)%12];
   var trop=((s.sid+D.ayan)%360+360)%360;
   return {tithi:pc.tithi, paksha:pc.paksha, yoga:pc.yoga, karana:pc.karana,
     vara:VARAS[(D.weekday!=null?D.weekday:0)],
     nakshatra:ni.name, nakshatra_pada:ni.pada, nakshatra_lord:ni.lord,
-    lunar_month_amanta:amanta,
-    lunar_month_purnimanta:(pc.paksha_sa==="Krishna")?LMONTH[(Math.floor(sunAtNM/30)+1)%12]:amanta,
-    ritu:RITU[amanta]||null,
+    lunar_month_amanta:bp.masa_amanta||null,
+    lunar_month_purnimanta:bp.masa_purnimanta||null,
+    ritu:bp.ritu||null,
     ayana:(trop>=90&&trop<270)?"Dakshinayana":"Uttarayana",
     vikram_samvat:i.year+57, saka_samvat:i.year-78,
     sun_sign_tropical:Math.floor(trop/30)%12};
@@ -395,7 +398,7 @@ function jxGuide(){
 }
 function buildFullExport(D,J){
   var x={};
-  try{ x.panchanga_at_birth=jxPanchanga(D); }catch(e){}
+  try{ x.panchanga_at_birth=jxPanchanga(D,J); }catch(e){}
   try{ x.avakhada=jxAvakhada(D); }catch(e){}
   try{ x.upagrahas=jxUpagrahas(D); }catch(e){}
   try{ x.sripati=jxSripati(D); }catch(e){}
