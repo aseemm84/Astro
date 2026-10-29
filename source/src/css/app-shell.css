@@ -1,0 +1,222 @@
+/* ===== App shell =================================================
+   Loaded only by the --app build. The website never links this file, so the
+   separation is a property of the build rather than a media query or a class
+   somebody has to remember to set: the deployed site cannot see these rules
+   even by accident.
+
+   The whole restructuring is done here rather than in a second set of shell
+   templates. All three shells — the reference pages, the Kundli builder and the
+   Workstation — share the same four top-level elements, so one grid covers all
+   twenty-eight pages and there is no second copy of the masthead or the footer
+   to drift from the first. This is the same technique the print stylesheet in
+   app.css already uses, aimed at a different medium.
+
+   What changes:
+     header.masthead   hero banner      ->  52px title strip, drag region
+     nav.site          26 wrapping links ->  fixed sidebar of four
+     .layout           part of the page ->  the ONLY scrolling region
+     footer            on screen        ->  hidden; its text moves to About
+   ================================================================= */
+
+html.app { height: 100% }
+
+/* The page itself never scrolls. This single rule is what most separates an
+   application window from a document: the chrome holds still. */
+html.app body {
+  height: 100vh;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 272px minmax(0, 1fr);
+  grid-template-rows: 52px minmax(0, 1fr);
+}
+
+/* ---- the title strip (was the masthead) ---- */
+html.app header.masthead {
+  grid-column: 2; grid-row: 1;
+  min-height: 0;
+  padding: 0 20px;
+  display: flex; align-items: center; gap: 12px;
+  background: var(--chrome, #191d33);
+  border-bottom: .5px solid var(--border, rgba(255,255,255,.14));
+  border-top: 0;
+  overflow: hidden;
+  user-select: none; -webkit-user-select: none;
+  app-region: drag; -webkit-app-region: drag;
+}
+
+/* The eyebrow and the subtitle are a banner's furniture. The brand is moved into
+   the sidebar by app-shell.js; hidden here so a failed move degrades to absent
+   rather than to a logo sitting in the toolbar. */
+html.app header.masthead .eyebrow, html.app header.masthead p.sub, html.app header.masthead .lhbrand { display: none }
+html.app header.masthead h1 {
+  margin: 0; font-size: 15px; line-height: 1.2; font-weight: 600;
+  color: var(--chrome-text, #f2f0f8);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+html.app header.masthead .kdeva { display: none }
+
+/* ---- the sidebar (was the nav) ---- */
+html.app nav.site {
+  grid-column: 1; grid-row: 1 / 3;
+  position: static; top: auto;
+  flex-direction: column; flex-wrap: nowrap;
+  align-content: start;
+  gap: 2px;
+  padding: 12px 12px 14px;
+  border-bottom: 0;
+  border-right: .5px solid var(--border, rgba(255,255,255,.14));
+  overflow-y: auto; overflow-x: hidden;
+  user-select: none; -webkit-user-select: none;
+}
+html.app nav.site a {
+  font-size: 13px;
+  height: 30px; padding: 0 9px;
+  display: flex; align-items: center;
+  flex: 0 0 auto;
+  cursor: default;
+}
+
+/* macOS puts the traffic lights over the top-left of the window. Nothing may sit
+   under them, and the clearance is measured by the harness rather than eyeballed. */
+html.app.mac nav.site { padding-top: 44px }
+
+/* cosmos.css carries a `body.wsapp` block — the installed-PWA windowing from
+   earlier work — and it caps the nav at 38px so the links read as a horizontal
+   strip. The app shell supersedes that whole layer, so the cap is released here
+   by name. Left to specificity alone it survives, because a property this file
+   never mentions cannot be overridden by it: the Workstation's sidebar then
+   renders 38px tall with the brand clipped, which is what it did. */
+html.app nav.site { max-height: none; align-items: stretch }
+
+/* The brand block app-shell.js relocates here from the masthead. */
+html.app nav.site .lhbrand {
+  display: flex; align-items: center; gap: 9px;
+  height: auto; padding: 2px 8px 14px;
+  text-decoration: none;
+}
+/* The mark is an <svg> on some pages and an <img> on others, and the file
+   behind the img is a full illustration at its own intrinsic size. Sizing only
+   the svg let it render at 111 KB worth of sun across the sidebar. Both, and a
+   clip on the wrapper so no future third form escapes either. */
+html.app nav.site .lhbrand .lhmarkwrap {
+  width: 20px; height: 20px; flex: 0 0 20px;
+  display: block; overflow: hidden;
+}
+html.app nav.site .lhbrand .lhmarkwrap > * { width: 100%; height: 100%; display: block }
+html.app nav.site .lhbrand .lhword { display: flex; align-items: baseline; gap: 6px }
+html.app nav.site .lhbrand .lhname { font-size: 15px; color: var(--chrome-text, #f2f0f8) }
+html.app nav.site .lhbrand .lhdeva { font-size: 12px; color: var(--chrome-link, #a8aecb) }
+
+/* What sits at the foot of the sidebar: the build id, and the way into About. */
+html.app nav.site .appfoot {
+  margin-top: auto; padding: 11px 9px 0;
+  border-top: .5px solid var(--border, rgba(255,255,255,.14));
+  font-size: 11px; line-height: 1.5;
+  color: var(--chrome-link, #a8aecb);
+}
+html.app nav.site .appfoot button {
+  display: block; width: 100%; text-align: left;
+  background: none; border: 0; padding: 4px 0 7px;
+  font: inherit; font-size: 12px;
+  color: var(--chrome-link, #a8aecb);
+  cursor: default;
+}
+html.app nav.site .appfoot button:hover { color: var(--chrome-text, #fff) }
+html.app nav.site .appfoot code { font-size: 11px; opacity: .85 }
+
+/* ---- the content region: the only thing that scrolls ---- */
+html.app .layout {
+  grid-column: 2; grid-row: 2;
+  min-height: 0;
+  overflow-y: auto; overflow-x: hidden;
+  padding-top: 20px; padding-bottom: 28px;
+  scrollbar-width: thin;
+}
+html.app .layout::-webkit-scrollbar { width: 10px }
+html.app .layout::-webkit-scrollbar-thumb {
+  background: rgba(128,128,140,.45); border-radius: 6px;
+  border: 3px solid transparent; background-clip: content-box;
+}
+html.app .layout::-webkit-scrollbar-thumb:hover { background-color: rgba(128,128,140,.7) }
+
+/* ---- the footer leaves the screen; app-shell.js copies it into About ---- */
+html.app footer { display: none }
+
+/* ---- native control scale ----
+   Deliberately scoped to chrome and controls. Body copy keeps the site's own
+   sizes: these pages are documents, and squeezing long-form prose to 13px to
+   satisfy a convention about toolbars would make them worse to read, not more
+   native. */
+html.app .k-btn {
+  font-size: 13px;
+  min-height: 26px; padding: 0 12px;
+  border-radius: 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+  cursor: default;
+}
+html.app button, html.app .kgo, html.app summary { cursor: default }
+
+/* The system accent, not the browser's focus ring. */
+html.app :focus-visible { outline: 2px solid AccentColor; outline-offset: 2px }
+
+/* ---- Find (⌘F / Ctrl+F) ----
+   A window has no browser find bar, and on the long reference pages that is a
+   real loss rather than a cosmetic one. */
+html.app #app-find {
+  position: fixed; top: 60px; right: 22px; z-index: 90;
+  display: none; align-items: center; gap: 7px;
+  padding: 7px 9px; border-radius: 8px;
+  background: var(--chrome, #191d33);
+  border: .5px solid var(--border, rgba(255,255,255,.2));
+  box-shadow: 0 10px 28px rgba(0,0,0,.4);
+  font-size: 13px; color: var(--chrome-text, #f2f0f8);
+}
+html.app #app-find.on { display: flex }
+html.app #app-find input {
+  width: 190px; height: 24px; padding: 0 7px;
+  border-radius: 5px; border: .5px solid var(--border, rgba(255,255,255,.25));
+  background: rgba(255,255,255,.08); color: inherit;
+  font: inherit; font-size: 13px;
+}
+html.app #app-find .cnt { min-width: 54px; font-size: 12px; opacity: .8; text-align: right }
+html.app #app-find button {
+  width: 24px; height: 24px; border-radius: 5px; border: 0;
+  background: rgba(255,255,255,.1); color: inherit; font: inherit;
+  display: flex; align-items: center; justify-content: center;
+}
+html.app mark.app-hit { background: #ffe07a; color: #1a1a22; border-radius: 2px }
+html.app mark.app-hit.cur { background: #ff9d2e; color: #140d00 }
+
+/* ---- About, holding the footer's text verbatim ---- */
+html.app #app-about {
+  position: fixed; inset: 0; z-index: 95;
+  display: none; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.45);
+}
+html.app #app-about.on { display: flex }
+html.app #app-about .sheet {
+  width: min(620px, calc(100vw - 80px));
+  max-height: calc(100vh - 120px); overflow-y: auto;
+  padding: 24px 26px 22px; border-radius: 12px;
+  background: var(--surface, #fff); color: var(--text, #1a1a22);
+  box-shadow: 0 24px 60px rgba(0,0,0,.45);
+  font-size: 13px; line-height: 1.6;
+}
+html.app #app-about h2 { margin: 0 0 4px; font-size: 17px }
+html.app #app-about .bid { font-size: 12px; opacity: .72; margin: 0 0 16px }
+html.app #app-about .close {
+  margin-top: 18px; height: 26px; padding: 0 14px;
+  border-radius: 6px; border: .5px solid var(--border-2, rgba(0,0,0,.18));
+  background: none; color: inherit; font: inherit; font-size: 13px;
+  cursor: default;
+}
+
+/* ---- printing ----
+   The grid plus `overflow:hidden` would otherwise print one screenful and stop.
+   Restoring normal flow here keeps the existing print stylesheet in app.css
+   doing its job. */
+@media print {
+  html.app body { display: block; height: auto; overflow: visible }
+  html.app .layout { overflow: visible; grid-column: auto; grid-row: auto }
+  html.app header.masthead, html.app nav.site, html.app #app-find, html.app #app-about { display: none !important }
+}

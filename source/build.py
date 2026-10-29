@@ -20,6 +20,14 @@ it must report "identical to the current output".
 """
 import os, re, json, sys, difflib, shutil, tempfile, subprocess
 
+# --app builds the same twenty-eight pages with application chrome instead of
+# website chrome. It is a target, not a fork: every page, every bundle and every
+# figure is produced by the code below either way, and the only differences are
+# the four listed in src/css/app-shell.css. The first thing the harness checks is
+# that the website build is byte-identical whether or not this flag exists.
+APP_MODE = False
+APP_BUILD = ""
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SRC  = os.path.join(ROOT, "src")
 VEND = os.path.join(ROOT, "vendor")
@@ -151,6 +159,11 @@ def head_meta(desc, path, og_title):
     — a referenced icon file would be one network request on every page load, and
     the whole point of this build is that an offline copy makes none."""
     frag = read(SRC, "pages", "_head.frag")
+    if APP_MODE:
+        cut = re.sub(r'<link rel="canonical"[^>]*>\s*', "", frag, count=1)
+        if cut == frag:
+            raise SystemExit("app build: the canonical link was not found in _head.frag")
+        frag = cut
     return brandify(frag.replace("{{DESC}}", esc_attr(desc))
                         .replace("{{BASE}}", SITE_BASE)
                         .replace("{{PATH}}", path)
@@ -323,7 +336,8 @@ def nav_html(href):
     Built in three places before this existed, which is how now.html came to be
     reachable from every page except the chart page — the busiest one. A page
     gains a nav entry on one edit to _nav.json and no other."""
-    nav = json.load(open(os.path.join(SRC, "pages", "_nav.json"), encoding="utf-8"))
+    src = "_nav-app.json" if APP_MODE else "_nav.json"
+    nav = json.load(open(os.path.join(SRC, "pages", src), encoding="utf-8"))
     return "".join('<a href="%s"%s>%s</a>' %
                    (h, ' class="active"' if h == href else "", label)
                    for h, label in nav)
@@ -389,6 +403,70 @@ def build_adopted():
     return out
 
 
+def app_sitejs(js):
+    """Take the service-worker registration out of the app build.
+
+    A service worker inside a packaged application caches files that are already
+    on disk, and then serves a previous build's copy of them. That is the exact
+    staleness this project has already lost days to, so the app does not get one
+    rather than getting one that is merely configured carefully."""
+    if not APP_MODE:
+        return js
+    mark = 'navigator.serviceWorker.register("sw.js")'
+    if mark not in js:
+        raise SystemExit("app build: the service-worker registration was not found in site.js")
+    return js.replace(mark, "(window.__noSW||function(){return{catch:function(){}}})()")
+
+
+def appify(text):
+    """The two references every app page gains, and nothing else.
+
+    A separate stylesheet and script rather than more inlining: the site already
+    ships site.js and engine.js this way, <link> and <script src> both work from
+    file://, and keeping them separate means one copy across twenty-eight pages
+    instead of twenty-eight. The stylesheet goes last in the head so it wins on
+    equal specificity without !important; the script goes last in the body so it
+    runs after site.js, which `defer` orders by document position.
+
+    Both insertions are anchored rather than taken on first match. dashboard.html
+    carries the literal "</body>" inside a minified vendor blob, so a naive
+    replace put a script tag in the middle of somebody's JavaScript — caught by
+    the build's own syntax check. The real </head> is the one followed by <body>,
+    and the real </body> is always the last."""
+    # `app` on <html> is what gives every rule in app-shell.css a class more
+    # specificity than the site's own. It matters: cosmos.css already carries a
+    # `body.wsapp` block — the installed-PWA windowing from earlier work, which
+    # is a partial version of this same idea — and without the prefix those
+    # rules win on the Workstation and the grid never takes.
+    if not re.search(r"<html\b", text):
+        raise SystemExit("app build: a page has no <html> tag")
+    text = re.sub(r"<html\b([^>]*)>",
+                  lambda mm: '<html class="app"' + mm.group(1) + '>'
+                  if 'class=' not in mm.group(1)
+                  else re.sub(r'class="', 'class="app ', mm.group(0), count=1),
+                  text, count=1)
+
+    # The adopted pages do not go through head_meta, so their canonical link is
+    # still in place at this point. An app window has no address.
+    text = re.sub(r'<link rel="canonical"[^>]*>\s*', "", text)
+
+    # One build id for the whole app, replacing the per-page ones the website
+    # uses. "Is my app current?" is a question about the app, not about a page.
+    # Done BEFORE the insertion point is located: removing text first and then
+    # splicing at an index found earlier puts the insert in the wrong place, and
+    # it only shows on the two pages that carry a per-page id.
+    text = re.sub(r'<script>window\.__kBuild=[^<]*</script>', "", text)
+    m = re.search(r"</head>\s*<body", text)
+    if not m:
+        raise SystemExit("app build: no </head> followed by <body> in a page")
+    stamp = '<script>window.__kBuild=%s;</script>' % json.dumps(APP_BUILD)
+    text = text[:m.start()] + stamp + '<link rel="stylesheet" href="app-shell.css">' + text[m.start():]
+    if "</body>" not in text:
+        raise SystemExit("app build: a page has no </body>")
+    head, tail = text.rsplit("</body>", 1)
+    return head + '<script src="app-shell.js" defer></script></body>' + tail
+
+
 def build_shared():
     """Files the reference pages reference rather than inline.
 
@@ -403,7 +481,7 @@ def build_shared():
     return {
         "engine.js": (read(VEND, "astronomy.browser.min.js") + "\n" +
                       brandify(jsread(SRC, "js", "engine.js"))),
-        "site.js":   brandify(jsread(SRC, "js", "site.js")),
+        "site.js":   brandify(app_sitejs(jsread(SRC, "js", "site.js"))),
         # now.html's own script. Referenced rather than inlined for the same reason
         # site.js is: it is wanted on one page and the rest should not carry it.
         "now.js":    brandify(jsread(SRC, "js", "now.js")),
@@ -751,11 +829,40 @@ def syntax_check(built):
     return True
 
 
+# What the deployed site serves but this script does not generate. On the web
+# these sit in the repository beside the built pages and GitHub Pages serves
+# them; an app folder has no repository behind it, so they have to be carried in.
+# Named explicitly rather than inferred: a file that stops being needed should
+# have to be removed deliberately, and a file that starts being needed shows up
+# as a harness failure rather than as a city search that silently returns nothing.
+APP_STATIC = ["cities.json", "favicon.ico", "assets"]
+
+
+def copy_static(outdir):
+    repo = os.path.dirname(ROOT) if os.path.basename(ROOT) == "source" else ROOT
+    for name in APP_STATIC:
+        src = os.path.join(repo, name)
+        dst = os.path.join(outdir, name)
+        if not os.path.exists(src):
+            raise SystemExit("app build: %s is missing from the repository" % name)
+        if os.path.isdir(src):
+            if os.path.isdir(dst):
+                shutil.rmtree(dst)
+            shutil.copytree(src, dst)
+        else:
+            shutil.copy2(src, dst)
+    print("  carried %d static paths" % len(APP_STATIC))
+
+
 def main():
+    global APP_MODE
     args = sys.argv[1:]
+    APP_MODE = "--app" in args
     # Default to the repository root — the folder holding this script — so a clone
     # builds straight into the files GitHub Pages serves. Override with --out.
     default_out = os.path.dirname(ROOT) if os.path.basename(ROOT) == "source" else ROOT
+    if APP_MODE:
+        default_out = os.path.join(default_out, "app")
     outdir = args[args.index("--out") + 1] if "--out" in args else default_out
     built = {"kundli.html": build_kundli(),
              "kinetic-workstation.html": build_workstation()}
@@ -764,6 +871,20 @@ def main():
     built.update(build_adopted())
     # last, because its cache key is a fingerprint of everything above it
     built.update(build_pwa(built))
+    if APP_MODE:
+        global APP_BUILD
+        # No service worker ships: see app_sitejs. The manifest stays, because
+        # _head.frag links it and a packaged app should not 404 on its own head.
+        built.pop("sw.js", None)
+        built["app-shell.css"] = read(SRC, "css", "app-shell.css")
+        built["app-shell.js"] = brandify(jsread(SRC, "js", "app-shell.js"))
+        # Computed over everything before the stamp is written in, so it is a
+        # fingerprint of the build rather than of itself.
+        APP_BUILD = build_stamp([t for _, t in sorted(built.items())])
+        for k in list(built):
+            if k.endswith(".html"):
+                built[k] = appify(built[k])
+        print("  app build id %s" % APP_BUILD)
     lang_key_check(SRC)
     syntax_check(built)
     window_export_check(built)
@@ -787,6 +908,8 @@ def main():
         return 0 if ok else 1
 
     os.makedirs(outdir, exist_ok=True)
+    if APP_MODE:
+        copy_static(outdir)
     for name, text in sorted(built.items()):
         with open(os.path.join(outdir, name), "w", encoding="utf-8") as f:
             f.write(text)
