@@ -1,0 +1,71 @@
+name: Desktop app
+
+# The app folder is gitignored: it is an output of source/build.py and an input
+# to Tauri, so it is built here rather than committed. That keeps one source of
+# truth — the website and the app come out of the same script on the same run,
+# and the app cannot drift behind the site the way a copied folder would.
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [app-shell]
+    paths:
+      - "source/**"
+      - "src-tauri/**"
+      - "assets/**"
+      - "cities.json"
+      - ".github/workflows/desktop.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  macos:
+    name: macOS (Apple silicon)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build the app target
+        run: python3 source/build.py --app
+
+      - name: Check the build actually produced something
+        # A silent empty folder would become a window showing nothing, and the
+        # first anyone would know is on opening the dmg.
+        run: |
+          test -f app/now.html            || { echo "app/now.html missing"; exit 1; }
+          test -f app/cities.json         || { echo "app/cities.json missing"; exit 1; }
+          test -f app/app-shell.css       || { echo "app/app-shell.css missing"; exit 1; }
+          test -d app/assets/brand        || { echo "app/assets missing"; exit 1; }
+          test ! -f app/sw.js             || { echo "a service worker got in"; exit 1; }
+          echo "pages: $(ls app/*.html | wc -l)"
+          grep -o 'window.__kBuild="[^"]*"' app/now.html | head -1
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: Build the bundle
+        run: npx --yes @tauri-apps/cli@2 build --target aarch64-apple-darwin --verbose
+
+      - name: Name the artifact after the build it came from
+        id: stamp
+        run: |
+          BID=$(grep -o 'window.__kBuild="[^"]*"' app/now.html | head -1 | sed 's/.*"\(.*\)"/\1/')
+          echo "bid=${BID:-unknown}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Nirayana-macOS-arm64-${{ steps.stamp.outputs.bid }}
+          path: |
+            src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
+          if-no-files-found: error
+          retention-days: 30

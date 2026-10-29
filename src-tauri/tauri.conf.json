@@ -1,0 +1,46 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Nirayana",
+  "version": "0.1.0",
+  "identifier": "com.aseemm84.nirayana",
+  "build": {
+    "frontendDist": "../app"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Nirayana",
+        "width": 1180,
+        "height": 800,
+        "minWidth": 920,
+        "minHeight": 620,
+        "resizable": true,
+        "center": true,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "url": "now.html"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: asset: http://asset.localhost; img-src 'self' data: blob: asset: http://asset.localhost; connect-src 'self' data: blob: asset: http://asset.localhost"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["dmg", "app"],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "category": "Education",
+    "shortDescription": "Vedic astrology from Bṛhat Parāśara Horā Śāstra",
+    "longDescription": "Pañcāṅga, calendar and chart work computed entirely on this machine. Nothing is sent anywhere.",
+    "copyright": "MIT licensed",
+    "macOS": {
+      "minimumSystemVersion": "11.0"
+    }
+  }
+}

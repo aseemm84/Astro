@@ -37,23 +37,43 @@ const sh = (cmd, args, cwd) =>
 /* ---------------------------------------------------------------- 1. the site */
 console.log("\nthe website is untouched");
 {
+  /* The first draft of this stashed the working tree and built twice. That only
+     worked while the app target was uncommitted, and it broke the moment it was
+     merged. The invariant worth guarding is different anyway: APP_MODE is a
+     module-global, and the risk a global carries is leaking across calls. So the
+     website is built, then the app, then the website again — and the two website
+     builds must be identical. A flag that stayed set would show up here. */
   const a = fs.mkdtempSync(path.join(os.tmpdir(), "site-a-"));
   const b = fs.mkdtempSync(path.join(os.tmpdir(), "site-b-"));
-  let clean = true, why = "";
   try {
-    sh("git", ["stash", "-q"], REPO);
     sh("python3", ["build.py", "--out", a], SRC);
-    sh("git", ["stash", "pop", "-q"], REPO);
+    sh("python3", ["build.py", "--app"], SRC);
     sh("python3", ["build.py", "--out", b], SRC);
     const fa = fs.readdirSync(a).sort(), fb = fs.readdirSync(b).sort();
-    if (fa.join() !== fb.join()) { clean = false; why = "file list differs"; }
-    else for (const f of fa) {
+    let why = fa.join() !== fb.join() ? "file list differs" : "";
+    if (!why) for (const f of fa)
       if (!fs.readFileSync(path.join(a, f)).equals(fs.readFileSync(path.join(b, f)))) {
-        clean = false; why = f + " differs"; break;
+        why = f + " differs"; break;
       }
+    ok("building the app does not change the website build", !why, why);
+    ok("the website still ships a service worker", fs.existsSync(path.join(a, "sw.js")));
+    ok("the website keeps its full nav",
+       JSON.parse(fs.readFileSync(path.join(SRC, "src/pages/_nav.json"), "utf8")).length === 25);
+
+    /* And the committed site is current. Compared with the build stamp's date
+       normalised, because the stamp carries today's date and a comparison
+       against files committed on another day always differs for a reason that
+       has nothing to do with the code. */
+    const norm = t => t.replace(/\b20\d\d-\d\d-\d\d\.[0-9a-f]{7}\b/g, "<stamp>");
+    const drift = [];
+    for (const f of fa) {
+      const live = path.join(REPO, f);
+      if (!fs.existsSync(live)) { drift.push(f + " (not committed)"); continue; }
+      if (norm(fs.readFileSync(path.join(a, f), "utf8")) !==
+          norm(fs.readFileSync(live, "utf8"))) drift.push(f);
     }
-    ok("the website build is byte-identical with and without --app", clean, why);
-    ok("the website still ships a service worker", fs.existsSync(path.join(b, "sw.js")));
+    ok("the committed website matches what build.py produces", drift.length === 0,
+       drift.slice(0, 4).join(" "));
   } finally {
     fs.rmSync(a, { recursive: true, force: true });
     fs.rmSync(b, { recursive: true, force: true });

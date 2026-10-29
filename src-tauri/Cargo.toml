@@ -1,0 +1,27 @@
+[package]
+name = "nirayana"
+version = "0.1.0"
+description = "Vedic astrology from Brihat Parashara Hora Shastra"
+edition = "2021"
+rust-version = "1.77"
+
+[build-dependencies]
+tauri-build = { version = "2.7", features = [] }
+
+[dependencies]
+tauri = { version = "2.12", features = [] }
+# Window size and position across launches. An application that forgets where it
+# was is one of the smaller things that marks a window as not quite native.
+tauri-plugin-window-state = "2.5"
+# The platform, for the .mac / .win class on <html>. app-shell.js falls back to
+# the user agent, so this is the authoritative answer rather than the only one.
+tauri-plugin-os = "2.4"
+
+# The release profile matters here: the app is twenty-odd megabytes of content
+# and the binary should not add meaningfully to it.
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true
