@@ -22,7 +22,16 @@ permissions:
 jobs:
   macos:
     name: macOS (Apple silicon)
-    runs-on: macos-14
+    # macos-latest, not macos-14. The first run was queued against the pinned
+    # macos-14 label for fifteen minutes and then abandoned — "the job was not
+    # acquired by Runner of type hosted even after multiple attempts", with a
+    # capacity notice about macOS arm64. Nothing in the build failed; no step
+    # ever ran. macos-latest is the default label and draws on a far larger
+    # pool, and it is Apple silicon too, so the binary is still native.
+    runs-on: macos-latest
+    # A queue that is never going to be served should give up in a quarter of an
+    # hour rather than holding the slot for six.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
 
@@ -46,15 +55,16 @@ jobs:
           grep -o 'window.__kBuild="[^"]*"' app/now.html | head -1
 
       - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-apple-darwin
 
       - uses: swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
 
       - name: Build the bundle
-        run: npx --yes @tauri-apps/cli@2 build --target aarch64-apple-darwin --verbose
+        # No --target: build for the host. The runner is Apple silicon, so the
+        # host target IS aarch64-apple-darwin, and not naming it means the job
+        # cannot acquire a runner whose architecture disagrees with the flag.
+        run: npx --yes @tauri-apps/cli@2 build --verbose
 
       - name: Name the artifact after the build it came from
         id: stamp
@@ -65,7 +75,10 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: Nirayana-macOS-arm64-${{ steps.stamp.outputs.bid }}
+          # Both layouts: target/release/... when building for the host,
+          # target/<triple>/release/... if a target is ever named again.
           path: |
-            src-tauri/target/aarch64-apple-darwin/release/bundle/dmg/*.dmg
+            src-tauri/target/release/bundle/dmg/*.dmg
+            src-tauri/target/*/release/bundle/dmg/*.dmg
           if-no-files-found: error
           retention-days: 30
