@@ -695,6 +695,17 @@ def build_shared():
         # source/ to satisfy a convention would be a worse trade than reading it
         # from where it is served.
         "cities.js": "window.__CITIES=" + read(SITE, "cities.json").strip() + ";\n",
+        # The browser verification suite, emitted rather than hand-copied.
+        #
+        # This used to be TWO files: source/test/self-test.html, which was edited,
+        # and a committed test/self-test.html, which was what run-self-test.mjs
+        # actually loaded. They had already drifted — the served copy still said
+        # "LearnHoro" throughout, a whole rebrand behind — and the only reason
+        # nothing had broken is that the drift happened to be cosmetic. The suite
+        # that gates every change should not itself be a file somebody remembers
+        # to copy, so it comes out of the build like everything else and the
+        # source is the only copy anyone edits.
+        "test/self-test.html": brandify(read(SRC, "..", "test", "self-test.html")),
     }
 
 def build_pages():
@@ -735,6 +746,40 @@ def build_pages():
                           .replace("{{FOOTER}}", footer)
                           .replace("<!--LOGO-->", logo_mark()))
     return out
+
+def no_remote_call_check(built):
+    """Nothing the build emits may call out to another machine.
+
+    The site has always said that nothing is sent anywhere. Until now that was
+    true of the default and not of the code: an opt-in "Remote chart engine"
+    POSTed the birth details to a Cloudflare Worker fronting a third-party
+    ephemeris. That path is gone, and this check is what stops it — or anything
+    like it — coming back by accident.
+
+    Only *literal absolute* targets are flagged. A `fetch(x)` on a variable is
+    not evidence of anything, and the pages legitimately fetch their own
+    relative files (cities.json). An absolute URL written into a request is the
+    thing that cannot be anything but a call to someone else's server."""
+    pat = re.compile(r"""(?:fetch|\.open|navigator\.sendBeacon|new\s+EventSource|
+                          new\s+WebSocket|importScripts)\s*\(\s*(?:["'][A-Z]+["']\s*,\s*)?
+                          ["'](?:https?:)?//""", re.X | re.I)
+    # Hosts that used to be reachable from the chart pages. Named so that
+    # restoring one is a deliberate act rather than a paste that slips through.
+    gone = ("kundliproxy.aseemmehrotralove.workers.dev", "your-worker.workers.dev")
+    bad = []
+    for name, text in sorted(built.items()):
+        if not name.endswith((".html", ".js")):
+            continue
+        for m in pat.finditer(text):
+            bad.append("%s: %s" % (name, re.sub(r"\s+", " ", text[m.start():m.end() + 60])))
+        for host in gone:
+            if host in text:
+                bad.append("%s: mentions %s" % (name, host))
+    if bad:
+        raise SystemExit("a built file would call another machine:\n  " +
+                         "\n  ".join(bad[:10]))
+    print("  no outbound call in %d emitted files" % len(built))
+
 
 def window_export_check(built):
     """No two files may export the same window.__name.
@@ -941,6 +986,11 @@ def main():
         # No service worker ships: see app_sitejs. The manifest stays, because
         # _head.frag links it and a packaged app should not 404 on its own head.
         built.pop("sw.js", None)
+        # The verification suite is a website page: it loads kundli.html in a
+        # frame over http and reports on it. Shipping it inside the app would
+        # put a test harness in a product and hand appify() a page that is not
+        # one of the thirty.
+        built.pop("test/self-test.html", None)
         built["app-shell.css"] = read(SRC, "css", "app-shell.css")
         built["app-shell.js"] = brandify(jsread(SRC, "js", "app-shell.js"))
         # Computed over everything before the stamp is written in, so it is a
@@ -953,6 +1003,7 @@ def main():
     lang_key_check(SRC)
     syntax_check(built)
     window_export_check(built)
+    no_remote_call_check(built)
 
     if "--check" in args:
         ok = True
@@ -976,7 +1027,12 @@ def main():
     if APP_MODE:
         copy_static(outdir)
     for name, text in sorted(built.items()):
-        with open(os.path.join(outdir, name), "w", encoding="utf-8") as f:
+        dest = os.path.join(outdir, name)
+        # Some outputs sit in a subfolder (test/self-test.html). The repository
+        # already has those folders, so building in place worked; building to a
+        # fresh --out did not, which is exactly what the harness does.
+        os.makedirs(os.path.dirname(dest), exist_ok=True)
+        with open(dest, "w", encoding="utf-8") as f:
             f.write(text)
         print("  wrote %-26s %7.1f KB" % (name, len(text)/1024))
     print("\n%d files built" % len(built))

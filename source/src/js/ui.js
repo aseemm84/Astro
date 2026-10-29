@@ -1,6 +1,5 @@
 
 (function(){
-  var API="https://kundliproxy.aseemmehrotralove.workers.dev";  // default: your Cloudflare Worker proxy (adds CORS, forwards to the engine)
   var CITIES=[
     {n:"\u2014 select a city \u2014"},
     {n:"Custom / enter coordinates manually"},
@@ -33,10 +32,6 @@
     {n:"Sydney, AU",lat:-33.8688,lon:151.2093,tz:10}
   ];
   function $(id){return document.getElementById(id);}
-  var proxyEl=$("k-proxy");
-  try{var _sv=localStorage.getItem("kundli_proxy"); if(_sv&&proxyEl) proxyEl.value=_sv;}catch(e){}
-  if(proxyEl) proxyEl.addEventListener("change",function(){try{localStorage.setItem("kundli_proxy",(proxyEl.value||"").trim());}catch(e){}});
-  function endpoint(){return (proxyEl&&proxyEl.value&&proxyEl.value.trim())||API;}
   /* The short city list, published for the motion pane. With no chart cast there
      is nothing to take a place from, and sunrise, the lagna and the Hindu date all
      need one; this is the same list the form offers, not a second one that could
@@ -331,61 +326,14 @@
     var body={year:+dp[0],month:+dp[1],day:+dp[2],hour:+tp[0],minute:+tp[1],lat:lat,lon:lon,tzHours:tz,
               ayanamsa:ayan, node:(($("k-node")&&$("k-node").value)||"mean")};
     if(nm) body.name=nm;
-    var src=($("k-src")&&$("k-src").value)||"local";
-    if(src==="local"){
-      $("k-go").disabled=true; $("k-status").textContent="Computing\u2026"; $("k-out").innerHTML="";
-      try{ var local=window.buildLocalChart(body); $("k-status").textContent=""; render(local); }
-      catch(err){ $("k-status").textContent=""; fail("<b>The built-in engine failed.</b> "+esc(err.message)); }
-      $("k-go").disabled=false; return;
-    }
-    $("k-go").disabled=true; $("k-status").textContent="Contacting the engine\u2026"; $("k-out").innerHTML="";
-    try{
-      var res=await fetch(endpoint(),{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)});
-      if(!res.ok){ var t=await res.text(); var er=new Error("HTTP "+res.status+" "+t.slice(0,200));
-        er.httpStatus=res.status; er.body=t; throw er; }
-      var data=await res.json();
-      // the remote engine supplies neither Shadbala nor Bhayāta — compute them locally from the same birth data,
-      // and record how far the two sources differ on positions
-      try{
-        var loc=window.buildLocalChart(body);
-        if(!data.shadbala) data.shadbala=loc.shadbala;
-        if(!data.bhayat)   data.bhayat=loc.bhayat;
-        var worst=0,worstName="";
-        (data.grahas||[]).forEach(function(g){
-          var m=(loc.grahas||[]).filter(function(x){return x.key===g.key;})[0];
-          if(!m)return; var d=Math.abs(((m.sidereal_deg-g.sidereal_deg+180)%360+360)%360-180)*3600;
-          if(d>worst){worst=d;worstName=g.key;}
-        });
-        data.__crosscheck={max_arcsec:worst,graha:worstName,
-          lagna_arcsec:Math.abs(((loc.lagna.sidereal_deg-data.lagna.sidereal_deg+180)%360+360)%360-180)*3600};
-      }catch(e){}
-      $("k-status").textContent=""; render(data);
-    }catch(e){
-      $("k-status").textContent="";
-      var st=e.httpStatus||0, body=(e.body||"");
-      var msg;
-      if(st===429){
-        var reset=(body.match(/"reset"\s*:\s*"([^"]+)"/)||[])[1];
-        msg="<b>Rate limited by the engine (HTTP 429).</b> Too many requests from this proxy in the current window."+
-            (reset?" It resets at "+esc(reset)+".":" Wait for the window to reset, then try again.");
-      } else if(st===402||st===403){
-        msg="<b>The chart engine is currently unavailable (HTTP "+st+").</b> This is on the engine's side, not your "+
-            "setup — your proxy reached it and relayed its reply. A 402 with <code class=\"k-inline\">DEPLOYMENT_DISABLED</code> "+
-            "usually means that service's own hosting is switched off. Switch the chart source back to the built-in engine, "+
-            "which computes everything locally and needs no network. "+
-            "";
-      } else if(st>=500){
-        msg="<b>The chart engine returned a server error (HTTP "+st+").</b> That is on the engine's side — your proxy "+
-            "reached it. Try again shortly; no change is needed here.";
-      } else if(st>0){
-        msg="<b>The engine rejected the request (HTTP "+st+").</b> Check the birth details, especially the date, "+
-            "time and the UTC offset.";
-      } else {
-        msg="<b>Could not reach the engine.</b> The request never completed, so either your proxy is unreachable or "+
-            "the network blocked it. Switch the chart source back to the built-in engine, which needs no network.";
-      }
-      fail(msg+'<div class="k-errdet">Technical detail: '+esc(e.message)+"</div>");
-    }
+    /* There is one chart source, and it is this machine. The remote
+       cross-check that used to sit here — an opt-in POST to a Cloudflare
+       Worker fronting a third-party ephemeris — is gone, so "nothing is sent
+       anywhere" is now a property of the code rather than of a default nobody
+       changes. The engine is the same one that was always the default. */
+    $("k-go").disabled=true; $("k-status").textContent="Computing\u2026"; $("k-out").innerHTML="";
+    try{ var local=window.buildLocalChart(body); $("k-status").textContent=""; render(local); }
+    catch(err){ $("k-status").textContent=""; fail("<b>The built-in engine failed.</b> "+esc(err.message)); }
     $("k-go").disabled=false;
   }
   $("k-go").addEventListener("click",cast);

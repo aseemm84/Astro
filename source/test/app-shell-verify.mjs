@@ -49,7 +49,13 @@ console.log("\nthe website is untouched");
     sh("python3", ["build.py", "--out", a], SRC);
     sh("python3", ["build.py", "--app"], SRC);
     sh("python3", ["build.py", "--out", b], SRC);
-    const fa = fs.readdirSync(a).sort(), fb = fs.readdirSync(b).sort();
+    /* Walked, not listed. Not every output sits at the top level any more —
+       test/self-test.html is emitted into a subfolder — and readdirSync handed
+       the comparison a directory to read as a file. */
+    const walk = (root, rel = "") =>
+      fs.readdirSync(path.join(root, rel), { withFileTypes: true }).flatMap(e =>
+        e.isDirectory() ? walk(root, path.join(rel, e.name)) : [path.join(rel, e.name)]);
+    const fa = walk(a).sort(), fb = walk(b).sort();
     let why = fa.join() !== fb.join() ? "file list differs" : "";
     if (!why) for (const f of fa)
       if (!fs.readFileSync(path.join(a, f)).equals(fs.readFileSync(path.join(b, f)))) {

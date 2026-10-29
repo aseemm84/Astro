@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Live verification suite for the LearnHoro chart engine — every check runs in your browser against the real engine.">
-<title>Self-test — LearnHoro</title><style>
+<meta name="description" content="Live verification suite for the Nirayana chart engine — every check runs in your browser against the real engine.">
+<title>Self-test — Nirayana</title><style>
 :root{--night:#191d33;--gold:#c9a24b;--ink:#20233a;--muted:#6c7089;--line:#e7e7f0;--soft:#f4f4fb;
 --pass:#1c6b46;--fail:#a1493a;--serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
 --sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
@@ -65,7 +65,7 @@ differences are documented on the pages themselves rather than quietly reconcile
 <iframe id="frame" src="../kundli.html" title="chart engine under test"></iframe>
 <footer>Educational reference on traditional doctrine — not a prediction, diagnosis, or advice.</footer>
 <script>
-/* ===== LearnHoro self-test — runs the verification suite in the browser ===== */
+/* ===== Nirayana self-test — runs the verification suite in the browser ===== */
 var CHARTS = {
   aseem:  {label:"Reference A (1984, day birth, sign-edge planets)",
            inp:{year:1984,month:12,day:15,hour:13,minute:31,lat:28.841064,lon:78.795319,tzHours:5.5}},
@@ -705,7 +705,6 @@ async function run(){
       doc.getElementById("k-tob").value=String(i.hour).padStart(2,"0")+":"+String(i.minute).padStart(2,"0");
       doc.getElementById("k-lat").value=i.lat; doc.getElementById("k-lon").value=i.lon;
       doc.getElementById("k-tz").value=i.tzHours;
-      doc.getElementById("k-src").value="local";
       doc.getElementById("k-go").click();
       await waitFor(function(){ return doc.querySelectorAll("#k-out .ksec").length>=40; },30000);
       var T=runReportChecks(W,doc,key,r.J,r.D);
@@ -731,7 +730,7 @@ document.getElementById("dl").addEventListener("click",function(){
   var blob=new Blob([JSON.stringify({when:new Date().toISOString(),passed:pass,failed:fail,
     results:results},null,2)],{type:"application/json"});
   var u=URL.createObjectURL(blob),a=document.createElement("a");
-  a.href=u; a.download="learnhoro-selftest.json"; document.body.appendChild(a); a.click();
+  a.href=u; a.download="nirayana-selftest.json"; document.body.appendChild(a); a.click();
   document.body.removeChild(a); setTimeout(function(){URL.revokeObjectURL(u);},1000);
 });
 </script></body></html>

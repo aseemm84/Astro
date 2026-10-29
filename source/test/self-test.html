@@ -705,7 +705,6 @@ async function run(){
       doc.getElementById("k-tob").value=String(i.hour).padStart(2,"0")+":"+String(i.minute).padStart(2,"0");
       doc.getElementById("k-lat").value=i.lat; doc.getElementById("k-lon").value=i.lon;
       doc.getElementById("k-tz").value=i.tzHours;
-      doc.getElementById("k-src").value="local";
       doc.getElementById("k-go").click();
       await waitFor(function(){ return doc.querySelectorAll("#k-out .ksec").length>=40; },30000);
       var T=runReportChecks(W,doc,key,r.J,r.D);
