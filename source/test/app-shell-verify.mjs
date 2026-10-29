@@ -57,8 +57,25 @@ console.log("\nthe website is untouched");
       }
     ok("building the app does not change the website build", !why, why);
     ok("the website still ships a service worker", fs.existsSync(path.join(a, "sw.js")));
-    ok("the website keeps its full nav",
-       JSON.parse(fs.readFileSync(path.join(SRC, "src/pages/_nav.json"), "utf8")).length === 25);
+    /* This used to assert `_nav.json` had exactly 25 entries, which made adding
+       a page to the site a test failure — a check that fires on the intended
+       change is noise, not a guard. The risk actually worth guarding is that
+       app mode leaks its short nav into the website build, so measure that: the
+       website's rendered nav must carry every destination the manifest lists,
+       and must be the longer of the two. */
+    const navOf = f => (fs.readFileSync(f, "utf8").match(/<nav class="site">[\s\S]*?<\/nav>/) ||
+                        [""])[0].match(/href="[^"]+\.html"/g) || [];
+    const siteNav = JSON.parse(fs.readFileSync(path.join(SRC, "src/pages/_nav.json"), "utf8"));
+    const appNav = JSON.parse(fs.readFileSync(path.join(SRC, "src/pages/_nav-app.json"), "utf8"));
+    const rendered = navOf(path.join(a, "now.html"));
+    ok("the website renders its own nav, not the app's",
+       rendered.length === siteNav.length && siteNav.length > appNav.length,
+       rendered.length + " links rendered, manifest lists " + siteNav.length +
+       ", app manifest " + appNav.length);
+    ok("every website nav destination exists as a page",
+       siteNav.every(([href]) => href.startsWith("http") || fs.existsSync(path.join(a, href))),
+       siteNav.filter(([h]) => !h.startsWith("http") && !fs.existsSync(path.join(a, h)))
+              .map(([h]) => h).join(", "));
 
     /* And the committed site is current. Compared with the build stamp's date
        normalised, because the stamp carries today's date and a comparison

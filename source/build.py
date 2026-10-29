@@ -228,19 +228,24 @@ def build_kundli():
     return shell
 
 def build_motion():
-    """The sixteen scenes that need no birth chart, on a page of their own.
+    """The thirty-two scenes that need no birth chart, on a page of their own.
 
     motionPane(null, null) is already a supported state — the pane gates the
     nine scenes that do need one and says why. What was missing was a way to
-    reach the other sixteen without casting a chart first, which is most of the
-    point: a year of transits, a lunation, an eclipse season and the bodies
+    reach the other thirty-two without casting a chart first, which is most of
+    the point: a year of transits, a lunation, an eclipse season and the bodies
     themselves are facts about the sky rather than about a person.
+
+    The count comes from MO_NEEDS_CHART in 47-motion-pacing.js, which is the
+    gate itself rather than a description of it. An earlier draft of this file
+    said sixteen, on the strength of an audit that grepped scene source instead
+    of reading that list; see claude/animation-chart-independence-audit.md.
 
     ui.js is not in this page's bundles. It is the chart form's script and it
     writes to elements that exist only on the builder; including it here would
     fail the way the Workstation did before it was given a hidden scaffold."""
     shell = read(SRC, "motion.shell.html")
-    desc = ("Sixteen animated scenes about the sky itself \u2014 transits, lunations, "
+    desc = ("Thirty-two animated scenes about the sky itself \u2014 transits, lunations, "
             "eclipse seasons, the nak\u1e63atras and the bodies \u2014 computed in this "
             "browser and needing no birth chart.")
     for tok in ("<!--HEAD-->", "{{NAV}}", "<!--CSS-->", "<!--THEMEJS-->",
