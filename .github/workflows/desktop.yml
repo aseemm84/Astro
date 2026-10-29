@@ -82,3 +82,64 @@ jobs:
             src-tauri/target/*/release/bundle/dmg/*.dmg
           if-no-files-found: error
           retention-days: 30
+
+  windows:
+    name: Windows (x64)
+    # Same shape as the macOS job on purpose: the same build.py --app, the same
+    # output check, the same Tauri CLI. The platform differences live in
+    # src-tauri/tauri.windows.conf.json (bundle targets) and in the .win rules
+    # of app-shell.css — not in a second workflow that would drift from this one.
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build the app target
+        run: python3 source/build.py --app
+
+      - name: Check the build actually produced something
+        shell: bash
+        # bash, not PowerShell: the same script as the macOS job, so the two
+        # cannot check different things by accident. It ships with the runner.
+        run: |
+          test -f app/now.html            || { echo "app/now.html missing"; exit 1; }
+          test -f app/cities.json         || { echo "app/cities.json missing"; exit 1; }
+          test -f app/app-shell.css       || { echo "app/app-shell.css missing"; exit 1; }
+          test -d app/assets/brand        || { echo "app/assets missing"; exit 1; }
+          test ! -f app/sw.js             || { echo "a service worker got in"; exit 1; }
+          echo "pages: $(ls app/*.html | wc -l)"
+          grep -o 'window.__kBuild="[^"]*"' app/now.html | head -1
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+          # Otherwise this job and the macOS one collide on one cache key and
+          # each keeps evicting the other's artefacts.
+          key: windows
+
+      - name: Build the bundle
+        # No --target, for the same reason as the macOS job: build for the host.
+        # WiX is downloaded by the CLI on first use; nothing to install here.
+        run: npx --yes @tauri-apps/cli@2 build --verbose
+
+      - name: Name the artifact after the build it came from
+        id: stamp
+        shell: bash
+        run: |
+          BID=$(grep -o 'window.__kBuild="[^"]*"' app/now.html | head -1 | sed 's/.*"\(.*\)"/\1/')
+          echo "bid=${BID:-unknown}" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Nirayana-Windows-x64-${{ steps.stamp.outputs.bid }}
+          path: |
+            src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/*/release/bundle/msi/*.msi
+          if-no-files-found: error
+          retention-days: 30

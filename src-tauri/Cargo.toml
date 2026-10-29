@@ -26,6 +26,19 @@ tauri-plugin-os = "2.4"
 [target."cfg(target_os = \"macos\")".dependencies]
 window-vibrancy = "0.8"
 
+# Mica on Windows 11. The same crate: apply_mica returns
+# Error::UnsupportedPlatformVersion below build 22000, so once again the error
+# path is the version test and no comparison is written here to drift.
+#
+# There is deliberately NO acrylic fallback for Windows 10. The crate's own
+# documentation warns that acrylic "has poor performance on Windows 10 v1903+
+# and Windows 11 build 22000, the window will lag when resizing or dragging",
+# and a window that stutters when dragged is a worse artefact than a flat
+# background. On Windows 10 the chrome stays opaque, which the stylesheet is
+# written to survive — see the 86%/92% mixes in app-shell.css.
+[target."cfg(target_os = \"windows\")".dependencies]
+window-vibrancy = "0.8"
+
 # The release profile matters here: the app is twenty-odd megabytes of content
 # and the binary should not add meaningfully to it.
 [profile.release]

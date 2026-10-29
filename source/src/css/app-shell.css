@@ -230,9 +230,14 @@ html.app #app-about .close {
    desktop wallpaper is a wallpaper you cannot read. That is also how the system
    does it: the furniture is translucent, the document is not.
 
-   Scoped to .mac. Windows keeps opaque chrome until Stage 5 gives it Mica, and
-   a platform with no material behind the window must not end up with a
-   see-through sidebar over nothing. */
+   The chrome mixes below are per-platform, because the material is: a macOS
+   frost is heavy enough to carry a 58% layer, Mica is a faint wallpaper tint
+   and needs 86%. Stage 5 adds the Windows half. The transparency of html and
+   body is NOT per-platform and does not need to be — the grid covers the whole
+   viewport with the sidebar, the header and an opaque .layout, so there is no
+   region where a missing material would show through as a hole. That is what
+   makes it safe for the Windows 10 case, where apply_mica fails and there is
+   no material at all. */
 html.app, html.app body { background: transparent }
 
 /* The content layer takes over the ground the body used to paint. */
@@ -251,6 +256,86 @@ html.app.mac header.masthead {
   background: color-mix(in srgb, var(--chrome, #191d33) 62%, transparent);
   -webkit-backdrop-filter: saturate(140%) blur(14px);
   backdrop-filter: saturate(140%) blur(14px);
+}
+
+/* ===== Stage 5: Windows =========================================
+   Selective overrides, not a second stylesheet. The precedent being followed
+   here is the one Stage 1 learned the hard way: prefixing everything produces a
+   fork that drifts. Only the properties where the two platforms genuinely
+   differ are restated below, and each says why.
+
+   The biggest difference is not cosmetic. Windows keeps its **native
+   decorations**, so the system draws its own caption bar at the top of the
+   window and extends Mica into it. That makes our own strip a *content header*
+   rather than a title bar — the shape Windows Settings has, caption above and
+   a page header below it.
+
+   The plan said "32px title-bar geometry". That assumed a custom caption of our
+   own, and a second bar pretending to be the first is worse than one honest
+   header, so the strip is 44px here and the window's real title bar belongs to
+   Windows. Recorded rather than changed quietly. */
+
+/* Segoe UI Variable is the Windows 11 UI face; Text for small sizes is the
+   variant the system itself uses for body and controls. Overriding the --sans
+   token rather than the rules means every place the chrome already asks for the
+   UI face follows, and the serif the prose is set in is untouched — these pages
+   are documents and their body copy is not UI. */
+html.app.win {
+  --sans: "Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI",
+          system-ui, -apple-system, Roboto, sans-serif;
+}
+
+/* 44px header, so the grid's first row has to agree. */
+html.app.win body { grid-template-rows: 44px minmax(0, 1fr) }
+
+/* No traffic lights on this platform, so no clearance: the sidebar starts at
+   its own padding. .mac adds the 44px; this is here as an assertion the harness
+   can measure rather than an inherited default nobody checked. */
+html.app.win nav.site { padding-top: 12px }
+
+/* Mica is a wallpaper tint, not a frost, so the web layer sits much more
+   opaque than the macOS mix — and it has to: apply_mica fails below Windows 11
+   build 22000 and there is deliberately no acrylic fallback, so on Windows 10
+   there is no material behind this at all. At 86% the sidebar reads as a
+   sidebar either way, which is the point of choosing the number this high.
+   No backdrop-filter: Mica already is the backdrop, and blurring over it costs
+   compositing for nothing. The `none` is not redundant — app.css gives nav.site
+   a blur(6px) of its own
+   for the website's sticky bar, and inheriting it here would blur the Mica the
+   system has already composited. The harness caught that it was still on. */
+html.app.win nav.site {
+  background: color-mix(in srgb, var(--chrome, #191d33) 86%, transparent);
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+html.app.win header.masthead { background: color-mix(in srgb, var(--chrome, #191d33) 92%, transparent) }
+
+/* Windows 11 radii: 4px on controls, 8px on cards and flyouts. macOS wants
+   softer and larger; this is the one place the two systems disagree enough to
+   be worth restating. */
+html.app.win .k-btn,
+html.app.win nav.site a,
+html.app.win #app-find input,
+html.app.win #app-find button,
+html.app.win #app-about .close { border-radius: 4px }
+html.app.win #app-find,
+html.app.win #app-about .sheet { border-radius: 8px }
+
+/* The find bar hangs below the header, and the header is 8px shorter here. */
+html.app.win #app-find { top: 52px }
+
+/* The selected-item accent bar, which is how Windows marks the current page in
+   a navigation pane — the same job .active does with a background elsewhere.
+   The literal comes first and AccentColor second so that a WebView2 build
+   without the system-colour keyword still gets the Windows default blue rather
+   than nothing; whichever one the engine understands is the one that lands. */
+html.app.win nav.site a.active { position: relative }
+html.app.win nav.site a.active::before {
+  content: ""; position: absolute;
+  left: 2px; top: 7px; bottom: 7px; width: 3px;
+  border-radius: 2px;
+  background: #0078D4;
+  background: AccentColor;
 }
 
 /* ---- the way back from an adopted page ----

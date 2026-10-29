@@ -122,6 +122,26 @@ fn main() {
                 }
             }
 
+            // Mica on Windows 11. Native decorations stay on, so the system
+            // draws the caption bar and extends Mica into it itself; this call
+            // is for the client area behind our own chrome.
+            //
+            // The error is dropped on purpose. apply_mica fails below Windows
+            // build 22000, and the fallback is not acrylic — the crate warns it
+            // lags on drag and resize — but simply no material. The stylesheet
+            // keeps the Windows chrome at 86% and 92% opacity precisely so that
+            // a window with no backdrop still reads as a sidebar and a header
+            // rather than as holes.
+            #[cfg(target_os = "windows")]
+            {
+                if let Some(window) = app.get_webview_window("main") {
+                    // None: follow the system light/dark preference rather than
+                    // pinning one, which would disagree with the palette the
+                    // page picks for itself from the same preference.
+                    let _ = window_vibrancy::apply_mica(&window, None);
+                }
+            }
+
             Ok(())
         })
         .run(tauri::generate_context!())

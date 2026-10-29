@@ -264,6 +264,100 @@ console.log("\nthe shell, measured");
   await pg.close();
 }
 
+/* ------------------------------------------------------- 3b. the Windows shell
+   The same page with .win instead of .mac. Playwright is Chromium, not WebView2,
+   so this cannot tell us how Mica looks — it can tell us the geometry agrees
+   with itself, that the macOS-only clearances are gone, that the Windows radii
+   and font actually apply, and that the selected-item accent exists. Which is
+   what a stylesheet check is for; the material is the user's to see. */
+console.log("\nthe Windows shell, measured");
+{
+  const pg = await ctx.newPage();
+  await pg.goto("file://" + path.join(APP, "dashas.html"));
+  await pg.evaluate(() => {
+    document.documentElement.classList.remove("mac", "other");
+    document.documentElement.classList.add("win");
+  });
+  await pg.waitForTimeout(120);
+  /* The find bar is built on first use, so it has to be opened before its own
+     geometry exists to measure. */
+  await pg.evaluate(() => window.NirayanaApp.find());
+  await pg.waitForTimeout(60);
+
+  const w = await pg.evaluate(() => {
+    const r = n => { const b = document.querySelector(n).getBoundingClientRect();
+                     return { x: b.x, y: b.y, w: b.width, h: b.height }; };
+    const cs = n => { const e = document.querySelector(n);
+                      if (!e) throw new Error("no element for " + n);
+                      return getComputedStyle(e); };
+    const act = document.querySelector("nav.site a.active");
+    return {
+      nav: r("nav.site"), mast: r("header.masthead"), layout: r(".layout"),
+      navPadTop: parseFloat(cs("nav.site").paddingTop),
+      sans: cs("nav.site a").fontFamily,
+      navRadius: cs("nav.site a").borderTopLeftRadius,
+      findRadius: cs("#app-find").borderTopLeftRadius,
+      findTop: cs("#app-find").top,
+      navBg: cs("nav.site").backgroundColor || cs("nav.site").background,
+      navFilter: cs("nav.site").backdropFilter,
+      /* dashas.html is a long reference page, which is why the geometry is
+         measured on it — but it is deliberately NOT one of the app's five
+         destinations, so no link here is current and there is nothing for the
+         accent rule to attach to. Marking one measures the rule, which is the
+         part that could be wrong; that a real destination gets .active is
+         checked below on a page that is one. */
+      accent: (() => { const a = act || document.querySelector("nav.site a");
+                       a.classList.add("active");
+                       return getComputedStyle(a, "::before").backgroundColor; })(),
+      accentW: (() => { const a = document.querySelector("nav.site a.active");
+                        return getComputedStyle(a, "::before").width; })(),
+      bodyScrolls: document.body.scrollHeight > document.body.clientHeight + 1
+    };
+  });
+
+  /* The header is 44px here, and the grid's first row has to agree with it —
+     this is the pair that silently disagrees if only one of them is changed. */
+  ok("the Windows header is 44px and the content starts under it",
+     w.mast.h === 44 && w.layout.y === 44 && w.nav.h === 724,
+     "header " + w.mast.h + ", layout y " + w.layout.y + ", nav h " + w.nav.h);
+  ok("the page still does not scroll on Windows", !w.bodyScrolls);
+  ok("no traffic-light clearance on Windows", w.navPadTop === 12, w.navPadTop + "px");
+  ok("the Windows UI face is Segoe UI Variable", /Segoe UI Variable/.test(w.sans), w.sans);
+  ok("Windows control radius is 4px", w.navRadius === "4px", w.navRadius);
+  ok("Windows flyout radius is 8px", w.findRadius === "8px", w.findRadius);
+  ok("the find bar follows the shorter header", w.findTop === "52px", w.findTop);
+
+  /* The sidebar must stay legible with no material behind it, because on
+     Windows 10 there is none: apply_mica fails and nothing replaces it. A
+     nearly-transparent sidebar would be a hole in that case. */
+  const alpha = (w.navBg.match(/[\d.]+\s*\)$/) || [])[0];
+  const a = alpha ? parseFloat(alpha) : 1;
+  ok("the sidebar stays legible without Mica", a >= 0.8, w.navBg);
+  ok("no blur is paid for over Mica",
+     w.navFilter === "none" || !w.navFilter, w.navFilter);
+
+  /* The accent bar marking the current page. Either the system colour or the
+     Windows default blue — the point is that one of them landed. */
+  ok("the current page carries an accent bar",
+     w.accentW === "3px" && /^rgba?\(/.test(w.accent || ""),
+     "width " + w.accentW + ", colour " + w.accent);
+
+  /* And that a page which IS one of the app's destinations really is marked
+     current — the other half of the rule, on a page where it applies. */
+  await pg.goto("file://" + path.join(APP, "now.html"));
+  await pg.evaluate(() => document.documentElement.classList.add("win"));
+  await pg.waitForTimeout(80);
+  const cur = await pg.evaluate(() => {
+    const a = document.querySelector("nav.site a.active");
+    return a ? { href: a.getAttribute("href"),
+                 bar: getComputedStyle(a, "::before").width } : null;
+  });
+  ok("a real destination is marked current, with the bar",
+     !!cur && cur.href === "now.html" && cur.bar === "3px", JSON.stringify(cur));
+
+  await pg.close();
+}
+
 console.log("\nMotion");
 {
   const pg = await ctx.newPage();
