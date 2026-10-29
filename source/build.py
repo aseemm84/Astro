@@ -450,6 +450,19 @@ def appify(text):
     # still in place at this point. An app window has no address.
     text = re.sub(r'<link rel="canonical"[^>]*>\s*', "", text)
 
+    # "Copy link" builds a shareable URL from location.href, which inside a
+    # window is a tauri:// address that means nothing to anybody else. Point it
+    # at the website instead: the site stays up, so the link keeps working and
+    # the recipient needs no app. This is the one capability the app genuinely
+    # loses, and this is the whole of the fix.
+    old_href = 'location.href.split("#")[0]'
+    if old_href in text:
+        n = text.count(old_href)
+        if n != 1:
+            raise SystemExit("app build: expected one share-link base, found %d" % n)
+        text = text.replace(old_href, json.dumps(SITE_BASE.rstrip("/") + "/") +
+                            '+location.pathname.split("/").pop()')
+
     # One build id for the whole app, replacing the per-page ones the website
     # uses. "Is my app current?" is a question about the app, not about a page.
     # Done BEFORE the insertion point is located: removing text first and then

@@ -35,6 +35,34 @@
   }
   document.documentElement.classList.add(platform());
 
+  /* ---- the OS appearance -----------------------------------------
+     An application is expected to follow the system. The site's own picker
+     still wins: if the reader has chosen a palette it is in localStorage, and
+     nothing here touches it. Only the "Site default" case follows the OS, and
+     it does so through NTheme.apply rather than NTheme.set, because set
+     persists and a persisted choice would stop following from then on. */
+  function followSystem() {
+    var T = window.NTheme;
+    if (!T || !T.apply) return;
+    var mq = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)");
+    if (!mq) return;
+    function paint() {
+      var chosen = "";
+      try { chosen = T.get() || ""; } catch (e) {}
+      if (chosen) return;               /* their choice, not ours */
+      T.apply(mq.matches ? "midnight" : "paper");
+    }
+    paint();
+    if (mq.addEventListener) mq.addEventListener("change", paint);
+    else if (mq.addListener) mq.addListener(paint);
+    /* The picker writing a real choice must take effect at once, and must stop
+       the OS from overriding it on the next system change. */
+    document.addEventListener("change", function (e) {
+      if (e.target && e.target.id === "theme-pick") setTimeout(paint, 0);
+    });
+  }
+  followSystem();
+
   function ready(fn) {
     if (document.readyState === "loading")
       document.addEventListener("DOMContentLoaded", fn, { once: true });
@@ -115,6 +143,30 @@
         });
       }
       about.classList.add("on");
+    }
+
+    /* ---- 3b. a way back from an adopted page ----
+       These four carry no nav, so the shell has nothing to restructure and the
+       window has no browser chrome to fall back on. Detected by the absence of
+       the sidebar rather than by a list of names, so a page that loses its nav
+       in future gets the same treatment without anyone remembering to add it. */
+    if (!nav && document.body) {
+      var back = document.createElement("a");
+      back.className = "appback";
+      back.href = "now.html";
+      back.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" ' +
+        'stroke="currentColor" stroke-width="2.2" aria-hidden="true">' +
+        '<path d="M14.5 5.5 8 12l6.5 6.5"></path></svg>';
+      back.appendChild(document.createTextNode("Back"));
+      back.addEventListener("click", function (e) {
+        /* History first, so the reader returns to the report they came from
+           rather than to the landing page. */
+        if (window.history && window.history.length > 1) {
+          e.preventDefault();
+          window.history.back();
+        }
+      });
+      document.body.appendChild(back);
     }
 
     /* ---- 4. Find ---------------------------------------------------- */
@@ -236,6 +288,18 @@
     });
 
     /* The menu bar in a later stage calls these rather than synthesising keys. */
-    window.NirayanaApp = { find: open, closeFind: close, about: openAbout, platform: platform() };
+    /* The menu bar calls these rather than synthesising key events. openChart
+       clicks the page's own hidden file input, so the app needs no dialog
+       plugin and gains no filesystem capability it did not have. */
+    window.NirayanaApp = {
+      find: open, closeFind: close, about: openAbout, platform: platform(),
+      openChart: function () {
+        var b = document.getElementById("k-open") || document.getElementById("k-openfile");
+        if (b) { b.click(); return true; }
+        location.href = "kundli.html";
+        return false;
+      },
+      print: function () { window.print(); }
+    };
   });
 })();

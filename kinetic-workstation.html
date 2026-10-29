@@ -2215,13 +2215,16 @@ html[data-theme="emerald"] .wsnext.lead{
     document.addEventListener("DOMContentLoaded", mount);
   else mount();
 
-  window.NTheme = { get: read, set: function (t) {
+  /* `apply` is exported for the desktop app, which follows the OS appearance.
+     `set` persists, and a persisted choice stops following; the app needs to
+     change the palette without recording a preference the user never made. */
+  window.NTheme = { get: read, apply: apply, set: function (t) {
     if (!known(t)) return false; write(t); apply(t);
     var s = document.getElementById("theme-pick"); if (s) s.value = t;
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-10-26.b0b0f5e";</script></head><body class="wsbody"><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Kinetic Workstation</h1><p class="sub">One surface for the whole chart: Śrīpati chalita beside whole-sign, a year of real transits, twelve rāśi readings, all sixteen divisions, and the strength and daśā panels — computed in this browser, nothing sent anywhere.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html" class="active">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav>
+</script><script>window.__kBuild="2026-10-29.c2df450";</script></head><body class="wsbody"><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Kinetic Workstation</h1><p class="sub">One surface for the whole chart: Śrīpati chalita beside whole-sign, a year of real transits, twelve rāśi readings, all sixteen divisions, and the strength and daśā panels — computed in this browser, nothing sent anywhere.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html" class="active">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav>
 <div class="layout onecol wide"><main>
 
 <section class="wsintake">
@@ -24402,6 +24405,10 @@ window.buildKundliReport=function(J){
   }
 
   function mountSky() {
+    /* The desktop app lays a real material behind the window, and an opaque
+       canvas of stars on top of it would hide the thing entirely. The class is
+       only ever present in the --app build, so the website is unaffected. */
+    if (document.documentElement.classList.contains("app")) return;
     if (CV || !darkTheme()) return;
     CV = document.createElement("canvas");
     CV.className = "cosmos";

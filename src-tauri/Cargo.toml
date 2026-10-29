@@ -9,13 +9,22 @@ rust-version = "1.77"
 tauri-build = { version = "2.7", features = [] }
 
 [dependencies]
-tauri = { version = "2.12", features = [] }
+# macos-private-api is what allows a transparent window, and a transparent
+# window is what lets the material behind it be seen at all. It goes in
+# together with app.macOSPrivateApi in tauri.conf.json — Tauri rejects the
+# build if the two disagree, which is why it was left out until now.
+tauri = { version = "2.12", features = ["macos-private-api"] }
 # Window size and position across launches. An application that forgets where it
 # was is one of the smaller things that marks a window as not quite native.
 tauri-plugin-window-state = "2.5"
 # The platform, for the .mac / .win class on <html>. app-shell.js falls back to
 # the user agent, so this is the authoritative answer rather than the only one.
 tauri-plugin-os = "2.4"
+
+# Liquid Glass on macOS 26+, NSVisualEffectView below it. Same
+# raw-window-handle 0.6 as tauri, so the window handle passes between them.
+[target."cfg(target_os = \"macos\")".dependencies]
+window-vibrancy = "0.8"
 
 # The release profile matters here: the app is twenty-odd megabytes of content
 # and the binary should not add meaningfully to it.

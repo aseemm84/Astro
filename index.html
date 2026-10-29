@@ -2201,7 +2201,10 @@ html[data-theme] nav.site .themepick select option{
     document.addEventListener("DOMContentLoaded", mount);
   else mount();
 
-  window.NTheme = { get: read, set: function (t) {
+  /* `apply` is exported for the desktop app, which follows the OS appearance.
+     `set` persists, and a persisted choice stops following; the app needs to
+     change the palette without recording a preference the user never made. */
+  window.NTheme = { get: read, apply: apply, set: function (t) {
     if (!known(t)) return false; write(t); apply(t);
     var s = document.getElementById("theme-pick"); if (s) s.value = t;
     return true;

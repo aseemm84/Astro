@@ -247,6 +247,121 @@ console.log("\nthe shell, measured");
   await pg.close();
 }
 
+console.log("\nthe window material can be seen");
+{
+  const pg = await ctx.newPage();
+  await pg.goto("file://" + path.join(APP, "dashas.html"));
+  await pg.evaluate(() => document.documentElement.classList.add("mac"));
+  await pg.waitForTimeout(140);
+  const m = await pg.evaluate(() => {
+    const a = n => getComputedStyle(document.querySelector(n)).backgroundColor;
+    const clear = c => c === "rgba(0, 0, 0, 0)" || c === "transparent";
+    return { html: a("html"), body: a("body"), layout: a(".layout"),
+             nav: a("nav.site"), mast: a("header.masthead"),
+             clearHtml: clear(a("html")), clearBody: clear(a("body")),
+             opaqueLayout: !clear(a(".layout")) && !/rgba\([^)]*,\s*0?\.\d+\)/.test(a(".layout")) };
+  });
+  /* A translucent window under an opaque page shows nothing, so the page must
+     stop painting a ground — and the content must then paint its own, because
+     a page of text over a desktop wallpaper is a wallpaper you cannot read. */
+  ok("the page paints no ground of its own", m.clearHtml && m.clearBody,
+     "html " + m.html + ", body " + m.body);
+  ok("the content layer carries an opaque surface", m.opaqueLayout, m.layout);
+  /* Alpha read from whichever form the engine serialises to: color-mix()
+     resolves to color(srgb r g b / a), not rgba(), and an earlier version of
+     this check tested for rgba( and called a correct stylesheet a failure. */
+  const alpha = c => {
+    let mm = /^rgba?\([^)]*?,\s*([\d.]+)\s*\)$/.exec(c);
+    if (mm) return parseFloat(mm[1]);
+    mm = /\/\s*([\d.]+)\s*\)$/.exec(c);
+    if (mm) return parseFloat(mm[1]);
+    return 1;
+  };
+  ok("the sidebar is translucent so the material reads",
+     alpha(m.nav) > 0.3 && alpha(m.nav) < 0.95, m.nav + " -> alpha " + alpha(m.nav));
+  ok("the title strip is translucent too",
+     alpha(m.mast) > 0.3 && alpha(m.mast) < 0.95, m.mast + " -> alpha " + alpha(m.mast));
+  await pg.close();
+}
+
+console.log("\nthe starfield is not in the way");
+{
+  const pg = await ctx.newPage();
+  await pg.goto("file://" + path.join(APP, "kinetic-workstation.html"));
+  await pg.evaluate(() => { try { localStorage.setItem("nirayana.theme", "midnight"); } catch (e) {} });
+  await pg.reload();
+  await pg.waitForTimeout(700);
+  const r = await pg.evaluate(() => ({
+    theme: document.documentElement.getAttribute("data-theme"),
+    canvases: document.querySelectorAll("canvas.cosmos").length
+  }));
+  ok("a dark palette is in force", r.theme === "midnight", r.theme + "");
+  ok("no starfield canvas is mounted in the app", r.canvases === 0, r.canvases + " found");
+  await pg.close();
+}
+
+console.log("\nthe app follows the OS appearance");
+{
+  for (const [scheme, want] of [["dark", "midnight"], ["light", "paper"]]) {
+    const c = await browser.newContext({ viewport: { width: 1104, height: 724 }, colorScheme: scheme });
+    const pg = await c.newPage();
+    await pg.goto("file://" + path.join(APP, "dashas.html"));
+    await pg.waitForTimeout(260);
+    const got = await pg.evaluate(() => document.documentElement.getAttribute("data-theme"));
+    ok("OS " + scheme + " gives " + want, got === want, "got " + got);
+    await c.close();
+  }
+  /* A palette the reader chose must survive, or following the system would
+     quietly overwrite their preference on every launch. */
+  const c = await browser.newContext({ viewport: { width: 1104, height: 724 }, colorScheme: "dark" });
+  const pg = await c.newPage();
+  await pg.goto("file://" + path.join(APP, "dashas.html"));
+  await pg.evaluate(() => { try { localStorage.setItem("nirayana.theme", "emerald"); } catch (e) {} });
+  await pg.reload();
+  await pg.waitForTimeout(260);
+  const kept = await pg.evaluate(() => document.documentElement.getAttribute("data-theme"));
+  ok("a chosen palette is not overwritten by the OS", kept === "emerald", "got " + kept);
+  await c.close();
+}
+
+console.log("\nthe adopted pages are not a dead end");
+{
+  for (const p of ["dashboard.html", "kundli-technical-report.html"]) {
+    const pg = await ctx.newPage();
+    await pg.goto("file://" + path.join(APP, p));
+    await pg.waitForTimeout(200);
+    const r = await pg.evaluate(() => {
+      const b = document.querySelector(".appback");
+      if (!b) return null;
+      const box = b.getBoundingClientRect();
+      return { href: b.getAttribute("href"), w: Math.round(box.width), h: Math.round(box.height),
+               text: b.textContent.trim() };
+    });
+    ok(p + " offers a way back", r !== null && r.w > 0 && r.h > 0 && /back/i.test(r.text),
+       JSON.stringify(r));
+    await pg.close();
+  }
+  /* And it must not appear on pages that already have a sidebar. */
+  const pg = await ctx.newPage();
+  await pg.goto("file://" + path.join(APP, "dashas.html"));
+  await pg.waitForTimeout(160);
+  const none = await pg.evaluate(() => document.querySelectorAll(".appback").length);
+  ok("pages with a sidebar get no back button", none === 0, none + "");
+  await pg.close();
+}
+
+console.log("\nthe share link survives having no address bar");
+{
+  let bad = [];
+  for (const p of ["kundli.html", "kinetic-workstation.html"]) {
+    const t = fs.readFileSync(path.join(APP, p), "utf8");
+    if (/location\.href\.split\("#"\)\[0\]/.test(t)) bad.push(p + " still uses location.href");
+    if (!t.includes('"https://aseemm84.github.io/Astro/"+location.pathname.split("/").pop()'))
+      bad.push(p + " has no site-based link");
+  }
+  ok("Copy link points at the website, not at tauri://", bad.length === 0, bad.join(" "));
+}
+
 console.log("\nAbout and Find");
 {
   const pg = await ctx.newPage();
@@ -296,6 +411,9 @@ console.log("\nAbout and Find");
     return document.querySelector("#app-find").classList.contains("on");
   });
   ok("Cmd+F opens Find", viaKey);
+  const hooks = await pg.evaluate(() => Object.keys(window.NirayanaApp).sort().join(","));
+  ok("the menu has something to call",
+     hooks === "about,closeFind,find,openChart,platform,print", hooks);
   await pg.close();
 }
 

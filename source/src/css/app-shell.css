@@ -220,3 +220,55 @@ html.app #app-about .close {
   html.app .layout { overflow: visible; grid-column: auto; grid-row: auto }
   html.app header.masthead, html.app nav.site, html.app #app-find, html.app #app-about { display: none !important }
 }
+
+/* ===== Stage 3: the window material =============================
+   A translucent window under an opaque page shows nothing at all, so the page
+   has to stop painting a ground and let the content layer carry its own.
+
+   The chrome is where the material is meant to read — the sidebar and the title
+   strip — and the content stays fully opaque, because a page of text over a
+   desktop wallpaper is a wallpaper you cannot read. That is also how the system
+   does it: the furniture is translucent, the document is not.
+
+   Scoped to .mac. Windows keeps opaque chrome until Stage 5 gives it Mica, and
+   a platform with no material behind the window must not end up with a
+   see-through sidebar over nothing. */
+html.app, html.app body { background: transparent }
+
+/* The content layer takes over the ground the body used to paint. */
+html.app .layout { background: var(--paper) }
+
+html.app.mac nav.site {
+  /* Tunable, and the one value in this file that cannot be checked without the
+     machine: the material behind it is a heavy frosted blur, so the web layer
+     can be this light and stay legible. If it reads thin on the real display,
+     raise the alpha rather than dropping the material. */
+  background: color-mix(in srgb, var(--chrome, #191d33) 58%, transparent);
+  -webkit-backdrop-filter: saturate(140%) blur(14px);
+  backdrop-filter: saturate(140%) blur(14px);
+}
+html.app.mac header.masthead {
+  background: color-mix(in srgb, var(--chrome, #191d33) 62%, transparent);
+  -webkit-backdrop-filter: saturate(140%) blur(14px);
+  backdrop-filter: saturate(140%) blur(14px);
+}
+
+/* ---- the way back from an adopted page ----
+   dashboard.html and the three tools a report links out to are standalone
+   documents with no nav for the shell to restructure. In a browser the back
+   gesture covers that; in a window there is no browser, and the reader is
+   stranded. app-shell.js puts this on exactly those pages. */
+html.app .appback {
+  position: fixed; top: 14px; left: 14px; z-index: 80;
+  display: flex; align-items: center; gap: 7px;
+  height: 28px; padding: 0 12px 0 9px;
+  border: .5px solid var(--border, rgba(255,255,255,.22));
+  border-radius: 7px;
+  background: var(--chrome, #191d33);
+  color: var(--chrome-text, #f2f0f8);
+  font: inherit; font-size: 13px; line-height: 1;
+  text-decoration: none; cursor: default;
+  box-shadow: 0 6px 18px rgba(0,0,0,.3);
+}
+html.app .appback:hover { filter: brightness(1.18) }
+html.app.mac .appback { top: 13px; left: 92px }   /* clear of the traffic lights */

@@ -116,6 +116,10 @@
   }
 
   function mountSky() {
+    /* The desktop app lays a real material behind the window, and an opaque
+       canvas of stars on top of it would hide the thing entirely. The class is
+       only ever present in the --app build, so the website is unaffected. */
+    if (document.documentElement.classList.contains("app")) return;
     if (CV || !darkTheme()) return;
     CV = document.createElement("canvas");
     CV.className = "cosmos";
