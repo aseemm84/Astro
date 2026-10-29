@@ -1,0 +1,55 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Motion — the sky, moving — {{BRAND}}</title><!--HEAD--><!--CSS--><!--THEMEJS--></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="{{BRAND}} — home"><span class="lhmarkwrap"><!--LOGO--></span><span class="lhword"><span class="lhname">{{BRAND}}</span><span class="lhdeva">{{BRAND_DEVA}}</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site">{{NAV}}</nav><div class="layout onecol wide"><main>
+
+<div id="mo-host" class="kreport"><p class="k-status" id="mo-status">Loading the scenes…</p></div>
+
+<noscript><p class="caution"><b>These scenes are drawn in the browser.</b> With JavaScript off there is nothing to draw them, and nothing here to read instead. Every figure the scenes use is computed on this machine from the same engine the chart pages use.</p></noscript>
+
+<h2 id="about">What is here, and what is not<span class="kdeva">क्षेत्र</span></h2>
+<p>Every scene on this page is about the sky as it stands, so it runs with no birth data entered at all. The place comes from this machine, and the moment is now.</p>
+<div class="mine"><b>Study note.</b> Nine of the forty-one scenes are unavailable here, and the panel says so on each rather than hiding them. Three are irreducibly natal: <i>birth sky</i> is the sky at one person's birth moment, <i>daśā</i> runs from the Moon's nakṣatra at birth, and <i>Sade Sati</i> measures Śani's passage against that same Moon. <i>Gochara</i> draws the natal chart inside the transiting sky, and <i>frames</i> is anchored to the birth moment and place. The remaining four — <i>lagna</i>, <i>bhāva</i>, <i>rāśi</i> and the full nakṣatra strip — use the chart only to place your grahas on a teaching diagram, and could be freed by substituting here-and-now for birth. That is a later pass, and it needs the frame to say plainly that a chart cast for now is a praśna chart and not your own.</div>
+<p>The scenes draw from the same engine as everything else on this site, so a figure shown here and the same figure in a chart report come from one computation rather than two.</p>
+
+</main></div><footer>{{FOOTER}}</footer>
+<!--JS0-->
+<!--JS1-->
+<!--JS2-->
+<!--JS3-->
+<script>
+/* Mount the motion pane with no chart.
+
+   motionPane(null, null) is already a supported state — the pane gates the nine
+   scenes that need a chart and says why rather than rendering nothing. What this
+   page adds is a home for the sixteen that do not, reachable without casting
+   anything.
+
+   ui.js is deliberately NOT in this page's bundles. It is the chart form's
+   script and it writes to elements that only exist on the builder; loading it
+   here would fail exactly the way the Workstation did before it was given a
+   hidden scaffold. Nothing here needs it. */
+(function () {
+  "use strict";
+  /* No opening-scene override. MO.scene's own default is chart-free — an
+     earlier draft here forced one on the strength of an audit that turned out
+     to be wrong about which scenes are gated. The pane's gate list is the
+     authority; this page does not second-guess it. */
+  function go() {
+    if (!window.motionPane || !window.__moMount) { setTimeout(go, 80); return; }
+    var host = document.getElementById("mo-host");
+    if (!host) return;
+    try {
+      host.innerHTML = '<div class="kpane" data-kpane="motion">' +
+                       window.motionPane(null, null) + '</div>';
+      window.__moMount();
+      var status = document.getElementById("mo-status");
+      if (status && status.parentNode) status.parentNode.removeChild(status);
+    } catch (e) {
+      host.innerHTML = '<p class="k-err">The scenes could not be started: ' +
+        String(e && e.message || e).replace(/[&<>]/g, "") + '</p>';
+    }
+  }
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", function () { setTimeout(go, 40); });
+  else setTimeout(go, 40);
+})();
+</script>
+</body></html>

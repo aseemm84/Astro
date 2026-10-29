@@ -694,8 +694,15 @@ body.kcast .k-status{min-height:0;margin:0}
 .kreport .mobandh{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin:0;
   padding:7px 11px;font-weight:400;border-bottom:2px solid var(--gold);
   background:linear-gradient(160deg,var(--night),var(--night2))}
+/* The band title is NOT var(--gold-soft). The band's own background is a dark
+   gradient in every palette — paper's --night is #292524, a dark brown, not a
+   light surface — but paper's --gold-soft (#b07c2a) is tuned for light paper
+   and lands at 3.08:1 on it. Hence a fixed light gold, the same reasoning that
+   already gives .mobandn its fixed #aeb4d2: the surface under this text does
+   not change with the palette, so the text on it should not either. Measured
+   6.93:1 at worst (paper, against --night2) across the four palettes. */
 .kreport .mobandt{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--gold-soft)}
+  color:#e8c877}
 .kreport .mobandt::before{counter-increment:moband;content:counter(moband);
   display:inline-block;width:17px;height:17px;line-height:17px;text-align:center;
   margin-right:8px;border-radius:50%;background:var(--gold);color:#231c07;
@@ -848,7 +855,10 @@ html.navlock,html.navlock body{overflow:hidden}
    cannot tell them. */
 .kreport .moscene.locked{opacity:.45;cursor:not-allowed}
 .kreport .moscene.locked span{font-style:italic}
-.kreport .monochart{margin:0 0 10px;font-size:13px;color:var(--dim,#6a7090)}
+/* --dim is defined by no palette, so this was always the literal #6a7090 —
+   fine on midnight, 3.13:1 on emerald. --text-soft is a real token the theme
+   harness validates, and reads 7.45:1 at worst. */
+.kreport .monochart{margin:0 0 10px;font-size:13px;color:var(--text-soft,#4a4e68)}
 @media (prefers-color-scheme:dark){.k-skynote{color:#9aa0bd}}
 
 /* The speed slider. Sized to sit in the same row the dropdown occupied, so the
@@ -2224,7 +2234,7 @@ html[data-theme="emerald"] .wsnext.lead{
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-10-29.c2df450";</script></head><body class="wsbody"><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Kinetic Workstation</h1><p class="sub">One surface for the whole chart: Śrīpati chalita beside whole-sign, a year of real transits, twelve rāśi readings, all sixteen divisions, and the strength and daśā panels — computed in this browser, nothing sent anywhere.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html" class="active">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav>
+</script><script>window.__kBuild="2026-10-29.fc0c4bc";</script></head><body class="wsbody"><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Kinetic Workstation</h1><p class="sub">One surface for the whole chart: Śrīpati chalita beside whole-sign, a year of real transits, twelve rāśi readings, all sixteen divisions, and the strength and daśā panels — computed in this browser, nothing sent anywhere.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html" class="active">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav>
 <div class="layout onecol wide"><main>
 
 <section class="wsintake">
@@ -19714,8 +19724,17 @@ function motionPane(D,J){
    patching only the obvious ones leaves a Hindi frame under English controls. So
    the markup is separated from the initialisation that motionPane() does once. */
 function moPaneHTML(){
-  return '<p class="knote">'+MO_SCENES.length+' animations built from this chart and the same ephemeris the rest of '+
-    'the site uses. Everything here is drawn on a canvas rather than as a chart, because these are '+
+  /* "built from this chart" is false on the Motion page, which has no chart at
+     all. The count of what actually runs is the honest opening there, and it
+     comes from the same gate the buttons use rather than a number written in
+     prose that would drift when a scene is added. */
+  var moFree=MO_SCENES.filter(function(s){ return moSceneAvailable(s.key); }).length;
+  return '<p class="knote">'+(moHasChart()
+      ? MO_SCENES.length+' animations built from this chart and the same ephemeris the rest of '+
+        'the site uses.'
+      : moFree+' of '+MO_SCENES.length+' animations run with no birth chart at all, from the same '+
+        'ephemeris the rest of the site uses.')+
+    ' Everything here is drawn on a canvas rather than as a chart, because these are '+
     'made to be <b>watched and posted</b> rather than measured — choose a vertical frame, press play, '+
     'and screen-record. <b>Studio mode</b> hides the whole site so the recording is clean. The '+
     '<b>export</b> button hands you the numbers behind whichever scene is running, as a spreadsheet.</p>'+

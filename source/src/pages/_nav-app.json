@@ -1,4 +1,22 @@
-[["now.html", "Hindu time"],
- ["calendar.html", "Pañcāṅga calendar"],
- ["kundli.html", "Kundli builder"],
- ["kinetic-workstation.html", "Kinetic Workstation"]]
+[
+ [
+  "now.html",
+  "Hindu time"
+ ],
+ [
+  "calendar.html",
+  "Pañcāṅga calendar"
+ ],
+ [
+  "motion.html",
+  "Motion"
+ ],
+ [
+  "kundli.html",
+  "Kundli builder"
+ ],
+ [
+  "kinetic-workstation.html",
+  "Kinetic Workstation"
+ ]
+]

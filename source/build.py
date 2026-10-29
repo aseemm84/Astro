@@ -227,6 +227,52 @@ def build_kundli():
     print("  build id %s" % stamp)
     return shell
 
+def build_motion():
+    """The sixteen scenes that need no birth chart, on a page of their own.
+
+    motionPane(null, null) is already a supported state — the pane gates the
+    nine scenes that do need one and says why. What was missing was a way to
+    reach the other sixteen without casting a chart first, which is most of the
+    point: a year of transits, a lunation, an eclipse season and the bodies
+    themselves are facts about the sky rather than about a person.
+
+    ui.js is not in this page's bundles. It is the chart form's script and it
+    writes to elements that exist only on the builder; including it here would
+    fail the way the Workstation did before it was given a hidden scaffold."""
+    shell = read(SRC, "motion.shell.html")
+    desc = ("Sixteen animated scenes about the sky itself \u2014 transits, lunations, "
+            "eclipse seasons, the nak\u1e63atras and the bodies \u2014 computed in this "
+            "browser and needing no birth chart.")
+    for tok in ("<!--HEAD-->", "{{NAV}}", "<!--CSS-->", "<!--THEMEJS-->",
+                "<!--JS0-->", "<!--JS1-->", "<!--JS2-->", "<!--JS3-->", "{{FOOTER}}"):
+        if tok not in shell:
+            raise SystemExit("token %s missing from the motion shell" % tok)
+    shell = shell.replace("<!--HEAD-->",
+                          head_meta(desc, "motion.html", "Motion \u2014 " + BRAND["name"]))
+    shell = shell.replace("{{NAV}}", nav_html("motion.html"))
+    shell = shell.replace("{{FOOTER}}", read(SRC, "pages", "_footer.html"))
+    shell = brandify(shell).replace("<!--LOGO-->", logo_mark())
+    parts = [("<!--CSS-->", read(SRC, "css", "app.css") + "\n" +
+                            read(SRC, "css", "theme-auto.css") + "\n" +
+                            read(SRC, "css", "theme.css") + "\n" +
+                            read(SRC, "css", "cosmos.css"), "style"),
+             ("<!--THEMEJS-->", read(SRC, "js", "theme.js"), "script"),
+             ("<!--JS0-->", read(VEND, "astronomy.browser.min.js"), "script"),
+             ("<!--JS1-->", jsread(SRC, "js", "engine.js"), "script"),
+             ("<!--JS2-->", report_bundle(), "script"),
+             # places.js for the pane's own place picker; sp-cosmos for the
+             # starfield, which the app build skips and the website keeps.
+             ("<!--JS3-->", jsread(SRC, "js", "places.js") + "\n" +
+                            jsread(SRC, "js", "sp-cosmos.js"), "script")]
+    stamp = build_stamp([shell] + [b for _, b, _ in parts])
+    shell = shell.replace("</head>",
+        '<script>window.__kBuild=%s;</script></head>' % json.dumps(stamp))
+    for tok, body, tag in parts:
+        shell = shell.replace(tok, "<%s>%s</%s>" % (tag, brandify(body), tag))
+    print("  motion build id %s" % stamp)
+    return shell
+
+
 def build_workstation():
     """The Kinetic Workstation — a second page over the same engines.
 
@@ -878,7 +924,8 @@ def main():
         default_out = os.path.join(default_out, "app")
     outdir = args[args.index("--out") + 1] if "--out" in args else default_out
     built = {"kundli.html": build_kundli(),
-             "kinetic-workstation.html": build_workstation()}
+             "kinetic-workstation.html": build_workstation(),
+             "motion.html": build_motion()}
     built.update(build_pages())
     built.update(build_shared())
     built.update(build_adopted())

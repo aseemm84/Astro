@@ -54,8 +54,17 @@ function motionPane(D,J){
    patching only the obvious ones leaves a Hindi frame under English controls. So
    the markup is separated from the initialisation that motionPane() does once. */
 function moPaneHTML(){
-  return '<p class="knote">'+MO_SCENES.length+' animations built from this chart and the same ephemeris the rest of '+
-    'the site uses. Everything here is drawn on a canvas rather than as a chart, because these are '+
+  /* "built from this chart" is false on the Motion page, which has no chart at
+     all. The count of what actually runs is the honest opening there, and it
+     comes from the same gate the buttons use rather than a number written in
+     prose that would drift when a scene is added. */
+  var moFree=MO_SCENES.filter(function(s){ return moSceneAvailable(s.key); }).length;
+  return '<p class="knote">'+(moHasChart()
+      ? MO_SCENES.length+' animations built from this chart and the same ephemeris the rest of '+
+        'the site uses.'
+      : moFree+' of '+MO_SCENES.length+' animations run with no birth chart at all, from the same '+
+        'ephemeris the rest of the site uses.')+
+    ' Everything here is drawn on a canvas rather than as a chart, because these are '+
     'made to be <b>watched and posted</b> rather than measured — choose a vertical frame, press play, '+
     'and screen-record. <b>Studio mode</b> hides the whole site so the recording is clean. The '+
     '<b>export</b> button hands you the numbers behind whichever scene is running, as a spreadsheet.</p>'+

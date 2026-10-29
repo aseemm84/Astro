@@ -84,7 +84,7 @@ console.log("\nthe website is untouched");
 console.log("\nthe app build");
 sh("python3", ["build.py", "--app"], SRC);
 const pages = fs.readdirSync(APP).filter(f => f.endsWith(".html")).sort();
-ok("every page is built", pages.length === 29, pages.length + " pages");
+ok("every page is built", pages.length === 30, pages.length + " pages");
 ok("app-shell.css and app-shell.js ship", fs.existsSync(path.join(APP, "app-shell.css")) &&
    fs.existsSync(path.join(APP, "app-shell.js")));
 ok("no service worker in the app", !fs.existsSync(path.join(APP, "sw.js")));
@@ -245,6 +245,72 @@ console.log("\nthe shell, measured");
      btns.every(h => h >= 22 && h <= 32), btns.join(","));
 
   await pg.close();
+}
+
+console.log("\nMotion");
+{
+  const pg = await ctx.newPage();
+  const errs = [];
+  pg.on("pageerror", e => errs.push(e.message));
+  await pg.goto("file://" + path.join(APP, "motion.html"));
+  await pg.waitForTimeout(2200);
+
+  const m = await pg.evaluate(() => {
+    const chips = [...document.querySelectorAll("[data-moscene]")];
+    const gated = chips.filter(c => c.hasAttribute("disabled") ||
+      c.getAttribute("aria-disabled") === "true" ||
+      /needs|chart/i.test(c.getAttribute("title") || ""));
+    return {
+      mounted: !!document.querySelector("#mo-host .kpane"),
+      drew: !!document.querySelector("#mo-host canvas"),
+      statusGone: !document.getElementById("mo-status"),
+      chips: chips.length,
+      gatedKeys: gated.map(c => c.getAttribute("data-moscene")).sort(),
+      hasUi: typeof window.applyChart === "function"
+    };
+  });
+
+  ok("Motion mounts with no chart", m.mounted);
+  ok("a scene actually draws", m.drew);
+  ok("the loading line is replaced", m.statusGone);
+  ok("no page error", errs.length === 0, errs.slice(0, 2).join(" | "));
+
+  /* The gate is MO_NEEDS_CHART, a declarative list in the pane, not a grep for
+     MO.D across the sources. An earlier audit used the grep and was wrong twice
+     over: it found 25 scenes where there are 41, and it reported retro as
+     chart-gated when the gate list has never contained it. The registry is the
+     authority, so the harness reads the registry. */
+  const declared = JSON.parse(fs.readFileSync(
+    path.join(SRC, "test/_motion-gate.json"), "utf8")).needsChart.slice().sort();
+  ok("exactly the declared scenes are gated",
+     m.gatedKeys.join(",") === declared.join(","),
+     "page: " + m.gatedKeys.join(",") + "  declared: " + declared.join(","));
+  ok("every other scene is reachable with no chart",
+     m.chips - m.gatedKeys.length === m.chips - declared.length,
+     (m.chips - m.gatedKeys.length) + " of " + m.chips);
+  ok("there are more scenes than the old audit counted", m.chips >= 41, m.chips + "");
+
+  /* ui.js is the chart form's script. Loading it here would write to elements
+     that do not exist on this page — the fault the Workstation hit. */
+  ok("the chart form's script is not on this page", !m.hasUi);
+  await pg.close();
+}
+
+{
+  /* The gate list in the harness must track the one in the source, or it
+     becomes a second opinion that slowly disagrees. */
+  const src = fs.readFileSync(path.join(SRC, "src/js/report/motion/47-motion-pacing.js"), "utf8");
+  const block = /var MO_NEEDS_CHART=\{([\s\S]*?)\n\};/.exec(src);
+  /* Each key carries an inline comment saying why, and those comments contain
+     commas — so splitting the block on "," loses every key but the first. Match
+     the keys at the start of their own lines instead. */
+  const inSource = [...(block ? block[1] : "").matchAll(/^\s*([a-z]+)\s*:/gm)]
+    .map(mm => mm[1]).sort();
+  const inHarness = JSON.parse(fs.readFileSync(
+    path.join(SRC, "test/_motion-gate.json"), "utf8")).needsChart.slice().sort();
+  ok("the harness's gate list matches the source's",
+     inSource.join(",") === inHarness.join(","),
+     "source: " + inSource.join(",") + "  harness: " + inHarness.join(","));
 }
 
 console.log("\nthe window material can be seen");

@@ -674,8 +674,15 @@ body.kcast .k-status{min-height:0;margin:0}
 .kreport .mobandh{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;margin:0;
   padding:7px 11px;font-weight:400;border-bottom:2px solid var(--gold);
   background:linear-gradient(160deg,var(--night),var(--night2))}
+/* The band title is NOT var(--gold-soft). The band's own background is a dark
+   gradient in every palette — paper's --night is #292524, a dark brown, not a
+   light surface — but paper's --gold-soft (#b07c2a) is tuned for light paper
+   and lands at 3.08:1 on it. Hence a fixed light gold, the same reasoning that
+   already gives .mobandn its fixed #aeb4d2: the surface under this text does
+   not change with the palette, so the text on it should not either. Measured
+   6.93:1 at worst (paper, against --night2) across the four palettes. */
 .kreport .mobandt{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
-  color:var(--gold-soft)}
+  color:#e8c877}
 .kreport .mobandt::before{counter-increment:moband;content:counter(moband);
   display:inline-block;width:17px;height:17px;line-height:17px;text-align:center;
   margin-right:8px;border-radius:50%;background:var(--gold);color:#231c07;
@@ -828,7 +835,10 @@ html.navlock,html.navlock body{overflow:hidden}
    cannot tell them. */
 .kreport .moscene.locked{opacity:.45;cursor:not-allowed}
 .kreport .moscene.locked span{font-style:italic}
-.kreport .monochart{margin:0 0 10px;font-size:13px;color:var(--dim,#6a7090)}
+/* --dim is defined by no palette, so this was always the literal #6a7090 —
+   fine on midnight, 3.13:1 on emerald. --text-soft is a real token the theme
+   harness validates, and reads 7.45:1 at worst. */
+.kreport .monochart{margin:0 0 10px;font-size:13px;color:var(--text-soft,#4a4e68)}
 @media (prefers-color-scheme:dark){.k-skynote{color:#9aa0bd}}
 
 /* The speed slider. Sized to sit in the same row the dropdown occupied, so the

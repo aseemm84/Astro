@@ -1,0 +1,4 @@
+{
+  "_": "The scenes the motion pane gates behind a cast chart. Mirrors MO_NEEDS_CHART in src/js/report/motion/47-motion-pacing.js, and the harness fails if the two drift. Kept as data rather than parsed inline so a change here is visible in a diff.",
+  "needsChart": ["bhava", "birthsky", "dasha", "frames", "gochara", "lagna", "nakfull", "rashi", "sadesati"]
+}
