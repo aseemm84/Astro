@@ -338,6 +338,24 @@
   }
   $("k-go").addEventListener("click",cast);
 
+  /* The strip beside the buttons used to be the fixed words "Sidereal · Lahiri
+     ayanāṃśa · whole-sign houses", with nothing updating it. Pick another
+     ayanāṃśa and the page went on asserting Lahiri an inch from the Cast
+     button. That was tolerable while every alternative sat within a degree and
+     a half of Lahiri; it stopped being tolerable the moment the Sūrya
+     Siddhānta readings arrived, because those differ by degrees and the strip
+     would have been naming the wrong convention for the chart on screen.
+     The name comes from the engine's own table, so it cannot drift from it. */
+  function convStrip(){
+    var el=$("k-conv"); if(!el) return;
+    var sel=($("k-ayan")&&$("k-ayan").value)||"lahiri";
+    var M=(window.__ayanModes||{})[sel];
+    el.innerHTML="Sidereal · "+esc((M&&M.name)||sel)+
+                 " ayanāṃśa · whole-sign houses";
+  }
+  if($("k-ayan")) $("k-ayan").addEventListener("change",convStrip);
+  convStrip();
+
   /* ------------------------------------------------------------------ here & now ---
      Geolocation hands back a latitude and a longitude and nothing else: no timezone,
      no place name. Both are found without any external service — the offset from the
@@ -614,6 +632,10 @@
     $("k-lat").value=i.lat; $("k-lon").value=i.lon; $("k-tz").value=i.tzHours;
     if($("k-ayan")&&i.ayanamsa) $("k-ayan").value=i.ayanamsa;
     if($("k-node")&&i.node) $("k-node").value=i.node;
+    /* Setting .value fires no change event, so the strip has to be told. A
+       saved chart or a shared link carries its own ayanāṃśa, and that is
+       exactly the case where a stale strip would be most misleading. */
+    convStrip();
     if($("k-city")&&(i.place||o.place)) $("k-city").textContent=i.place||o.place;
     return true;
   }

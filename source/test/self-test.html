@@ -386,6 +386,25 @@ function runSensitivityChecks(doc, key){
     fk && Object.keys(AM).length>=7 &&
     Object.keys(AM).every(function(m){ return fk.innerText.indexOf(AM[m].name)>=0; }),
     Object.keys(AM).length+" ayanāṃśas compared");
+  /* The conventions strip beside the Cast button. It used to be the fixed
+     words "Lahiri ayanamsha" with nothing updating it, so choosing any other
+     ayanāṃśa left the page asserting the wrong one an inch from the button.
+     Checked by consequence: set the picker, fire change, read the strip. */
+  var cv=doc.getElementById("k-conv"), sel=doc.getElementById("k-ayan");
+  var stripOk=!!(cv&&sel), stripSaw=[];
+  if(stripOk){
+    var was=sel.value;
+    Object.keys(AM).forEach(function(m){
+      sel.value=m; sel.dispatchEvent(new Event("change",{bubbles:true}));
+      var txt=cv.textContent;
+      if(txt.indexOf(AM[m].name)<0) stripOk=false;
+      stripSaw.push(m);
+    });
+    sel.value=was; sel.dispatchEvent(new Event("change",{bubbles:true}));
+  }
+  check("the conventions strip names the ayanāṃśa actually chosen",
+    stripOk, stripSaw.length+" modes, strip now reads: "+(cv?cv.textContent:"absent"));
+
   check("the node fork compares mean against true",
     fk && fk.innerText.indexOf("Mean node")>=0 && fk.innerText.indexOf("True node")>=0,
     "both node conventions shown");
