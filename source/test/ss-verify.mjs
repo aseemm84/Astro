@@ -420,9 +420,56 @@ const PG = await (async () => {
   return Object.assign(r,{errors:e2.length});
 })();
 
+/* ---- the chart engine's two Sūrya Siddhānta ayanāṃśas ----
+   The Kundli builder now offers the text's libration and the text's bare rate
+   as chart ayanāṃśas. They are the SAME definition this page implements, and
+   two implementations of one definition are exactly the thing that drifts
+   apart quietly — so they are held against each other here rather than each
+   being held against a number written down twice. Exact agreement is demanded,
+   not close agreement: these are formulae, not fits. */
+const X = await (async () => {
+  const p3 = await br.newPage();
+  const errs3 = [];
+  p3.on("pageerror", e => errs3.push(String(e && e.message || e)));
+  const years = [499, 1000, 1500, 1900, 2026, 2100, 3000, -500];
+  await p3.goto(`http://127.0.0.1:${port}/siddhanta.html`, { waitUntil: "load" });
+  const ss = await p3.evaluate(ys => {
+    const ms = y => Date.UTC(y, 6, 1);
+    const S = window.SSEngine, out = {};
+    S.options({ ayana: "libration" }); out.lib = ys.map(y => S.ayanamsa(ms(y)));
+    S.options({ ayana: "linear" });    out.lin = ys.map(y => S.ayanamsa(ms(y)));
+    S.options({ ayana: "libration" });
+    return out;
+  }, years);
+  await p3.goto(`http://127.0.0.1:${port}/kundli.html`, { waitUntil: "load" });
+  const ch = await p3.evaluate(ys => {
+    const jd = y => (Date.UTC(y, 6, 1) / 86400000) + 2440587.5;
+    return { text: ys.map(y => window.__ayanFor("ss_text", jd(y))),
+             rate: ys.map(y => window.__ayanFor("ss_rate", jd(y))),
+             modes: Object.keys(window.__ayanModes) };
+  }, years);
+  const worst = Math.max(
+    ...ss.lib.map((v, i) => Math.abs(v - ch.text[i])),
+    ...ss.lin.map((v, i) => Math.abs(v - ch.rate[i])));
+  await p3.close();
+  return { years, ss, ch, worstArcsec: worst * 3600, errors: errs3.length };
+})();
+
 const K = A.K;
 const okAll = (o,f) => Object.keys(o).every(k=>f(o[k],k));
 const C = [
+  /* the two engines, one definition */
+  ["the chart engine offers the two Sūrya Siddhānta readings this page implements",
+   X.ch.modes.includes("ss_text") && X.ch.modes.includes("ss_rate")],
+  ["and agrees with this page EXACTLY on both, across 3500 years",
+   X.worstArcsec < 1e-6],
+  ["the libration turns and comes back; the bare rate never does",
+   X.ss.lib[6] < X.ss.lib[5] && X.ss.lin[6] > X.ss.lin[5]],
+  ["they agree at the 499 zero and disagree by 15° by the year 3000",
+   Math.abs(X.ss.lib[0] - X.ss.lin[0]) < 0.05 &&
+   Math.abs(X.ss.lib[6] - X.ss.lin[6]) > 15],
+  ["no page error on either engine", X.errors === 0],
+
   ["the sine table is the sine function, to a unit in 3438", A.jyaWorst < 1.0],
   ["and interpolating inside it costs under three units",
    A.jyaInterpWorst < 3.0],

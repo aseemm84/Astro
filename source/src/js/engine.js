@@ -35,12 +35,51 @@ var AYAN_MODES={
   kp:         {name:"Krishnamurti (KP)", note:"used in the KP system; matches Swiss Ephemeris to 0.000″",
                c:[0.000307050151567,1.39688808364,23.7602400426]},
   truechitra: {name:"True Chitrapakṣa", note:"Spica fixed at 180° exactly; a moving definition, within ≈20″ of Swiss Ephemeris",
-               c:[0.00030778556054,1.39569673536,23.8413914361]}
+               c:[0.00030778556054,1.39569673536,23.8413914361]},
+
+  /* ---- the three Sūrya Siddhānta readings ----------------------------------
+     "Sūrya Siddhānta ayanāṃśa" is not one number. The text does not describe
+     precession at all: it describes the circle of asterisms LIBRATING — an
+     oscillation of ±27° completing in 7200 years — so taken at its word the
+     ayanāṃśa does not grow without limit, it swings back, and right now it
+     sits near the top of its swing and is nearly stationary. Read instead as
+     a rate, or anchored to a zero epoch and advanced by modern precession,
+     it gives quite different answers. The three differ by about 5° today,
+     which is roughly 1.5 nakṣatra pādas — a different chart, not a refinement.
+
+     All three are offered and none is called the right one, which is the same
+     stance ss-engine.js already takes on the Sūrya Siddhānta page. The first
+     two use that page's own model, so a figure shown here and the same figure
+     there come from one definition rather than two; the harness asserts it. */
+  ss_text:    {name:"Sūrya Siddhānta — libration", unit:"text",
+               note:"the text's own model: ±27° oscillating over 7200 years, zero at 499 CE. " +
+                    "Near its maximum now and almost stationary — it advances ≈0.35° this century " +
+                    "where every modern ayanāṃśa advances ≈1.03°. Not a Swiss Ephemeris quantity.",
+               f:function(y){ return 27*Math.sin(2*Math.PI*(y-499)/7200); }},
+  ss_rate:    {name:"Sūrya Siddhānta — steady 54″", unit:"text",
+               note:"the text's rate with the libration ignored: a constant 54″ a year from 499 CE. " +
+                    "This is what is usually meant casually by “the Sūrya Siddhānta ayanāṃśa”, and it " +
+                    "agrees with the libration reading only near the zero point. Not a Swiss Ephemeris quantity.",
+               f:function(y){ return (y-499)*54/3600; }},
+  ss_swiss:   {name:"Sūrya Siddhānta (Swiss Ephemeris)", note:"Swiss Ephemeris SE_SIDM_SURYASIDDHANTA: " +
+                    "zero at 499 CE then advanced by modern precession, not by the text's libration. " +
+                    "Quadratic fitted over 1800–2200; matches Swiss Ephemeris to 0.000″",
+               c:[0.00030619214892391,1.39688356264496,20.8950588659651]}
 };
 var AYAN_MODE="lahiri";
 function setAyanamsaMode(m){ if(AYAN_MODES[m]) AYAN_MODE=m; return AYAN_MODE; }
+/* The calendar year, computed exactly as ss-engine.js's yearOf does, so the two
+   engines cannot drift apart on the two text-based readings. A Julian-year
+   approximation from T would be close but not identical, and "close" between
+   two implementations of one definition is how they end up disagreeing. */
+function ayanYearOf(jd){
+  var d=new Date((jd-2440587.5)*86400000);
+  return d.getUTCFullYear()+(d.getUTCMonth()+0.5)/12;
+}
 function ayanamsaFor(mode,jd){
-  var M=AYAN_MODES[mode]||AYAN_MODES.lahiri, T=Tof(jd), v=0;
+  var M=AYAN_MODES[mode]||AYAN_MODES.lahiri, v=0;
+  if(M.f) return M.f(ayanYearOf(jd));
+  var T=Tof(jd);
   for(var i=0;i<M.c.length;i++) v=v*T+M.c[i];
   return v;
 }

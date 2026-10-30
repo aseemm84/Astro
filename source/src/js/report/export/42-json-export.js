@@ -317,7 +317,12 @@ function jxConventions(J){
            node_mode:J.node_mode||"mean", house_system:"whole sign",
            alternatives:{}};
   try{
-    var modes=["lahiri","raman","kp","truechitra"];
+    /* Driven by the engine's own table rather than a copy of it. The copy used to
+       live here, in the sensitivity panel, in the motion export and in the
+       self-test, so adding one ayanāṃśa meant editing four lists and hoping
+       none was missed. */
+    var modes=Object.keys(window.__ayanModes||{});
+    if(!modes.length) modes=["lahiri","raman","kp","truechitra"];
     modes.forEach(function(m){
       var i={}; for(var k in J.input) i[k]=J.input[k]; i.ayanamsa=m;
       var Jv=window.buildLocalChart(i);

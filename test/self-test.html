@@ -196,38 +196,74 @@ function runEngineChecks(W, key){
 }
 
 function runAyanamsaChecks(W){
-  group("Ayanāṃśa modes");
+  group("Ayan\u0101\u1e43\u015ba modes");
   var inp=CHARTS.aseem.inp, got={};
-  ["lahiri","raman","kp","truechitra"].forEach(function(m){
+  /* The mode list comes from the engine, not from a copy of it here. A copy
+     would pass while silently testing four of seven. */
+  var MODES=Object.keys(W.__ayanModes||{});
+  MODES.forEach(function(m){
     var o={}; for(var k in inp) o[k]=inp[k]; o.ayanamsa=m;
     got[m]=W.buildLocalChart(o);
   });
-  check("four modes available",
-    Object.keys(got).length===4, Object.keys(got).join(", "));
-  check("every mode returns a plausible ayanāṃśa for 1984",
+  check("every mode the engine declares can cast a chart",
+    MODES.length>=7 && Object.keys(got).length===MODES.length, MODES.join(", "));
+  check("the four modern modes land in the expected band for 1984",
     ["lahiri","raman","kp","truechitra"].every(function(m){
       var a=got[m].ayanamsha_deg; return a>21 && a<25; }),
     ["lahiri","raman","kp","truechitra"].map(function(m){
       return m+" "+got[m].ayanamsha_deg.toFixed(4); }).join("  "));
   check("Lahiri remains the default and matches the published value",
     near(W.buildLocalChart(inp).ayanamsha_deg, GOLDEN.ayanamsa, 0.001),
-    W.buildLocalChart(inp).ayanamsha_deg.toFixed(4)+"° · PL "+GOLDEN.ayanamsa+"°");
-  check("Raman sits about 1.45° behind Lahiri, as it should",
+    W.buildLocalChart(inp).ayanamsha_deg.toFixed(4)+"\u00b0 \u00b7 PL "+GOLDEN.ayanamsa+"\u00b0");
+  check("Raman sits about 1.45\u00b0 behind Lahiri, as it should",
     near(got.lahiri.ayanamsha_deg-got.raman.ayanamsha_deg, 1.4463, 0.01),
-    (got.lahiri.ayanamsha_deg-got.raman.ayanamsha_deg).toFixed(4)+"°");
+    (got.lahiri.ayanamsha_deg-got.raman.ayanamsha_deg).toFixed(4)+"\u00b0");
+
+  /* ---- the three S\u016brya Siddh\u0101nta readings ----
+     The point of carrying all three is that they DISAGREE, so that is what is
+     asserted. Asserting a single blessed value would be asserting a position
+     the text does not settle. */
+  check("the Swiss Ephemeris S\u016brya Siddh\u0101nta sits 2.96\u00b0 behind Lahiri",
+    near(got.lahiri.ayanamsha_deg-got.ss_swiss.ayanamsha_deg, 2.9620, 0.01),
+    (got.lahiri.ayanamsha_deg-got.ss_swiss.ayanamsha_deg).toFixed(4)+"\u00b0");
+  check("the three S\u016brya Siddh\u0101nta readings disagree by degrees, not seconds",
+    (function(){
+      var v=["ss_text","ss_rate","ss_swiss"].map(function(m){ return got[m].ayanamsha_deg; });
+      return Math.max.apply(null,v)-Math.min.apply(null,v) > 4; })(),
+    ["ss_text","ss_rate","ss_swiss"].map(function(m){
+      return m+" "+got[m].ayanamsha_deg.toFixed(3); }).join("  "));
+  check("the libration is near its maximum and nearly stationary now",
+    (function(){
+      var j1=got.ss_text.jd_utc, a1=W.__ayanFor("ss_text",j1),
+          a2=W.__ayanFor("ss_text",j1+36525);
+      return a1>25.5 && a1<27 && Math.abs(a2-a1)<0.6; })(),
+    W.__ayanFor("ss_text",got.ss_text.jd_utc).toFixed(3)+"\u00b0 now, "+
+    W.__ayanFor("ss_text",got.ss_text.jd_utc+36525).toFixed(3)+"\u00b0 in a century");
+  check("the libration and the steady rate agree at the 499 CE zero",
+    (function(){
+      var j0=2451545.0+(499-2000)*365.25;
+      return Math.abs(W.__ayanFor("ss_text",j0))<0.05 &&
+             Math.abs(W.__ayanFor("ss_rate",j0))<0.05; })(),
+    "both \u2248 0\u00b0 at 499 CE");
+
   check("changing the mode moves every sidereal position by the same amount",
     got.lahiri.grahas.every(function(g,i){
       var d1=got.lahiri.ayanamsha_deg-got.raman.ayanamsha_deg;
       var d2=got.raman.grahas[i].sidereal_deg-g.sidereal_deg;
       return near(wrap180(d2-d1), 0, 1e-6); }), "9/9 grahas shift together");
+  check("that holds for the libration too, which is not a polynomial",
+    got.lahiri.grahas.every(function(g,i){
+      var d1=got.lahiri.ayanamsha_deg-got.ss_text.ayanamsha_deg;
+      var d2=got.ss_text.grahas[i].sidereal_deg-g.sidereal_deg;
+      return near(wrap180(d2-d1), 0, 1e-6); }), "9/9 grahas shift together");
   check("the lagna shifts by the same amount as the planets",
     near(wrap180((got.raman.lagna.sidereal_deg-got.lahiri.lagna.sidereal_deg)-
           (got.lahiri.ayanamsha_deg-got.raman.ayanamsha_deg)), 0, 1e-6),
-    (got.raman.lagna.sidereal_deg-got.lahiri.lagna.sidereal_deg).toFixed(4)+"°");
+    (got.raman.lagna.sidereal_deg-got.lahiri.lagna.sidereal_deg).toFixed(4)+"\u00b0");
   check("each mode reports its own name and caveat",
-    ["lahiri","raman","kp","truechitra"].every(function(m){
+    MODES.every(function(m){
       return got[m].ayanamsa_name && got[m].ayanamsa_note; }),
-    got.truechitra.ayanamsa_name);
+    got.ss_text.ayanamsa_name);
 }
 function runReportChecks(W, doc, key, J, D){
   var T=tablesOf(doc), C=CHARTS[key];
@@ -342,9 +378,14 @@ function runSensitivityChecks(doc, key){
     "both sections rendered");
   var fk=[].slice.call(doc.querySelectorAll("#k-out .ksec")).filter(function(s2){
     var h=s2.querySelector(".kh"); return h && h.childNodes[0].textContent.indexOf("Conventions")>=0; })[0];
-  check("the ayanāṃśa fork lists all four settings",
-    fk && fk.innerText.indexOf("Raman")>=0 && fk.innerText.indexOf("Krishnamurti")>=0 &&
-          fk.innerText.indexOf("True Chitrapakṣa")>=0, "four ayanāṃśas compared");
+  /* The frame's own window, not an outer W — this function is given the
+     document only, and reaching for a W that was never passed is how the
+     first draft of this check threw instead of failing. */
+  var AM=(doc.defaultView&&doc.defaultView.__ayanModes)||{};
+  check("the ayanāṃśa fork lists every mode the engine declares",
+    fk && Object.keys(AM).length>=7 &&
+    Object.keys(AM).every(function(m){ return fk.innerText.indexOf(AM[m].name)>=0; }),
+    Object.keys(AM).length+" ayanāṃśas compared");
   check("the node fork compares mean against true",
     fk && fk.innerText.indexOf("Mean node")>=0 && fk.innerText.indexOf("True node")>=0,
     "both node conventions shown");

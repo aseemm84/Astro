@@ -2234,7 +2234,7 @@ html[data-theme="emerald"] .wsnext.lead{
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-10-29.1395024";</script></head><body class="wsbody"><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Kinetic Workstation</h1><p class="sub">One surface for the whole chart: Śrīpati chalita beside whole-sign, a year of real transits, twelve rāśi readings, all sixteen divisions, and the strength and daśā panels — computed in this browser, nothing sent anywhere.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html" class="active">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav>
+</script><script>window.__kBuild="2026-10-30.c8b5894";</script></head><body class="wsbody"><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Kinetic Workstation</h1><p class="sub">One surface for the whole chart: Śrīpati chalita beside whole-sign, a year of real transits, twelve rāśi readings, all sixteen divisions, and the strength and daśā panels — computed in this browser, nothing sent anywhere.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html" class="active">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav>
 <div class="layout onecol wide"><main>
 
 <section class="wsintake">
@@ -2276,9 +2276,16 @@ html[data-theme="emerald"] .wsnext.lead{
       <option value="raman">Raman</option>
       <option value="kp">Krishnamurti (KP)</option>
       <option value="truechitra">True Chitrapakṣa (Spica fixed at 180°)</option>
+      <option value="ss_text">Sūrya Siddhānta — the text's libration (±27°, 7200 years)</option>
+      <option value="ss_rate">Sūrya Siddhānta — steady 54″ a year from 499 CE</option>
+      <option value="ss_swiss">Sūrya Siddhānta — Swiss Ephemeris definition (modern precession)</option>
     </select>
     <p class="k-note">Changes every sidereal position in the report. Lahiri is the default and everything
-    on this site is validated against it; the others are offered so the choice is visible rather than hidden.</p></div>
+    on this site is validated against it; the others are offered so the choice is visible rather than hidden.
+    The three S&#363;rya Siddh&#257;nta entries are three readings of <i>one</i> text, not three texts: it describes the
+    circle of asterisms as librating rather than precessing, and taken at its word the ayan&#257;&#7747;&#347;a swings back
+    instead of growing. They differ by about 5&deg; today &mdash; roughly 1.5 nak&#7779;atra p&#257;das &mdash; so they give
+    different charts, not a refined one. The report&rsquo;s Conventions section shows all of them side by side.</p></div>
   <div class="k-full"><label for="k-node">Lunar nodes</label>
     <select id="k-node">
       <option value="mean" selected>Mean node — the smoothed average, the usual Jyotiṣa choice</option>
@@ -2649,12 +2656,51 @@ var AYAN_MODES={
   kp:         {name:"Krishnamurti (KP)", note:"used in the KP system; matches Swiss Ephemeris to 0.000″",
                c:[0.000307050151567,1.39688808364,23.7602400426]},
   truechitra: {name:"True Chitrapakṣa", note:"Spica fixed at 180° exactly; a moving definition, within ≈20″ of Swiss Ephemeris",
-               c:[0.00030778556054,1.39569673536,23.8413914361]}
+               c:[0.00030778556054,1.39569673536,23.8413914361]},
+
+  /* ---- the three Sūrya Siddhānta readings ----------------------------------
+     "Sūrya Siddhānta ayanāṃśa" is not one number. The text does not describe
+     precession at all: it describes the circle of asterisms LIBRATING — an
+     oscillation of ±27° completing in 7200 years — so taken at its word the
+     ayanāṃśa does not grow without limit, it swings back, and right now it
+     sits near the top of its swing and is nearly stationary. Read instead as
+     a rate, or anchored to a zero epoch and advanced by modern precession,
+     it gives quite different answers. The three differ by about 5° today,
+     which is roughly 1.5 nakṣatra pādas — a different chart, not a refinement.
+
+     All three are offered and none is called the right one, which is the same
+     stance ss-engine.js already takes on the Sūrya Siddhānta page. The first
+     two use that page's own model, so a figure shown here and the same figure
+     there come from one definition rather than two; the harness asserts it. */
+  ss_text:    {name:"Sūrya Siddhānta — libration", unit:"text",
+               note:"the text's own model: ±27° oscillating over 7200 years, zero at 499 CE. " +
+                    "Near its maximum now and almost stationary — it advances ≈0.35° this century " +
+                    "where every modern ayanāṃśa advances ≈1.03°. Not a Swiss Ephemeris quantity.",
+               f:function(y){ return 27*Math.sin(2*Math.PI*(y-499)/7200); }},
+  ss_rate:    {name:"Sūrya Siddhānta — steady 54″", unit:"text",
+               note:"the text's rate with the libration ignored: a constant 54″ a year from 499 CE. " +
+                    "This is what is usually meant casually by “the Sūrya Siddhānta ayanāṃśa”, and it " +
+                    "agrees with the libration reading only near the zero point. Not a Swiss Ephemeris quantity.",
+               f:function(y){ return (y-499)*54/3600; }},
+  ss_swiss:   {name:"Sūrya Siddhānta (Swiss Ephemeris)", note:"Swiss Ephemeris SE_SIDM_SURYASIDDHANTA: " +
+                    "zero at 499 CE then advanced by modern precession, not by the text's libration. " +
+                    "Quadratic fitted over 1800–2200; matches Swiss Ephemeris to 0.000″",
+               c:[0.00030619214892391,1.39688356264496,20.8950588659651]}
 };
 var AYAN_MODE="lahiri";
 function setAyanamsaMode(m){ if(AYAN_MODES[m]) AYAN_MODE=m; return AYAN_MODE; }
+/* The calendar year, computed exactly as ss-engine.js's yearOf does, so the two
+   engines cannot drift apart on the two text-based readings. A Julian-year
+   approximation from T would be close but not identical, and "close" between
+   two implementations of one definition is how they end up disagreeing. */
+function ayanYearOf(jd){
+  var d=new Date((jd-2440587.5)*86400000);
+  return d.getUTCFullYear()+(d.getUTCMonth()+0.5)/12;
+}
 function ayanamsaFor(mode,jd){
-  var M=AYAN_MODES[mode]||AYAN_MODES.lahiri, T=Tof(jd), v=0;
+  var M=AYAN_MODES[mode]||AYAN_MODES.lahiri, v=0;
+  if(M.f) return M.f(ayanYearOf(jd));
+  var T=Tof(jd);
   for(var i=0;i<M.c.length;i++) v=v*T+M.c[i];
   return v;
 }
@@ -8536,7 +8582,9 @@ function sensForksSection(D,J){
     return window.buildLocalChart(i);
   }
   // 1. ayanamsa
-  var modes=["lahiri","raman","kp","truechitra"], V={};
+  var modes=Object.keys(window.__ayanModes||{});
+  if(!modes.length) modes=["lahiri","raman","kp","truechitra"];
+  var V={};
   modes.forEach(function(m){ V[m]=variant({ayanamsa:m}); });
   var ayRows=modes.map(function(m){
     var Jv=V[m], moved=[];
@@ -13728,22 +13776,28 @@ function moSceneSheets(){
       cols:["Time (UTC)","Lagna °","Rāśi rising","Degrees in rāśi","1st bhāva","4th","7th","10th"],
       rows:rows5});
   } else if(k==="ayanamsa"){
+    /* Four thousand years of it, which is the span that makes the S\u016brya
+       Siddh\u0101nta readings legible: the libration climbs, turns and comes back
+       down while every other definition keeps climbing. The column set comes
+       from the engine's own table, so a new ayan\u0101\u1e43\u015ba appears here without
+       anybody remembering to add it. */
+    var mo6=Object.keys(window.__ayanModes||{});
+    if(!mo6.length) mo6=["lahiri","raman","kp","truechitra"];
     var rows6=[];
     for(var yy=-500;yy<=3500;yy+=25){
-      var jd6=2451545.0+(yy-2000)*365.2425, a6=null;
-      try{ a6=window.__ayanFor?window.__ayanFor("lahiri",jd6):null; }catch(e){}
-      if(a6==null) continue;
-      var others={};
-      ["raman","kp","truechitra"].forEach(function(mdx){
-        try{ others[mdx]=window.__ayanFor(mdx,jd6); }catch(e){ others[mdx]=null; }
+      var jd6=2451545.0+(yy-2000)*365.2425;
+      var row6=[yy<0?(Math.abs(yy)+" BCE"):(yy+" CE"), yy], any6=false;
+      mo6.forEach(function(mdx){
+        var v6=null;
+        try{ v6=window.__ayanFor?window.__ayanFor(mdx,jd6):null; }catch(e){}
+        if(v6!=null){ any6=true; row6.push(+v6.toFixed(5)); } else row6.push("");
       });
-      rows6.push([yy<0?(Math.abs(yy)+" BCE"):(yy+" CE"), yy, +a6.toFixed(5),
-                  others.raman!=null?+others.raman.toFixed(5):"",
-                  others.kp!=null?+others.kp.toFixed(5):"",
-                  others.truechitra!=null?+others.truechitra.toFixed(5):""]);
+      if(any6) rows6.push(row6);
     }
-    out.push({name:"Ayanāṃśa by year",
-      cols:["Year","Year (signed)","Lahiri °","Raman °","Krishnamurti °","True Chitrapakṣa °"],
+    out.push({name:"Ayan\u0101\u1e43\u015ba by year",
+      cols:["Year","Year (signed)"].concat(mo6.map(function(mdx){
+        var M6=window.__ayanModes&&window.__ayanModes[mdx];
+        return ((M6&&M6.name)||mdx)+" \u00b0"; })),
       rows:rows6});
   } else if(k==="drishti"){
     var en7=MO.opt.subject, t7=Date.now(), e7=t7+moSpanMs(), rows7=[];
@@ -20876,7 +20930,12 @@ function jxConventions(J){
            node_mode:J.node_mode||"mean", house_system:"whole sign",
            alternatives:{}};
   try{
-    var modes=["lahiri","raman","kp","truechitra"];
+    /* Driven by the engine's own table rather than a copy of it. The copy used to
+       live here, in the sensitivity panel, in the motion export and in the
+       self-test, so adding one ayanāṃśa meant editing four lists and hoping
+       none was missed. */
+    var modes=Object.keys(window.__ayanModes||{});
+    if(!modes.length) modes=["lahiri","raman","kp","truechitra"];
     modes.forEach(function(m){
       var i={}; for(var k in J.input) i[k]=J.input[k]; i.ayanamsa=m;
       var Jv=window.buildLocalChart(i);

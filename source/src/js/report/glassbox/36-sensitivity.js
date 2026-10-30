@@ -8,7 +8,9 @@ function sensForksSection(D,J){
     return window.buildLocalChart(i);
   }
   // 1. ayanamsa
-  var modes=["lahiri","raman","kp","truechitra"], V={};
+  var modes=Object.keys(window.__ayanModes||{});
+  if(!modes.length) modes=["lahiri","raman","kp","truechitra"];
+  var V={};
   modes.forEach(function(m){ V[m]=variant({ayanamsa:m}); });
   var ayRows=modes.map(function(m){
     var Jv=V[m], moved=[];

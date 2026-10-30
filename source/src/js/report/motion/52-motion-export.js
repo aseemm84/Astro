@@ -317,22 +317,28 @@ function moSceneSheets(){
       cols:["Time (UTC)","Lagna °","Rāśi rising","Degrees in rāśi","1st bhāva","4th","7th","10th"],
       rows:rows5});
   } else if(k==="ayanamsa"){
+    /* Four thousand years of it, which is the span that makes the S\u016brya
+       Siddh\u0101nta readings legible: the libration climbs, turns and comes back
+       down while every other definition keeps climbing. The column set comes
+       from the engine's own table, so a new ayan\u0101\u1e43\u015ba appears here without
+       anybody remembering to add it. */
+    var mo6=Object.keys(window.__ayanModes||{});
+    if(!mo6.length) mo6=["lahiri","raman","kp","truechitra"];
     var rows6=[];
     for(var yy=-500;yy<=3500;yy+=25){
-      var jd6=2451545.0+(yy-2000)*365.2425, a6=null;
-      try{ a6=window.__ayanFor?window.__ayanFor("lahiri",jd6):null; }catch(e){}
-      if(a6==null) continue;
-      var others={};
-      ["raman","kp","truechitra"].forEach(function(mdx){
-        try{ others[mdx]=window.__ayanFor(mdx,jd6); }catch(e){ others[mdx]=null; }
+      var jd6=2451545.0+(yy-2000)*365.2425;
+      var row6=[yy<0?(Math.abs(yy)+" BCE"):(yy+" CE"), yy], any6=false;
+      mo6.forEach(function(mdx){
+        var v6=null;
+        try{ v6=window.__ayanFor?window.__ayanFor(mdx,jd6):null; }catch(e){}
+        if(v6!=null){ any6=true; row6.push(+v6.toFixed(5)); } else row6.push("");
       });
-      rows6.push([yy<0?(Math.abs(yy)+" BCE"):(yy+" CE"), yy, +a6.toFixed(5),
-                  others.raman!=null?+others.raman.toFixed(5):"",
-                  others.kp!=null?+others.kp.toFixed(5):"",
-                  others.truechitra!=null?+others.truechitra.toFixed(5):""]);
+      if(any6) rows6.push(row6);
     }
-    out.push({name:"Ayanāṃśa by year",
-      cols:["Year","Year (signed)","Lahiri °","Raman °","Krishnamurti °","True Chitrapakṣa °"],
+    out.push({name:"Ayan\u0101\u1e43\u015ba by year",
+      cols:["Year","Year (signed)"].concat(mo6.map(function(mdx){
+        var M6=window.__ayanModes&&window.__ayanModes[mdx];
+        return ((M6&&M6.name)||mdx)+" \u00b0"; })),
       rows:rows6});
   } else if(k==="drishti"){
     var en7=MO.opt.subject, t7=Date.now(), e7=t7+moSpanMs(), rows7=[];
