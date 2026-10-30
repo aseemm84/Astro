@@ -200,7 +200,8 @@ function runAyanamsaChecks(W){
   var inp=CHARTS.aseem.inp, got={};
   /* The mode list comes from the engine, not from a copy of it here. A copy
      would pass while silently testing four of seven. */
-  var MODES=Object.keys(W.__ayanModes||{});
+  var AM0=W.__ayanModes||{};
+  var MODES=Object.keys(AM0);
   MODES.forEach(function(m){
     var o={}; for(var k in inp) o[k]=inp[k]; o.ayanamsa=m;
     got[m]=W.buildLocalChart(o);
@@ -260,6 +261,43 @@ function runAyanamsaChecks(W){
     near(wrap180((got.raman.lagna.sidereal_deg-got.lahiri.lagna.sidereal_deg)-
           (got.lahiri.ayanamsha_deg-got.raman.ayanamsha_deg)), 0, 1e-6),
     (got.raman.lagna.sidereal_deg-got.lahiri.lagna.sidereal_deg).toFixed(4)+"\u00b0");
+  /* ---- the coefficients, pinned ----
+     Each of these is the ayanāṃśa at J2000 as the engine computes it, and
+     every one with a Swiss Ephemeris counterpart was checked against Swiss
+     Ephemeris itself when it was added: ten matched to 0.0001″, and the three
+     moving-star definitions (True Chitrapakṣa, True Revatī, True Puṣya) sat
+     within the ≈20″ of non-polynomial wobble their notes declare — a cubic and
+     a quintic were both tried and neither helps, because the residual is the
+     star's own apparent motion.
+
+     That check cannot run here; the site carries no ephemeris library. So it
+     is carried as data instead: a wrong digit in a coefficient moves J2000 and
+     fails this, which is the part a typo would actually break. */
+  var GOLD_AYAN={
+    lahiri:23.85709, raman:22.41079, kp:23.76024, truechitra:23.84139,
+    yukteshwar:22.47880, bhasin:22.76214, fagan:24.74030,
+    truerevati:20.04419, truepushya:22.72202,
+    ss_text:26.08634, ss_rate:22.51562, ss_swiss:20.89506,
+    ss_revati:20.10339, ss_citra:23.00576, aryabhata:20.89506,
+    nirayana_revati:20.13211
+  };
+  var goldBad=[], goldSeen=0;
+  Object.keys(GOLD_AYAN).forEach(function(m){
+    if(!AM0[m]) { goldBad.push(m+" absent"); return; }
+    goldSeen++;
+    var v=W.__ayanFor(m, 2451545.0);
+    if(Math.abs(v-GOLD_AYAN[m])>0.001) goldBad.push(m+" "+v.toFixed(5)+" vs "+GOLD_AYAN[m]);
+  });
+  check("every ayanāṃśa still computes its pinned J2000 value",
+    goldBad.length===0 && goldSeen===Object.keys(GOLD_AYAN).length,
+    goldBad.length ? goldBad.slice(0,3).join(" · ") : goldSeen+" modes pinned");
+  check("the engine declares no mode the pinned table has not seen",
+    Object.keys(AM0).every(function(m){ return GOLD_AYAN[m]!=null; }),
+    Object.keys(AM0).filter(function(m){ return GOLD_AYAN[m]==null; }).join(", ") || "none");
+  check("Āryabhaṭa and the Swiss Sūrya Siddhānta are the same series",
+    Math.abs(W.__ayanFor("aryabhata",2451545.0)-W.__ayanFor("ss_swiss",2451545.0))<0.0001,
+    "offered because it is published, not because it is a separate choice");
+
   check("each mode reports its own name and caveat",
     MODES.every(function(m){
       return got[m].ayanamsa_name && got[m].ayanamsa_note; }),

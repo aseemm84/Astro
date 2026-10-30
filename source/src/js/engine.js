@@ -36,6 +36,23 @@ var AYAN_MODES={
                c:[0.000307050151567,1.39688808364,23.7602400426]},
   truechitra: {name:"True Chitrapakṣa", note:"Spica fixed at 180° exactly; a moving definition, within ≈20″ of Swiss Ephemeris",
                c:[0.00030778556054,1.39569673536,23.8413914361]},
+  yukteshwar: {name:"Yukteshwar", note:"Śrī Yukteswar's value; matches Swiss Ephemeris to 0.000″",
+               c:[0.000307050196155334,1.39688808367904,22.4788030300512]},
+  bhasin:     {name:"J. N. Bhasin", note:"J. N. Bhasin's value; matches Swiss Ephemeris to 0.000″",
+               c:[0.000307050196162532,1.39688808367904,22.7621370300512]},
+  fagan:      {name:"Fagan–Bradley", note:"the Western sidereal standard, not a Jyotiṣa one; offered for comparison. " +
+                    "Matches Swiss Ephemeris to 0.000″",
+               c:[0.000307079912515056,1.39688797821407,24.7402999966933]},
+
+  /* ---- two more moving-star definitions ------------------------------------
+     Like True Chitrapakṣa these follow a real star rather than a fixed epoch,
+     so they carry the same ≈20″ of non-polynomial wobble. A cubic and a quintic
+     were both tried and neither helps: the residual is the star's own apparent
+     motion, not a shortcoming of the polynomial. */
+  truerevati: {name:"True Revatī", note:"ζ Piscium held at its stated longitude; a moving definition, within ≈20″ of Swiss Ephemeris",
+               c:[0.000306512057764597,1.40008230121424,20.0441879052671]},
+  truepushya: {name:"True Puṣya", note:"δ Cancri held at its stated longitude; a moving definition, within ≈19″ of Swiss Ephemeris",
+               c:[0.00030665680272264,1.39808717915315,22.7220173465237]},
 
   /* ---- the three Sūrya Siddhānta readings ----------------------------------
      "Sūrya Siddhānta ayanāṃśa" is not one number. The text does not describe
@@ -64,7 +81,44 @@ var AYAN_MODES={
   ss_swiss:   {name:"Sūrya Siddhānta (Swiss Ephemeris)", note:"Swiss Ephemeris SE_SIDM_SURYASIDDHANTA: " +
                     "zero at 499 CE then advanced by modern precession, not by the text's libration. " +
                     "Quadratic fitted over 1800–2200; matches Swiss Ephemeris to 0.000″",
-               c:[0.00030619214892391,1.39688356264496,20.8950588659651]}
+               c:[0.00030619214892391,1.39688356264496,20.8950588659651]},
+  ss_revati:  {name:"Sūrya Siddhānta — Revatī (Swiss)", note:"Swiss Ephemeris SE_SIDM_SS_REVATI: Revatī at 359°50′, " +
+                    "taken at a fixed epoch and then advanced by modern precession. Matches Swiss Ephemeris to 0.000″",
+               c:[0.000306192149237889,1.39688356264479,20.1033884059649]},
+  ss_citra:   {name:"Sūrya Siddhānta — Citrā (Swiss)", note:"Swiss Ephemeris SE_SIDM_SS_CITRA: the same scheme with " +
+                    "Citrā at 180° instead. Matches Swiss Ephemeris to 0.000″",
+               c:[0.000306192149240291,1.39688356264479,23.0057633059649]},
+  aryabhata:  {name:"Āryabhaṭa", note:"Swiss Ephemeris SE_SIDM_ARYABHATA. Measured against its Sūrya Siddhānta mode " +
+                    "over 1700–2300 the two never differ by more than 0.003″ — for every practical purpose this is " +
+                    "the same series under another name, and it is offered because it is published, not because it " +
+                    "is a separate choice",
+               c:[0.000306192149196146,1.39688356264424,20.8950597525217]},
+
+  /* ---- this site's own ------------------------------------------------------
+     Sidereal zero ten arcminutes east of Revatī (ζ Piscium), which is the
+     dhruvaka the Sūrya Siddhānta itself gives for that star: 359°50′. The star
+     is propagated to the date by its full space motion (HYG v4.1 — Hipparcos
+     astrometry, which for stars this bright is better than Gaia's) and measured
+     by POLAR longitude, the convention the siddhāntas record star positions in,
+     in the ecliptic and mean equinox of date with no nutation.
+
+     Derived independently here, and then found to agree with Swiss Ephemeris's
+     own SS_REVATI to 1.7 arcminutes at 2026 — which is the corroboration, not
+     the source. The two differ because that one freezes the star at an epoch
+     where this one lets it move; over the 1527 years since 499 CE Revatī has
+     drifted 3.8′, less than half the 10′ step the text rounds its own figure
+     to, so the text's statement still holds at the precision the text states it.
+
+     Quadratic fitted over 1700–2300, max residual 0.12″ against the derivation.
+
+     NOT a BPHS quantity. BPHS prescribes no ayanāṃśa; it uses one without
+     defining it. Lahiri remains the default and the value everything on this
+     site is validated against. */
+  nirayana_revati: {name:"Nirayana–Revatī (this site)",
+               note:"this site's own: sidereal zero 10′ east of Revatī, from the Sūrya Siddhānta's own dhruvaka " +
+                    "of 359°50′, with the star moved by its real space motion and measured by polar longitude. " +
+                    "Independent of, and within 1.7′ of, Swiss Ephemeris's Sūrya Siddhānta–Revatī",
+               c:[0.00027145885336,1.39822212898,20.132107536527]}
 };
 var AYAN_MODE="lahiri";
 function setAyanamsaMode(m){ if(AYAN_MODES[m]) AYAN_MODE=m; return AYAN_MODE; }

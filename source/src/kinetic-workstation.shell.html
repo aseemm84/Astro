@@ -36,20 +36,42 @@
 <p class="k-note">The city search sets the UTC offset that applied on the birth date, including historical daylight saving. If you type coordinates by hand, set the offset yourself.</p>
 <details class="k-raw" id="k-settings"><summary>Settings &middot; ayanāṃśa and lunar nodes</summary><div class="k-form" style="margin-top:8px"><div class="k-full"><label for="k-ayan">Ayanāṃśa</label>
     <select id="k-ayan">
-      <option value="lahiri" selected>Lahiri (Chitrapakṣa) — the Indian civil standard</option>
-      <option value="raman">Raman</option>
-      <option value="kp">Krishnamurti (KP)</option>
-      <option value="truechitra">True Chitrapakṣa (Spica fixed at 180°)</option>
-      <option value="ss_text">Sūrya Siddhānta — the text's libration (±27°, 7200 years)</option>
-      <option value="ss_rate">Sūrya Siddhānta — steady 54″ a year from 499 CE</option>
-      <option value="ss_swiss">Sūrya Siddhānta — Swiss Ephemeris definition (modern precession)</option>
+      <optgroup label="Fixed-epoch standards">
+        <option value="lahiri" selected>Lahiri (Chitrapakṣa) — the Indian civil standard</option>
+        <option value="raman">Raman</option>
+        <option value="kp">Krishnamurti (KP)</option>
+        <option value="yukteshwar">Yukteshwar</option>
+        <option value="bhasin">J. N. Bhasin</option>
+        <option value="fagan">Fagan–Bradley — Western sidereal, not Jyotiṣa</option>
+      </optgroup>
+      <optgroup label="Moving star — the anchor is tracked, not frozen">
+        <option value="truechitra">True Chitrapakṣa — Spica at 180°</option>
+        <option value="truerevati">True Revatī — ζ Piscium</option>
+        <option value="truepushya">True Puṣya — δ Cancri</option>
+      </optgroup>
+      <optgroup label="Sūrya Siddhānta and classical">
+        <option value="ss_text">Sūrya Siddhānta — the text's libration (±27°, 7200 years)</option>
+        <option value="ss_rate">Sūrya Siddhānta — steady 54″ a year from 499 CE</option>
+        <option value="ss_swiss">Sūrya Siddhānta — Swiss Ephemeris definition</option>
+        <option value="ss_revati">Sūrya Siddhānta — Revatī at 359°50′ (Swiss)</option>
+        <option value="ss_citra">Sūrya Siddhānta — Citrā at 180° (Swiss)</option>
+        <option value="aryabhata">Āryabhaṭa — same series as the Swiss Sūrya Siddhānta</option>
+      </optgroup>
+      <optgroup label="This site's own">
+        <option value="nirayana_revati">Nirayana–Revatī — the text's 359°50′, star moving, polar longitude</option>
+      </optgroup>
     </select>
     <p class="k-note">Changes every sidereal position in the report. Lahiri is the default and everything
     on this site is validated against it; the others are offered so the choice is visible rather than hidden.
-    The three S&#363;rya Siddh&#257;nta entries are three readings of <i>one</i> text, not three texts: it describes the
-    circle of asterisms as librating rather than precessing, and taken at its word the ayan&#257;&#7747;&#347;a swings back
-    instead of growing. They differ by about 5&deg; today &mdash; roughly 1.5 nak&#7779;atra p&#257;das &mdash; so they give
-    different charts, not a refined one. The report&rsquo;s Conventions section shows all of them side by side.</p></div>
+    An ayan&#257;&#7747;&#347;a is a <b>convention, not a measurement</b>: the rate is astronomy, but where sidereal zero
+    sits is a choice no observation can settle. The sixteen here span about 5&deg; today &mdash; roughly 1.5 nak&#7779;atra
+    p&#257;das &mdash; so they give different charts, not refinements of one. The S&#363;rya Siddh&#257;nta entries are
+    several readings of <i>one</i> text, which describes the circle of asterisms as librating rather than precessing.
+    <b>Nirayana&ndash;Revat&#299;</b> is this site&rsquo;s own, anchored on the dhruvaka of 359&deg;50&prime; the
+    S&#363;rya Siddh&#257;nta gives for Revat&#299;, with the star moved by its real motion. The report&rsquo;s
+    Conventions section casts the chart under every one of them side by side, and the rule worth keeping is simple:
+    <b>if a reading flips when you change ayan&#257;&#7747;&#347;a, it is an artefact of the convention rather than a
+    conclusion.</b></p></div>
   <div class="k-full"><label for="k-node">Lunar nodes</label>
     <select id="k-node">
       <option value="mean" selected>Mean node — the smoothed average, the usual Jyotiṣa choice</option>
