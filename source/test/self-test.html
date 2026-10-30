@@ -247,20 +247,32 @@ function runAyanamsaChecks(W){
              Math.abs(W.__ayanFor("ss_rate",j0))<0.05; })(),
     "both \u2248 0\u00b0 at 499 CE");
 
-  check("changing the mode moves every sidereal position by the same amount",
-    got.lahiri.grahas.every(function(g,i){
-      var d1=got.lahiri.ayanamsha_deg-got.raman.ayanamsha_deg;
-      var d2=got.raman.grahas[i].sidereal_deg-g.sidereal_deg;
-      return near(wrap180(d2-d1), 0, 1e-6); }), "9/9 grahas shift together");
-  check("that holds for the libration too, which is not a polynomial",
-    got.lahiri.grahas.every(function(g,i){
-      var d1=got.lahiri.ayanamsha_deg-got.ss_text.ayanamsha_deg;
-      var d2=got.ss_text.grahas[i].sidereal_deg-g.sidereal_deg;
-      return near(wrap180(d2-d1), 0, 1e-6); }), "9/9 grahas shift together");
-  check("the lagna shifts by the same amount as the planets",
-    near(wrap180((got.raman.lagna.sidereal_deg-got.lahiri.lagna.sidereal_deg)-
-          (got.lahiri.ayanamsha_deg-got.raman.ayanamsha_deg)), 0, 1e-6),
-    (got.raman.lagna.sidereal_deg-got.lahiri.lagna.sidereal_deg).toFixed(4)+"\u00b0");
+  /* ---- the rigid-shift identity ----
+     sid(a) = sid(a\u2080) + (a\u2080 \u2212 a), for every graha AND the lagna, in EVERY mode.
+     This used to be checked for two modes and the lagna for one. It now sweeps
+     all of them, because the Ayan\u0101\u1e43\u015ba comparison pane computes its entire table
+     by applying that identity rather than by casting sixteen charts \u2014 about a
+     hundredfold cheaper, and exactly as accurate, but only for as long as the
+     engine really does enter the ayan\u0101\u1e43\u015ba at a single place. If that ever
+     changes, this fails loudly rather than the pane quietly drawing charts
+     nobody would get by casting them.
+
+     The libration mode stays in the sweep on purpose: it is not a polynomial,
+     so an identity that held only for the polynomial modes would be a property
+     of the coefficients rather than of the engine. */
+  var rigidBad=[];
+  MODES.forEach(function(m){
+    var d=got.lahiri.ayanamsha_deg-got[m].ayanamsha_deg;
+    got.lahiri.grahas.forEach(function(g,i){
+      if(!near(wrap180((got[m].grahas[i].sidereal_deg-g.sidereal_deg)-d),0,1e-6))
+        rigidBad.push(m+"/"+g.key); });
+    if(!near(wrap180((got[m].lagna.sidereal_deg-got.lahiri.lagna.sidereal_deg)-d),0,1e-6))
+      rigidBad.push(m+"/lagna");
+  });
+  check("every mode shifts every longitude rigidly, lagna included",
+    rigidBad.length===0 && MODES.length>=16,
+    rigidBad.length ? rigidBad.slice(0,4).join(" \u00b7 ")
+                    : MODES.length+" modes \u00d7 10 longitudes, all within 1e-6\u00b0");
   /* ---- the coefficients, pinned ----
      Each of these is the ayanāṃśa at J2000 as the engine computes it, and
      every one with a Swiss Ephemeris counterpart was checked against Swiss
@@ -446,6 +458,72 @@ function runSensitivityChecks(doc, key){
   check("the node fork compares mean against true",
     fk && fk.innerText.indexOf("Mean node")>=0 && fk.innerText.indexOf("True node")>=0,
     "both node conventions shown");
+
+  /* ---- the three places that used to say "Lahiri" whatever you chose ----
+     The vitals card printed the constant string "sidereal (≈ Lahiri)" under
+     whatever number the engine had produced; the conventions fork measured its
+     "changes sign" column against a hardcoded Lahiri baseline and put "← in
+     use" on the Lahiri row. Cast on Nirayana–Revatī and the page read
+     "19.922° · sidereal (≈ Lahiri)" — nearly four degrees of disagreement,
+     captioned as agreement. The arithmetic was right throughout; only the
+     labels were constants.
+
+     Checked by consequence rather than by reading the source: recast the page
+     on every declared mode and require each label to name that mode. A fourth
+     constant appearing anywhere in the head would fail this the same way. */
+  var selA=doc.getElementById("k-ayan"), goB=doc.getElementById("k-go");
+  var capBad=[], baseBad=[], paneBad=[], capSeen=0;
+  if(selA && goB && Object.keys(AM).length>=16){
+    var was0=selA.value;
+    Object.keys(AM).forEach(function(m){
+      selA.value=m; goB.click();
+      var cap=doc.querySelector("#k-out .kcard-ayan .s");
+      if(!cap || cap.textContent.indexOf(AM[m].name)<0)
+        capBad.push(m+" → "+(cap?cap.textContent.trim():"absent"));
+      else capSeen++;
+      /* The fork's OWN highlighted row — resolved inside the "Conventions in
+         use" section, not by the first tr.khl in the document. The first draft
+         of this check took the document-wide first match, which belongs to a
+         different section, so it passed against a deliberately broken baseline.
+         The section is re-found each pass because the report is rebuilt. */
+      var fk2=[].slice.call(doc.querySelectorAll("#k-out .ksec")).filter(function(s3){
+        var h3=s3.querySelector(".kh");
+        return h3 && h3.childNodes[0].textContent.indexOf("Conventions")>=0; })[0];
+      var hl=fk2 && fk2.querySelector("tr.khl b");
+      if(!hl || hl.textContent.indexOf(AM[m].name)<0)
+        baseBad.push(m+" → "+(hl?hl.textContent:"none"));
+      /* exactly one "in use" marker in the comparison pane, on this mode */
+      var pn=doc.getElementById("kp-ayan");
+      if(!pn) paneBad.push(m+" pane absent");
+      else {
+        var marks=(pn.innerHTML.match(/← in use/g)||[]).length;
+        var uses=pn.querySelectorAll("[data-kayan]").length;
+        if(marks!==1 || uses!==Object.keys(AM).length-1)
+          paneBad.push(m+" marks="+marks+" use="+uses);
+      }
+    });
+    selA.value=was0; goB.click();
+  }
+  check("the vitals card names the ayanāṃśa actually cast with",
+    capBad.length===0 && capSeen>=16,
+    capBad.length ? capBad.slice(0,3).join(" · ") : capSeen+" modes, each captioned with its own name");
+  check("the conventions fork takes the cast mode as its baseline",
+    baseBad.length===0,
+    baseBad.length ? baseBad.slice(0,3).join(" · ") : "highlighted row follows the picker in all 16");
+  check("the comparison pane marks one mode in use and offers the rest",
+    paneBad.length===0,
+    paneBad.length ? paneBad.slice(0,3).join(" · ") : "1 marker + 15 switches, in all 16 castings");
+
+  /* The report is assembled by string concatenation, so a missing lookup does
+     not throw — it prints the word "undefined" and carries on. One slipped into
+     a source-link row and was caught by eye, which is not a method. Nothing in
+     a finished report should ever read "undefined"; if a future section needs
+     the word in prose, it can be exempted here deliberately. */
+  var outEl=doc.getElementById("k-out");
+  var undef=outEl ? (outEl.innerText.match(/\bundefined\b/g)||[]).length : -1;
+  check("no section renders the word “undefined”",
+    undef===0,
+    undef<0 ? "report absent" : undef+" occurrence(s) in the visible report");
 }
 function runSkyChecks(W, doc, key){
   group(CHARTS[key].label+" — sky view");

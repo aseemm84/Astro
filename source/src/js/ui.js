@@ -864,6 +864,7 @@
     var st=t.closest("[data-kstep-go]"); if(st){ stepGo(st.getAttribute("data-kstep-go")); return; }
     var ip=t.closest("[data-kip]"); if(ip){ pick(ip.getAttribute("data-kip")); return; }
     var sh=t.closest("[data-kshift]"); if(sh){ shiftTime(+sh.getAttribute("data-kshift")); return; }
+    var ay=t.closest("[data-kayan]"); if(ay){ switchAyan(ay.getAttribute("data-kayan")); return; }
     var geo=t.closest("[data-kday-geo]"); if(geo){ dayHere(); return; }
     if(t.id==="kev-add"){ evAdd(); return; }
     var dl=t.closest("[data-kev-del]"); if(dl){ var L=evLoad(); L.splice(+dl.getAttribute("data-kev-del"),1); evSave(L); evRender(); return; }
@@ -879,6 +880,13 @@
     if(t.matches("[data-kip]")&&(ev.key==="Enter"||ev.key===" ")){ ev.preventDefault(); pick(t.getAttribute("data-kip")); return; }
     if(t.id==="km-search"&&ev.key==="Enter"){ ev.preventDefault(); kmSearch(); return; }
     if((t.id==="kev-label"||t.id==="kev-date")&&ev.key==="Enter"){ ev.preventDefault(); evAdd(); }
+  });
+  /* The picker inside the vitals card. It lives in markup the report rebuilds on
+     every cast, so the listener is delegated rather than bound to the element —
+     binding it would be lost the first time it was used. */
+  document.addEventListener("change",function(ev){
+    var t=ev.target; if(!t||t.id!=="k-ayan-live") return;
+    switchAyan(t.value);
   });
   // interactive chart: show the panel and shade the houses it names
   function pick(key){
@@ -900,6 +908,25 @@
     r.querySelectorAll(".kpath-nav [data-kstep-go]").forEach(function(b){ b.classList.toggle("on",+b.getAttribute("data-kstep-go")===n); });
     var nx=r.querySelector('.kpath-foot [data-kstep-go="next"]'); if(nx) nx.disabled=(n===steps.length);
     var pv=r.querySelector('.kpath-foot [data-kstep-go="prev"]'); if(pv) pv.disabled=(n===1);
+  }
+  /* ---- recast on a different ayanāṃśa, without re-entering anything ----
+     The chart is a pure function of the birth data and the two conventions, so
+     this is the move shiftTime makes on the other axis: change one field in the
+     form, cast again, come back to the tab you were on. Keeping the tab matters
+     more here than for a time shift, because the comparison table is the thing
+     you switch *from* — losing your place in it on every switch would make the
+     feature unusable. The mode is validated against the picker's own options
+     rather than trusted, since an unrecognised value would silently fall
+     through to the default and cast a chart the reader did not ask for. */
+  function switchAyan(mode){
+    var sel=$("k-ayan"); if(!sel||!mode) return;
+    var ok=false;
+    for(var i=0;i<sel.options.length;i++) if(sel.options[i].value===mode) ok=true;
+    if(!ok) return;
+    if(sel.value===mode) return;               // already there; a pointless recast
+    sel.value=mode;
+    try{ convStrip(); }catch(e){}
+    pendingTab=currentTab; cast();
   }
   // birth-time check: recast at a nearby time
   function shiftTime(min){

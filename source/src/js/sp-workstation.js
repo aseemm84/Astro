@@ -450,6 +450,19 @@
     return need("The Śrīpati panel is unavailable.");
   }
 
+  /* ---- the ayanāṃśa comparison ------------------------------------------
+     Rendered from the report's own function rather than reimplemented, for the
+     same reason as the Śrīpati panel above: one implementation, so the two
+     pages cannot disagree about which placements the convention moves. */
+  function viewAyan(D) {
+    if (!D) return need("A chart is needed for this view.");
+    try {
+      if (window.__kApi && window.__kApi.ayanamsa)
+        return window.__kApi.ayanamsa();
+    } catch (e) {}
+    return need("The ayanāṃśa comparison is unavailable.");
+  }
+
   /* ---- view 6: the sixteen divisions ------------------------------------- */
   function viewVarga(D) {
     if (!D) return need("A chart is needed for this view.");
@@ -782,6 +795,7 @@
       case "rashiphal": html = viewGochara("rashiphal"); break;
       case "ganita":    html = viewGanita(D); break;
       case "shifts":    html = viewShifts(D); break;
+      case "ayan":      html = viewAyan(D); break;
       case "varga":     html = viewVarga(D); break;
       case "dasha":     html = borrow(["ks-vimsottari-dasa",
                           "ks-antardasa-and-pratyantardasa",

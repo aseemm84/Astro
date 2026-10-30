@@ -31,8 +31,17 @@ strength:"strength.html",lagna:"lagna.html"};
 var SRCN={bhava:"Bhavas",dignity:"Dignity",graha:"Grahas",varga:"Vargas",av:"Ashtakavarga",yoga:"Yogas",
 dasha:"Dashas",aspect:"Aspects",sp:"Special Points",strength:"Strength",lagna:"Lagna"};
 
-function srcs(keys){return '<span class="kasrc">'+keys.map(function(k){
-  return '<a href="'+SRCP[k]+'">'+SRCN[k]+'</a>';}).join(" · ")+'</span>';}
+/* A key with no entry in these two tables used to render the literal word
+   "undefined", linked to a page called "undefined" — a dead link in the one
+   place a reader is told where a rule comes from. It is a typo-class mistake
+   that no amount of care prevents, so it is handled rather than relied on: an
+   unknown key is dropped, and the suite fails any report still containing the
+   word, which is what catches the next one of these wherever it appears. */
+function srcs(keys){
+  var ok=(keys||[]).filter(function(k){ return SRCP[k] && SRCN[k]; });
+  if(!ok.length) return "";
+  return '<span class="kasrc">'+ok.map(function(k){
+    return '<a href="'+SRCP[k]+'">'+SRCN[k]+'</a>';}).join(" · ")+'</span>';}
 function note(title,brief,detail,keys){
   return '<div class="kanote"><b>'+esc(title)+'</b>'+brief+
     (detail?'<span class="kmore"> '+detail+'</span>':'')+(keys?srcs(keys):'')+'</div>';

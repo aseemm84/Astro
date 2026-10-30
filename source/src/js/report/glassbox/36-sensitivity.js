@@ -10,18 +10,25 @@ function sensForksSection(D,J){
   // 1. ayanamsa
   var modes=Object.keys(window.__ayanModes||{});
   if(!modes.length) modes=["lahiri","raman","kp","truechitra"];
+  /* The baseline is the mode this chart was actually cast with, not the literal
+     string "lahiri". Hardcoding it meant that a chart cast on Nirayana–Revatī got
+     a "changes sign" column measured against a chart the reader was not looking
+     at, and an "← in use" marker on a row that was not in use. Both follow the
+     input now, so the table describes the chart above it. */
+  var CUR=(J.input&&J.input.ayanamsa)||"lahiri";
+  if(modes.indexOf(CUR)<0) CUR=modes[0];
   var V={};
   modes.forEach(function(m){ V[m]=variant({ayanamsa:m}); });
   var ayRows=modes.map(function(m){
     var Jv=V[m], moved=[];
     Jv.grahas.forEach(function(g,ix){
-      if(g.rashi.idx!==V.lahiri.grahas[ix].rashi.idx) moved.push(EN[g.key]||g.key); });
-    var lagDiff=Jv.lagna.rashi.idx!==V.lahiri.lagna.rashi.idx;
-    return '<tr'+(m==="lahiri"?' class="khl"':'')+'><td><b>'+esc(Jv.ayanamsa_name)+'</b>'+
-      (m==="lahiri"?' <span class="kmut">← in use</span>':'')+'</td>'+
+      if(g.rashi.idx!==V[CUR].grahas[ix].rashi.idx) moved.push(EN[g.key]||g.key); });
+    var lagDiff=Jv.lagna.rashi.idx!==V[CUR].lagna.rashi.idx;
+    return '<tr'+(m===CUR?' class="khl"':'')+'><td><b>'+esc(Jv.ayanamsa_name)+'</b>'+
+      (m===CUR?' <span class="kmut">← in use</span>':'')+'</td>'+
       '<td class="knum">'+Jv.ayanamsha_deg.toFixed(4)+'°</td>'+
       '<td>'+SA[Jv.lagna.rashi.idx]+' '+dm(Jv.lagna.rashi.degInSign)+(lagDiff?' <b style="color:#a1493a">changes</b>':'')+'</td>'+
-      '<td>'+(m==="lahiri"?'<span class="kmut">—</span>':(moved.length?moved.join(", "):'<span class="kmut">no sign changes</span>'))+'</td></tr>';
+      '<td>'+(m===CUR?'<span class="kmut">— baseline</span>':(moved.length?moved.join(", "):'<span class="kmut">no sign changes</span>'))+'</td></tr>';
   }).join("");
   // 2. node
   var nm=variant({node:"mean"}), nt=variant({node:"true"});

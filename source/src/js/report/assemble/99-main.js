@@ -13,7 +13,13 @@ window.buildKundliReport=function(J){
   H.push('<div class="kcards">');
   H.push('<div class="kcard"><div class="k">Lagna</div><div class="v">'+SA[LS]+'</div><div class="s">'+dm(D.lagDeg)+' · '+padaLink(D.lagNak.name,D.lagNak.pada)+'</div></div>');
   if(D.P.Moon)H.push('<div class="kcard"><div class="k">Moon</div><div class="v">'+SA[D.P.Moon.sign]+'</div><div class="s">'+padaLink(D.P.Moon.nak,D.P.Moon.pada)+'</div></div>');
-  if(D.ayan!=null)H.push('<div class="kcard"><div class="k">Ayanāṃśa</div><div class="v">'+D.ayan.toFixed(3)+'°</div><div class="s">sidereal (≈ Lahiri)</div></div>');
+  /* The caption used to be the literal words "sidereal (≈ Lahiri)", printed under
+     whatever number the engine had actually produced. Choose Nirayana–Revatī and
+     the card read "19.922° · sidereal (≈ Lahiri)" — a value nearly four degrees
+     from Lahiri, captioned Lahiri. The arithmetic was always right; only the
+     caption was a constant. It now comes from the engine's own mode table, keyed
+     by the chart's own input, so the name and the number cannot drift apart. */
+  if(D.ayan!=null)H.push('<div class="kcard kcard-ayan"><div class="k">Ayanāṃśa</div><div class="v">'+D.ayan.toFixed(3)+'°</div><div class="s">sidereal · '+esc(ayanNameOf(J))+'</div>'+ayanQuickPick(J)+'</div>');
   if(cm)H.push('<div class="kcard"><div class="k">Current mahādaśā</div><div class="v">'+esc(cm.lord)+'</div><div class="s">to '+fmy(cm.end)+(D.nextMd?' · then '+esc(D.nextMd.lord):'')+'</div></div>');
   if(D.av&&D.av.sarva_total!=null)H.push('<div class="kcard"><div class="k">Ashtakavarga total</div><div class="v">'+D.av.sarva_total+'</div><div class="s">expected 337</div></div>');
   H.push('</div>');
@@ -217,7 +223,7 @@ window.buildKundliReport=function(J){
 
      Paired with the stamp engine.js writes — an identifier, not branding. */
   if((J.substrate_stamp||"").indexOf("LearnHoro built-in")>=0)
-    H.push('<div class="kbox"><b>Computed in your browser</b>Every figure here — positions, ashtakavarga, yogas, Bhay\u0101ta/Bhabhoga and the da\u015b\u0101 tree — was computed locally by the built-in engine (astronomy-engine, MIT) with the Lahiri ayan\u0101\u1e43\u015ba fitted to Swiss Ephemeris; no network call was made, and this page carries no code that could make one. \u0100r\u016b\u1e0dha exception cases follow the rule this site documents: the 4th from the house when the pada falls in the 7th.</div>');
+    H.push('<div class="kbox"><b>Computed in your browser</b>Every figure here — positions, ashtakavarga, yogas, Bhay\u0101ta/Bhabhoga and the da\u015b\u0101 tree — was computed locally by the built-in engine (astronomy-engine, MIT) with the '+esc(ayanNameOf(J))+' ayan\u0101\u1e43\u015ba; no network call was made, and this page carries no code that could make one. \u0100r\u016b\u1e0dha exception cases follow the rule this site documents: the 4th from the house when the pada falls in the 7th.</div>');
   H.push('<div class="kbox kwarn"><b>What this is</b>A technical presentation of a traditional system, for study and reflection — not a prediction, diagnosis, or basis for medical, financial, legal or personal decisions. Positions and engine-computed values come from the chart engine; houses, nakṣatra-pādas, combustion, Moolatrikona by degree and the daśā sequence are recomputed here. Charts with planets at sign edges are sensitive to the exact birth time.</div>');
   var full=H.join("").replace('<!--KINDEX-->', sectionIndex());
   // runtime hooks for the interactive panes (events, compatibility, today's tools)
@@ -236,7 +242,10 @@ window.buildKundliReport=function(J){
     shodashavargaMatrix:function(){ return shodashavargaMatrix(D); },
     events:function(list){ try{ return eventsAnalyze(D,list||[]); }catch(e){ return paneErr("Life events",e); } },
     match:function(J2,opt){ return matchHtml(D,J2,opt||{}); },
-    dayBlock:function(lat,lon,tz,label){ return dayBlock(D,lat,lon,tz,label); }
+    dayBlock:function(lat,lon,tz,label){ return dayBlock(D,lat,lon,tz,label); },
+    /* The Workstation renders this from the same function rather than its own
+       copy, for the same reason as the Śrīpati pane above. */
+    ayanamsa:function(){ return pane(function(){ return ayanPane(D,J); },"Ayanāṃśa"); }
   };
   function pane(fn,name){ try{ return fn(); }catch(e){ return paneErr(name,e); } }
   var PANES=[
@@ -250,6 +259,7 @@ window.buildKundliReport=function(J){
     ["motion","Motion",function(){ return motionPane(D,J); }],
     ["sripati","Śrīpati",function(){ return pane(function(){ return sripatiPane(D); },"Śrīpati"); }],
     ["btime","Birth-time check",function(){ return birthTimePane(D); }],
+    ["ayan","Ayanāṃśa",function(){ return pane(function(){ return ayanPane(D,J); },"Ayanāṃśa"); }],
     ["match","Compatibility",function(){ return matchPane(); }],
     ["full","Full report",function(){ return '<div class="krprint">'+
       '<button type="button" class="k-btn" data-krprint>Print full report ('+
