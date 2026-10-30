@@ -41,7 +41,7 @@ function matchHtml(D,J2,opt){
   var tot=K.reduce(function(s,k){ return s+k[2]; },0);
   var rows=K.map(function(k){ var pc=k[2]/k[1];
     return '<tr><td><b>'+k[0]+'</b></td><td>'+esc(k[3])+'</td><td>'+esc(k[4])+'</td>'+
-      '<td class="knum" style="font-weight:700;color:'+(pc>=0.75?"#1c6b46":pc>=0.4?"#b08a2e":"#a1493a")+'">'+k[2]+' / '+k[1]+'</td><td class="kmut">'+k[5]+'</td></tr>'; });
+      '<td class="knum" style="font-weight:700;color:'+(pc>=0.75?"var(--sem-good,#1c6b46)":pc>=0.4?"var(--sem-mid,#b08a2e)":"var(--sem-bad,#a1493a)")+'">'+k[2]+' / '+k[1]+'</td><td class="kmut">'+k[5]+'</td></tr>'; });
   var sameLordOrFriends=boy.lord===girl.lord||(maitriRel(boy.lord,girl.lord)==="friend"&&maitriRel(girl.lord,boy.lord)==="friend");
   var exc=[];
   if(np===0) exc.push('<b>Nāḍī</b> scores 0. Commonly cited exceptions — same Moon sign with different nakṣatras: '+

@@ -66,7 +66,7 @@ window.buildKundliReport=function(J){
   if(D.bhavas.length){
     rows=D.bhavas.map(function(b){
       var lp=D.P[b.lord],ld=lp?esc(b.lord)+" — H"+lp.house+" "+chip(lp.dig):esc(b.lord);
-      var sc=b.sav==null?"":(b.sav>=30?"#1c6b46":(b.sav>=25?"#b08a2e":"#a1493a"));
+      var sc=b.sav==null?"":(b.sav>=30?"var(--sem-good,#1c6b46)":(b.sav>=25?"var(--sem-mid,#b08a2e)":"var(--sem-bad,#a1493a)"));
       return '<tr><td><b>'+b.n+'</b> '+esc(b.sa)+'</td><td>'+SA[b.sign]+'</td><td>'+ld+'</td>'+
        '<td>'+(b.occ.join(", ")||"—")+'</td><td class="kmut">'+(b.cls.join(" · ")||"—")+'</td>'+
        '<td class="knum" style="color:'+sc+';font-weight:700">'+(b.sav==null?"—":b.sav)+'</td></tr>';});
@@ -128,7 +128,7 @@ window.buildKundliReport=function(J){
       ' of them defined in the uploaded BPHS text and '+nLater+' drawn from later tradition. The source '+
       'column says which, and a yoga taken from later tradition is never presented as Parāśara&rsquo;s own.</p>';
     if(pres.length)yb+='<h4 class="ksub">Present</h4>'+tbl(["Yoga","Category","Why it forms","Strength","Source"],
-      pres.map(function(y){var col=y.category.indexOf("Subtractive")===0||y.category.indexOf("Doṣa")===0?"#a1493a":"#1c6b46";
+      pres.map(function(y){var col=y.category.indexOf("Subtractive")===0||y.category.indexOf("Doṣa")===0?"var(--sem-bad,#a1493a)":"var(--sem-good,#1c6b46)";
         return '<tr><td><b style="color:'+col+'">'+esc(y.iast||y.key)+'</b></td><td>'+esc(y.category)+
           '</td><td>'+esc(y.detail)+'</td><td>'+esc(y.strength||"—")+'</td>'+srcCell(y)+'</tr>';}));
     if(abs.length)yb+='<h4 class="ksub">Tested, not formed</h4>'+tbl(["Yoga","Category","Reason","Source"],
@@ -196,7 +196,7 @@ window.buildKundliReport=function(J){
       .sort(function(a,b){return a.orb_deg-b.orb_deg;});
     if(tight.length)tb+='<h4 class="ksub">Tight contacts <span class="kmut">('+tight.length+' of '+D.trel.length+')</span></h4>'+
       tbl(["Transiting","Aspect","Natal","Orb","Phase"],tight.map(function(r){
-        var col=r.significance==="exact"?"#a1493a":"#b08a2e";
+        var col=r.significance==="exact"?"var(--sem-bad,#a1493a)":"var(--sem-mid,#b08a2e)";
         return '<tr><td>'+esc(r.transit_graha)+'</td><td>'+esc(r.aspect)+'</td><td>'+esc(r.natal_graha)+'</td>'+
         '<td class="knum">'+r.orb_deg.toFixed(2)+'°</td><td style="color:'+col+';font-weight:600">'+esc(r.significance)+'</td></tr>';}));
     var cds='';

@@ -864,6 +864,46 @@
     var part = (D.sunset - D.sunrise) / 8, i = RAHU_PART[wd];
     return { from: D.sunrise + i * part, to: D.sunrise + (i + 1) * part };
   };
+  /* ---- Choghaḍiyā, day AND night --------------------------------------
+     Only the eight daytime slots existed. Between sunset and sunrise the
+     function returned {night:true} and nothing more, so every surface that
+     shows a choghaḍiyā — the calendar row, the card, the Now panel — simply
+     had nothing to show for half of every day. That is the "not displaying
+     correctly" of it: the daytime table below is right, and was right; it
+     just stopped at dusk.
+
+     Both halves come from ONE cycle rather than two hand-typed tables. The
+     seven names run in the hora order — Sun, Venus, Mercury, Moon, Saturn,
+     Jupiter, Mars — and a weekday's daytime run starts at its own lord. The
+     night run of the same weekday starts five places further on, which is the
+     classical rule and is also what makes the night of one day join the dawn
+     of the next without a seam. Deriving the second table from the first
+     means they cannot disagree, and the suite checks the derived daytime
+     table against the printed one it replaces.
+
+     TIER. Choghaḍiyā is later muhūrta practice, not BPHS. The uploaded
+     Santhanam edition does not give it, and the pages that display it say so.
+
+     This is a scheme for naming the parts of a day, not a prediction. */
+  var CHOG_CYCLE = ["Udvega", "Cala", "Lābha", "Amṛta", "Kāla", "Śubha", "Roga"];
+  /* where each weekday's DAY run starts in that cycle, Sunday first */
+  var CHOG_START = [0, 3, 6, 2, 5, 1, 4];
+  function chogRun(wd, night) {
+    /* The night does not simply carry on where the day stopped. It starts five
+       places along the cycle AND advances five at a time, where the day
+       advances one — which is why Sunday's night reads Śubha, Amṛta, Cala,
+       Roga and not Śubha, Roga, Udvega, Cala. The first version of this
+       derivation got the start right and the step wrong, and the error was
+       invisible in the first slot of every weekday; printing all seven runs
+       and reading them against the standard tables is what caught it.
+
+       Both numbers are checked against the printed day table and against the
+       seven standard night runs in the suite, so neither can drift. */
+    var a = [], st = CHOG_START[wd] + (night ? 5 : 0), step = night ? 5 : 1;
+    for (var i = 0; i < 8; i++) a.push(CHOG_CYCLE[(st + i * step) % 7]);
+    return a;
+  }
+  /* kept as the thing the derived day table is checked against */
   var CHOG_DAY = [
     ["Udvega", "Cala", "Lābha", "Amṛta", "Kāla", "Śubha", "Roga", "Udvega"],
     ["Amṛta", "Kāla", "Śubha", "Roga", "Udvega", "Cala", "Lābha", "Amṛta"],
@@ -873,13 +913,50 @@
     ["Cala", "Lābha", "Amṛta", "Kāla", "Śubha", "Roga", "Udvega", "Cala"],
     ["Kāla", "Śubha", "Roga", "Udvega", "Cala", "Lābha", "Amṛta", "Kāla"]
   ];
+  NP.chogRun = chogRun; NP.CHOG_DAY = CHOG_DAY;
+  function chogWd(ms) {
+    return (Math.floor(window.__kJD(ms) + 1.5) % 7 + 7) % 7;
+  }
+  /* Which the eight auspicious-by-name slots are. Named rather than ranked,
+     because the names ARE the claim and this adds none of its own. */
+  var CHOG_GOOD = { "Amṛta": 1, "Śubha": 1, "Lābha": 1, "Cala": 1 };
   NP.choghadiya = function (D) {
     if (D.sunrise == null || D.sunset == null) return null;
-    if (D.ms < D.sunrise || D.ms > D.sunset) return { night: true };
-    var wd = (Math.floor(window.__kJD(D.sunrise) + 1.5) % 7 + 7) % 7;
-    var part = (D.sunset - D.sunrise) / 8, i = Math.floor((D.ms - D.sunrise) / part);
-    return { name: CHOG_DAY[wd][Math.min(7, i)], i: i + 1,
-             from: D.sunrise + i * part, to: D.sunrise + (i + 1) * part };
+    var part, i, wd, night;
+    if (D.ms >= D.sunrise && D.ms <= D.sunset) {
+      night = false; wd = chogWd(D.sunrise);
+      part = (D.sunset - D.sunrise) / 8;
+      i = Math.min(7, Math.floor((D.ms - D.sunrise) / part));
+      var f0 = D.sunrise + i * part;
+      return { name: chogRun(wd, false)[i], i: i + 1, night: false,
+               good: !!CHOG_GOOD[chogRun(wd, false)[i]],
+               from: f0, to: f0 + part };
+    }
+    /* After sunset the night belongs to THIS weekday; before sunrise it
+       belongs to the previous one, whose sunset began it. Without that the
+       small hours were labelled with tomorrow's names. */
+    var ss, nsr;
+    if (D.ms > D.sunset) {
+      ss = D.sunset;
+      nsr = (D.nextSunrise != null && D.nextSunrise > D.sunset)
+          ? D.nextSunrise : D.sunset + 43200000;
+      wd = chogWd(D.sunrise);
+    } else {
+      /* pre-dawn: yesterday's sunset to this morning's sunrise. The lengths
+         of the two are within a couple of minutes of each other at any
+         latitude this side of the Arctic, so yesterday's night length is
+         taken as this one's rather than refusing to answer. */
+      nsr = D.sunrise;
+      ss = D.sunrise - ((D.sunset - D.sunrise) > 0
+          ? (86400000 - (D.sunset - D.sunrise)) : 43200000);
+      wd = (chogWd(D.sunrise) + 6) % 7;
+    }
+    if (!(nsr > ss)) return { night: true };
+    part = (nsr - ss) / 8;
+    i = Math.max(0, Math.min(7, Math.floor((D.ms - ss) / part)));
+    var nm = chogRun(wd, true)[i];
+    return { name: nm, i: i + 1, night: true, good: !!CHOG_GOOD[nm],
+             from: ss + i * part, to: ss + (i + 1) * part };
   };
   var MUHURTA = ["Rudra", "Āhi", "Mitra", "Pitṛ", "Vasu", "Vārāha", "Viśvedevā",
     "Vidhi", "Satamukhī", "Puruhūta", "Vāhinī", "Naktanakarā", "Varuṇa", "Aryaman",

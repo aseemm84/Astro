@@ -130,22 +130,56 @@ function printFullReport(){
     window.removeEventListener("afterprint",cleanup);
   }
   window.addEventListener("afterprint",cleanup);
-  setTimeout(function(){ window.print(); setTimeout(cleanup,1500); },250);
+  /* The teardown used to run 1.5 seconds after window.print() was called.
+     In a browser that is safe: print() blocks until the dialog is dismissed,
+     so the timer only starts once the reader has finished. In the desktop app
+     it is not — the system print panel is a sheet that does NOT block the
+     script, so the timer fired while the panel was still open and deleted the
+     document out from under it. The reader got a blank or half-built page,
+     which is exactly "the Print button does not work properly".
+
+     afterprint is the real signal and was always listened for. The timer is
+     now only a last resort for a window that never fires it, and it is long
+     enough that nobody reaches it by reading the print dialog. */
+  setTimeout(function(){
+    try{ window.print(); }
+    catch(e){
+      cleanup();
+      alert("This window would not open a print dialog. Use the browser or "+
+            "system print command instead — the report is already laid out for it.");
+      return;
+    }
+    setTimeout(cleanup,120000);
+  },250);
 }
 window.__printFullReport=printFullReport;
 window.__buildPrintDoc=buildPrintDoc;
 document.addEventListener("click",function(ev){
-  var t=ev.target;
-  if(t&&t.getAttribute&&t.getAttribute("data-krprint")!=null){ ev.preventDefault(); printFullReport(); }
+  /* closest(), not ev.target. These are two buttons whose labels contain a
+     span and an entity, and a click that lands on an inner node has a target
+     that is not the button — the attribute lookup then finds nothing and the
+     click does nothing at all, silently. It happened to work wherever the
+     label was a single text node. */
+  var t=ev.target&&ev.target.closest?ev.target.closest("[data-krprint],[data-kdash]"):ev.target;
+  if(!t||!t.getAttribute) return;
+  if(t.getAttribute("data-krprint")!=null){ ev.preventDefault(); printFullReport(); }
   /* Hand the current chart to the dashboard rather than making the reader export a
      file and upload it again. localStorage is same-origin and holds only this chart;
      the dashboard clears it once read. */
-  if(t&&t.getAttribute&&t.getAttribute("data-kdash")!=null){
+  if(t.getAttribute("data-kdash")!=null){
     try{
       /* Storage key, not branding: dashboard.html reads this exact string. Renaming
          it here alone makes the handoff fail silently, with the dashboard simply
          finding nothing. */
       if(window.__kdata) localStorage.setItem("learnhoro.chart",JSON.stringify(window.__kdata));
     }catch(e){ /* quota or private mode — the dashboard will ask for a file instead */ }
+    /* target="_blank" opens a new tab, and the application has no tabs: in the
+       app this link did nothing whatsoever. The handoff above has already
+       happened, so navigating this window is the same journey without the tab,
+       and the app's own Back takes the reader home again. */
+    if(window.__isApp){
+      ev.preventDefault();
+      try{ location.href=t.getAttribute("href")||"dashboard.html"; }catch(e){}
+    }
   }
 });

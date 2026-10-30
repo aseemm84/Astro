@@ -196,15 +196,33 @@ function ayanPane(D,J){
       prev=k; prevLab=lb;
     }
   });
-  var HH=y0+LANES.length*RH+34, marks='';
-  L.forEach(function(m,i){
-    var xx=xr(m.deg);
+  /* The sixteen standards are not spread evenly — several sit within a tenth
+     of a degree of each other, and Āryabhaṭa and the Swiss Sūrya Siddhānta are
+     the same series to four decimals. Writing a label at every mark put four
+     or five names on top of one another at the left of the ruler, which is
+     what made the strip unreadable.
+
+     Each mark still gets its line and its hover title, because those are what
+     the ruler is for. A NAME is written only where there is room for one: the
+     labels are laid out left to right and one is skipped unless it clears the
+     last one drawn. Marks that lose their label are not lost — they are the
+     ones you read by hovering, and the table above names every one of them in
+     order anyway. */
+  var HH=y0+LANES.length*RH+34, marks='', lastLab=-1e9, LABGAP=13;
+  L.forEach(function(m){
+    var xx=xr(m.deg), cur=(m.key===CUR);
     marks+='<g><title>'+esc(m.name)+' — '+m.deg.toFixed(4)+'°</title>'+
       '<line x1="'+xx.toFixed(1)+'" y1="18" x2="'+xx.toFixed(1)+'" y2="'+(HH-26)+
-      '" stroke="'+(m.key===CUR?"#a1493a":"#b9ad90")+'" stroke-width="'+(m.key===CUR?2:0.7)+
-      '"'+(m.key===CUR?'':' stroke-dasharray="2 3"')+'/>'+
-      '<text x="'+xx.toFixed(1)+'" y="14" class="ty" transform="rotate(-90 '+xx.toFixed(1)+' 14)" '+
-      'style="text-anchor:start">'+esc(m.name.split(" ")[0].slice(0,9))+'</text></g>';
+      '" stroke="'+(cur?"#a1493a":"#b9ad90")+'" stroke-width="'+(cur?2:0.7)+
+      '"'+(cur?'':' stroke-dasharray="2 3"')+'/>';
+    /* the mode in use always gets its name, whatever it would collide with */
+    if(cur || xx-lastLab>=LABGAP){
+      lastLab=Math.max(lastLab,xx);
+      marks+='<text x="'+xx.toFixed(1)+'" y="14" class="ty'+(cur?' tycur':'')+
+        '" transform="rotate(-90 '+xx.toFixed(1)+' 14)" style="text-anchor:start">'+
+        esc(m.name.replace(/—.*$/,"").split("(")[0].trim().split(" ")[0].slice(0,10))+'</text>';
+    }
+    marks+='</g>';
   });
   for(var t=Math.ceil(X0);t<=X1;t++){ var xt=xr(t);
     marks+='<text x="'+xt.toFixed(1)+'" y="'+(HH-8)+'" class="ty">'+t+'°</text>'; }
@@ -265,7 +283,21 @@ function ayanPane(D,J){
     : 'Across the full range, '+invNames.length+' of '+(ORD.length+1)+' hold their sign and '+
       varies.length+' do not. The ones that move are where any reading should name the ayanāṃśa it is using out loud.';
 
-  return '<p class="knote">The ayanāṃśa is the one number in this chart that no observation can settle. Its '+
+  /* The switcher travels with the pane, not with the vitals card.
+     It was put in the card, which is part of the report HEAD — and the
+     Workstation renders the report's SECTIONS, not its head, so the app's
+     Workstation had the comparison but no way to act on it. Putting a picker
+     at the top of the pane itself means every page that shows the comparison
+     can switch, because the two arrive together. The card keeps its own copy
+     for the builder, where it sits beside the number it changes. */
+  var pick='<div class="kayanbar"><label for="k-ayan-live2">Cast this chart on</label>'+
+    '<select id="k-ayan-live2" class="kayanpick" aria-label="Recast with a different ayanāṃśa">'+
+    L.map(function(m){ return '<option value="'+esc(m.key)+'"'+(m.key===CUR?' selected':'')+'>'+
+      esc(m.name)+' · '+m.deg.toFixed(3)+'°</option>'; }).join("")+'</select>'+
+    '<span class="kmut">Everything below follows the choice.</span></div>';
+
+  return pick+
+    '<p class="knote">The ayanāṃśa is the one number in this chart that no observation can settle. Its '+
       '<i>rate</i> is astronomy and every standard agrees about it; its <i>zero point</i> is a convention, and '+
       'that is what the sixteen disagree about. This pane holds the birth data fixed and varies only that '+
       'convention, so you can see exactly which parts of the reading depend on it.</p>'+

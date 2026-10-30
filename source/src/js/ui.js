@@ -307,7 +307,13 @@
       lat:+$("k-lat").value, lon:+$("k-lon").value, tzHours:+$("k-tz").value,
       ayanamsa:($("k-ayan")&&$("k-ayan").value)||"lahiri",
       node:($("k-node")&&$("k-node").value)||"mean",
-      name:($("k-name")&&$("k-name").value||"").trim()||null })); }catch(e){}
+      name:($("k-name")&&$("k-name").value||"").trim()||null,
+      /* The place name is the one field the reference pages never needed and
+         the chip does. It goes in now because this record has a second job: it
+         is what brings the chart back after navigating away. See
+         restoreLastChart below. */
+      place:window.__kplace||null,
+      tab:currentTab||null })); }catch(e){}
     try{ chipFill(); }catch(e){}
     try{ writeHash(true); hashReady=true; }catch(e){}
     var r=$("k-chip")&&!$("k-chip").hidden ? $("k-chip") : $("k-result");
@@ -577,6 +583,12 @@
        naming a chart that is no longer on the page — and the fragment with it, or a
        refresh would bring the cleared chart straight back. */
     window.__kdata=null; window.__kplace=null;
+    /* The saved birth record is now what brings a chart back after navigating
+       away, so clearing has to remove it too. Leaving it meant Clear emptied
+       the form and the next page load filled it in again — the chart would
+       come back from the dead, which is precisely what Clear promises not to
+       let happen. */
+    try{ localStorage.removeItem("nirayana.birth"); }catch(e){}
     var chip=$("k-chip"); if(chip) chip.hidden=true;
     var n=$("k-chipnote"); if(n) n.hidden=true;
     document.body.classList.remove("kcast","kedit");
@@ -625,14 +637,13 @@
       document.body.removeChild(a); setTimeout(function(){URL.revokeObjectURL(u);},1000);
     }catch(e){ alert("Could not build the analyst payload: "+e.message); }
   });
+  /* The delegated half of the pair; bindReportControls is the direct half.
+     Both call one function so the two can never drift into doing different
+     things, and the direct binding's guard means a control never fires twice. */
   document.addEventListener("click",function(ev){
     var b=ev.target&&ev.target.closest?ev.target.closest("[data-kdt]"):null; if(!b)return;
-    var act=b.getAttribute("data-kdt"), all=document.querySelectorAll(".kreport details.kdt-md, .kreport details.kdt-ad");
-    if(act==="open") all.forEach(function(d){d.open=true;});
-    else if(act==="close") all.forEach(function(d){d.open=false;});
-    else { all.forEach(function(d){d.open=d.classList.contains("kdt-cur");});
-      var c=document.querySelector(".kreport details.kdt-ad.kdt-cur")||document.querySelector(".kreport details.kdt-md.kdt-cur");
-      if(c&&c.scrollIntoView) c.scrollIntoView({behavior:"smooth",block:"center"}); }
+    if(b.__bound) return;                 /* its own listener already handled it */
+    dashaTreeAction(b.getAttribute("data-kdt"));
   });
   var copyBtn=$("k-copy"), copyMsg=$("k-copymsg");
   if(copyBtn) copyBtn.addEventListener("click",async function(){
@@ -793,6 +804,17 @@
        locked, so there is nothing to keep open. */
     var sky=$("k-skyout"), skyb=$("k-skygo");
     if(sky && sky.innerHTML){ sky.innerHTML=""; if(skyb) skyb.textContent=SKY_OPEN; }
+    /* A chart that appears on a page you have just opened needs to say why it
+       is there. Said once, on the restore itself, and not again on the casts
+       that follow. */
+    if(window.__krestored){
+      window.__krestored=false;
+      var n=$("k-chipnote");
+      if(n){ n.hidden=false;
+        n.innerHTML="Brought back from your last chart on this machine — nothing was fetched, "+
+          "the engine recomputed it. <b>Edit</b> to change it, or <b>Clear</b> to forget it.";
+        clearTimeout(n.__t); n.__t=setTimeout(function(){ n.hidden=true; },12000); }
+    }
   }
   function chipEdit(){
     document.body.classList.add("kedit");
@@ -895,15 +917,94 @@
     try{ if(document.getElementById("swhcanvas") && window.__swhDraw) window.__swhDraw(); }catch(e){}
     try{ if(document.getElementById("mocanvas") && window.__moMount) window.__moMount(); }catch(e){}
     evRender();
+    bindReportControls();
     if(pendingTab){ showTab(pendingTab,true); pendingTab=null; }
+  }
+  /* ---- belt as well as braces on the report's own controls ----
+     Every control inside the report is delegated from `document`, which is the
+     right design: the report is rebuilt wholesale on each cast, and rebinding
+     a hundred listeners each time would be worse. But delegation has one
+     failure mode that is invisible in the source — anything that stops a click
+     before it reaches `document` silently disables every one of them at once,
+     and the symptom is "many buttons do nothing" with no error anywhere.
+
+     Reported from the desktop app, where these work on the website. I could
+     not reproduce it in a browser engine I have here, so rather than guess at
+     a cause I cannot see, the controls are ALSO bound directly. A direct
+     listener fires before anything upstream can intervene, the guard keeps a
+     rebuilt report from stacking duplicates, and the delegated handlers stay
+     exactly as they were for everything rendered later. */
+  function bindReportControls(){
+    var r=rep(); if(!r) return;
+    r.querySelectorAll("[data-kdt]").forEach(function(b){
+      if(b.__bound) return; b.__bound=true;
+      b.addEventListener("click",function(){ dashaTreeAction(b.getAttribute("data-kdt")); });
+    });
+    r.querySelectorAll("[data-krprint]").forEach(function(b){
+      if(b.__bound) return; b.__bound=true;
+      b.addEventListener("click",function(ev){
+        ev.preventDefault();
+        try{ if(window.__printFullReport) window.__printFullReport(); }catch(e){}
+      });
+    });
+    r.querySelectorAll("[data-ktab]").forEach(function(b){
+      if(b.__bound) return; b.__bound=true;
+      b.addEventListener("click",function(){ showTab(b.getAttribute("data-ktab")); });
+    });
+  }
+  function dashaTreeAction(act){
+    var all=document.querySelectorAll(".kreport details.kdt-md, .kreport details.kdt-ad");
+    if(act==="open") all.forEach(function(d){d.open=true;});
+    else if(act==="close") all.forEach(function(d){d.open=false;});
+    else { all.forEach(function(d){d.open=d.classList.contains("kdt-cur");});
+      var c=document.querySelector(".kreport details.kdt-ad.kdt-cur")||
+            document.querySelector(".kreport details.kdt-md.kdt-cur");
+      if(c&&c.scrollIntoView) c.scrollIntoView({behavior:"smooth",block:"center"}); }
   }
   /* A link, a bookmark or a refresh arrives as a fragment; rebuild the chart from it.
      Nothing was fetched to do this — the engine is already here.
      Deferred by a tick on purpose: casting touches state declared further down this
      file, and `var` hoisting means those names exist but hold undefined until the
      script finishes. Running inline here failed inside the events layer. */
+  /* ---- bringing the chart back after navigating away ----
+     The fragment was the only place a cast chart lived. On the website that is
+     nearly invisible, because Back restores the fragment and with it the chart.
+     In the desktop app there is no Back on a page that has a sidebar: choosing
+     Motion and then Kundli again loads a bare kundli.html, and the chart the
+     reader cast a moment ago is simply gone. Every page that needs a chart then
+     reports not having one, which is what made the Motion scenes look broken.
+
+     The birth record in localStorage already holds everything the engine needs
+     — it is written on every successful cast for the reference pages — so the
+     chart can be rebuilt from it in milliseconds with nothing fetched. The
+     fragment still wins when there is one, because a shared link must show its
+     own chart and not the reader's last.
+
+     It is restored rather than merely offered, and said rather than slipped in:
+     a chart appearing on a page you have just opened should carry a line
+     explaining why it is there and how to clear it. "Clear" already exists and
+     empties this record with everything else. */
+  function restoreLastChart(){
+    var raw=null;
+    try{ raw=localStorage.getItem("nirayana.birth"); }catch(e){ return false; }
+    if(!raw) return false;
+    var i=null;
+    try{ i=JSON.parse(raw); }catch(e){ return false; }
+    if(!i||i.year==null||i.lat==null||isNaN(+i.lat)) return false;
+    if(!applyChart({learnhoro:1,year:i.year,month:i.month,day:i.day,hour:i.hour,
+      minute:i.minute,lat:i.lat,lon:i.lon,tzHours:i.tzHours,ayanamsa:i.ayanamsa,
+      node:i.node,name:i.name})) return false;
+    if(i.place) window.__kplace=i.place;
+    if(i.tab) pendingTab=i.tab;
+    window.__krestored=true;
+    var g=$("k-go"); if(!g) return false;
+    g.click();
+    return true;
+  }
   setTimeout(function(){
-    try{ if(!castFromHash()) hashReady=true; }catch(e){ hashReady=true; }
+    try{
+      if(!castFromHash() && !restoreLastChart()) hashReady=true;
+    }catch(e){ hashReady=true; }
   },0);
 
   /* On a narrow screen the eleven tabs are a sheet behind one trigger rather than a
@@ -964,7 +1065,8 @@
      every cast, so the listener is delegated rather than bound to the element —
      binding it would be lost the first time it was used. */
   document.addEventListener("change",function(ev){
-    var t=ev.target; if(!t||t.id!=="k-ayan-live") return;
+    var t=ev.target;
+    if(!t||(t.id!=="k-ayan-live"&&t.id!=="k-ayan-live2")) return;
     switchAyan(t.value);
   });
   // interactive chart: show the panel and shade the houses it names

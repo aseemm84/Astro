@@ -44,6 +44,27 @@
      line; small print uses this instead. Found by measurement, not by
      looking — the difference is invisible and the failure is not. */
   --muted-2:#5a5e78;
+  /* ---- verdict colours ----------------------------------------------
+     The report says "good", "bad", "note this" in colour as well as in
+     words, and it used to say them as literal hexes written INLINE into
+     the generated HTML. An inline style beats every rule a theme can
+     write, so those six colours stayed fixed while the ground under them
+     inverted: on the dark palettes the report was drawing dark green and
+     dark red onto near-black, measured as low as 2.3:1 over two hundred
+     table cells at a time.
+
+     They are tokens now, referenced inline as var(--sem-good) and so on.
+     The hex stays in the generator as the var() fallback, so a page with
+     no theme layer at all renders exactly as it always did. Each palette
+     below restates them at a lightness that suits its own ground; the
+     values are measured against that palette's surface, not chosen by
+     eye. Colour still never carries meaning alone — every one of these
+     sits beside a word. */
+  --sem-good:#1c6b46;         /* 5.46:1 on the paper ground */
+  --sem-bad:#a1493a;          /* 5.09:1 */
+  --sem-mid:#8a6a1f;          /* 4.97:1 */
+  --sem-info:#3f6fa6;         /* 4.76:1 */
+  --sem-dim:#5a5e78;          /* matches --muted-2 */
   --accent:#c9a24b;           /* the gold rule and the active state */
   --accent-soft:#e7d19a;
   --accent-ink:#231c07;       /* text on the accent */
@@ -71,6 +92,7 @@
    The mockup's own default: near-black with a blue cast, amber accent, and
    a sky-blue used for the dṛṣṭi beams. */
 html[data-theme="midnight"]{
+  --sem-good:#6ee7a8; --sem-bad:#fca5a5; --sem-mid:#fcd34d; --sem-info:#93c5fd; --sem-dim:#a8b4c6;
   --muted-2:#a8b4c6;
   --night:#040711; --night2:#0b1024; --paper:#040711; --ink:#f1f5f9;
   --muted:#94a3b8; --line:#1e293b; --soft:#0b1024;
@@ -94,6 +116,7 @@ html[data-theme="midnight"]{
    Named for the yellow silk: a warm near-black ground with the whole text
    in shades of yellow, and peacock blue-green as the second colour. */
 html[data-theme="peetambari"]{
+  --sem-good:#86efac; --sem-bad:#fca5a5; --sem-mid:#fde68a; --sem-info:#a5c9f5; --sem-dim:#c9b25a;
   --muted-2:#d6bf64;
   --night:#0c0a09; --night2:#1c1611; --paper:#0c0a09; --ink:#fef08a;
   --muted:#bfa94d; --line:#332a16; --soft:#1a1509;
@@ -117,6 +140,7 @@ html[data-theme="peetambari"]{
    Warm paper and dark ink: within a hair of the palette the site was
    written in, so this is the default and overrides almost nothing. */
 html[data-theme="paper"]{
+  --sem-good:#18603f; --sem-bad:#8f3f32; --sem-mid:#7a5d1b; --sem-info:#375f90; --sem-dim:#57534e;
   --muted-2:#4a463f;
   /* The legacy tokens matter as much as the new ones. Leaving --muted and
      --gold at their original values put a dozen captions at 4.01:1 and the
@@ -142,6 +166,7 @@ html[data-theme="paper"]{
 
 /* ---- Emerald Forest ---------------------------------------------------- */
 html[data-theme="emerald"]{
+  --sem-good:#7ff0bd; --sem-bad:#fda4a4; --sem-mid:#fcd98a; --sem-info:#a9d2f8; --sem-dim:#8dd3b4;
   --muted-2:#a4ddc2;
   --night:#022c22; --night2:#043d2f; --paper:#022c22; --ink:#ecfdf5;
   --muted:#8dd3b4; --line:#0b4a39; --soft:#03352a;

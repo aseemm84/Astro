@@ -1,5 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Motion — the sky, moving — {{BRAND}}</title><!--HEAD--><!--CSS--><!--THEMEJS--></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="{{BRAND}} — home"><span class="lhmarkwrap"><!--LOGO--></span><span class="lhword"><span class="lhname">{{BRAND}}</span><span class="lhdeva">{{BRAND_DEVA}}</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site">{{NAV}}</nav><div class="layout onecol wide"><main>
 
+<p class="mochartbar" id="mo-chart"></p>
 <div id="mo-host" class="kreport"><p class="k-status" id="mo-status">Loading the scenes…</p></div>
 
 <noscript><p class="caution"><b>These scenes are drawn in the browser.</b> With JavaScript off there is nothing to draw them, and nothing here to read instead. Every figure the scenes use is computed on this machine from the same engine the chart pages use.</p></noscript>
@@ -32,13 +33,58 @@
      earlier draft here forced one on the strength of an audit that turned out
      to be wrong about which scenes are gated. The pane's gate list is the
      authority; this page does not second-guess it. */
+  /* ---- the nine gated scenes, when there is a chart to give them ----
+     This page used to mount with motionPane(null, null) unconditionally, so
+     the nine chart-dependent scenes stayed locked even for a reader who had
+     cast a chart a moment earlier. On the website that was a missed
+     opportunity; the report has its own Motion tab. In the desktop app it was
+     the whole experience, because the sidebar is how you reach Motion and
+     arriving here is how the chart was lost.
+
+     Everything needed is already on this page: the same engine, and the same
+     birth record the builder writes on every cast. The chart is rebuilt here —
+     nothing fetched, nothing sent — and handed to the pane. A button drops it
+     again for a reader who wants the sky alone. */
+  function savedChart() {
+    var raw = null;
+    if (window.__moSkyOnly) return null;
+    try { raw = localStorage.getItem("nirayana.birth"); } catch (e) { return null; }
+    if (!raw) return null;
+    var i = null;
+    try { i = JSON.parse(raw); } catch (e) { return null; }
+    if (!i || i.year == null || i.lat == null || isNaN(+i.lat)) return null;
+    if (!window.buildLocalChart || !window.__derive) return null;
+    try {
+      var J = window.buildLocalChart(i);
+      return { J: J, D: window.__derive(J), name: i.name || null, place: i.place || null };
+    } catch (e) { return null; }
+  }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>]/g, ""); }
+  function banner(c) {
+    var el = document.getElementById("mo-chart");
+    if (!el) return;
+    if (!c) {
+      el.innerHTML = '<span class="kmut">No chart is saved on this machine, so the nine ' +
+        'chart-dependent scenes stay locked. Cast one in <a href="kundli.html">Kundli</a> ' +
+        'and come back — it will be waiting here.</span>';
+      return;
+    }
+    el.innerHTML = 'Every scene is unlocked, using <b>' + esc(c.name || "your last chart") +
+      '</b>' + (c.place ? ' · ' + esc(c.place) : "") +
+      ', rebuilt on this machine from the birth details you last cast. ' +
+      '<button type="button" class="k-btn sec" id="mo-skyonly">Sky only</button>';
+    var b = document.getElementById("mo-skyonly");
+    if (b) b.addEventListener("click", function () { window.__moSkyOnly = true; go(); });
+  }
   function go() {
     if (!window.motionPane || !window.__moMount) { setTimeout(go, 80); return; }
     var host = document.getElementById("mo-host");
     if (!host) return;
     try {
+      var c = savedChart();
+      banner(c);
       host.innerHTML = '<div class="kpane" data-kpane="motion">' +
-                       window.motionPane(null, null) + '</div>';
+                       window.motionPane(c ? c.D : null, c ? c.J : null) + '</div>';
       window.__moMount();
       var status = document.getElementById("mo-status");
       if (status && status.parentNode) status.parentNode.removeChild(status);

@@ -35,6 +35,18 @@
   }
   document.documentElement.classList.add(platform());
 
+  /* "Am I running inside the application?" — asked by code shared with the
+     website that has to behave differently here. This file is only ever built
+     into the app target, so its presence IS the answer. A user-agent test
+     would not be: the webview reports an ordinary browser.
+
+     Two things need it so far. target="_blank" opens nothing in a wrapper with
+     no tabs, so the visual dashboard's link did nothing at all; and printing
+     has no browser dialog behind it, so a failure there has to be said rather
+     than assumed. Both are handled where they occur. */
+  window.__isApp = true;
+  document.documentElement.classList.add("isapp");
+
   /* ---- the OS appearance -----------------------------------------
      An application is expected to follow the system. The site's own picker
      still wins: if the reader has chosen a palette it is in localStorage, and

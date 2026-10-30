@@ -152,7 +152,7 @@ function shadbalaSection(D,J){
   var sb=J&&J.shadbala; if(!sb||sb.error||!sb.planets) return "";
   var c=sb.context||{};
   var rows=sb.planets.map(function(p){
-    var col=p.ratio>=1?"#1c6b46":(p.ratio>=0.85?"#b08a2e":"#a1493a");
+    var col=p.ratio>=1?"var(--sem-good,#1c6b46)":(p.ratio>=0.85?"var(--sem-mid,#b08a2e)":"var(--sem-bad,#a1493a)");
     return '<tr><td><b>'+esc(p.graha)+'</b></td>'+
       '<td class="knum">'+p.sthana.toFixed(1)+'</td><td class="knum">'+p.dig.toFixed(1)+'</td>'+
       '<td class="knum">'+p.kala.toFixed(1)+'</td><td class="knum">'+p.cheshta.toFixed(1)+'</td>'+

@@ -20,19 +20,29 @@ function dayBlock(D,lat,lon,tz,label){
   if(ev){
     var sr=ev.rise, ss=ev.set, part=(((ss-sr)+24)%24)/8;
     var RAHU=[8,2,7,5,6,4,3], YAMA=[5,4,3,2,1,7,6], GULI=[7,6,5,4,3,2,1];
-    var CH={0:["Udvega","Chara","Labha","Amrita","Kala","Shubha","Roga","Udvega"],1:["Amrita","Kala","Shubha","Roga","Udvega","Chara","Labha","Amrita"],
-      2:["Roga","Udvega","Chara","Labha","Amrita","Kala","Shubha","Roga"],3:["Labha","Amrita","Kala","Shubha","Roga","Udvega","Chara","Labha"],
-      4:["Shubha","Roga","Udvega","Chara","Labha","Amrita","Kala","Shubha"],5:["Chara","Labha","Amrita","Kala","Shubha","Roga","Udvega","Chara"],
-      6:["Kala","Shubha","Roga","Udvega","Chara","Labha","Amrita","Kala"]};
-    var GOODCH=["Amrita","Shubha","Labha","Chara"];
     function row(nm,k,note){ var s=sr+(k-1)*part, on=nowH>=s&&nowH<s+part;
       return '<tr'+(on?' class="khl"':'')+'><td><b>'+nm+'</b>'+(on?' ← now':'')+'</td><td class="knum">'+hm2(s)+' – '+hm2(s+part)+'</td><td class="kmut">'+note+'</td></tr>'; }
-    var ci=Math.floor((nowH-sr)/part), cur=(ci>=0&&ci<8)?CH[wd][ci]:null;
+    /* Day or night, from the report's one shared derivation. This used to
+       read CH[wd][ci] with no night table at all and print "night — not
+       tabulated" for every hour between sunset and sunrise. */
+    var ci=Math.floor((nowH-sr)/part), cur=null, cFrom=0, cTo=0, cNight=false;
+    if(ci>=0&&ci<8){ cur=chogRun(wd,false)[ci]; cFrom=sr+ci*part; cTo=cFrom+part; }
+    else {
+      cNight=true;
+      var nl=24-(ss-sr), np2=nl/8;
+      /* after sunset it is tonight; before sunrise it is last night, which
+         belongs to yesterday's weekday */
+      var base=(nowH>=ss)? ss : (ss-24), nwd=(nowH>=ss)? wd : ((wd+6)%7);
+      var ni=Math.max(0,Math.min(7,Math.floor((nowH-base)/np2)));
+      cur=chogRun(nwd,true)[ni]; cFrom=base+ni*np2; cTo=cFrom+np2;
+    }
     t='<div class="ktwrap"><table class="ktbl"><thead><tr><th>Period</th><th>Time</th><th>Note</th></tr></thead><tbody>'+
       '<tr><td><b>Sunrise / sunset</b></td><td class="knum">'+hm2(sr)+' / '+hm2(ss)+'</td><td class="kmut">disc centre, unrefracted</td></tr>'+
       row("Rāhu kālam",RAHU[wd],"avoided for beginnings")+row("Yamaganda",YAMA[wd],"avoided for beginnings")+row("Gulika kālam",GULI[wd],"avoided for beginnings")+
-      '<tr><td><b>Choghaḍiyā now</b></td><td class="knum">'+(cur?hm2(sr+ci*part)+' – '+hm2(sr+(ci+1)*part):'—')+'</td><td style="font-weight:600;color:'+
-        (cur?(GOODCH.indexOf(cur)>=0?"#1c6b46":"#a1493a"):"inherit")+'">'+(cur||'night — not tabulated')+'</td></tr></tbody></table></div>';
+      '<tr><td><b>Choghaḍiyā now</b>'+(cNight?' <span class="kmut">(night)</span>':'')+'</td><td class="knum">'+
+        (cur?hm2(cFrom)+' – '+hm2(cTo):'—')+'</td><td style="font-weight:600;color:'+
+        (cur?(CHOG_GOOD[cur]?"var(--sem-good,#1c6b46)":"var(--sem-bad,#a1493a)"):"inherit")+'">'+
+        (cur||'—')+'</td></tr></tbody></table></div>';
   }
   return c+t+'<p class="klegend">Times are local to '+esc(label)+' (UTC'+(tz>=0?"+":"")+tz+'). Tārābala counts from your birth nakṣatra ('+
     esc(D.P.Moon.nak)+') to today\'s; regional tables for these muhūrta tools vary.</p>';
@@ -67,7 +77,7 @@ function nowPane(D,J){
     var bav=null; if(D.av&&D.av.bhinna) D.av.bhinna.forEach(function(b){ if(b.graha===en) bav=b.bindus[sg]; });
     var nx=nextIngress(en,now);
     rows.push('<tr><td><b>'+en+'</b>'+(t.retrograde&&en!=="Rahu"&&en!=="Ketu"?' ℞':'')+'</td><td>'+SA[sg]+'</td><td class="knum">'+hl+'</td>'+
-      '<td class="knum">'+hm+'</td><td style="color:'+(fav?"#1c6b46":"#a1493a")+';font-weight:600">'+(fav?"favourable":"not favourable")+'</td>'+
+      '<td class="knum">'+hm+'</td><td style="color:'+(fav?"var(--sem-good,#1c6b46)":"var(--sem-bad,#a1493a)")+';font-weight:600">'+(fav?"favourable":"not favourable")+'</td>'+
       '<td class="knum">'+(D.av&&D.av.sarva?D.av.sarva[sg]:"—")+(bav!=null?' <span class="kmut">/ '+bav+' own</span>':'')+'</td>'+
       '<td>'+(nx?fdate(nx.jd)+' → '+SA[nx.sign]:'—')+'</td></tr>');
   });

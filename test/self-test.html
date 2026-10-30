@@ -306,6 +306,53 @@ function runAyanamsaChecks(W){
   check("the engine declares no mode the pinned table has not seen",
     Object.keys(AM0).every(function(m){ return GOLD_AYAN[m]!=null; }),
     Object.keys(AM0).filter(function(m){ return GOLD_AYAN[m]==null; }).join(", ") || "none");
+  /* ---- the sixteen divisions, computed twice ----
+     vargaSign() in the engine places a GRAHA in a division; vargaLagna() in
+     the report places the LAGNA in the same division. They are two copies of
+     the same sixteen formulas, and a divergence between them would be silent:
+     both return a sign, and a wrong sign in D24 looks exactly like a right
+     one. Reported as a real disagreement in D24 for even signs — reverse
+     counting from Cancer in one, forward in the other — which turned out not
+     to be in this code at all. The reading that settled it is this sweep, and
+     it is kept so that the question never has to be settled by reading again.
+
+     Every tenth of a degree of the zodiac, in all sixteen divisions: 57,600
+     comparisons, which takes a few milliseconds and covers every boundary. */
+  (function(){
+    var VS=W.__vargaSign, VL=W.__vargaLagna;
+    var CODES=["D1","D2","D3","D4","D7","D9","D10","D12","D16","D20","D24",
+               "D27","D30","D40","D45","D60"];
+    if(!VS||!VL){ check("the engine and the report agree on all sixteen divisions",
+        false, "one of the two implementations is not reachable from here"); return; }
+    /* lon = i/10, never lon += 0.1. Accumulating a tenth three thousand times
+       drifts by enough to land one side of a division boundary and not the
+       other, and the first run of this check duly "found" three divergences
+       that were its own arithmetic. The formulas agreed all along. */
+    var bad=[], n=0;
+    for(var c=0;c<CODES.length;c++){
+      for(var i2=0;i2<3600;i2++){
+        var lon=i2/10; n++;
+        var a=VS(CODES[c],lon), b2=VL(CODES[c],lon);
+        if(a!==b2 && bad.length<6) bad.push(CODES[c]+" at "+lon.toFixed(1)+"\u00b0: engine "+a+" vs report "+b2);
+      }
+    }
+    check("the engine and the report agree on all sixteen divisions",
+      bad.length===0,
+      bad.length ? bad.slice(0,3).join(" \u00b7 ") : n.toLocaleString()+" longitudes \u00d7 16 divisions, no disagreement");
+    /* and the one that was reported, stated on its own so a future change to
+       it fails with its own name on the line */
+    var d24=[];
+    for(var s2=0;s2<12;s2++){
+      var base=(s2%2===0)?4:3;                       /* Leo for odd signs, Cancer for even */
+      for(var k=0;k<24;k++){
+        var lon2=s2*30+k*1.25+0.01, want=(base+k)%12;
+        if(VS("D24",lon2)!==want) d24.push("sign "+s2+" part "+k);
+      }
+    }
+    check("D24 counts forward from Leo in odd signs and from Cancer in even",
+      d24.length===0,
+      d24.length ? d24.slice(0,3).join(", ") : "288 parts, forward counting throughout");
+  })();
   check("Āryabhaṭa and the Swiss Sūrya Siddhānta are the same series",
     Math.abs(W.__ayanFor("aryabhata",2451545.0)-W.__ayanFor("ss_swiss",2451545.0))<0.0001,
     "offered because it is published, not because it is a separate choice");

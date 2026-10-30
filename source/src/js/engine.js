@@ -1153,7 +1153,14 @@ function sankrantiWeekday(jd,date,targetLon){
 
 try{ window.__AVT=AVT; window.__ayan=ayanamsa;
      window.__ayanModes=AYAN_MODES; window.__setAyan=setAyanamsaMode;
-     window.__ayanFor=ayanamsaFor; }catch(e){}
+     window.__ayanFor=ayanamsaFor;
+     /* The divisional formulas exist twice: here, where a graha's varga sign is
+        computed, and in the report's vargaLagna, which does the same arithmetic
+        for the lagna. Two copies of sixteen formulas is two chances to diverge,
+        and a divergence would be invisible — both would return a plausible
+        sign. Exposing this one lets the suite assert that the two agree across
+        the whole zodiac, rather than leaving it to a reading of the source. */
+     window.__vargaSign=vargaSign; }catch(e){}
 /* sidereal lagna for the birth input shifted by offMin minutes — used by the birth-time check */
 /* The pañcāṅga primitives, exposed for pages outside the report bundle. now.html
    and the calendar both need the tithi, the māsa and the ṛtu at an arbitrary

@@ -16,7 +16,13 @@ function friendshipSection(D){
     var h='<th></th>'+P.map(function(k){return "<th>"+GL[k]+"</th>";}).join("");
     var rows=P.map(function(a){
       return '<tr><td><b>'+GL[a]+'</b> '+esc(a)+'</td>'+P.map(function(b){
-        var v=fn(a,b),col=v==="Friend"?"#1c6b46":(v==="Enemy"?"#a1493a":(v==="—"?"#c9c3b2":"#7a6f52"));
+        /* Friend and Enemy carry their OWN pale background, so this pair has to
+           hold together on that ground rather than on the page's — using the
+           theme tokens here put a palette's light-on-dark green onto a fixed
+           pale green and measured 1.2:1. Fixed colours, checked against their
+           own backgrounds. The neutral and blank cells have no background of
+           their own, so those two DO follow the theme. */
+        var v=fn(a,b),col=v==="Friend"?"#145c3a":(v==="Enemy"?"#8e3a2c":(v==="—"?"var(--muted,#8b8676)":"var(--sem-dim,#7a6f52)"));
         var bg=v==="Friend"?"#e4f1e9":(v==="Enemy"?"#f8e7e2":"transparent");
         return '<td style="text-align:center;color:'+col+';background:'+bg+';font-weight:600">'+
           (v==="—"?"—":v.slice(0,1))+'</td>';}).join("")+'</tr>';});

@@ -23,9 +23,40 @@ var DIGB={Sun:10,Mars:10,Moon:4,Venus:4,Mercury:1,Jupiter:1,Saturn:7};
 var VY={Ketu:7,Venus:20,Sun:6,Moon:10,Mars:7,Rahu:18,Jupiter:16,Saturn:19,Mercury:17};
 var VSEQ=["Ketu","Venus","Sun","Moon","Mars","Rahu","Jupiter","Saturn","Mercury"];
 var DPY=365.2564;
-var DIGC={exalted:"#1c6b46",moolatrikona:"#1c6b46",own:"#2b7a6f",friend:"#3d6fa5",neutral:"#7a6f52",enemy:"#a1613a",debilitated:"#9e3d3d",node:"#6a5a86"};
+/* Each of these is painted on its matching DIGBG below, so the pair travels
+   together and needs no theming — but the pair has to clear the line on its
+   own, and four of the eight did not: friend measured 4.38:1, own 4.41:1,
+   neutral 4.12:1 and enemy 4.33:1 on their own grounds. Darkened until every
+   one clears 4.5:1, measured rather than judged by eye. */
+var DIGC={exalted:"#1c6b46",moolatrikona:"#1c6b46",own:"#1f6259",friend:"#2f5c8c",neutral:"#645a42",enemy:"#8a4f2d",debilitated:"#9e3d3d",node:"#5a4b75"};
 var DIGBG={exalted:"#dff0e6",moolatrikona:"#dff0e6",own:"#dcefec",friend:"#e2ecf8",neutral:"#f0ece0",enemy:"#f7e6da",debilitated:"#f8e0e0",node:"#ece7f4"};
 var MON=["","Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+/* ---- Choghaḍiyā, one derivation for the whole report --------------------
+   There were three copies of this in the codebase: panchanga.js, the muhūrta
+   section and the Now tab. The two in the report were daytime-only and spelled
+   the names in ASCII — "Chara" where the rest of the site writes "Cala" — and
+   the Now tab answered "night — not tabulated" for every hour between sunset
+   and sunrise, which is half of every day.
+
+   One cycle now, shared by both report sites, and identical by construction to
+   the one in panchanga.js: the seven names in hora order, each weekday's day
+   run starting at its own lord and advancing one place, its night run starting
+   five places on and advancing five. chogh-verify asserts the two copies agree
+   across all 7 × 2 × 8 slots, which is the only thing that keeps them honest.
+
+   TIER. Choghaḍiyā is later muhūrta practice. The uploaded Santhanam edition
+   does not give it, and every page that shows it says so. It names the parts
+   of a day; it does not predict anything. */
+var CHOG_CYCLE=["Udvega","Cala","Lābha","Amṛta","Kāla","Śubha","Roga"];
+var CHOG_START=[0,3,6,2,5,1,4];            /* Sunday first */
+var CHOG_GOOD={"Amṛta":1,"Śubha":1,"Lābha":1,"Cala":1};
+function chogRun(wd,night){
+  var a=[], st=CHOG_START[((wd%7)+7)%7]+(night?5:0), step=night?5:1;
+  for(var i=0;i<8;i++) a.push(CHOG_CYCLE[(st+i*step)%7]);
+  return a;
+}
+try{ window.__chogRun=chogRun; window.__chogGood=CHOG_GOOD; }catch(e){}
 
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
 function dm(x){var d=Math.floor(x),m=Math.floor((x-d)*60);return d+"°"+(m<10?"0":"")+m+"′";}

@@ -24,11 +24,11 @@ function aspectSection(D){
     var a=(byH[h]||[]);
     var ben=a.filter(function(x){return BEN.indexOf(x)>=0;}), mal=a.filter(function(x){return BEN.indexOf(x)<0;});
     var net=ben.length-mal.length;
-    var col=net>0?"#1c6b46":(net<0?"#a1493a":"#7a6f52");
+    var col=net>0?"var(--sem-good,#1c6b46)":(net<0?"var(--sem-bad,#a1493a)":"var(--sem-dim,#7a6f52)");
     mrows.push('<tr><td><b>'+h+'</b> <span class="kmut">'+SA[(D.LS+h-1)%12]+'</span></td>'+
       '<td>'+(occ.length?occ.join(" "):"—")+'</td>'+
-      '<td style="color:#1c6b46">'+(ben.length?ben.join(", "):"—")+'</td>'+
-      '<td style="color:#a1493a">'+(mal.length?mal.join(", "):"—")+'</td>'+
+      '<td style="color:var(--sem-good,#1c6b46)">'+(ben.length?ben.join(", "):"—")+'</td>'+
+      '<td style="color:var(--sem-bad,#a1493a)">'+(mal.length?mal.join(", "):"—")+'</td>'+
       '<td class="knum" style="color:'+col+';font-weight:700">'+(net>0?"+":"")+net+'</td></tr>');
   }
   var body='<p class="knote">Graha dṛṣṭi as BPHS gives it: every planet aspects the <b>7th</b> from itself; '+

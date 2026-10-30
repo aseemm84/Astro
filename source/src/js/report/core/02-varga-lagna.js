@@ -29,3 +29,9 @@ var CRUX={D1:[1,"the life as a whole"],D2:[2,"wealth & sustenance"],D3:[3,"sibli
  D27:[1,"vitality & strength"],D30:[6,"adversity & health"],D40:[4,"maternal legacy"],
  D45:[9,"paternal legacy & conduct"],D60:[1,"the karmic totality"]};
 
+
+/* Exposed for the suite, which asserts that this and the engine's own
+   vargaSign agree across the whole zodiac in all sixteen divisions. Two
+   copies of the same formulas need a check that they have not drifted,
+   and a check that cannot reach one of them is not a check. */
+try{ window.__vargaLagna=vargaLagna; }catch(e){}

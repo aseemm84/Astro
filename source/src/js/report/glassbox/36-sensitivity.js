@@ -27,7 +27,7 @@ function sensForksSection(D,J){
     return '<tr'+(m===CUR?' class="khl"':'')+'><td><b>'+esc(Jv.ayanamsa_name)+'</b>'+
       (m===CUR?' <span class="kmut">← in use</span>':'')+'</td>'+
       '<td class="knum">'+Jv.ayanamsha_deg.toFixed(4)+'°</td>'+
-      '<td>'+SA[Jv.lagna.rashi.idx]+' '+dm(Jv.lagna.rashi.degInSign)+(lagDiff?' <b style="color:#a1493a">changes</b>':'')+'</td>'+
+      '<td>'+SA[Jv.lagna.rashi.idx]+' '+dm(Jv.lagna.rashi.degInSign)+(lagDiff?' <b style="color:var(--sem-bad,#a1493a)">changes</b>':'')+'</td>'+
       '<td>'+(m===CUR?'<span class="kmut">— baseline</span>':(moved.length?moved.join(", "):'<span class="kmut">no sign changes</span>'))+'</td></tr>';
   }).join("");
   // 2. node

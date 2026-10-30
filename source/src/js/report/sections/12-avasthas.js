@@ -104,7 +104,7 @@ function chalitSection(D){
       '<td>'+SA[p.sign]+' '+dm(p.deg)+'</td><td class="knum">'+p.house+'</td>'+
       '<td class="knum"><b>'+ch+'</b></td>'+
       '<td>'+(same?'<span class="kmut">same</span>':
-        '<span style="color:#a1493a;font-weight:600">moves '+(ch>p.house?'forward':'back')+'</span>')+'</td></tr>';
+        '<span style="color:var(--sem-bad,#a1493a);font-weight:600">moves '+(ch>p.house?'forward':'back')+'</span>')+'</td></tr>';
   });
   var moved=D.planets.filter(function(p){
     var off=((p.sid-((lag-15)%360+360)%360)%360+360)%360; return Math.floor(off/30)+1!==p.house;});
@@ -265,7 +265,7 @@ function argalaSection(D){
       var a=occBy[ah]||[], o=occBy[oh]||[];
       if(!a.length) return;
       var blocked=o.length>=a.length;
-      parts.push('<span style="color:'+(blocked?"#a1493a":"#1c6b46")+'">'+pair[0]+'th: '+a.join(",")+
+      parts.push('<span style="color:'+(blocked?"var(--sem-bad,#a1493a)":"var(--sem-good,#1c6b46)")+'">'+pair[0]+'th: '+a.join(",")+
         (blocked?' <span class="kmut">(obstructed by '+o.join(",")+' in the '+pair[1]+'th)</span>':' <b>active</b>')+'</span>');
     });
     rows.push('<tr><td><b>'+h+'</b> '+SA[(D.LS+h-1)%12]+'</td><td>'+(parts.join("<br>")||'<span class="kmut">no argala</span>')+'</td></tr>');
@@ -288,8 +288,8 @@ function yuddhaSection(D){
     if(sep>1) continue;
     var win=(P1.sid<P2.sid)?P1:P2, lose=(win===P1)?P2:P1;
     out.push('<tr><td>'+esc(P1.en)+' &amp; '+esc(P2.en)+'</td><td class="knum">'+sep.toFixed(3)+'°</td>'+
-      '<td style="color:#1c6b46;font-weight:600">'+esc(win.en)+'</td>'+
-      '<td style="color:#a1493a">'+esc(lose.en)+'</td></tr>');
+      '<td style="color:var(--sem-good,#1c6b46);font-weight:600">'+esc(win.en)+'</td>'+
+      '<td style="color:var(--sem-bad,#a1493a)">'+esc(lose.en)+'</td></tr>');
   }
   return '<p class="knote"><b>Graha yuddha</b> — planetary war — occurs when two non-luminous planets come '+
     'within about a degree of each other. The one with the lower longitude is taken as the victor; the loser '+
@@ -321,7 +321,7 @@ function gocharaSection(D){
       if(q===p||NO_VEDHA[p]===q) return;
       if(((tsign[q]-mSign)%12+12)%12+1===vh) blocked=q; }); }
     var verdict=fav?(blocked?"favourable, but obstructed":"favourable"):(blocked?"unfavourable, but obstructed":"unfavourable");
-    var col=fav?(blocked?"#b08a2e":"#1c6b46"):(blocked?"#b08a2e":"#a1493a");
+    var col=fav?(blocked?"var(--sem-mid,#b08a2e)":"var(--sem-good,#1c6b46)"):(blocked?"var(--sem-mid,#b08a2e)":"var(--sem-bad,#a1493a)");
     return '<tr><td><b>'+esc(p)+'</b></td><td>'+SA[tsign[p]]+'</td><td class="knum">'+h+'</td>'+
       '<td class="kmut">'+GOOD_FROM_MOON[p].join(", ")+'</td>'+
       '<td style="color:'+col+';font-weight:600">'+verdict+'</td>'+
@@ -355,7 +355,7 @@ function kakshaSection(D){
     rows.push('<tr><td><b>'+esc(en)+'</b></td><td>'+SA[sg]+' '+dm(deg)+'</td>'+
       '<td class="knum">'+(k+1)+' of 8</td><td>'+esc(lord)+'</td>'+
       '<td class="knum">'+bav.bindus[sg]+'/8</td>'+
-      '<td style="color:'+(has?"#1c6b46":"#a1493a")+';font-weight:600">'+(has?"rekhā — supported":"bindu — unsupported")+'</td></tr>');
+      '<td style="color:'+(has?"var(--sem-good,#1c6b46)":"var(--sem-bad,#a1493a)")+';font-weight:600">'+(has?"rekhā — supported":"bindu — unsupported")+'</td></tr>');
   });
   return '<p class="knote">Each sign divides into eight <b>kakṣās</b> of 3°45&prime;, ruled in the fixed order '+
     'Saturn, Jupiter, Mars, Sun, Venus, Mercury, Moon, Lagna. A transiting planet gives results according to '+
@@ -488,25 +488,29 @@ function dayToolsSection(D){
     ["Yamaganda",span(YAMA[wd]),"avoided for beginnings"],
     ["Gulika kālam",span(GULI[wd]),"avoided for beginnings"]
   ].map(function(r){ return '<tr><td><b>'+esc(r[0])+'</b></td><td class="knum">'+esc(r[1])+'</td><td class="kmut">'+esc(r[2])+'</td></tr>'; });
-  var CHOG_DAY=[["Udvega",0],["Chara",1],["Labha",2],["Amrita",3],["Kala",4],["Shubha",5],["Roga",6],["Udvega",7]];
-  var CH_SEQ={0:["Udvega","Chara","Labha","Amrita","Kala","Shubha","Roga","Udvega"],
-              1:["Amrita","Kala","Shubha","Roga","Udvega","Chara","Labha","Amrita"],
-              2:["Roga","Udvega","Chara","Labha","Amrita","Kala","Shubha","Roga"],
-              3:["Labha","Amrita","Kala","Shubha","Roga","Udvega","Chara","Labha"],
-              4:["Shubha","Roga","Udvega","Chara","Labha","Amrita","Kala","Shubha"],
-              5:["Chara","Labha","Amrita","Kala","Shubha","Roga","Udvega","Chara"],
-              6:["Kala","Shubha","Roga","Udvega","Chara","Labha","Amrita","Kala"]};
-  var GOODCH=["Amrita","Shubha","Labha","Chara"];
-  var ch=(CH_SEQ[wd]||CH_SEQ[0]).map(function(nm,k){
-    return '<tr><td class="knum">'+(k+1)+'</td><td>'+span(k+1)+'</td>'+
-      '<td style="color:'+(GOODCH.indexOf(nm)>=0?"#1c6b46":"#a1493a")+';font-weight:600">'+esc(nm)+'</td></tr>';});
+  /* Both halves, from the report's one shared derivation. This used to be a
+     second hand-typed table in ASCII spelling, daytime only. */
+  var chD=chogRun(wd,false), chN=chogRun(wd,true);
+  /* sr and ss are HOURS here, not minutes — the first version of this
+     divided 1440 by them and produced night slots some ninety hours long. */
+  var nightLen=24-(ss-sr), np=nightLen/8;
+  function nspan(k){ var a=ss+(k-1)*np; return hm2(a)+" \u2013 "+hm2(a+np); }
+  function chRow(nm,k,sp){
+    return '<tr><td class="knum">'+k+'</td><td>'+sp+'</td>'+
+      '<td style="color:'+(CHOG_GOOD[nm]?"var(--sem-good,#1c6b46)":"var(--sem-bad,#a1493a)")+
+      ';font-weight:600">'+esc(nm)+'</td></tr>'; }
+  var ch=chD.map(function(nm,k){ return chRow(nm,k+1,span(k+1)); });
+  var chn=chN.map(function(nm,k){ return chRow(nm,k+1,nspan(k+1)); });
   return '<p class="knote">Day divisions for the <b>birth date at the birth place</b>, from the computed sunrise '+
     '('+hm2(sr)+') and sunset ('+hm2(ss)+'). These are muhūrta tools — the inauspicious eighth-parts, and the '+
     'choghaḍiyā of the day.</p>'+
     tbl(["Period","Time","Note"],rows)+
-    '<h4 class="ksub">Choghaḍiyā (day)</h4>'+tbl(["#","Time","Quality"],ch)+
+    '<h4 class="ksub">Choghaḍiyā — day</h4>'+tbl(["#","Time","Quality"],ch)+
+    '<h4 class="ksub">Choghaḍiyā — night</h4>'+tbl(["#","Time","Quality"],chn)+
     '<div class="kbox">Choghaḍiyā and the inauspicious periods follow the common weekday tables; regional '+
-    'traditions vary. Night choghaḍiyā is omitted.</div>';
+    'traditions vary. The night run starts at sunset and divides the night into eight, exactly as the day '+
+    'run divides the day. Both are <b>later muhūrta practice, not BPHS</b> — the uploaded Santhanam edition '+
+    'does not give them — and they name the parts of a day rather than predicting anything in it.</div>';
 }
 var ASHT_YEARS={Sun:6,Moon:15,Mars:8,Mercury:17,Saturn:10,Jupiter:19,Rahu:12,Venus:21};
 var ASHT_SEQ=["Sun","Moon","Mars","Mercury","Saturn","Jupiter","Rahu","Venus"];
@@ -580,9 +584,9 @@ function ishtaKashtaSection(D,J){
     var net=ishta-kashta;
     return '<tr><td><b>'+esc(p.graha)+'</b></td><td class="knum">'+p.uchcha.toFixed(1)+'</td>'+
       '<td class="knum">'+p.cheshta.toFixed(1)+'</td>'+
-      '<td class="knum" style="color:#1c6b46;font-weight:600">'+ishta.toFixed(1)+'</td>'+
-      '<td class="knum" style="color:#a1493a;font-weight:600">'+kashta.toFixed(1)+'</td>'+
-      '<td class="knum" style="color:'+(net>=0?"#1c6b46":"#a1493a")+'"><b>'+(net>=0?"+":"")+net.toFixed(1)+'</b></td></tr>';
+      '<td class="knum" style="color:var(--sem-good,#1c6b46);font-weight:600">'+ishta.toFixed(1)+'</td>'+
+      '<td class="knum" style="color:var(--sem-bad,#a1493a);font-weight:600">'+kashta.toFixed(1)+'</td>'+
+      '<td class="knum" style="color:'+(net>=0?"var(--sem-good,#1c6b46)":"var(--sem-bad,#a1493a)")+'"><b>'+(net>=0?"+":"")+net.toFixed(1)+'</b></td></tr>';
   });
   return '<p class="knote">From a planet\'s exaltation ray (Uchcha) and motional ray (Cheṣṭā), BPHS derives two '+
     'opposed potencies: <b>Iṣṭa phala</b>, the capacity to give agreeable results, and <b>Kaṣṭa phala</b>, the '+

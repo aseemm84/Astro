@@ -120,6 +120,13 @@ code.k-inline{background:#f0f0f6;padding:1px 5px;border-radius:5px;font-size:12.
    scrolls sideways on a phone instead of shrinking the lane labels to nothing. */
 .kreport .kayanruler{min-width:720px}
 .kreport .kayanwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+/* The Motion page's chart line. It sits above the pane and says which chart
+   unlocked the nine gated scenes, or that none is saved. */
+.mochartbar{border:1px solid var(--line);border-left:3px solid var(--gold);
+  background:var(--soft);padding:8px 11px;border-radius:0 6px 6px 0;font-size:13px;
+  color:var(--text-soft,#4a4e68);margin:10px 0 14px;display:flex;gap:10px;
+  align-items:center;flex-wrap:wrap}
+.mochartbar b{color:var(--text,inherit)}
 .kreport .kcharts{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;margin:12px 0}
 .kreport .kchartfig{margin:0}
 .kreport .kchartfig figcaption{font-size:12px;margin-bottom:6px}
@@ -1456,6 +1463,121 @@ table.reeltbl td:first-child{width:38%;color:var(--muted)}
   .scbeats li{border-top-color:#332c21}
 }
 
+/* ---- the report under a theme -------------------------------------------
+   .kreport was written against the paper ground and carries its own literal
+   colours. The theme layer never reached inside it, so on the dark palettes
+   the verdict words, the numeric columns and the ashtakavarga totals were
+   drawn in near-black on near-black. These route the same meanings through
+   the verdict tokens, which every palette restates for its own ground.
+
+   The inline styles the report generates now reference the same tokens, so
+   the two halves cannot disagree about what "good" looks like. */
+html[data-theme] .kreport .kgood{color:var(--sem-good)}
+html[data-theme] .kreport .kmid{color:var(--sem-mid)}
+html[data-theme] .kreport .kbad{color:var(--sem-bad)}
+html[data-theme] .kreport .gbcheck.ok{color:var(--sem-good)}
+html[data-theme] .kreport .gbcheck.bad{color:var(--sem-bad)}
+html[data-theme] .kreport .kev-del{color:var(--sem-bad)}
+html[data-theme] .kreport .wlitem b.wl-u{color:var(--sem-good)}
+html[data-theme] .kreport .sensb.sens-lo{background:transparent;color:var(--sem-good);
+  border:1px solid currentColor}
+html[data-theme] .kreport .sensb.sens-hi{background:transparent;color:var(--sem-bad);
+  border:1px solid currentColor}
+html[data-theme] .kreport .kwsvg .now{fill:var(--sem-bad)}
+html[data-theme] .kreport .kchartsvg .sc-c{fill:var(--sem-bad)}
+html[data-theme] .kreport .kichart .kip.on{fill:var(--sem-bad)}
+html[data-theme] .kreport svg.skysvg .sk-plnat{fill:var(--sem-dim)}
+html[data-theme] .goretro,html[data-theme] .spwarn,
+html[data-theme] .wswarn,html[data-theme] .wsretro{color:var(--sem-bad)}
+html[data-theme] .kgood{color:var(--sem-good)}
+
+/* The sarvāṣṭakavarga row paints light text on the night ground. Under a
+   theme the ground is a token and the text was not, so the two converged:
+   1.04:1 on the default palette, which is invisible rather than merely
+   hard. Both come from the same place now. */
+.kreport table.ktbl tbody tr td.kbsav{background:var(--night);color:#f2eee0}
+html[data-theme] .kreport table.ktbl tbody tr td.kbsav{background:var(--surface-3);
+  color:var(--text-strong)}
+
+/* A native <option> list is drawn by the operating system on ITS background,
+   not the page's, so a themed text colour lands on white and vanishes. The
+   list is left to the system; only the closed control is themed. */
+.kreport .kayanpick option,.kreport select option{color:#16181f;background:#ffffff}
+
+/* The gold pill: #231c07 on --gold measured 2.68:1 on the default palette,
+   where --gold is a mid tone rather than the bright one the dark palettes
+   use. The pill carries its own ground, so it gets its own fixed pair. */
+.kreport .kdt-tag{background:#5a4410;color:#fdf6e3}
+html[data-theme] .kreport .kdt-tag{background:var(--accent);color:var(--accent-ink)}
+
+/* Two last pairs, both carrying their own ground rather than the page's.
+   The dashboard link is a gold label on the dark print bar (2.4:1 as written);
+   the active pager pill is dark-on-gold where --gold is a mid tone (2.68:1).
+   Measured, not judged: 8.9:1 and 7.1:1 after. */
+.kreport .krdash a.k-btn,.kreport .krprint a.k-btn{color:#f6e6bd;border-color:#8a6a1f}
+.kreport .kpager button.on,.kreport button.on > span{color:#fdf6e3}
+html[data-theme] .kreport .krdash a.k-btn,
+html[data-theme] .kreport .krprint a.k-btn{color:var(--accent-soft);
+  border-color:var(--accent)}
+
+/* The ayanāṃśa ruler's own mark labels: small, rotated, and the one in use
+   picked out so the eye finds it among fifteen others. */
+.kreport .kayanruler .ty{font-size:8.5px;fill:var(--muted,#8b8676)}
+.kreport .kayanruler .ty.tycur{font-weight:700;fill:var(--sem-bad,#a1493a)}
+
+/* The pane's own ayanāṃśa switcher. It sits above the comparison rather than
+   in the vitals card, so every page that can show the comparison can also act
+   on it — the Workstation renders sections, not the report head. */
+.kreport .kayanbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;
+  border:1px solid var(--line);border-left:3px solid var(--gold);background:var(--soft);
+  padding:8px 11px;border-radius:0 6px 6px 0;margin:0 0 14px;font-size:13px}
+.kreport .kayanbar label{font-weight:600}
+.kreport .kayanbar .kayanpick{display:inline-block;width:auto;min-width:220px;margin:0}
+
+/* The reading-path step number: #231c07 on --gold is 2.68:1 on the default
+   palette, where --gold (#8a5306) is a mid tone rather than the bright one
+   the dark palettes use. The pill carries its own ground, so it gets its own
+   pair; under a theme the accent tokens are already a checked pair. */
+.kreport .kpath-nav button.on span{background:#4a3708;color:#fdf6e3}
+html[data-theme] .kreport .kpath-nav button.on span{background:var(--accent);
+  color:var(--accent-ink)}
+
+/* --muted is documented in :root as 4.44:1 on the panel ground — "a hair
+   under the WCAG line; small print uses this instead", with --muted-2 as the
+   compliant one. The report is small print throughout and was using the
+   wrong one of the pair: every caption, every key column and every source
+   line measured 4.44:1. --muted-2 puts them at 5.5:1 and the difference is
+   invisible, which is the whole point of having measured it. */
+
+/* The motion read-note was styled for a dark panel it no longer sits on:
+   #8f96bb heading and #8a8fa8 footnote measure 2.65:1 and 2.92:1 on the
+   report's own ground. Both become tokens, which also makes them follow a
+   theme instead of staying put while it inverts. The two small-print labels
+   beside them move to the compliant half of the muted pair for the same
+   reason as the captions above. */
+.moreadh{color:var(--muted-2,#5a5e78)}
+.moreadf{color:var(--muted-2,#5a5e78)}
+html[data-theme] .moreadh,html[data-theme] .moreadf{color:var(--text-soft)}
+
+/* One line instead of a list of classes.
+   :root documents --muted as 4.44:1 on the panel ground — "a hair under the
+   WCAG line; small print uses this instead" — and defines --muted-2 as the
+   compliant sibling. The report is small print throughout, and it reached for
+   the wrong half of that pair in a dozen different places: captions, key
+   columns, source lines, axis labels, legends. Chasing them one class at a
+   time found four more on every pass.
+
+   Redefining the token INSIDE .kreport fixes every var(--muted) under it at
+   once, in every palette, including the ones nobody has written yet. The
+   difference is invisible; that it was measured rather than judged is the
+   point. */
+.kreport{--muted:var(--muted-2)}
+
+/* The last one: #8a6a1f on the mid sensitivity badge's own pale gold is
+   4.46:1 — four hundredths under. Its two siblings (lo and hi) already clear
+   it; this one was simply never measured against its own ground. */
+.kreport .sensb.sens-mid{color:#7d601b}
+
 /* ===== Generated theme overrides =====================================
    Written by source/tools/gen-theme-overrides.py from the literal
    colours in app.css and pages.css. Do not edit by hand: regenerate.
@@ -1805,6 +1927,27 @@ table.reeltbl td:first-child{width:38%;color:var(--muted)}
      line; small print uses this instead. Found by measurement, not by
      looking — the difference is invisible and the failure is not. */
   --muted-2:#5a5e78;
+  /* ---- verdict colours ----------------------------------------------
+     The report says "good", "bad", "note this" in colour as well as in
+     words, and it used to say them as literal hexes written INLINE into
+     the generated HTML. An inline style beats every rule a theme can
+     write, so those six colours stayed fixed while the ground under them
+     inverted: on the dark palettes the report was drawing dark green and
+     dark red onto near-black, measured as low as 2.3:1 over two hundred
+     table cells at a time.
+
+     They are tokens now, referenced inline as var(--sem-good) and so on.
+     The hex stays in the generator as the var() fallback, so a page with
+     no theme layer at all renders exactly as it always did. Each palette
+     below restates them at a lightness that suits its own ground; the
+     values are measured against that palette's surface, not chosen by
+     eye. Colour still never carries meaning alone — every one of these
+     sits beside a word. */
+  --sem-good:#1c6b46;         /* 5.46:1 on the paper ground */
+  --sem-bad:#a1493a;          /* 5.09:1 */
+  --sem-mid:#8a6a1f;          /* 4.97:1 */
+  --sem-info:#3f6fa6;         /* 4.76:1 */
+  --sem-dim:#5a5e78;          /* matches --muted-2 */
   --accent:#c9a24b;           /* the gold rule and the active state */
   --accent-soft:#e7d19a;
   --accent-ink:#231c07;       /* text on the accent */
@@ -1832,6 +1975,7 @@ table.reeltbl td:first-child{width:38%;color:var(--muted)}
    The mockup's own default: near-black with a blue cast, amber accent, and
    a sky-blue used for the dṛṣṭi beams. */
 html[data-theme="midnight"]{
+  --sem-good:#6ee7a8; --sem-bad:#fca5a5; --sem-mid:#fcd34d; --sem-info:#93c5fd; --sem-dim:#a8b4c6;
   --muted-2:#a8b4c6;
   --night:#040711; --night2:#0b1024; --paper:#040711; --ink:#f1f5f9;
   --muted:#94a3b8; --line:#1e293b; --soft:#0b1024;
@@ -1855,6 +1999,7 @@ html[data-theme="midnight"]{
    Named for the yellow silk: a warm near-black ground with the whole text
    in shades of yellow, and peacock blue-green as the second colour. */
 html[data-theme="peetambari"]{
+  --sem-good:#86efac; --sem-bad:#fca5a5; --sem-mid:#fde68a; --sem-info:#a5c9f5; --sem-dim:#c9b25a;
   --muted-2:#d6bf64;
   --night:#0c0a09; --night2:#1c1611; --paper:#0c0a09; --ink:#fef08a;
   --muted:#bfa94d; --line:#332a16; --soft:#1a1509;
@@ -1878,6 +2023,7 @@ html[data-theme="peetambari"]{
    Warm paper and dark ink: within a hair of the palette the site was
    written in, so this is the default and overrides almost nothing. */
 html[data-theme="paper"]{
+  --sem-good:#18603f; --sem-bad:#8f3f32; --sem-mid:#7a5d1b; --sem-info:#375f90; --sem-dim:#57534e;
   --muted-2:#4a463f;
   /* The legacy tokens matter as much as the new ones. Leaving --muted and
      --gold at their original values put a dozen captions at 4.01:1 and the
@@ -1903,6 +2049,7 @@ html[data-theme="paper"]{
 
 /* ---- Emerald Forest ---------------------------------------------------- */
 html[data-theme="emerald"]{
+  --sem-good:#7ff0bd; --sem-bad:#fda4a4; --sem-mid:#fcd98a; --sem-info:#a9d2f8; --sem-dim:#8dd3b4;
   --muted-2:#a4ddc2;
   --night:#022c22; --night2:#043d2f; --paper:#022c22; --ink:#ecfdf5;
   --muted:#8dd3b4; --line:#0b4a39; --soft:#03352a;
