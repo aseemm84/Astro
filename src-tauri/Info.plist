@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <!-- macOS will not even consider a location request from a process that has
+       not said why it wants one; without this key the request is denied before
+       any prompt appears, which is indistinguishable from a broken button.
+
+       The key is here so that a window able to ask CAN ask. It is not what
+       makes "Here & now" work: that is answered from the device's own clock
+       and the bundled city list, with no permission of any kind. This only
+       buys the sharper answer when the system is willing to give it. -->
+  <key>NSLocationWhenInUseUsageDescription</key>
+  <string>Nirayana uses your location only to set the place for a chart cast for here and now. It stays on this Mac and is never sent anywhere.</string>
+</dict>
+</plist>

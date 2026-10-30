@@ -313,7 +313,18 @@
     var r=$("k-chip")&&!$("k-chip").hidden ? $("k-chip") : $("k-result");
     if(r&&r.scrollIntoView) r.scrollIntoView({behavior:"smooth",block:"start"});
   }
-  function fail(msg){ $("k-out").innerHTML='<div class="k-err">'+msg+"</div>"; }
+  /* A failed cast must take the veil down with it.
+     The casting ceremony goes up on the click and comes down when the chart
+     arrives. When no chart is coming, it used to sit there for its full ceiling
+     — nine seconds of animation over an error message nobody could read — and
+     then lift onto a page that looked simply empty. The reader's reasonable
+     conclusion was that the ceremony had hung. Aborting here puts the reason on
+     screen at the moment it is known. */
+  function fail(msg){
+    try{ if(window.SPCosmos&&window.SPCosmos.abort) window.SPCosmos.abort(); }catch(e){}
+    $("k-out").innerHTML='<div class="k-err">'+msg+"</div>";
+    var o=$("k-out"); if(o&&o.scrollIntoView) o.scrollIntoView({behavior:"smooth",block:"center"});
+  }
   async function cast(){
     var dob=$("k-dob").value, tob=$("k-tob").value;
     var lat=parseFloat($("k-lat").value), lon=parseFloat($("k-lon").value), tz=parseFloat($("k-tz").value);
@@ -405,29 +416,95 @@
     if(GEO_WATCH){ clearTimeout(GEO_WATCH); GEO_WATCH=null; }
     return true;
   }
+  /* Every one of these used to end the attempt and tell the reader to go and do
+     it by hand. None of them is a reason to give up: the clock is still there,
+     and it answers the same question well enough for a chart. The reason is
+     still said — a place chosen for you should always be explained — but it is
+     now a preamble to a cast rather than an apology for not doing one. */
   function geoFail(e){
     if(!geoSettle()) return;
     var msg;
-    if(e&&e.code===1) msg="<b>Permission refused.</b> The browser was not allowed to share this "+
-      "device&rsquo;s position. Allow location for this site in your browser settings, or use the city "+
-      "search above.";
-    else if(e&&e.code===2) msg="<b>No position available.</b> The device could not work out where it "+
-      "is — this is common indoors on a desktop with no Wi-Fi positioning. Use the city search above.";
-    else if(e&&e.code===3) msg="<b>Timed out.</b> The device took too long to find a position. Try "+
-      "again, or use the city search above.";
-    else msg="<b>Could not get a position.</b> "+esc((e&&e.message)||"Unknown error")+
-      " Use the city search above.";
-    hereNote(msg,true);
-    $("k-here").disabled=false; $("k-here").textContent="Here & now";
+    if(e&&e.code===1) msg="<b>The position was not shared, so the clock was used instead.</b>";
+    else if(e&&e.code===2) msg="<b>The device could not work out where it is — common indoors on a "+
+      "desktop — so the clock was used instead.</b>";
+    else if(e&&e.code===3) msg="<b>Finding a position took too long, so the clock was used instead.</b>";
+    else msg="<b>No position was available ("+esc((e&&e.message)||"unknown error")+
+      "), so the clock was used instead.</b>";
+    hereFromClock(msg);
+  }
+  /* ---- Here & now without asking the operating system anything ----
+     Satellite positioning is one way to answer "where is this device", and on a
+     desktop it is the worst one: it needs a permission the window may not be
+     able to ask for, it fails indoors, and in the desktop app the page is not
+     an https origin at all, so the browser engine refuses before any prompt can
+     appear. That left the button dead with a message telling the reader to open
+     an https address — advice that cannot be followed inside an application.
+
+     The device's own clock already carries the answer. Intl reports the IANA
+     zone it is set to — "Asia/Dubai" — and the city list bundled with this page
+     maps every zone to the towns in it, population first. That fixes the place
+     to the right city in the right zone with no permission, no network and no
+     waiting, which is accurate enough for a chart: a chart cast anywhere in a
+     zone's principal city differs from one cast across that city by far less
+     than the minute of birth does.
+
+     So this is now the default answer, and satellite positioning is an optional
+     refinement rather than a precondition. The note always says which was used
+     and how to override it, because a place the reader did not choose should
+     never be silent. */
+  async function hereFromClock(why){
+    var btn=$("k-here"), n=setNow();
+    $("k-tz").value=n.tz;
+    var db=null,row=null;
+    try{ db=await loadCities(); }catch(e){}
+    if(db&&db.tz){
+      var zi=db.tz.indexOf(n.zone);
+      if(zi>=0){ for(var i=0;i<db.c.length;i++) if(db.c[i][3]===zi){ row=db.c[i]; break; } }
+      if(!row){
+        /* No exact zone match — a zone the list spells differently, or none at
+           all. Fall back to any zone standing at the same offset right now,
+           which keeps the chart's arithmetic right even if the town is not the
+           reader's own. */
+        var seen={};
+        for(var j=0;j<db.c.length&&!row;j++){
+          var z=db.c[j][3];
+          if(seen[z]!==undefined){ if(seen[z]) row=db.c[j]; continue; }
+          var off=tzOffsetHours(db.tz[z],new Date());
+          seen[z]=(off!=null&&Math.abs(off-n.tz)<0.01);
+          if(seen[z]) row=db.c[j];
+        }
+      }
+    }
+    if(!row){
+      hereNote("<b>Could not place this device.</b> The clock says UTC"+(n.tz>=0?"+":"")+n.tz+
+        (n.zone?" ("+esc(n.zone)+")":"")+", but no town in the list matches it. Use the city search "+
+        "above, or type a latitude and longitude.",true);
+      btn.disabled=false; btn.textContent="Here & now"; return;
+    }
+    $("k-lat").value=(+row[1]).toFixed(4); $("k-lon").value=(+row[2]).toFixed(4);
+    var zoneName=db.tz[row[3]], off=tzOffsetHours(zoneName,new Date());
+    if(off!=null) $("k-tz").value=off;
+    var label=cityLabel(db,row);
+    window.__kplace=label;
+    hereNote((why?why+" ":"")+"Cast for <b>"+esc(label)+"</b>, the principal city of this device&rsquo;s "+
+      "own time zone"+(zoneName?" ("+esc(zoneName)+")":"")+", at "+$("k-tob").value+" on "+$("k-dob").value+
+      ", UTC"+($("k-tz").value>=0?"+":"")+$("k-tz").value+". <b>If you are somewhere else in this zone, "+
+      "search for your town above and cast again</b> — the place only matters to the lagna, and within "+
+      "one zone that is a matter of minutes.",false);
+    btn.disabled=false; btn.textContent="Here & now";
+    var sel=document.getElementById("k-city"); if(sel) sel.value="1";
+    cast();
   }
   async function hereAndNow(){
     var btn=$("k-here");
-    if(!navigator.geolocation){
-      hereNote("<b>This browser has no location service.</b> Use the city search above.",true); return; }
-    if(!window.isSecureContext){
-      hereNote("<b>This page is not running over https,</b> so the browser will not share a position. "+
-        "Open the site at its https address — from a file on disk this cannot work. The city search "+
-        "above does the same job by hand.",true); return; }
+    /* Both of these used to be dead ends. They are now the ordinary path: the
+       clock knows enough, and in the desktop app it is the only thing that
+       does. */
+    if(!navigator.geolocation)
+      return hereFromClock("<b>This window has no location service, so the clock was used instead.</b>");
+    if(!window.isSecureContext)
+      return hereFromClock("<b>This window cannot ask for a satellite position, so the clock was used "+
+        "instead.</b>");
     btn.disabled=true; btn.textContent="Locating…";
     hereNote("Asking the browser where this device is… if nothing happens, look for a permission "+
       "prompt at the top of the window.");
@@ -438,11 +515,13 @@
     if(GEO_WATCH) clearTimeout(GEO_WATCH);
     GEO_WATCH=setTimeout(function(){
       if(!geoSettle()) return;
-      hereNote("<b>No answer from the browser.</b> The permission prompt may have been dismissed "+
-        "without choosing. Try again and answer the prompt, allow location for this site in your "+
-        "browser settings, or use the city search above.",true);
-      btn.disabled=false; btn.textContent="Here & now";
-    },20000);
+      /* Neither callback fired — a prompt swiped away, or a window that never
+         raised one. Eight seconds, not twenty: this is now a wait before a
+         fallback rather than a wait before an apology, so it should be short
+         enough that the reader does not wonder whether the button works. */
+      hereFromClock("<b>Nothing came back from the location service, so the clock was used "+
+        "instead.</b>");
+    },8000);
     navigator.geolocation.getCurrentPosition(async function(pos){
       if(!geoSettle()) return;
       try{

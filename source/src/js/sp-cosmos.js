@@ -221,9 +221,11 @@
 
   var OVER = null, OVRAF = null, OVDONE = null;
 
+  var SUPPRESS = 0;
   function ceremony(birthDate, opts) {
     opts = opts || {};
     if (OVER) return;                    /* one at a time */
+    if (Date.now() - SUPPRESS < 1200) return;   /* the cast on this click failed */
     var now = new Date();
     if (!(birthDate instanceof Date) || isNaN(birthDate.getTime()))
       birthDate = now;
@@ -638,6 +640,34 @@
     f();
   }
 
+  /* Tear the veil down NOW, with no floor and no linger.
+     endCeremony() is the graceful lift for a chart that arrived; this is for
+     one that never will. Without it a failed cast left the reader watching an
+     animation for nine seconds with the explanation hidden behind it, which
+     reads as the ceremony being broken rather than the cast having failed. */
+  function abortCeremony() {
+    /* Two listeners sit on the Cast button — this file's, which raises the
+       veil, and the form's, which does the casting — and nothing fixes which
+       runs first. When the form's runs first and the cast fails, abort() is
+       called before there is anything to abort, and the veil then goes up over
+       the error message a moment later.
+
+       So an abort is also a short refusal to start. Twelve hundred
+       milliseconds covers the gap between two handlers on one click and
+       nothing else, and it makes the fix independent of an ordering no part of
+       this code controls. */
+    SUPPRESS = Date.now();
+    if (!OVER) return;
+    OVDONE = null;
+    var btn = OVER.querySelector("#cast-reveal");
+    if (btn) btn.click();            /* the close() that owns the timers */
+    if (OVER) {                      /* belt and braces if the button is gone */
+      var node = OVER; OVER = null;
+      document.body.classList.remove("casting");
+      node.parentNode && node.parentNode.removeChild(node);
+    }
+  }
+
   /* ---- 3. wiring ---------------------------------------------------------- */
   function birthFromForm() {
     var d = document.getElementById("k-dob");
@@ -651,11 +681,31 @@
     return new Date(ms - off * 3600000);
   }
 
+  /* The form has to be castable, not merely dated.
+     birthFromForm() needs only a date, but Cast also needs a latitude, a
+     longitude and an offset, and refuses without them. The veil used to go up
+     on the click regardless — so a Cast pressed with no place chosen drew the
+     whole ceremony over an error message the reader could not see, and then
+     lifted after nine seconds onto a page with no chart on it. It looked like
+     the ceremony had hung. It had not: there was nothing coming.
+
+     Checking the same three fields Cast checks means the veil only ever covers
+     a cast that is actually going to happen. fail() in ui.js tears it down for
+     anything that goes wrong after this point. */
+  function castable() {
+    var g = function (id) { var e = document.getElementById(id); return e ? e.value : ""; };
+    if (!g("k-dob") || !g("k-tob")) return false;
+    return !isNaN(parseFloat(g("k-lat"))) &&
+           !isNaN(parseFloat(g("k-lon"))) &&
+           !isNaN(parseFloat(g("k-tz")));
+  }
+
   function wire() {
     var go = document.getElementById("k-go");
     if (go && !go.__cosmos) {
       go.__cosmos = true;
       go.addEventListener("click", function () {
+        if (!castable()) return;
         var b = birthFromForm();
         if (b) ceremony(b);
       });
@@ -726,5 +776,6 @@
   var VIEW = null;
   function view(o) { if (VIEW) VIEW(o || {}); }
   window.SPCosmos = { view: view, ceremony: ceremony, end: endCeremony,
+                      abort: abortCeremony,
                       sky: syncSky, mount: mountSky, unmount: unmountSky };
 })();

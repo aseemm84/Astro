@@ -371,6 +371,99 @@ is(await pg.evaluate(() => typeof window.SPCosmos === "undefined"),
    "a teaching page does not — it has no chart to cast, so it pays " +
    "nothing for the machinery");
 
+/* ---- the veil must never hide a failure --------------------------------
+   Reported from the desktop app: Cast started the ceremony, the Reveal button
+   never appeared and no chart was ever made. The ceremony was not at fault.
+   The veil went up on the click whatever the form held, so a Cast pressed with
+   no place chosen drew the whole animation over "Please pick a city" and then
+   lifted, nine seconds later, onto a page that looked empty. A reader has no
+   way to tell that from a hung animation.
+
+   Two rules, checked here because neither is visible in the code that broke:
+   a cast that cannot run raises no veil, and a cast that fails takes the veil
+   down with it at once rather than at its ceiling. The second is checked
+   against BOTH handler orderings, because nothing fixes which of the two Cast
+   listeners runs first and the first fix only worked for one of them. */
+head("A failed cast is never hidden behind the veil");
+await pg.close();
+pg = await page(false);
+await pg.goto(ROOT + "kundli.html");
+await pg.waitForFunction(() => !!document.getElementById("k-go"), null, { timeout: 25000 });
+
+await pg.evaluate(() => {
+  document.getElementById("k-dob").value = "1984-12-15";
+  document.getElementById("k-tob").value = "13:31";
+  ["k-lat", "k-lon", "k-tz"].forEach(i => { document.getElementById(i).value = ""; });
+});
+await pg.click("#k-go");
+await pg.waitForTimeout(700);
+is(await pg.evaluate(() => !document.querySelector(".castover")),
+   "no place in the form raises no veil");
+is(await pg.evaluate(() => !!document.querySelector("#k-out .k-err")),
+   "and the reason is on screen immediately");
+
+await pg.evaluate(() => {
+  document.getElementById("k-lat").value = "28.8389";
+  document.getElementById("k-lon").value = "78.7768";
+  document.getElementById("k-tz").value = "5.5";
+  window.__realBLC = window.buildLocalChart;
+  window.buildLocalChart = function () { throw new Error("planted engine failure"); };
+});
+await pg.click("#k-go");
+await pg.waitForTimeout(900);
+is(await pg.evaluate(() => !document.querySelector(".castover")),
+   "an engine failure takes the veil down within a second, not at its ceiling");
+is(await pg.evaluate(() =>
+     (document.querySelector("#k-out .k-err") || {}).textContent
+       ?.indexOf("planted engine failure") >= 0),
+   "and says what went wrong");
+await pg.evaluate(() => { window.buildLocalChart = window.__realBLC; });
+
+/* the other ordering: the veil is already up when the failure lands.
+   The wait is the suppression window doing its job — a ceremony asked for
+   within 1.2 s of a failed cast is refused on purpose, and that is the whole
+   mechanism under test above, so this has to step outside it. */
+await pg.waitForTimeout(1400);
+await pg.evaluate(() => {
+  window.SPCosmos.ceremony(new Date(Date.UTC(1984, 11, 15, 8, 1, 0)), { ms: 300 });
+});
+await pg.waitForSelector(".castover", { timeout: 4000 });
+await pg.evaluate(() => { window.SPCosmos.abort(); });
+await pg.waitForFunction(() => !document.querySelector(".castover"), null, { timeout: 3000 });
+is(await pg.evaluate(() => document.body.classList.contains("casting") === false),
+   "abort lifts a veil that is already up, and releases the scroll lock");
+
+/* ---- Here & now needs no permission ------------------------------------
+   In the desktop app the page is not an https origin, so the engine refuses a
+   satellite position before any prompt can appear — the button was dead, with
+   a message telling the reader to open an https address, which cannot be done
+   inside an application. The clock knows the zone and the bundled city list
+   knows the zone's towns, so the answer was available all along. */
+head("Here & now works with no location permission");
+await pg.close();
+pg = await page(false);
+await pg.goto(ROOT + "kundli.html");
+await pg.waitForFunction(() => !!document.getElementById("k-here"), null, { timeout: 25000 });
+await pg.evaluate(() => {
+  try { Object.defineProperty(navigator, "geolocation",
+          { get: () => undefined, configurable: true }); } catch (e) {}
+});
+await pg.click("#k-here");
+await pg.waitForFunction(() => !!document.getElementById("kreport"), null, { timeout: 45000 });
+is(true, "it casts a chart with no geolocation of any kind");
+is(await pg.evaluate(() => {
+     const v = id => document.getElementById(id).value;
+     return !isNaN(parseFloat(v("k-lat"))) && !isNaN(parseFloat(v("k-lon"))) &&
+            !isNaN(parseFloat(v("k-tz")));
+   }), "and fills a real place and offset into the form");
+is(await pg.evaluate(() =>
+     (document.getElementById("k-herenote") || {}).innerText.indexOf("time zone") >= 0),
+   "and says the place came from the device's time zone, not from its position");
+is(await pg.evaluate(() => {
+     const b = document.getElementById("k-here");
+     return !b.disabled && b.textContent.indexOf("Locating") < 0;
+   }), "and leaves the button usable rather than stuck on Locating");
+
 head("The pages behave");
 is(errs.length === 0, "no console errors" +
    (errs.length ? " — " + errs[0].slice(0, 150) : ""));
