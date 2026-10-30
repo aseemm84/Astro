@@ -201,6 +201,81 @@ is(Date.now() - t0 < 14000,
 is(await pg.evaluate(() => document.body.classList.contains("casting")) === false,
    "the scroll lock is released with it");
 
+/* ---- 2b. the ring you can turn ------------------------------------------
+   The veil stopped being a two-second flicker and became something to play
+   with, which is exactly the shape the first rule here warns about. So the
+   new behaviour is checked for what it gives (a real ring, real bodies, a
+   ring that turns) AND for what it must not take away (every way out). */
+head("The ring is a ring, and the grahas are bodies");
+await pg.evaluate(() => window.SPCosmos.ceremony(new Date(Date.UTC(1984,7,26,9,0,0)), { ms: 600 }));
+await pg.waitForSelector(".castover", { timeout: 6000 });
+const ring = await pg.evaluate(() => ({
+  sectors: document.querySelectorAll(".castnakseg").length,
+  spokes:  document.querySelectorAll(".castspoke").length,
+  signs:   document.querySelectorAll(".castsign").length,
+  discs:   document.querySelectorAll(".castdisc").length,
+  circles: document.querySelectorAll(".castbody circle").length,
+  realPng: [...document.querySelectorAll(".castdisc")]
+             .every(i => (i.getAttribute("href")||"").startsWith("data:image/png")),
+  plane:   document.querySelector(".castplane").getAttribute("transform") || ""
+}));
+is(ring.sectors === 27, "twenty-seven nakṣatra sectors, not tick marks (" + ring.sectors + ")");
+is(ring.spokes === 12 && ring.signs === 12,
+   "and the twelve rāśi boundaries inside them, each named");
+is(ring.discs === 9 && ring.circles === 0,
+   "all nine grahas are rendered bodies rather than coloured dots (" +
+   ring.discs + " discs, " + ring.circles + " dots)");
+is(ring.realPng === true,
+   "each one is a raster the body renderer produced, not a shape stood in for it");
+is(/scale\(1,[\d.]+\)\s*rotate\(/.test(ring.plane),
+   "the ring is tilted and spun by one transform on the plane, so every child " +
+   "keeps its true longitude — which is what the wind-back check above reads");
+
+/* it turns on its own, and a drag takes it over */
+const spin0 = await pg.evaluate(() =>
+  +(/rotate\(([-\d.]+)\)/.exec(document.querySelector(".castplane").getAttribute("transform"))||[0,0])[1]);
+await pg.waitForTimeout(700);
+const spin1 = await pg.evaluate(() =>
+  +(/rotate\(([-\d.]+)\)/.exec(document.querySelector(".castplane").getAttribute("transform"))||[0,0])[1]);
+is(Math.abs(spin1 - spin0) > 0.3,
+   "it keeps drifting after the grahas land (" + (spin1 - spin0).toFixed(1) + "° in .7s)");
+const box = await pg.evaluate(() => {
+  const b = document.querySelector(".castwheel").getBoundingClientRect();
+  return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+});
+await pg.mouse.move(box.x, box.y);
+await pg.mouse.down();
+await pg.mouse.move(box.x + 120, box.y, { steps: 6 });
+const spinDrag = await pg.evaluate(() =>
+  +(/rotate\(([-\d.]+)\)/.exec(document.querySelector(".castplane").getAttribute("transform"))||[0,0])[1]);
+await pg.mouse.up();
+is(spinDrag - spin1 > 25,
+   "and dragging turns it by hand (" + (spinDrag - spin1).toFixed(0) + "° for 120px)");
+
+head("Every way out still works");
+is(await pg.evaluate(() => !!document.querySelector("#cast-reveal")),
+   "Reveal Kundli is there");
+await pg.evaluate(() => document.querySelector("#cast-reveal").click());
+await pg.waitForFunction(() => !document.querySelector(".castover"), null, { timeout: 4000 });
+ok("the button lifts it");
+
+await pg.evaluate(() => window.SPCosmos.ceremony(new Date(Date.UTC(1984,7,26,9,0,0)), { ms: 300 }));
+await pg.waitForSelector(".castover", { timeout: 4000 });
+await pg.keyboard.press("Escape");
+await pg.waitForFunction(() => !document.querySelector(".castover"), null, { timeout: 4000 });
+ok("Escape lifts it");
+
+await pg.evaluate(() => window.SPCosmos.ceremony(new Date(Date.UTC(1984,7,26,9,0,0)), { ms: 300 }));
+await pg.waitForSelector(".castover", { timeout: 4000 });
+await pg.evaluate(() => {
+  const o = document.querySelector(".castover");
+  o.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+});
+await pg.waitForFunction(() => !document.querySelector(".castover"), null, { timeout: 4000 });
+ok("a click on the backdrop lifts it");
+is(await pg.evaluate(() => document.body.classList.contains("casting")) === false,
+   "and the scroll lock comes off every time");
+
 /* ---- 3. reduced motion -------------------------------------------------- */
 head("Reduced motion is honoured by stopping, not by hurrying");
 await pg.close();

@@ -1113,6 +1113,55 @@ function moSunDisc(R,rot){
   E.cx.putImageData(E.img,0,0);
   return E.cv;
 }
+
+/* ---- one graha disc, for anything outside this bundle ----------------------
+   The renderers above are declarations inside the report bundle's closure, so
+   until now nothing could reach them: the casting ceremony was drawing
+   coloured dots while the real surfaces sat a few kilobytes away in the same
+   file. This publishes exactly one entry point.
+
+   moBody hands back a canvas it still OWNS — moCanvas pools its pixel buffer
+   by size, so the next disc of the same radius overwrites this one in place.
+   The copy below is not defensive tidiness; without it every graha on the
+   ring would show whichever surface was generated last. sp-bodies.js learned
+   this the hard way and says so at length.
+
+   `phase` is where the Sun is relative to the body, in degrees: 180 is full,
+   which is what a chart wheel wants — a graha on the ring is a token for the
+   body, not a telescope view of its current illumination. */
+window.__moDisc=function(name,R,opt){
+  opt=opt||{};
+  try{
+    if(name==="Sun"||name==="Sūrya") return moOwn(moSunDisc(moQR(R),opt.rot||0));
+    var AX={Moon:1.5,Candra:1.5,Mercury:0.03,Budha:0.03,Venus:2.6,"Śukra":2.6,
+            Mars:25.2,"Maṅgala":25.2,Jupiter:3.1,Guru:3.1,Saturn:26.7,"Śani":26.7};
+    var RL={Moon:1,Candra:1,Mercury:1,Budha:1,Venus:0.35,"Śukra":0.35,
+            Mars:0.8,"Maṅgala":0.8,Jupiter:0,Guru:0,Saturn:0,"Śani":0};
+    var tex=null;
+    switch(name){
+      case "Moon": case "Candra": tex=moMoonTex(); break;
+      case "Mercury": case "Budha": tex=moMercuryTex(); break;
+      case "Venus": case "Śukra": tex=moVenusTex(); break;
+      case "Mars": case "Maṅgala": tex=moMarsTex(); break;
+      case "Jupiter": case "Guru": tex=moJupiterTex(); break;
+      case "Saturn": case "Śani": tex=moSaturnTex(); break;
+    }
+    if(!tex) return null;
+    var ph=opt.phase==null?180:opt.phase, pa=(180-ph)*Math.PI/180;
+    var rel=(tex.gx?(RL[name]==null?1:RL[name]):0);
+    return moOwn(moBody(moQR(R),{
+      tex:tex, lx:(ph<180?1:-1)*Math.sin(Math.abs(pa)), ly:0.03, lz:Math.cos(pa),
+      rot:opt.rot||0, axis:moQA(AX[name]==null?0:AX[name]),
+      relief:rel, b:(rel?0.82:0.25), exposure:1.15, night:[2,2,3]}));
+  }catch(e){ return null; }
+};
+function moOwn(src){
+  if(!src) return null;
+  var cv=document.createElement("canvas");
+  cv.width=src.width; cv.height=src.height;
+  cv.getContext("2d").drawImage(src,0,0);
+  return cv;
+}
 ;
 
 /* ===== Real grahas on the reel ============================================

@@ -84,13 +84,29 @@ body.casting{overflow:hidden}
 @keyframes castout{from{opacity:1}to{opacity:0}}
 .castinner{text-align:center;max-width:460px}
 .castwheelwrap{display:grid;place-items:center;margin:0 0 18px}
-.castwheel{width:min(74vw,360px);height:auto;overflow:visible;
+.castwheel{width:min(84vw,420px);height:auto;overflow:visible;
   filter:drop-shadow(0 0 26px rgba(245,158,11,.22))}
 .castring{fill:none;stroke:rgba(245,158,11,.42);stroke-width:1.1}
 .castring2{fill:none;stroke:rgba(255,255,255,.12);stroke-width:.8}
 .castspoke{stroke:rgba(245,158,11,.30);stroke-width:.8}
 .casttrail{fill:none;stroke-width:1.4;opacity:.42;stroke-linecap:round}
 .castbody circle{filter:drop-shadow(0 0 7px currentColor)}
+/* ---- the tilted nakṣatra ring ----
+   The plane group carries the whole 3D as one transform, so these are all
+   drawn in flat polar coordinates and tilt with it. */
+.castwheel{cursor:grab;touch-action:none}
+.castwheel.dragging{cursor:grabbing}
+.castnakseg{fill:rgba(96,112,176,.08);stroke:rgba(140,156,214,.16);stroke-width:.6}
+.castnakseg.alt{fill:rgba(96,112,176,.17)}
+.castsign{font-size:7.5px;text-anchor:middle;dominant-baseline:middle;
+  fill:rgba(160,172,214,.72);letter-spacing:.03em}
+.castlagnamark{stroke:rgba(232,200,119,.85);stroke-width:1.8;stroke-linecap:round}
+.castdisc{image-rendering:auto}
+.castbody{transition:none}
+/* the way out, which appears only once the report is actually behind the veil */
+.castacts{margin:14px 0 0;min-height:34px;display:flex;justify-content:center}
+.castreveal{opacity:0;pointer-events:none;transition:opacity .28s ease}
+.castover.ready .castreveal{opacity:1;pointer-events:auto}
 .castglyph{font-size:11px;text-anchor:middle;font-weight:700;
   paint-order:stroke;stroke:rgba(0,0,0,.65);stroke-width:2.4px}
 .castline{font-family:var(--deva);font-size:clamp(17px,4.4vw,22px);
