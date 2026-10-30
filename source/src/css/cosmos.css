@@ -84,7 +84,7 @@ body.casting{overflow:hidden}
 @keyframes castout{from{opacity:1}to{opacity:0}}
 .castinner{text-align:center;max-width:460px}
 .castwheelwrap{display:grid;place-items:center;margin:0 0 18px}
-.castwheel{width:min(84vw,420px);height:auto;overflow:visible;
+.castwheel{width:min(92vw,500px);height:auto;overflow:visible;
   filter:drop-shadow(0 0 26px rgba(245,158,11,.22))}
 .castring{fill:none;stroke:rgba(245,158,11,.42);stroke-width:1.1}
 .castring2{fill:none;stroke:rgba(255,255,255,.12);stroke-width:.8}
@@ -102,6 +102,14 @@ body.casting{overflow:hidden}
   fill:rgba(160,172,214,.72);letter-spacing:.03em}
 .castlagnamark{stroke:rgba(232,200,119,.85);stroke-width:1.8;stroke-linecap:round}
 .castdisc{image-rendering:auto}
+.castdrop{fill:none;stroke-width:1;opacity:0;stroke-dasharray:2 3}
+/* A corona ADDS light; it must not paint over the grahas standing beside
+   Sūrya — Budha, Śukra and Candra are in the same rāśi on many charts, and
+   a covering halo simply deletes them. */
+.castsunglow{pointer-events:none;mix-blend-mode:screen}
+/* the drop-shadow rule above is for coloured dots; it must not halo the glow */
+.castbody circle.castsunglow{filter:none}
+.castring2{fill:rgba(8,11,28,.5)}
 .castbody{transition:none}
 /* the way out, which appears only once the report is actually behind the veil */
 .castacts{margin:14px 0 0;min-height:34px;display:flex;justify-content:center}

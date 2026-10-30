@@ -1764,7 +1764,7 @@ body.casting{overflow:hidden}
 @keyframes castout{from{opacity:1}to{opacity:0}}
 .castinner{text-align:center;max-width:460px}
 .castwheelwrap{display:grid;place-items:center;margin:0 0 18px}
-.castwheel{width:min(84vw,420px);height:auto;overflow:visible;
+.castwheel{width:min(92vw,500px);height:auto;overflow:visible;
   filter:drop-shadow(0 0 26px rgba(245,158,11,.22))}
 .castring{fill:none;stroke:rgba(245,158,11,.42);stroke-width:1.1}
 .castring2{fill:none;stroke:rgba(255,255,255,.12);stroke-width:.8}
@@ -1782,6 +1782,14 @@ body.casting{overflow:hidden}
   fill:rgba(160,172,214,.72);letter-spacing:.03em}
 .castlagnamark{stroke:rgba(232,200,119,.85);stroke-width:1.8;stroke-linecap:round}
 .castdisc{image-rendering:auto}
+.castdrop{fill:none;stroke-width:1;opacity:0;stroke-dasharray:2 3}
+/* A corona ADDS light; it must not paint over the grahas standing beside
+   Sūrya — Budha, Śukra and Candra are in the same rāśi on many charts, and
+   a covering halo simply deletes them. */
+.castsunglow{pointer-events:none;mix-blend-mode:screen}
+/* the drop-shadow rule above is for coloured dots; it must not halo the glow */
+.castbody circle.castsunglow{filter:none}
+.castring2{fill:rgba(8,11,28,.5)}
 .castbody{transition:none}
 /* the way out, which appears only once the report is actually behind the veil */
 .castacts{margin:14px 0 0;min-height:34px;display:flex;justify-content:center}
@@ -2250,7 +2258,7 @@ html[data-theme="emerald"] .wsnext.lead{
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-10-30.138288f";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html" class="active">Motion</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
+</script><script>window.__kBuild="2026-10-30.52a817f";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html" class="active">Motion</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
 
 <div id="mo-host" class="kreport"><p class="k-status" id="mo-status">Loading the scenes…</p></div>
 
@@ -22846,8 +22854,14 @@ window.buildKundliReport=function(J){
     OVER.setAttribute("aria-live", "polite");
     OVER.innerHTML =
       '<div class="castinner">' +
-      '<div class="castwheelwrap"><svg class="castwheel" viewBox="-150 -150 300 300" ' +
+      '<div class="castwheelwrap"><svg class="castwheel" viewBox="-205 -165 410 330" ' +
       'role="img" aria-label="The sky winding back to the birth moment">' +
+      '<defs><radialGradient id="castsunglow">' +
+      '<stop offset="0" stop-color="#ffe9b0" stop-opacity=".62"/>' +
+      '<stop offset=".34" stop-color="#ffb93a" stop-opacity=".26"/>' +
+      '<stop offset=".62" stop-color="#ff8f1f" stop-opacity=".09"/>' +
+      '<stop offset="1" stop-color="#ff7a05" stop-opacity="0"/>' +
+      '</radialGradient></defs>' +
       '<g class="castplane">' +
       '<g class="castnak"></g><g class="castspokes"></g><g class="castsigns"></g>' +
       '<circle class="castring2" r="60"/>' +
@@ -22882,62 +22896,105 @@ window.buildKundliReport=function(J){
        which is what lets the harness read the wind-back straight out of the
        DOM and compare it with the ephemeris. Depth is restored per body as
        a scale and an opacity, which that reading ignores. */
-    var SPIN = 0, TILT = 58 * Math.PI / 180, DRIFT = reduced ? 0 : 0.045;
-    function applyPlane(){
-      plane.setAttribute("transform",
-        "scale(1," + Math.cos(TILT).toFixed(4) + ") rotate(" + SPIN.toFixed(2) + ")");
+    /* degrees per SECOND. Per frame it was whatever the frame rate happened
+       to be, which on a page re-projecting the whole ring each tick is not
+       60 — the harness measured a quarter of the intended speed. */
+    var SPIN = 0, TILT = 58 * Math.PI / 180, DRIFT = reduced ? 0 : 2.6;
+    var FOCAL = 430;                       /* eye distance, in viewBox units */
+
+    /* ---- the projection --------------------------------------------------
+       A squash is not a tilt. The first version of this leaned the ring with
+       one affine transform on a group, which flattens it evenly: the near
+       edge and the far edge foreshorten by the same amount, nothing grows as
+       it comes towards you, and at any real angle it reads as a drawing of an
+       ellipse rather than as a circle lying down. Every point is now carried
+       through a real perspective divide instead, and the bodies are sorted
+       back to front, which is what the depth actually costs.
+
+       Everything is projected in JS rather than by a group transform, so the
+       DOM holds projected coordinates. The harness therefore flattens the
+       ring first — view({spin:0, tilt:0}) makes this the identity — and reads
+       the true longitudes straight out of it exactly as it did before. */
+    function proj(lon, r, lift) {
+      var th = (lon - 90 + SPIN) * Math.PI / 180;
+      var x = Math.cos(th) * r, y = Math.sin(th) * r, z = lift || 0;
+      var ct = Math.cos(TILT), st = Math.sin(TILT);
+      var yt = y * ct - z * st;            /* tilt about the viewer's x axis */
+      var zt = y * st + z * ct;            /* ...and the depth it produces */
+      var s = FOCAL / (FOCAL - zt);
+      return { x: x * s, y: yt * s, s: s, z: zt };
     }
-    function depthAt(lon){                 /* -1 far, +1 near */
-      return Math.sin((lon - 90 + SPIN) * Math.PI / 180);
-    }
+    function applyPlane(){ renderPlane(); }
 
     var RNAK_O = 132, RNAK_I = 112, RSPOKE = 60, RBODY = 96;
-    var i, k2;
-    /* 27 nakṣatra sectors, alternately shaded, as real sectors rather than
-       tick marks — this is the ring the grahas land on */
-    function sector(r0, r1, a0, a1, cls){
-      var pts = [], st = (a1 - a0) / 8, a;
-      for (a = a0; a <= a1 + 1e-9; a += st)
-        pts.push([Math.cos((a-90)*Math.PI/180)*r1, Math.sin((a-90)*Math.PI/180)*r1]);
-      for (a = a1; a >= a0 - 1e-9; a -= st)
-        pts.push([Math.cos((a-90)*Math.PI/180)*r0, Math.sin((a-90)*Math.PI/180)*r0]);
-      var d = "M" + pts.map(function(q){ return q[0].toFixed(2)+","+q[1].toFixed(2); }).join("L") + "Z";
-      var el = document.createElementNS(NS, "path");
-      el.setAttribute("d", d); el.setAttribute("class", cls);
-      return el;
+    var i;
+    /* The elements are made once and re-placed every frame, because under a
+       perspective divide a sector is no longer a fixed shape: each of its
+       corners moves by a different amount. */
+    var segs = [], spokeEls = [], signEls = [], lagEl = null, innerEl = null;
+    for (i = 0; i < 27; i++) {
+      var sg = document.createElementNS(NS, "path");
+      sg.setAttribute("class", "castnakseg" + (i % 2 ? " alt" : ""));
+      nakg.appendChild(sg); segs.push(sg);
     }
-    for (i = 0; i < 27; i++)
-      nakg.appendChild(sector(RNAK_I, RNAK_O, i*(360/27), (i+1)*(360/27),
-                              "castnakseg" + (i % 2 ? " alt" : "")));
-    /* the twelve rāśi boundaries, and their names at the mid-sign */
     for (i = 0; i < 12; i++) {
-      var a = (i * 30 - 90) * Math.PI / 180;
-      var l = document.createElementNS(NS, "line");
-      l.setAttribute("x1", (Math.cos(a) * RSPOKE).toFixed(2));
-      l.setAttribute("y1", (Math.sin(a) * RSPOKE).toFixed(2));
-      l.setAttribute("x2", (Math.cos(a) * RNAK_I).toFixed(2));
-      l.setAttribute("y2", (Math.sin(a) * RNAK_I).toFixed(2));
-      l.setAttribute("class", "castspoke");
-      spokes.appendChild(l);
-      var am = ((i * 30 + 15) - 90) * Math.PI / 180;
+      var ln = document.createElementNS(NS, "line");
+      ln.setAttribute("class", "castspoke");
+      spokes.appendChild(ln); spokeEls.push(ln);
       var tx = document.createElementNS(NS, "text");
       tx.setAttribute("class", "castsign");
-      tx.setAttribute("x", (Math.cos(am) * 86).toFixed(2));
-      tx.setAttribute("y", (Math.sin(am) * 86).toFixed(2));
       tx.textContent = RASHI_SA[i];
-      signs.appendChild(tx);
+      signs.appendChild(tx); signEls.push(tx);
     }
-    /* the lagna, when the form has a place to compute one from */
+    innerEl = svg.querySelector(".castring2");
+    if (innerEl) {                        /* a circle cannot be a projected circle */
+      var ip = document.createElementNS(NS, "path");
+      ip.setAttribute("class", "castring2");
+      innerEl.parentNode.replaceChild(ip, innerEl);
+      innerEl = ip;
+    }
     var lagLon = ascFromForm(birthDate);
     if (lagLon != null) {
-      var la = (lagLon - 90) * Math.PI / 180;
-      var lm = document.createElementNS(NS, "line");
-      lm.setAttribute("x1", (Math.cos(la) * RSPOKE).toFixed(2));
-      lm.setAttribute("y1", (Math.sin(la) * RSPOKE).toFixed(2));
-      lm.setAttribute("x2", (Math.cos(la) * (RNAK_O + 8)).toFixed(2));
-      lm.setAttribute("y2", (Math.sin(la) * (RNAK_O + 8)).toFixed(2));
-      lm.setAttribute("class", "castlagnamark");
-      lagg.appendChild(lm);
+      lagEl = document.createElementNS(NS, "line");
+      lagEl.setAttribute("class", "castlagnamark");
+      lagg.appendChild(lagEl);
+    }
+
+    function ringPath(r0, r1, a0, a1) {
+      var pts = [], st = (a1 - a0) / 4, a, q;
+      for (a = a0; a <= a1 + 1e-9; a += st) { q = proj(a, r1, 0); pts.push(q); }
+      for (a = a1; a >= a0 - 1e-9; a -= st) { q = proj(a, r0, 0); pts.push(q); }
+      return "M" + pts.map(function (o) {
+        return o.x.toFixed(1) + "," + o.y.toFixed(1); }).join("L") + "Z";
+    }
+    function renderPlane() {
+      var k;
+      for (k = 0; k < 27; k++)
+        segs[k].setAttribute("d", ringPath(RNAK_I, RNAK_O, k * (360 / 27), (k + 1) * (360 / 27)));
+      for (k = 0; k < 12; k++) {
+        var p1 = proj(k * 30, RSPOKE, 0), p2 = proj(k * 30, RNAK_I, 0);
+        spokeEls[k].setAttribute("x1", p1.x.toFixed(1));
+        spokeEls[k].setAttribute("y1", p1.y.toFixed(1));
+        spokeEls[k].setAttribute("x2", p2.x.toFixed(1));
+        spokeEls[k].setAttribute("y2", p2.y.toFixed(1));
+        var pm = proj(k * 30 + 15, 86, 0);
+        signEls[k].setAttribute("x", pm.x.toFixed(1));
+        signEls[k].setAttribute("y", pm.y.toFixed(1));
+        /* the labels lie on the ring, so they shrink with it */
+        signEls[k].setAttribute("font-size", (7.5 * pm.s).toFixed(2));
+        signEls[k].setAttribute("opacity", Math.max(0.12, Math.min(1, (pm.s - 0.62) * 2.1)).toFixed(2));
+      }
+      var d = "", j;
+      for (j = 0; j <= 48; j++) {
+        var q2 = proj(j * 7.5, RSPOKE, 0);
+        d += (j ? "L" : "M") + q2.x.toFixed(1) + "," + q2.y.toFixed(1);
+      }
+      innerEl.setAttribute("d", d + "Z");
+      if (lagEl) {
+        var l1 = proj(lagLon, RSPOKE, 0), l2 = proj(lagLon, RNAK_O + 8, 0);
+        lagEl.setAttribute("x1", l1.x.toFixed(1)); lagEl.setAttribute("y1", l1.y.toFixed(1));
+        lagEl.setAttribute("x2", l2.x.toFixed(1)); lagEl.setAttribute("y2", l2.y.toFixed(1));
+      }
     }
 
     var marks = {};
@@ -22945,11 +23002,27 @@ window.buildKundliReport=function(J){
       if (from[b] == null) return;
       var g = document.createElementNS(NS, "g");
       g.setAttribute("class", "castbody");
+      /* Named, because the depth sort re-appends these every frame and DOM
+         order therefore says nothing about which graha is which. Anything
+         reading them — the harness above all — must read them by name. */
+      g.setAttribute("data-body", b);
       /* The real graha, generated per pixel by 54-motion-bodies.js — the
          Moon's maria at their selenographic coordinates, Guru's belts at
          their real latitudes — not a coloured dot. One sprite each, drawn
          once and then scaled, because the lighting does not change during
          the wind-back and re-rasterising per frame would cost everything. */
+      if (b === "Sun") {
+        /* Sūrya is the source of the light every other disc here is lit by,
+           so it is the one graha that should not sit on the ring as a flat
+           token. The corona lives inside the body group, so it travels,
+           scales with the perspective and fades with the depth exactly as
+           the disc does. */
+        var hl = document.createElementNS(NS, "circle");
+        hl.setAttribute("class", "castsunglow");
+        hl.setAttribute("r", (BODY_R[b] * 2.0).toFixed(1));
+        hl.setAttribute("fill", "url(#castsunglow)");
+        g.appendChild(hl);
+      }
       var href = bodyHref(b);
       if (href) {
         var im = document.createElementNS(NS, "image");
@@ -22977,7 +23050,11 @@ window.buildKundliReport=function(J){
       tr.setAttribute("class", "casttrail");
       tr.setAttribute("stroke", HUE[b] || "#fff");
       trails.appendChild(tr);
-      marks[b] = { g: g, trail: tr, r: RBODY + (k % 5) * 5 };
+      var dr = document.createElementNS(NS, "path");
+      dr.setAttribute("class", "castdrop");
+      dr.setAttribute("stroke", HUE[b] || "#fff");
+      trails.appendChild(dr);
+      marks[b] = { g: g, trail: tr, drop: dr, r: RBODY + (k % 5) * 5 };
     });
     applyPlane();
 
@@ -22986,9 +23063,13 @@ window.buildKundliReport=function(J){
     var start = null;
     var msFrom = now.getTime(), msTo = birthDate.getTime();
 
+    var LASTP = 0;
     function place(p) {
+      LASTP = p;
       /* ease so it settles rather than stopping dead */
       var e = p >= 1 ? 1 : 1 - Math.pow(1 - p, 3);
+      renderPlane();
+      var order = [];
       BODIES.forEach(function (b) {
         var m = marks[b];
         if (!m) return;
@@ -22999,34 +23080,41 @@ window.buildKundliReport=function(J){
         while (d > 180) d -= 360;
         while (d < -180) d += 360;
         var lon = from[b] + d * e;
-        var a = (lon - 90) * Math.PI / 180;
-        var x = Math.cos(a) * m.r, y = Math.sin(a) * m.r;
-        /* The translate stays TRUE polar — the harness reads the wind-back
-           out of it and checks it against the ephemeris, so nothing about
-           the 3D may touch it. Depth goes in the scale and the opacity,
-           which that reading does not look at. */
-        var dep = depthAt(lon);                     /* -1 far, +1 near */
-        var sc = 0.74 + 0.30 * (dep + 1) / 2;
-        /* The plane is squashed to tilt the ring; a graha is a sphere and
-           must not be. Undoing the squash on the y axis only keeps each
-           body round while it still sits on the tilted ring — the ring is
-           an ellipse because it is a circle seen at an angle, the bodies
-           are not because they are not. */
-        var ky = 1 / Math.max(0.12, Math.cos(TILT));
-        m.g.setAttribute("transform", "translate(" + x.toFixed(2) + "," +
-          y.toFixed(2) + ") scale(" + sc.toFixed(3) + "," +
-          (sc * ky).toFixed(3) + ")");
-        m.g.setAttribute("opacity", (0.45 + 0.55 * (dep + 1) / 2).toFixed(3));
-        /* the trail is the arc it has covered so far */
-        var a0 = (from[b] - 90) * Math.PI / 180;
-        var big = Math.abs(d * e) > 180 ? 1 : 0;
-        var sweep = d > 0 ? 1 : 0;
-        m.trail.setAttribute("d",
-          "M" + (Math.cos(a0) * m.r).toFixed(2) + "," +
-          (Math.sin(a0) * m.r).toFixed(2) +
-          " A" + m.r + "," + m.r + " 0 " + big + " " + sweep + " " +
-          x.toFixed(2) + "," + y.toFixed(2));
+        /* They come down onto the ring rather than sliding round it: a graha
+           stands above the plane while the sky is still winding, and lands on
+           it as the birth moment arrives. */
+        var lift = (1 - e) * 54;
+        var q = proj(lon, m.r, lift);
+        /* The scale IS the perspective — nothing is added to it, so a graha on
+           the near edge is larger because it is nearer, not because it was
+           told to look nearer. */
+        m.g.setAttribute("transform", "translate(" + q.x.toFixed(2) + "," +
+          q.y.toFixed(2) + ") scale(" + q.s.toFixed(3) + ")");
+        m.g.setAttribute("opacity", Math.max(0.32, Math.min(1, (q.s - 0.55) * 1.9)).toFixed(3));
+        order.push({ g: m.g, z: q.z });
+        if (e < 1) {                       /* a line down to where it will stand */
+          var foot = proj(lon, m.r, 0);
+          m.drop.setAttribute("d", "M" + q.x.toFixed(1) + "," + q.y.toFixed(1) +
+            "L" + foot.x.toFixed(1) + "," + foot.y.toFixed(1));
+          m.drop.setAttribute("opacity", (0.34 * (1 - e)).toFixed(2));
+        } else m.drop.setAttribute("opacity", "0");
+        /* The arc it has covered, sampled rather than drawn as an SVG arc:
+           under a perspective divide the path of a circle is no longer a
+           circular arc, and an A command would cut the corner. */
+        var dd = "", n = 14, k2, lk;
+        for (k2 = 0; k2 <= n; k2++) {
+          lk = from[b] + d * e * (k2 / n);
+          var qt = proj(lk, m.r, 0);
+          dd += (k2 ? "L" : "M") + qt.x.toFixed(1) + "," + qt.y.toFixed(1);
+        }
+        m.trail.setAttribute("d", dd);
       });
+      /* Back to front. Without this the paint order is the DOM order, and a
+         graha on the far side of the ring draws over one in front of it —
+         the single thing that most gives away a flat drawing pretending to
+         have depth. */
+      order.sort(function (u, v) { return u.z - v.z; })
+           .forEach(function (o) { bodies.appendChild(o.g); });
       var ms = msFrom + (msTo - msFrom) * e;
       var d2 = new Date(ms);
       if (dateEl) dateEl.textContent = isNaN(d2.getTime()) ? "" :
@@ -23048,12 +23136,25 @@ window.buildKundliReport=function(J){
        sky is something to watch rather than a frozen diagram. Dragging takes
        it over; letting go hands it back. */
     var DRAG = null;
+    var LASTTS = 0;
     function spinLoop(ts) {
       if (!OVER) return;
-      if (!DRAG) { SPIN += DRIFT; applyPlane(); }
+      var dt = LASTTS ? Math.min(0.1, (ts - LASTTS) / 1000) : 0;
+      LASTTS = ts;
+      if (!DRAG) SPIN += DRIFT * dt;
+      /* re-place everything, not just the ring: the grahas stand ON it, and
+         a ring that turns under stationary bodies is worse than one that
+         does not turn at all */
+      place(LASTP);
       SPINRAF = requestAnimationFrame(spinLoop);
     }
     var SPINRAF = requestAnimationFrame(spinLoop);
+    VIEW = function (o) {
+      if (o.spin != null) SPIN = o.spin;
+      if (o.tilt != null) TILT = o.tilt * Math.PI / 180;
+      if (o.drift != null) DRIFT = o.drift;
+      place(LASTP);
+    };
 
     svg.addEventListener("pointerdown", function (e) {
       DRAG = { x: e.clientX, y: e.clientY };
@@ -23067,7 +23168,7 @@ window.buildKundliReport=function(J){
       TILT = Math.max(0, Math.min(78 * Math.PI / 180,
                                   TILT + (e.clientY - DRAG.y) * 0.006));
       DRAG.x = e.clientX; DRAG.y = e.clientY;
-      applyPlane();
+      place(LASTP);
     });
     function dragEnd() { DRAG = null; svg.classList.remove("dragging"); }
     svg.addEventListener("pointerup", dragEnd);
@@ -23229,7 +23330,14 @@ window.buildKundliReport=function(J){
     document.addEventListener("DOMContentLoaded", boot);
   else boot();
 
-  window.SPCosmos = { ceremony: ceremony, end: endCeremony,
+  /* The harness reads each graha's drawn position and compares it with the
+     ephemeris. Under perspective the drawn position is no longer the polar
+     one, so instead of weakening that check to read a number the code
+     reports about itself, this flattens the ring: at spin 0 and tilt 0 the
+     projection IS the identity, and the DOM again holds true longitudes. */
+  var VIEW = null;
+  function view(o) { if (VIEW) VIEW(o || {}); }
+  window.SPCosmos = { view: view, ceremony: ceremony, end: endCeremony,
                       sky: syncSky, mount: mountSky, unmount: unmountSky };
 })();
 ;

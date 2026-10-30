@@ -97,6 +97,13 @@ await pg.evaluate(() => window.NTheme.set("midnight"));
 await fill(pg);
 await pg.click("#k-go");
 await pg.waitForSelector(".castover", { timeout: 8000 });
+/* FLATTEN THE RING FIRST. The ceremony draws through a perspective divide,
+   so a graha's drawn position is not its polar one — which is the whole
+   point of the tilt. At spin 0 and tilt 0 that projection is the identity,
+   and the DOM again holds true longitudes, so this check reads exactly what
+   it always read instead of being softened into trusting a number the code
+   reports about itself. Drift off too, or the spin walks away mid-read. */
+await pg.evaluate(() => window.SPCosmos.view({ spin: 0, tilt: 0, drift: 0 }));
 /* sample the drawn positions immediately, then again once settled, and
    compare both against the ephemeris read independently */
 const truth = await pg.evaluate(() => {
@@ -115,17 +122,17 @@ const truth = await pg.evaluate(() => {
 async function drawn() {
   return pg.evaluate(() => {
     const out = {};
-    const g = document.querySelectorAll(".castbody");
-    const names = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus",
-                   "Saturn", "Rahu", "Ketu"];
-    g.forEach((n, i) => {
+    /* BY NAME. The ceremony sorts its bodies back to front and re-appends
+       them every frame, so the n-th node is whichever graha was n-th nearest
+       at that instant. Reading by index would compare one graha's position
+       with another's ephemeris and could sit there passing by luck. */
+    document.querySelectorAll(".castbody[data-body]").forEach((n) => {
       const t = n.getAttribute("transform") || "";
-      const m = /translate\(([-\d.]+),([-\d.]+)\)/.exec(t);
+      const m = /translate\((-?[\d.]+),(-?[\d.]+)\)/.exec(t);
       if (!m) return;
       const x = +m[1], y = +m[2];
       let a = Math.atan2(y, x) * 180 / Math.PI + 90;
-      a = ((a % 360) + 360) % 360;
-      out[names[i]] = a;
+      out[n.getAttribute("data-body")] = ((a % 360) + 360) % 360;
     });
     return out;
   });
@@ -146,7 +153,7 @@ const atStart = await pg.evaluate(() => {
                  "Saturn", "Rahu", "Ketu"];
   document.querySelectorAll(".casttrail").forEach((n, i) => {
     const d = n.getAttribute("d") || "";
-    const m = /^M([-\d.]+),([-\d.]+)/.exec(d);
+    const m = /^M(-?[\d.]+),(-?[\d.]+)/.exec(d);
     if (!m) return;
     let a = Math.atan2(+m[2], +m[1]) * 180 / Math.PI + 90;
     out[names[i]] = ((a % 360) + 360) % 360;
@@ -163,6 +170,7 @@ is(Math.max.apply(null, startErr) < 1.0,
    "ephemeris");
 
 await pg.waitForSelector(".castover.settled", { timeout: 9000 });
+await pg.evaluate(() => window.SPCosmos.view({ spin: 0, tilt: 0, drift: 0 }));
 const atEnd = await drawn();
 const endErr = Object.keys(atEnd).map((b) => dd(atEnd[b], truth[b].birth));
 is(Math.max.apply(null, endErr) < 1.0,
@@ -214,10 +222,10 @@ const ring = await pg.evaluate(() => ({
   spokes:  document.querySelectorAll(".castspoke").length,
   signs:   document.querySelectorAll(".castsign").length,
   discs:   document.querySelectorAll(".castdisc").length,
-  circles: document.querySelectorAll(".castbody circle").length,
+  circles: document.querySelectorAll(".castbody circle:not(.castsunglow)").length,
   realPng: [...document.querySelectorAll(".castdisc")]
              .every(i => (i.getAttribute("href")||"").startsWith("data:image/png")),
-  plane:   document.querySelector(".castplane").getAttribute("transform") || ""
+  glow:    document.querySelectorAll(".castsunglow").length
 }));
 is(ring.sectors === 27, "twenty-seven nakṣatra sectors, not tick marks (" + ring.sectors + ")");
 is(ring.spokes === 12 && ring.signs === 12,
@@ -227,30 +235,78 @@ is(ring.discs === 9 && ring.circles === 0,
    ring.discs + " discs, " + ring.circles + " dots)");
 is(ring.realPng === true,
    "each one is a raster the body renderer produced, not a shape stood in for it");
-is(/scale\(1,[\d.]+\)\s*rotate\(/.test(ring.plane),
-   "the ring is tilted and spun by one transform on the plane, so every child " +
-   "keeps its true longitude — which is what the wind-back check above reads");
+is(ring.glow === 1,
+   "and Sūrya alone carries a corona, because it is the one lighting the rest");
+/* PERSPECTIVE, NOT A SQUASH. The first version of this leaned the ring with
+   one affine transform, which flattens it evenly — and looked wrong for
+   exactly that reason. The difference is measurable without looking: under a
+   squash the ring stays symmetric about its centre, because every y is
+   multiplied by the same number. Under a perspective divide the near edge
+   grows and the far edge shrinks, so it does not. */
+const sym = await pg.evaluate(() => {
+  const read = () => {
+    const d = document.querySelector(".castring2").getAttribute("d") || "";
+    const ys = [...d.matchAll(/[ML](-?[\d.]+),(-?[\d.]+)/g)].map(m => +m[2]);
+    return { near: Math.max(...ys), far: Math.min(...ys) };
+  };
+  window.SPCosmos.view({ spin: 0, tilt: 0, drift: 0 });
+  const flat = read();
+  window.SPCosmos.view({ spin: 0, tilt: 58, drift: 0 });
+  const tilted = read();
+  return { flat, tilted };
+});
+is(Math.abs(sym.flat.near + sym.flat.far) < 0.5,
+   "flat, the ring is symmetric about its centre");
+is(sym.tilted.near + sym.tilted.far > 4,
+   "tilted, the near edge is pushed further than the far edge is pulled (" +
+   (sym.tilted.near + sym.tilted.far).toFixed(1) + " units of asymmetry) — a " +
+   "perspective divide, which an affine squash cannot produce");
 
-/* it turns on its own, and a drag takes it over */
-const spin0 = await pg.evaluate(() =>
-  +(/rotate\(([-\d.]+)\)/.exec(document.querySelector(".castplane").getAttribute("transform"))||[0,0])[1]);
-await pg.waitForTimeout(700);
-const spin1 = await pg.evaluate(() =>
-  +(/rotate\(([-\d.]+)\)/.exec(document.querySelector(".castplane").getAttribute("transform"))||[0,0])[1]);
-is(Math.abs(spin1 - spin0) > 0.3,
-   "it keeps drifting after the grahas land (" + (spin1 - spin0).toFixed(1) + "° in .7s)");
+/* it turns on its own, and a drag takes it over. With no plane transform to
+   read, the spin is measured by where a graha is actually drawn — which is
+   the honest question anyway: did the picture move? */
+const where = () => pg.evaluate(() => {
+  const g = document.querySelector('.castbody[data-body="Jupiter"]');
+  const m = /translate\((-?[\d.]+),(-?[\d.]+)\)/.exec(g.getAttribute("transform") || "");
+  return m ? { x: +m[1], y: +m[2] } : null;
+});
+/* Wait for the wind-back to finish first. Measuring during it reads the
+   grahas' own motion and calls it drift — the first version of this check
+   reported 244 units of "drift" where the drift can only produce about four,
+   and passed. A number that large was the tell. */
+await pg.waitForSelector(".castover.settled", { timeout: 9000 });
+await pg.evaluate(() => window.SPCosmos.view({ spin: 0, tilt: 58, drift: 0 }));
+const still0 = await where();
+await pg.waitForTimeout(500);
+const still1 = await where();
+is(Math.hypot(still1.x - still0.x, still1.y - still0.y) < 0.6,
+   "with the drift off, a settled graha holds still (" +
+   Math.hypot(still1.x - still0.x, still1.y - still0.y).toFixed(2) + " units in .5s)");
+
+await pg.evaluate(() => window.SPCosmos.view({ drift: 2.6 }));
+const w0 = await where();
+await pg.waitForTimeout(800);
+const w1 = await where();
+const moved = Math.hypot(w1.x - w0.x, w1.y - w0.y);
+is(moved > 2 && moved < 12,
+   "and the ring keeps turning slowly under it (" + moved.toFixed(1) +
+   " units in .8s — a drift, not a spin)");
+
 const box = await pg.evaluate(() => {
   const b = document.querySelector(".castwheel").getBoundingClientRect();
   return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
 });
+await pg.evaluate(() => window.SPCosmos.view({ drift: 0 }));
+const w2 = await where();
 await pg.mouse.move(box.x, box.y);
 await pg.mouse.down();
-await pg.mouse.move(box.x + 120, box.y, { steps: 6 });
-const spinDrag = await pg.evaluate(() =>
-  +(/rotate\(([-\d.]+)\)/.exec(document.querySelector(".castplane").getAttribute("transform"))||[0,0])[1]);
+await pg.mouse.move(box.x + 140, box.y, { steps: 6 });
+const w3 = await where();
 await pg.mouse.up();
-is(spinDrag - spin1 > 25,
-   "and dragging turns it by hand (" + (spinDrag - spin1).toFixed(0) + "° for 120px)");
+is(Math.hypot(w3.x - w2.x, w3.y - w2.y) > 20,
+   "and dragging turns it by hand (" +
+   Math.hypot(w3.x - w2.x, w3.y - w2.y).toFixed(0) + " units for 140px, with the drift off)");
+await pg.evaluate(() => window.SPCosmos.view({ drift: 2.6 }));
 
 head("Every way out still works");
 is(await pg.evaluate(() => !!document.querySelector("#cast-reveal")),
