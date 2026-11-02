@@ -129,6 +129,34 @@ head("the figures cross-check against the fixtures");
      "and the holdout count is the fit's (" + fitted._provenance.holdoutSamples + ")");
 }
 
+head("the capabilities are counted from the build, not kept by hand");
+{
+  const K = D.capabilities;
+  is(/Counted from the built/.test(K.note),
+     "the capabilities block says it is counted from the artefact");
+  const famTotal = K.families.reduce((p, f) => p + f.count, 0);
+  is(famTotal === K.reportSections,
+     "the families sum exactly to the " + K.reportSections + " sections (" + famTotal + ")");
+  is(K.unclassified.length === 0,
+     "every section falls into a family"
+     + (K.unclassified.length ? " — stray: " + K.unclassified.join(", ") : ""));
+  /* The same counts, taken straight from the built files here, so a page that
+     overstated its own scope would fail rather than impress. */
+  const built = readFileSync(ROOT + "/kundli.html", "utf8");
+  const secs = new Set([...built.matchAll(/sec\("([^"]{2,46})"/g)].map(m => m[1]));
+  is(K.reportSections === secs.size,
+     "the section count re-counts from kundli.html (" + secs.size + ")");
+  const eng = readFileSync(ROOT + "/source/src/js/engine.js", "utf8");
+  is(K.vargas === (eng.match(/case "D\d+":/g) || []).length,
+     "the varga count re-counts from the engine (" + K.vargas + ")");
+  is(K.tabNames.length === K.tabs && K.tabs >= 10,
+     "the tab names and count agree (" + K.tabs + ")");
+  is(K.reach.length >= 4 && K.reach.every(r => r.from < r.to && r.note),
+     "every reach span runs forwards and carries its own note");
+  is(K.pipeline.length >= 6 && K.pipeline.every(p => p.step && p.detail),
+     "the pipeline has " + K.pipeline.length + " steps, each with its detail");
+}
+
 head("the derived costs are arithmetic on the measured residual");
 {
   const moon = D.modern.perBody.find(b => b.en === "Moon").lonWorst;
@@ -172,7 +200,8 @@ head("every block renders, in a browser, into visible text");
   await p.waitForTimeout(1800);
 
   const r = await p.evaluate(() => {
-    const ids = ["ax-headline", "ax-scale", "ax-divtable", "ax-ayan", "ax-cost",
+    const ids = ["ax-counts", "ax-families", "ax-pipeline", "ax-reach",
+                 "ax-headline", "ax-scale", "ax-divtable", "ax-ayan", "ax-cost",
                  "ax-bands", "ax-bandtable", "ax-bare", "ax-fit", "ax-evection",
                  "ax-precision"];
     const filled = {}, over = {};
@@ -199,7 +228,7 @@ head("every block renders, in a browser, into visible text");
 
   is(errs.length === 0, "no page errors" + (errs.length ? ": " + errs[0] : ""));
   const unfilled = Object.keys(r.filled).filter(k => !r.filled[k]);
-  is(unfilled.length === 0, "all 11 blocks are filled"
+  is(unfilled.length === 0, "all 15 blocks are filled"
      + (unfilled.length ? " — empty: " + unfilled.join(", ") : ""));
   /* An SVG renders happily with its contents outside the viewBox, so nothing
      looks wrong and the last two rows are simply gone. This caught exactly

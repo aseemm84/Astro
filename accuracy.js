@@ -107,6 +107,98 @@
     if (SPANS[k] != null) n.textContent = SPANS[k];
   });
 
+  /* ---- 0 · what the engines do ---------------------------------------- */
+
+  (function () {
+    var K = D.capabilities; if (!K) return;
+
+    /* the counter row */
+    var g0 = $("ax-counts");
+    if (g0) g0.innerHTML =
+      card("Report sections", K.reportSections, "in " + K.tabs + " tabs") +
+      card("Divisional charts", K.vargas, "the ṣoḍaśa varga, D1 to D60") +
+      card("Ayanāṃśa conventions", K.ayanamsaModes,
+           "switchable after the chart is cast") +
+      card("Yoga rules", K.yogaRules, "each with its cancellation conditions") +
+      card("Motion scenes", K.motionScenes, "animated, rendered in the browser") +
+      card("Reference pages", K.referencePages, "on the tradition itself");
+
+    /* the family bars — a horizontal stack, which reads better than a treemap
+       at this size and does not need a legend */
+    (function () {
+      var host = $("ax-families"); if (!host) return;
+      var F = K.families.slice().sort(function (a, b) { return b.count - a.count; });
+      var W = 760, rowH = 30, T = 16, L = 158, R = 46;
+      var H = T + F.length * rowH + 22;
+      var max = F.reduce(function (m, f) { return Math.max(m, f.count); }, 0);
+      var x = function (n) { return (n / max) * (W - L - R); };
+      var s2 = svg(W, H, "The report's sections grouped into families.");
+      F.forEach(function (f, i) {
+        var y = T + i * rowH;
+        add(s2, "rect", { x: L, y: y, width: Math.max(x(f.count), 2), height: 18,
+                          rx: 3, fill: C.accent, "fill-opacity": 0.82 });
+        add(s2, "text", { x: L - 10, y: y + 13, "text-anchor": "end", fill: C.ink,
+                          "font-size": 12 }, f.name);
+        add(s2, "text", { x: L + x(f.count) + 8, y: y + 13, fill: C.mute,
+                          "font-size": 11.5 }, f.count);
+      });
+      add(s2, "text", { x: L, y: H - 7, fill: C.mute, "font-size": 10.5 },
+          K.reportSections + " sections in all");
+      host.appendChild(s2);
+    })();
+
+    /* the pipeline — numbered steps with connecting rule */
+    (function () {
+      var host = $("ax-pipeline"); if (!host) return;
+      var P = K.pipeline, W = 760, rowH = 38, T = 14;
+      var H = T + P.length * rowH + 6;
+      var s2 = svg(W, H, "What goes in and what comes out of the engines.");
+      add(s2, "line", { x1: 18, y1: T + 4, x2: 18, y2: T + (P.length - 1) * rowH + 4,
+                        stroke: C.line, "stroke-width": 1.5 });
+      P.forEach(function (p, i) {
+        var y = T + i * rowH;
+        add(s2, "circle", { cx: 18, cy: y + 4, r: 6.5, fill: C.band,
+                            stroke: C.accent, "stroke-width": 1.6 });
+        add(s2, "text", { x: 18, y: y + 7.5, "text-anchor": "middle", fill: C.accent,
+                          "font-size": 8.5, "font-weight": 600 }, i + 1);
+        add(s2, "text", { x: 36, y: y + 8, fill: C.ink, "font-size": 12.5,
+                          "font-weight": 600 }, p.step);
+        add(s2, "text", { x: 36, y: y + 24, fill: C.mute, "font-size": 11.5 }, p.detail);
+      });
+      host.appendChild(s2);
+    })();
+
+    /* the reach timeline */
+    (function () {
+      var host = $("ax-reach"); if (!host) return;
+      var R = K.reach, W = 760, rowH = 40, T = 32, L = 192, PAD = 34;
+      var H = T + R.length * rowH + 26;
+      var lo = R.reduce(function (m, r) { return Math.min(m, r.from); }, 9999);
+      var hi = R.reduce(function (m, r) { return Math.max(m, r.to); }, -9999);
+      var x = function (y) { return L + (y - lo) / (hi - lo) * (W - L - PAD); };
+      var s2 = svg(W, H, "The span of years each engine will stand behind.");
+      [-3000, -2000, -1000, 0, 1000, 2000, 3000].forEach(function (y) {
+        if (y < lo || y > hi) return;
+        add(s2, "line", { x1: x(y), y1: T - 14, x2: x(y), y2: H - 22, stroke: C.line,
+                          "stroke-width": 0.8, "stroke-dasharray": "2 4" });
+        add(s2, "text", { x: x(y), y: T - 18, "text-anchor": "middle", fill: C.mute,
+                          "font-size": 10 },
+            y === 0 ? "1 BCE" : (y < 0 ? Math.abs(y) + " BCE" : y));
+      });
+      R.forEach(function (r, i) {
+        var y = T + i * rowH, checked = /checked|Measured/.test(r.what);
+        add(s2, "rect", { x: x(r.from), y: y, width: Math.max(x(r.to) - x(r.from), 3),
+                          height: 15, rx: 3,
+                          fill: checked ? C.good : C.warn,
+                          "fill-opacity": checked ? 0.85 : 0.45 });
+        add(s2, "text", { x: L - 10, y: y + 12, "text-anchor": "end", fill: C.ink,
+                          "font-size": 12 }, r.what);
+        add(s2, "text", { x: L, y: y + 29, fill: C.mute, "font-size": 11 }, r.note);
+      });
+      host.appendChild(s2);
+    })();
+  })();
+
   /* ---- 1 · the logarithmic scale --------------------------------------- */
 
   (function () {

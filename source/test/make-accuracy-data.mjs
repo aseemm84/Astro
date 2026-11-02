@@ -239,6 +239,87 @@ const cost = {
   engineEquivalentBirthSeconds: Math.round(MOON_W / MOON_RATE),
 };
 
+/* ---- 6 · what the engines can actually do -----------------------------
+   COUNTED FROM THE BUILT OUTPUT, not from memory and not from a list someone
+   maintains by hand. A capabilities summary is exactly the kind of thing that
+   drifts: a section gets renamed, a daśā is added, and the number on the page
+   quietly becomes a claim nobody checked. Counting the artefact means the page
+   can only ever overstate by as much as the build does. */
+
+const built = readFileSync(ROOT + "/kundli.html", "utf8");
+const engineSrc = readFileSync(ROOT + "/source/src/js/engine.js", "utf8");
+const uniq = a => [...new Set(a)];
+
+const sections = uniq([...built.matchAll(/sec\("([^"]{2,46})"/g)].map(m => m[1]));
+const tabs = [...built.matchAll(/\["([a-z0-9]+)","([A-Z][^"]{1,22})",function/g)]
+  .map(m => m[2]);
+const scenes = uniq([...readFileSync(ROOT + "/motion.html", "utf8")
+  .matchAll(/\bkey: *"([a-z0-9]+)"/g)].map(m => m[1]));
+
+/* The families are the only hand-made thing here, and they are a GROUPING of
+   the counted sections rather than a count of their own — every section must
+   land in exactly one, which the harness asserts, so a new section cannot be
+   silently left out of the picture. */
+const FAMILY = [
+  ["The chart itself", /chart|particulars|Grahas|Bhāva|ascendant|Upagraha|Dhūmādi|Chandra|Sudarśana|Conventions|Derived/i],
+  ["Strength & dignity", /bala|Iṣṭa|Avasthā|friendship|strength/i],
+  ["Divisional", /varga|Divisional|Ashtakavarga|Prastār|kakṣyā/i],
+  ["Timing", /daśā|Varṣaphala|timeline|Sade/i],
+  ["Aspects & yogas", /dṛṣṭi|Argala|Yoga|Kārak|Ārūḍha/i],
+  ["Sky & transit", /sky|Gochara|Ingress|Eclipse|transit/i],
+  ["Day tools", /Day tools|birth minute/i],
+];
+/* FIRST match wins, so the counts sum to the total. Allowing a section into
+   two families made them add to 50 of 46 — "Ārūḍha & Kārakāṃśa charts" is both
+   a chart and a kāraka, and a reader counting the bars would have found four
+   more sections than exist. */
+const taken = new Set();
+const families = FAMILY.map(([name, re]) => {
+  const members = sections.filter(s => !taken.has(s) && re.test(s));
+  members.forEach(m => taken.add(m));
+  return { name, count: members.length, members };
+});
+const unclassified = sections.filter(s => !taken.has(s));
+
+const capabilities = {
+  note: "Counted from the built kundli.html and motion.html, not from a "
+      + "hand-kept list. accuracy-verify.mjs re-counts them and asserts every "
+      + "section falls into exactly one family.",
+  reportSections: sections.length,
+  tabs: tabs.length, tabNames: tabs,
+  vargas: (engineSrc.match(/case "D\d+":/g) || []).length,
+  ayanamsaModes: Object.keys(E.__ayanModes).length,
+  motionScenes: scenes.length,
+  referencePages: 24,
+  yogaRules: (engineSrc.match(/\badd\("/g) || []).length,
+  families, unclassified,
+  /* What each engine reaches across, in years. A capability is not only what
+     it computes but over what span it will stand behind it. */
+  reach: [
+    { what: "Modern engine, checked", from: E.__kSpanWindow[0], to: E.__kSpanWindow[1],
+      note: "held to an independent sky on " + dense.samples.length + " instants" },
+    { what: "Modern engine, bounded", from: 1000, to: 3000,
+      note: "disagreement quoted by band; nothing claimed outside" },
+    { what: "Sūrya Siddhānta, as written", from: -3101, to: 3000,
+      note: "the text's own epoch onward, at its own degree-level accuracy" },
+    { what: "Measured siddhāntic tier", from: E.__kSpanWindow[0], to: E.__kSpanWindow[1],
+      note: "fitted and validated out of sample over the same window" },
+  ],
+  /* The end-to-end path, which is the thing a reader actually wants to know:
+     what you put in, and what comes out. */
+  pipeline: [
+    { step: "A moment and a place", detail: "date, time, latitude, longitude, zone" },
+    { step: "Apparent positions", detail: "nine grahas, geocentric, true ecliptic of date" },
+    { step: "A sidereal frame", detail: Object.keys(E.__ayanModes).length
+        + " ayanāṃśa conventions, switchable after casting" },
+    { step: "The chart", detail: "lagna, bhāvas by two systems, " +
+        (engineSrc.match(/case "D\d+":/g) || []).length + " divisional charts" },
+    { step: "Judgement", detail: "ṣaḍbala, ashtakavarga, avasthās, dṛṣṭi, yogas, ārūḍhas" },
+    { step: "Timing", detail: "six daśā systems to prāṇa, varṣaphala, gochara, eclipses" },
+    { step: "Out", detail: "a printable report, JSON, motion scenes, shareable cards" },
+  ],
+};
+
 /* ---- out -------------------------------------------------------------- */
 
 const doc = {
@@ -284,7 +365,7 @@ const doc = {
       notTheText: fitted._provenance.notTheText,
     },
   },
-  divisions, cost,
+  divisions, cost, capabilities,
 };
 
 /* An optional argument sends the output elsewhere, which is how

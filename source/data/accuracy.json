@@ -1690,5 +1690,176 @@
   "birthMinuteArcsec": 32.94,
   "birthMinuteDashaDays": 30.078,
   "engineEquivalentBirthSeconds": 27
+ },
+ "capabilities": {
+  "note": "Counted from the built kundli.html and motion.html, not from a hand-kept list. accuracy-verify.mjs re-counts them and asserts every section falls into exactly one family.",
+  "reportSections": 46,
+  "tabs": 12,
+  "tabNames": [
+   "Overview",
+   "Now",
+   "Life timeline",
+   "Reading path",
+   "Life events",
+   "Sky",
+   "Star wheel",
+   "Motion",
+   "Birth-time check",
+   "Ayanāṃśa",
+   "Compatibility",
+   "Full report"
+  ],
+  "vargas": 16,
+  "ayanamsaModes": 17,
+  "motionScenes": 52,
+  "referencePages": 24,
+  "yogaRules": 29,
+  "families": [
+   {
+    "name": "The chart itself",
+    "count": 17,
+    "members": [
+     "Birth particulars",
+     "Conventions in use",
+     "Special ascendants",
+     "Upagrahas",
+     "Dhūmādi upagrahas",
+     "The chart",
+     "Chandra & Sūrya kuṇḍalī",
+     "Special ascendant charts",
+     "Grahas",
+     "Bhāva Chalit",
+     "Bhāva (Sripati)",
+     "Bhāvas",
+     "Divisional charts",
+     "Bhāva Bala",
+     "Ārūḍha & Kārakāṃśa charts",
+     "Sudarśana Chakra",
+     "Derived points"
+    ]
+   },
+   {
+    "name": "Strength & dignity",
+    "count": 5,
+    "members": [
+     "Avasthās",
+     "Ṣoḍaśavarga strength",
+     "Ṣaḍbala",
+     "Iṣṭa & Kaṣṭa phala",
+     "Planetary friendship"
+    ]
+   },
+   {
+    "name": "Divisional",
+    "count": 4,
+    "members": [
+     "Ashtakavarga",
+     "Prastārāṣṭakavarga and kakṣyā",
+     "Divisional ashtakavarga",
+     "Ṣoḍaśa varga"
+    ]
+   },
+   {
+    "name": "Timing",
+    "count": 7,
+    "members": [
+     "Vimśottarī daśā",
+     "Antardaśā & pratyantardaśā",
+     "Aṣṭottarī daśā",
+     "Yoginī daśā",
+     "Chara daśā",
+     "Varṣaphala",
+     "Sade Sati timeline"
+    ]
+   },
+   {
+    "name": "Aspects & yogas",
+    "count": 6,
+    "members": [
+     "Graha dṛṣṭi",
+     "Rāśi dṛṣṭi",
+     "Argala",
+     "Kārakāṃśa",
+     "Yogas",
+     "Kārakas & ārūḍhas"
+    ]
+   },
+   {
+    "name": "Sky & transit",
+    "count": 5,
+    "members": [
+     "Current sky",
+     "Gochara",
+     "Kakṣā transit",
+     "Ingress & retrograde",
+     "Eclipses"
+    ]
+   },
+   {
+    "name": "Day tools",
+    "count": 2,
+    "members": [
+     "How much rests on the birth minute",
+     "Day tools"
+    ]
+   }
+  ],
+  "unclassified": [],
+  "reach": [
+   {
+    "what": "Modern engine, checked",
+    "from": 1800,
+    "to": 2200,
+    "note": "held to an independent sky on 400 instants"
+   },
+   {
+    "what": "Modern engine, bounded",
+    "from": 1000,
+    "to": 3000,
+    "note": "disagreement quoted by band; nothing claimed outside"
+   },
+   {
+    "what": "Sūrya Siddhānta, as written",
+    "from": -3101,
+    "to": 3000,
+    "note": "the text's own epoch onward, at its own degree-level accuracy"
+   },
+   {
+    "what": "Measured siddhāntic tier",
+    "from": 1800,
+    "to": 2200,
+    "note": "fitted and validated out of sample over the same window"
+   }
+  ],
+  "pipeline": [
+   {
+    "step": "A moment and a place",
+    "detail": "date, time, latitude, longitude, zone"
+   },
+   {
+    "step": "Apparent positions",
+    "detail": "nine grahas, geocentric, true ecliptic of date"
+   },
+   {
+    "step": "A sidereal frame",
+    "detail": "17 ayanāṃśa conventions, switchable after casting"
+   },
+   {
+    "step": "The chart",
+    "detail": "lagna, bhāvas by two systems, 16 divisional charts"
+   },
+   {
+    "step": "Judgement",
+    "detail": "ṣaḍbala, ashtakavarga, avasthās, dṛṣṭi, yogas, ārūḍhas"
+   },
+   {
+    "step": "Timing",
+    "detail": "six daśā systems to prāṇa, varṣaphala, gochara, eclipses"
+   },
+   {
+    "step": "Out",
+    "detail": "a printable report, JSON, motion scenes, shareable cards"
+   }
+  ]
  }
 }

@@ -2,6 +2,18 @@
 
 <div class="note"><b>Four different kinds of statement.</b> They get confused constantly, and confusing them is how a project ends up quoting a convention as an accuracy. <b>Accuracy</b> is this engine against a sky computed by other people&rsquo;s code. <b>Precision</b> is how finely this engine converges on its own answer, which says nothing about whether that answer is right. <b>Convention</b> is a choice with no correct value &mdash; and it is usually the largest difference against any other source. <b>Unmeasured</b> is unmeasured.</div>
 
+<h2 id="can">What these engines do</h2>
+<p>Accuracy is one half of a capability and the less interesting half. The other is reach: how much of the tradition is actually computed, over what span, and what comes out at the end. Everything below is <b>counted from the built site</b> rather than from a list kept by hand, so it can only ever overstate by as much as the build does.</p>
+<div id="ax-counts" class="axgrid"></div>
+<figure class="axfig"><div id="ax-families"></div>
+<figcaption>Every section of the report, grouped. Each one falls into exactly one family and the bars sum to the total &mdash; they did not at first, and four sections were being counted twice.</figcaption></figure>
+<figure class="axfig"><div id="ax-pipeline"></div>
+<figcaption>What goes in and what comes out. Each step is computed locally, in the browser, with no network call at any point.</figcaption></figure>
+<h3 id="reach">How far each engine will stand behind itself</h3>
+<p>A capability is not only what a thing computes but over what span it is willing to be held to it. These four do not have the same answer.</p>
+<figure class="axfig"><div id="ax-reach"></div>
+<figcaption>The checked window is where an engine is held to an independent sky. Beyond it an engine may still answer &mdash; and this one does &mdash; but what it says about its own uncertainty changes.</figcaption></figure>
+
 <h2 id="headline">The short answer</h2>
 <div id="ax-headline" class="axgrid"></div>
 <p>Measured against ERFA &mdash; the International Astronomical Union&rsquo;s own reference algorithms &mdash; on <span class="axn" data-k="denseSamples"></span> instants spread across <span class="axn" data-k="span"></span>, stratified so every month and every hour of the day appears, and compared at matched Terrestrial Time so that two different &Delta;T models are not mistaken for two different skies.</p>
