@@ -1,0 +1,4213 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Accuracy &amp; Precision &mdash; what the engines are measured to &mdash; Nirayana</title><meta name="description" content="Measured accuracy of the Nirayana chart engines: per-graha residuals against ERFA over 1800–2200, what they cost each varga, nakṣatra and daśā boundary, the 5.83° spread across seventeen ayanāṃśa conventions, and the Sūrya Siddhānta tiers.">
+<link rel="canonical" href="https://aseemm84.github.io/Astro/accuracy.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Nirayana">
+<meta property="og:locale" content="en_GB">
+<meta property="og:title" content="Accuracy &amp;amp; Precision &amp;mdash; what the engines are measured to &amp;mdash; Nirayana">
+<meta property="og:description" content="Measured accuracy of the Nirayana chart engines: per-graha residuals against ERFA over 1800–2200, what they cost each varga, nakṣatra and daśā boundary, the 5.83° spread across seventeen ayanāṃśa conventions, and the Sūrya Siddhānta tiers.">
+<meta property="og:url" content="https://aseemm84.github.io/Astro/accuracy.html">
+<meta property="og:image" content="https://aseemm84.github.io/Astro/assets/og-nirayana.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Nirayana — a Vedic astrology reference and chart engine">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Accuracy &amp;amp; Precision &amp;mdash; what the engines are measured to &amp;mdash; Nirayana">
+<meta name="twitter:description" content="Measured accuracy of the Nirayana chart engines: per-graha residuals against ERFA over 1800–2200, what they cost each varga, nakṣatra and daśā boundary, the 5.83° spread across seventeen ayanāṃśa conventions, and the Sūrya Siddhānta tiers.">
+<meta name="twitter:image" content="https://aseemm84.github.io/Astro/assets/og-nirayana.png">
+<meta name="theme-color" content="#1d2340">
+<meta name="color-scheme" content="light">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2064%2064%22%3E%3Crect%20width%3D%2264%22%20height%3D%2264%22%20rx%3D%2213%22%20fill%3D%22%231d2340%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%2212.5%22%20fill%3D%22none%22%20stroke%3D%22%23c9a24b%22%20stroke-width%3D%223%22%2F%3E%3Ccircle%20cx%3D%2232%22%20cy%3D%2232%22%20r%3D%227.5%22%20fill%3D%22%23edc968%22%2F%3E%3Cpath%20d%3D%22M46.8%2020.6A19%2019%200%200%201%2051%2032%22%20fill%3D%22none%22%20stroke%3D%22%23e7d19a%22%20stroke-width%3D%225%22%2F%3E%3Cpath%20d%3D%22M32%2013.5v3.4M32%2047.1v3.4M13.5%2032h3.4M47.1%2032h3.4%22%20stroke%3D%22%23c9a24b%22%20stroke-width%3D%222.6%22%2F%3E%3C%2Fsvg%3E">
+<link rel="apple-touch-icon" href="assets/brand/icon-180.png">
+<link rel="manifest" href="manifest.webmanifest"><style>
+:root{--night:#191d33;--night2:#252a49;--gold:#c9a24b;--gold-soft:#e7d19a;--paper:#fbfbfd;--ink:#20233a;--muted:#6c7089;--line:#e7e7f0;--soft:#f4f4fb;--serif:"Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,Georgia,serif;--sans:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+*{box-sizing:border-box}html,body{margin:0}html{scroll-behavior:smooth}body{font-family:var(--sans);color:var(--ink);background:var(--paper);line-height:1.62}
+.masthead{background:radial-gradient(1px 1px at 18% 30%,#fff 40%,transparent 41%),radial-gradient(1px 1px at 42% 66%,#fff 40%,transparent 41%),radial-gradient(1.4px 1.4px at 70% 24%,#fff 40%,transparent 41%),radial-gradient(1px 1px at 86% 60%,#fff 40%,transparent 41%),radial-gradient(1px 1px at 55% 40%,#fff 40%,transparent 41%),radial-gradient(1200px 300px at 80% -40%,#33406f 0%,transparent 60%),linear-gradient(160deg,var(--night),var(--night2));color:#f3f2ec;padding:30px clamp(16px,5vw,64px) 26px;border-bottom:3px solid var(--gold)}
+.masthead .eyebrow{letter-spacing:.14em;text-transform:uppercase;font-size:11px;color:var(--gold-soft);margin:0 0 8px}
+.masthead h1{font-family:var(--serif);font-weight:600;font-size:clamp(26px,4.4vw,42px);margin:0 0 6px;line-height:1.1;color:#fff}
+.masthead p.sub{font-family:var(--serif);font-style:italic;font-size:clamp(15px,2vw,19px);color:#cdd0e4;margin:0;max-width:74ch}
+nav.site{position:sticky;top:0;z-index:30;background:rgba(25,29,51,.97);backdrop-filter:blur(6px);border-bottom:1px solid #333a5e;padding:8px clamp(10px,5vw,64px);display:flex;flex-wrap:wrap;gap:2px 4px}
+nav.site a{color:#c7cbe4;text-decoration:none;font-size:12.5px;padding:5px 9px;border-radius:7px;white-space:nowrap}
+nav.site a:hover{background:#2c3358;color:#fff}nav.site a.active{background:var(--gold);color:#231c07;font-weight:600}
+.layout{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr;gap:0;padding:0 clamp(16px,4vw,40px)}
+@media(min-width:1000px){.layout{grid-template-columns:230px 1fr;gap:34px}.layout.onecol{grid-template-columns:1fr}}
+aside.onpage{display:none}
+@media(min-width:1000px){aside.onpage{display:block;position:sticky;top:52px;align-self:start;height:calc(100vh - 60px);overflow:auto;padding:26px 0 40px;font-size:13px}}
+aside.onpage b{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:block;margin:0 0 8px}
+aside.onpage a{display:block;color:#4a4e68;text-decoration:none;padding:3px 10px;border-left:2px solid var(--line);line-height:1.35;margin:1px 0}
+aside.onpage a:hover{color:var(--gold);border-left-color:var(--gold)}
+main{padding:26px 0 64px;min-width:0}
+h2{font-family:var(--serif);font-weight:600;font-size:25px;margin:38px 0 10px;padding-bottom:6px;border-bottom:2px solid var(--gold);color:#1b1e33;scroll-margin-top:56px}
+h2:first-of-type{margin-top:6px}
+h3{font-family:var(--serif);font-weight:600;font-size:19px;margin:22px 0 6px;color:#2a2e4a}
+p{margin:0 0 12px;max-width:80ch}p.lead{font-size:17px;color:#3a3e58;max-width:82ch}
+.term{background:var(--soft);border-left:3px solid var(--gold);padding:8px 12px;border-radius:0 7px 7px 0;margin:0 0 10px;max-width:82ch}
+.term b{font-family:var(--serif);font-size:16px}
+.src{font-size:12.5px;color:var(--muted);background:#f7f6ef;border:1px solid #ece7d4;border-radius:7px;padding:6px 11px;margin:2px 0 14px;max-width:84ch}
+.src span{font-weight:700;color:#8a6d1f;text-transform:uppercase;letter-spacing:.05em;font-size:10.5px;margin-right:6px}
+.note{background:#eef2f7;border:1px solid #dbe3ee;border-left:3px solid #6f86b0;border-radius:0 7px 7px 0;padding:9px 13px;margin:2px 0 14px;font-size:14px;max-width:84ch}
+.mine{background:#f0f6f1;border:1px solid #d8e7db;border-left:3px solid #4f8c5f;border-radius:0 7px 7px 0;padding:9px 13px;margin:2px 0 14px;font-size:14px;max-width:84ch}
+.ex{background:#fbf6e8;border:1px solid #ecdcae;border-left:3px solid var(--gold);border-radius:0 7px 7px 0;padding:9px 13px;margin:2px 0 14px;font-size:14px;max-width:84ch}
+.caution{background:#fbeeee;border:1px solid #ecc1c1;border-left:3px solid #b45252;border-radius:0 7px 7px 0;padding:10px 13px;margin:8px 0 16px;font-size:14px;max-width:84ch}
+ul,ol{margin:0 0 12px;padding-left:22px;max-width:82ch}li{margin:3px 0}
+.tw{overflow-x:auto;margin:0 0 16px}
+table.tbl{border-collapse:collapse;width:100%;font-size:13.5px;min-width:520px}
+table.tbl th{background:var(--night);color:#eef0fb;text-align:left;font-weight:600;font-size:12px;padding:8px 10px;border-bottom:2px solid var(--gold);vertical-align:bottom}
+table.tbl td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+table.tbl tr:nth-child(even) td{background:var(--soft)}
+table.tbl td b{color:#1b1e33}
+.crux td{background:#fbf6e8 !important}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;margin:14px 0}
+.card{display:block;text-decoration:none;color:inherit;background:#fff;border:1px solid var(--line);border-radius:12px;padding:15px 16px;transition:border-color .15s,transform .15s}
+.card:hover{border-color:var(--gold);transform:translateY(-2px)}
+.card .n{font-size:11px;color:var(--muted)}.card h3{margin:2px 0 5px;font-size:17px;color:#1b1e33}.card p{font-size:13px;color:#4a4e68;margin:0}
+.card.tool{background:linear-gradient(160deg,#20264a,#2b3358);border-color:#39406a}.card.tool h3,.card.tool .n{color:#fff}.card.tool p{color:#c9cce4}
+footer{border-top:1px solid var(--line);background:#f5f5fb;color:var(--muted);font-size:12.5px;padding:24px clamp(16px,5vw,64px) 46px}
+footer .wrap{max-width:100ch;margin:0 auto}footer b{color:#454963}footer p{margin:0 0 8px;max-width:none}
+a{color:#2b5fa5}a:hover{color:var(--gold)}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:1px 8px;border-radius:999px;background:var(--soft);color:#4a4e68;margin-left:5px}
+.k-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin:14px 0}
+.k-form label{display:block;font-size:12px;font-weight:600;color:#4a4e68;margin:0 0 4px}
+.k-form input,.k-form select{width:100%;padding:8px 9px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;background:#fdfdff;color:var(--ink)}
+.k-full{grid-column:1/-1}
+.k-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0 4px}
+.k-btn{background:var(--night);color:#fff;border:0;border-radius:9px;padding:10px 18px;font:inherit;font-weight:600;font-size:14px;cursor:pointer}
+.k-btn:hover{background:#2b3358}.k-btn.sec{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.k-btn:disabled{opacity:.55;cursor:default}
+.k-status{font-size:13px;margin:6px 0;min-height:1.1em;color:var(--muted)}
+.k-err{background:#fbeeee;border:1px solid #ecc1c1;border-left:3px solid #b45252;border-radius:0 8px 8px 0;padding:10px 13px;font-size:13.5px;margin:8px 0;max-width:84ch}
+.k-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:12px 0}
+.k-card{background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+.k-card .lab{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.k-card .val{font-family:var(--serif);font-size:18px;color:#1b1e33;margin-top:2px;line-height:1.2}
+.k-card .sub{font-size:12px;color:#4a4e68;margin-top:2px}
+.k-retro{color:#b45252;font-weight:700}
+.k-deg{font-variant-numeric:tabular-nums;color:var(--muted);font-size:12px}
+details.k-raw{margin:14px 0}details.k-raw summary{cursor:pointer;font-size:13px;color:#2b5fa5}
+details.k-raw pre,pre.k-code{background:#0f1223;color:#d9dcf2;padding:12px;border-radius:10px;overflow:auto;font-size:11.5px;line-height:1.5;max-width:100%}
+code.k-inline{background:#f0f0f6;padding:1px 5px;border-radius:5px;font-size:12.5px}
+.k-rawbar{display:flex;align-items:center;gap:10px;margin:8px 0}
+.k-copymsg{font-size:12px;color:#4f8c5f;min-height:1em}
+.k-searchrow{display:flex;gap:8px}
+.k-searchrow input{flex:1;min-width:0}
+.k-results{margin:6px 0 0}
+.k-results button{display:block;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 10px;margin:4px 0;font:inherit;font-size:13px;cursor:pointer;color:var(--ink)}
+.k-results button:hover{border-color:var(--gold);background:#fdfbf4}
+.k-results button b{font-weight:600}
+.k-results button span{color:var(--muted);font-size:12px;margin-left:6px}
+.k-results .k-rmsg{font-size:12.5px;color:var(--muted);padding:4px 0}
+.kreport{margin:14px 0}
+.kreport .ksec{margin:26px 0 0}
+.kreport .kh{font-size:17px;margin:0 0 4px;padding-bottom:6px;border-bottom:2px solid #cdbf9a;font-family:var(--serif);font-weight:600}
+.kreport .kh span{float:right;font-size:11px;color:var(--muted);font-weight:400;padding-top:7px}
+.kreport .ksub{font-size:13.5px;margin:16px 0 4px;color:#3a4060;font-weight:600}
+.kreport .knote{font-size:13px;color:var(--muted);margin:6px 0 8px;max-width:76ch}
+.kreport .klegend{font-size:11px;color:var(--muted);margin:6px 0 0}
+.kreport .kmut{color:var(--muted)}
+.kreport .kthin{font-weight:400}
+.kreport .kcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:12px 0}
+.kreport .kcard{border:1px solid var(--line);background:#fff;padding:9px 11px;border-left:3px solid var(--gold);border-radius:0 6px 6px 0}
+.kreport .kcard .k{font-size:10.5px;color:var(--muted);display:block}
+.kreport .kcard .v{font-size:16px;font-weight:600;margin-top:1px;line-height:1.25;font-family:var(--serif);display:block}
+.kreport .kcard .s{font-size:11.5px;color:#4a4e68;margin-top:1px;display:block}
+/* The ayanāṃśa picker sits inside its own vitals card, so the card has to give
+   it a line of its own rather than letting it stretch the grid. Full width at
+   the card's own width keeps the four cards the same size. */
+.kreport .kcard-ayan .kayanpick{display:block;width:100%;margin-top:6px;font-size:11px;
+  padding:3px 4px;border:1px solid var(--line);border-radius:4px;background:#fff;color:inherit;
+  font-family:inherit}
+.kreport .kayango{font-size:10px;padding:1px 6px;margin-left:4px;vertical-align:1px}
+/* The ruler is wide by nature — sixteen standards across seven degrees — so it
+   scrolls sideways on a phone instead of shrinking the lane labels to nothing. */
+.kreport .kayanruler{min-width:720px}
+.kreport .kayanwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+/* The Motion page's chart line. It sits above the pane and says which chart
+   unlocked the nine gated scenes, or that none is saved. */
+.mochartbar{border:1px solid var(--line);border-left:3px solid var(--gold);
+  background:var(--soft);padding:8px 11px;border-radius:0 6px 6px 0;font-size:13px;
+  color:var(--text-soft,#4a4e68);margin:10px 0 14px;display:flex;gap:10px;
+  align-items:center;flex-wrap:wrap}
+.mochartbar b{color:var(--text,inherit)}
+.kreport .kcharts{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px;margin:12px 0}
+.kreport .kchartfig{margin:0}
+.kreport .kchartfig figcaption{font-size:12px;margin-bottom:6px}
+.kreport .kchartfig figcaption span{color:var(--muted);margin-left:6px}
+.kreport .kchartsvg{width:100%;height:auto;display:block}
+.kreport .kchartsvg .hn{font:600 9px system-ui,sans-serif;fill:#a89a72;text-anchor:middle}
+.kreport .kchartsvg .hs{font:600 10px system-ui,sans-serif;fill:#6f6a5c;text-anchor:middle}
+.kreport .kchartsvg .hp{font:700 12px system-ui,sans-serif;fill:#1d2340;text-anchor:middle}
+.kreport .kchartsvg .ss{font:600 9.5px system-ui,sans-serif;fill:#8b8368}
+.kreport .kchartsvg .sh{font:600 9.5px system-ui,sans-serif;fill:#b08a2e;text-anchor:end}
+.kreport .kchartsvg .sp{font:700 12px system-ui,sans-serif;fill:#1d2340;text-anchor:middle}
+.kreport .kchartsvg .slag{font:600 8.5px system-ui,sans-serif;fill:#b08a2e;text-anchor:middle}
+.kreport .kwsvg{width:100%;height:auto;display:block;margin:8px 0}
+.kreport .kwsvg .ax{font:600 9.5px system-ui,sans-serif;fill:#6f6a5c;text-anchor:middle}
+.kreport .kwsvg .axs{font:400 8px system-ui,sans-serif;fill:#9a917a;text-anchor:middle}
+.kreport .kwsvg .bv{font:700 10px system-ui,sans-serif;fill:#1d2340;text-anchor:middle}
+.kreport .kwsvg .tl{font:700 10px system-ui,sans-serif;fill:#fff;text-anchor:middle}
+.kreport .kwsvg .ty{font:400 8.5px system-ui,sans-serif;fill:#6f6a5c;text-anchor:middle}
+.kreport .kwsvg .now{font:700 9px system-ui,sans-serif;fill:#a1493a;text-anchor:middle}
+.kreport table.ktbl{border-collapse:collapse;width:100%;font-size:12.3px;font-variant-numeric:tabular-nums;margin:8px 0 4px;display:table}
+.kreport table.ktbl th{background:var(--night);color:#f2eee0;text-align:left;padding:6px 7px;font-weight:600;font-size:10.5px;border-bottom:2px solid var(--gold);white-space:nowrap}
+.kreport table.ktbl td{padding:5px 7px;border-bottom:1px solid var(--line);vertical-align:top}
+.kreport table.ktbl tbody tr:nth-child(even) td{background:var(--soft)}
+.kreport table.ktbl tr.khl td{background:#f7f0dc}
+.kreport table.ktbl td.knum{text-align:right}
+.kreport table.ktbl td.kb{text-align:center;font-weight:600}
+.kreport table.ktbl td.kbsav{background:var(--night);color:#f2eee0}
+.kreport .ktwrap{overflow-x:auto;margin:8px 0}
+.kreport .kchip{display:inline-block;font-size:9.5px;font-weight:700;padding:1px 5px;border-radius:3px;letter-spacing:.04em}
+.kreport .kprow{display:grid;grid-template-columns:112px 1fr 38px 180px;gap:9px;align-items:center;margin:4px 0;font-size:11.5px}
+.kreport .kplab b{margin-left:5px}
+.kreport .kpbar{background:#e6dfcb;height:10px;border-radius:2px;overflow:hidden}
+.kreport .kpbar span{display:block;height:100%;background:linear-gradient(90deg,#b08a2e,#1c6b46)}
+.kreport .kppct{text-align:right;color:var(--muted)}
+.kreport .kpdate{color:var(--muted)}
+.kreport .kbox{border:1px solid #dbe3ee;border-left:3px solid #6f86b0;background:#eef2f7;padding:9px 12px;font-size:12.5px;margin:10px 0;max-width:82ch;border-radius:0 6px 6px 0}
+.kreport .kbox.kwarn{border-left-color:#b45252;background:#fbeeee}
+.kreport .kbox b{display:block;margin-bottom:2px}
+@media(max-width:700px){.kreport .kprow{grid-template-columns:96px 1fr 34px}.kreport .kpdate{display:none}}
+.kreport .kvgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px;margin:12px 0}
+.kreport .kvgrid .kchartfig figcaption{font-size:11px}
+.kreport .kvgrid .kchartsvg .hp{font-size:13px}
+.kreport .kvgrid .kchartsvg .hs{font-size:9.5px}
+.kreport .katoggle{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 10px;font-size:12px}
+.kreport .kanote{background:#f2f6f2;border:1px solid #d8e5db;border-left:3px solid #4f8c5f;border-radius:0 7px 7px 0;padding:10px 13px;margin:12px 0 4px;font-size:13px;line-height:1.55;max-width:84ch}
+.kreport .kanote b:first-child{display:block;margin-bottom:3px;color:#2f6b45;font-size:11px;letter-spacing:.03em;text-transform:uppercase}
+.kreport .kanote .kmore{display:none}
+.kreport.kdetail .kanote .kmore{display:inline}
+.kreport .kasrc{display:block;margin-top:6px;font-size:11px;color:var(--muted)}
+.kreport .kasrc a{color:#2b5fa5;text-decoration:none}
+.kreport .kasrc a:hover{color:var(--gold)}
+.kreport .kname{font-family:var(--serif);font-size:22px;font-weight:600;color:var(--night);margin:2px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.kreport .kbasics{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:18px}
+.kreport table.kkv td.kk{color:var(--muted);width:46%}
+.kreport table.kkv th{display:none}
+.kreport .ksudnote{align-self:center}
+.kreport .kchartsvg .sc-h{font:600 8.5px system-ui,sans-serif;fill:#a89a72;text-anchor:middle}
+.kreport .kchartsvg .sc-p{font:700 10px system-ui,sans-serif;fill:#1d2340;text-anchor:middle}
+.kreport .kchartsvg .sc-c{font:16px serif;fill:#a1493a;text-anchor:middle}
+@media print{
+  nav.site,aside.onpage,.k-form,.k-actions,.k-status,.katoggle,details.k-raw,#k-searchnote,.k-results,header.masthead p.sub{display:none!important}
+  body{background:#fff}
+  .kreport .kmore{display:inline!important}
+  .kreport .ksec{break-inside:avoid;page-break-inside:avoid}
+  .kreport .kchartfig,.kreport .kanote,.kreport table{break-inside:avoid;page-break-inside:avoid}
+  .kreport .kvgrid{grid-template-columns:repeat(4,1fr)}
+  a{text-decoration:none;color:#000}
+}
+.kreport .katoggle{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 10px;font-size:12px}
+.kreport .kanote{background:#f2f6f2;border:1px solid #d8e5db;border-left:3px solid #4f8c5f;border-radius:0 7px 7px 0;padding:10px 13px;margin:12px 0 4px;font-size:13px;line-height:1.55;max-width:84ch}
+.kreport .kanote b:first-child{display:block;margin-bottom:3px;color:#2f6b45;font-size:11px;letter-spacing:.03em;text-transform:uppercase}
+.kreport .kanote .kmore{display:none}
+.kreport.kdetail .kanote .kmore{display:inline}
+.kreport .kasrc{display:block;margin-top:6px;font-size:11px;color:var(--muted)}
+.kreport .kasrc a{color:#2b5fa5;text-decoration:none}
+.kreport .kasrc a:hover{color:var(--gold)}
+
+@media(max-width:820px){
+  nav.site{flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;
+    scrollbar-width:none;padding-left:12px;padding-right:12px;
+    -webkit-mask-image:linear-gradient(90deg,#000 88%,transparent);
+            mask-image:linear-gradient(90deg,#000 88%,transparent)}
+  nav.site::-webkit-scrollbar{display:none}
+  nav.site a{flex:0 0 auto;white-space:nowrap}
+}
+.lhbrand{display:inline-block;vertical-align:-0.22em;margin-right:12px}
+.lhbrand .lhmark{width:1.55em;height:1.18em}
+svg.lhmark .lhink{stroke:currentColor}
+svg.lhmark .lhorb{stroke:#c9a24b;fill:#c9a24b}
+svg.lhmark .lhorb ellipse{fill:none}
+/* --- brand lockup: inline vector mark + the name as real text ---------------
+   The mark used to be a 12 KB base64 JPEG pasted into both shells and the print
+   module. It is now one SVG on disk, inlined by the build, and the wordmark is
+   text rather than a picture of text, so it stays crisp, themes with the page and
+   is readable by a screen reader. */
+.masthead .lhbrand{display:inline-flex;align-items:center;gap:15px;text-decoration:none;
+  color:inherit;margin:0 0 14px}
+.masthead .lhmarkwrap{display:block;width:clamp(52px,11vw,74px);flex:0 0 auto}
+.masthead .lhmark{display:block;width:100%;height:auto}
+.masthead .lhword{display:flex;flex-direction:column;line-height:1}
+.masthead .lhname{font-family:var(--serif);font-size:clamp(27px,6.4vw,37px);font-weight:600;
+  color:#dcb866;letter-spacing:.012em}
+.masthead .lhdeva{font-size:clamp(15px,3.4vw,20px);color:#c9a24b;opacity:.9;margin-top:4px;
+  font-family:"Noto Sans Devanagari","Nirmala UI",system-ui,sans-serif}
+.masthead .lhbrand:hover .lhname{color:#edc968}
+@media print{.masthead .lhbrand{display:none}}
+
+/* The landing hero: say what the thing does, show that it does it, and give one
+   way in. Before this the page opened with a paragraph and seventeen equal
+   navigation links, so a visitor had no way to tell there was an engine here. */
+.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:30px;align-items:center;margin:4px 0 26px}
+.hero-copy .lead{margin-top:0}
+.hero-do{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:16px 0 14px}
+.k-btn.big{display:inline-block;text-decoration:none;font-size:16px;padding:13px 26px;
+  background:linear-gradient(160deg,#2b3358,#1d2340);box-shadow:0 2px 10px rgba(29,35,64,.22)}
+.k-btn.big:hover{background:linear-gradient(160deg,#39406a,#262d52)}
+.hero-free{font-size:12.5px;color:var(--muted)}
+.hero-pts{margin:0;padding-left:18px}
+.hero-pts li{font-size:13.5px;line-height:1.55;color:#4a4e68;margin-bottom:5px}
+.hero-pts li b{color:var(--ink)}
+.hero-shot{margin:0}
+.hero-shot img{width:100%;height:auto;border:1px solid var(--line);border-radius:12px;
+  box-shadow:0 6px 22px rgba(29,35,64,.13)}
+.hero-shot figcaption{font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.45}
+@media (max-width:820px){
+  .hero{grid-template-columns:1fr;gap:20px}
+  .hero-shot{order:-1}
+  .hero-shot img{max-width:360px;display:block;margin:0 auto}
+}
+
+/* ===== navigation that fits the screen ======================================
+   Sixteen links in a horizontal scroller hid 883px of themselves on a phone.
+   Wide screens keep the row; narrow ones get a button and a panel. */
+.navbar{display:none}
+html.navlock,html.navlock body{overflow:hidden}
+@media(max-width:1000px){
+  .navbar{display:block;position:sticky;top:0;z-index:31;
+    background:linear-gradient(160deg,var(--night),var(--night2));
+    border-bottom:1px solid #333a5e}
+  .navtoggle{display:flex;align-items:center;gap:11px;width:100%;
+    padding:11px clamp(12px,4vw,24px);background:none;border:0;cursor:pointer;
+    font:inherit;color:#f0eee6;text-align:left}
+  .navtoggle-i{display:inline-flex;flex-direction:column;gap:3.5px;flex:0 0 auto}
+  .navtoggle-i i{display:block;width:17px;height:2px;background:var(--gold);border-radius:2px}
+  .navtoggle-t{flex:1;font-size:14.5px;font-weight:600;letter-spacing:.01em}
+  .navtoggle-c{color:var(--gold);font-size:12px;transition:transform .18s}
+  .navtoggle[aria-expanded="true"] .navtoggle-c{transform:rotate(180deg)}
+  nav.site{display:none;position:sticky;top:44px;z-index:30;
+    flex-wrap:wrap;overflow:visible;padding:8px clamp(12px,4vw,24px) 14px;
+    -webkit-mask-image:none;mask-image:none;
+    max-height:calc(100vh - 44px);overflow-y:auto}
+  nav.site.open{display:grid;grid-template-columns:1fr 1fr;gap:3px}
+  nav.site a{white-space:normal;padding:10px 11px;font-size:13.5px;border-radius:8px}
+  nav.site a.active{background:var(--gold);color:#231c07}
+}
+/* two columns even on a small phone: sixteen single-file items is a long scroll,
+   and the labels wrap rather than truncate */
+@media(max-width:340px){ nav.site.open{grid-template-columns:1fr} }
+
+/* ---- section links where the sidebar is hidden --------------------------- */
+.onpage-m{display:none}
+@media(max-width:999px){
+  .onpage-m{display:block;margin:0 0 18px;border:1px solid var(--line);
+    border-left:3px solid var(--gold);border-radius:4px 10px 10px 4px;background:#fff}
+  .onpage-m>summary{list-style:none;cursor:pointer;padding:10px 14px;
+    font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+    color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+  .onpage-m>summary::-webkit-details-marker{display:none}
+  .onpage-m>summary span{font-weight:400;letter-spacing:0;text-transform:none;font-size:12px}
+  .onpage-m>summary::after{content:"\25be";color:var(--gold);margin-left:8px}
+  .onpage-m[open]>summary::after{content:"\25b4"}
+  .onpage-m-list{padding:2px 10px 10px;display:flex;flex-direction:column}
+  .onpage-m-list a{display:block;padding:7px 10px;color:#4a4e68;text-decoration:none;
+    font-size:14px;border-left:2px solid var(--line);line-height:1.3}
+  .onpage-m-list a:hover{color:var(--gold);border-left-color:var(--gold)}
+}
+
+/* ===== your own chart, on a reference page ==================================
+   A rule is easier to hold once you have seen it land somewhere. These state
+   what your chart contains and stop there; the page around them carries the
+   interpretation. */
+.inchart{margin:0 0 20px;border:1px solid #d8e7db;border-left:3px solid #4f8c5f;
+  border-radius:0 10px 10px 0;background:#f4faf5;padding:13px 16px;max-width:84ch}
+.inchart h4{margin:0 0 8px;font-family:var(--serif);font-size:16px;color:#1f4f33}
+.inchart h4 span{font-family:var(--sans);font-size:12.5px;color:#5c7a66;font-weight:400}
+.inchart ul{margin:0;padding-left:18px;max-width:none}
+.inchart li{font-size:13.5px;line-height:1.55;margin:0 0 5px;color:#33493b}
+.inchart li b{color:#15351f}
+.inchart-f{margin:10px 0 0;font-size:11.5px;line-height:1.5;color:#6a8271;max-width:none}
+.inchart-f a{color:#2b5fa5}
+.inchart-x{font:inherit;font-size:11.5px;color:#6a8271;background:none;border:0;
+  border-bottom:1px dotted #9db3a3;padding:0;cursor:pointer;margin-left:2px}
+.inchart-x:hover{color:#1f4f33;border-bottom-color:#1f4f33}
+.inchart-ask{font-size:13px;color:var(--muted);background:var(--soft);
+  border:1px dashed var(--line);border-radius:9px;padding:9px 13px;margin:0 0 18px;max-width:84ch}
+@media print{.inchart-ask,.inchart-f,.navbar{display:none}.inchart{break-inside:avoid}}
+
+/* ===== now.html ==========================================================
+   A clock page: the numbers are the content, so they are set large and the
+   labels small, and the cards wrap to one column on a phone without the figures
+   shrinking with them. */
+.nowbar{display:flex;flex-wrap:wrap;gap:10px 14px;align-items:center;
+  margin:18px 0 10px;padding:12px 14px;border:1px solid var(--line);
+  border-radius:12px;background:var(--card,#fff)}
+.nowlab{font-size:12px;font-weight:700;letter-spacing:.02em;color:#5a5f78}
+.nowsel{font:inherit;font-size:14px;padding:7px 9px;border:1px solid var(--line);
+  border-radius:8px;background:transparent;color:inherit;max-width:100%}
+.nowhint{flex:1 1 18em;min-width:14em;font-size:12px;line-height:1.5;color:#6a7090}
+.nowhead{display:flex;flex-wrap:wrap;gap:6px 18px;align-items:baseline;margin:16px 0 4px}
+.nowclock{font-size:40px;font-weight:700;letter-spacing:-.01em;
+  font-variant-numeric:tabular-nums;line-height:1}
+/* The Hindu clock sits beside the civil one, smaller and in the gold, so the two
+   read as one line of time in two reckonings rather than as two competing clocks. */
+.nowhindu{font-size:24px;font-weight:600;color:var(--gold,#9a7a28);
+  font-variant-numeric:tabular-nums;line-height:1}
+.nowhindu i{font-style:normal;font-size:.55em;font-weight:600;opacity:.75;
+  margin:0 .15em 0 .05em}
+.nowplace{font-size:14px;color:#5a5f78}
+.nowdate{font-size:14px;font-weight:600;color:var(--gold,#9a7a28)}
+.nowgrid{display:grid;gap:10px;margin:12px 0 6px;
+  grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.nowcard{border:1px solid var(--line);border-radius:12px;padding:12px 13px;
+  background:var(--card,#fff);display:flex;flex-direction:column;gap:3px}
+.nowcard b{font-size:11px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:#6a7090}
+.nowbig{font-size:21px;font-weight:600;line-height:1.25}
+.nowsub{font-size:12.5px;color:#5a5f78;line-height:1.45}
+.nowcard.nowlt{border-style:dashed}
+.nowstrip{width:100%;display:block;margin:10px 0 4px}
+.nownote{font-size:14px;color:#6a7090}
+@media (max-width:520px){ .nowclock{font-size:32px} }
+@media (prefers-color-scheme:dark){
+  .nowbar,.nowcard{background:rgba(255,255,255,.03)}
+  .nowhint,.nowplace,.nowsub,.nownote{color:#9aa0bd}
+  .nowcard b{color:#9aa0bd}
+}
+
+/* ===== calendar.html =====================================================
+   The grid is solar and the content is lunisolar, so the layout has to carry
+   markers for the three mismatches rather than smoothing them away: a cell can
+   hold a second tithi (upari), a lunar month boundary is drawn as a rule BETWEEN
+   cells rather than inside one, and the year view exists because an intercalary
+   month has no cell at all in a Gregorian grid. */
+.cbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;
+  border:1px solid var(--line);border-radius:12px;padding:10px 13px;
+  margin:14px 0 8px;background:var(--soft)}
+.cbar2{background:transparent}
+.cbargroup{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.clab{font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);font-weight:700}
+.csel{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);
+  border-radius:8px;background:#fff;color:var(--ink);max-width:min(42ch,70vw)}
+.cnum{width:7.5em}
+.cvbtn{font:inherit;font-size:13px;padding:5px 12px;border:1px solid var(--line);
+  border-radius:8px;background:#fff;color:var(--ink);cursor:pointer}
+.cvbtn:hover{border-color:var(--gold)}
+.cvbtn.on{background:var(--night);color:#fff;border-color:var(--night)}
+.clayerbox{border:1px solid var(--line);border-radius:12px;padding:8px 13px;
+  margin:0 0 10px;font-size:13px}
+.clayerbox summary{cursor:pointer;font-weight:600}
+.clayerlist{display:grid;gap:2px 16px;margin:8px 0 4px;
+  grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+.clayer{display:flex;gap:7px;align-items:center;font-size:13px}
+.clayer.cbase{color:var(--muted)}
+.clayer i{font-style:normal;font-size:10px;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--muted);border:1px solid var(--line);
+  border-radius:4px;padding:0 4px}
+.cplacenote{font-size:13px;color:var(--muted);margin:4px 0 10px}
+.cheadbar{margin:6px 0 10px}
+.cnav{display:flex;gap:8px;align-items:center}
+.cnav button{font:inherit;font-size:17px;line-height:1;padding:4px 11px;
+  border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer}
+.cnav button.csec{font-size:13px}
+.cnav button:hover{border-color:var(--gold)}
+.clabel{display:flex;flex-direction:column;line-height:1.25;margin:0 6px}
+.clabel b{font-family:var(--serif);font-size:20px}
+.clabel i{font-style:normal;font-size:12px;color:var(--muted)}
+
+/* --- the month grid --- */
+.cgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));
+  gap:1px;background:var(--line);border:1px solid var(--line);
+  border-radius:12px;overflow:hidden}
+.chead{background:var(--night);color:#cdd0e4;font-size:11px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;text-align:center;padding:6px 2px}
+.ccell{background:#fff;min-height:104px;padding:5px 6px 7px;display:flex;
+  flex-direction:column;gap:1px;cursor:pointer;position:relative}
+.ccell:hover{background:#fcfbf6}
+.ccell:focus-visible{outline:2px solid var(--gold);outline-offset:-2px}
+.ccell.cempty{background:var(--soft);cursor:default;min-height:0}
+.cdate{font-family:var(--serif);font-size:17px;font-weight:600;line-height:1.1}
+.cmoon{position:absolute;top:6px;right:6px}
+/* The lunar month boundary is a rule across the grid: it is a boundary BETWEEN
+   cells, so it is drawn on the cell edge rather than as a badge inside one. */
+.ccell.cmonthstart{box-shadow:inset 3px 0 0 var(--gold)}
+.ccell.cfull{background:#fffdf4}
+.ccell.cnew{background:#f7f7fa}
+.ccell.csel{background:#f3f0e4;box-shadow:inset 0 0 0 2px var(--gold)}
+.ctithi{font-size:12px;line-height:1.3;margin-top:2px}
+.ctithi i{font-style:normal;font-weight:700;color:var(--gold);margin-right:3px}
+.cnak{font-size:11.5px;color:#4a4e68;line-height:1.3}
+.cmin{font-size:10.5px;color:var(--muted);line-height:1.3}
+.cends{font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+/* The doubled tithi, marked the way printed almanacs mark it. */
+.cupari{font-size:10.5px;color:#7a5c12;background:#fdf6e3;border-radius:4px;
+  padding:0 3px;line-height:1.35}
+.cupari i{font-style:italic}
+.csank{font-size:10.5px;color:#1d4f6b;background:#eaf4f9;border-radius:4px;
+  padding:0 3px}
+.cadhika{font-size:10px;letter-spacing:.05em;text-transform:uppercase;
+  font-weight:700;color:#7a3b12;background:#fcefe6;border-radius:4px;
+  padding:0 4px;align-self:flex-start}
+.cfestname{font-size:11px;font-weight:600;color:#6b4a00;line-height:1.3}
+.cfestname.cminor{font-weight:400;color:var(--muted)}
+.cfestname.ccontested::after{content:" *";color:#a1493a}
+.cfestname i{font-style:normal;font-size:9.5px;text-transform:uppercase;
+  letter-spacing:.04em;color:#a1493a;border:1px solid #e3c8c2;border-radius:3px;
+  padding:0 3px;margin-left:3px}
+.cwarn{position:absolute;bottom:5px;right:7px;color:#a1493a;font-weight:700}
+
+/* --- the almanac row --- */
+.calm{width:100%;border-collapse:collapse;font-size:12.5px}
+.calm th{background:var(--night);color:#cdd0e4;font-size:10.5px;font-weight:700;
+  letter-spacing:.05em;text-transform:uppercase;text-align:left;padding:6px 7px;
+  position:sticky;top:0}
+.calm td{border-bottom:1px solid var(--line);padding:5px 7px;vertical-align:top}
+.calm tr:hover td{background:#fcfbf6}
+.calm small{color:var(--muted);font-variant-numeric:tabular-nums}
+.calm td i{font-style:normal;font-weight:700;color:var(--gold)}
+.calm td b{font-weight:600;color:#7a5c12}
+
+/* --- the day detail --- */
+.cdetail{border:1px solid var(--line);border-radius:12px;overflow:hidden;
+  margin:0 0 14px}
+.cdhead{display:flex;gap:14px;align-items:center;padding:13px 15px;
+  background:var(--night);color:#f3f2ec}
+.cdhead h3{font-family:var(--serif);font-size:22px;margin:0;color:#fff}
+.cdhead p{margin:2px 0 0;font-size:13px;color:#cdd0e4}
+.cdrow{display:grid;grid-template-columns:minmax(110px,150px) 1fr;gap:12px;
+  padding:8px 15px;border-top:1px solid var(--line);font-size:14px}
+.cdrow b{font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted);padding-top:3px}
+.cdrow span{display:flex;flex-direction:column}
+.cdrow i{font-style:normal;font-size:12.5px;color:var(--muted);line-height:1.5}
+.csub{font-family:var(--serif);font-size:19px;margin:18px 0 8px}
+.cfestbox{border:1px solid var(--line);border-left:3px solid var(--gold);
+  border-radius:0 10px 10px 0;padding:10px 13px;margin:0 0 9px;font-size:13.5px}
+.cfestbox.ccon{border-left-color:#a1493a}
+.cfestbox b{font-size:15px}
+.cfestbox p{margin:5px 0 0;line-height:1.55}
+.cfestbox .csrc{font-size:12px;color:var(--muted);margin-top:6px}
+.ctag{display:inline-block;font-size:10.5px;letter-spacing:.03em;
+  text-transform:uppercase;font-weight:700;color:#7a3b12;background:#fcefe6;
+  border-radius:4px;padding:1px 6px;margin-left:7px}
+.ctag.ctagwarn{color:#1d4f6b;background:#eaf4f9;text-transform:none;
+  letter-spacing:0;font-weight:400}
+
+/* --- the year view --- */
+.cyear{border:1px solid var(--line);border-radius:12px;padding:9px 11px;
+  background:#fff;overflow-x:auto}
+.cyrow{display:flex;gap:9px;align-items:center;margin:0 0 3px}
+.cymon{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted);width:3.1em;flex:0 0 auto;cursor:pointer}
+.cymon:hover{color:var(--gold)}
+.cystrip{display:flex;gap:1px;flex:1 1 auto;min-width:420px}
+.cyd{flex:1 1 0;height:17px;background:var(--soft);border-radius:2px;
+  cursor:pointer;min-width:5px}
+.cyd:hover{outline:1px solid var(--gold)}
+.cyd.cyfull{background:var(--gold-soft)}
+.cyd.cynew{background:#4a4e68}
+.cyd.cysank{background:#9fc6db}
+.cyd.cybound{box-shadow:inset 2px 0 0 var(--gold)}
+.cyd.cyadhika{background:#fcefe6}
+.ckey{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;
+  font-size:12px;color:var(--muted);margin:8px 0 0}
+.ckey .cyd{flex:0 0 auto;width:15px;cursor:default}
+.cadhikanote{border-left:3px solid var(--gold);padding-left:11px}
+.cnote{font-size:13px;color:var(--muted);line-height:1.6}
+.crange{border-left:3px solid #a1493a;padding-left:11px}
+
+@media (max-width:700px){
+  /* On a phone the seven-column grid is unreadable, so the month becomes a
+     list of days — the same cells, stacked, keeping every marker. */
+  .cgrid{grid-template-columns:1fr;border-radius:10px}
+  .chead{display:none}
+  .ccell{min-height:0;flex-direction:row;flex-wrap:wrap;gap:4px 10px;
+    align-items:baseline;padding:8px 10px}
+  .ccell.cempty{display:none}
+  .cdate{width:1.8em}
+  .cmoon{position:static;order:-1}
+  .ccell.cmonthstart{box-shadow:inset 0 3px 0 var(--gold)}
+  .calm{font-size:11.5px}
+  .calm th:nth-child(5),.calm td:nth-child(5),
+  .calm th:nth-child(6),.calm td:nth-child(6){display:none}
+  .cdrow{grid-template-columns:1fr;gap:1px}
+}
+@media print{
+  /* A month that prints on one page is a real feature: the printed wall
+     calendar is the form this information has actually taken for fifty years. */
+  .cbar,.clayerbox,.cnav button,.sitenav,nav.site,aside.onpage{display:none}
+  .cgrid{break-inside:avoid}
+  .ccell{min-height:86px}
+  .calm th{position:static;background:#fff;color:#000;border-bottom:2px solid #000}
+}
+@media (prefers-color-scheme:dark){
+  .cbar,.cyear,.csel,.cvbtn,.cnav button{background:rgba(255,255,255,.04)}
+  .ccell{background:#1b1f36}
+  .ccell:hover{background:#232842}
+  .ccell.cempty{background:rgba(255,255,255,.02)}
+  .ccell.cfull{background:#232136}
+  .ccell.cnew{background:#15182a}
+  .ccell.csel{background:#2a2a40}
+  .cnak{color:#b9bedb}
+  .cnote,.cplacenote,.clabel i,.cdrow b,.cdrow i,.calm small{color:#9aa0bd}
+  .calm tr:hover td{background:rgba(255,255,255,.03)}
+  .cupari{background:#2e2714;color:#e7d19a}
+  .csank{background:#15293a;color:#9fc6db}
+  .cadhika{background:#33210f;color:#e8b98e}
+  .cfestname{color:#e7d19a}
+}
+
+/* The export row, and a printed month that is actually one page.
+   The first attempt hid the controls and left the reference prose in place, so
+   a month printed as fourteen A4 sheets. The prose is wrapped in .cprose for
+   exactly this reason: on paper the calendar is the artefact and the essay is
+   not. */
+.cexport{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin:12px 0 6px}
+.cexport .cnote{flex:1 1 32ch;min-width:0}
+.cprintonly{display:none}
+@media print{
+  /* Measured, not guessed: in print media the page came to 956 px against about
+     740 usable on A4 landscape, and the masthead and the navigation header
+     accounted for 227 px of it. The .cprintonly line replaces both — it names
+     the month, the place and the sunrise convention, which is everything a
+     printed sheet needs in order to be checkable. */
+  .cprose,.cexport,.cplacenote,.lead,.clayerbox,.cbar,footer,
+  .cnav,header.masthead,.masthead{display:none !important}
+  .cprintonly{display:block;margin:0 0 5px;font-size:11.5px;color:#000;
+    border-bottom:1px solid #999;padding-bottom:3px}
+  .cheadbar{margin:0 0 5px}
+  main>h1,main>p.sub{display:none}
+  /* The sidebar is hidden on paper but its 230 px column was still reserved, so
+     every cell lost a fifth of its width and the text wrapped into extra lines.
+     That, not the row height, was why one month printed on three sheets and
+     another on one. */
+  .layout{grid-template-columns:1fr !important;gap:0 !important;
+    padding:0 !important;max-width:none}
+  .cgrid{font-size:9.5px}
+  /* No minimum height on paper: a 31-day month starting on a Friday needs six
+     rows where February needs four, and a fixed row height is what made the
+     same sheet print on one page or three depending on the month. Rows take the
+     height their content needs and no more. */
+  .ccell{min-height:0;padding:2px 4px;gap:0}
+  .cdate{font-size:13px}
+  .ctithi{font-size:9px}.cnak{font-size:8.5px}.cmin,.cends{font-size:8px}
+  .cfestname{font-size:8.5px}
+  .cmoon{width:11px;height:11px}
+  @page{size:A4 landscape;margin:9mm}
+}
+
+}
+
+/* The shared place picker (NPlaces.picker). One control on three pages, so one
+   block of styling rather than three that drift. The results sit in the flow
+   rather than floating: a popover would need positioning against bars that
+   wrap at three widths, and pushing the content down is the simpler honest
+   behaviour on a control that is dismissed as soon as it is used. */
+.nppick{position:relative;display:flex;flex-wrap:wrap;gap:4px;min-width:min(26ch,100%)}
+.npfind{font:inherit;font-size:13px;padding:5px 9px;border:1px solid var(--line,#e7e7f0);
+  border-radius:8px;background:#fff;color:var(--ink,#20233a);width:100%;min-width:0}
+.npfind::placeholder{color:var(--ink,#20233a);opacity:.85}
+.npfind:focus{outline:2px solid var(--gold,#c9a24b);outline-offset:1px}
+.npres{flex-basis:100%;display:flex;flex-direction:column;gap:2px;
+  max-height:min(50vh,340px);overflow:auto;margin:2px 0 0}
+.npres[hidden]{display:none}
+.npres button{font:inherit;text-align:left;background:#fff;cursor:pointer;
+  border:1px solid var(--line,#e7e7f0);border-radius:8px;padding:5px 9px;
+  display:flex;flex-direction:column;line-height:1.3}
+.npres button:hover,.npres button:focus-visible{border-color:var(--gold,#c9a24b);
+  background:#fcfbf6}
+.npres button b{font-size:13px;font-weight:600}
+.npres button span{font-size:11.5px;color:var(--muted,#6c7089);
+  font-variant-numeric:tabular-nums}
+.npmsg{font-size:12px;color:var(--muted,#6c7089);margin:2px 0 3px;padding:0 2px}
+@media print{ .npres{display:none !important} }
+@media (prefers-color-scheme:dark){
+  .npfind,.npres button{background:rgba(255,255,255,.04);color:#e8e9f3}
+  .npres button:hover{background:rgba(255,255,255,.08)}
+}
+
+/* ===== studio.html =======================================================
+   Cards, because each one is a decision: post this, or scroll on. They are
+   wide and few rather than small and many — a caption has to be readable in
+   place or it will be copied unread. */
+.stbar{display:flex;flex-wrap:wrap;gap:9px 16px;align-items:center;
+  border:1px solid var(--line);border-radius:12px;padding:10px 13px;
+  margin:14px 0 10px;background:var(--soft)}
+.stlab{font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--muted);font-weight:700}
+.stsel{font:inherit;font-size:13px;padding:5px 8px;border:1px solid var(--line);
+  border-radius:8px;background:#fff;color:var(--ink)}
+.stbar .nppick{min-width:min(24ch,100%);flex:0 1 26ch}
+.stcards{display:grid;gap:14px;margin:10px 0 6px}
+.stcard{border:1px solid var(--line);border-left:3px solid var(--gold);
+  border-radius:0 12px 12px 0;padding:14px 16px;background:var(--card,#fff)}
+.stcard header{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.stcard h3{font-family:var(--serif);font-size:21px;margin:0;line-height:1.25}
+.strank{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:#7a5c12;background:#fdf6e3;border-radius:5px;padding:2px 7px;flex:0 0 auto}
+.stbody{margin:8px 0 0;line-height:1.6;font-size:14.5px}
+.stfacts{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:3px;
+  grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.stfacts li{font-size:13px;color:#4a4e68;border-left:2px solid var(--line);
+  padding-left:9px;font-variant-numeric:tabular-nums}
+.sttags{margin:10px 0 0;font-size:12px;color:var(--muted);word-break:break-word}
+.stact{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0 0}
+.stbtn{font:inherit;font-size:13px;padding:6px 13px;border-radius:8px;
+  border:1px solid var(--night);background:var(--night);color:#fff;cursor:pointer;
+  text-decoration:none;display:inline-block}
+.stbtn.sec{background:#fff;color:var(--ink);border-color:var(--line)}
+.stbtn.sec:hover{border-color:var(--gold)}
+.stmsg{font-size:12.5px;color:var(--muted)}
+.stcopybox{width:100%;min-height:9em;margin:8px 0 0;font:inherit;font-size:12.5px;
+  border:1px solid var(--line);border-radius:8px;padding:8px}
+.stpreview{margin:10px 0;text-align:center}
+.stpreview img{max-width:min(340px,80vw);height:auto;border-radius:10px;
+  border:1px solid var(--line);box-shadow:0 6px 24px rgba(20,26,51,.18)}
+table.stahead{width:100%;border-collapse:collapse;font-size:13.5px}
+table.stahead td{border-bottom:1px solid var(--line);padding:5px 8px}
+table.stahead td:nth-child(2){font-variant-numeric:tabular-nums;color:var(--muted)}
+table.stahead td:nth-child(4){color:var(--muted);text-align:right}
+table.stahead tr:hover td{background:#fcfbf6}
+.stnote{font-size:13.5px;color:var(--muted)}
+@media (max-width:620px){
+  .stcard h3{font-size:18px}
+  .stfacts{grid-template-columns:1fr}
+}
+@media (prefers-color-scheme:dark){
+  .stbar,.stsel,.stbtn.sec{background:rgba(255,255,255,.04);color:#e8e9f3}
+  .stcard{background:rgba(255,255,255,.03)}
+  .stfacts li{color:#b9bedb}
+  .strank{background:#2e2714;color:#e7d19a}
+  table.stahead tr:hover td{background:rgba(255,255,255,.03)}
+}
+
+/* ===== the reel strip and the card composer =============================
+   Both sit on the Studio page and both reuse its controls, so they also reuse
+   its type and its chrome: a new visual language for a second half of the same
+   page would read as a second site. The composer is the only thing here that
+   needs a layout of its own — slots on the left and a live card on the right,
+   collapsing to one column when there is not room for two. */
+.streels{display:grid;gap:12px;margin:10px 0 6px}
+.strcard{border:1px solid var(--line);border-left:3px solid var(--gold);
+  border-radius:0 12px 12px 0;padding:13px 16px;background:var(--card,#fff)}
+.strcard header{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.strcard h3{font-family:var(--serif);font-size:20px;margin:0;line-height:1.25;flex:1 1 auto}
+.strcard p{margin:7px 0 0;font-size:14px;line-height:1.6}
+.strno{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--gold);
+  flex:0 0 auto;min-width:1.2em}
+.strsec{font-size:11px;font-weight:700;letter-spacing:.06em;color:#7a5c12;
+  background:#fdf6e3;border-radius:5px;padding:2px 7px;flex:0 0 auto}
+.strpost{color:var(--muted);font-size:13px !important;font-style:italic}
+
+.stcompose{margin:10px 0 6px}
+.stcbar{display:flex;flex-wrap:wrap;gap:9px 14px;align-items:center;
+  border:1px solid var(--line);border-radius:12px;padding:10px 13px;
+  margin:0 0 8px;background:var(--soft)}
+.stchk{font-size:12.5px;color:var(--muted);display:flex;gap:6px;align-items:center}
+.stclayout{display:grid;gap:16px;grid-template-columns:minmax(0,1fr) minmax(0,300px);
+  align-items:start}
+.stcslots{display:grid;gap:9px;min-width:0}
+.stcrow{border:1px solid var(--line);border-radius:10px;padding:9px 11px;
+  background:var(--card,#fff);display:grid;gap:6px}
+.stchead{display:flex;align-items:center;gap:8px}
+.stchead b{font-size:12px;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--muted);flex:1 1 auto}
+.stcmove{display:flex;gap:4px}
+.stcmove button{font:inherit;font-size:13px;line-height:1;width:26px;height:24px;
+  border:1px solid var(--line);border-radius:6px;background:#fff;color:var(--ink);
+  cursor:pointer}
+.stcmove button:hover{border-color:var(--gold)}
+.stcrow input,.stcrow textarea{font:inherit;font-size:13.5px;padding:6px 8px;
+  border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);
+  width:100%;box-sizing:border-box;resize:vertical}
+.stcadd{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.stcadd .stsel{flex:1 1 18ch;min-width:0}
+.stcprev{position:sticky;top:12px}
+.stcprev canvas{width:100%;height:auto;border-radius:10px;
+  border:1px solid var(--line);box-shadow:0 6px 24px rgba(20,26,51,.18);display:block}
+@media (max-width:760px){
+  .stclayout{grid-template-columns:1fr}
+  .stcprev{position:static;max-width:320px;margin:0 auto}
+}
+@media (prefers-color-scheme:dark){
+  .strcard,.stcrow{background:rgba(255,255,255,.03)}
+  .strsec{background:#2e2714;color:#e7d19a}
+  .stcbar,.stcrow input,.stcrow textarea,.stcmove button{
+    background:rgba(255,255,255,.04);color:#e8e9f3}
+}
+
+/* The running clock. Civil time and Hindu time side by side, both ticking, so
+   the relationship between them is visible rather than asserted: the vipala
+   column moves two and a half times a second against the civil seconds, which
+   is what a sixtieth of a sixtieth of a sixtieth of a day looks like. */
+.cclock{display:flex;flex-wrap:wrap;gap:8px 22px;align-items:baseline;
+  border:1px solid var(--line);border-radius:12px;padding:9px 14px;
+  margin:4px 0 10px;background:var(--soft)}
+.cclock .cck{display:flex;flex-direction:column;gap:1px}
+.cclock b{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--muted);font-weight:700}
+.cclock .cckv{font-size:26px;font-weight:600;line-height:1.05;
+  font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.cclock .cckh{color:var(--gold,#c9a24b)}
+.cclock .cckn{font-size:12px;color:var(--muted);align-self:flex-end;
+  padding-bottom:3px;max-width:46ch;line-height:1.45}
+.cclock .cckunit{font-size:.52em;font-weight:600;opacity:.72;margin-left:.12em}
+@media (max-width:620px){ .cclock .cckv{font-size:22px} }
+@media (prefers-color-scheme:dark){ .cclock{background:rgba(255,255,255,.04)} }
+.strec{margin:10px 0 0;padding:9px 12px;border-radius:9px;background:var(--soft);
+  font-size:13px;line-height:1.55;color:#4a4e68}
+.strec b{color:var(--ink)}
+.strecset{display:block;margin-top:4px;font-size:12px;color:var(--muted);
+  font-variant-numeric:tabular-nums}
+@media (prefers-color-scheme:dark){
+  .strec{background:rgba(255,255,255,.05);color:#b9bedb}
+  .strec b{color:#e8e9f3}
+}
+
+/* Provenance tags. The point of this project is that it says which book a rule
+   came from, and until now it said so in prose. A tag beside the row is the
+   same claim made legible at a glance — and the colours are deliberately not a
+   good/bad scale: later tradition is not worse than BPHS, it is OTHER, and a
+   red tag would be an argument the site is not making. */
+.dptag{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  border-radius:5px;padding:2px 7px;white-space:nowrap;border:1px solid transparent}
+.dptag.dpb{background:#eef3ec;color:#2f5d3a;border-color:#cfe0d2}
+.dptag.dpc{background:#fdf6e3;color:#7a5c12;border-color:#ecdcae}
+.dptag.dpt{background:#eef0f8;color:#434a74;border-color:#d4d9ec}
+.dptag.dpa{background:#eaf1f6;color:#2d5873;border-color:#cadde8}
+.dpwhy td{font-size:12.5px;color:var(--muted);padding-top:0 !important;
+  border-bottom:1px solid var(--line) !important;line-height:1.55}
+table.dptable td{vertical-align:top}
+@media (prefers-color-scheme:dark){
+  .dptag.dpb{background:#1b2a1f;color:#a9d6b4;border-color:#2c4433}
+  .dptag.dpc{background:#2e2714;color:#e7d19a;border-color:#4a3f1f}
+  .dptag.dpt{background:#1d2138;color:#b9c0e6;border-color:#313859}
+  .dptag.dpa{background:#152632;color:#a8cde2;border-color:#24404f}
+}
+
+/* The carousel strip and the month plan. Both are lists of things to act on,
+   so they borrow the Studio's existing chrome rather than inventing more. */
+.stslides{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 9px}
+.stslide{font:inherit;font-size:13px;font-weight:700;min-width:30px;height:28px;
+  border:1px solid var(--line);border-radius:7px;background:#fff;color:var(--ink);
+  cursor:pointer;padding:0 8px}
+.stslide.on{background:var(--night);color:#fff;border-color:var(--night)}
+.stslide:hover{border-color:var(--gold)}
+.stslide.add{color:var(--gold);font-size:16px;line-height:1}
+.stslide.rm{color:#a4503c}
+.stslides .stnote{margin:0 0 0 6px;font-size:12px}
+.stpack{margin:10px 0 6px}
+.stplan{margin:8px 0 0}
+table.stplantab td{font-size:13px;vertical-align:top}
+table.stplantab td.stpd{white-space:nowrap;font-weight:600}
+table.stplantab td.stph{color:var(--ink)}
+@media (prefers-color-scheme:dark){
+  .stslide{background:rgba(255,255,255,.04);color:#e8e9f3}
+  .stslide.on{background:#e7d19a;color:#1b1f33;border-color:#e7d19a}
+}
+
+/* ===== Studio Pro =========================================================
+   Three panes on a desk, stacked on a phone. The wall scrolls on its own so
+   the stage never leaves the screen while you browse two hundred chips, and
+   the stage is sticky on wide screens for the same reason: picking a node and
+   not seeing what it did to the picture is the one thing that would make this
+   page useless. */
+.layout.wide{max-width:1680px}
+/* A page with no aside must say `onecol` as well, or at 1000px and up it
+   lands in the 230px column the aside would have had — which is how the
+   sample strip came to be rendering into a 270px-wide sliver while the panes
+   below it, whose own grid overflowed that sliver, looked correct. */
+.spwrap{display:grid;grid-template-columns:1fr;gap:18px;margin:18px 0 28px}
+@media (min-width:1100px){
+  .spwrap{grid-template-columns:minmax(260px,1fr) minmax(340px,1.15fr) minmax(260px,0.95fr)}
+}
+.sppane{border:1px solid var(--line);border-radius:12px;background:#fff;
+  padding:14px 14px 16px;min-width:0}
+.sppane h2{margin:0 0 6px;font-size:1.05rem}
+.sppane h3{margin:14px 0 4px;font-size:.92rem;letter-spacing:.02em}
+.sppane .sphead p{margin:0 0 8px;font-size:.84rem;line-height:1.45;color:var(--muted)}
+.spsearch input{width:100%;padding:8px 10px;border:1px solid var(--line);
+  border-radius:8px;background:var(--soft);color:var(--ink);font:inherit;font-size:.9rem}
+.spcheck{display:inline-flex;align-items:center;gap:6px;font-size:.8rem;
+  color:var(--muted);margin:6px 0}
+.spstat{margin:4px 0 0;font-size:.75rem;color:var(--muted)}
+
+.spwall{max-height:62vh;overflow:auto;padding-right:4px}
+@media (max-width:1099px){.spwall{max-height:none}}
+.spgrp{margin:12px 0 2px}
+.spgrp h3{display:flex;align-items:baseline;gap:8px;margin:10px 0 6px}
+.spcount{font-size:.72rem;color:var(--muted);font-weight:500}
+.spchips{display:flex;flex-wrap:wrap;gap:5px}
+.spchip{font:inherit;font-size:.78rem;line-height:1.2;padding:5px 9px;
+  border:1px solid var(--line);border-radius:999px;background:var(--soft);
+  color:var(--ink);cursor:pointer;transition:background .12s,border-color .12s}
+.spchip:hover{border-color:var(--gold)}
+.spchip.on{background:var(--night);border-color:var(--night);color:var(--gold-soft);font-weight:600}
+/* a chip with a stated relation to what is already picked */
+.spchip.rel{border-color:var(--gold);background:#fdf8ea;color:#5a4512}
+.spchip.off{opacity:.4;cursor:not-allowed}
+.spchip.off:hover{border-color:var(--line)}
+
+.spstagebox{display:flex;justify-content:center;background:#0b1020;border-radius:10px;
+  padding:6px;overflow:hidden}
+#sp-canvas{display:block;border-radius:6px;max-width:100%}
+@media (min-width:1100px){.spmid{position:sticky;top:12px;align-self:start}}
+
+.spctl{margin-top:12px;display:flex;flex-direction:column;gap:9px}
+.sprow2{display:flex;flex-wrap:wrap;align-items:center;gap:7px}
+.splab{font-size:.76rem;color:var(--muted);min-width:52px}
+.spbtn{font:inherit;font-size:.84rem;padding:7px 13px;border:1px solid var(--line);
+  border-radius:8px;background:var(--soft);color:var(--ink);cursor:pointer}
+.spbtn.primary{border-color:var(--gold);color:#8a6a1e;background:#fdfaf1;font-weight:600}
+.spbtn:disabled,.spv:disabled{opacity:.45;cursor:not-allowed}
+/* the Record button while it owns the playhead: it is the way out */
+.spbtn.rec{background:#fdf0ec;border-color:#b5533c;color:#8a3a26}
+#sp-scrub:disabled{opacity:.45}
+.spv{font:inherit;font-size:.78rem;padding:5px 10px;border:1px solid var(--line);
+  border-radius:7px;background:var(--soft);color:var(--ink);cursor:pointer}
+.spv.on{background:var(--night);border-color:var(--night);color:var(--gold-soft);font-weight:600}
+/* The playhead gets a row to itself, full width, with a touch area tall
+   enough to grab deliberately and nothing within a fingertip of it. */
+.spscrubrow{margin:9px 0 4px}
+#sp-scrub{flex:1;width:100%;min-width:0;height:34px;touch-action:pan-x;cursor:pointer}
+.sptime{font-size:.78rem;color:var(--muted);font-variant-numeric:tabular-nums;
+  margin-left:auto}
+/* Apple asks for 44×44; these were 38 tall and sat beside a 16px slider. */
+@media (pointer:coarse){
+  .spbtn,.spv,.spfield select,.spfield input{min-height:44px}
+  .spchip{min-height:38px;padding:8px 12px}
+  .sprowx{min-width:38px;min-height:38px}
+}
+.spbtn,.spv,.spchip,.sprowx,.sptile,.spview{touch-action:manipulation}
+.spfield{display:flex;flex-direction:column;gap:3px;font-size:.75rem;color:var(--muted)}
+.spfield.wide{flex:1;min-width:200px}
+.spfield input,.spfield select{font:inherit;font-size:.84rem;padding:6px 8px;
+  border:1px solid var(--line);border-radius:7px;background:var(--soft);color:var(--ink)}
+.spflash{margin:2px 0 0;font-size:.8rem;color:var(--gold)}
+
+/* ===== Director mode =====================================================
+   The panel is dense on purpose: a layer has roughly thirty properties and a
+   pro tool that asks for four clicks to reach any of them is a tool nobody
+   finishes a card in. So the fields are small and close, and the touch rules
+   at the bottom of this block put them back to 44px on a phone, where close
+   together is the one thing they must not be. */
+.spmode{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:8px 0 2px}
+.spdmode{font-size:.74rem;color:var(--muted);margin-left:4px}
+
+.sptimewrap{margin:8px 0 4px;border:1px solid var(--line);border-radius:9px;
+  background:#fff;padding:8px 10px}
+.sptimehead h3{margin:0 0 2px;font-size:.88rem}
+.sptimehead p{margin:0 0 7px;font-size:.73rem;color:var(--muted);line-height:1.45}
+.sptimeline{display:flex;flex-direction:column;gap:3px}
+.spdtrow{display:flex;align-items:center;gap:7px}
+.spdtrow.on .spdtname{color:#5a4512;font-weight:600}
+.spdtname{flex:0 0 92px;font-size:.71rem;color:var(--muted);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.spdtlane{position:relative;flex:1;height:17px;background:var(--soft);
+  border-radius:4px;border:1px solid var(--line);min-width:0}
+.spdtbar{position:absolute;top:1px;bottom:1px;background:var(--night);
+  border-radius:3px;cursor:grab;overflow:hidden;touch-action:none}
+.spdtrow.on .spdtbar{background:var(--gold)}
+.spdtbar.off{opacity:.3}
+.spdtbar i{position:absolute;top:0;bottom:0;background:rgba(255,255,255,.34)}
+.spdte{left:0}
+.spdtx{right:0}
+.spdtruler .spdtlane{height:9px;background:none;border:none}
+.spdtick{position:absolute;top:0;bottom:0;width:1px;background:var(--line)}
+
+.spdpresets{display:flex;flex-direction:column;gap:5px;margin:0 0 9px}
+.spdrow{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:0 0 5px}
+.spdlab{font-size:.71rem;color:var(--muted);flex:0 0 76px}
+.spdsuf{font-size:.71rem;color:var(--muted);font-variant-numeric:tabular-nums;
+  min-width:30px}
+.spdrow input[type=number],.spdrow input[type=text],.spdrow select{font:inherit;
+  font-size:.8rem;padding:4px 6px;border:1px solid var(--line);border-radius:6px;
+  background:var(--soft);color:var(--ink);flex:1;min-width:0}
+.spdrow input[type=color]{width:46px;height:28px;padding:0;border:1px solid var(--line);
+  border-radius:6px;background:none}
+.spdrange{flex:1;min-width:0;height:22px;touch-action:pan-x}
+.spdsec{margin:12px 0 5px;font-size:.78rem;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line);
+  padding-bottom:3px}
+.spdhint{margin:1px 0 7px;font-size:.71rem;color:var(--muted);line-height:1.45}
+.spdempty{margin:4px 0;font-size:.75rem;color:var(--muted);font-style:italic}
+
+.spdstack{display:flex;flex-direction:column;gap:3px;max-height:290px;
+  overflow-y:auto;padding-right:2px}
+.spdlayer{display:flex;align-items:center;gap:2px;border:1px solid var(--line);
+  border-radius:7px;background:#fff;padding:2px 3px}
+.spdlayer.on{border-color:var(--gold);background:#fdf8ea}
+.spdlayer.off{opacity:.55}
+.spdeye,.spdmv{font:inherit;font-size:.78rem;line-height:1;min-width:24px;
+  padding:5px 4px;border:1px solid transparent;border-radius:5px;background:none;
+  color:var(--muted);cursor:pointer}
+.spdeye:hover,.spdmv:hover{border-color:var(--line);background:var(--soft);
+  color:var(--ink)}
+.spdx:hover{border-color:#e0b4ad;background:#fdf1ef;color:#9a3c2a}
+.spdname{flex:1;min-width:0;text-align:left;font:inherit;font-size:.78rem;
+  background:none;border:none;cursor:pointer;padding:4px 3px;color:var(--ink);
+  display:flex;align-items:baseline;gap:5px}
+.spdkind{font-size:.63rem;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--gold);flex:0 0 auto}
+.spdtitle{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.spdwin{font-size:.65rem;color:var(--muted);font-variant-numeric:tabular-nums;
+  margin-left:auto;flex:0 0 auto}
+.spdadd{display:flex;flex-wrap:wrap;gap:4px;margin:6px 0 0}
+.spdadd .spbtn{font-size:.76rem;padding:5px 9px}
+
+.spdinsp{border:1px solid var(--line);border-radius:9px;background:#fff;
+  padding:8px 10px}
+.spdhead{display:flex;align-items:baseline;gap:6px;margin:0 0 6px;
+  padding-bottom:5px;border-bottom:1px solid var(--line)}
+.spdhead b{font-size:.86rem}
+.spdsel{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 6px}
+.spchip.sm{font-size:.72rem;padding:3px 7px}
+.spdgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin:0 0 4px}
+.spdcell{display:flex;flex-direction:column;gap:2px;font-size:.66rem;
+  color:var(--muted)}
+.spdcell.to{color:#2f7d55}
+.spdcell input{font:inherit;font-size:.76rem;padding:4px 3px;text-align:center;
+  border:1px solid var(--line);border-radius:5px;background:var(--soft);
+  color:var(--ink);width:100%;min-width:0}
+.spdtok{margin:2px 0 7px;font-size:.7rem;color:var(--muted);line-height:1.7}
+.spdtokb{font:inherit;font-size:.68rem;padding:1px 5px;margin:0 2px 0 0;
+  border:1px solid var(--line);border-radius:4px;background:var(--soft);
+  color:#5a4512;cursor:pointer}
+.spdtokb:hover{border-color:var(--gold)}
+.spdwarn{margin:8px 0 0;padding-left:17px;font-size:.73rem;color:var(--muted);
+  line-height:1.5}
+.spdwarn li.bad{color:#9a3c2a}
+.spdlib{margin:0 0 6px}
+.spdname-in{flex:1;min-width:0}
+.spdsaved{display:flex;flex-direction:column;gap:3px;margin:6px 0 0}
+.spdsrow{display:flex;align-items:center;gap:3px}
+.spdsrow .spchip{flex:1;text-align:left}
+@media (pointer:coarse){
+  .spdeye,.spdmv{min-width:38px;min-height:38px}
+  .spdrow input[type=number],.spdrow input[type=text],.spdrow select,
+  .spdcell input{min-height:40px}
+  .spdrange{height:38px}
+  /* The timeline bar is a drag target, not a readout: a bar is dragged to
+     retime a layer and its ends are dragged to trim it. At 26 the lane left a
+     22px bar, which is half a fingertip — tall enough to read and too short
+     to grab, the worst of both. 42 leaves a 38px bar. */
+  .spdtlane{height:42px}
+  .spdtname{flex:0 0 76px}
+  .spdname{padding:9px 4px}
+}
+.spdeye,.spdmv,.spdname,.spdtokb,.spdtbar{touch-action:manipulation}
+/* The canvas swallows touch only while layers are draggable. In Auto mode a
+   finger on the frame has to scroll the page, which is most of what a finger
+   on a phone is for; the class is put on by the Director panel. */
+.spdragging#sp-canvas{touch-action:none}
+
+.sptray{display:flex;flex-direction:column;gap:6px}
+.sprow{display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px solid var(--line);
+  border-radius:9px;background:var(--soft)}
+.sprow.dead{opacity:.5}
+.sprowt{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.sprowt b{font-size:.86rem}
+.sprowt small{font-size:.7rem;color:var(--muted)}
+.spkind{font-size:.68rem;color:var(--gold);text-transform:uppercase;letter-spacing:.06em}
+.sprowx{font:inherit;font-size:1rem;line-height:1;padding:2px 7px;border:1px solid var(--line);
+  border-radius:6px;background:transparent;color:var(--muted);cursor:pointer}
+.splinks{margin-top:10px;padding:9px 11px;border-left:3px solid var(--gold);
+  background:var(--soft);border-radius:0 8px 8px 0}
+.splinks b{font-size:.8rem}
+.splinks p{margin:5px 0 0;font-size:.78rem;line-height:1.4;color:var(--muted)}
+.spviews{display:flex;flex-wrap:wrap;gap:5px}
+.spview{font:inherit;font-size:.76rem;padding:5px 9px;border:1px solid var(--line);
+  border-radius:7px;background:var(--soft);color:var(--ink);cursor:pointer}
+.spview.on{background:var(--night);border-color:var(--night);color:var(--gold-soft);font-weight:600}
+.spnotes{margin-top:12px;font-size:.8rem;line-height:1.45}
+.spnotes p{margin:5px 0}
+.spwarn{color:var(--muted)}
+.spmuted{color:var(--muted);font-size:.82rem;line-height:1.45}
+.spnote{padding:9px 12px;border-left:3px solid var(--gold);background:#fff;
+  border-radius:0 8px 8px 0;font-size:.85rem;line-height:1.5;margin:10px 0}
+.spnote.warn{border-left-color:#b5533c}
+.spabsent{font-size:.86rem;line-height:1.55}
+.spabsent li{margin:6px 0}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+.sprow.live{border-color:var(--gold);background:#fdf8ea}
+.spsec{width:52px;font:inherit;font-size:.8rem;padding:4px 6px;border:1px solid var(--line);
+  border-radius:6px;background:#fff;color:var(--ink)}
+/* A shot row carries a name, a timer and three buttons. On a narrow column
+   that is more than one line will hold, and the first attempt let the name
+   wrap to four words a line beside the controls. The name takes its own row;
+   the controls sit under it, right-aligned. */
+#sp-shots .sprow{flex-wrap:wrap}
+#sp-shots .sprowt{flex:1 0 100%;cursor:pointer}
+#sp-shots .spsec{margin-left:auto}
+#sp-shots .sprowx{padding:2px 8px}
+
+/* ===== Studio Pro — the live sample strip ================================
+   A full-bleed row of small canvases. It scrolls itself, and a reader can
+   take it over by dragging; hovering stops it so a tile can be read rather
+   than chased. */
+/* the samples are the first thing the page is for, so they are not allowed
+   to be pushed past the fold by a notice */
+.spstripwrap{margin:10px 0 4px}
+.spnote{margin:8px 0}
+.spstriphead{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin:0 0 9px}
+.spstriphead h2{margin:0;font-size:1.05rem}
+.spstriphead p{margin:0;flex:1;min-width:220px;font-size:.82rem;color:var(--muted);line-height:1.45}
+.spstrip{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;padding:4px 2px 10px;
+  scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+.spstrip::-webkit-scrollbar{height:7px}
+.spstrip::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
+.sptile{flex:0 0 auto;margin:0;cursor:pointer;border-radius:10px;padding:4px;
+  border:1px solid transparent;transition:border-color .15s,transform .15s}
+.sptile:hover,.sptile:focus-visible{border-color:var(--gold);transform:translateY(-2px);outline:none}
+.sptile canvas{display:block;width:126px;height:224px;border-radius:7px;background:#0b1020}
+.sptile figcaption{margin-top:5px;font-size:.72rem;color:var(--muted);text-align:center;
+  max-width:126px;line-height:1.3}
+@media (prefers-reduced-motion:reduce){.sptile{transition:none}}
+
+/* ===== Director Pro =======================================================
+   A three-column workstation with a timeline under the stage. The density is
+   the point — a keyframe tool whose properties are four clicks away is a tool
+   nobody finishes a reel in — and the coarse-pointer block at the end puts
+   every target back to 40px on a phone, where density is the one thing that
+   must not survive. */
+.dptopbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  background:var(--night);color:#eceaf6;padding:8px 11px;border-radius:10px;
+  margin:10px 0 9px}
+.dptitle{font:inherit;font-size:.92rem;font-weight:600;padding:5px 9px;
+  border:1px solid #39406b;border-radius:7px;background:#232949;color:#fff;
+  min-width:150px;flex:0 1 240px}
+.dptopbar .dpfield{flex-direction:row;align-items:center;gap:5px;color:#aeb4d6}
+.dptopbar select{font:inherit;font-size:.78rem;padding:4px 6px;border-radius:6px;
+  border:1px solid #39406b;background:#232949;color:#eceaf6}
+.dptopbar .dpcheck{color:#aeb4d6;font-size:.75rem}
+.dpspacer{flex:1}
+.dptopbar .dpbtn{background:#232949;border-color:#39406b;color:#eceaf6}
+.dptopbar .dpbtn:disabled{opacity:.35}
+
+.dpshell{display:grid;grid-template-columns:270px minmax(300px,1fr) 320px;
+  gap:12px;align-items:start}
+@media (max-width:1250px){.dpshell{grid-template-columns:1fr}}
+.dppane{border:1px solid var(--line);border-radius:11px;background:#fff;
+  padding:10px 11px;min-width:0}
+.dpsech{margin:10px 0 6px;font-size:.76rem;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--muted);
+  border-bottom:1px solid var(--line);padding-bottom:4px}
+.dpsech:first-child{margin-top:0}
+.dpnote{font-size:.8rem;color:var(--muted);margin:0 0 8px}
+.dpnote.warn{color:#8a5a12}
+.dpstat{font-size:.72rem;color:var(--muted);margin:4px 0;
+  font-variant-numeric:tabular-nums}
+.dphint{font-size:.71rem;color:var(--muted);margin:3px 0 6px;line-height:1.45}
+.dpempty{font-size:.75rem;color:var(--muted);font-style:italic;margin:4px 0}
+.dpflash{margin:4px 0 0;font-size:.8rem;color:var(--gold)}
+.dpwarn{margin:5px 0 0;padding-left:17px;font-size:.72rem;color:var(--muted)}
+.dpwarn li.bad{color:#9a3c2a}
+
+.dpsearch input{width:100%;font:inherit;font-size:.82rem;padding:6px 9px;
+  border:1px solid var(--line);border-radius:8px;background:var(--soft);
+  color:var(--ink)}
+.dplib{max-height:260px;overflow-y:auto;margin:4px 0 0}
+.dplibgroup h5{margin:7px 0 3px;font-size:.68rem;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--gold)}
+.dplibchips{display:flex;flex-wrap:wrap;gap:3px}
+.dpchip{font:inherit;font-size:.72rem;line-height:1.2;padding:4px 7px;
+  border:1px solid var(--line);border-radius:999px;background:#fff;
+  color:var(--ink);cursor:pointer}
+.dpchip:hover{border-color:var(--gold)}
+.dpchip.on{background:var(--night);border-color:var(--night);
+  color:var(--gold-soft);font-weight:600}
+.dpchip.off{opacity:.4}
+.dpchips{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 6px}
+
+.dpaddbar{display:flex;flex-wrap:wrap;gap:4px}
+.dpbtn{font:inherit;font-size:.78rem;padding:6px 10px;border:1px solid var(--line);
+  border-radius:8px;background:#fff;color:var(--ink);cursor:pointer}
+.dpbtn:hover{border-color:var(--gold)}
+.dpbtn.primary{background:var(--night);border-color:var(--night);color:#fff}
+.dpbtn.primary:hover{background:#2b3358}
+.dpbtn.rec{background:#9a3c2a;border-color:#9a3c2a}
+.dpbtn:disabled{opacity:.45;cursor:not-allowed}
+
+.dpstack{display:flex;flex-direction:column;gap:3px;max-height:280px;
+  overflow-y:auto}
+.dplayer{display:flex;align-items:center;gap:1px;border:1px solid var(--line);
+  border-radius:7px;background:#fff;padding:2px 3px}
+.dplayer.on{border-color:var(--gold);background:#fdf8ea}
+.dplayer.off{opacity:.55}
+.dpmini{font:inherit;font-size:.72rem;line-height:1;min-width:22px;padding:5px 3px;
+  border:1px solid transparent;border-radius:5px;background:none;color:var(--muted);
+  cursor:pointer}
+.dpmini:hover{border-color:var(--line);background:var(--soft);color:var(--ink)}
+.dpmini.on{color:var(--gold);font-weight:700}
+.dpname{flex:1;min-width:0;text-align:left;font:inherit;font-size:.77rem;
+  background:none;border:none;cursor:pointer;padding:4px 3px;color:var(--ink);
+  display:flex;align-items:baseline;gap:5px}
+.dpkind{font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--gold);flex:0 0 auto}
+.dpnametxt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.dpstagebox{display:flex;align-items:center;justify-content:center;
+  background:#15172a;border-radius:10px;padding:8px;min-height:300px;
+  max-height:58vh}
+#dp-canvas{display:block;border-radius:5px;box-shadow:0 6px 26px rgba(0,0,0,.4);
+  touch-action:none;max-width:100%;max-height:54vh}
+.dptransport{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin:8px 0}
+.dptime{font-size:.76rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.dpfield{display:flex;flex-direction:column;gap:2px;font-size:.71rem;
+  color:var(--muted)}
+.dpfield.wide{flex:1;min-width:170px}
+.dpfield input,.dpfield select{font:inherit;font-size:.8rem;padding:5px 7px;
+  border:1px solid var(--line);border-radius:7px;background:var(--soft);
+  color:var(--ink)}
+.dpcheck{display:inline-flex;align-items:center;gap:4px;font-size:.73rem;
+  color:var(--muted)}
+
+.dpscenes{display:flex;gap:6px;overflow-x:auto;padding:4px 0 7px}
+.dpscene{display:flex;gap:6px;align-items:center;border:1px solid var(--line);
+  border-radius:8px;padding:4px 7px 4px 4px;background:#fff;cursor:pointer;
+  flex:0 0 auto}
+.dpscene.on{border-color:var(--gold);background:#fdf8ea}
+.dpthumb{display:block;border-radius:4px;background:#0b1020;width:30px;height:auto}
+.dpscenemeta{display:flex;flex-direction:column;font-size:.68rem;
+  color:var(--muted);line-height:1.35}
+.dpscenemeta b{font-size:.76rem;color:var(--ink)}
+.dptrans{color:var(--gold)}
+.dpaddscene{font:inherit;font-size:.76rem;padding:6px 10px;border:1px dashed var(--line);
+  border-radius:8px;background:none;color:var(--muted);cursor:pointer;flex:0 0 auto}
+.dpaddscene:hover{border-color:var(--gold);color:var(--gold)}
+
+.dptimeline{display:flex;flex-direction:column;gap:2px;border:1px solid var(--line);
+  border-radius:9px;padding:6px 8px;background:var(--soft);max-height:300px;
+  overflow-y:auto}
+.dptrow{display:flex;align-items:center;gap:6px}
+.dptrow.on .dptname{color:#5a4512;font-weight:600}
+.dptname{flex:0 0 108px;font-size:.71rem;color:var(--muted);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;background:none;border:none;
+  text-align:left;font-family:inherit;cursor:pointer;padding:3px 0;
+  display:flex;align-items:center;gap:3px}
+.dptwist{font-size:.6rem;color:var(--gold)}
+.dptpname{padding-left:14px;font-size:.67rem;cursor:default}
+.dptlane{position:relative;flex:1;height:19px;background:#fff;border-radius:4px;
+  border:1px solid var(--line);min-width:0}
+.dptprop .dptlane{height:13px;background:none;border-color:transparent}
+.dptbar{position:absolute;top:1px;bottom:1px;background:var(--night);
+  border-radius:3px;cursor:grab;touch-action:none}
+.dptrow.on .dptbar{background:var(--gold)}
+.dptbar.off{opacity:.3}
+.dpruler .dptlane{height:15px;background:none;border:none}
+.dptscene{position:absolute;top:0;bottom:0;background:#e3e3ef;border-radius:3px;
+  border-right:2px solid #fff;cursor:pointer}
+.dptscene.on{background:var(--gold-soft)}
+.dptick{position:absolute;top:0;bottom:0;width:1px;background:rgba(0,0,0,.10)}
+.dpplayhead{position:absolute;top:-3px;bottom:-3px;width:2px;background:#c0392b;
+  pointer-events:none;z-index:3}
+.dptkey{position:absolute;top:50%;width:9px;height:9px;margin:-5px 0 0 -5px;
+  background:var(--gold);border:1px solid #8a6a1c;transform:rotate(45deg);
+  cursor:grab;touch-action:none;z-index:2}
+.dptkey:hover{background:#fff}
+
+.dpinsp,.dpexport,.dpreels{font-size:.8rem}
+.dpsec{display:flex;align-items:baseline;gap:6px;margin:12px 0 5px;
+  padding-bottom:4px;border-bottom:1px solid var(--line)}
+.dpsec:first-child{margin-top:0}
+.dpsec h4{margin:0;font-size:.84rem}
+.dpsub{margin:9px 0 3px;font-size:.68rem;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--muted)}
+.dprow{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin:0 0 5px}
+.dplab{font-size:.71rem;color:var(--muted);flex:0 0 74px}
+.dpunit{font-size:.69rem;color:var(--muted)}
+.dprow input[type=text],.dprow input[type=number],.dprow select{font:inherit;
+  font-size:.78rem;padding:4px 6px;border:1px solid var(--line);border-radius:6px;
+  background:var(--soft);color:var(--ink);flex:1;min-width:0}
+.dprow input[type=color]{width:44px;height:26px;padding:0;border-radius:6px;
+  border:1px solid var(--line);background:none;flex:0 0 auto}
+.dpprop{display:flex;align-items:center;gap:4px;margin:0 0 3px}
+.dpprop.anim .dpproplab{color:#5a4512;font-weight:600}
+.dpstop{font:inherit;font-size:.74rem;line-height:1;min-width:22px;padding:4px 2px;
+  border:1px solid transparent;border-radius:5px;background:none;
+  color:var(--muted);cursor:pointer}
+.dpstop.on{color:var(--gold)}
+.dpstop:hover{border-color:var(--line);background:var(--soft)}
+.dpproplab{flex:0 0 68px;font-size:.7rem;color:var(--muted);overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap}
+.dpslider{flex:1;min-width:0;height:20px;touch-action:pan-x}
+.dppropnum{width:60px;flex:0 0 60px;font:inherit;font-size:.74rem;padding:3px 4px;
+  border:1px solid var(--line);border-radius:5px;background:var(--soft);
+  color:var(--ink);text-align:right}
+.dptok{margin:2px 0 7px;line-height:1.8}
+.dptokb{font:inherit;font-size:.67rem;padding:1px 5px;margin:0 2px 0 0;
+  border:1px solid var(--line);border-radius:4px;background:var(--soft);
+  color:#5a4512;cursor:pointer}
+.dptokb:hover{border-color:var(--gold)}
+.dpsaved{display:flex;flex-direction:column;gap:3px;margin:6px 0 0}
+.dpsrow{display:flex;align-items:center;gap:3px}
+.dpsrow .dpchip{flex:1;text-align:left}
+label.dpbtn{display:inline-block}
+
+@media (pointer:coarse){
+  .dpbtn,.dprow select,.dprow input,.dpfield input,.dpfield select,
+  .dptopbar select,.dppropnum{min-height:40px}
+  .dpmini,.dpstop{min-width:38px;min-height:38px}
+  .dpchip{min-height:36px;padding:7px 11px}
+  .dpslider{height:36px}
+  .dptlane{height:38px}
+  .dptprop .dptlane{height:30px}
+  .dptkey{width:18px;height:18px;margin:-9px 0 0 -9px}
+  .dptname{flex:0 0 84px}
+}
+.dpbtn,.dpchip,.dpmini,.dpstop,.dpname,.dptokb,.dpscene{touch-action:manipulation}
+/* The harness measured these at 28 and 23 pixels on a phone: a layer's name
+   is how you select it and a token chip is how you insert a token, so both
+   are targets, not labels. */
+@media (pointer:coarse){
+  .dpname,.dptokb,.dptname,label.dpbtn{min-height:38px}
+  .dptokb{padding:8px 10px;margin-bottom:3px}
+}
+
+/* ===== Say what you want ================================================= */
+.sipanel{border:1px solid var(--line);border-radius:12px;background:#fff;
+  padding:12px 14px;margin:10px 0 12px}
+.sihead h2{margin:0 0 4px;font-size:1.05rem;border:none;padding:0}
+.sihead p{margin:0 0 9px;font-size:.78rem;color:var(--muted);line-height:1.5;
+  max-width:92ch}
+.sirow{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+#si-text{flex:1;min-width:230px;font:inherit;font-size:.9rem;padding:9px 12px;
+  border:1px solid var(--line);border-radius:9px;background:var(--soft);
+  color:var(--ink)}
+#si-text:focus{outline:2px solid var(--gold);outline-offset:1px;background:#fff}
+.siread-box{margin:8px 0 0;min-height:1px}
+.siread{margin:0 0 4px;font-size:.78rem;color:var(--muted);line-height:1.55}
+.sigood{color:#2f7d55;font-weight:600}
+.sibad{color:#9a3c2a;font-weight:600}
+.siwhy{margin:3px 0;font-size:.78rem;color:#8a5a12;line-height:1.5;
+  border-left:3px solid var(--gold);padding-left:8px;background:#fdf8ea;
+  border-radius:0 5px 5px 0}
+.silist{max-height:230px;overflow-y:auto;margin:6px 0 0;
+  border-top:1px solid var(--line);padding-top:7px}
+.sigroup h5{margin:7px 0 3px;font-size:.67rem;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--gold)}
+.sirecipe{display:block;width:100%;text-align:left;font:inherit;font-size:.78rem;
+  padding:5px 9px;margin:0 0 3px;border:1px solid transparent;border-radius:6px;
+  background:var(--soft);color:var(--ink);cursor:pointer;line-height:1.4}
+.sirecipe:hover{border-color:var(--gold);background:#fdf8ea}
+@media (pointer:coarse){
+  #si-text,.sirow button{min-height:44px}
+  .sirecipe{min-height:40px}
+}
+.sirecipe,.sirow button{touch-action:manipulation}
+
+/* ===== Sūrya Siddhānta page ============================================== */
+.ssnote{font-size:.84rem;color:var(--muted);line-height:1.6;max-width:86ch}
+.ssrow{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin:8px 0 10px}
+.ssfield{display:flex;flex-direction:column;gap:3px;font-size:.74rem;
+  color:var(--muted)}
+.ssfield input,.ssfield select{font:inherit;font-size:.85rem;padding:6px 9px;
+  border:1px solid var(--line);border-radius:8px;background:var(--soft);
+  color:var(--ink)}
+#ss-params table.tbl td.num,#ss-now table.tbl td.num,
+#ss-working table.tbl td.num{font-variant-numeric:tabular-nums;
+  white-space:nowrap}
+#ss-now td.num.warn{color:#9a3c2a;font-weight:600}
+#ss-working td.muted{color:var(--muted);font-size:.8rem}
+.sslist{margin:10px 0;padding-left:18px;font-size:.84rem;line-height:1.7;
+  max-width:86ch}
+#ss-drift{display:block;width:100%;max-width:860px;height:300px;
+  border:1px solid var(--line);border-radius:10px;background:#fff;
+  margin:4px 0 6px}
+@media (pointer:coarse){.ssfield input,.ssfield select{min-height:44px}}
+
+/* ===== Simulation ======================================================== */
+.simnote{font-size:.84rem;color:var(--muted);line-height:1.6;max-width:86ch}
+.simpicker{display:flex;flex-direction:column;gap:7px;margin:8px 0 10px}
+.simgroup h4{margin:4px 0 4px;font-size:.7rem;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--gold)}
+.simchips{display:flex;flex-wrap:wrap;gap:5px}
+.simchip{font:inherit;font-size:.8rem;padding:6px 11px;border:1px solid var(--line);
+  border-radius:999px;background:#fff;color:var(--ink);cursor:pointer}
+.simchip:hover{border-color:var(--gold)}
+.simchip.on{background:var(--night);border-color:var(--night);
+  color:var(--gold-soft);font-weight:600}
+.simrow{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:8px 0}
+.simfield{display:flex;flex-direction:column;gap:2px;font-size:.72rem;
+  color:var(--muted)}
+.simfield input,.simfield select{font:inherit;font-size:.84rem;padding:6px 8px;
+  border:1px solid var(--line);border-radius:7px;background:var(--soft);
+  color:var(--ink)}
+.simbtn{font:inherit;font-size:.84rem;padding:7px 14px;border:1px solid var(--night);
+  border-radius:8px;background:var(--night);color:#fff;cursor:pointer}
+.simbtn:hover{background:#2b3358}
+#sim-scrub{flex:1;min-width:120px;max-width:100%;height:36px;touch-action:pan-x}
+.simstat{font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.simrun{font-size:.8rem;color:var(--gold);margin:4px 0}
+.simflash{font-size:.8rem;color:var(--gold);margin:4px 0}
+.simstagebox,.simdiscbox{margin:6px 0 4px}
+#sim-canvas,#sim-discs{display:block;width:100%;border-radius:10px;
+  border:1px solid var(--line);background:#0b1020}
+.simreport{margin:10px 0 4px}
+.simq{font-size:.95rem;color:var(--ink);margin:10px 0 4px;font-style:italic}
+.simhead{font-size:1.02rem;font-weight:600;color:#1b1e33;margin:2px 0 10px;
+  padding-left:11px;border-left:3px solid var(--gold)}
+.simsec{margin:16px 0 6px;font-size:.98rem}
+/* the site's data tables carry a 520px floor so wide numeric grids scroll
+   rather than crush; these two-column report tables are not those, and the
+   floor is what pushed the page sideways on a phone */
+.simreport table.tbl,.simnoise table.tbl{table-layout:fixed;width:100%;
+  max-width:100%;min-width:0}
+.simreport table.tbl td,.simnoise table.tbl td{vertical-align:top;
+  overflow-wrap:anywhere}
+.simreport table.tbl td:first-child,.simnoise table.tbl td:first-child{
+  width:32%;color:var(--muted);font-size:.84rem}
+td.simval{font-size:.86rem}
+.simjy td:first-child{color:#5a4512;font-weight:600}
+.simnoise{border:1px solid #ecdcae;background:#fbf6e8;border-left:3px solid var(--gold);
+  border-radius:0 8px 8px 0;padding:11px 14px;margin:10px 0}
+.simnoise h4{margin:0 0 6px;font-size:.92rem}
+.simnoise p{font-size:.85rem;line-height:1.6;margin:0 0 7px}
+.simmoral{font-style:italic;color:#5a4512}
+.simlist{margin:10px 0;padding-left:18px;font-size:.84rem;line-height:1.7;
+  max-width:88ch}
+@media (pointer:coarse){
+  .simchip,.simbtn,.simfield input,.simfield select{min-height:42px}
+  #sim-scrub{height:40px}
+}
+.simchip,.simbtn{touch-action:manipulation}
+
+/* ===== Reel Studio ======================================================= */
+.reelintro{font-size:.86rem;color:var(--muted);line-height:1.65;max-width:88ch}
+.reelwrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,360px);
+  gap:22px;align-items:start;margin:14px 0}
+.reelmain{order:-1;position:sticky;top:12px}
+.reelside{min-width:0}
+.reelstagebox{display:flex;justify-content:center}
+#reel-canvas{display:block;border-radius:14px;border:1px solid var(--line);
+  background:#05060b;box-shadow:0 14px 40px rgba(10,12,24,.28);max-width:100%}
+.reelctl{margin-top:9px}
+#reel-scrub{flex:1;min-width:110px;max-width:100%;height:36px;touch-action:pan-x}
+.reelwhen{font-size:.7rem;color:var(--muted);font-variant-numeric:tabular-nums;
+  white-space:nowrap}
+.reelpicker{display:flex;flex-direction:column;gap:8px;margin:6px 0 8px}
+.reelgroup h4{margin:3px 0 4px;font-size:.68rem;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--gold)}
+.reelchips{display:flex;flex-wrap:wrap;gap:5px}
+.reelchip{font:inherit;font-size:.78rem;padding:6px 10px;border:1px solid var(--line);
+  border-radius:999px;background:#fff;color:var(--ink);cursor:pointer;
+  text-align:left;touch-action:manipulation}
+.reelchip:hover{border-color:var(--gold)}
+.reelchip.on{background:var(--night);border-color:var(--night);
+  color:var(--gold-soft);font-weight:600}
+.reelblurb{font-size:.79rem;color:var(--muted);line-height:1.55;margin:4px 0 2px;
+  padding-left:10px;border-left:2px solid var(--line)}
+.reelsub{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--muted);margin:16px 0 6px;border-bottom:1px solid var(--line);
+  padding-bottom:4px}
+.reelrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0}
+.reelfield{display:flex;flex-direction:column;gap:2px;font-size:.7rem;
+  color:var(--muted)}
+.reelfield input,.reelfield select{font:inherit;font-size:.82rem;padding:6px 8px;
+  border:1px solid var(--line);border-radius:7px;background:var(--soft);
+  color:var(--ink)}
+.reelslider{display:block;font-size:.7rem;color:var(--muted);margin:7px 0}
+.reelslider span{display:flex;justify-content:space-between;align-items:baseline}
+.reelslider b{color:var(--ink);font-size:.8rem;font-variant-numeric:tabular-nums}
+.reelslider input{width:100%;height:34px;touch-action:pan-x}
+.reelbtn{font:inherit;font-size:.82rem;padding:8px 14px;border:1px solid var(--night);
+  border-radius:8px;background:var(--night);color:#fff;cursor:pointer;
+  touch-action:manipulation}
+.reelbtn:hover{background:#2b3358}
+.reelbtn.ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+.reelbtn.ghost:hover{border-color:var(--gold)}
+.reelprog{width:100%;height:5px;margin:4px 0}
+.reelnote{font-size:.78rem;color:var(--gold);margin:4px 0;line-height:1.5}
+.reelnote.bad{color:#9a3b2a}
+/* table.tbl carries a 520px floor for wide numeric grids; this two-column
+   report is not one, and a bare .reeltbl loses the specificity contest */
+table.reeltbl{table-layout:fixed;width:100%;max-width:100%;min-width:0}
+table.reeltbl td{vertical-align:top;overflow-wrap:anywhere;font-size:.8rem}
+table.reeltbl td:first-child{width:38%;color:var(--muted)}
+.reelclosing{border:1px solid #ecdcae;background:#fbf6e8;border-left:3px solid var(--gold);
+  border-radius:0 8px 8px 0;padding:12px 15px;margin:10px 0;max-width:80ch}
+.reelclosing h4{margin:0 0 7px;font-size:1rem;color:#5a4512}
+.reelclosing p{font-size:.85rem;line-height:1.6;margin:0 0 7px}
+@media (max-width:860px){
+  .reelwrap{grid-template-columns:1fr}
+  .reelmain{position:static}
+  #reel-canvas{max-height:72vh}
+}
+@media (pointer:coarse){
+  .reelchip,.reelbtn,.reelfield input,.reelfield select{min-height:42px}
+  #reel-scrub,.reelslider input{height:42px}
+}
+.reelnote2{font-size:.75rem;color:var(--muted);line-height:1.55;margin:4px 0 7px}
+#reel-place{position:relative;margin:2px 0 6px}
+#reel-place .npfind{width:100%}
+#reel-place .npres{position:absolute;z-index:40;left:0;right:0;max-height:260px;
+  overflow:auto;background:#fff;border:1px solid var(--line);border-radius:8px;
+  box-shadow:0 10px 30px rgba(10,12,24,.18)}
+
+/* ---- the script and caption panel on the reel page ---------------------- */
+.reelscript{margin:12px 0 26px}
+.sctabs{gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.sctab{appearance:none;border:1px solid #ddd0ad;background:#fbf6e8;color:var(--ink);
+  border-radius:999px;padding:7px 15px;font:inherit;font-size:.78rem;cursor:pointer;
+  min-height:34px}
+.sctab[aria-selected="true"]{background:var(--gold);border-color:var(--gold);color:#241c08;
+  font-weight:600}
+.scbar{align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 10px}
+.scnote{font-size:.74rem;color:var(--muted)}
+.scnote.tight{color:#8a4b12}
+.scbeats{list-style:none;margin:0;padding:0;counter-reset:scb}
+.scbeats li{display:grid;grid-template-columns:3.2rem 1fr;gap:10px;padding:9px 0;
+  border-top:1px solid #efe4cd}
+.scbeats li:first-child{border-top:0}
+.scbeats .sct{font-size:.72rem;color:var(--muted);font-variant-numeric:tabular-nums;
+  padding-top:2px}
+.scbeats li.over .sct{color:#8a4b12;font-weight:600}
+.scbeats .scs{font-size:.92rem;line-height:1.5}
+.sccap{white-space:pre-wrap;word-break:break-word;background:#fbf6e8;
+  border:1px solid #ecdcae;border-left:3px solid var(--gold);border-radius:6px;
+  padding:12px 14px;font:inherit;font-size:.86rem;line-height:1.5;margin:6px 0 10px}
+@media (prefers-color-scheme:dark){
+  .sctab{background:#1d1a14;border-color:#3a3328}
+  .sccap{background:#1d1a14;border-color:#3a3328}
+  .scbeats li{border-top-color:#332c21}
+}
+
+/* ---- the report under a theme -------------------------------------------
+   .kreport was written against the paper ground and carries its own literal
+   colours. The theme layer never reached inside it, so on the dark palettes
+   the verdict words, the numeric columns and the ashtakavarga totals were
+   drawn in near-black on near-black. These route the same meanings through
+   the verdict tokens, which every palette restates for its own ground.
+
+   The inline styles the report generates now reference the same tokens, so
+   the two halves cannot disagree about what "good" looks like. */
+html[data-theme] .kreport .kgood{color:var(--sem-good)}
+html[data-theme] .kreport .kmid{color:var(--sem-mid)}
+html[data-theme] .kreport .kbad{color:var(--sem-bad)}
+html[data-theme] .kreport .gbcheck.ok{color:var(--sem-good)}
+html[data-theme] .kreport .gbcheck.bad{color:var(--sem-bad)}
+html[data-theme] .kreport .kev-del{color:var(--sem-bad)}
+html[data-theme] .kreport .wlitem b.wl-u{color:var(--sem-good)}
+html[data-theme] .kreport .sensb.sens-lo{background:transparent;color:var(--sem-good);
+  border:1px solid currentColor}
+html[data-theme] .kreport .sensb.sens-hi{background:transparent;color:var(--sem-bad);
+  border:1px solid currentColor}
+html[data-theme] .kreport .kwsvg .now{fill:var(--sem-bad)}
+html[data-theme] .kreport .kchartsvg .sc-c{fill:var(--sem-bad)}
+html[data-theme] .kreport .kichart .kip.on{fill:var(--sem-bad)}
+html[data-theme] .kreport svg.skysvg .sk-plnat{fill:var(--sem-dim)}
+html[data-theme] .goretro,html[data-theme] .spwarn,
+html[data-theme] .wswarn,html[data-theme] .wsretro{color:var(--sem-bad)}
+html[data-theme] .kgood{color:var(--sem-good)}
+
+/* The sarvāṣṭakavarga row paints light text on the night ground. Under a
+   theme the ground is a token and the text was not, so the two converged:
+   1.04:1 on the default palette, which is invisible rather than merely
+   hard. Both come from the same place now. */
+.kreport table.ktbl tbody tr td.kbsav{background:var(--night);color:#f2eee0}
+html[data-theme] .kreport table.ktbl tbody tr td.kbsav{background:var(--surface-3);
+  color:var(--text-strong)}
+
+/* A native <option> list is drawn by the operating system on ITS background,
+   not the page's, so a themed text colour lands on white and vanishes. The
+   list is left to the system; only the closed control is themed. */
+.kreport .kayanpick option,.kreport select option{color:#16181f;background:#ffffff}
+
+/* The gold pill: #231c07 on --gold measured 2.68:1 on the default palette,
+   where --gold is a mid tone rather than the bright one the dark palettes
+   use. The pill carries its own ground, so it gets its own fixed pair. */
+.kreport .kdt-tag{background:#5a4410;color:#fdf6e3}
+html[data-theme] .kreport .kdt-tag{background:var(--accent);color:var(--accent-ink)}
+
+/* Two last pairs, both carrying their own ground rather than the page's.
+   The dashboard link is a gold label on the dark print bar (2.4:1 as written);
+   the active pager pill is dark-on-gold where --gold is a mid tone (2.68:1).
+   Measured, not judged: 8.9:1 and 7.1:1 after. */
+.kreport .krdash a.k-btn,.kreport .krprint a.k-btn{color:#f6e6bd;border-color:#8a6a1f}
+.kreport .kpager button.on,.kreport button.on > span{color:#fdf6e3}
+html[data-theme] .kreport .krdash a.k-btn,
+html[data-theme] .kreport .krprint a.k-btn{color:var(--accent-soft);
+  border-color:var(--accent)}
+
+/* The ayanāṃśa ruler's own mark labels: small, rotated, and the one in use
+   picked out so the eye finds it among fifteen others. */
+.kreport .kayanruler .ty{font-size:8.5px;fill:var(--muted-2,#5a5e78)}
+.kreport .kayanruler .ty.tycur{font-weight:700;fill:var(--sem-bad,#a1493a)}
+
+/* The pane's own ayanāṃśa switcher. It sits above the comparison rather than
+   in the vitals card, so every page that can show the comparison can also act
+   on it — the Workstation renders sections, not the report head. */
+.kreport .kayanbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;
+  border:1px solid var(--line);border-left:3px solid var(--gold);background:var(--soft);
+  padding:8px 11px;border-radius:0 6px 6px 0;margin:0 0 14px;font-size:13px}
+.kreport .kayanbar label{font-weight:600}
+.kreport .kayanbar .kayanpick{display:inline-block;width:auto;min-width:220px;margin:0}
+
+/* The reading-path step number: #231c07 on --gold is 2.68:1 on the default
+   palette, where --gold (#8a5306) is a mid tone rather than the bright one
+   the dark palettes use. The pill carries its own ground, so it gets its own
+   pair; under a theme the accent tokens are already a checked pair. */
+.kreport .kpath-nav button.on span{background:#4a3708;color:#fdf6e3}
+html[data-theme] .kreport .kpath-nav button.on span{background:var(--accent);
+  color:var(--accent-ink)}
+
+/* --muted is documented in :root as 4.44:1 on the panel ground — "a hair
+   under the WCAG line; small print uses this instead", with --muted-2 as the
+   compliant one. The report is small print throughout and was using the
+   wrong one of the pair: every caption, every key column and every source
+   line measured 4.44:1. --muted-2 puts them at 5.5:1 and the difference is
+   invisible, which is the whole point of having measured it. */
+
+/* The motion read-note was styled for a dark panel it no longer sits on:
+   #8f96bb heading and #8a8fa8 footnote measure 2.65:1 and 2.92:1 on the
+   report's own ground. Both become tokens, which also makes them follow a
+   theme instead of staying put while it inverts. The two small-print labels
+   beside them move to the compliant half of the muted pair for the same
+   reason as the captions above. */
+.moreadh{color:var(--muted-2,#5a5e78)}
+.moreadf{color:var(--muted-2,#5a5e78)}
+html[data-theme] .moreadh,html[data-theme] .moreadf{color:var(--text-soft)}
+
+/* One line instead of a list of classes.
+   :root documents --muted as 4.44:1 on the panel ground — "a hair under the
+   WCAG line; small print uses this instead" — and defines --muted-2 as the
+   compliant sibling. The report is small print throughout, and it reached for
+   the wrong half of that pair in a dozen different places: captions, key
+   columns, source lines, axis labels, legends. Chasing them one class at a
+   time found four more on every pass.
+
+   Redefining the token INSIDE .kreport fixes every var(--muted) under it at
+   once, in every palette, including the ones nobody has written yet. The
+   difference is invisible; that it was measured rather than judged is the
+   point. */
+.kreport{--muted:var(--muted-2)}
+
+/* The last one: #8a6a1f on the mid sensitivity badge's own pale gold is
+   4.46:1 — four hundredths under. Its two siblings (lo and hi) already clear
+   it; this one was simply never measured against its own ground. */
+.kreport .sensb.sens-mid{color:#7d601b}
+
+/* The prastāra grids: eight rows of twelve, read as a pattern rather than
+   as numbers, so the cells are tight and the filled ones carry the weight. */
+.kreport table.kprastara th{font-size:9.5px;padding:4px 3px;text-align:center}
+.kreport table.kprastara th:first-child,
+.kreport table.kprastara td:first-child{text-align:left;white-space:nowrap}
+.kreport table.kprastara td.kb{text-align:center;padding:3px 2px;font-size:11px;
+  color:var(--muted-2)}
+.kreport table.kprastara td.kb.kbon{color:var(--sem-good,#1c6b46);font-weight:700}
+.kreport table.kprastara tr.kprtot td{border-top:2px solid var(--gold);
+  background:var(--soft);font-variant-numeric:tabular-nums}
+
+/* The ceremony page's own controls — a date, a time and two buttons, laid
+   out as one bar rather than as a form, because nothing here is submitted. */
+.cerbar{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;
+  border:1px solid var(--line);border-left:3px solid var(--gold);background:var(--soft);
+  padding:12px 14px;border-radius:0 8px 8px 0;margin:14px 0 18px}
+.cerfield{display:flex;flex-direction:column;gap:3px}
+.cerfield label{font-size:11px;font-weight:600;color:var(--muted-2);
+  text-transform:uppercase;letter-spacing:.05em}
+.cerfield input{padding:6px 8px;border:1px solid var(--line);border-radius:5px;
+  background:var(--surface-3,#fff);color:inherit;font:inherit;font-size:13px}
+
+/* The line the app's two hand-off buttons write under themselves. An alert
+   would be a modal the reader has to dismiss before acting on what it said. */
+.kreport .kappnote{margin:8px 0 0;font-size:12.5px;line-height:1.5;
+  color:var(--muted-2);max-width:70ch}
+.kreport .kappnote:empty{display:none}
+.kreport .kappnote.bad{color:var(--sem-bad,#a1493a);font-weight:600}
+.kreport .kappnote b{color:var(--text,inherit)}
+html[data-theme] .kreport .kappnote{color:var(--text-soft)}
+
+/* The key to the ayanāṃśa ruler's sixteen lines. Four families, each a short
+   list, because sixteen flat rows are a wall and four groups of three or six
+   are read at a glance. The swatch is a graphic and the name beside it does
+   the work, so nothing here depends on telling two colours apart. */
+.kreport .kaylegend{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:12px 20px;margin:10px 0 6px}
+.kreport .kaylgrp{min-width:0}
+.kreport .kaylh{font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.05em;color:var(--text-soft,#4a4e68);margin:0 0 5px;
+  padding-bottom:3px;border-bottom:1px solid var(--line)}
+.kreport .kaylh .kmut{text-transform:none;letter-spacing:0;font-weight:400;font-size:11px}
+.kreport ul.kaylist{list-style:none;margin:0;padding:0}
+.kreport ul.kaylist li{display:flex;align-items:baseline;gap:7px;
+  font-size:12.5px;line-height:1.55;padding:1px 0}
+.kreport ul.kaylist li.on{font-weight:700}
+.kreport .kaysw{flex:0 0 auto;width:10px;height:10px;border-radius:50%;
+  align-self:center;box-shadow:0 0 0 1px rgba(0,0,0,.18)}
+.kreport .kaysw.cur{width:13px;height:13px;box-shadow:0 0 0 2px var(--gold)}
+.kreport .kaynm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.kreport .kayval{flex:0 0 auto;font-variant-numeric:tabular-nums;color:var(--muted-2)}
+.kreport .kaycur{flex:0 0 auto;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.04em;color:var(--gold-ink,#5a4410)}
+html[data-theme] .kreport .kaycur{color:var(--accent)}
+html[data-theme] .kreport .kaysw{box-shadow:0 0 0 1px rgba(255,255,255,.28)}
+
+/* ===== accuracy.html ======================================================
+   Its own small block rather than reusing table.tbl, because these tables are
+   dense numeric comparisons that want tighter rows and right-aligned figures,
+   and the cards want to reflow to one column on a phone. Every colour is a
+   theme token with a light fallback: an inline literal would beat every theme
+   rule, which is how the dark palettes broke once before. */
+.axgrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));margin:4px 0 16px}
+.axcard{border:1px solid var(--border-2,#d9d2c6);border-radius:8px;padding:10px 12px;background:var(--surface-2,#f8f6f1)}
+.axcard .axk{font-size:11.5px;letter-spacing:.02em;text-transform:uppercase;color:var(--muted,#6b6459)}
+.axcard .axv{font-size:21px;font-weight:600;color:var(--ink,#23201c);margin:2px 0 1px;font-variant-numeric:tabular-nums}
+.axcard .axs{font-size:12px;color:var(--muted,#6b6459);line-height:1.35}
+.axfig{margin:6px 0 18px;max-width:100%}
+.axfig figcaption{font-size:12.5px;color:var(--muted,#6b6459);margin-top:4px;max-width:80ch;line-height:1.45}
+.axsvg{width:100%;height:auto;display:block;overflow:visible}
+.axcap{font-size:12.5px;color:var(--muted,#6b6459);max-width:80ch;margin:4px 0 14px}
+table.axtab{border-collapse:collapse;width:100%;font-size:13px;margin:4px 0 16px}
+table.axtab th{text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.02em;
+  text-transform:uppercase;color:var(--muted,#6b6459);padding:6px 9px;
+  border-bottom:1.5px solid var(--border-2,#d9d2c6);white-space:nowrap}
+table.axtab td{padding:6px 9px;border-bottom:1px solid var(--border,#e8e2d8);
+  vertical-align:top;font-variant-numeric:tabular-nums}
+table.axtab th+th,table.axtab td+td{text-align:right}
+table.axtab tr.axnow td{background:var(--surface-2,#f2eee6);font-weight:600}
+table.axtab tr.axnow td i{font-weight:400;font-style:normal;color:var(--muted,#6b6459);font-size:11.5px}
+/* A dense numeric table is the one thing that genuinely needs to scroll
+   sideways on a phone rather than reflow into nonsense. */
+#ax-divtable,#ax-bandtable,#ax-bare,#ax-precision{overflow-x:auto}
+@media (max-width:560px){
+  .axgrid{grid-template-columns:1fr}
+  table.axtab{font-size:12px;min-width:430px}
+}
+
+/* ===== Generated theme overrides =====================================
+   Written by source/tools/gen-theme-overrides.py from the literal
+   colours in app.css and pages.css. Do not edit by hand: regenerate.
+
+   Every selector below paints an opaque background with a literal
+   colour, so under a palette it would keep that colour while the text
+   on it changed — a white card with white text, or a near-black strip
+   with near-black text. Each is repointed at the token it should have
+   used. The colour is set as well as the surface, because a surface
+   that flips from light to dark takes its text with it.
+   ================================================================= */
+
+/* surfaces the stylesheets paint light (136) */
+:where(html[data-theme]) #reel-place .npres,
+:where(html[data-theme]) #si-text:focus,
+:where(html[data-theme]) #ss-drift,
+:where(html[data-theme]) .cadhika,
+:where(html[data-theme]) .calm th,
+:where(html[data-theme]) .calm tr:hover td,
+:where(html[data-theme]) .card,
+:where(html[data-theme]) .caution,
+:where(html[data-theme]) .ccell,
+:where(html[data-theme]) .ccell.cfull,
+:where(html[data-theme]) .ccell.cnew,
+:where(html[data-theme]) .ccell.csel,
+:where(html[data-theme]) .ccell:hover,
+:where(html[data-theme]) .cnav button,
+:where(html[data-theme]) .crux td,
+:where(html[data-theme]) .csank,
+:where(html[data-theme]) .csel,
+:where(html[data-theme]) .ctag,
+:where(html[data-theme]) .ctag.ctagwarn,
+:where(html[data-theme]) .cupari,
+:where(html[data-theme]) .cvbtn,
+:where(html[data-theme]) .cyd.cyadhika,
+:where(html[data-theme]) .cyear,
+:where(html[data-theme]) .dpbtn,
+:where(html[data-theme]) .dpchip,
+:where(html[data-theme]) .dplayer,
+:where(html[data-theme]) .dplayer.on,
+:where(html[data-theme]) .dppane,
+:where(html[data-theme]) .dpscene,
+:where(html[data-theme]) .dpscene.on,
+:where(html[data-theme]) .dptag.dpa,
+:where(html[data-theme]) .dptag.dpb,
+:where(html[data-theme]) .dptag.dpc,
+:where(html[data-theme]) .dptag.dpt,
+:where(html[data-theme]) .dptkey:hover,
+:where(html[data-theme]) .dptlane,
+:where(html[data-theme]) .dptscene,
+:where(html[data-theme]) .ex,
+:where(html[data-theme]) .gotier-bphs,
+:where(html[data-theme]) .gotier-comm,
+:where(html[data-theme]) .gotier-later,
+:where(html[data-theme]) .inchart,
+:where(html[data-theme]) .k-btn.sec,
+:where(html[data-theme]) .k-card,
+:where(html[data-theme]) .k-chip,
+:where(html[data-theme]) .k-err,
+:where(html[data-theme]) .k-form,
+:where(html[data-theme]) .k-form input,
+:where(html[data-theme]) .k-form select,
+:where(html[data-theme]) .k-results button,
+:where(html[data-theme]) .k-results button:hover,
+:where(html[data-theme]) .kreport .gbpanel,
+:where(html[data-theme]) .kreport .kanote,
+:where(html[data-theme]) .kreport .kbox,
+:where(html[data-theme]) .kreport .kbox.kwarn,
+:where(html[data-theme]) .kreport .kcard,
+:where(html[data-theme]) .kreport .kev-form,
+:where(html[data-theme]) .kreport .kev-form input,
+:where(html[data-theme]) .kreport .kev-form select,
+:where(html[data-theme]) .kreport .kgi,
+:where(html[data-theme]) .kreport .kipanel,
+:where(html[data-theme]) .kreport .kk-asp,
+:where(html[data-theme]) .kreport .kk-at,
+:where(html[data-theme]) .kreport .kk-own,
+:where(html[data-theme]) .kreport .kmbar,
+:where(html[data-theme]) .kreport .kpath,
+:where(html[data-theme]) .kreport .kpath-nav button span,
+:where(html[data-theme]) .kreport .kpbar,
+:where(html[data-theme]) .kreport .kstep-try,
+:where(html[data-theme]) .kreport .ktabs,
+:where(html[data-theme]) .kreport .ktabs button,
+:where(html[data-theme]) .kreport .ktabs button:hover,
+:where(html[data-theme]) .kreport .ktabsel,
+:where(html[data-theme]) .kreport .moband,
+:where(html[data-theme]) .kreport .monum,
+:where(html[data-theme]) .kreport .moscene,
+:where(html[data-theme]) .kreport .motext,
+:where(html[data-theme]) .kreport .sensb.sens-hi,
+:where(html[data-theme]) .kreport .sensb.sens-lo,
+:where(html[data-theme]) .kreport .sensb.sens-mid,
+:where(html[data-theme]) .kreport .skysel,
+:where(html[data-theme]) .kreport .skytoggle button,
+:where(html[data-theme]) .kreport .skyv,
+:where(html[data-theme]) .kreport .swhb,
+:where(html[data-theme]) .kreport .swhb.sec,
+:where(html[data-theme]) .kreport .swhb:hover,
+:where(html[data-theme]) .kreport .swhchip,
+:where(html[data-theme]) .kreport .swhgrp,
+:where(html[data-theme]) .kreport button.gbq:focus,
+:where(html[data-theme]) .kreport button.gbq:hover,
+:where(html[data-theme]) .kreport details.kdt-cur>summary,
+:where(html[data-theme]) .kreport details.kdt-md,
+:where(html[data-theme]) .kreport table.ktbl tr.khl td,
+:where(html[data-theme]) .mine,
+:where(html[data-theme]) .note,
+:where(html[data-theme]) .npfind,
+:where(html[data-theme]) .npres button,
+:where(html[data-theme]) .npres button:focus-visible,
+:where(html[data-theme]) .npres button:hover,
+:where(html[data-theme]) .onpage-m,
+:where(html[data-theme]) .reelbtn.ghost,
+:where(html[data-theme]) .reelchip,
+:where(html[data-theme]) .reelclosing,
+:where(html[data-theme]) .sccap,
+:where(html[data-theme]) .sctab,
+:where(html[data-theme]) .simchip,
+:where(html[data-theme]) .simnoise,
+:where(html[data-theme]) .sipanel,
+:where(html[data-theme]) .sirecipe:hover,
+:where(html[data-theme]) .siwhy,
+:where(html[data-theme]) .spbtn.primary,
+:where(html[data-theme]) .spbtn.rec,
+:where(html[data-theme]) .spchip.rel,
+:where(html[data-theme]) .spdinsp,
+:where(html[data-theme]) .spdlayer,
+:where(html[data-theme]) .spdlayer.on,
+:where(html[data-theme]) .spdx:hover,
+:where(html[data-theme]) .spnote,
+:where(html[data-theme]) .sppane,
+:where(html[data-theme]) .sprow.live,
+:where(html[data-theme]) .spsec,
+:where(html[data-theme]) .sptimewrap,
+:where(html[data-theme]) .src,
+:where(html[data-theme]) .stbtn.sec,
+:where(html[data-theme]) .stcmove button,
+:where(html[data-theme]) .stcrow input,
+:where(html[data-theme]) .stcrow textarea,
+:where(html[data-theme]) .strank,
+:where(html[data-theme]) .strsec,
+:where(html[data-theme]) .stsel,
+:where(html[data-theme]) .stslide,
+:where(html[data-theme]) .stslide.on,
+:where(html[data-theme]) body,
+:where(html[data-theme]) code.k-inline,
+:where(html[data-theme]) footer,
+:where(html[data-theme]) table.stahead tr:hover td{
+  background:var(--surface-3);
+  color:var(--text);
+  border-color:var(--border);
+}
+
+/* surfaces the stylesheets paint dark (29) */
+:where(html[data-theme]) #reel-canvas,
+:where(html[data-theme]) #sim-canvas,
+:where(html[data-theme]) #sim-discs,
+:where(html[data-theme]) .card.tool,
+:where(html[data-theme]) .cyd.cynew,
+:where(html[data-theme]) .dpbtn.primary:hover,
+:where(html[data-theme]) .dpbtn.rec,
+:where(html[data-theme]) .dpplayhead,
+:where(html[data-theme]) .dpstagebox,
+:where(html[data-theme]) .dpthumb,
+:where(html[data-theme]) .dptitle,
+:where(html[data-theme]) .dptopbar .dpbtn,
+:where(html[data-theme]) .dptopbar select,
+:where(html[data-theme]) .k-btn.big,
+:where(html[data-theme]) .k-btn.big:hover,
+:where(html[data-theme]) .k-btn:hover,
+:where(html[data-theme]) .kreport .kmbar i,
+:where(html[data-theme]) .kreport .kmbar span,
+:where(html[data-theme]) .kreport .kpbar span,
+:where(html[data-theme]) .kreport .mostage,
+:where(html[data-theme]) .reelbtn:hover,
+:where(html[data-theme]) .simbtn:hover,
+:where(html[data-theme]) .spstagebox,
+:where(html[data-theme]) .sptile canvas,
+:where(html[data-theme]) body.mostudio .mostage,
+:where(html[data-theme]) details.k-raw pre,
+:where(html[data-theme]) nav.site,
+:where(html[data-theme]) nav.site a:hover,
+:where(html[data-theme]) pre.k-code{
+  background:var(--chrome-2);
+  color:var(--chrome-text);
+  border-color:var(--border-2);
+}
+
+/* text given a dark literal ink and no surface of its own (109) */
+:where(html[data-theme]) #kprintdoc,
+:where(html[data-theme]) #kprintdoc .prby,
+:where(html[data-theme]) #kprintdoc .prconv,
+:where(html[data-theme]) #kprintdoc .prfoot,
+:where(html[data-theme]) #kprintdoc .prh span,
+:where(html[data-theme]) #kprintdoc .prname,
+:where(html[data-theme]) #kprintdoc .prnote,
+:where(html[data-theme]) #kprintdoc .prsub,
+:where(html[data-theme]) #kprintdoc .prwm,
+:where(html[data-theme]) #kprintdoc .sensb,
+:where(html[data-theme]) #ss-now td.num.warn,
+:where(html[data-theme]) .calm small,
+:where(html[data-theme]) .calm td b,
+:where(html[data-theme]) .card h3,
+:where(html[data-theme]) .card p,
+:where(html[data-theme]) .cdrow b,
+:where(html[data-theme]) .cdrow i,
+:where(html[data-theme]) .cfestname,
+:where(html[data-theme]) .cfestname i,
+:where(html[data-theme]) .clabel i,
+:where(html[data-theme]) .cnak,
+:where(html[data-theme]) .cnote,
+:where(html[data-theme]) .cplacenote,
+:where(html[data-theme]) .cprintonly,
+:where(html[data-theme]) .cwarn,
+:where(html[data-theme]) .dpnote.warn,
+:where(html[data-theme]) .dpprop.anim .dpproplab,
+:where(html[data-theme]) .dptokb,
+:where(html[data-theme]) .dptrow.on .dptname,
+:where(html[data-theme]) .dpwarn li.bad,
+:where(html[data-theme]) .goretro,
+:where(html[data-theme]) .gotick,
+:where(html[data-theme]) .hero-pts li,
+:where(html[data-theme]) .inchart h4,
+:where(html[data-theme]) .inchart h4 span,
+:where(html[data-theme]) .inchart li,
+:where(html[data-theme]) .inchart li b,
+:where(html[data-theme]) .inchart-f,
+:where(html[data-theme]) .inchart-f a,
+:where(html[data-theme]) .inchart-x,
+:where(html[data-theme]) .inchart-x:hover,
+:where(html[data-theme]) .k-card .sub,
+:where(html[data-theme]) .k-card .val,
+:where(html[data-theme]) .k-chipwhen,
+:where(html[data-theme]) .k-chipwho,
+:where(html[data-theme]) .k-copymsg,
+:where(html[data-theme]) .k-errdet,
+:where(html[data-theme]) .k-form label,
+:where(html[data-theme]) .k-retro,
+:where(html[data-theme]) .k-skynote,
+:where(html[data-theme]) .kgood,
+:where(html[data-theme]) .kreport .gbcheck.bad,
+:where(html[data-theme]) .kreport .gbcheck.ok,
+:where(html[data-theme]) .kreport .kanote b:first-child,
+:where(html[data-theme]) .kreport .kasrc a,
+:where(html[data-theme]) .kreport .kbad,
+:where(html[data-theme]) .kreport .kcard .s,
+:where(html[data-theme]) .kreport .kev-del,
+:where(html[data-theme]) .kreport .kev-form label,
+:where(html[data-theme]) .kreport .kgo,
+:where(html[data-theme]) .kreport .kgood,
+:where(html[data-theme]) .kreport .kindex-links a,
+:where(html[data-theme]) .kreport .kmid,
+:where(html[data-theme]) .kreport .kpath-nav button,
+:where(html[data-theme]) .kreport .ksub,
+:where(html[data-theme]) .kreport .sensb,
+:where(html[data-theme]) .kreport .wlitem b.wl-g,
+:where(html[data-theme]) .kreport .wlitem b.wl-s,
+:where(html[data-theme]) .kreport .wlitem b.wl-u,
+:where(html[data-theme]) .kreport td.ylater,
+:where(html[data-theme]) .moread li,
+:where(html[data-theme]) .moreadf,
+:where(html[data-theme]) .moreadh,
+:where(html[data-theme]) .nowcard b,
+:where(html[data-theme]) .nowhint,
+:where(html[data-theme]) .nowlab,
+:where(html[data-theme]) .nownote,
+:where(html[data-theme]) .nowplace,
+:where(html[data-theme]) .nowsub,
+:where(html[data-theme]) .onpage-m-list a,
+:where(html[data-theme]) .pill,
+:where(html[data-theme]) .reelclosing h4,
+:where(html[data-theme]) .reelnote.bad,
+:where(html[data-theme]) .scbeats li.over .sct,
+:where(html[data-theme]) .scnote.tight,
+:where(html[data-theme]) .sibad,
+:where(html[data-theme]) .sigood,
+:where(html[data-theme]) .simhead,
+:where(html[data-theme]) .simjy td:first-child,
+:where(html[data-theme]) .simmoral,
+:where(html[data-theme]) .spdcell.to,
+:where(html[data-theme]) .spdtokb,
+:where(html[data-theme]) .spdtrow.on .spdtname,
+:where(html[data-theme]) .spdwarn li.bad,
+:where(html[data-theme]) .spwarn,
+:where(html[data-theme]) .src span,
+:where(html[data-theme]) .stfacts li,
+:where(html[data-theme]) .strec,
+:where(html[data-theme]) .stslide.rm,
+:where(html[data-theme]) .wsretro,
+:where(html[data-theme]) .wswarn,
+:where(html[data-theme]) a,
+:where(html[data-theme]) aside.onpage a,
+:where(html[data-theme]) details.k-raw summary,
+:where(html[data-theme]) footer b,
+:where(html[data-theme]) h2,
+:where(html[data-theme]) h3,
+:where(html[data-theme]) p.lead,
+:where(html[data-theme]) table.tbl td b{
+  color:var(--text);
+}
+
+
+/* ===== The four themes ====================================================
+
+   WHAT THESE ARE. Vedic Midnight, Krishna Peetāmbarī, Rishi Paper and
+   Emerald Forest. One is chosen on any page and remembered for every page,
+   so the site is read in the palette the reader picked rather than in the
+   one the stylesheet happened to be written in.
+
+   WHY THIS FILE IS ADDITIVE AND NEVER SUBTRACTIVE. The site's two
+   stylesheets carry some six hundred and sixty literal colours against
+   twelve tokens — counted, not estimated. Tokenising all of them would
+   touch every rule on every page to deliver a feature that changes none of
+   their behaviour, and a mistake anywhere would show up as an unreadable
+   page somewhere nobody looked. So nothing here edits an existing rule.
+   The default palette is the one the site already had, and each theme is a
+   block of overrides under its own attribute selector. A theme can make a
+   page look wrong; it cannot make the untouched page look wrong, which is
+   the property that makes this safe to ship.
+
+   WHY RISHI PAPER IS THE LIGHT ONE. It is very nearly the palette the site
+   was built in — warm paper, dark ink, a gold rule — so it is the default
+   and costs nothing. The three dark palettes are the real work: every
+   surface that was assumed to be a white card has to be told otherwise.
+
+   THE FONTS. The mockup these palettes come from loads Cinzel, Inter,
+   JetBrains Mono and Noto Sans Devanāgarī from Google. This site makes no
+   network requests of any kind, so the stacks below ask for those faces by
+   name — a reader who happens to have them installed gets them — and fall
+   through to the faces that ship with the machine. The Devanāgarī stack is
+   listed ahead of the Latin one everywhere Devanāgarī can appear, because
+   a Latin-first stack renders Hindi in whatever the browser picks last. */
+
+:root{
+  /* the surfaces, named by what they are for rather than by their colour,
+     so a theme can invert them without the names lying */
+  --surface:#fbfbfd;          /* the page itself */
+  --surface-2:#f4f4fb;        /* a panel on the page */
+  --surface-3:#ffffff;        /* a card lifted off the panel */
+  --text:#20233a;             /* body text */
+  --text-strong:#1b1e33;      /* headings */
+  --text-soft:#4a4e68;        /* captions, sidebars */
+  --border:#e7e7f0;
+  --border-2:#d8d8e6;
+  /* --muted measures 4.44:1 on the panel ground, a hair under the WCAG
+     line; small print uses this instead. Found by measurement, not by
+     looking — the difference is invisible and the failure is not. */
+  --muted-2:#5a5e78;
+  /* ---- verdict colours ----------------------------------------------
+     The report says "good", "bad", "note this" in colour as well as in
+     words, and it used to say them as literal hexes written INLINE into
+     the generated HTML. An inline style beats every rule a theme can
+     write, so those six colours stayed fixed while the ground under them
+     inverted: on the dark palettes the report was drawing dark green and
+     dark red onto near-black, measured as low as 2.3:1 over two hundred
+     table cells at a time.
+
+     They are tokens now, referenced inline as var(--sem-good) and so on.
+     The hex stays in the generator as the var() fallback, so a page with
+     no theme layer at all renders exactly as it always did. Each palette
+     below restates them at a lightness that suits its own ground; the
+     values are measured against that palette's surface, not chosen by
+     eye. Colour still never carries meaning alone — every one of these
+     sits beside a word. */
+  --sem-good:#1c6b46;         /* 5.46:1 on the paper ground */
+  --sem-bad:#a1493a;          /* 5.09:1 */
+  --sem-mid:#8a6a1f;          /* 4.97:1 */
+  --sem-info:#3f6fa6;         /* 4.76:1 */
+  --sem-dim:#5a5e78;          /* matches --muted-2 */
+  --accent:#c9a24b;           /* the gold rule and the active state */
+  --accent-soft:#e7d19a;
+  --accent-ink:#231c07;       /* text on the accent */
+  --chrome:#191d33;           /* masthead and nav */
+  --chrome-2:#252a49;
+  --chrome-text:#f3f2ec;
+  --chrome-link:#c7cbe4;
+  /* the four callouts: source, note, mine, example, caution */
+  --src-bg:#f7f6ef;      --src-line:#ece7d4;  --src-key:#8a6d1f;
+  --note-bg:#eef2f7;     --note-line:#dbe3ee;  --note-edge:#6f86b0;
+  --mine-bg:#f0f6f1;     --mine-line:#d8e7db;  --mine-edge:#4f8c5f;
+  --ex-bg:#fbf6e8;       --ex-line:#ecdcae;
+  --caution-bg:#fbeeee;  --caution-line:#ecc1c1; --caution-edge:#b45252;
+  /* chart ink: a wheel is drawn in these, never in a literal colour */
+  --chart-line:#4a4e68;  --chart-fill:#ffffff;  --chart-text:#20233a;
+  --chart-glow:rgba(201,162,75,.22);
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --deva:"Noto Sans Devanagari","Nirmala UI","Kohinoor Devanagari",
+         "Mangal",system-ui,sans-serif;
+  --display:"Cinzel","Iowan Old Style","Palatino Linotype",Palatino,
+            Georgia,serif;
+}
+
+/* ---- Vedic Midnight -----------------------------------------------------
+   The mockup's own default: near-black with a blue cast, amber accent, and
+   a sky-blue used for the dṛṣṭi beams. */
+html[data-theme="midnight"]{
+  --sem-good:#6ee7a8; --sem-bad:#fca5a5; --sem-mid:#fcd34d; --sem-info:#93c5fd; --sem-dim:#a8b4c6;
+  --muted-2:#a8b4c6;
+  --night:#040711; --night2:#0b1024; --paper:#040711; --ink:#f1f5f9;
+  --muted:#94a3b8; --line:#1e293b; --soft:#0b1024;
+  --gold:#f59e0b; --gold-soft:#fcd34d;
+  --surface:#040711; --surface-2:#0b1024; --surface-3:#111a33;
+  --text:#f1f5f9; --text-strong:#ffffff; --text-soft:#94a3b8;
+  --border:#1e293b; --border-2:#2b3a55;
+  --accent:#f59e0b; --accent-soft:#fcd34d; --accent-ink:#1a1204;
+  --chrome:#02040c; --chrome-2:#0b1024; --chrome-text:#f1f5f9;
+  --chrome-link:#b6c2d9;
+  --src-bg:#0e1526;  --src-line:#263450;  --src-key:#fcd34d;
+  --note-bg:#0c1524; --note-line:#24344d; --note-edge:#38bdf8;
+  --mine-bg:#07160f; --mine-line:#1d3a2a; --mine-edge:#34d399;
+  --ex-bg:#17120a;   --ex-line:#3d2f12;
+  --caution-bg:#1b0d0d; --caution-line:#452020; --caution-edge:#f87171;
+  --chart-line:#94a3b8; --chart-fill:#0b1024; --chart-text:#f1f5f9;
+  --chart-glow:rgba(245,158,11,.28);
+}
+
+/* ---- Krishna Peetāmbarī -------------------------------------------------
+   Named for the yellow silk: a warm near-black ground with the whole text
+   in shades of yellow, and peacock blue-green as the second colour. */
+html[data-theme="peetambari"]{
+  --sem-good:#86efac; --sem-bad:#fca5a5; --sem-mid:#fde68a; --sem-info:#a5c9f5; --sem-dim:#c9b25a;
+  --muted-2:#d6bf64;
+  --night:#0c0a09; --night2:#1c1611; --paper:#0c0a09; --ink:#fef08a;
+  --muted:#bfa94d; --line:#332a16; --soft:#1a1509;
+  --gold:#facc15; --gold-soft:#fef9c3;
+  --surface:#0c0a09; --surface-2:#1a1509; --surface-3:#241c0c;
+  --text:#fef08a; --text-strong:#fffbeb; --text-soft:#c9b25a;
+  --border:#332a16; --border-2:#4a3d1f;
+  --accent:#facc15; --accent-soft:#fef9c3; --accent-ink:#1a1403;
+  --chrome:#07060a; --chrome-2:#161208; --chrome-text:#fef9c3;
+  --chrome-link:#d9c37a;
+  --src-bg:#191307;  --src-line:#3b3015;  --src-key:#fde047;
+  --note-bg:#061412; --note-line:#14433c; --note-edge:#2dd4bf;
+  --mine-bg:#08150c; --mine-line:#1d3a22; --mine-edge:#4ade80;
+  --ex-bg:#1d1608;   --ex-line:#473916;
+  --caution-bg:#1c0e08; --caution-line:#4a2415; --caution-edge:#fb923c;
+  --chart-line:#c9b25a; --chart-fill:#120e05; --chart-text:#fef08a;
+  --chart-glow:rgba(250,204,21,.30);
+}
+
+/* ---- Rishi Paper --------------------------------------------------------
+   Warm paper and dark ink: within a hair of the palette the site was
+   written in, so this is the default and overrides almost nothing. */
+html[data-theme="paper"]{
+  --sem-good:#18603f; --sem-bad:#8f3f32; --sem-mid:#7a5d1b; --sem-info:#375f90; --sem-dim:#57534e;
+  --muted-2:#4a463f;
+  /* The legacy tokens matter as much as the new ones. Leaving --muted and
+     --gold at their original values put a dozen captions at 4.01:1 and the
+     Studio's main button at 2.63:1 against this warmer, darker ground —
+     every one of them found by measurement, none of them visible in a
+     screenshot of the page's top half. */
+  --paper:#f7f3e8; --ink:#292524; --soft:#efe9d8; --line:#ded5bd;
+  --muted:#57534e; --gold:#8a5306; --gold-soft:#b07c2a;
+  --night:#292524; --night2:#3f3a36;
+  --surface:#f7f3e8; --surface-2:#efe9d8; --surface-3:#fffdf6;
+  --text:#292524; --text-strong:#1c1917; --text-soft:#57534e;
+  --border:#ded5bd; --border-2:#cdc2a5;
+  /* #a16207 measured 4.44:1 against this ground on the big call to
+     action — a hair under the line, so it is darkened until it clears */
+  --accent:#8a5306; --accent-soft:#d9bb73; --accent-ink:#fffdf6;
+  --chrome:#292524; --chrome-2:#3f3a36; --chrome-text:#f7f3e8;
+  --chrome-link:#ded5bd;
+  --src-bg:#f2ecda;  --src-line:#ddd2b4;  --src-key:#7a5c12;
+  --ex-bg:#f4eeda;   --ex-line:#ddcea6;
+  --chart-line:#57534e; --chart-fill:#fffdf6; --chart-text:#292524;
+  --chart-glow:rgba(161,98,7,.18);
+}
+
+/* ---- Emerald Forest ---------------------------------------------------- */
+html[data-theme="emerald"]{
+  --sem-good:#7ff0bd; --sem-bad:#fda4a4; --sem-mid:#fcd98a; --sem-info:#a9d2f8; --sem-dim:#8dd3b4;
+  --muted-2:#a4ddc2;
+  --night:#022c22; --night2:#043d2f; --paper:#022c22; --ink:#ecfdf5;
+  --muted:#8dd3b4; --line:#0b4a39; --soft:#03352a;
+  --gold:#fbbf24; --gold-soft:#fde68a;
+  --surface:#022c22; --surface-2:#03352a; --surface-3:#064435;
+  --text:#ecfdf5; --text-strong:#ffffff; --text-soft:#8dd3b4;
+  --border:#0b4a39; --border-2:#116b52;
+  --accent:#fbbf24; --accent-soft:#fde68a; --accent-ink:#11210c;
+  --chrome:#01201a; --chrome-2:#043d2f; --chrome-text:#ecfdf5;
+  --chrome-link:#a7e3c8;
+  --src-bg:#04372b;  --src-line:#0e5440;  --src-key:#fde68a;
+  --note-bg:#032e2e; --note-line:#0c4a4a; --note-edge:#22d3ee;
+  --mine-bg:#043528; --mine-line:#0e5a3f; --mine-edge:#4ade80;
+  --ex-bg:#1a2e09;   --ex-line:#38500f;
+  --caution-bg:#2a1410; --caution-line:#5a2a1e; --caution-edge:#fb923c;
+  --chart-line:#8dd3b4; --chart-fill:#03352a; --chart-text:#ecfdf5;
+  --chart-glow:rgba(251,191,36,.26);
+}
+
+/* ===== What the themes have to say out loud ================================
+   Everything below applies only when a theme is set, so the untouched site
+   is byte-for-byte what it was. Each block names the thing the stylesheet
+   hardcoded and the token that should have been there. */
+
+/* The five card rules on the Now, Studio and Strength pages are written
+   `background:var(--card,#fff)` against a --card that is never defined, so
+   they resolve to white. Defining it is better than overriding each of
+   them: the fallback was already the hook, it just had nothing on it. */
+html[data-theme]{--card:var(--surface-3)}
+
+html[data-theme] body{background:var(--surface);color:var(--text)}
+html[data-theme] h2{color:var(--text-strong);border-bottom-color:var(--accent)}
+html[data-theme] h3,html[data-theme] h4{color:var(--text-strong)}
+html[data-theme] p.lead{color:var(--text-soft)}
+html[data-theme] a{color:var(--accent)}
+html[data-theme] aside.onpage a{color:var(--text-soft);
+  border-left-color:var(--border)}
+html[data-theme] aside.onpage a:hover{color:var(--accent);
+  border-left-color:var(--accent)}
+html[data-theme] nav.site{background:var(--chrome);
+  border-bottom-color:var(--border-2)}
+html[data-theme] nav.site a{color:var(--chrome-link)}
+html[data-theme] nav.site a:hover{background:var(--chrome-2);
+  color:var(--chrome-text)}
+html[data-theme] nav.site a.active{background:var(--accent);
+  color:var(--accent-ink)}
+html[data-theme] .masthead{color:var(--chrome-text);
+  border-bottom-color:var(--accent)}
+html[data-theme] .masthead h1{color:var(--chrome-text)}
+html[data-theme] .masthead p.sub{color:var(--chrome-link)}
+/* the brand lockup and the eyebrow sit on the masthead's dark gradient in
+   every palette, so they keep light ink in every palette rather than
+   following --text, which the light palette turns dark */
+html[data-theme] .masthead .eyebrow{color:var(--accent-soft)}
+html[data-theme] .masthead .lhname{color:var(--accent-soft)}
+html[data-theme] .masthead .lhdeva{color:var(--accent)}
+html[data-theme="paper"] .masthead .lhname{color:#e8cf95}
+html[data-theme="paper"] .masthead .lhdeva{color:#d9bb73}
+html[data-theme="paper"] .masthead .eyebrow{color:#d9bb73}
+html[data-theme] .term{background:var(--surface-2);
+  border-left-color:var(--accent)}
+html[data-theme] .src{background:var(--src-bg);border-color:var(--src-line);
+  color:var(--text-soft)}
+html[data-theme] .src span{color:var(--src-key)}
+html[data-theme] .note{background:var(--note-bg);
+  border-color:var(--note-line);border-left-color:var(--note-edge)}
+html[data-theme] .mine{background:var(--mine-bg);
+  border-color:var(--mine-line);border-left-color:var(--mine-edge)}
+html[data-theme] .ex{background:var(--ex-bg);border-color:var(--ex-line);
+  border-left-color:var(--accent)}
+html[data-theme] .caution{background:var(--caution-bg);
+  border-color:var(--caution-line);border-left-color:var(--caution-edge)}
+
+/* tables, which are the site's main way of showing a calculation. At
+   :where() weight, because a page that colours one column or one row for a
+   reason should keep doing so. */
+:where(html[data-theme]) table{color:var(--text)}
+:where(html[data-theme]) th{background:var(--surface-2);
+  color:var(--text-strong);border-color:var(--border)}
+:where(html[data-theme]) td{border-color:var(--border)}
+:where(html[data-theme]) tr:nth-child(even) td{background:var(--surface-2)}
+
+/* The panels, cards and wells are NOT listed here. They are generated into
+   theme-auto.css from the stylesheets' own colours, at :where() specificity
+   so that a deeper rule still wins. A hand-written `html[data-theme] .card`
+   scores (0,2,1) and so beat the generated `.card.tool` at (0,2,0), turning
+   the one dark gradient card on the home page into a light card with its
+   white heading still white. Generic surfaces belong to the generator;
+   this file keeps the things that need a judgement. */
+
+/* inputs: a white field on a near-black page is a lamp */
+html[data-theme] input,html[data-theme] select,html[data-theme] textarea{
+  background:var(--surface-3);color:var(--text);
+  border-color:var(--border-2)}
+:where(html[data-theme]) label{color:var(--text-soft)}
+/* the picker's label is a <label>, so the generic rule above claims it and
+   would put page ink on the dark nav; it needs the chrome's ink at a
+   weight that wins */
+html[data-theme] nav.site .themepick label,
+html[data-theme] nav.site .themepickl{color:var(--chrome-link)}
+nav.site .themepickl{color:#c7cbe4}
+html[data-theme] input::placeholder,
+html[data-theme] textarea::placeholder{color:var(--text-soft)}
+
+/* the chart wheels: these are SVG drawn from CSS currentColor where they
+   can be, and the tokens above where they cannot */
+html[data-theme] .kchart,html[data-theme] .chart{color:var(--chart-line)}
+html[data-theme] .kchart text,html[data-theme] .chart text{
+  fill:var(--chart-text)}
+html[data-theme] .kchart .cell,html[data-theme] .chart .cell{
+  fill:var(--chart-fill)}
+
+/* ---- selected states -----------------------------------------------------
+   A chip, tab or button that marks itself selected paints the accent and
+   puts ink on it. The two have to move together: the stylesheets write the
+   surface as var(--gold) and the ink as a literal, so a palette that
+   changes one without the other gives a light chip with light text. These
+   are asserted as a pair, which is the only form in which they are
+   correct. */
+html[data-theme] .sctab[aria-selected="true"],
+html[data-theme] .reelchip.on,html[data-theme] .simchip.on,
+html[data-theme] .spv.on,html[data-theme] .stbtn,
+html[data-theme] .ktabs button[aria-selected="true"]{
+  background:var(--accent);border-color:var(--accent);
+  color:var(--accent-ink)}
+html[data-theme] .stbtn.sec{background:var(--surface-3);color:var(--text);
+  border-color:var(--border-2)}
+
+
+/* the gochara tier badges: three tinted chips that have to stay legible on
+   every ground, so each palette gets its own rather than a shared wash */
+html[data-theme] .gotier-bphs{background:var(--mine-bg);color:var(--mine-edge);
+  border-color:var(--mine-line)}
+html[data-theme] .gotier-comm{background:var(--note-bg);color:var(--note-edge);
+  border-color:var(--note-line)}
+html[data-theme] .gotier-later{background:var(--ex-bg);color:var(--accent);
+  border-color:var(--ex-line)}
+html[data-theme] .gotbl tr.gogood td{background:var(--mine-bg)}
+html[data-theme] .gotick{color:var(--mine-edge)}
+html[data-theme] .goretro{color:var(--caution-edge)}
+
+html[data-theme] tr.spfrail td{background:var(--caution-bg)}
+html[data-theme] .spwarn{color:var(--caution-edge)}
+html[data-theme] .kgood{color:var(--mine-edge)}
+html[data-theme] .spbar i{background:var(--accent)}
+
+html[data-theme] .wsdeckwrap{background:var(--surface);
+  border-bottom-color:var(--border)}
+html[data-theme] .wswarn,html[data-theme] .wsretro{color:var(--caution-edge)}
+html[data-theme] .wsjsonmsg{color:var(--mine-edge)}
+
+/* ---- the switcher itself ------------------------------------------------ */
+.themepick{display:inline-flex;align-items:center;gap:6px;
+  font:inherit;font-size:12px}
+.themepick select{font:inherit;font-size:12px;padding:3px 6px;
+  border-radius:6px;border:1px solid var(--border-2);
+  background:var(--surface-3);color:var(--text)}
+/* the label inherits from body, and the nav is dark in every palette
+   including the untouched site — so without this it is ink on near-black.
+   The contrast harness caught it at 1.08:1 before a human would have. */
+nav.site .themepick{margin-left:auto;padding:0 2px;color:#c7cbe4}
+html[data-theme] nav.site .themepick{color:var(--chrome-link)}
+nav.site .themepick select{background:rgba(255,255,255,.08);
+  color:var(--chrome-link);border-color:rgba(255,255,255,.18)}
+nav.site .themepick select option{color:#20233a;background:#fff}
+html[data-theme] nav.site .themepick select option{
+  color:var(--text);background:var(--surface-3)}
+
+/* ---- print -------------------------------------------------------------
+   A printed chart is read on paper, and paper is white whatever the screen
+   was. Every theme prints as ink on white; nobody wants Vedic Midnight
+   coming out of a laser printer. */
+@media print{
+  html[data-theme] body,html[data-theme] .masthead{
+    background:#fff !important;color:#000 !important}
+  html[data-theme] h2,html[data-theme] h3,html[data-theme] h4,
+  html[data-theme] .masthead h1{color:#000 !important}
+  html[data-theme] .src,html[data-theme] .note,html[data-theme] .mine,
+  html[data-theme] .ex,html[data-theme] .caution,html[data-theme] .term,
+  html[data-theme] th,html[data-theme] td,html[data-theme] tr:nth-child(even) td,
+  html[data-theme] .card,html[data-theme] .panel,html[data-theme] .box,
+  html[data-theme] .kcard,html[data-theme] .kpanel,html[data-theme] .kbox,
+  html[data-theme] .kwell,html[data-theme] .ksec,html[data-theme] .ktile{
+    background:#fff !important;color:#000 !important;
+    border-color:#999 !important}
+  html[data-theme] .kchart text,html[data-theme] .chart text{
+    fill:#000 !important}
+  html[data-theme] .kchart,html[data-theme] .chart{color:#333 !important}
+  .themepick{display:none !important}
+}
+</style><script>/* ===== Choosing a theme ===================================================
+
+   Two halves that must not be merged. The first runs before anything is
+   painted and does one thing: put the remembered theme on <html>. It is
+   inlined into the document head by the build, ahead of the stylesheet,
+   because a theme applied after first paint is a white flash followed by a
+   dark page — on a dark palette that flash is the brightest thing the
+   reader sees, and it happens on every single navigation. The second half
+   builds the control and can run whenever the page is ready, because by
+   then the colours are already right.
+
+   WHY LOCALSTORAGE AND NOT A COOKIE OR A QUERY STRING. This site runs from
+   a folder of files on someone's own machine as happily as from a server.
+   There is no server to set a cookie and no router to carry a query string,
+   so the reader's choice lives in the one store a file:// page can write.
+   It can throw — a private window, blocked site data — so every touch of
+   it is wrapped, and a store that cannot be read simply means the default
+   palette rather than a broken page.
+
+   THE DEFAULT IS NO ATTRIBUTE AT ALL, not "paper". Every themed rule in
+   theme.css hangs off html[data-theme], so a reader who has never chosen
+   gets the stylesheet exactly as it was written, with none of the theme
+   layer in play. That is what makes the feature safe: it cannot change the
+   site for anyone who has not asked it to. */
+
+(function () {
+  "use strict";
+
+  var KEY = "nirayana.theme";
+  var THEMES = [
+    ["", "Site default"],
+    ["midnight", "Vedic Midnight"],
+    ["peetambari", "Krishna Peetāmbarī"],
+    ["paper", "Rishi Paper"],
+    ["emerald", "Emerald Forest"]
+  ];
+  /* the colour the browser paints its own chrome with, so the phone's
+     status bar is not a white stripe above a black page */
+  var BAR = { midnight: "#02040c", peetambari: "#07060a",
+              paper: "#292524", emerald: "#01201a", "": "#1d2340" };
+
+  function known(t) {
+    for (var i = 0; i < THEMES.length; i++) if (THEMES[i][0] === t) return true;
+    return false;
+  }
+  function read() {
+    try {
+      var v = window.localStorage.getItem(KEY);
+      return known(v) ? v : "";
+    } catch (e) { return ""; }
+  }
+  function write(t) {
+    try {
+      if (t) window.localStorage.setItem(KEY, t);
+      else window.localStorage.removeItem(KEY);
+    } catch (e) {}
+  }
+
+  /* ---- the half that must run before paint ------------------------------ */
+  function apply(t) {
+    var h = document.documentElement;
+    if (t) h.setAttribute("data-theme", t);
+    else h.removeAttribute("data-theme");
+    /* a dark palette has to tell the browser so, or form controls and
+       scrollbars are drawn light on top of it */
+    h.style.colorScheme = (t && t !== "paper") ? "dark" : "light";
+    var m = document.querySelector('meta[name="theme-color"]');
+    if (m) m.setAttribute("content", BAR[t] || BAR[""]);
+    try {
+      window.dispatchEvent(new CustomEvent("nirayana:theme", { detail: t }));
+    } catch (e) {}
+  }
+
+  apply(read());
+
+  /* ---- the control ------------------------------------------------------ */
+  function mount() {
+    var nav = document.querySelector("nav.site");
+    if (!nav || nav.querySelector(".themepick")) return;
+    var cur = read();
+    var wrap = document.createElement("div");
+    wrap.className = "themepick";
+    var id = "theme-pick";
+    var lab = document.createElement("label");
+    lab.setAttribute("for", id);
+    lab.textContent = "Theme";
+    lab.className = "themepickl";
+    var sel = document.createElement("select");
+    sel.id = id;
+    THEMES.forEach(function (t) {
+      var o = document.createElement("option");
+      o.value = t[0]; o.textContent = t[1];
+      if (t[0] === cur) o.selected = true;
+      sel.appendChild(o);
+    });
+    sel.addEventListener("change", function () {
+      write(sel.value); apply(sel.value);
+    });
+    wrap.appendChild(lab); wrap.appendChild(sel);
+    nav.appendChild(wrap);
+  }
+
+  /* another tab of the same site changing the theme should change this one:
+     the reader thinks of it as one setting, not one per tab */
+  try {
+    window.addEventListener("storage", function (e) {
+      if (e && e.key === KEY) {
+        var t = read();
+        apply(t);
+        var s = document.getElementById("theme-pick");
+        if (s) s.value = t;
+      }
+    });
+  } catch (e) {}
+
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", mount);
+  else mount();
+
+  /* `apply` is exported for the desktop app, which follows the OS appearance.
+     `set` persists, and a persisted choice stops following; the app needs to
+     change the palette without recording a preference the user never made. */
+  window.NTheme = { get: read, apply: apply, set: function (t) {
+    if (!known(t)) return false; write(t); apply(t);
+    var s = document.getElementById("theme-pick"); if (s) s.value = t;
+    return true;
+  }, list: THEMES };
+})();
+</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Accuracy &amp; Precision</h1><p class="sub">What the engines are measured to, against an independent computation of the sky — and the far larger differences that are convention rather than error.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="accuracy.html" class="active">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#headline">The short answer</a><a href="#scale">An arcsecond, against the divisions it could move</a><a href="#convention">Convention dwarfs accuracy, by three orders of magnitude</a><a href="#cost">What it costs the things you actually read</a><a href="#window">Where the engine is checked, and what happens outside it</a><a href="#siddhanta">The two siddh&#257;ntic engines</a><a href="#precision">Precision, which is a different claim</a><a href="#unmeasured">What has not been measured</a></aside><main><p class="lede">This page is drawn from measurements, not from claims. Every number on it is produced by a harness in the repository and regenerated by running that harness &mdash; there is no figure here that was typed into the prose. Where something has not been measured it says so, because an unmeasured quantity with a number beside it is worse than one without.</p>
+
+<div class="note"><b>Four different kinds of statement.</b> They get confused constantly, and confusing them is how a project ends up quoting a convention as an accuracy. <b>Accuracy</b> is this engine against a sky computed by other people&rsquo;s code. <b>Precision</b> is how finely this engine converges on its own answer, which says nothing about whether that answer is right. <b>Convention</b> is a choice with no correct value &mdash; and it is usually the largest difference against any other source. <b>Unmeasured</b> is unmeasured.</div>
+
+<h2 id="headline">The short answer</h2>
+<div id="ax-headline" class="axgrid"></div>
+<p>Measured against ERFA &mdash; the International Astronomical Union&rsquo;s own reference algorithms &mdash; on <span class="axn" data-k="denseSamples"></span> instants spread across <span class="axn" data-k="span"></span>, stratified so every month and every hour of the day appears, and compared at matched Terrestrial Time so that two different &Delta;T models are not mistaken for two different skies.</p>
+
+<h2 id="scale">An arcsecond, against the divisions it could move</h2>
+<p>A residual only means something once it is put beside the thing it might change. The scale below is logarithmic because it has to span five orders of magnitude: from the Sun&rsquo;s two arcseconds to a thirty-degree sign. Every division the tradition uses is a band; every graha&rsquo;s worst measured error is a dot.</p>
+<figure class="axfig"><div id="ax-scale"></div>
+<figcaption>Worst case over all samples, so the dots are the bad days and not the average ones. The bands are the divisions a wrongly-placed graha would have to cross to change a reading.</figcaption></figure>
+<div id="ax-divtable"></div>
+<p>The &#7779;a&#7779;&#7789;y&#257;&#7745;&#347;a is the first division where a slow planet&rsquo;s uncertainty becomes a visible fraction of an a&#7745;&#347;a &mdash; about a twenty-first. Everything coarser than D27 is untouchable at these residuals, which is the honest reason this site does not fuss about its arcseconds: they are already far finer than the questions being asked of them.</p>
+
+<h2 id="convention">Convention dwarfs accuracy, by three orders of magnitude</h2>
+<p>This is the single most useful thing on the page. The seventeen ayan&#257;&#7745;&#347;a definitions this site offers disagree with each other by <b><span class="axn" data-k="ayanSpread"></span></b> at the present epoch. The Moon&rsquo;s measured error is <b><span class="axn" data-k="moonWorst"></span></b>. Both are drawn to the same scale below.</p>
+<figure class="axfig"><div id="ax-ayan"></div>
+<figcaption>Each tick is one ayan&#257;&#7745;&#347;a mode. The red mark at the left is the engine&rsquo;s own worst-case Moon error at the same scale &mdash; which is why you cannot see it.</figcaption></figure>
+<p>Nearly six degrees is <b>seventeen nak&#7779;atra p&#257;das</b>, decided by convention alone. <span class="axn" data-k="exactToSwiss"></span> of the seventeen modes reproduce Swiss Ephemeris exactly, so this is not imprecision in any of them; they are precise implementations of genuinely different conventions. The two star-anchored definitions are themselves mutually incompatible by <span class="axn" data-k="anchorGap"></span>: Citr&#257; held at 180&deg; and Revat&#299; held at 359&deg;50&prime; cannot both be true.</p>
+<div class="note"><b>What follows from that.</b> If this site and another source disagree about a chart, the ayan&#257;&#7745;&#347;a is about a thousand times more likely to be the reason than anybody&rsquo;s ephemeris. Check the convention first, and the sunrise definition second.</div>
+
+<h2 id="cost">What it costs the things you actually read</h2>
+<p>Arcseconds are not the unit any of this work is done in. Converted:</p>
+<div id="ax-cost" class="axgrid"></div>
+<p>The da&#347;&#257; figure is the one that matters and the one most easily got wrong. A hundred-and-twenty-year Vi&#7747;&#347;ottar&#299; cycle maps onto a single nak&#7779;atra of 13&deg;20&prime;, so the conversion is <b><span class="axn" data-k="dashaPerArcsec"></span> days of da&#347;&#257; per arcsecond of Moon</b> &mdash; not per arcminute, and emphatically not the Moon&rsquo;s daily motion, which gives an answer some five hundred times too small.</p>
+<p>For scale: one minute of birth-time error is about <span class="axn" data-k="birthMinuteArcsec"></span> of Moon, which is roughly <span class="axn" data-k="birthMinuteDashaDays"></span> days of da&#347;&#257; drift. The engine&rsquo;s own contribution is therefore equivalent to about <b><span class="axn" data-k="engineBirthSeconds"></span> of birth time</b> &mdash; real, not negligible, and smaller than the birth time anyone actually has.</p>
+
+<h2 id="window">Where the engine is checked, and what happens outside it</h2>
+<p>1800&ndash;2200 is the window this engine is <i>checked</i> over, not where it stops working. A chart dated outside it still casts in full and says so at the top of its Overview. What degrades is the Moon &mdash; and not the ayan&#257;&#7745;&#347;a, which was the obvious guess and the wrong one.</p>
+<figure class="axfig"><div id="ax-bands"></div>
+<figcaption>The Moon&rsquo;s disagreement with the reference, every sample from 1000 to 3000. The shaded span is the checked window. Either side may be responsible: the reference&rsquo;s own lunar series degrades away from 1900&ndash;2100 too, so this is a disagreement and therefore an uncertainty, not an engine error.</figcaption></figure>
+<div id="ax-bandtable"></div>
+<p>Past 1000&ndash;3000 nothing is quoted at all. The reference used to measure the engine is itself only documented over that range, and a number invented beyond it would be worse than silence.</p>
+
+<h2 id="siddhanta">The two siddh&#257;ntic engines</h2>
+<p>This site also computes the sky the way the S&#363;rya Siddh&#257;nta does, with the text&rsquo;s own constants &mdash; its twenty-four-entry sine table at radius 3438, its epicycles, its revolution counts. That engine lands <b>degrees</b> from the modern one, which is the method&rsquo;s own accuracy rather than a fault in the implementation.</p>
+<div id="ax-bare"></div>
+<p>A second tier keeps every one of those equations exactly as it is and measures the <i>constants</i> &mdash; a b&#299;ja on each body&rsquo;s revolutions, an epoch longitude, a scale on each paridhi of the pair the text states, an offset on each mandocca. <span class="axn" data-k="fitParams"></span> numbers, every one a quantity the tradition itself treats as correctable. No term is added and no formula changes.</p>
+<figure class="axfig"><div id="ax-fit"></div>
+<figcaption>Bare text against measured constants, on <span class="axn" data-k="holdoutSamples"></span> instants the fit never saw. Logarithmic. The gain is written against each.</figcaption></figure>
+<div class="note"><b>This is not the S&#363;rya Siddh&#257;nta&rsquo;s answer.</b> It is the text&rsquo;s method carrying measured numbers, and the bare text stays selectable and unchanged beside it. With the Moon still at about a degree, the measured tier is for study and comparison &mdash; <b>not for casting a chart</b>.</div>
+
+<h3 id="evection">Why the Moon will not come down, and how we know</h3>
+<p>Measuring the constants takes the Sun to about an arcminute and the slow planets to under ten. The Moon, Mars and Mercury barely move. The obvious reading is that their limit is structural rather than parametric &mdash; and obvious is not the same as established, so it was measured.</p>
+<div id="ax-evection" class="axgrid"></div>
+<p>The Moon&rsquo;s residual, regressed on the arguments of the two largest terms this theory does not have, recovers their textbook amplitudes from the residual alone to under one per cent. Removing just those two terms drops its scatter by a factor of four. <b>The Moon&rsquo;s limit here is the absence of terms, not the value of numbers</b> &mdash; an evection is a function of the elongation from the Sun, and nothing in the parameter set is. No choice of b&#299;ja, paridhi or mandocca could ever supply one. Adding them would make this a different astronomy wearing the same parameters, which is the line this tier does not cross.</p>
+
+<h2 id="precision">Precision, which is a different claim</h2>
+<p>How finely the engine converges on its own answer. None of this says the answer is right; it says the arithmetic is not the limit.</p>
+<div id="ax-precision"></div>
+<p>The lagna is worth separating out, because its two figures look contradictory and are not. Given the engine&rsquo;s <i>own</i> sidereal time and obliquity, its closed form agrees with an independent horizon-plane construction to <b><span class="axn" data-k="lagnaConstruction"></span></b> &mdash; exact, at every latitude tested. So the whole of its end-to-end residual is the sidereal-time disagreement seen through the geometry, which near the pole is amplified about ninefold. Testing a construction separately from its inputs is why the <span class="axn" data-k="lagnaPolar"></span> polar residual could be attributed rather than merely tolerated.</p>
+
+<h2 id="unmeasured">What has not been measured</h2>
+<div class="note"><b>The spread between &Delta;T predictions after 2027.</b> Not measured. The figure the harness prints is very nearly &Delta;T <i>itself</i>, not the uncertainty in predicting it, and two sources are not enough to measure a prediction spread when one of them is not modelling the quantity. <b>The true lunar node</b> is not pinned by any current harness. <b>Rise, set and twilight</b> are convention-bounded rather than measured against an independent implementation. <b>Jupiter&rsquo;s and Saturn&rsquo;s true accuracy</b> is bounded but not attributable &mdash; the reference&rsquo;s own error there is <span class="axn" data-k="refGuru"></span> and <span class="axn" data-k="refSani"></span>, so most of the measured disagreement may be the reference&rsquo;s rather than the engine&rsquo;s. A JPL kernel would settle it, and is not reachable from the build environment.</div>
+
+<p class="src"><span>Sources</span> Positions from astronomy-engine v2 (MIT). Reference from ERFA, the IAU SOFA algorithms, via astropy. Generated <span class="axn" data-k="generated"></span> from the harnesses <code>reference-verify</code>, <code>span-verify</code>, <code>ss-verify</code> and <code>siddhanta-measured-verify</code>; see <a href="siddhanta.html">S&#363;rya Siddh&#257;nta</a> for the classical engine and <a href="kundli.html">Kundli 2.0</a> to cast a chart.</p>
+
+<script type="application/json" id="data-accuracy">{
+ "_provenance": {
+  "what": "Every figure the accuracy page draws.",
+  "why": "A page about accuracy whose numbers were typed into its prose would be the worst file in the repository. These are measured by running the same comparisons the harnesses run; accuracy-verify.mjs re-derives them and fails if this file has drifted from the engines.",
+  "generator": "source/test/make-accuracy-data.mjs",
+  "checkedBy": "source/test/accuracy-verify.mjs",
+  "reference": "ERFA (IAU SOFA) via astropy: epv00 for the Sun, moon98 for the Moon, plan94 for the five tara-grahas, gst06a and obl06/nut06a for Earth orientation.",
+  "referenceNote": "plan94's own documented longitude error over 1000-3000 CE. The per-body bars in the harness are derived from these, which is why Jupiter's and Saturn's are loose. A loose bar is not a precision claim; it is wide enough that only a real fault trips it.",
+  "denseSamples": 400,
+  "wideSamples": 300,
+  "span": "1800-2200",
+  "wideSpan": "1000-3000",
+  "certifiedWindow": [
+   1800,
+   2200
+  ],
+  "generated": "2026-11-02"
+ },
+ "modern": {
+  "library": "astronomy-engine v2 (MIT), ±1′ claimed against NOVAS",
+  "perBody": [
+   {
+    "en": "Sun",
+    "sa": "Sūrya",
+    "lonWorst": 1.911,
+    "lonRms": 0.602,
+    "latWorst": 2.866,
+    "referenceOwnError": 0.1
+   },
+   {
+    "en": "Moon",
+    "sa": "Candra",
+    "lonWorst": 14.787,
+    "lonRms": 4.191,
+    "latWorst": 5.011,
+    "referenceOwnError": 5
+   },
+   {
+    "en": "Mercury",
+    "sa": "Budha",
+    "lonWorst": 10.345,
+    "lonRms": 2.963,
+    "latWorst": 11.064,
+    "referenceOwnError": 4
+   },
+   {
+    "en": "Venus",
+    "sa": "Śukra",
+    "lonWorst": 9.763,
+    "lonRms": 1.929,
+    "latWorst": 11.605,
+    "referenceOwnError": 5
+   },
+   {
+    "en": "Mars",
+    "sa": "Maṅgala",
+    "lonWorst": 44.191,
+    "lonRms": 8.416,
+    "latWorst": 11.344,
+    "referenceOwnError": 17
+   },
+   {
+    "en": "Jupiter",
+    "sa": "Guru",
+    "lonWorst": 84.374,
+    "lonRms": 20.224,
+    "latWorst": 16.543,
+    "referenceOwnError": 71
+   },
+   {
+    "en": "Saturn",
+    "sa": "Śani",
+    "lonWorst": 85.5,
+    "lonRms": 29.507,
+    "latWorst": 27.041,
+    "referenceOwnError": 81
+   }
+  ],
+  "meanNodeWorst": 0.98,
+  "gastWorst": 12.383,
+  "lagna": [
+   {
+    "place": "Moradabad",
+    "lat": 28.8389,
+    "polar": false,
+    "constructionWorst": 0,
+    "endToEndWorst": 21.072
+   },
+   {
+    "place": "Abu Dhabi",
+    "lat": 24.4539,
+    "polar": false,
+    "constructionWorst": 0,
+    "endToEndWorst": 20.435
+   },
+   {
+    "place": "Wellington",
+    "lat": -41.2866,
+    "polar": false,
+    "constructionWorst": 0,
+    "endToEndWorst": 27.656
+   },
+   {
+    "place": "Tromso",
+    "lat": 69.6492,
+    "polar": true,
+    "constructionWorst": 0,
+    "endToEndWorst": 112.467
+   }
+  ]
+ },
+ "bands": [
+  {
+   "from": 1000,
+   "to": 1399,
+   "moon": 205,
+   "tithi": 452,
+   "nak": 416,
+   "certified": false
+  },
+  {
+   "from": 1400,
+   "to": 1799,
+   "moon": 73,
+   "tithi": 162,
+   "nak": 148,
+   "certified": false
+  },
+  {
+   "from": 1800,
+   "to": 2200,
+   "moon": 15,
+   "tithi": 34,
+   "nak": 31,
+   "certified": true
+  },
+  {
+   "from": 2201,
+   "to": 2599,
+   "moon": 56,
+   "tithi": 123,
+   "nak": 113,
+   "certified": false
+  },
+  {
+   "from": 2600,
+   "to": 3000,
+   "moon": 164,
+   "tithi": 359,
+   "nak": 333,
+   "certified": false
+  }
+ ],
+ "moonCurve": [
+  {
+   "y": 1000,
+   "d": 204.674
+  },
+  {
+   "y": 1006,
+   "d": 171.269
+  },
+  {
+   "y": 1013,
+   "d": 161.766
+  },
+  {
+   "y": 1020,
+   "d": 157.947
+  },
+  {
+   "y": 1026,
+   "d": 168.648
+  },
+  {
+   "y": 1033,
+   "d": 163.825
+  },
+  {
+   "y": 1040,
+   "d": 150.962
+  },
+  {
+   "y": 1046,
+   "d": 176.405
+  },
+  {
+   "y": 1053,
+   "d": 160.013
+  },
+  {
+   "y": 1060,
+   "d": 137.846
+  },
+  {
+   "y": 1066,
+   "d": 170.048
+  },
+  {
+   "y": 1073,
+   "d": 154
+  },
+  {
+   "y": 1080,
+   "d": 135.864
+  },
+  {
+   "y": 1086,
+   "d": 163.144
+  },
+  {
+   "y": 1093,
+   "d": 149.082
+  },
+  {
+   "y": 1100,
+   "d": 131.62
+  },
+  {
+   "y": 1107,
+   "d": 139.432
+  },
+  {
+   "y": 1113,
+   "d": 155.134
+  },
+  {
+   "y": 1120,
+   "d": 126.379
+  },
+  {
+   "y": 1127,
+   "d": 124.311
+  },
+  {
+   "y": 1133,
+   "d": 153.021
+  },
+  {
+   "y": 1140,
+   "d": 118.656
+  },
+  {
+   "y": 1147,
+   "d": 117.299
+  },
+  {
+   "y": 1153,
+   "d": 149.58
+  },
+  {
+   "y": 1160,
+   "d": 117.656
+  },
+  {
+   "y": 1167,
+   "d": 118.703
+  },
+  {
+   "y": 1173,
+   "d": 139.193
+  },
+  {
+   "y": 1180,
+   "d": 145.865
+  },
+  {
+   "y": 1187,
+   "d": 107.67
+  },
+  {
+   "y": 1193,
+   "d": 110.773
+  },
+  {
+   "y": 1200,
+   "d": 140.589
+  },
+  {
+   "y": 1207,
+   "d": 112.53
+  },
+  {
+   "y": 1214,
+   "d": 102.018
+  },
+  {
+   "y": 1220,
+   "d": 134.237
+  },
+  {
+   "y": 1227,
+   "d": 114.754
+  },
+  {
+   "y": 1234,
+   "d": 97.077
+  },
+  {
+   "y": 1240,
+   "d": 122.127
+  },
+  {
+   "y": 1247,
+   "d": 116.849
+  },
+  {
+   "y": 1254,
+   "d": 92.831
+  },
+  {
+   "y": 1260,
+   "d": 95.571
+  },
+  {
+   "y": 1267,
+   "d": 101.883
+  },
+  {
+   "y": 1274,
+   "d": 112.363
+  },
+  {
+   "y": 1280,
+   "d": 90.922
+  },
+  {
+   "y": 1287,
+   "d": 102.102
+  },
+  {
+   "y": 1294,
+   "d": 102.333
+  },
+  {
+   "y": 1301,
+   "d": 81.606
+  },
+  {
+   "y": 1307,
+   "d": 87.155
+  },
+  {
+   "y": 1314,
+   "d": 94.362
+  },
+  {
+   "y": 1321,
+   "d": 79.779
+  },
+  {
+   "y": 1327,
+   "d": 82.611
+  },
+  {
+   "y": 1334,
+   "d": 89.055
+  },
+  {
+   "y": 1341,
+   "d": 77.265
+  },
+  {
+   "y": 1347,
+   "d": 74.167
+  },
+  {
+   "y": 1354,
+   "d": 77.32
+  },
+  {
+   "y": 1361,
+   "d": 76.464
+  },
+  {
+   "y": 1367,
+   "d": 64.021
+  },
+  {
+   "y": 1374,
+   "d": 69.198
+  },
+  {
+   "y": 1381,
+   "d": 72.062
+  },
+  {
+   "y": 1387,
+   "d": 54.206
+  },
+  {
+   "y": 1394,
+   "d": 60.593
+  },
+  {
+   "y": 1401,
+   "d": 72.363
+  },
+  {
+   "y": 1408,
+   "d": 65.64
+  },
+  {
+   "y": 1414,
+   "d": 61.364
+  },
+  {
+   "y": 1421,
+   "d": 66.848
+  },
+  {
+   "y": 1428,
+   "d": 62.357
+  },
+  {
+   "y": 1434,
+   "d": 49.947
+  },
+  {
+   "y": 1441,
+   "d": 62.447
+  },
+  {
+   "y": 1448,
+   "d": 64.839
+  },
+  {
+   "y": 1454,
+   "d": 49.221
+  },
+  {
+   "y": 1461,
+   "d": 58.03
+  },
+  {
+   "y": 1468,
+   "d": 49.694
+  },
+  {
+   "y": 1474,
+   "d": 47.992
+  },
+  {
+   "y": 1481,
+   "d": 56.588
+  },
+  {
+   "y": 1488,
+   "d": 48.61
+  },
+  {
+   "y": 1494,
+   "d": 44.83
+  },
+  {
+   "y": 1501,
+   "d": 40.128
+  },
+  {
+   "y": 1508,
+   "d": 51.49
+  },
+  {
+   "y": 1515,
+   "d": 45.763
+  },
+  {
+   "y": 1521,
+   "d": 37.532
+  },
+  {
+   "y": 1528,
+   "d": 41.819
+  },
+  {
+   "y": 1535,
+   "d": 45.51
+  },
+  {
+   "y": 1541,
+   "d": 36.49
+  },
+  {
+   "y": 1548,
+   "d": 39.615
+  },
+  {
+   "y": 1555,
+   "d": 42.062
+  },
+  {
+   "y": 1561,
+   "d": 36.313
+  },
+  {
+   "y": 1568,
+   "d": 33.533
+  },
+  {
+   "y": 1575,
+   "d": 39.63
+  },
+  {
+   "y": 1581,
+   "d": 36.324
+  },
+  {
+   "y": 1588,
+   "d": 34.548
+  },
+  {
+   "y": 1595,
+   "d": 27.037
+  },
+  {
+   "y": 1602,
+   "d": 33.683
+  },
+  {
+   "y": 1608,
+   "d": 26.688
+  },
+  {
+   "y": 1615,
+   "d": 27.304
+  },
+  {
+   "y": 1622,
+   "d": 28.957
+  },
+  {
+   "y": 1628,
+   "d": 28.715
+  },
+  {
+   "y": 1635,
+   "d": 21.431
+  },
+  {
+   "y": 1642,
+   "d": 26.014
+  },
+  {
+   "y": 1648,
+   "d": 19.513
+  },
+  {
+   "y": 1655,
+   "d": 18.79
+  },
+  {
+   "y": 1662,
+   "d": 18.085
+  },
+  {
+   "y": 1668,
+   "d": 18.527
+  },
+  {
+   "y": 1675,
+   "d": 21.294
+  },
+  {
+   "y": 1682,
+   "d": 24.358
+  },
+  {
+   "y": 1688,
+   "d": 23.589
+  },
+  {
+   "y": 1695,
+   "d": 21.041
+  },
+  {
+   "y": 1702,
+   "d": 14.095
+  },
+  {
+   "y": 1709,
+   "d": 15.56
+  },
+  {
+   "y": 1715,
+   "d": 12.185
+  },
+  {
+   "y": 1722,
+   "d": 10.962
+  },
+  {
+   "y": 1729,
+   "d": 14.848
+  },
+  {
+   "y": 1735,
+   "d": 15.413
+  },
+  {
+   "y": 1742,
+   "d": 9.325
+  },
+  {
+   "y": 1749,
+   "d": 7.756
+  },
+  {
+   "y": 1755,
+   "d": 14.623
+  },
+  {
+   "y": 1762,
+   "d": 12.257
+  },
+  {
+   "y": 1769,
+   "d": 10.299
+  },
+  {
+   "y": 1775,
+   "d": 14.048
+  },
+  {
+   "y": 1782,
+   "d": 9.705
+  },
+  {
+   "y": 1789,
+   "d": 14.851
+  },
+  {
+   "y": 1795,
+   "d": 8.074
+  },
+  {
+   "y": 1802,
+   "d": 8.746
+  },
+  {
+   "y": 1809,
+   "d": 9.107
+  },
+  {
+   "y": 1816,
+   "d": 9.929
+  },
+  {
+   "y": 1822,
+   "d": 5.299
+  },
+  {
+   "y": 1829,
+   "d": 7.643
+  },
+  {
+   "y": 1836,
+   "d": 3.486
+  },
+  {
+   "y": 1842,
+   "d": 5.448
+  },
+  {
+   "y": 1849,
+   "d": 7.015
+  },
+  {
+   "y": 1856,
+   "d": 0.894
+  },
+  {
+   "y": 1862,
+   "d": 2.361
+  },
+  {
+   "y": 1869,
+   "d": 1.827
+  },
+  {
+   "y": 1876,
+   "d": 6.582
+  },
+  {
+   "y": 1882,
+   "d": 5.454
+  },
+  {
+   "y": 1889,
+   "d": 5.676
+  },
+  {
+   "y": 1896,
+   "d": 0.023
+  },
+  {
+   "y": 1903,
+   "d": 1.543
+  },
+  {
+   "y": 1909,
+   "d": 0.934
+  },
+  {
+   "y": 1916,
+   "d": 3.291
+  },
+  {
+   "y": 1923,
+   "d": 2.082
+  },
+  {
+   "y": 1929,
+   "d": 5.019
+  },
+  {
+   "y": 1936,
+   "d": 4.335
+  },
+  {
+   "y": 1943,
+   "d": 0.269
+  },
+  {
+   "y": 1949,
+   "d": 0.619
+  },
+  {
+   "y": 1956,
+   "d": 5.886
+  },
+  {
+   "y": 1963,
+   "d": 1.107
+  },
+  {
+   "y": 1969,
+   "d": 6.319
+  },
+  {
+   "y": 1976,
+   "d": 0.302
+  },
+  {
+   "y": 1983,
+   "d": 1.215
+  },
+  {
+   "y": 1989,
+   "d": 2.868
+  },
+  {
+   "y": 1996,
+   "d": 0.817
+  },
+  {
+   "y": 2003,
+   "d": 1.774
+  },
+  {
+   "y": 2010,
+   "d": 1.083
+  },
+  {
+   "y": 2016,
+   "d": 0.04
+  },
+  {
+   "y": 2023,
+   "d": 1.879
+  },
+  {
+   "y": 2030,
+   "d": 1.906
+  },
+  {
+   "y": 2036,
+   "d": 1.071
+  },
+  {
+   "y": 2043,
+   "d": 3.164
+  },
+  {
+   "y": 2050,
+   "d": 0.037
+  },
+  {
+   "y": 2056,
+   "d": 4.919
+  },
+  {
+   "y": 2063,
+   "d": 3.687
+  },
+  {
+   "y": 2070,
+   "d": 2.896
+  },
+  {
+   "y": 2076,
+   "d": 0.245
+  },
+  {
+   "y": 2083,
+   "d": 1.269
+  },
+  {
+   "y": 2090,
+   "d": 2.291
+  },
+  {
+   "y": 2096,
+   "d": 2.18
+  },
+  {
+   "y": 2103,
+   "d": 2.445
+  },
+  {
+   "y": 2110,
+   "d": 0.273
+  },
+  {
+   "y": 2117,
+   "d": 0.404
+  },
+  {
+   "y": 2123,
+   "d": 1.733
+  },
+  {
+   "y": 2130,
+   "d": 2.015
+  },
+  {
+   "y": 2137,
+   "d": 2.176
+  },
+  {
+   "y": 2143,
+   "d": 3.011
+  },
+  {
+   "y": 2150,
+   "d": 0.047
+  },
+  {
+   "y": 2157,
+   "d": 1.345
+  },
+  {
+   "y": 2163,
+   "d": 0.2
+  },
+  {
+   "y": 2170,
+   "d": 2.143
+  },
+  {
+   "y": 2177,
+   "d": 0.452
+  },
+  {
+   "y": 2183,
+   "d": 0.442
+  },
+  {
+   "y": 2190,
+   "d": 4.864
+  },
+  {
+   "y": 2197,
+   "d": 7.171
+  },
+  {
+   "y": 2204,
+   "d": 5.197
+  },
+  {
+   "y": 2210,
+   "d": 0.704
+  },
+  {
+   "y": 2217,
+   "d": 8.268
+  },
+  {
+   "y": 2224,
+   "d": 10.517
+  },
+  {
+   "y": 2230,
+   "d": 3.649
+  },
+  {
+   "y": 2237,
+   "d": 5.17
+  },
+  {
+   "y": 2244,
+   "d": 14.515
+  },
+  {
+   "y": 2250,
+   "d": 6.421
+  },
+  {
+   "y": 2257,
+   "d": 3.644
+  },
+  {
+   "y": 2264,
+   "d": 11.246
+  },
+  {
+   "y": 2270,
+   "d": 8.966
+  },
+  {
+   "y": 2277,
+   "d": 5.792
+  },
+  {
+   "y": 2284,
+   "d": 17.033
+  },
+  {
+   "y": 2290,
+   "d": 10.006
+  },
+  {
+   "y": 2297,
+   "d": 7.544
+  },
+  {
+   "y": 2304,
+   "d": 6.537
+  },
+  {
+   "y": 2311,
+   "d": 10.834
+  },
+  {
+   "y": 2317,
+   "d": 12.033
+  },
+  {
+   "y": 2324,
+   "d": 12.373
+  },
+  {
+   "y": 2331,
+   "d": 14.14
+  },
+  {
+   "y": 2337,
+   "d": 14.128
+  },
+  {
+   "y": 2344,
+   "d": 11.696
+  },
+  {
+   "y": 2351,
+   "d": 13.109
+  },
+  {
+   "y": 2357,
+   "d": 12.266
+  },
+  {
+   "y": 2364,
+   "d": 14.146
+  },
+  {
+   "y": 2371,
+   "d": 22.888
+  },
+  {
+   "y": 2377,
+   "d": 18.175
+  },
+  {
+   "y": 2384,
+   "d": 19.781
+  },
+  {
+   "y": 2391,
+   "d": 17.357
+  },
+  {
+   "y": 2397,
+   "d": 27.076
+  },
+  {
+   "y": 2404,
+   "d": 19.298
+  },
+  {
+   "y": 2411,
+   "d": 17.984
+  },
+  {
+   "y": 2418,
+   "d": 20.983
+  },
+  {
+   "y": 2424,
+   "d": 21.758
+  },
+  {
+   "y": 2431,
+   "d": 23.633
+  },
+  {
+   "y": 2438,
+   "d": 26.151
+  },
+  {
+   "y": 2444,
+   "d": 25.076
+  },
+  {
+   "y": 2451,
+   "d": 24.554
+  },
+  {
+   "y": 2458,
+   "d": 26.335
+  },
+  {
+   "y": 2464,
+   "d": 32.727
+  },
+  {
+   "y": 2471,
+   "d": 28.73
+  },
+  {
+   "y": 2478,
+   "d": 26.648
+  },
+  {
+   "y": 2484,
+   "d": 33.874
+  },
+  {
+   "y": 2491,
+   "d": 31.895
+  },
+  {
+   "y": 2498,
+   "d": 26.734
+  },
+  {
+   "y": 2505,
+   "d": 36.227
+  },
+  {
+   "y": 2511,
+   "d": 39.596
+  },
+  {
+   "y": 2518,
+   "d": 33.454
+  },
+  {
+   "y": 2525,
+   "d": 39.795
+  },
+  {
+   "y": 2531,
+   "d": 42.642
+  },
+  {
+   "y": 2538,
+   "d": 30.646
+  },
+  {
+   "y": 2545,
+   "d": 27.996
+  },
+  {
+   "y": 2551,
+   "d": 42.845
+  },
+  {
+   "y": 2558,
+   "d": 49.795
+  },
+  {
+   "y": 2565,
+   "d": 34.057
+  },
+  {
+   "y": 2571,
+   "d": 48.234
+  },
+  {
+   "y": 2578,
+   "d": 49.899
+  },
+  {
+   "y": 2585,
+   "d": 39.427
+  },
+  {
+   "y": 2591,
+   "d": 42.758
+  },
+  {
+   "y": 2598,
+   "d": 55.274
+  },
+  {
+   "y": 2605,
+   "d": 45.597
+  },
+  {
+   "y": 2612,
+   "d": 45.045
+  },
+  {
+   "y": 2618,
+   "d": 57.391
+  },
+  {
+   "y": 2625,
+   "d": 53.799
+  },
+  {
+   "y": 2632,
+   "d": 52.279
+  },
+  {
+   "y": 2638,
+   "d": 56.59
+  },
+  {
+   "y": 2645,
+   "d": 58.718
+  },
+  {
+   "y": 2652,
+   "d": 50.466
+  },
+  {
+   "y": 2658,
+   "d": 58.357
+  },
+  {
+   "y": 2665,
+   "d": 59.894
+  },
+  {
+   "y": 2672,
+   "d": 65.218
+  },
+  {
+   "y": 2678,
+   "d": 65.288
+  },
+  {
+   "y": 2685,
+   "d": 66.44
+  },
+  {
+   "y": 2692,
+   "d": 71.963
+  },
+  {
+   "y": 2698,
+   "d": 65.693
+  },
+  {
+   "y": 2705,
+   "d": 81.641
+  },
+  {
+   "y": 2712,
+   "d": 68.136
+  },
+  {
+   "y": 2719,
+   "d": 69.849
+  },
+  {
+   "y": 2725,
+   "d": 84.482
+  },
+  {
+   "y": 2732,
+   "d": 82.523
+  },
+  {
+   "y": 2739,
+   "d": 77.231
+  },
+  {
+   "y": 2745,
+   "d": 87.08
+  },
+  {
+   "y": 2752,
+   "d": 86.245
+  },
+  {
+   "y": 2759,
+   "d": 75.654
+  },
+  {
+   "y": 2765,
+   "d": 89.361
+  },
+  {
+   "y": 2772,
+   "d": 89.527
+  },
+  {
+   "y": 2779,
+   "d": 83.578
+  },
+  {
+   "y": 2785,
+   "d": 73.963
+  },
+  {
+   "y": 2792,
+   "d": 88.439
+  },
+  {
+   "y": 2799,
+   "d": 103.777
+  },
+  {
+   "y": 2806,
+   "d": 84.381
+  },
+  {
+   "y": 2812,
+   "d": 87.661
+  },
+  {
+   "y": 2819,
+   "d": 106.707
+  },
+  {
+   "y": 2826,
+   "d": 85.122
+  },
+  {
+   "y": 2832,
+   "d": 87.248
+  },
+  {
+   "y": 2839,
+   "d": 107.903
+  },
+  {
+   "y": 2846,
+   "d": 101.614
+  },
+  {
+   "y": 2852,
+   "d": 92.21
+  },
+  {
+   "y": 2859,
+   "d": 112.208
+  },
+  {
+   "y": 2866,
+   "d": 107.125
+  },
+  {
+   "y": 2872,
+   "d": 98.211
+  },
+  {
+   "y": 2879,
+   "d": 97.188
+  },
+  {
+   "y": 2886,
+   "d": 122.845
+  },
+  {
+   "y": 2892,
+   "d": 99.727
+  },
+  {
+   "y": 2899,
+   "d": 102.849
+  },
+  {
+   "y": 2906,
+   "d": 119.347
+  },
+  {
+   "y": 2913,
+   "d": 126.19
+  },
+  {
+   "y": 2919,
+   "d": 107.994
+  },
+  {
+   "y": 2926,
+   "d": 129.299
+  },
+  {
+   "y": 2933,
+   "d": 130.82
+  },
+  {
+   "y": 2939,
+   "d": 119.657
+  },
+  {
+   "y": 2946,
+   "d": 122.913
+  },
+  {
+   "y": 2953,
+   "d": 133.816
+  },
+  {
+   "y": 2959,
+   "d": 126.509
+  },
+  {
+   "y": 2966,
+   "d": 134.492
+  },
+  {
+   "y": 2973,
+   "d": 149.718
+  },
+  {
+   "y": 2979,
+   "d": 131.164
+  },
+  {
+   "y": 2986,
+   "d": 133.661
+  },
+  {
+   "y": 2993,
+   "d": 138.264
+  },
+  {
+   "y": 3000,
+   "d": 163.733
+  }
+ ],
+ "ayanamsa": {
+  "atJd": 2461000.5,
+  "spreadDeg": 5.83,
+  "anchorGapDeg": 3.796,
+  "modes": [
+   {
+    "key": "truerevati",
+    "name": "True Revatī",
+    "tag": "T. Revatī",
+    "deg": 20.407,
+    "exactToSwiss": false,
+    "wobbleArcsec": 20
+   },
+   {
+    "key": "ss_revati",
+    "name": "Sūrya Siddhānta — Revatī (Swiss)",
+    "tag": "SS Revatī",
+    "deg": 20.465,
+    "exactToSwiss": true,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "nirayana_revati",
+    "name": "Nirayana–Revatī (this site)",
+    "tag": "Nir. Revatī",
+    "deg": 20.494,
+    "exactToSwiss": false,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "ss_swiss",
+    "name": "Sūrya Siddhānta (Swiss Ephemeris)",
+    "tag": "SS Swiss",
+    "deg": 21.257,
+    "exactToSwiss": true,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "aryabhata",
+    "name": "Āryabhaṭa",
+    "tag": "Āryabhaṭa",
+    "deg": 21.257,
+    "exactToSwiss": false,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "raman",
+    "name": "Raman",
+    "tag": "Raman",
+    "deg": 22.772,
+    "exactToSwiss": true,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "yukteshwar",
+    "name": "Yukteshwar",
+    "tag": "Yukteśvar",
+    "deg": 22.84,
+    "exactToSwiss": true,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "ss_rate",
+    "name": "Sūrya Siddhānta — steady 54″",
+    "tag": "SS 54″",
+    "deg": 22.903,
+    "exactToSwiss": false,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "truepushya",
+    "name": "True Puṣya",
+    "tag": "T. Puṣya",
+    "deg": 23.084,
+    "exactToSwiss": false,
+    "wobbleArcsec": 19
+   },
+   {
+    "key": "bhasin",
+    "name": "J. N. Bhasin",
+    "tag": "Bhasin",
+    "deg": 23.124,
+    "exactToSwiss": true,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "ss_citra",
+    "name": "Sūrya Siddhānta — Citrā (Swiss)",
+    "tag": "SS Citrā",
+    "deg": 23.367,
+    "exactToSwiss": true,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "nirayana_citra",
+    "name": "Nirayana–Chitrapakṣa (this site)",
+    "tag": "Nir. Citrā",
+    "deg": 23.383,
+    "exactToSwiss": false,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "kp",
+    "name": "Krishnamurti (KP)",
+    "tag": "KP",
+    "deg": 24.122,
+    "exactToSwiss": true,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "truechitra",
+    "name": "True Chitrapakṣa",
+    "tag": "T. Citrā",
+    "deg": 24.203,
+    "exactToSwiss": false,
+    "wobbleArcsec": 20
+   },
+   {
+    "key": "lahiri",
+    "name": "Lahiri (Chitrapakṣa)",
+    "tag": "Lahiri",
+    "deg": 24.219,
+    "exactToSwiss": true,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "fagan",
+    "name": "Fagan–Bradley",
+    "tag": "Fagan",
+    "deg": 25.102,
+    "exactToSwiss": true,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "ss_text",
+    "name": "Sūrya Siddhānta — libration",
+    "tag": "SS libration",
+    "deg": 26.237,
+    "exactToSwiss": false,
+    "wobbleArcsec": null
+   }
+  ],
+  "exactToSwiss": 9
+ },
+ "siddhanta": {
+  "measured": [
+   {
+    "sa": "Sūrya",
+    "bareRms": 39.474,
+    "measuredRms": 1.0406,
+    "measuredWorst": 3.1182,
+    "gain": 37.9
+   },
+   {
+    "sa": "Candra",
+    "bareRms": 378.052,
+    "measuredRms": 61.6159,
+    "measuredWorst": 147.9552,
+    "gain": 6.1
+   },
+   {
+    "sa": "Maṅgala",
+    "bareRms": 206.809,
+    "measuredRms": 58.2675,
+    "measuredWorst": 303.3648,
+    "gain": 3.5
+   },
+   {
+    "sa": "Budha",
+    "bareRms": 152.778,
+    "measuredRms": 107.1138,
+    "measuredWorst": 232.8319,
+    "gain": 1.4
+   },
+   {
+    "sa": "Guru",
+    "bareRms": 284.793,
+    "measuredRms": 5.9942,
+    "measuredWorst": 16.1135,
+    "gain": 47.5
+   },
+   {
+    "sa": "Śukra",
+    "bareRms": 365.801,
+    "measuredRms": 8.3882,
+    "measuredWorst": 26.1288,
+    "gain": 43.6
+   },
+   {
+    "sa": "Śani",
+    "bareRms": 381.677,
+    "measuredRms": 7.2984,
+    "measuredWorst": 22.9315,
+    "gain": 52.3
+   }
+  ],
+  "bareByYear": [
+   {
+    "year": 500,
+    "Sūrya": 2.998,
+    "Candra": -4.935,
+    "Maṅgala": 3.303,
+    "Budha": 7.311,
+    "Guru": 2.123,
+    "Śukra": 9.841,
+    "Śani": 4.957
+   },
+   {
+    "year": 1000,
+    "Sūrya": 1.868,
+    "Candra": -3.652,
+    "Maṅgala": -0.798,
+    "Budha": 5.02,
+    "Guru": 2.697,
+    "Śukra": 1.958,
+    "Śani": 1.832
+   },
+   {
+    "year": 1500,
+    "Sūrya": 0.701,
+    "Candra": 4.372,
+    "Maṅgala": 1.732,
+    "Budha": 2.649,
+    "Guru": 4.049,
+    "Śukra": 2.303,
+    "Śani": -3.454
+   },
+   {
+    "year": 1900,
+    "Sūrya": -0.268,
+    "Candra": 3.407,
+    "Maṅgala": 0.8,
+    "Budha": -1.492,
+    "Guru": 3.47,
+    "Śukra": 2.721,
+    "Śani": -4.665
+   },
+   {
+    "year": 2000,
+    "Sūrya": -0.497,
+    "Candra": -11.38,
+    "Maṅgala": 1.733,
+    "Budha": 0.273,
+    "Guru": 5.634,
+    "Śukra": 2.037,
+    "Śani": -7.786
+   },
+   {
+    "year": 2026,
+    "Sūrya": -0.564,
+    "Candra": 1.894,
+    "Maṅgala": 0.198,
+    "Budha": -0.532,
+    "Guru": 5.109,
+    "Śukra": 2.894,
+    "Śani": -7.864
+   },
+   {
+    "year": 2100,
+    "Sūrya": -0.743,
+    "Candra": 2.197,
+    "Maṅgala": -1.565,
+    "Budha": 2.276,
+    "Guru": 3.973,
+    "Śukra": 2.012,
+    "Śani": -5.388
+   }
+  ],
+  "lunarDiagnostic": {
+   "rms": 61.87,
+   "correlationWithEvection": 0.86,
+   "correlationWithVariation": -0.452,
+   "amplitudeArcmin": {
+    "evection": 75.9,
+    "variation": -39.7,
+    "anomaly": 3.4
+   },
+   "textbookArcmin": {
+    "evection": 76.4,
+    "variation": 39.5
+   },
+   "rmsAfterRemovingThem": 13.95,
+   "reading": "The Moon's residual after the fit IS the evection and the variation. Regressed on their arguments it yields amplitudes within one per cent of the textbook values, and removing just those two terms drops its rms from 61.9′ to 14.0′. Neither term exists in this theory, and neither can be produced by any choice of revolution count, paridhi or mandocca — so the Moon's limit here is the absence of terms, not the value of numbers. Supplying them would make this a different astronomy wearing the same parameters, which is the line this tier does not cross."
+  },
+  "fitProvenance": {
+   "fitSamples": 187,
+   "holdoutSamples": 213,
+   "parameters": 46,
+   "notTheText": "THIS IS NOT THE SŪRYA SIDDHĀNTA'S ANSWER and must never be presented as one. It is the text's METHOD carrying measured numbers. The bare text stays selectable and unchanged; siddhanta-measured-verify.mjs asserts it is still bit-identical."
+  }
+ },
+ "divisions": [
+  {
+   "name": "Rāśi (D1)",
+   "deg": 30,
+   "arcsec": 108000,
+   "moonFraction": 7304,
+   "saturnFraction": 1263
+  },
+  {
+   "name": "Nakṣatra",
+   "deg": 13.333333333333334,
+   "arcsec": 48000,
+   "moonFraction": 3246,
+   "saturnFraction": 561
+  },
+  {
+   "name": "Navāṃśa (D9) / pāda",
+   "deg": 3.3333333333333335,
+   "arcsec": 12000,
+   "moonFraction": 812,
+   "saturnFraction": 140
+  },
+  {
+   "name": "D27",
+   "deg": 1.1111111111111112,
+   "arcsec": 4000,
+   "moonFraction": 271,
+   "saturnFraction": 47
+  },
+  {
+   "name": "Ṣaṣṭyāṃśa (D60)",
+   "deg": 0.5,
+   "arcsec": 1800,
+   "moonFraction": 122,
+   "saturnFraction": 21
+  }
+ ],
+ "cost": {
+  "nakshatraBoundarySeconds": 27,
+  "tithiEndSeconds": 33,
+  "dashaDaysPerArcsec": 0.913,
+  "mahadashaDays": 13.502,
+  "antardashaDays": 2.25,
+  "birthMinuteArcsec": 32.94,
+  "birthMinuteDashaDays": 30.078,
+  "engineEquivalentBirthSeconds": 27
+ }
+}</script>
+<script src="accuracy.js" defer></script>
+</main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p><b>How the numbers are worked out:</b> <a href="kundli-technical-report.html">the chart engine, in detail</a> &mdash; the ephemeris, the ayanāṃśa modes, the sunrise convention and what each divisional chart is computed from.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>

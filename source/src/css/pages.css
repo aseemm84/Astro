@@ -1614,3 +1614,35 @@ html[data-theme] .kreport .kappnote{color:var(--text-soft)}
   letter-spacing:.04em;color:var(--gold-ink,#5a4410)}
 html[data-theme] .kreport .kaycur{color:var(--accent)}
 html[data-theme] .kreport .kaysw{box-shadow:0 0 0 1px rgba(255,255,255,.28)}
+
+/* ===== accuracy.html ======================================================
+   Its own small block rather than reusing table.tbl, because these tables are
+   dense numeric comparisons that want tighter rows and right-aligned figures,
+   and the cards want to reflow to one column on a phone. Every colour is a
+   theme token with a light fallback: an inline literal would beat every theme
+   rule, which is how the dark palettes broke once before. */
+.axgrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));margin:4px 0 16px}
+.axcard{border:1px solid var(--border-2,#d9d2c6);border-radius:8px;padding:10px 12px;background:var(--surface-2,#f8f6f1)}
+.axcard .axk{font-size:11.5px;letter-spacing:.02em;text-transform:uppercase;color:var(--muted,#6b6459)}
+.axcard .axv{font-size:21px;font-weight:600;color:var(--ink,#23201c);margin:2px 0 1px;font-variant-numeric:tabular-nums}
+.axcard .axs{font-size:12px;color:var(--muted,#6b6459);line-height:1.35}
+.axfig{margin:6px 0 18px;max-width:100%}
+.axfig figcaption{font-size:12.5px;color:var(--muted,#6b6459);margin-top:4px;max-width:80ch;line-height:1.45}
+.axsvg{width:100%;height:auto;display:block;overflow:visible}
+.axcap{font-size:12.5px;color:var(--muted,#6b6459);max-width:80ch;margin:4px 0 14px}
+table.axtab{border-collapse:collapse;width:100%;font-size:13px;margin:4px 0 16px}
+table.axtab th{text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.02em;
+  text-transform:uppercase;color:var(--muted,#6b6459);padding:6px 9px;
+  border-bottom:1.5px solid var(--border-2,#d9d2c6);white-space:nowrap}
+table.axtab td{padding:6px 9px;border-bottom:1px solid var(--border,#e8e2d8);
+  vertical-align:top;font-variant-numeric:tabular-nums}
+table.axtab th+th,table.axtab td+td{text-align:right}
+table.axtab tr.axnow td{background:var(--surface-2,#f2eee6);font-weight:600}
+table.axtab tr.axnow td i{font-weight:400;font-style:normal;color:var(--muted,#6b6459);font-size:11.5px}
+/* A dense numeric table is the one thing that genuinely needs to scroll
+   sideways on a phone rather than reflow into nonsense. */
+#ax-divtable,#ax-bandtable,#ax-bare,#ax-precision{overflow-x:auto}
+@media (max-width:560px){
+  .axgrid{grid-template-columns:1fr}
+  table.axtab{font-size:12px;min-width:430px}
+}

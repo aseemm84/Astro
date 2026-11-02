@@ -182,5 +182,13 @@
   "sub": "That address is not on this site — here is where the links usually point.",
   "layout": "onecol",
   "has_aside": false
+ },
+ "accuracy": {
+  "title": "Accuracy &amp; Precision &mdash; what the engines are measured to &mdash; {{BRAND}}",
+  "h1": "Accuracy &amp; Precision",
+  "sub": "What the engines are measured to, against an independent computation of the sky — and the far larger differences that are convention rather than error.",
+  "layout": "",
+  "has_aside": true,
+  "desc": "Measured accuracy of the Nirayana chart engines: per-graha residuals against ERFA over 1800–2200, what they cost each varga, nakṣatra and daśā boundary, the 5.83° spread across seventeen ayanāṃśa conventions, and the Sūrya Siddhānta tiers."
  }
 }

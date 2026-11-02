@@ -602,6 +602,12 @@ def build_shared():
         # matters. festivals.js extends the same window.NP, so they ship as one
         # file and a page cannot load half of the pair.
         "calendar.js": brandify(jsread(SRC, "js", "calendar.js")),
+        # accuracy.html's own script: it draws the measured figures as SVG from
+        # the JSON the build inlined into that page. On its own file for the
+        # same reason as now.js — one page wants it, the other thirty should not
+        # carry it — and it reads nothing from the network, which is what lets
+        # the whole page work from a file:// URL.
+        "accuracy.js": brandify(jsread(SRC, "js", "accuracy.js")),
         # The city list, loading and search, shared so the calendar does not grow
         # a second copy of "which city is this and what is its offset". Lazy: the
         # 3 MB of rows are fetched only when somebody actually searches.
@@ -775,6 +781,18 @@ def build_pages():
     for name, m in meta.items():
         href = "index.html" if name == "index" else name + ".html"
         body = read(SRC, "pages", name + ".html")
+        # {{DATA:x}} inlines source/data/x.json as a <script type=application/json>.
+        # The accuracy page draws itself from measured figures, and this is how
+        # they reach it: INLINED, never fetched. Every page here has to work
+        # opened from a file:// URL with no server, and a fetch() of a sibling
+        # JSON is precisely the thing that silently fails there. Generic rather
+        # than special-cased, because the next page that needs a measurement
+        # will want the same door.
+        for key in re.findall(r"\{\{DATA:([a-z0-9-]+)\}\}", body):
+            raw = read(os.path.dirname(SRC), "data", key + ".json").strip()
+            body = body.replace(
+                "{{DATA:%s}}" % key,
+                '<script type="application/json" id="data-%s">%s</script>' % (key, raw))
         aside = ""
         if m["has_aside"]:
             secs = re.findall(r'<h2 id="([^"]+)">(.*?)</h2>', body, re.S)
@@ -958,9 +976,18 @@ def syntax_check(built):
         else:
             # the pages inline their script; pull each block out and check it as
             # its own unit, which is also how the browser will parse it
-            for i, m in enumerate(re.finditer(r"<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>",
+            for i, m in enumerate(re.finditer(r"<script(?![^>]*\bsrc=)([^>]*)>(.*?)</script>",
                                               text, re.S)):
-                body = m.group(1)
+                attrs, body = m.group(1), m.group(2)
+                # A data block is not JavaScript and must not be parse-checked
+                # as any. accuracy.html carries its measured figures as
+                # <script type="application/json">, which node --check rejects
+                # on the first colon — a real failure of this checker, not of
+                # the page. Anything whose type is not JavaScript is skipped.
+                mt = re.search(r'\btype\s*=\s*["\']?([^"\'\s>]+)', attrs)
+                if mt and mt.group(1).lower() not in (
+                        "text/javascript", "application/javascript", "module"):
+                    continue
                 if body.strip():
                     jobs.append(("%s <script #%d>" % (name, i + 1), body))
     bad = []

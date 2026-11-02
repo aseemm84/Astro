@@ -1635,6 +1635,38 @@ html[data-theme] .kreport .kappnote{color:var(--text-soft)}
 html[data-theme] .kreport .kaycur{color:var(--accent)}
 html[data-theme] .kreport .kaysw{box-shadow:0 0 0 1px rgba(255,255,255,.28)}
 
+/* ===== accuracy.html ======================================================
+   Its own small block rather than reusing table.tbl, because these tables are
+   dense numeric comparisons that want tighter rows and right-aligned figures,
+   and the cards want to reflow to one column on a phone. Every colour is a
+   theme token with a light fallback: an inline literal would beat every theme
+   rule, which is how the dark palettes broke once before. */
+.axgrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));margin:4px 0 16px}
+.axcard{border:1px solid var(--border-2,#d9d2c6);border-radius:8px;padding:10px 12px;background:var(--surface-2,#f8f6f1)}
+.axcard .axk{font-size:11.5px;letter-spacing:.02em;text-transform:uppercase;color:var(--muted,#6b6459)}
+.axcard .axv{font-size:21px;font-weight:600;color:var(--ink,#23201c);margin:2px 0 1px;font-variant-numeric:tabular-nums}
+.axcard .axs{font-size:12px;color:var(--muted,#6b6459);line-height:1.35}
+.axfig{margin:6px 0 18px;max-width:100%}
+.axfig figcaption{font-size:12.5px;color:var(--muted,#6b6459);margin-top:4px;max-width:80ch;line-height:1.45}
+.axsvg{width:100%;height:auto;display:block;overflow:visible}
+.axcap{font-size:12.5px;color:var(--muted,#6b6459);max-width:80ch;margin:4px 0 14px}
+table.axtab{border-collapse:collapse;width:100%;font-size:13px;margin:4px 0 16px}
+table.axtab th{text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.02em;
+  text-transform:uppercase;color:var(--muted,#6b6459);padding:6px 9px;
+  border-bottom:1.5px solid var(--border-2,#d9d2c6);white-space:nowrap}
+table.axtab td{padding:6px 9px;border-bottom:1px solid var(--border,#e8e2d8);
+  vertical-align:top;font-variant-numeric:tabular-nums}
+table.axtab th+th,table.axtab td+td{text-align:right}
+table.axtab tr.axnow td{background:var(--surface-2,#f2eee6);font-weight:600}
+table.axtab tr.axnow td i{font-weight:400;font-style:normal;color:var(--muted,#6b6459);font-size:11.5px}
+/* A dense numeric table is the one thing that genuinely needs to scroll
+   sideways on a phone rather than reflow into nonsense. */
+#ax-divtable,#ax-bandtable,#ax-bare,#ax-precision{overflow-x:auto}
+@media (max-width:560px){
+  .axgrid{grid-template-columns:1fr}
+  table.axtab{font-size:12px;min-width:430px}
+}
+
 /* ===== Generated theme overrides =====================================
    Written by source/tools/gen-theme-overrides.py from the literal
    colours in app.css and pages.css. Do not edit by hand: regenerate.
@@ -2425,7 +2457,7 @@ html[data-theme] nav.site .themepick select option{
     return true;
   }, list: THEMES };
 })();
-</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Director Pro</h1><p class="sub">Scenes, layers and a keyframe on every property. The same composers, none of the decisions, and an export that posts without conversion.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html" class="active">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main><p class="dpnote" id="dp-mode">Loading what this browser knows…</p>
+</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Director Pro</h1><p class="sub">Scenes, layers and a keyframe on every property. The same composers, none of the decisions, and an export that posts without conversion.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html" class="active">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main><p class="dpnote" id="dp-mode">Loading what this browser knows…</p>
 
 <section class="sipanel" aria-label="Describe what you want">
   <div class="sihead">

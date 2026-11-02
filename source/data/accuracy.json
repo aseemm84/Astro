@@ -1,0 +1,1694 @@
+{
+ "_provenance": {
+  "what": "Every figure the accuracy page draws.",
+  "why": "A page about accuracy whose numbers were typed into its prose would be the worst file in the repository. These are measured by running the same comparisons the harnesses run; accuracy-verify.mjs re-derives them and fails if this file has drifted from the engines.",
+  "generator": "source/test/make-accuracy-data.mjs",
+  "checkedBy": "source/test/accuracy-verify.mjs",
+  "reference": "ERFA (IAU SOFA) via astropy: epv00 for the Sun, moon98 for the Moon, plan94 for the five tara-grahas, gst06a and obl06/nut06a for Earth orientation.",
+  "referenceNote": "plan94's own documented longitude error over 1000-3000 CE. The per-body bars in the harness are derived from these, which is why Jupiter's and Saturn's are loose. A loose bar is not a precision claim; it is wide enough that only a real fault trips it.",
+  "denseSamples": 400,
+  "wideSamples": 300,
+  "span": "1800-2200",
+  "wideSpan": "1000-3000",
+  "certifiedWindow": [
+   1800,
+   2200
+  ],
+  "generated": "2026-11-02"
+ },
+ "modern": {
+  "library": "astronomy-engine v2 (MIT), ±1′ claimed against NOVAS",
+  "perBody": [
+   {
+    "en": "Sun",
+    "sa": "Sūrya",
+    "lonWorst": 1.911,
+    "lonRms": 0.602,
+    "latWorst": 2.866,
+    "referenceOwnError": 0.1
+   },
+   {
+    "en": "Moon",
+    "sa": "Candra",
+    "lonWorst": 14.787,
+    "lonRms": 4.191,
+    "latWorst": 5.011,
+    "referenceOwnError": 5
+   },
+   {
+    "en": "Mercury",
+    "sa": "Budha",
+    "lonWorst": 10.345,
+    "lonRms": 2.963,
+    "latWorst": 11.064,
+    "referenceOwnError": 4
+   },
+   {
+    "en": "Venus",
+    "sa": "Śukra",
+    "lonWorst": 9.763,
+    "lonRms": 1.929,
+    "latWorst": 11.605,
+    "referenceOwnError": 5
+   },
+   {
+    "en": "Mars",
+    "sa": "Maṅgala",
+    "lonWorst": 44.191,
+    "lonRms": 8.416,
+    "latWorst": 11.344,
+    "referenceOwnError": 17
+   },
+   {
+    "en": "Jupiter",
+    "sa": "Guru",
+    "lonWorst": 84.374,
+    "lonRms": 20.224,
+    "latWorst": 16.543,
+    "referenceOwnError": 71
+   },
+   {
+    "en": "Saturn",
+    "sa": "Śani",
+    "lonWorst": 85.5,
+    "lonRms": 29.507,
+    "latWorst": 27.041,
+    "referenceOwnError": 81
+   }
+  ],
+  "meanNodeWorst": 0.98,
+  "gastWorst": 12.383,
+  "lagna": [
+   {
+    "place": "Moradabad",
+    "lat": 28.8389,
+    "polar": false,
+    "constructionWorst": 0,
+    "endToEndWorst": 21.072
+   },
+   {
+    "place": "Abu Dhabi",
+    "lat": 24.4539,
+    "polar": false,
+    "constructionWorst": 0,
+    "endToEndWorst": 20.435
+   },
+   {
+    "place": "Wellington",
+    "lat": -41.2866,
+    "polar": false,
+    "constructionWorst": 0,
+    "endToEndWorst": 27.656
+   },
+   {
+    "place": "Tromso",
+    "lat": 69.6492,
+    "polar": true,
+    "constructionWorst": 0,
+    "endToEndWorst": 112.467
+   }
+  ]
+ },
+ "bands": [
+  {
+   "from": 1000,
+   "to": 1399,
+   "moon": 205,
+   "tithi": 452,
+   "nak": 416,
+   "certified": false
+  },
+  {
+   "from": 1400,
+   "to": 1799,
+   "moon": 73,
+   "tithi": 162,
+   "nak": 148,
+   "certified": false
+  },
+  {
+   "from": 1800,
+   "to": 2200,
+   "moon": 15,
+   "tithi": 34,
+   "nak": 31,
+   "certified": true
+  },
+  {
+   "from": 2201,
+   "to": 2599,
+   "moon": 56,
+   "tithi": 123,
+   "nak": 113,
+   "certified": false
+  },
+  {
+   "from": 2600,
+   "to": 3000,
+   "moon": 164,
+   "tithi": 359,
+   "nak": 333,
+   "certified": false
+  }
+ ],
+ "moonCurve": [
+  {
+   "y": 1000,
+   "d": 204.674
+  },
+  {
+   "y": 1006,
+   "d": 171.269
+  },
+  {
+   "y": 1013,
+   "d": 161.766
+  },
+  {
+   "y": 1020,
+   "d": 157.947
+  },
+  {
+   "y": 1026,
+   "d": 168.648
+  },
+  {
+   "y": 1033,
+   "d": 163.825
+  },
+  {
+   "y": 1040,
+   "d": 150.962
+  },
+  {
+   "y": 1046,
+   "d": 176.405
+  },
+  {
+   "y": 1053,
+   "d": 160.013
+  },
+  {
+   "y": 1060,
+   "d": 137.846
+  },
+  {
+   "y": 1066,
+   "d": 170.048
+  },
+  {
+   "y": 1073,
+   "d": 154
+  },
+  {
+   "y": 1080,
+   "d": 135.864
+  },
+  {
+   "y": 1086,
+   "d": 163.144
+  },
+  {
+   "y": 1093,
+   "d": 149.082
+  },
+  {
+   "y": 1100,
+   "d": 131.62
+  },
+  {
+   "y": 1107,
+   "d": 139.432
+  },
+  {
+   "y": 1113,
+   "d": 155.134
+  },
+  {
+   "y": 1120,
+   "d": 126.379
+  },
+  {
+   "y": 1127,
+   "d": 124.311
+  },
+  {
+   "y": 1133,
+   "d": 153.021
+  },
+  {
+   "y": 1140,
+   "d": 118.656
+  },
+  {
+   "y": 1147,
+   "d": 117.299
+  },
+  {
+   "y": 1153,
+   "d": 149.58
+  },
+  {
+   "y": 1160,
+   "d": 117.656
+  },
+  {
+   "y": 1167,
+   "d": 118.703
+  },
+  {
+   "y": 1173,
+   "d": 139.193
+  },
+  {
+   "y": 1180,
+   "d": 145.865
+  },
+  {
+   "y": 1187,
+   "d": 107.67
+  },
+  {
+   "y": 1193,
+   "d": 110.773
+  },
+  {
+   "y": 1200,
+   "d": 140.589
+  },
+  {
+   "y": 1207,
+   "d": 112.53
+  },
+  {
+   "y": 1214,
+   "d": 102.018
+  },
+  {
+   "y": 1220,
+   "d": 134.237
+  },
+  {
+   "y": 1227,
+   "d": 114.754
+  },
+  {
+   "y": 1234,
+   "d": 97.077
+  },
+  {
+   "y": 1240,
+   "d": 122.127
+  },
+  {
+   "y": 1247,
+   "d": 116.849
+  },
+  {
+   "y": 1254,
+   "d": 92.831
+  },
+  {
+   "y": 1260,
+   "d": 95.571
+  },
+  {
+   "y": 1267,
+   "d": 101.883
+  },
+  {
+   "y": 1274,
+   "d": 112.363
+  },
+  {
+   "y": 1280,
+   "d": 90.922
+  },
+  {
+   "y": 1287,
+   "d": 102.102
+  },
+  {
+   "y": 1294,
+   "d": 102.333
+  },
+  {
+   "y": 1301,
+   "d": 81.606
+  },
+  {
+   "y": 1307,
+   "d": 87.155
+  },
+  {
+   "y": 1314,
+   "d": 94.362
+  },
+  {
+   "y": 1321,
+   "d": 79.779
+  },
+  {
+   "y": 1327,
+   "d": 82.611
+  },
+  {
+   "y": 1334,
+   "d": 89.055
+  },
+  {
+   "y": 1341,
+   "d": 77.265
+  },
+  {
+   "y": 1347,
+   "d": 74.167
+  },
+  {
+   "y": 1354,
+   "d": 77.32
+  },
+  {
+   "y": 1361,
+   "d": 76.464
+  },
+  {
+   "y": 1367,
+   "d": 64.021
+  },
+  {
+   "y": 1374,
+   "d": 69.198
+  },
+  {
+   "y": 1381,
+   "d": 72.062
+  },
+  {
+   "y": 1387,
+   "d": 54.206
+  },
+  {
+   "y": 1394,
+   "d": 60.593
+  },
+  {
+   "y": 1401,
+   "d": 72.363
+  },
+  {
+   "y": 1408,
+   "d": 65.64
+  },
+  {
+   "y": 1414,
+   "d": 61.364
+  },
+  {
+   "y": 1421,
+   "d": 66.848
+  },
+  {
+   "y": 1428,
+   "d": 62.357
+  },
+  {
+   "y": 1434,
+   "d": 49.947
+  },
+  {
+   "y": 1441,
+   "d": 62.447
+  },
+  {
+   "y": 1448,
+   "d": 64.839
+  },
+  {
+   "y": 1454,
+   "d": 49.221
+  },
+  {
+   "y": 1461,
+   "d": 58.03
+  },
+  {
+   "y": 1468,
+   "d": 49.694
+  },
+  {
+   "y": 1474,
+   "d": 47.992
+  },
+  {
+   "y": 1481,
+   "d": 56.588
+  },
+  {
+   "y": 1488,
+   "d": 48.61
+  },
+  {
+   "y": 1494,
+   "d": 44.83
+  },
+  {
+   "y": 1501,
+   "d": 40.128
+  },
+  {
+   "y": 1508,
+   "d": 51.49
+  },
+  {
+   "y": 1515,
+   "d": 45.763
+  },
+  {
+   "y": 1521,
+   "d": 37.532
+  },
+  {
+   "y": 1528,
+   "d": 41.819
+  },
+  {
+   "y": 1535,
+   "d": 45.51
+  },
+  {
+   "y": 1541,
+   "d": 36.49
+  },
+  {
+   "y": 1548,
+   "d": 39.615
+  },
+  {
+   "y": 1555,
+   "d": 42.062
+  },
+  {
+   "y": 1561,
+   "d": 36.313
+  },
+  {
+   "y": 1568,
+   "d": 33.533
+  },
+  {
+   "y": 1575,
+   "d": 39.63
+  },
+  {
+   "y": 1581,
+   "d": 36.324
+  },
+  {
+   "y": 1588,
+   "d": 34.548
+  },
+  {
+   "y": 1595,
+   "d": 27.037
+  },
+  {
+   "y": 1602,
+   "d": 33.683
+  },
+  {
+   "y": 1608,
+   "d": 26.688
+  },
+  {
+   "y": 1615,
+   "d": 27.304
+  },
+  {
+   "y": 1622,
+   "d": 28.957
+  },
+  {
+   "y": 1628,
+   "d": 28.715
+  },
+  {
+   "y": 1635,
+   "d": 21.431
+  },
+  {
+   "y": 1642,
+   "d": 26.014
+  },
+  {
+   "y": 1648,
+   "d": 19.513
+  },
+  {
+   "y": 1655,
+   "d": 18.79
+  },
+  {
+   "y": 1662,
+   "d": 18.085
+  },
+  {
+   "y": 1668,
+   "d": 18.527
+  },
+  {
+   "y": 1675,
+   "d": 21.294
+  },
+  {
+   "y": 1682,
+   "d": 24.358
+  },
+  {
+   "y": 1688,
+   "d": 23.589
+  },
+  {
+   "y": 1695,
+   "d": 21.041
+  },
+  {
+   "y": 1702,
+   "d": 14.095
+  },
+  {
+   "y": 1709,
+   "d": 15.56
+  },
+  {
+   "y": 1715,
+   "d": 12.185
+  },
+  {
+   "y": 1722,
+   "d": 10.962
+  },
+  {
+   "y": 1729,
+   "d": 14.848
+  },
+  {
+   "y": 1735,
+   "d": 15.413
+  },
+  {
+   "y": 1742,
+   "d": 9.325
+  },
+  {
+   "y": 1749,
+   "d": 7.756
+  },
+  {
+   "y": 1755,
+   "d": 14.623
+  },
+  {
+   "y": 1762,
+   "d": 12.257
+  },
+  {
+   "y": 1769,
+   "d": 10.299
+  },
+  {
+   "y": 1775,
+   "d": 14.048
+  },
+  {
+   "y": 1782,
+   "d": 9.705
+  },
+  {
+   "y": 1789,
+   "d": 14.851
+  },
+  {
+   "y": 1795,
+   "d": 8.074
+  },
+  {
+   "y": 1802,
+   "d": 8.746
+  },
+  {
+   "y": 1809,
+   "d": 9.107
+  },
+  {
+   "y": 1816,
+   "d": 9.929
+  },
+  {
+   "y": 1822,
+   "d": 5.299
+  },
+  {
+   "y": 1829,
+   "d": 7.643
+  },
+  {
+   "y": 1836,
+   "d": 3.486
+  },
+  {
+   "y": 1842,
+   "d": 5.448
+  },
+  {
+   "y": 1849,
+   "d": 7.015
+  },
+  {
+   "y": 1856,
+   "d": 0.894
+  },
+  {
+   "y": 1862,
+   "d": 2.361
+  },
+  {
+   "y": 1869,
+   "d": 1.827
+  },
+  {
+   "y": 1876,
+   "d": 6.582
+  },
+  {
+   "y": 1882,
+   "d": 5.454
+  },
+  {
+   "y": 1889,
+   "d": 5.676
+  },
+  {
+   "y": 1896,
+   "d": 0.023
+  },
+  {
+   "y": 1903,
+   "d": 1.543
+  },
+  {
+   "y": 1909,
+   "d": 0.934
+  },
+  {
+   "y": 1916,
+   "d": 3.291
+  },
+  {
+   "y": 1923,
+   "d": 2.082
+  },
+  {
+   "y": 1929,
+   "d": 5.019
+  },
+  {
+   "y": 1936,
+   "d": 4.335
+  },
+  {
+   "y": 1943,
+   "d": 0.269
+  },
+  {
+   "y": 1949,
+   "d": 0.619
+  },
+  {
+   "y": 1956,
+   "d": 5.886
+  },
+  {
+   "y": 1963,
+   "d": 1.107
+  },
+  {
+   "y": 1969,
+   "d": 6.319
+  },
+  {
+   "y": 1976,
+   "d": 0.302
+  },
+  {
+   "y": 1983,
+   "d": 1.215
+  },
+  {
+   "y": 1989,
+   "d": 2.868
+  },
+  {
+   "y": 1996,
+   "d": 0.817
+  },
+  {
+   "y": 2003,
+   "d": 1.774
+  },
+  {
+   "y": 2010,
+   "d": 1.083
+  },
+  {
+   "y": 2016,
+   "d": 0.04
+  },
+  {
+   "y": 2023,
+   "d": 1.879
+  },
+  {
+   "y": 2030,
+   "d": 1.906
+  },
+  {
+   "y": 2036,
+   "d": 1.071
+  },
+  {
+   "y": 2043,
+   "d": 3.164
+  },
+  {
+   "y": 2050,
+   "d": 0.037
+  },
+  {
+   "y": 2056,
+   "d": 4.919
+  },
+  {
+   "y": 2063,
+   "d": 3.687
+  },
+  {
+   "y": 2070,
+   "d": 2.896
+  },
+  {
+   "y": 2076,
+   "d": 0.245
+  },
+  {
+   "y": 2083,
+   "d": 1.269
+  },
+  {
+   "y": 2090,
+   "d": 2.291
+  },
+  {
+   "y": 2096,
+   "d": 2.18
+  },
+  {
+   "y": 2103,
+   "d": 2.445
+  },
+  {
+   "y": 2110,
+   "d": 0.273
+  },
+  {
+   "y": 2117,
+   "d": 0.404
+  },
+  {
+   "y": 2123,
+   "d": 1.733
+  },
+  {
+   "y": 2130,
+   "d": 2.015
+  },
+  {
+   "y": 2137,
+   "d": 2.176
+  },
+  {
+   "y": 2143,
+   "d": 3.011
+  },
+  {
+   "y": 2150,
+   "d": 0.047
+  },
+  {
+   "y": 2157,
+   "d": 1.345
+  },
+  {
+   "y": 2163,
+   "d": 0.2
+  },
+  {
+   "y": 2170,
+   "d": 2.143
+  },
+  {
+   "y": 2177,
+   "d": 0.452
+  },
+  {
+   "y": 2183,
+   "d": 0.442
+  },
+  {
+   "y": 2190,
+   "d": 4.864
+  },
+  {
+   "y": 2197,
+   "d": 7.171
+  },
+  {
+   "y": 2204,
+   "d": 5.197
+  },
+  {
+   "y": 2210,
+   "d": 0.704
+  },
+  {
+   "y": 2217,
+   "d": 8.268
+  },
+  {
+   "y": 2224,
+   "d": 10.517
+  },
+  {
+   "y": 2230,
+   "d": 3.649
+  },
+  {
+   "y": 2237,
+   "d": 5.17
+  },
+  {
+   "y": 2244,
+   "d": 14.515
+  },
+  {
+   "y": 2250,
+   "d": 6.421
+  },
+  {
+   "y": 2257,
+   "d": 3.644
+  },
+  {
+   "y": 2264,
+   "d": 11.246
+  },
+  {
+   "y": 2270,
+   "d": 8.966
+  },
+  {
+   "y": 2277,
+   "d": 5.792
+  },
+  {
+   "y": 2284,
+   "d": 17.033
+  },
+  {
+   "y": 2290,
+   "d": 10.006
+  },
+  {
+   "y": 2297,
+   "d": 7.544
+  },
+  {
+   "y": 2304,
+   "d": 6.537
+  },
+  {
+   "y": 2311,
+   "d": 10.834
+  },
+  {
+   "y": 2317,
+   "d": 12.033
+  },
+  {
+   "y": 2324,
+   "d": 12.373
+  },
+  {
+   "y": 2331,
+   "d": 14.14
+  },
+  {
+   "y": 2337,
+   "d": 14.128
+  },
+  {
+   "y": 2344,
+   "d": 11.696
+  },
+  {
+   "y": 2351,
+   "d": 13.109
+  },
+  {
+   "y": 2357,
+   "d": 12.266
+  },
+  {
+   "y": 2364,
+   "d": 14.146
+  },
+  {
+   "y": 2371,
+   "d": 22.888
+  },
+  {
+   "y": 2377,
+   "d": 18.175
+  },
+  {
+   "y": 2384,
+   "d": 19.781
+  },
+  {
+   "y": 2391,
+   "d": 17.357
+  },
+  {
+   "y": 2397,
+   "d": 27.076
+  },
+  {
+   "y": 2404,
+   "d": 19.298
+  },
+  {
+   "y": 2411,
+   "d": 17.984
+  },
+  {
+   "y": 2418,
+   "d": 20.983
+  },
+  {
+   "y": 2424,
+   "d": 21.758
+  },
+  {
+   "y": 2431,
+   "d": 23.633
+  },
+  {
+   "y": 2438,
+   "d": 26.151
+  },
+  {
+   "y": 2444,
+   "d": 25.076
+  },
+  {
+   "y": 2451,
+   "d": 24.554
+  },
+  {
+   "y": 2458,
+   "d": 26.335
+  },
+  {
+   "y": 2464,
+   "d": 32.727
+  },
+  {
+   "y": 2471,
+   "d": 28.73
+  },
+  {
+   "y": 2478,
+   "d": 26.648
+  },
+  {
+   "y": 2484,
+   "d": 33.874
+  },
+  {
+   "y": 2491,
+   "d": 31.895
+  },
+  {
+   "y": 2498,
+   "d": 26.734
+  },
+  {
+   "y": 2505,
+   "d": 36.227
+  },
+  {
+   "y": 2511,
+   "d": 39.596
+  },
+  {
+   "y": 2518,
+   "d": 33.454
+  },
+  {
+   "y": 2525,
+   "d": 39.795
+  },
+  {
+   "y": 2531,
+   "d": 42.642
+  },
+  {
+   "y": 2538,
+   "d": 30.646
+  },
+  {
+   "y": 2545,
+   "d": 27.996
+  },
+  {
+   "y": 2551,
+   "d": 42.845
+  },
+  {
+   "y": 2558,
+   "d": 49.795
+  },
+  {
+   "y": 2565,
+   "d": 34.057
+  },
+  {
+   "y": 2571,
+   "d": 48.234
+  },
+  {
+   "y": 2578,
+   "d": 49.899
+  },
+  {
+   "y": 2585,
+   "d": 39.427
+  },
+  {
+   "y": 2591,
+   "d": 42.758
+  },
+  {
+   "y": 2598,
+   "d": 55.274
+  },
+  {
+   "y": 2605,
+   "d": 45.597
+  },
+  {
+   "y": 2612,
+   "d": 45.045
+  },
+  {
+   "y": 2618,
+   "d": 57.391
+  },
+  {
+   "y": 2625,
+   "d": 53.799
+  },
+  {
+   "y": 2632,
+   "d": 52.279
+  },
+  {
+   "y": 2638,
+   "d": 56.59
+  },
+  {
+   "y": 2645,
+   "d": 58.718
+  },
+  {
+   "y": 2652,
+   "d": 50.466
+  },
+  {
+   "y": 2658,
+   "d": 58.357
+  },
+  {
+   "y": 2665,
+   "d": 59.894
+  },
+  {
+   "y": 2672,
+   "d": 65.218
+  },
+  {
+   "y": 2678,
+   "d": 65.288
+  },
+  {
+   "y": 2685,
+   "d": 66.44
+  },
+  {
+   "y": 2692,
+   "d": 71.963
+  },
+  {
+   "y": 2698,
+   "d": 65.693
+  },
+  {
+   "y": 2705,
+   "d": 81.641
+  },
+  {
+   "y": 2712,
+   "d": 68.136
+  },
+  {
+   "y": 2719,
+   "d": 69.849
+  },
+  {
+   "y": 2725,
+   "d": 84.482
+  },
+  {
+   "y": 2732,
+   "d": 82.523
+  },
+  {
+   "y": 2739,
+   "d": 77.231
+  },
+  {
+   "y": 2745,
+   "d": 87.08
+  },
+  {
+   "y": 2752,
+   "d": 86.245
+  },
+  {
+   "y": 2759,
+   "d": 75.654
+  },
+  {
+   "y": 2765,
+   "d": 89.361
+  },
+  {
+   "y": 2772,
+   "d": 89.527
+  },
+  {
+   "y": 2779,
+   "d": 83.578
+  },
+  {
+   "y": 2785,
+   "d": 73.963
+  },
+  {
+   "y": 2792,
+   "d": 88.439
+  },
+  {
+   "y": 2799,
+   "d": 103.777
+  },
+  {
+   "y": 2806,
+   "d": 84.381
+  },
+  {
+   "y": 2812,
+   "d": 87.661
+  },
+  {
+   "y": 2819,
+   "d": 106.707
+  },
+  {
+   "y": 2826,
+   "d": 85.122
+  },
+  {
+   "y": 2832,
+   "d": 87.248
+  },
+  {
+   "y": 2839,
+   "d": 107.903
+  },
+  {
+   "y": 2846,
+   "d": 101.614
+  },
+  {
+   "y": 2852,
+   "d": 92.21
+  },
+  {
+   "y": 2859,
+   "d": 112.208
+  },
+  {
+   "y": 2866,
+   "d": 107.125
+  },
+  {
+   "y": 2872,
+   "d": 98.211
+  },
+  {
+   "y": 2879,
+   "d": 97.188
+  },
+  {
+   "y": 2886,
+   "d": 122.845
+  },
+  {
+   "y": 2892,
+   "d": 99.727
+  },
+  {
+   "y": 2899,
+   "d": 102.849
+  },
+  {
+   "y": 2906,
+   "d": 119.347
+  },
+  {
+   "y": 2913,
+   "d": 126.19
+  },
+  {
+   "y": 2919,
+   "d": 107.994
+  },
+  {
+   "y": 2926,
+   "d": 129.299
+  },
+  {
+   "y": 2933,
+   "d": 130.82
+  },
+  {
+   "y": 2939,
+   "d": 119.657
+  },
+  {
+   "y": 2946,
+   "d": 122.913
+  },
+  {
+   "y": 2953,
+   "d": 133.816
+  },
+  {
+   "y": 2959,
+   "d": 126.509
+  },
+  {
+   "y": 2966,
+   "d": 134.492
+  },
+  {
+   "y": 2973,
+   "d": 149.718
+  },
+  {
+   "y": 2979,
+   "d": 131.164
+  },
+  {
+   "y": 2986,
+   "d": 133.661
+  },
+  {
+   "y": 2993,
+   "d": 138.264
+  },
+  {
+   "y": 3000,
+   "d": 163.733
+  }
+ ],
+ "ayanamsa": {
+  "atJd": 2461000.5,
+  "spreadDeg": 5.83,
+  "anchorGapDeg": 3.796,
+  "modes": [
+   {
+    "key": "truerevati",
+    "name": "True Revatī",
+    "tag": "T. Revatī",
+    "deg": 20.407,
+    "exactToSwiss": false,
+    "wobbleArcsec": 20
+   },
+   {
+    "key": "ss_revati",
+    "name": "Sūrya Siddhānta — Revatī (Swiss)",
+    "tag": "SS Revatī",
+    "deg": 20.465,
+    "exactToSwiss": true,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "nirayana_revati",
+    "name": "Nirayana–Revatī (this site)",
+    "tag": "Nir. Revatī",
+    "deg": 20.494,
+    "exactToSwiss": false,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "ss_swiss",
+    "name": "Sūrya Siddhānta (Swiss Ephemeris)",
+    "tag": "SS Swiss",
+    "deg": 21.257,
+    "exactToSwiss": true,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "aryabhata",
+    "name": "Āryabhaṭa",
+    "tag": "Āryabhaṭa",
+    "deg": 21.257,
+    "exactToSwiss": false,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "raman",
+    "name": "Raman",
+    "tag": "Raman",
+    "deg": 22.772,
+    "exactToSwiss": true,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "yukteshwar",
+    "name": "Yukteshwar",
+    "tag": "Yukteśvar",
+    "deg": 22.84,
+    "exactToSwiss": true,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "ss_rate",
+    "name": "Sūrya Siddhānta — steady 54″",
+    "tag": "SS 54″",
+    "deg": 22.903,
+    "exactToSwiss": false,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "truepushya",
+    "name": "True Puṣya",
+    "tag": "T. Puṣya",
+    "deg": 23.084,
+    "exactToSwiss": false,
+    "wobbleArcsec": 19
+   },
+   {
+    "key": "bhasin",
+    "name": "J. N. Bhasin",
+    "tag": "Bhasin",
+    "deg": 23.124,
+    "exactToSwiss": true,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "ss_citra",
+    "name": "Sūrya Siddhānta — Citrā (Swiss)",
+    "tag": "SS Citrā",
+    "deg": 23.367,
+    "exactToSwiss": true,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "nirayana_citra",
+    "name": "Nirayana–Chitrapakṣa (this site)",
+    "tag": "Nir. Citrā",
+    "deg": 23.383,
+    "exactToSwiss": false,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "kp",
+    "name": "Krishnamurti (KP)",
+    "tag": "KP",
+    "deg": 24.122,
+    "exactToSwiss": true,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "truechitra",
+    "name": "True Chitrapakṣa",
+    "tag": "T. Citrā",
+    "deg": 24.203,
+    "exactToSwiss": false,
+    "wobbleArcsec": 20
+   },
+   {
+    "key": "lahiri",
+    "name": "Lahiri (Chitrapakṣa)",
+    "tag": "Lahiri",
+    "deg": 24.219,
+    "exactToSwiss": true,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "fagan",
+    "name": "Fagan–Bradley",
+    "tag": "Fagan",
+    "deg": 25.102,
+    "exactToSwiss": true,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "ss_text",
+    "name": "Sūrya Siddhānta — libration",
+    "tag": "SS libration",
+    "deg": 26.237,
+    "exactToSwiss": false,
+    "wobbleArcsec": null
+   }
+  ],
+  "exactToSwiss": 9
+ },
+ "siddhanta": {
+  "measured": [
+   {
+    "sa": "Sūrya",
+    "bareRms": 39.474,
+    "measuredRms": 1.0406,
+    "measuredWorst": 3.1182,
+    "gain": 37.9
+   },
+   {
+    "sa": "Candra",
+    "bareRms": 378.052,
+    "measuredRms": 61.6159,
+    "measuredWorst": 147.9552,
+    "gain": 6.1
+   },
+   {
+    "sa": "Maṅgala",
+    "bareRms": 206.809,
+    "measuredRms": 58.2675,
+    "measuredWorst": 303.3648,
+    "gain": 3.5
+   },
+   {
+    "sa": "Budha",
+    "bareRms": 152.778,
+    "measuredRms": 107.1138,
+    "measuredWorst": 232.8319,
+    "gain": 1.4
+   },
+   {
+    "sa": "Guru",
+    "bareRms": 284.793,
+    "measuredRms": 5.9942,
+    "measuredWorst": 16.1135,
+    "gain": 47.5
+   },
+   {
+    "sa": "Śukra",
+    "bareRms": 365.801,
+    "measuredRms": 8.3882,
+    "measuredWorst": 26.1288,
+    "gain": 43.6
+   },
+   {
+    "sa": "Śani",
+    "bareRms": 381.677,
+    "measuredRms": 7.2984,
+    "measuredWorst": 22.9315,
+    "gain": 52.3
+   }
+  ],
+  "bareByYear": [
+   {
+    "year": 500,
+    "Sūrya": 2.998,
+    "Candra": -4.935,
+    "Maṅgala": 3.303,
+    "Budha": 7.311,
+    "Guru": 2.123,
+    "Śukra": 9.841,
+    "Śani": 4.957
+   },
+   {
+    "year": 1000,
+    "Sūrya": 1.868,
+    "Candra": -3.652,
+    "Maṅgala": -0.798,
+    "Budha": 5.02,
+    "Guru": 2.697,
+    "Śukra": 1.958,
+    "Śani": 1.832
+   },
+   {
+    "year": 1500,
+    "Sūrya": 0.701,
+    "Candra": 4.372,
+    "Maṅgala": 1.732,
+    "Budha": 2.649,
+    "Guru": 4.049,
+    "Śukra": 2.303,
+    "Śani": -3.454
+   },
+   {
+    "year": 1900,
+    "Sūrya": -0.268,
+    "Candra": 3.407,
+    "Maṅgala": 0.8,
+    "Budha": -1.492,
+    "Guru": 3.47,
+    "Śukra": 2.721,
+    "Śani": -4.665
+   },
+   {
+    "year": 2000,
+    "Sūrya": -0.497,
+    "Candra": -11.38,
+    "Maṅgala": 1.733,
+    "Budha": 0.273,
+    "Guru": 5.634,
+    "Śukra": 2.037,
+    "Śani": -7.786
+   },
+   {
+    "year": 2026,
+    "Sūrya": -0.564,
+    "Candra": 1.894,
+    "Maṅgala": 0.198,
+    "Budha": -0.532,
+    "Guru": 5.109,
+    "Śukra": 2.894,
+    "Śani": -7.864
+   },
+   {
+    "year": 2100,
+    "Sūrya": -0.743,
+    "Candra": 2.197,
+    "Maṅgala": -1.565,
+    "Budha": 2.276,
+    "Guru": 3.973,
+    "Śukra": 2.012,
+    "Śani": -5.388
+   }
+  ],
+  "lunarDiagnostic": {
+   "rms": 61.87,
+   "correlationWithEvection": 0.86,
+   "correlationWithVariation": -0.452,
+   "amplitudeArcmin": {
+    "evection": 75.9,
+    "variation": -39.7,
+    "anomaly": 3.4
+   },
+   "textbookArcmin": {
+    "evection": 76.4,
+    "variation": 39.5
+   },
+   "rmsAfterRemovingThem": 13.95,
+   "reading": "The Moon's residual after the fit IS the evection and the variation. Regressed on their arguments it yields amplitudes within one per cent of the textbook values, and removing just those two terms drops its rms from 61.9′ to 14.0′. Neither term exists in this theory, and neither can be produced by any choice of revolution count, paridhi or mandocca — so the Moon's limit here is the absence of terms, not the value of numbers. Supplying them would make this a different astronomy wearing the same parameters, which is the line this tier does not cross."
+  },
+  "fitProvenance": {
+   "fitSamples": 187,
+   "holdoutSamples": 213,
+   "parameters": 46,
+   "notTheText": "THIS IS NOT THE SŪRYA SIDDHĀNTA'S ANSWER and must never be presented as one. It is the text's METHOD carrying measured numbers. The bare text stays selectable and unchanged; siddhanta-measured-verify.mjs asserts it is still bit-identical."
+  }
+ },
+ "divisions": [
+  {
+   "name": "Rāśi (D1)",
+   "deg": 30,
+   "arcsec": 108000,
+   "moonFraction": 7304,
+   "saturnFraction": 1263
+  },
+  {
+   "name": "Nakṣatra",
+   "deg": 13.333333333333334,
+   "arcsec": 48000,
+   "moonFraction": 3246,
+   "saturnFraction": 561
+  },
+  {
+   "name": "Navāṃśa (D9) / pāda",
+   "deg": 3.3333333333333335,
+   "arcsec": 12000,
+   "moonFraction": 812,
+   "saturnFraction": 140
+  },
+  {
+   "name": "D27",
+   "deg": 1.1111111111111112,
+   "arcsec": 4000,
+   "moonFraction": 271,
+   "saturnFraction": 47
+  },
+  {
+   "name": "Ṣaṣṭyāṃśa (D60)",
+   "deg": 0.5,
+   "arcsec": 1800,
+   "moonFraction": 122,
+   "saturnFraction": 21
+  }
+ ],
+ "cost": {
+  "nakshatraBoundarySeconds": 27,
+  "tithiEndSeconds": 33,
+  "dashaDaysPerArcsec": 0.913,
+  "mahadashaDays": 13.502,
+  "antardashaDays": 2.25,
+  "birthMinuteArcsec": 32.94,
+  "birthMinuteDashaDays": 30.078,
+  "engineEquivalentBirthSeconds": 27
+ }
+}
