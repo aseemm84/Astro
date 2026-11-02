@@ -121,8 +121,24 @@
     if (!NP.inRange(new Date(S.day + tz() * 3600000).getUTCFullYear())) {
       S.pan = null; S.sky = null; return "range";
     }
-    S.pan = NP.day(S.day + 8 * 3600000, S.place, {});
+    /* NP.dayOfDate, not NP.day at an invented offset. This seeded the pañcāṅga
+       at local 08:00 on the assumption that sunrise is always behind it, which
+       it is around Ujjain and is not in Reykjavík, where November sunrise is
+       09:10: the seed landed BEFORE sunrise, so NP.day returned the pañcāṅga
+       day that had begun the previous morning and the page quietly showed
+       1 November for a reader who had asked for the 2nd. dayOfDate seeds at
+       local noon — which is after sunrise everywhere there is a sunrise — and
+       reports the two cases that cannot be answered rather than answering with
+       a neighbour: noSunrise inside a polar night, and dateMatch false when the
+       pañcāṅga day's own sunrise falls on another civil date. It is the
+       primitive the Calendar already uses, so the two cannot disagree about
+       which day a date is. */
+    var cd = new Date(S.day + tz() * 3600000);
+    S.pan = NP.dayOfDate(cd.getUTCFullYear(), cd.getUTCMonth() + 1,
+                         cd.getUTCDate(), S.place, {});
     if (!S.pan) return false;
+    if (S.pan.outOfRange) { S.pan = null; S.sky = null; return "range"; }
+    if (S.pan.noSunrise) { S.pan = null; S.sky = null; return "nosunrise"; }
     S.ms = instantFor(S.pan);
     var d = new Date(S.ms + tz() * 3600000);
     S.sky = window.quickSky({
@@ -499,6 +515,14 @@
         window.NP.RANGE.max + ' only. ' + esc2(window.NP.rangeWhy || "") + "</p>";
       return;
     }
+    if (ok === "nosunrise") {
+      host.innerHTML = '<p class="swfail">The Sun neither rises nor sets at ' +
+        esc2(S.place.n) + ' on this date, so there is no sunrise to begin a ' +
+        'pañcāṅga day from. Every limb here is measured from sunrise, so rather ' +
+        'than pick a substitute the page says so. Try a date nearer the equinox, ' +
+        'or a place further from the pole.</p>';
+      return;
+    }
     if (!ok) { host.innerHTML = '<p class="swfail">Could not compute that day.</p>'; return; }
     drawWheel();
     S.runs = drawDay();
@@ -627,8 +651,33 @@
     S.place = (window.NP.savedPlace && window.NP.savedPlace()) ||
               (window.NP.PLACES && window.NP.PLACES[0]) ||
               { n: "Ujjain", lat: 23.1765, lon: 75.7885, tz: 5.5 };
-    var p = $("sw-place");
-    if (p) p.textContent = S.place.n;
+    /* The shared place picker, the same control the Calendar, Hindu time now
+       and the chart page's sky panel use, rather than a label showing whatever
+       place a saved chart happened to carry. A page whose whole point is "any
+       day and any place" that could not be told a place was half-built: it was
+       reading savedPlace() and then offering no way to change it. savedPlace()
+       is still the opening value, because a reader who has already said where
+       they are should not have to say it again. */
+    var ph = $("sw-place");
+    if (ph && window.NPlaces && window.NPlaces.picker) {
+      var quick = [S.place].concat(window.NP.PLACES || []);
+      window.NPlaces.picker({
+        host: ph, value: S.place, quick: quick, label: "Place",
+        refMs: function () { return S.day || Date.now(); },
+        onPick: function (pl) {
+          /* S.day is milliseconds at local midnight, so it is a function of the
+             offset: changing place without rebuilding it from the date field
+             would silently shift the civil day by the difference between the
+             two zones, and the date input would then disagree with the wheel. */
+          S.place = pl;
+          var di2 = $("sw-date");
+          S.day = parseDay(di2 ? di2.value : dayStr(S.day));
+          render();
+        }
+      });
+    } else if (ph) {
+      ph.textContent = S.place.n;
+    }
     S.day = parseDay(dayStr(Date.now()));
     var di = $("sw-date");
     if (di) {

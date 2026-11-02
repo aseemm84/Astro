@@ -191,6 +191,14 @@
   "has_aside": true,
   "desc": "Measured accuracy of the Nirayana chart engines: per-graha residuals against ERFA over 1800–2200, what they cost each varga, nakṣatra and daśā boundary, the 5.83° spread across seventeen ayanāṃśa conventions, and the Sūrya Siddhānta tiers."
  },
+ "ecliptic": {
+  "title": "Ecliptic wheel &mdash; the sky animated through a span &mdash; {{BRAND}}",
+  "h1": "Ecliptic wheel",
+  "sub": "The rāśis, nakṣatras and the nine grahas at their true longitudes, for any moment and place, played through a span you choose — no birth chart needed.",
+  "layout": "",
+  "has_aside": true,
+  "desc": "The animated sidereal ecliptic wheel for any moment and place: the twelve rāśis and twenty-seven nakṣatras with each graha at its true longitude, played through a span from six hours to thirty years, with trails that make a retrograde loop visible, graha dṛṣṭi as chords, a settable tilt, and any of the sixteen vargas."
+ },
  "starwheel": {
   "title": "Star wheel &mdash; the whole sky for any day &mdash; {{BRAND}}",
   "h1": "Star wheel",

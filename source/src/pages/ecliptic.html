@@ -1,0 +1,70 @@
+<p class="lede">The ecliptic drawn as a wheel &mdash; the twelve r&amacr;&#347;is, the twenty-seven nak&#7779;atras, and the nine grahas at their true longitudes &mdash; for any moment and any place, with <b>no birth chart required</b>. Give it a target moment and a span, and it will play the sky through that span so the motion itself is visible: the fast inner grahas sweeping, the slow outer ones barely stirring, and a retrograde loop closing on itself.</p>
+
+<div class="swbar" id="ecbar">
+  <label>Date <input type="date" id="ec-date" class="swin"></label>
+  <label>Time <input type="time" id="ec-time" class="swin" value="12:00"></label>
+  <label class="ecplace">Place <span id="ec-place" class="ecpick"></span></label>
+  <label>Ayan&amacr;&#7745;&#347;a <select id="ec-ayan" class="swin"></select></label>
+  <span class="swsp"></span>
+  <button type="button" class="swbtn" data-ec="now">This moment</button>
+</div>
+
+<h2 id="wheel">The wheel</h2>
+<p class="swstamp" id="ec-stamp"></p>
+<div class="swwrap"><div id="echost" class="echost"></div></div>
+<p class="k-note" id="ec-facts"></p>
+
+<h3 id="transport">The span, and playing through it</h3>
+<p>The span is how far either side of the target moment the wheel will travel. The scrubber is that whole span laid out end to end, so dragging it is dragging time; <b>Play</b> runs it from one end to the other and holds at the far end rather than looping, because a loop makes a return look like a motion.</p>
+<div class="swbar" id="ectransport">
+  <label>Span <select id="ec-span" class="swin">
+    <option value="360">&plusmn;6 hours</option>
+    <option value="1440">&plusmn;1 day</option>
+    <option value="10080">&plusmn;1 week</option>
+    <option value="43830" selected>&plusmn;1 month</option>
+    <option value="131490">&plusmn;3 months</option>
+    <option value="525960">&plusmn;1 year</option>
+    <option value="1577880">&plusmn;3 years</option>
+    <option value="6311520">&plusmn;12 years</option>
+    <option value="15778800">&plusmn;30 years</option>
+  </select></label>
+  <label>Speed <select id="ec-rate" class="swin">
+    <option value="0.25">&frac14;&times;</option>
+    <option value="0.5">&frac12;&times;</option>
+    <option value="1" selected>1&times;</option>
+    <option value="2">2&times;</option>
+    <option value="4">4&times;</option>
+  </select></label>
+  <span class="swsp"></span>
+  <button type="button" class="swbtn swprimary" data-ec="play">Play</button>
+  <button type="button" class="swbtn" data-ec="back">To the start</button>
+  <button type="button" class="swbtn" data-ec="mid">To the target</button>
+  <button type="button" class="swbtn" data-ec="step" data-k="-1">&minus;1 step</button>
+  <button type="button" class="swbtn" data-ec="step" data-k="1">+1 step</button>
+</div>
+<div class="ecscrub"><input type="range" id="ec-scrub" min="-1000" max="1000" value="0" step="1"
+  aria-label="Position within the span"></div>
+<p class="ecoff" id="ec-off"></p>
+
+<h3 id="view">What is drawn</h3>
+<div class="swtoggles" id="ec-toggles"></div>
+<div class="swbar">
+  <label>Varga <select id="ec-varga" class="swin"></select></label>
+  <label>Aspects <select id="ec-asp" class="swin">
+    <option value="none" selected>none</option>
+    <option value="all">every gr&amacr;ha d&#7771;&#7779;&#7789;i</option>
+    <option value="ben">benefics only</option>
+    <option value="mal">malefics only</option>
+  </select></label>
+  <label>Trails <input type="range" id="ec-trail" class="swrange" min="0" max="100" step="5" value="0"></label>
+</div>
+
+<h2 id="reading">How to read it</h2>
+<div class="note"><b>The wheel is sidereal and the longitudes are true.</b> Each graha sits at its own degree within its r&amacr;&#347;i, not at the sign&rsquo;s centre, and the degree is printed beside it. A graha moving backwards against the stars is marked <b>R</b>; the Sun and Moon never are. Where two grahas would overlap they are moved onto separate rings rather than drawn on top of one another, so a conjunction reads as two discs close in angle rather than one disc hiding another.</div>
+<p>The <b>trails</b> slider draws where each graha has been over the preceding part of the span, which is the only way a retrograde loop becomes visible as a loop: the trail doubles back on itself and crosses.</p>
+<div class="note"><b>Why there is no tilt here.</b> This wheel is flat, which is the chart convention: Jyoti&#7779;a works in longitude alone and treats every graha as though it sat exactly on the ecliptic. A tilt control was built for this page and then removed, because the renderer tilts the grahas without tilting the rings that <i>are</i> the ecliptic plane, so a tilted wheel drew each graha displaced from the r&amacr;&#347;i it is actually in. A control that misplaces a graha is worse than no control. For the sky laid back into the plane you would really see it in &mdash; with each graha at its own ecliptic latitude, and the local horizon across it &mdash; use the <a href="starwheel.html">Star wheel</a>, which projects for that from the start.</div>
+<p>Changing the <b>varga</b> redraws the same grahas at their divisional longitudes &mdash; a graha&rsquo;s position within its varga sign, stretched across the thirty degrees, so motion within a division is visible rather than being snapped to the sign. Tri&#7747;&#347;&amacr;&#7745;&#347;a is the exception: its five parts are unequal, so a graha there is placed at the centre of its varga sign.</p>
+
+<p class="src"><span>Source</span> The r&amacr;&#347;i and nak&#7779;atra divisions and graha d&#7771;&#7779;&#7789;i follow BPHS; the d&#7771;&#7779;&#7789;i drawn here is <i>graha</i> dr&#7779;&#7789;i, not r&amacr;&#347;i d&#7771;&#7779;&#7789;i. Positions are sidereal, from the built-in engine at the ayan&amacr;&#7745;&#347;a shown; see <a href="starwheel.html">Star wheel</a> for the same sky against the local horizon, <a href="accuracy.html">Accuracy</a> for what these positions are measured to, and <a href="kundli.html">Kundli 2.0</a> to cast a full chart.</p>
+
+<script src="ecliptic.js" defer></script>

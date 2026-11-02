@@ -293,6 +293,65 @@ for (const shape of ["1:1", "4:5", "9:16"]) {
      + ", above the foot at " + r.foot);
 }
 
+/* ───── the place can be changed, and the day survives the change ─────────────
+   The page opened on whatever place a saved chart carried and offered no way
+   to say otherwise, which for a page whose whole claim is "any day and any
+   place" was half the feature missing. It now carries the shared picker.
+
+   Adding it immediately exposed a second fault underneath. compute() seeded
+   the pañcāṅga at local 08:00 on the assumption that sunrise is always behind
+   that, which holds around Ujjain and fails in Reykjavík, where November
+   sunrise is 09:10: the seed landed before sunrise, NP.day returned the
+   pañcāṅga day that had begun the previous morning, and the page showed
+   1 November to a reader who had asked for the 2nd — silently, with a
+   plausible wheel. Both the control and the date it must preserve are
+   asserted here, at a latitude where the old arithmetic was wrong. */
+head("the place can be changed, and a high latitude keeps the date asked for");
+{
+  const { p, errs } = await open({ day: "2026-11-02" });
+  const picker = await p.evaluate(() => !!document.querySelector("#sw-place .npfind"));
+  is(picker, "the shared place picker is present, not a bare label");
+
+  const r = await p.evaluate(async () => {
+    const wait = ms => new Promise(r2 => setTimeout(r2, ms));
+    const stamp = () => document.getElementById("sw-stamp").textContent;
+    const limbs = () => document.getElementById("sw-limbs").textContent;
+    const before = { stamp: stamp(), limbs: limbs() };
+    const inp = document.querySelector("#sw-place .npfind");
+    inp.value = "Reykjavik";
+    inp.dispatchEvent(new Event("input", { bubbles: true }));
+    await wait(2500);
+    const row = document.querySelector("#sw-place .npres [role=option], #sw-place .npres > *");
+    const found = !!row;
+    if (row) row.click();
+    await wait(3000);
+    return { before, found, stamp: stamp(), limbs: limbs(),
+             date: document.getElementById("sw-date").value };
+  });
+  await p.close();
+  /* One console message is EXPECTED here and is not a fault: places.js tries
+     fetch("cities.json") first and falls back to a <script> tag when it is
+     refused, because fetch is blocked on file:// — the page's origin is "null"
+     — and a copy opened straight from Finder must still be able to search for
+     a town. The refusal is the designed first attempt, so it is allowed by
+     name rather than by loosening the check; anything else still fails, and
+     the assertions below prove the fallback actually delivered the rows. */
+  const expected = /cannot load file:.*cities\.json|URL scheme "file" is not supported/;
+  const unexpected = errs.filter(e => !expected.test(e));
+  is(unexpected.length === 0,
+     "no unexpected page errors (" + unexpected.slice(0, 2).join(" / ") + ")");
+  is(r.found, "a search returns a town to choose — so the file:// fallback delivered");
+  is(/Reykjav/.test(r.stamp), "choosing it moves the page to that place");
+  is(r.limbs !== r.before.limbs,
+     "and the pañcāṅga recomputes rather than only the label changing");
+  is(r.date === "2026-11-02", "the date field still reads the date asked for");
+  /* the fault itself: 2 November must stay 2 November at 64°N, where sunrise
+     is after 08:00 and the old seed fell on the previous pañcāṅga day */
+  is(/2 November 2026/.test(r.stamp),
+     "and so does the wheel — 64°N does not roll it back a day (" +
+     r.stamp.slice(0, 34) + ")");
+}
+
 await browser.close();
 console.log("\n" + (fail ? "FAIL" : "PASS") + " starwheel-verify — " + pass
             + " passed, " + fail + " failed");

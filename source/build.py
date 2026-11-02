@@ -615,6 +615,16 @@ def build_shared():
         # eventually disagree, and a wheel that disagreed with the report's
         # would be worse than no wheel. The prelude supplies the two helpers it
         # expects from the report's scope and nothing else.
+        # The animated ecliptic wheel, same bargain as the star wheel: the page
+        # gets report/sky/37-ecliptic-wheel.js itself rather than a copy, so it
+        # and the report's Sky tab animate through one renderer. 02-varga-lagna
+        # comes along because the renderer calls vargaLagna for every varga
+        # other than D1, and that module is self-contained.
+        "ecliptic.js": brandify(
+            jsread(SRC, "js", "ecliptic-prelude.js") + "\n" +
+            jsread(SRC, "js", "report", "core", "02-varga-lagna.js") + "\n" +
+            jsread(SRC, "js", "report", "sky", "37-ecliptic-wheel.js") + "\n" +
+            jsread(SRC, "js", "ecliptic-ui.js")),
         "starwheel.js": brandify(
             jsread(SRC, "js", "starwheel-prelude.js") + "\n" +
             jsread(SRC, "js", "report", "sky", "40-star-wheel.js") + "\n" +
