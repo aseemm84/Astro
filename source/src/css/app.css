@@ -1097,7 +1097,7 @@ html[data-theme] .kreport .krprint a.k-btn{color:var(--accent-soft);
 
 /* The ayanāṃśa ruler's own mark labels: small, rotated, and the one in use
    picked out so the eye finds it among fifteen others. */
-.kreport .kayanruler .ty{font-size:8.5px;fill:var(--muted,#8b8676)}
+.kreport .kayanruler .ty{font-size:8.5px;fill:var(--muted-2,#5a5e78)}
 .kreport .kayanruler .ty.tycur{font-weight:700;fill:var(--sem-bad,#a1493a)}
 
 /* The pane's own ayanāṃśa switcher. It sits above the comparison rather than

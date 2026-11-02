@@ -172,14 +172,31 @@ function ayanPane(D,J){
     .concat(ORD.map(function(g){ return [g,function(S){return SA[S.P[g].sign];},function(S){return S.P[g].sign;}]; }))
     .concat([["D9 lagna",function(S){return SA[S.d9];},function(S){return S.d9;}],
              ["D10 lagna",function(S){return SA[S.d10];},function(S){return S.d10;}]]);
+  /* ---- the marks, and the room their names need ----
+     The labels are rotated a quarter turn so sixteen of them fit across seven
+     degrees. Rotated text still occupies its own length, and that length ran
+     upward out of the top of the viewBox: the band above the lanes was 14px
+     and the names are sixty or more, so every one was sliced to three or four
+     characters. The strip read "Tru  Sūr  Ran  Tru  Sūr  Kris  Lah" — nine
+     labels naming nothing, and three pairs of them identical.
+
+     Two fixes, and both were needed. The band above the ruler is now sized to
+     the longest label actually being drawn, so nothing is clipped whatever
+     the names are; and the names come from the engine's own short tags, which
+     are chosen to be distinct from one another rather than truncated from a
+     full name that five others share a first word with. */
+  var LABFONT=8.5, LABCH=LABFONT*0.62;      /* ≈ advance per character, rotated */
+  var tags=L.map(function(m){ return (window.__ayanModes[m.key]||{}).s||m.key; });
+  var TOP=Math.ceil(Math.max.apply(null,tags.map(function(t){ return t.length; }))*LABCH)+16;
+  var y0b=TOP+6;                            /* the lanes start below the label band */
   /* One pass of snapshots, shared by every lane. Snapping inside each lane's
      own loop recomputed the same fourteen charts fourteen times over. */
   var SAMP=[];
   for(var sa=X0; sa<=X1+1e-9; sa+=STEP) SAMP.push({a:sa,S:ayanSnap(D,sa)});
   if(SAMP[SAMP.length-1].a<X1) SAMP.push({a:X1,S:ayanSnap(D,X1)});
-  var bands='', y0=26, RH=22;
+  var bands='', RH=22;
   LANES.forEach(function(ln,li){
-    var y=y0+li*RH, prev=null, segS=X0, prevLab='';
+    var y=y0b+li*RH, prev=null, segS=X0, prevLab='';
     bands+='<text x="'+(LX-8)+'" y="'+(y+14)+'" class="lab">'+esc(ln[0])+'</text>';
     for(var si=0; si<SAMP.length; si++){
       var a=SAMP[si].a, S=SAMP[si].S, k=ln[2](S), lb=ln[1](S);
@@ -208,24 +225,26 @@ function ayanPane(D,J){
      last one drawn. Marks that lose their label are not lost — they are the
      ones you read by hovering, and the table above names every one of them in
      order anyway. */
-  var HH=y0+LANES.length*RH+34, marks='', lastLab=-1e9, LABGAP=13;
-  L.forEach(function(m){
+  var HH=y0b+LANES.length*RH+34, marks='', lastLab=-1e9, LABGAP=12;
+  L.forEach(function(m,mi){
     var xx=xr(m.deg), cur=(m.key===CUR);
-    marks+='<g><title>'+esc(m.name)+' — '+m.deg.toFixed(4)+'°</title>'+
-      '<line x1="'+xx.toFixed(1)+'" y1="18" x2="'+xx.toFixed(1)+'" y2="'+(HH-26)+
+    marks+='<g><title>'+esc(m.name)+' \u2014 '+m.deg.toFixed(4)+'\u00b0</title>'+
+      '<line x1="'+xx.toFixed(1)+'" y1="'+(TOP-2)+'" x2="'+xx.toFixed(1)+'" y2="'+(HH-26)+
       '" stroke="'+(cur?"#a1493a":"#b9ad90")+'" stroke-width="'+(cur?2:0.7)+
       '"'+(cur?'':' stroke-dasharray="2 3"')+'/>';
     /* the mode in use always gets its name, whatever it would collide with */
     if(cur || xx-lastLab>=LABGAP){
       lastLab=Math.max(lastLab,xx);
-      marks+='<text x="'+xx.toFixed(1)+'" y="14" class="ty'+(cur?' tycur':'')+
-        '" transform="rotate(-90 '+xx.toFixed(1)+' 14)" style="text-anchor:start">'+
-        esc(m.name.replace(/—.*$/,"").split("(")[0].trim().split(" ")[0].slice(0,10))+'</text>';
+      /* anchored at the BOTTOM of the band and rotated so it reads upward into
+         the room reserved above, rather than off the edge of it */
+      marks+='<text x="'+xx.toFixed(1)+'" y="'+(TOP-6)+'" class="ty'+(cur?' tycur':'')+
+        '" transform="rotate(-90 '+xx.toFixed(1)+' '+(TOP-6)+')" style="text-anchor:start">'+
+        esc(tags[mi])+'</text>';
     }
     marks+='</g>';
   });
   for(var t=Math.ceil(X0);t<=X1;t++){ var xt=xr(t);
-    marks+='<text x="'+xt.toFixed(1)+'" y="'+(HH-8)+'" class="ty">'+t+'°</text>'; }
+    marks+='<text x="'+xt.toFixed(1)+'" y="'+(HH-8)+'" class="ty">'+t+'\u00b0</text>'; }
   var svg='<svg viewBox="0 0 '+RW+' '+HH+'" class="kwsvg kruler kayanruler" role="img" '+
     'aria-label="How each part of the chart changes across the whole range of published ayanāṃśas">'+
     bands+marks+'</svg>';

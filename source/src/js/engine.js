@@ -27,20 +27,26 @@ function Tof(jd){return (jd-2451545.0)/36525.0;}
    reproduce Swiss Ephemeris to 0.000"; true Chitrapaksha is a moving definition tied
    to Spica's actual position and carries about +/-20" of non-polynomial wobble, which
    is well under an arcminute and far below a nakshatra pada (3000"), but is not exact. */
+/* A short tag per mode, for places with no room for the full name.
+   The ruler on the Ayanāṃśa pane was taking the first word of the name, which
+   is useless here: five of the sixteen begin "Sūrya" or "True", so the strip
+   read Tru, Sūr, Ran, Tru, Sūr, Kris, Lah, Fag, Sūr — nine labels naming
+   nothing. These are chosen to be distinct from one another at a glance, and
+   they live beside the names so the two cannot drift apart. */
 var AYAN_MODES={
-  lahiri:     {name:"Lahiri (Chitrapakṣa)", note:"the Indian civil standard; matches Swiss Ephemeris to 0.000″",
+  lahiri:     {name:"Lahiri (Chitrapakṣa)", s:"Lahiri", note:"the Indian civil standard; matches Swiss Ephemeris to 0.000″",
                c:[0.000307083556492,1.39688796382,23.857092356]},
-  raman:      {name:"Raman", note:"B. V. Raman's value; matches Swiss Ephemeris to 0.000″",
+  raman:      {name:"Raman", s:"Raman", note:"B. V. Raman's value; matches Swiss Ephemeris to 0.000″",
                c:[0.00030705015156,1.39688808364,22.4107910426]},
-  kp:         {name:"Krishnamurti (KP)", note:"used in the KP system; matches Swiss Ephemeris to 0.000″",
+  kp:         {name:"Krishnamurti (KP)", s:"KP", note:"used in the KP system; matches Swiss Ephemeris to 0.000″",
                c:[0.000307050151567,1.39688808364,23.7602400426]},
-  truechitra: {name:"True Chitrapakṣa", note:"Spica fixed at 180° exactly; a moving definition, within ≈20″ of Swiss Ephemeris",
+  truechitra: {name:"True Chitrapakṣa", s:"T. Citrā", note:"Spica fixed at 180° exactly; a moving definition, within ≈20″ of Swiss Ephemeris",
                c:[0.00030778556054,1.39569673536,23.8413914361]},
-  yukteshwar: {name:"Yukteshwar", note:"Śrī Yukteswar's value; matches Swiss Ephemeris to 0.000″",
+  yukteshwar: {name:"Yukteshwar", s:"Yukteśvar", note:"Śrī Yukteswar's value; matches Swiss Ephemeris to 0.000″",
                c:[0.000307050196155334,1.39688808367904,22.4788030300512]},
-  bhasin:     {name:"J. N. Bhasin", note:"J. N. Bhasin's value; matches Swiss Ephemeris to 0.000″",
+  bhasin:     {name:"J. N. Bhasin", s:"Bhasin", note:"J. N. Bhasin's value; matches Swiss Ephemeris to 0.000″",
                c:[0.000307050196162532,1.39688808367904,22.7621370300512]},
-  fagan:      {name:"Fagan–Bradley", note:"the Western sidereal standard, not a Jyotiṣa one; offered for comparison. " +
+  fagan:      {name:"Fagan–Bradley", s:"Fagan", note:"the Western sidereal standard, not a Jyotiṣa one; offered for comparison. " +
                     "Matches Swiss Ephemeris to 0.000″",
                c:[0.000307079912515056,1.39688797821407,24.7402999966933]},
 
@@ -49,9 +55,9 @@ var AYAN_MODES={
      so they carry the same ≈20″ of non-polynomial wobble. A cubic and a quintic
      were both tried and neither helps: the residual is the star's own apparent
      motion, not a shortcoming of the polynomial. */
-  truerevati: {name:"True Revatī", note:"ζ Piscium held at its stated longitude; a moving definition, within ≈20″ of Swiss Ephemeris",
+  truerevati: {name:"True Revatī", s:"T. Revatī", note:"ζ Piscium held at its stated longitude; a moving definition, within ≈20″ of Swiss Ephemeris",
                c:[0.000306512057764597,1.40008230121424,20.0441879052671]},
-  truepushya: {name:"True Puṣya", note:"δ Cancri held at its stated longitude; a moving definition, within ≈19″ of Swiss Ephemeris",
+  truepushya: {name:"True Puṣya", s:"T. Puṣya", note:"δ Cancri held at its stated longitude; a moving definition, within ≈19″ of Swiss Ephemeris",
                c:[0.00030665680272264,1.39808717915315,22.7220173465237]},
 
   /* ---- the three Sūrya Siddhānta readings ----------------------------------
@@ -68,27 +74,27 @@ var AYAN_MODES={
      stance ss-engine.js already takes on the Sūrya Siddhānta page. The first
      two use that page's own model, so a figure shown here and the same figure
      there come from one definition rather than two; the harness asserts it. */
-  ss_text:    {name:"Sūrya Siddhānta — libration", unit:"text",
+  ss_text:    {name:"Sūrya Siddhānta — libration", s:"SS libration", unit:"text",
                note:"the text's own model: ±27° oscillating over 7200 years, zero at 499 CE. " +
                     "Near its maximum now and almost stationary — it advances ≈0.35° this century " +
                     "where every modern ayanāṃśa advances ≈1.03°. Not a Swiss Ephemeris quantity.",
                f:function(y){ return 27*Math.sin(2*Math.PI*(y-499)/7200); }},
-  ss_rate:    {name:"Sūrya Siddhānta — steady 54″", unit:"text",
+  ss_rate:    {name:"Sūrya Siddhānta — steady 54″", s:"SS 54″", unit:"text",
                note:"the text's rate with the libration ignored: a constant 54″ a year from 499 CE. " +
                     "This is what is usually meant casually by “the Sūrya Siddhānta ayanāṃśa”, and it " +
                     "agrees with the libration reading only near the zero point. Not a Swiss Ephemeris quantity.",
                f:function(y){ return (y-499)*54/3600; }},
-  ss_swiss:   {name:"Sūrya Siddhānta (Swiss Ephemeris)", note:"Swiss Ephemeris SE_SIDM_SURYASIDDHANTA: " +
+  ss_swiss:   {name:"Sūrya Siddhānta (Swiss Ephemeris)", s:"SS Swiss", note:"Swiss Ephemeris SE_SIDM_SURYASIDDHANTA: " +
                     "zero at 499 CE then advanced by modern precession, not by the text's libration. " +
                     "Quadratic fitted over 1800–2200; matches Swiss Ephemeris to 0.000″",
                c:[0.00030619214892391,1.39688356264496,20.8950588659651]},
-  ss_revati:  {name:"Sūrya Siddhānta — Revatī (Swiss)", note:"Swiss Ephemeris SE_SIDM_SS_REVATI: Revatī at 359°50′, " +
+  ss_revati:  {name:"Sūrya Siddhānta — Revatī (Swiss)", s:"SS Revatī", note:"Swiss Ephemeris SE_SIDM_SS_REVATI: Revatī at 359°50′, " +
                     "taken at a fixed epoch and then advanced by modern precession. Matches Swiss Ephemeris to 0.000″",
                c:[0.000306192149237889,1.39688356264479,20.1033884059649]},
-  ss_citra:   {name:"Sūrya Siddhānta — Citrā (Swiss)", note:"Swiss Ephemeris SE_SIDM_SS_CITRA: the same scheme with " +
+  ss_citra:   {name:"Sūrya Siddhānta — Citrā (Swiss)", s:"SS Citrā", note:"Swiss Ephemeris SE_SIDM_SS_CITRA: the same scheme with " +
                     "Citrā at 180° instead. Matches Swiss Ephemeris to 0.000″",
                c:[0.000306192149240291,1.39688356264479,23.0057633059649]},
-  aryabhata:  {name:"Āryabhaṭa", note:"Swiss Ephemeris SE_SIDM_ARYABHATA. Measured against its Sūrya Siddhānta mode " +
+  aryabhata:  {name:"Āryabhaṭa", s:"Āryabhaṭa", note:"Swiss Ephemeris SE_SIDM_ARYABHATA. Measured against its Sūrya Siddhānta mode " +
                     "over 1700–2300 the two never differ by more than 0.003″ — for every practical purpose this is " +
                     "the same series under another name, and it is offered because it is published, not because it " +
                     "is a separate choice",
@@ -114,7 +120,7 @@ var AYAN_MODES={
      NOT a BPHS quantity. BPHS prescribes no ayanāṃśa; it uses one without
      defining it. Lahiri remains the default and the value everything on this
      site is validated against. */
-  nirayana_revati: {name:"Nirayana–Revatī (this site)",
+  nirayana_revati: {name:"Nirayana–Revatī (this site)", s:"Nirayana",
                note:"this site's own: sidereal zero 10′ east of Revatī, from the Sūrya Siddhānta's own dhruvaka " +
                     "of 359°50′, with the star moved by its real space motion and measured by polar longitude. " +
                     "Independent of, and within 1.7′ of, Swiss Ephemeris's Sūrya Siddhānta–Revatī",

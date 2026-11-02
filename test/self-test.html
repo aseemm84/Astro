@@ -353,6 +353,34 @@ function runAyanamsaChecks(W){
       d24.length===0,
       d24.length ? d24.slice(0,3).join(", ") : "288 parts, forward counting throughout");
   })();
+  /* ---- the short tags ----
+     The ayanāṃśa ruler has room for a rotated word, not a name, and it used
+     to take the first word of the name. Five of the sixteen begin "Sūrya" or
+     "True", so the strip read Tru, Sūr, Ran, Tru, Sūr, Kris, Lah — nine
+     labels naming nothing and three pairs of them identical. Each mode now
+     carries its own short tag beside its name.
+
+     Two things have to hold and neither is visible in a diff: every mode must
+     have one, and no two may be the same. The first attempt at adding them
+     silently skipped two — its "already tagged?" guard looked far enough
+     ahead to match a NEIGHBOUR's tag — and the ruler duly printed a raw key
+     in lowercase where a name should have been. */
+  (function(){
+    var tags={}, noTag=[], dupe=[];
+    Object.keys(AM0).forEach(function(m){
+      var t=AM0[m].s;
+      if(!t){ noTag.push(m); return; }
+      if(tags[t]) dupe.push(t+" ("+tags[t]+" and "+m+")");
+      tags[t]=m;
+    });
+    check("every ayanāṃśa carries a short tag for places with no room for its name",
+      noTag.length===0, noTag.length?noTag.join(", "):Object.keys(AM0).length+" tagged");
+    check("and no two share one, which is the whole point of having them",
+      dupe.length===0, dupe.length?dupe.join(" · "):Object.keys(tags).length+" distinct");
+    check("no tag is long enough to need truncating in the ruler",
+      Object.keys(tags).every(function(t){ return t.length<=14; }),
+      "longest: "+Object.keys(tags).sort(function(a,b){return b.length-a.length;})[0]);
+  })();
   check("Āryabhaṭa and the Swiss Sūrya Siddhānta are the same series",
     Math.abs(W.__ayanFor("aryabhata",2451545.0)-W.__ayanFor("ss_swiss",2451545.0))<0.0001,
     "offered because it is published, not because it is a separate choice");
