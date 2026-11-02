@@ -291,7 +291,7 @@ function runAyanamsaChecks(W){
     truerevati:20.04419, truepushya:22.72202,
     ss_text:26.08634, ss_rate:22.51562, ss_swiss:20.89506,
     ss_revati:20.10339, ss_citra:23.00576, aryabhata:20.89506,
-    nirayana_revati:20.13211
+    nirayana_revati:20.13211, nirayana_citra:23.01992
   };
   var goldBad=[], goldSeen=0;
   Object.keys(GOLD_AYAN).forEach(function(m){
@@ -562,6 +562,44 @@ function runSensitivityChecks(doc, key){
   check("the node fork compares mean against true",
     fk && fk.innerText.indexOf("Mean node")>=0 && fk.innerText.indexOf("True node")>=0,
     "both node conventions shown");
+
+  /* ---- the picker must offer every mode the engine declares ----
+     It was a hand-written list of sixteen <option> rows in the builder's shell
+     and sixteen more in the Workstation's. A seventeenth mode added to the
+     engine appeared in the comparison table, in the ruler and in the legend,
+     and in neither picker — so it could not be chosen at all, and casting on
+     it fell back to Lahiri silently. Nothing threw; the only symptom was a
+     caption naming a mode the reader had not picked.
+
+     The picker is built from the engine's table now, and this is the assertion
+     that keeps it that way. Checked by value, not by count: a list of the
+     right length naming the wrong modes would pass a count. */
+  (function(){
+    var sel=doc.getElementById("k-ayan");
+    var have=sel?[].map.call(sel.options,function(o){ return o.value; }):[];
+    var declared=Object.keys(AM).sort();
+    var missing=declared.filter(function(k){ return have.indexOf(k)<0; });
+    var extra=have.filter(function(k){ return !AM[k]; });
+    check("the ayanāṃśa picker offers every mode the engine declares, and no others",
+      sel && missing.length===0 && extra.length===0,
+      !sel ? "no picker on the page"
+        : missing.length ? "missing: "+missing.join(", ")
+        : extra.length ? "offers modes the engine does not: "+extra.join(", ")
+        : have.length+" options for "+declared.length+" modes");
+    /* and each is actually castable — an option whose value the engine will not
+       accept falls back to the default, which looks like the reader changing
+       their mind rather than a fault */
+    var bad=[];
+    /* the frame's own window, reached through the document it was handed —
+       runSensitivityChecks takes no W, and the first version of this check
+       reached for one and stopped the whole suite instead of failing once. */
+    var FW=doc.defaultView;
+    have.forEach(function(k){ if(!AM[k]||!FW||typeof FW.__ayanFor!=="function") return;
+      var v=FW.__ayanFor(k,2451545.0);
+      if(!isFinite(v)||Math.abs(v)>40) bad.push(k+"="+v); });
+    check("and every option the picker offers computes a usable value",
+      bad.length===0, bad.length?bad.join(", "):have.length+" checked at J2000");
+  })();
 
   /* ---- the three places that used to say "Lahiri" whatever you chose ----
      The vitals card printed the constant string "sidereal (≈ Lahiri)" under

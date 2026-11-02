@@ -74,8 +74,8 @@ var AYAN_FAM=[
    ["truechitra","truerevati","truepushya"]],
   ["Sūrya Siddhānta and classical","from the text, and from the readings later editors took of it",
    ["ss_text","ss_rate","ss_swiss","ss_revati","ss_citra","aryabhata"]],
-  ["This site's own","Revatī at 359°50′, computed to the precision the text states and no further",
-   ["nirayana_revati"]]
+  ["This site's own","the two classical anchors, derived by one method so the 3.8° between them is the texts disagreeing and nothing else",
+   ["nirayana_citra","nirayana_revati"]]
 ];
 var AYAN_COL={
   lahiri:"#2f6fb5", raman:"#6f93d4", kp:"#1f8a8a", yukteshwar:"#5bb0ae",
@@ -83,7 +83,7 @@ var AYAN_COL={
   truechitra:"#2f8f52", truerevati:"#63b36a", truepushya:"#93b03f",
   ss_text:"#c9922a", ss_rate:"#e0a94a", ss_swiss:"#b5742a",
   ss_revati:"#d9893f", ss_citra:"#a35f2a", aryabhata:"#8d7149",
-  nirayana_revati:"#b0343c"
+  nirayana_citra:"#d4635c", nirayana_revati:"#9e2a3a"
 };
 function ayanColour(k){ return AYAN_COL[k]||"#8b8676"; }
 /* exposed so the suite can assert every declared mode has a colour and a
@@ -125,7 +125,7 @@ function ayanLegend(L,CUR){
     orphan.map(function(m){ return '<li><i class="kaysw" style="background:'+ayanColour(m.key)+
       '"></i><span class="kaynm">'+esc(m.name)+'</span><span class="kayval">'+
       m.deg.toFixed(3)+'\u00b0</span></li>'; }).join("")+'</ul></div>';
-  /* two of the sixteen are the same series and draw one line between them;
+  /* two of them are the same series and draw one line between them;
      saying so is better than letting a reader hunt for a missing colour */
   var same=L.filter(function(m){ return m.key==="ss_swiss"||m.key==="aryabhata"; });
   var note=(same.length===2 && Math.abs(same[0].deg-same[1].deg)<0.0005)
@@ -302,7 +302,7 @@ function ayanPane(D,J){
       prev=k; prevLab=lb;
     }
   });
-  /* The sixteen standards are not spread evenly — several sit within a tenth
+  /* The standards are not spread evenly — several sit within a tenth
      of a degree of each other, and Āryabhaṭa and the Swiss Sūrya Siddhānta are
      the same series to four decimals. Writing a label at every mark put four
      or five names on top of one another at the left of the ruler, which is
@@ -371,7 +371,7 @@ function ayanPane(D,J){
       w.up.toFixed(2)+'°</b> into <b>'+esc(D.birthNak.nak)+
       '</b> and <b>'+w.down.toFixed(2)+'°</b> short of the next nakṣatra. So the whole Viṃśottarī '+
       '<i>sequence</i> holds for any ayanāṃśa '+span+
-      (reach.length?' — which '+(reach.length===1?'one':reach.length)+' of the sixteen standards '+
+      (reach.length?' — which '+(reach.length===1?'one':reach.length)+' of the '+L.length+' standards '+
         (reach.length===1?'falls':'fall')+' outside, so '+(reach.length===1?'it gives':'they give')+
         ' a different opening mahādaśā and a different timeline entirely'
        :' — a range no published standard leaves, so the sequence is settled whichever you pick')+

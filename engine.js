@@ -381,7 +381,40 @@ var AYAN_MODES={
      NOT a BPHS quantity. BPHS prescribes no ayanāṃśa; it uses one without
      defining it. Lahiri remains the default and the value everything on this
      site is validated against. */
-  nirayana_revati: {name:"Nirayana–Revatī (this site)", s:"Nirayana",
+  /* ---- and the same method on the other anchor ----------------------------
+     Citrā (Spica, α Virginis) at polar longitude 180°00′ — the anchor the
+     Chitrapakṣa family is named for — derived by exactly the pipeline the
+     Revatī reading above uses: HYG v4.1 astrometry, the star propagated to the
+     date by its full space motion, measured by POLAR longitude in the ecliptic
+     and mean equinox of date with no nutation.
+
+     WHY BOTH. The two classical anchors are not consistent with each other.
+     Citrā at 180° and Revatī at 359°50′ cannot both be true of the sky: as
+     measured here they disagree by about 3.8°, which is a different chart
+     rather than a refinement of one. Offering both, derived identically, is
+     the only honest way to present that — the difference between these two
+     entries is the textual disagreement itself, with the method held constant
+     so that nothing else can be blamed for it.
+
+     Derived independently and then found to agree with Swiss Ephemeris's own
+     SS_CITRA to 0.9 arcminutes at 2026, which is the corroboration and not the
+     source — the same relationship the Revatī reading has to SS_REVATI at 1.7′.
+
+     It sits 49.2′ from True Chitrapakṣa, and that gap is not an error in
+     either: True Chitrapakṣa anchors Citrā's ECLIPTIC longitude where this
+     anchors its POLAR longitude, and for a star 2° off the ecliptic those two
+     differ by exactly that much. The two definitions are answering different
+     questions about the same star.
+
+     Quadratic fitted over 1700–2300, max residual 0.023″ against the
+     derivation. NOT a BPHS quantity. */
+  nirayana_citra: {name:"Nirayana–Chitrapakṣa (this site)", s:"Nir. Citrā",
+               note:"this site's own: sidereal zero at Citrā (Spica), the 180° anchor the Chitrapakṣa " +
+                    "family is named for, with the star moved by its real space motion and measured by " +
+                    "polar longitude. Independent of, and within 0.9′ of, Swiss Ephemeris's SS_CITRA; " +
+                    "49.2′ from True Chitrapakṣa, which anchors the same star's ecliptic longitude instead",
+               c:[0.00056693400497,1.40165348481417,23.019916795380]},
+  nirayana_revati: {name:"Nirayana–Revatī (this site)", s:"Nir. Revatī",
                note:"this site's own: sidereal zero 10′ east of Revatī, from the Sūrya Siddhānta's own dhruvaka " +
                     "of 359°50′, with the star moved by its real space motion and measured by polar longitude. " +
                     "Independent of, and within 1.7′ of, Swiss Ephemeris's Sūrya Siddhānta–Revatī",

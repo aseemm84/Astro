@@ -30,32 +30,13 @@
 </div>
 <p class="k-note">The city search sets the UTC offset that applied on the birth date, including historical daylight saving. If you type coordinates by hand, set the offset yourself.</p>
 <details class="k-raw" id="k-settings"><summary>Settings &middot; ayanāṃśa and lunar nodes</summary><div class="k-form" style="margin-top:8px"><div class="k-full"><label for="k-ayan">Ayanāṃśa</label>
-    <select id="k-ayan">
-      <optgroup label="Fixed-epoch standards">
-        <option value="lahiri" selected>Lahiri (Chitrapakṣa) — the Indian civil standard</option>
-        <option value="raman">Raman</option>
-        <option value="kp">Krishnamurti (KP)</option>
-        <option value="yukteshwar">Yukteshwar</option>
-        <option value="bhasin">J. N. Bhasin</option>
-        <option value="fagan">Fagan–Bradley — Western sidereal, not Jyotiṣa</option>
-      </optgroup>
-      <optgroup label="Moving star — the anchor is tracked, not frozen">
-        <option value="truechitra">True Chitrapakṣa — Spica at 180°</option>
-        <option value="truerevati">True Revatī — ζ Piscium</option>
-        <option value="truepushya">True Puṣya — δ Cancri</option>
-      </optgroup>
-      <optgroup label="Sūrya Siddhānta and classical">
-        <option value="ss_text">Sūrya Siddhānta — the text's libration (±27°, 7200 years)</option>
-        <option value="ss_rate">Sūrya Siddhānta — steady 54″ a year from 499 CE</option>
-        <option value="ss_swiss">Sūrya Siddhānta — Swiss Ephemeris definition</option>
-        <option value="ss_revati">Sūrya Siddhānta — Revatī at 359°50′ (Swiss)</option>
-        <option value="ss_citra">Sūrya Siddhānta — Citrā at 180° (Swiss)</option>
-        <option value="aryabhata">Āryabhaṭa — same series as the Swiss Sūrya Siddhānta</option>
-      </optgroup>
-      <optgroup label="This site's own">
-        <option value="nirayana_revati">Nirayana–Revatī — the text's 359°50′, star moving, polar longitude</option>
-      </optgroup>
-    </select>
+    <select id="k-ayan"><!-- populated by ui.js from the engine's own mode table.
+      It used to be sixteen hand-written <option> rows here AND sixteen more in
+      the Workstation's shell, which meant a seventeenth mode added to the
+      engine appeared in the comparison pane, in the ruler and in the legend —
+      and not in the picker, so choosing it was impossible and casting on it
+      fell silently back to Lahiri. Two lists that have to be edited together
+      are one list too many. --></select>
     <p class="k-note">Changes every sidereal position in the report. Lahiri is the default and everything
     on this site is validated against it; the others are offered so the choice is visible rather than hidden.
     An ayan&#257;&#7747;&#347;a is a <b>convention, not a measurement</b>: the rate is astronomy, but where sidereal zero

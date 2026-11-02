@@ -370,6 +370,44 @@
     el.innerHTML="Sidereal · "+esc((M&&M.name)||sel)+
                  " ayanāṃśa · whole-sign houses";
   }
+  /* ---- the ayanāṃśa picker, built from the engine's own table ----
+     This was sixteen hand-written <option> rows in the builder's shell and
+     sixteen more in the Workstation's. Adding a seventeenth mode to the engine
+     put it in the comparison table, the ruler and the legend — and not in
+     either picker, so it could not be chosen, and casting on it fell silently
+     back to Lahiri with no error anywhere. Two lists that must be edited
+     together are one list too many.
+
+     The grouping comes from the report pane's own family table, so the picker,
+     the legend and the ruler's colours are all grouped the same way from one
+     declaration. If that table is not loaded — the Workstation builds its
+     scaffold before the report bundle on some paths — the modes are listed
+     flat rather than not at all. */
+  function fillAyanPicker(){
+    var sel=$("k-ayan"); if(!sel) return;
+    var M=window.__ayanModes; if(!M) return;
+    var want=(sel.value)||"lahiri";
+    var fams=window.__ayanFamilies, done={}, html="";
+    function opt(k){
+      done[k]=1;
+      var m=M[k]; if(!m) return "";
+      var extra=(k==="lahiri")?" — the Indian civil standard"
+             :(k==="fagan")?" — Western sidereal, not Jyotiṣa":"";
+      return '<option value="'+esc(k)+'">'+esc(m.name)+extra+'</option>';
+    }
+    if(fams&&fams.length){
+      fams.forEach(function(f){
+        var inner=f[2].filter(function(k){ return M[k]; }).map(opt).join("");
+        if(inner) html+='<optgroup label="'+esc(f[0])+(f[1]?" — "+esc(f[1]):"")+'">'+inner+'</optgroup>';
+      });
+    }
+    /* anything the families did not name still has to be choosable */
+    var rest=Object.keys(M).filter(function(k){ return !done[k]; }).map(opt).join("");
+    if(rest) html+='<optgroup label="Other">'+rest+'</optgroup>';
+    sel.innerHTML=html;
+    sel.value=M[want]?want:"lahiri";
+  }
+  try{ fillAyanPicker(); }catch(e){}
   if($("k-ayan")) $("k-ayan").addEventListener("change",convStrip);
   convStrip();
 

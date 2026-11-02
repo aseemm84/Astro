@@ -2473,7 +2473,7 @@ html[data-theme="emerald"] .wsnext.lead{
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-11-02.96b8752";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself — of forty-four in all. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html" class="active">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
+</script><script>window.__kBuild="2026-11-02.d95612e";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself — of forty-four in all. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html" class="active">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
 
 <p class="mochartbar" id="mo-chart"></p>
 <div id="mo-host" class="kreport"><p class="k-status" id="mo-status">Loading the scenes…</p></div>
@@ -2869,7 +2869,40 @@ var AYAN_MODES={
      NOT a BPHS quantity. BPHS prescribes no ayanāṃśa; it uses one without
      defining it. Lahiri remains the default and the value everything on this
      site is validated against. */
-  nirayana_revati: {name:"Nirayana–Revatī (this site)", s:"Nirayana",
+  /* ---- and the same method on the other anchor ----------------------------
+     Citrā (Spica, α Virginis) at polar longitude 180°00′ — the anchor the
+     Chitrapakṣa family is named for — derived by exactly the pipeline the
+     Revatī reading above uses: HYG v4.1 astrometry, the star propagated to the
+     date by its full space motion, measured by POLAR longitude in the ecliptic
+     and mean equinox of date with no nutation.
+
+     WHY BOTH. The two classical anchors are not consistent with each other.
+     Citrā at 180° and Revatī at 359°50′ cannot both be true of the sky: as
+     measured here they disagree by about 3.8°, which is a different chart
+     rather than a refinement of one. Offering both, derived identically, is
+     the only honest way to present that — the difference between these two
+     entries is the textual disagreement itself, with the method held constant
+     so that nothing else can be blamed for it.
+
+     Derived independently and then found to agree with Swiss Ephemeris's own
+     SS_CITRA to 0.9 arcminutes at 2026, which is the corroboration and not the
+     source — the same relationship the Revatī reading has to SS_REVATI at 1.7′.
+
+     It sits 49.2′ from True Chitrapakṣa, and that gap is not an error in
+     either: True Chitrapakṣa anchors Citrā's ECLIPTIC longitude where this
+     anchors its POLAR longitude, and for a star 2° off the ecliptic those two
+     differ by exactly that much. The two definitions are answering different
+     questions about the same star.
+
+     Quadratic fitted over 1700–2300, max residual 0.023″ against the
+     derivation. NOT a BPHS quantity. */
+  nirayana_citra: {name:"Nirayana–Chitrapakṣa (this site)", s:"Nir. Citrā",
+               note:"this site's own: sidereal zero at Citrā (Spica), the 180° anchor the Chitrapakṣa " +
+                    "family is named for, with the star moved by its real space motion and measured by " +
+                    "polar longitude. Independent of, and within 0.9′ of, Swiss Ephemeris's SS_CITRA; " +
+                    "49.2′ from True Chitrapakṣa, which anchors the same star's ecliptic longitude instead",
+               c:[0.00056693400497,1.40165348481417,23.019916795380]},
+  nirayana_revati: {name:"Nirayana–Revatī (this site)", s:"Nir. Revatī",
                note:"this site's own: sidereal zero 10′ east of Revatī, from the Sūrya Siddhānta's own dhruvaka " +
                     "of 359°50′, with the star moved by its real space motion and measured by polar longitude. " +
                     "Independent of, and within 1.7′ of, Swiss Ephemeris's Sūrya Siddhānta–Revatī",
@@ -9165,8 +9198,8 @@ var AYAN_FAM=[
    ["truechitra","truerevati","truepushya"]],
   ["Sūrya Siddhānta and classical","from the text, and from the readings later editors took of it",
    ["ss_text","ss_rate","ss_swiss","ss_revati","ss_citra","aryabhata"]],
-  ["This site's own","Revatī at 359°50′, computed to the precision the text states and no further",
-   ["nirayana_revati"]]
+  ["This site's own","the two classical anchors, derived by one method so the 3.8° between them is the texts disagreeing and nothing else",
+   ["nirayana_citra","nirayana_revati"]]
 ];
 var AYAN_COL={
   lahiri:"#2f6fb5", raman:"#6f93d4", kp:"#1f8a8a", yukteshwar:"#5bb0ae",
@@ -9174,7 +9207,7 @@ var AYAN_COL={
   truechitra:"#2f8f52", truerevati:"#63b36a", truepushya:"#93b03f",
   ss_text:"#c9922a", ss_rate:"#e0a94a", ss_swiss:"#b5742a",
   ss_revati:"#d9893f", ss_citra:"#a35f2a", aryabhata:"#8d7149",
-  nirayana_revati:"#b0343c"
+  nirayana_citra:"#d4635c", nirayana_revati:"#9e2a3a"
 };
 function ayanColour(k){ return AYAN_COL[k]||"#8b8676"; }
 /* exposed so the suite can assert every declared mode has a colour and a
@@ -9216,7 +9249,7 @@ function ayanLegend(L,CUR){
     orphan.map(function(m){ return '<li><i class="kaysw" style="background:'+ayanColour(m.key)+
       '"></i><span class="kaynm">'+esc(m.name)+'</span><span class="kayval">'+
       m.deg.toFixed(3)+'\u00b0</span></li>'; }).join("")+'</ul></div>';
-  /* two of the sixteen are the same series and draw one line between them;
+  /* two of them are the same series and draw one line between them;
      saying so is better than letting a reader hunt for a missing colour */
   var same=L.filter(function(m){ return m.key==="ss_swiss"||m.key==="aryabhata"; });
   var note=(same.length===2 && Math.abs(same[0].deg-same[1].deg)<0.0005)
@@ -9393,7 +9426,7 @@ function ayanPane(D,J){
       prev=k; prevLab=lb;
     }
   });
-  /* The sixteen standards are not spread evenly — several sit within a tenth
+  /* The standards are not spread evenly — several sit within a tenth
      of a degree of each other, and Āryabhaṭa and the Swiss Sūrya Siddhānta are
      the same series to four decimals. Writing a label at every mark put four
      or five names on top of one another at the left of the ruler, which is
@@ -9462,7 +9495,7 @@ function ayanPane(D,J){
       w.up.toFixed(2)+'°</b> into <b>'+esc(D.birthNak.nak)+
       '</b> and <b>'+w.down.toFixed(2)+'°</b> short of the next nakṣatra. So the whole Viṃśottarī '+
       '<i>sequence</i> holds for any ayanāṃśa '+span+
-      (reach.length?' — which '+(reach.length===1?'one':reach.length)+' of the sixteen standards '+
+      (reach.length?' — which '+(reach.length===1?'one':reach.length)+' of the '+L.length+' standards '+
         (reach.length===1?'falls':'fall')+' outside, so '+(reach.length===1?'it gives':'they give')+
         ' a different opening mahādaśā and a different timeline entirely'
        :' — a range no published standard leaves, so the sequence is settled whichever you pick')+
