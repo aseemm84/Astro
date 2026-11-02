@@ -28,6 +28,9 @@ source/
   test/make-reference-fixture.py  writes the fixture that harness holds it to
   test/fixtures/                  reference-ecliptic.json — 400 ERFA samples
   test/span-verify.mjs            the certified window, its band and tolerances
+  test/citation-verify.mjs        every BPHS citation, checked as a citation
+  test/make-citation-registry.py  writes data/citations.json from the source
+  data/citations.json             196 citations, 82 loci, 36 files
 ```
 
 ## The certified window
@@ -179,6 +182,68 @@ A JPL DE kernel would beat `plan94` for the outer planets. `naif.jpl.nasa.gov`
 is not reachable from this environment, so if it ever becomes so, set
 `EPHEMERIS` in the generator to `de440s` and every planet bar can drop by an
 order of magnitude with no other change.
+
+## Citations
+
+The project's first rule is that a citation is either exact or absent and none
+is fabricated. That rule had been kept by hand, in prose, across **36 files and
+196 citations**, with nothing checking it. A wrong chapter, a volume that
+contradicts the same chapter cited elsewhere, or a verse range written backwards
+would all have shipped, and the first person to notice would have been a reader
+who went to the PDF to look one up.
+
+`make-citation-registry.py` extracts them all into `data/citations.json` — file,
+line, chapter, verses, and the line of code the citation sits in so it can be
+reviewed. The registry is **generated from the code, never edited beside it**:
+the code stays the one place a citation is written, and a registry you had to
+update in step with the prose would just be a second thing to forget.
+
+`citation-verify.mjs` then checks, in 20 assertions:
+
+* **The registry still matches the source.** It reruns the generator into a
+  scratch file and compares byte for byte. This is the check the others depend
+  on — everything else could pass on a registry six months stale, and this is
+  what notices a citation added to the code and never registered.
+* Every chapter inside 1–97; every explicit volume consistent with the
+  edition's split; no verse range backwards; no chapter cited as being in both
+  volumes; every citation carrying the line it sits in.
+* **Notation uniform enough to grep.** Not pedantry: a citation nobody can grep
+  for is a citation nobody checks. The house form is `Ch. 35, vv. 9–11`, with an
+  absent volume, an absent verse part, a single verse and a spelled-out
+  "Chapter" tolerated.
+
+### What it cannot check, and says so
+
+Whether a verse **says** what the surrounding code claims. That needs the text
+as data, which is the next step. The registry's own provenance block states this
+rather than leaving a reader to assume the stronger thing.
+
+### The volume split is 45 / 52, and that is not a round number
+
+Both prefaces state it. Vol. 1: *"The present volume—first volume—contains 45
+chapters while the remaining 52 chapters have been put in the second volume."*
+Vol. 2 opens at Chapter 46, "Dasas (Periods) of planets".
+
+Worth recording because the generator started with `VOLUME_SPLIT = 50`, assumed
+because it was round, and promptly flagged the source's own `BPHS, Vol. 2, Ch.
+46` as suspicious. **The citation was right and the assumption was wrong.** That
+is the use of a registry — it sent someone to look instead of assuming — and the
+figure now travels with the quotation that settles it.
+
+### What the first run found
+
+Seven real notation drifts, now normalised: five citations written `ch.`
+lower-case or with the comma missing (`Vol. 2 ch. 79 v. 9`), and two verse ranges
+using a hyphen where every other one uses an en-dash. Nothing wrong with the
+scholarship — exactly the drift that accumulates in prose nobody can grep.
+
+It also found two bugs in its own extractor, which are the more instructive
+ones. The volume digit was an unnamed inner group read back positionally, so
+named groups shifted the numbering and every citation recorded its *chapter* as
+its volume. And the range separator was optional independently of the second
+number, so `v. 9 — Śukra always` matched with the em-dash swallowed and came out
+as `v. 9 —`. Both times the source was fine and the tool was wrong, which is the
+normal case and worth expecting.
 
 ## The report modules
 

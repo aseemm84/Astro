@@ -1,0 +1,2145 @@
+{
+ "_provenance": {
+  "what": "Every BPHS chapter/verse citation in source/src, with the file and line it appears on and the claim it sits in.",
+  "why": "The project's rule is that a citation is either exact or absent. That has been kept by hand in prose across 38 files with nothing checking it: a wrong chapter, a volume that contradicts the same chapter cited elsewhere, or a verse range written backwards would all have shipped silently.",
+  "generator": "source/test/make-citation-registry.py",
+  "checkedBy": "source/test/citation-verify.mjs",
+  "derived": "GENERATED FROM THE CODE, never edited by hand. The code stays the one place a citation is written; this is an index of it. A registry that had to be edited in step with the prose would just be a second thing to forget.",
+  "whatThisCannotCheck": "Whether a verse SAYS what the surrounding code claims. That needs the text as data, which is the next step. What it does check is the citation itself: chapter in range, volume self-consistent, verse range not backwards, notation uniform.",
+  "edition": "BPHS, R. Santhanam translation, 2 volumes, 97 chapters (the uploaded edition this project cites).",
+  "volumeSplit": 45,
+  "volumeSplitSource": "BPHS-Santhanam Vol. 1, preface: \"The present volume—first volume—contains 45 chapters while the remaining 52 chapters have been put in the second volume.\" Vol. 2 opens at Chapter 46, \"Dasas (Periods) of planets\".",
+  "maxChapter": 97,
+  "citations": 196,
+  "distinctLoci": 82,
+  "files": 36
+ },
+ "chaptersCited": [
+  3,
+  4,
+  6,
+  7,
+  11,
+  24,
+  26,
+  27,
+  28,
+  29,
+  31,
+  32,
+  33,
+  35,
+  36,
+  37,
+  38,
+  39,
+  40,
+  41,
+  42,
+  43,
+  44,
+  45,
+  46,
+  66,
+  67,
+  68,
+  69,
+  70,
+  79
+ ],
+ "volumeByChapter": {
+  "3": [
+   1
+  ],
+  "4": [
+   1
+  ],
+  "6": [
+   1
+  ],
+  "7": [
+   1
+  ],
+  "11": [
+   1
+  ],
+  "24": [
+   1
+  ],
+  "26": [
+   1
+  ],
+  "27": [
+   1
+  ],
+  "28": [
+   1
+  ],
+  "29": [
+   1
+  ],
+  "31": [
+   1
+  ],
+  "32": [
+   1
+  ],
+  "33": [
+   1
+  ],
+  "35": [
+   1
+  ],
+  "36": [
+   1
+  ],
+  "37": [
+   1
+  ],
+  "38": [
+   1
+  ],
+  "39": [
+   1
+  ],
+  "41": [
+   1
+  ],
+  "42": [
+   1
+  ],
+  "43": [
+   1
+  ],
+  "44": [
+   1
+  ],
+  "45": [
+   1
+  ],
+  "46": [
+   2
+  ],
+  "66": [
+   2
+  ],
+  "67": [
+   2
+  ],
+  "70": [
+   2
+  ],
+  "79": [
+   2
+  ]
+ },
+ "citations": [
+  {
+   "file": "src/js/engine.js",
+   "line": 621,
+   "text": "Ch. 37",
+   "vol": null,
+   "chapter": 37,
+   "verses": null,
+   "claim": "/* ---- lunar yogas, BPHS Ch. 37 ---- */"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 633,
+   "text": "Ch. 37, vv. 7–10",
+   "vol": null,
+   "chapter": 37,
+   "verses": [
+    7,
+    10
+   ],
+   "claim": "in2.length?\"medium\":undefined,\"BPHS Ch. 37, vv. 7–10\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 637,
+   "text": "Ch. 37, vv. 7–10",
+   "vol": null,
+   "chapter": 37,
+   "verses": [
+    7,
+    10
+   ],
+   "claim": "in12.length?\"medium\":undefined,\"BPHS Ch. 37, vv. 7–10\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 641,
+   "text": "Ch. 37, vv. 7–10",
+   "vol": null,
+   "chapter": 37,
+   "verses": [
+    7,
+    10
+   ],
+   "claim": ":\"both sides are not occupied\", (in2.length&&in12.length)?\"strong\":undefined,\"BPHS Ch. 37, vv. 7–10\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 655,
+   "text": "Ch. 37, vv. 11–13",
+   "vol": null,
+   "chapter": 37,
+   "verses": [
+    11,
+    13
+   ],
+   "claim": "kem?\"medium\":undefined,\"BPHS Ch. 37, vv. 11–13\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 663,
+   "text": "Ch. 37, v. 5",
+   "vol": null,
+   "chapter": 37,
+   "verses": [
+    5,
+    5
+   ],
+   "claim": "adhiAll?\"strong\":undefined,\"BPHS Ch. 37, v. 5\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 665,
+   "text": "Ch. 38",
+   "vol": null,
+   "chapter": 38,
+   "verses": null,
+   "claim": "/* ---- solar yogas, BPHS Ch. 38 ---- */"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 672,
+   "text": "Ch. 38, v. 1",
+   "vol": null,
+   "chapter": 38,
+   "verses": [
+    1,
+    1
+   ],
+   "claim": "s2.length?\"medium\":undefined,\"BPHS Ch. 38, v. 1\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 675,
+   "text": "Ch. 38, v. 1",
+   "vol": null,
+   "chapter": 38,
+   "verses": [
+    1,
+    1
+   ],
+   "claim": "s12.length?\"medium\":undefined,\"BPHS Ch. 38, v. 1\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 679,
+   "text": "Ch. 38, v. 1",
+   "vol": null,
+   "chapter": 38,
+   "verses": [
+    1,
+    1
+   ],
+   "claim": ":\"the Sun is not flanked on both sides\", (s2.length&&s12.length)?\"strong\":undefined,\"BPHS Ch. 38, v. 1\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 681,
+   "text": "Ch. 36",
+   "vol": null,
+   "chapter": 36,
+   "verses": null,
+   "claim": "/* ---- further yogas of BPHS Ch. 36 ---- */"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 691,
+   "text": "Ch. 36, vv. 5–6",
+   "vol": null,
+   "chapter": 36,
+   "verses": [
+    5,
+    6
+   ],
+   "claim": "amala?\"medium\":undefined,\"BPHS Ch. 36, vv. 5–6\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 701,
+   "text": "Ch. 36, vv. 7–8",
+   "vol": null,
+   "chapter": 36,
+   "verses": [
+    7,
+    8
+   ],
+   "claim": "parvata?\"medium\":undefined,\"BPHS Ch. 36, vv. 7–8\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 715,
+   "text": "Ch. 36, vv. 9–10",
+   "vol": null,
+   "chapter": 36,
+   "verses": [
+    9,
+    10
+   ],
+   "claim": "kahala?\"medium\":undefined,\"BPHS Ch. 36, vv. 9–10\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 720,
+   "text": "Ch. 35",
+   "vol": null,
+   "chapter": 35,
+   "verses": null,
+   "claim": "/* ================= Nābhasa yogas, BPHS Ch. 35 ================="
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 740,
+   "text": "Ch. 35",
+   "vol": null,
+   "chapter": 35,
+   "verses": null,
+   "claim": "add(key,iast,en,\"Nābhasa\",present,detail,present?\"medium\":undefined,cite||\"BPHS Ch. 35\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 744,
+   "text": "Ch. 35, v. 7",
+   "vol": null,
+   "chapter": 35,
+   "verses": [
+    7,
+    7
+   ],
+   "claim": "nbModality(0)?\"all seven in movable signs\":\"the grahas are not all in movable signs\",\"BPHS Ch. 35, v. 7\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 746,
+   "text": "Ch. 35, v. 7",
+   "vol": null,
+   "chapter": 35,
+   "verses": [
+    7,
+    7
+   ],
+   "claim": "nbModality(1)?\"all seven in fixed signs\":\"the grahas are not all in fixed signs\",\"BPHS Ch. 35, v. 7\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 748,
+   "text": "Ch. 35, v. 7",
+   "vol": null,
+   "chapter": 35,
+   "verses": [
+    7,
+    7
+   ],
+   "claim": "nbModality(2)?\"all seven in dual signs\":\"the grahas are not all in dual signs\",\"BPHS Ch. 35, v. 7\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 758,
+   "text": "Ch. 35, v. 8",
+   "vol": null,
+   "chapter": 35,
+   "verses": [
+    8,
+    8
+   ],
+   "claim": "kBen.length+\" kendras hold benefics only\",\"BPHS Ch. 35, v. 8\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 760,
+   "text": "Ch. 35, v. 8",
+   "vol": null,
+   "chapter": 35,
+   "verses": [
+    8,
+    8
+   ],
+   "claim": "kMal.length+\" kendras hold malefics only\",\"BPHS Ch. 35, v. 8\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 764,
+   "text": "Ch. 35, vv. 9–11",
+   "vol": null,
+   "chapter": 35,
+   "verses": [
+    9,
+    11
+   ],
+   "claim": "gada?\"the grahas fill two adjacent kendras\":\"not confined to two successive kendras\",\"BPHS Ch. 35, vv. 9–11\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 766,
+   "text": "Ch. 35, vv. 9–11",
+   "vol": null,
+   "chapter": 35,
+   "verses": [
+    9,
+    11
+   ],
+   "claim": "nbAllIn([1,7])?\"all seven across the 1st and 7th\":\"not confined to the 1st and 7th\",\"BPHS Ch. 35, vv. 9–11\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 768,
+   "text": "Ch. 35, vv. 9–11",
+   "vol": null,
+   "chapter": 35,
+   "verses": [
+    9,
+    11
+   ],
+   "claim": "nbAllIn([4,10])?\"all seven across the 4th and 10th\":\"not confined to the 4th and 10th\",\"BPHS Ch. 35, vv. 9–11\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 770,
+   "text": "Ch. 35, vv. 9–11",
+   "vol": null,
+   "chapter": 35,
+   "verses": [
+    9,
+    11
+   ],
+   "claim": "nbAllIn([1,5,9])?\"all seven in the trines\":\"not confined to the trines\",\"BPHS Ch. 35, vv. 9–11\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 773,
+   "text": "Ch. 35, vv. 9–11",
+   "vol": null,
+   "chapter": 35,
+   "verses": [
+    9,
+    11
+   ],
+   "claim": "hala?\"the grahas fill one trinal set\":\"not confined to a single trinal set\",\"BPHS Ch. 35, vv. 9–11\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 780,
+   "text": "Ch. 35, vv. 9–11",
+   "vol": null,
+   "chapter": 35,
+   "verses": [
+    9,
+    11
+   ],
+   "claim": ":\"neither arrangement holds\",\"BPHS Ch. 35, vv. 9–11\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 784,
+   "text": "Ch. 35, vv. 9–11",
+   "vol": null,
+   "chapter": 35,
+   "verses": [
+    9,
+    11
+   ],
+   "claim": ":\"neither arrangement holds\",\"BPHS Ch. 35, vv. 9–11\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 786,
+   "text": "Ch. 35, v. 12",
+   "vol": null,
+   "chapter": 35,
+   "verses": [
+    12,
+    12
+   ],
+   "claim": "nbAllIn([1,4,7,10])?\"all seven in kendras\":\"not confined to the kendras\",\"BPHS Ch. 35, v. 12\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 790,
+   "text": "Ch. 35, v. 12",
+   "vol": null,
+   "chapter": 35,
+   "verses": [
+    12,
+    12
+   ],
+   "claim": ":\"spread across kendras as well\",\"BPHS Ch. 35, v. 12\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 796,
+   "text": "Ch. 35, v. 13",
+   "vol": null,
+   "chapter": 35,
+   "verses": [
+    13,
+    13
+   ],
+   "claim": "\"BPHS Ch. 35, v. 13\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 802,
+   "text": "Ch. 35, v. 14",
+   "vol": null,
+   "chapter": 35,
+   "verses": [
+    14,
+    14
+   ],
+   "claim": "\"BPHS Ch. 35, v. 14\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 805,
+   "text": "Ch. 35, v. 15",
+   "vol": null,
+   "chapter": 35,
+   "verses": [
+    15,
+    15
+   ],
+   "claim": "nbAllIn([1,3,5,7,9,11])?\"all seven in the odd houses\":\"not confined to the odd houses\",\"BPHS Ch. 35, v. 15\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 807,
+   "text": "Ch. 35, v. 15",
+   "vol": null,
+   "chapter": 35,
+   "verses": [
+    15,
+    15
+   ],
+   "claim": "nbAllIn([2,4,6,8,10,12])?\"all seven in the even houses\":\"not confined to the even houses\",\"BPHS Ch. 35, v. 15\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 819,
+   "text": "Ch. 35",
+   "vol": null,
+   "chapter": 35,
+   "verses": null,
+   "claim": "\"BPHS Ch. 35 names this among the twenty Ākṛti yogas, but the uploaded text gives \"+"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 834,
+   "text": "Ch. 35, vv. 16–17",
+   "vol": null,
+   "chapter": 35,
+   "verses": [
+    16,
+    17
+   ],
+   "claim": "forms?\"medium\":undefined,\"BPHS Ch. 35, vv. 16–17\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 837,
+   "text": "Ch. 36",
+   "vol": null,
+   "chapter": 36,
+   "verses": null,
+   "claim": "/* ============ the remaining yogas of BPHS Ch. 36 ============ */"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 858,
+   "text": "Ch. 36, vv. 11–12",
+   "vol": null,
+   "chapter": 36,
+   "verses": [
+    11,
+    12
+   ],
+   "claim": "\" at house \"+H[lagLord]+\", and no two benefics share the 1st, 7th, 9th or 10th\",\"BPHS Ch. 36, vv. 11–12\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 865,
+   "text": "Ch. 36, vv. 13–14",
+   "vol": null,
+   "chapter": 36,
+   "verses": [
+    13,
+    14
+   ],
+   "claim": "(((H[l5]-H[l6]+12)%12)+1)+\" apart\",\"BPHS Ch. 36, vv. 13–14\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 871,
+   "text": "Ch. 36, vv. 15–16",
+   "vol": null,
+   "chapter": 36,
+   "verses": [
+    15,
+    16
+   ],
+   "claim": ":\"9th lord \"+l9+\" is \"+dig[l9],\"BPHS Ch. 36, vv. 15–16\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 877,
+   "text": "Ch. 36, v. 17",
+   "vol": null,
+   "chapter": 36,
+   "verses": [
+    17,
+    17
+   ],
+   "claim": ":\"lagna lord \"+lagLord+\" is \"+dig[lagLord]+\", or some graha is otherwise placed\",\"BPHS Ch. 36, v. 17\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 882,
+   "text": "Ch. 36, v. 18",
+   "vol": null,
+   "chapter": 36,
+   "verses": [
+    18,
+    18
+   ],
+   "claim": "\", 10th lord \"+l10x+\" is \"+dig[l10x],\"BPHS Ch. 36, v. 18\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 890,
+   "text": "Ch. 36, vv. 19–20",
+   "vol": null,
+   "chapter": 36,
+   "verses": [
+    19,
+    20
+   ],
+   "claim": "\"; 10th lord \"+l10x+\" at \"+H[l10x],\"BPHS Ch. 36, vv. 19–20\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 895,
+   "text": "Ch. 36, vv. 21–22",
+   "vol": null,
+   "chapter": 36,
+   "verses": [
+    21,
+    22
+   ],
+   "claim": "\" and the 8th \"+(occOf(8).join(\", \")||\"nothing\"),\"BPHS Ch. 36, vv. 21–22\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 902,
+   "text": "Ch. 36, vv. 23–24",
+   "vol": null,
+   "chapter": 36,
+   "verses": [
+    23,
+    24
+   ],
+   "claim": "koorma, koorma?\"the condition is met\":\"the 5th, 6th and 7th are not all held by dignified benefics\",\"BPHS Ch. 36, vv. 23–24\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 908,
+   "text": "Ch. 36, vv. 25–26",
+   "vol": null,
+   "chapter": 36,
+   "verses": [
+    25,
+    26
+   ],
+   "claim": ":\"no exchange between the 2nd lord \"+l2+\" and the 9th lord \"+l9,\"BPHS Ch. 36, vv. 25–26\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 915,
+   "text": "Ch. 36, vv. 29–30",
+   "vol": null,
+   "chapter": 36,
+   "verses": [
+    29,
+    30
+   ],
+   "claim": "\"; Venus at \"+H.Venus+\", Moon at \"+H.Moon+\", Saturn at \"+H.Saturn,\"BPHS Ch. 36, vv. 29–30\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 922,
+   "text": "Ch. 36, vv. 31–32",
+   "vol": null,
+   "chapter": 36,
+   "verses": [
+    31,
+    32
+   ],
+   "claim": ":\"Jupiter is at house \"+H.Jupiter,\"BPHS Ch. 36, vv. 31–32\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 933,
+   "text": "Ch. 36, vv. 33–34",
+   "vol": null,
+   "chapter": 36,
+   "verses": [
+    33,
+    34
+   ],
+   "claim": "\"BPHS Ch. 36, vv. 33–34\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 939,
+   "text": "Ch. 36, vv. 35–36",
+   "vol": null,
+   "chapter": 36,
+   "verses": [
+    35,
+    36
+   ],
+   "claim": "\"from \"+l2+\" at house \"+H[l2],\"BPHS Ch. 36, vv. 35–36\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 941,
+   "text": "Ch. 36, vv. 35–36",
+   "vol": null,
+   "chapter": 36,
+   "verses": [
+    35,
+    36
+   ],
+   "claim": "\"from \"+l7+\" at house \"+H[l7],\"BPHS Ch. 36, vv. 35–36\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 943,
+   "text": "Ch. 36, vv. 35–36",
+   "vol": null,
+   "chapter": 36,
+   "verses": [
+    35,
+    36
+   ],
+   "claim": "\"from \"+lagLord+\" at house \"+H[lagLord],\"BPHS Ch. 36, vv. 35–36\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 950,
+   "text": "Ch. 36, v. 37",
+   "vol": null,
+   "chapter": 36,
+   "verses": [
+    37,
+    37
+   ],
+   "claim": "\"BPHS Ch. 36, v. 37. The sage names only the 7th and 8th; some editions add the 6th.\");"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 1002,
+   "text": "Ch. 35",
+   "vol": null,
+   "chapter": 35,
+   "verses": null,
+   "claim": "LATER+\". BPHS Ch. 35 has a Śakaṭa among the Nābhasa yogas, which is a different \"+"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 1045,
+   "text": "Ch. 35",
+   "vol": null,
+   "chapter": 35,
+   "verses": null,
+   "claim": "LATER+\". Closely related to the Nābhasa Mālā and Sṛṅgāṭaka family in BPHS Ch. 35; \"+"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 1118,
+   "text": "Ch. 26, vv. 1–12",
+   "vol": null,
+   "chapter": 26,
+   "verses": [
+    1,
+    12
+   ],
+   "claim": "/* Sphuta Drishti — BPHS Ch. 26, vv. 1–12. The aspectual angle is measured from the"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 1457,
+   "text": "Vol. 2, Ch. 79",
+   "vol": 2,
+   "chapter": 79,
+   "verses": null,
+   "claim": "yuddha scene needs the other one: BPHS Vol. 2, Ch. 79 decides the victor by"
+  },
+  {
+   "file": "src/js/report/core/05-aspects.js",
+   "line": 1,
+   "text": "Ch.26",
+   "vol": null,
+   "chapter": 26,
+   "verses": null,
+   "claim": "/* --- natal graha drishti (BPHS Ch.26): all aspect the 7th; Mars 4/8, Jupiter 5/9, Saturn 3/10 --- */"
+  },
+  {
+   "file": "src/js/report/export/42-json-export.js",
+   "line": 297,
+   "text": "Ch. 46, vv. 195",
+   "vol": null,
+   "chapter": 46,
+   "verses": [
+    195,
+    195
+   ],
+   "claim": "return {source:\"BPHS Ch. 46, vv. 195\\u2013199\", cycle_years:36,"
+  },
+  {
+   "file": "src/js/report/export/42-json-export.js",
+   "line": 392,
+   "text": "Ch. 7, vv. 21–25",
+   "vol": null,
+   "chapter": 7,
+   "verses": [
+    21,
+    25
+   ],
+   "claim": "\"Vimsopaka weights and Varga Visva values follow BPHS Ch. 7, vv. 21–25.\","
+  },
+  {
+   "file": "src/js/report/export/42-json-export.js",
+   "line": 393,
+   "text": "Ch. 26",
+   "vol": null,
+   "chapter": 26,
+   "verses": null,
+   "claim": "\"Drik Bala uses the exact Sphuta Drishti formula of BPHS Ch. 26.\","
+  },
+  {
+   "file": "src/js/report/export/44-readings.js",
+   "line": 71,
+   "text": "Ch. 46, vv. 195–199",
+   "vol": null,
+   "chapter": 46,
+   "verses": [
+    195,
+    199
+   ],
+   "claim": "\"subdivides a long mahādaśā. Source: BPHS Ch. 46, vv. 195–199.\";"
+  },
+  {
+   "file": "src/js/report/export/46-skill-payload.js",
+   "line": 286,
+   "text": "Vol. 1 Ch. 7, vv. 17–25",
+   "vol": 1,
+   "chapter": 7,
+   "verses": [
+    17,
+    25
+   ],
+   "claim": "/* --- Viṃśopaka: BPHS Vol. 1 Ch. 7, vv. 17–25 ---------------------------------"
+  },
+  {
+   "file": "src/js/report/export/46-skill-payload.js",
+   "line": 308,
+   "text": "Vol. 1, Ch. 7, vv. 17–19",
+   "vol": 1,
+   "chapter": 7,
+   "verses": [
+    17,
+    19
+   ],
+   "claim": "source:\"BPHS Vol. 1, Ch. 7, vv. 17–19\", certain:true},"
+  },
+  {
+   "file": "src/js/report/export/46-skill-payload.js",
+   "line": 310,
+   "text": "Vol. 1, Ch. 7, vv. 17–19",
+   "vol": 1,
+   "chapter": 7,
+   "verses": [
+    17,
+    19
+   ],
+   "claim": "source:\"BPHS Vol. 1, Ch. 7, vv. 17–19 (verse order)\", certain:false,"
+  },
+  {
+   "file": "src/js/report/export/46-skill-payload.js",
+   "line": 312,
+   "text": "Ch. 7",
+   "vol": null,
+   "chapter": 7,
+   "verses": null,
+   "claim": "alternative_source:\"BPHS-Santhanam edition, Ch. 7, translator's table (row order)\"},"
+  },
+  {
+   "file": "src/js/report/export/46-skill-payload.js",
+   "line": 314,
+   "text": "Vol. 1, Ch. 7, v. 20",
+   "vol": 1,
+   "chapter": 7,
+   "verses": [
+    20,
+    20
+   ],
+   "claim": "source:\"BPHS Vol. 1, Ch. 7, v. 20\", certain:true},"
+  },
+  {
+   "file": "src/js/report/export/46-skill-payload.js",
+   "line": 317,
+   "text": "Vol. 1, Ch. 7, vv. 21–25",
+   "vol": 1,
+   "chapter": 7,
+   "verses": [
+    21,
+    25
+   ],
+   "claim": "source:\"BPHS Vol. 1, Ch. 7, vv. 21–25\", certain:true}"
+  },
+  {
+   "file": "src/js/report/export/46-skill-payload.js",
+   "line": 405,
+   "text": "Ch. 7 vv. 26–27",
+   "vol": null,
+   "chapter": 7,
+   "verses": [
+    26,
+    27
+   ],
+   "claim": "\"divisions, per BPHS Ch. 7 vv. 26–27. A graha continuously in its own vargas \"+"
+  },
+  {
+   "file": "src/js/report/export/46-skill-payload.js",
+   "line": 481,
+   "text": "Vol. 1, Ch. 26, vv. 1–12",
+   "vol": 1,
+   "chapter": 26,
+   "verses": [
+    1,
+    12
+   ],
+   "claim": "return {unit:\"virupas, 0–60\", source:\"BPHS Vol. 1, Ch. 26, vv. 1–12 (Sphuṭa Dṛṣṭi)\","
+  },
+  {
+   "file": "src/js/report/glassbox/29-dignity.js",
+   "line": 11,
+   "text": "Ch. 3, vv. 49–50",
+   "vol": null,
+   "chapter": 3,
+   "verses": [
+    49,
+    50
+   ],
+   "claim": "rows+=gbRow(\"Exaltation sign\", SA[ex]+\" · deepest at \"+GB_EXALT_DEG[p]+\"°\", \"BPHS Ch. 3, vv. 49–50\");"
+  },
+  {
+   "file": "src/js/report/glassbox/29-dignity.js",
+   "line": 13,
+   "text": "Ch. 3, vv. 51–54",
+   "vol": null,
+   "chapter": 3,
+   "verses": [
+    51,
+    54
+   ],
+   "claim": "if(mt) rows+=gbRow(\"Moolatrikona\", SA[mt[0]]+\" \"+mt[1]+\"°–\"+mt[2]+\"°\", \"BPHS Ch. 3, vv. 51–54\");"
+  },
+  {
+   "file": "src/js/report/glassbox/29-dignity.js",
+   "line": 21,
+   "text": "Ch. 3, v. 55",
+   "vol": null,
+   "chapter": 3,
+   "verses": [
+    55,
+    55
+   ],
+   "claim": "\"friends are the lords of the 2nd, 4th, 5th, 8th, 9th and 12th from its Moolatrikona, plus the lord of its exaltation sign — BPHS Ch. 3, v. 55\");"
+  },
+  {
+   "file": "src/js/report/glassbox/29-dignity.js",
+   "line": 27,
+   "text": "Ch. 3, vv. 49–58",
+   "vol": null,
+   "chapter": 3,
+   "verses": [
+    49,
+    58
+   ],
+   "claim": "return gbWrap(\"How \"+p+\"’s dignity was decided\",\"BPHS Ch. 3, vv. 49–58\",rows,"
+  },
+  {
+   "file": "src/js/report/glassbox/30-uchcha-bala.js",
+   "line": 13,
+   "text": "Ch. 27, v. 1",
+   "vol": null,
+   "chapter": 27,
+   "verses": [
+    1,
+    1
+   ],
+   "claim": "return gbWrap(\"Uchcha Bala for \"+p,\"BPHS Ch. 27, v. 1\",rows,"
+  },
+  {
+   "file": "src/js/report/glassbox/31-saptavargaja.js",
+   "line": 35,
+   "text": "Ch. 27, vv. 2–4",
+   "vol": null,
+   "chapter": 27,
+   "verses": [
+    2,
+    4
+   ],
+   "claim": "return gbWrap(\"Saptavargaja Bala for \"+p,\"BPHS Ch. 27, vv. 2–4\",rows,"
+  },
+  {
+   "file": "src/js/report/glassbox/32-drik-bala.js",
+   "line": 26,
+   "text": "Ch. 26",
+   "vol": null,
+   "chapter": 26,
+   "verses": null,
+   "claim": "return gbWrap(\"Dṛk Bala for \"+p,\"BPHS Ch. 26 (Sphuṭa Dṛṣṭi)\",rows,"
+  },
+  {
+   "file": "src/js/report/glassbox/33-shadbala-total.js",
+   "line": 11,
+   "text": "Ch. 27, vv. 32–33",
+   "vol": null,
+   "chapter": 27,
+   "verses": [
+    32,
+    33
+   ],
+   "claim": "rows+=gbRow(\"Required of \"+p, gbFmt(sb.required_rupa,1)+\" rupas\",\"BPHS Ch. 27, vv. 32–33\");"
+  },
+  {
+   "file": "src/js/report/glassbox/33-shadbala-total.js",
+   "line": 13,
+   "text": "Ch. 27",
+   "vol": null,
+   "chapter": 27,
+   "verses": null,
+   "claim": "return gbWrap(\"Ṣaḍbala total for \"+p,\"BPHS Ch. 27\",rows,"
+  },
+  {
+   "file": "src/js/report/glassbox/34-vimsopaka.js",
+   "line": 25,
+   "text": "Ch. 7, vv. 21–25",
+   "vol": null,
+   "chapter": 7,
+   "verses": [
+    21,
+    25
+   ],
+   "claim": "return gbWrap(\"Vimśopaka for \"+p,\"BPHS Ch. 7, vv. 21–25\",rows,"
+  },
+  {
+   "file": "src/js/report/motion/52-motion-export.js",
+   "line": 722,
+   "text": "Ch. 11",
+   "vol": null,
+   "chapter": 11,
+   "verses": null,
+   "claim": "cols:[\"#\",\"Sanskrit\",\"What it carries (BPHS Ch. 11 — same in every division)\","
+  },
+  {
+   "file": "src/js/report/motion/52-motion-export.js",
+   "line": 733,
+   "text": "Ch. 6",
+   "vol": null,
+   "chapter": 6,
+   "verses": null,
+   "claim": "cols:[\"Varga\",\"The matter it refines (BPHS Ch. 6)\",\"House(s) it exists to refine\"],"
+  },
+  {
+   "file": "src/js/report/motion/56-motion-guide.js",
+   "line": 133,
+   "text": "Ch. 11",
+   "vol": null,
+   "chapter": 11,
+   "verses": null,
+   "claim": "\"The significations are from <b>BPHS Ch. 11</b>. They overlap on purpose: the 7th is spouse and travel and trade, and the text does not rank them.\","
+  },
+  {
+   "file": "src/js/report/motion/56-motion-guide.js",
+   "line": 137,
+   "text": "Ch. 6",
+   "vol": null,
+   "chapter": 6,
+   "verses": null,
+   "claim": "\"<b>Where BPHS looks closer.</b> The vargas are tied to topics in Ch. 6, so the 5th (children) is refined by <b>D7</b>, not D5. The popular habit of matching house N to chart D-N is not in the text and is not used here.\"…"
+  },
+  {
+   "file": "src/js/report/motion/56-motion-guide.js",
+   "line": 144,
+   "text": "Ch. 4",
+   "vol": null,
+   "chapter": 4,
+   "verses": null,
+   "claim": "\"Movable, fixed and dual, with the element and the lord, are <b>BPHS Ch. 4</b>. The limb of the Kālapuruṣa is the same chapter's scheme of the zodiac as a body.\","
+  },
+  {
+   "file": "src/js/report/motion/57-motion-teaching.js",
+   "line": 9,
+   "text": "Ch. 4",
+   "vol": null,
+   "chapter": 4,
+   "verses": null,
+   "claim": "Source. Significations are from BPHS Ch. 11 for the bhāvas and Ch. 4 for the"
+  },
+  {
+   "file": "src/js/report/motion/57-motion-teaching.js",
+   "line": 9,
+   "text": "Ch. 11",
+   "vol": null,
+   "chapter": 11,
+   "verses": null,
+   "claim": "Source. Significations are from BPHS Ch. 11 for the bhāvas and Ch. 4 for the"
+  },
+  {
+   "file": "src/js/report/motion/57-motion-teaching.js",
+   "line": 15,
+   "text": "Ch. 6",
+   "vol": null,
+   "chapter": 6,
+   "verses": null,
+   "claim": "how BPHS Ch. 6 assigns them — Horā to wealth, Drekkāṇa to siblings, Saptāṃśa"
+  },
+  {
+   "file": "src/js/report/motion/57-motion-teaching.js",
+   "line": 20,
+   "text": "Ch. 11",
+   "vol": null,
+   "chapter": 11,
+   "verses": null,
+   "claim": "/* --- bhāva significations, BPHS Ch. 11 ---------------------------------- */"
+  },
+  {
+   "file": "src/js/report/motion/57-motion-teaching.js",
+   "line": 43,
+   "text": "Ch. 11",
+   "vol": null,
+   "chapter": 11,
+   "verses": null,
+   "claim": "mother in the rāśi chart and in the Daśāṃśa alike; that is BPHS Ch. 11 and it"
+  },
+  {
+   "file": "src/js/report/motion/57-motion-teaching.js",
+   "line": 74,
+   "text": "Ch. 4",
+   "vol": null,
+   "chapter": 4,
+   "verses": null,
+   "claim": "/* --- rāśi attributes, BPHS Ch. 4 ---------------------------------------- */"
+  },
+  {
+   "file": "src/js/report/motion/57-motion-teaching.js",
+   "line": 314,
+   "text": "Ch. 11",
+   "vol": null,
+   "chapter": 11,
+   "verses": null,
+   "claim": "- the significations BPHS Ch. 11, the same in every division"
+  },
+  {
+   "file": "src/js/report/motion/66-motion-yuddha.js",
+   "line": 16,
+   "text": "Vol. 2, Ch. 79, v. 9",
+   "vol": 2,
+   "chapter": 79,
+   "verses": [
+    9,
+    9
+   ],
+   "claim": "BPHS TEXT. Vol. 2, Ch. 79, v. 9 gives the condition and the victor test"
+  },
+  {
+   "file": "src/js/report/motion/66-motion-yuddha.js",
+   "line": 23,
+   "text": "Vol. 1, Ch. 11",
+   "vol": 1,
+   "chapter": 11,
+   "verses": null,
+   "claim": "TRANSLATOR'S NOTE, Vol. 1, Ch. 11. Santhanam reports a different test as"
+  },
+  {
+   "file": "src/js/report/motion/66-motion-yuddha.js",
+   "line": 106,
+   "text": "Vol. 2, Ch. 79, v. 9",
+   "vol": 2,
+   "chapter": 79,
+   "verses": [
+    9,
+    9
+   ],
+   "claim": "/* 1. BPHS Vol. 2, Ch. 79, v. 9 — Śukra always; otherwise the northern one. */"
+  },
+  {
+   "file": "src/js/report/motion/66-motion-yuddha.js",
+   "line": 116,
+   "text": "Vol. 2, Ch. 79, v. 9",
+   "vol": 2,
+   "chapter": 79,
+   "verses": [
+    9,
+    9
+   ],
+   "claim": "out.push({ src: \"bphs\", cite: \"BPHS Vol. 2, Ch. 79, v. 9\", v: v1 });"
+  },
+  {
+   "file": "src/js/report/sections/09-friendship.js",
+   "line": 43,
+   "text": "Ch. 3",
+   "vol": null,
+   "chapter": 3,
+   "verses": null,
+   "claim": "return grid(natFriend,\"Naisargika maitrī — natural\",\"Fixed for every chart, from each planet's Moolatrikona (BPHS Ch. 3).\")+"
+  },
+  {
+   "file": "src/js/report/sections/11-ashtakavarga.js",
+   "line": 18,
+   "text": "Ch.7 v.25",
+   "vol": null,
+   "chapter": 7,
+   "verses": [
+    25,
+    25
+   ],
+   "claim": "/* Varga Viśva, BPHS Ch.7 v.25: own 20, great friend 18, friend 15, neutral 10,"
+  },
+  {
+   "file": "src/js/report/sections/18b-shodashavarga.js",
+   "line": 16,
+   "text": "Ch. 6",
+   "vol": null,
+   "chapter": 6,
+   "verses": null,
+   "claim": "WHAT IS NOT CLAIMED. The divisions themselves are BPHS Ch. 6, and the"
+  },
+  {
+   "file": "src/js/report/sections/18b-shodashavarga.js",
+   "line": 121,
+   "text": "Ch. 6",
+   "vol": null,
+   "chapter": 6,
+   "verses": null,
+   "claim": "return '<p class=\"knote\">All sixteen divisions of BPHS Ch. 6 at once. ' +"
+  },
+  {
+   "file": "src/js/report/sections/18b-shodashavarga.js",
+   "line": 130,
+   "text": "Ch. 6",
+   "vol": null,
+   "chapter": 6,
+   "verses": null,
+   "claim": "'<p class=\"knote\">The division constructions are BPHS Ch. 6 and the ' +"
+  },
+  {
+   "file": "src/js/report/sections/71-rashiphal.js",
+   "line": 22,
+   "text": "Vol. 2, Ch. 70",
+   "vol": 2,
+   "chapter": 70,
+   "verses": null,
+   "claim": "* Vol. 2, Ch. 70 gives genuine BPHS transit doctrine, and it is"
+  },
+  {
+   "file": "src/js/report/sections/71-rashiphal.js",
+   "line": 179,
+   "text": "Vol. 2, Ch. 70",
+   "vol": 2,
+   "chapter": 70,
+   "verses": null,
+   "claim": "BPHS Vol. 2, Ch. 70. The bindus come from the chart that is open; with"
+  },
+  {
+   "file": "src/js/report/sections/71-rashiphal.js",
+   "line": 282,
+   "text": "Ch. 70",
+   "vol": null,
+   "chapter": 70,
+   "verses": null,
+   "claim": "the Parāśara verses — BPHS Ch. 70 compares rekhās between rāśis rather"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 227,
+   "text": "Vol. 1, Ch. 7, vv. 33–36",
+   "vol": 1,
+   "chapter": 7,
+   "verses": [
+    33,
+    36
+   ],
+   "claim": "(Ch. 11 onward). Functional classes: BPHS, Vol. 1, Ch. 7, vv. 33–36."
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 227,
+   "text": "Ch. 11",
+   "vol": null,
+   "chapter": 11,
+   "verses": null,
+   "claim": "(Ch. 11 onward). Functional classes: BPHS, Vol. 1, Ch. 7, vv. 33–36."
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 228,
+   "text": "Vol. 1, Ch. 24",
+   "vol": 1,
+   "chapter": 24,
+   "verses": null,
+   "claim": "The lord-travels rule and its strength-scaling: BPHS, Vol. 1, Ch. 24. */"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 398,
+   "text": "Ch. 7, vv. 33–36",
+   "vol": null,
+   "chapter": 7,
+   "verses": [
+    33,
+    36
+   ],
+   "claim": "method: \"BPHS, Vol. 1 — bhāva significations and Ch. 7, vv. 33–36\","
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 1200,
+   "text": "Vol. 1, Ch. 3",
+   "vol": 1,
+   "chapter": 3,
+   "verses": null,
+   "claim": "cite: \"BPHS, Vol. 1, Ch. 3 (planetary characters, castes, guṇas, \" +"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 1241,
+   "text": "Vol. 1, Ch. 4",
+   "vol": 1,
+   "chapter": 4,
+   "verses": null,
+   "claim": "cite: \"BPHS, Vol. 1, Ch. 4 (descriptions and classifications of the \" +"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 1282,
+   "text": "Vol. 1, Ch. 26",
+   "vol": 1,
+   "chapter": 26,
+   "verses": null,
+   "claim": "cite: \"BPHS, Vol. 1, Ch. 26 (planetary aspects and the graded scheme); \" +"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 1323,
+   "text": "Vol. 1, Ch. 3, vv. 49–54",
+   "vol": 1,
+   "chapter": 3,
+   "verses": [
+    49,
+    54
+   ],
+   "claim": "cite: \"BPHS, Vol. 1, Ch. 3, vv. 49–54 (exaltations and deep degrees; \" +"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 1371,
+   "text": "Vol. 1, Ch. 6",
+   "vol": 1,
+   "chapter": 6,
+   "verses": null,
+   "claim": "cite: \"BPHS, Vol. 1, Ch. 6 (the divisions) and Ch. 7 (the groupings \" +"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 1371,
+   "text": "Ch. 7",
+   "vol": null,
+   "chapter": 7,
+   "verses": null,
+   "claim": "cite: \"BPHS, Vol. 1, Ch. 6 (the divisions) and Ch. 7 (the groupings \" +"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 1406,
+   "text": "Vol. 1, Ch. 27",
+   "vol": 1,
+   "chapter": 27,
+   "verses": null,
+   "claim": "cite: \"BPHS, Vol. 1, Ch. 27 (Ṣaḍbala and its six components)\" },"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 1439,
+   "text": "Vol. 2, Ch. 46, vv. 12–16",
+   "vol": 2,
+   "chapter": 46,
+   "verses": [
+    12,
+    16
+   ],
+   "claim": "cite: \"BPHS, Vol. 2, Ch. 46, vv. 12–16 (the nakṣatra lords, the \" +"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 1491,
+   "text": "Vol. 2, Ch. 66",
+   "vol": 2,
+   "chapter": 66,
+   "verses": null,
+   "claim": "cite: \"BPHS, Vol. 2, Ch. 66 (the contributors and the tables), \" +"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 1524,
+   "text": "Vol. 1, Ch. 45",
+   "vol": 1,
+   "chapter": 45,
+   "verses": null,
+   "claim": "cite: \"BPHS, Vol. 1, Ch. 45 (Bālādi, Jāgradādi, Dīptādi, Lajjitādi \" +"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 1570,
+   "text": "Vol. 1, Ch. 43",
+   "vol": 1,
+   "chapter": 43,
+   "verses": null,
+   "claim": "cite: \"BPHS, Vol. 1, Ch. 43 (Piṇḍāyu, Naisargāyu, Aṃśāyu and the \" +"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 1600,
+   "text": "Vol. 1, Ch. 37",
+   "vol": 1,
+   "chapter": 37,
+   "verses": null,
+   "claim": "cite: \"BPHS, Vol. 1, Ch. 37 (Adhi, Sunapha, Anapha, Durudharā, \" +"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 1639,
+   "text": "Vol. 1, Ch. 29",
+   "vol": 1,
+   "chapter": 29,
+   "verses": null,
+   "claim": "cite: \"BPHS, Vol. 1, Ch. 29 (bhāva padas), Ch. 31 (argalā) and \" +"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 1639,
+   "text": "Ch. 31",
+   "vol": null,
+   "chapter": 31,
+   "verses": null,
+   "claim": "cite: \"BPHS, Vol. 1, Ch. 29 (bhāva padas), Ch. 31 (argalā) and \" +"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 1688,
+   "text": "Vol. 1, Ch. 3",
+   "vol": 1,
+   "chapter": 3,
+   "verses": null,
+   "claim": "cite: \"BPHS, Vol. 1, Ch. 3–4 (the rising sign as Lagna; roughly two \" +"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 1719,
+   "text": "Ch. 11",
+   "vol": null,
+   "chapter": 11,
+   "verses": null,
+   "claim": "cite: \"BPHS, Vol. 1 — bhāva significations (Ch. 11 onward), \" +"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 1945,
+   "text": "Vol. 2, Ch. 46",
+   "vol": 2,
+   "chapter": 46,
+   "verses": null,
+   "claim": "method: \"HYG catalogue under Lahiri · BPHS, Vol. 2, Ch. 46, \" +"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 1958,
+   "text": "Vol. 2, Ch. 46",
+   "vol": 2,
+   "chapter": 46,
+   "verses": null,
+   "claim": "\"under Lahiri. Daśā lords: BPHS, Vol. 2, Ch. 46, \" +"
+  },
+  {
+   "file": "src/js/sp-explain.js",
+   "line": 2257,
+   "text": "Vol. 1, Ch. 4",
+   "vol": 1,
+   "chapter": 4,
+   "verses": null,
+   "claim": "\"Classifications: BPHS, Vol. 1, Ch. 4. Stars: HYG, J2000, sidereal \" +"
+  },
+  {
+   "file": "src/js/sp-gocharaui.js",
+   "line": 11,
+   "text": "Vol. 2 Ch. 70",
+   "vol": 2,
+   "chapter": 70,
+   "verses": null,
+   "claim": "ashtakavarga transit doctrine of BPHS Vol. 2 Ch. 70 — can finally be"
+  },
+  {
+   "file": "src/js/sp-gocharaui.js",
+   "line": 200,
+   "text": "Vol. 2, Ch. 70",
+   "vol": 2,
+   "chapter": 70,
+   "verses": null,
+   "claim": "'is the one that needs a chart: BPHS Vol. 2, Ch. 70 reads a graha ' +"
+  },
+  {
+   "file": "src/js/sp-workstation.js",
+   "line": 600,
+   "text": "Ch. 6",
+   "vol": null,
+   "chapter": 6,
+   "verses": null,
+   "claim": "tier: \"bphs\", source: \"BPHS Ch. 6 constructions; the kārya \" +"
+  },
+  {
+   "file": "src/kundli.shell.html",
+   "line": 111,
+   "text": "Vol. 1, Ch. 3",
+   "vol": 1,
+   "chapter": 3,
+   "verses": null,
+   "claim": "…. See <a href=\"dashas.html\">Dashas</a>.</li></ol><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 3&ndash;6 (sidereal positions, rashis, dignity, vargas) and Vol. 2, Ch. 46 (Vimshottari from the Moon&rsquo;s nakshatr…"
+  },
+  {
+   "file": "src/kundli.shell.html",
+   "line": 111,
+   "text": "Vol. 2, Ch. 46",
+   "vol": 2,
+   "chapter": 46,
+   "verses": null,
+   "claim": "…urce</span> BPHS, Vol. 1, Ch. 3&ndash;6 (sidereal positions, rashis, dignity, vargas) and Vol. 2, Ch. 46 (Vimshottari from the Moon&rsquo;s nakshatra). The casting arithmetic itself is standard astronomy; BPHS supplies t…"
+  },
+  {
+   "file": "src/pages/ashtakavarga.html",
+   "line": 1,
+   "text": "Vol. 2, Ch. 66",
+   "vol": 2,
+   "chapter": 66,
+   "verses": null,
+   "claim": "…that sign is for the matters of that planet.</p><p class=\"src\"><span>Source</span> BPHS, Vol. 2, Ch. 66 (the eight contributors; rekha = auspicious sthana, bindu = inauspicious karana; the benefic-place tables for each…"
+  },
+  {
+   "file": "src/pages/ashtakavarga.html",
+   "line": 1,
+   "text": "Vol. 2, Ch. 67",
+   "vol": 2,
+   "chapter": 67,
+   "verses": null,
+   "claim": "…osper or suffer under transit. (Ch. 69)</li></ol><p class=\"src\"><span>Source</span> BPHS, Vol. 2, Ch. 67 (Trikona), Ch. 68 (Ekadhipatya), Ch. 69 (Pinda Sadhana), Ch. 70 (applying the Pinda to time a house's results under…"
+  },
+  {
+   "file": "src/pages/ashtakavarga.html",
+   "line": 1,
+   "text": "Ch. 68",
+   "vol": null,
+   "chapter": 68,
+   "verses": null,
+   "claim": "…sit. (Ch. 69)</li></ol><p class=\"src\"><span>Source</span> BPHS, Vol. 2, Ch. 67 (Trikona), Ch. 68 (Ekadhipatya), Ch. 69 (Pinda Sadhana), Ch. 70 (applying the Pinda to time a house's results under Saturn's transit), Ch. 71…"
+  },
+  {
+   "file": "src/pages/ashtakavarga.html",
+   "line": 1,
+   "text": "Ch. 69",
+   "vol": null,
+   "chapter": 69,
+   "verses": null,
+   "claim": "…ng the <b>Pinda</b> used to time when a house's matters prosper or suffer under transit. (Ch. 69)</li></ol><p class=\"src\"><span>Source</span> BPHS, Vol. 2, Ch. 67 (Trikona), Ch. 68 (Ekadhipatya), Ch. 69 (Pinda Sadhana),…"
+  },
+  {
+   "file": "src/pages/ashtakavarga.html",
+   "line": 1,
+   "text": "Ch. 69",
+   "vol": null,
+   "chapter": 69,
+   "verses": null,
+   "claim": "…><p class=\"src\"><span>Source</span> BPHS, Vol. 2, Ch. 67 (Trikona), Ch. 68 (Ekadhipatya), Ch. 69 (Pinda Sadhana), Ch. 70 (applying the Pinda to time a house's results under Saturn's transit), Ch. 71 (a longevity estimate…"
+  },
+  {
+   "file": "src/pages/ashtakavarga.html",
+   "line": 1,
+   "text": "Ch. 70",
+   "vol": null,
+   "chapter": 70,
+   "verses": null,
+   "claim": "…urce</span> BPHS, Vol. 2, Ch. 67 (Trikona), Ch. 68 (Ekadhipatya), Ch. 69 (Pinda Sadhana), Ch. 70 (applying the Pinda to time a house's results under Saturn's transit), Ch. 71 (a longevity estimate from the Ashtakavarga).…"
+  },
+  {
+   "file": "src/pages/aspects.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 7, vv. 1–5",
+   "vol": 1,
+   "chapter": 7,
+   "verses": [
+    1,
+    5
+   ],
+   "claim": "…, Libra and Capricorn — is given in the text.</p><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 7, vv. 1–5 (sign aspects and the full table).</p><h2 id=\"argala\">Argala — a related idea</h2><p>Beyond aspect, BPHS us…"
+  },
+  {
+   "file": "src/pages/aspects.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 26",
+   "vol": 1,
+   "chapter": 26,
+   "verses": null,
+   "claim": "…<td>(all planets)</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 26 (planetary aspects; the ¼–½–¾–full graded scheme; Mars→4/8, Jupiter→5/9, Saturn→3/10; and a Virupa-valued 'Drishti'…"
+  },
+  {
+   "file": "src/pages/avasthas-longevity.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 43",
+   "vol": 1,
+   "chapter": 43,
+   "verses": null,
+   "claim": "…n and Jupiter and for 'doubtful' cases.</li></ul><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 43 (Longevity — Pindayu, Nisargayu, Amsayu; the contribution figures 19/25/15/12/15/21/20; the reductions; the three b…"
+  },
+  {
+   "file": "src/pages/avasthas-longevity.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 44",
+   "vol": 1,
+   "chapter": 44,
+   "verses": null,
+   "claim": "…ect real concerns to medical professionals.</div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 44 (Maraka planets — marakas by lordship, the badhaka, maraka-dasha timing, and related material, presented here as th…"
+  },
+  {
+   "file": "src/pages/avasthas-longevity.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 45",
+   "vol": 1,
+   "chapter": 45,
+   "verses": null,
+   "claim": "…te that makes the result full, medium or nil.</p><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 45 (Avasthas — Baladi, Jagradadi, Deeptadi, Lajjitadi, and the twelve Sayanadi states with their sub-state modifiers a…"
+  },
+  {
+   "file": "src/pages/bhavas.html",
+   "line": 1,
+   "text": "Ch. 7, vv. 33–36",
+   "vol": null,
+   "chapter": 7,
+   "verses": [
+    33,
+    36
+   ],
+   "claim": "…rce</span> BPHS, Vol. 1 — bhava significations (Ch. 11 onward) and house classifications (Ch. 7, vv. 33–36); bhava-lord placements (Ch. 24).</p><h2 id=\"sig\">The twelve houses — significations & karakas</h2><div class=\"tw…"
+  },
+  {
+   "file": "src/pages/bhavas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 7, vv. 33–36",
+   "vol": 1,
+   "chapter": 7,
+   "verses": [
+    33,
+    36
+   ],
+   "claim": "…ary strength gradation used in Kendradi Bala.</p><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 7, vv. 33–36 (Kendra, Panapara/Apoklima, Kona, Trika, Chaturasra, Upachaya).</p><h2 id=\"lords\">Bhava lords and their p…"
+  },
+  {
+   "file": "src/pages/bhavas.html",
+   "line": 1,
+   "text": "Ch. 11",
+   "vol": null,
+   "chapter": 11,
+   "verses": null,
+   "claim": "…isional chart.</p><p class=\"src\"><span>Source</span> BPHS, Vol. 1 — bhava significations (Ch. 11 onward) and house classifications (Ch. 7, vv. 33–36); bhava-lord placements (Ch. 24).</p><h2 id=\"sig\">The twelve houses — s…"
+  },
+  {
+   "file": "src/pages/bhavas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 24",
+   "vol": 1,
+   "chapter": 24,
+   "verses": null,
+   "claim": "…h-lord) — then declares the blended result.</div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 24 (effects of each bhava-lord in each bhava; the dual-lordship resolution and the full/half/quarter strength-scaling…"
+  },
+  {
+   "file": "src/pages/dashas.html",
+   "line": 1,
+   "text": "Vol. 2, Ch. 46, vv. 12–16",
+   "vol": 2,
+   "chapter": 46,
+   "verses": [
+    12,
+    16
+   ],
+   "claim": "…ercury</td><td>17</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 2, Ch. 46, vv. 12–16 (the nakshatra-lords counted from Krittika; the 120-year scheme; the balance-at-birth method).</p><h3>Ba…"
+  },
+  {
+   "file": "src/pages/dashas.html",
+   "line": 1,
+   "text": "Vol. 2, Ch. 46",
+   "vol": 2,
+   "chapter": 46,
+   "verses": null,
+   "claim": "…Lagna (per rules)</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 2, Ch. 46–48 (the conditional nakshatra dashas and their triggers).</p><h2 id=\"rasi\">Rasi (sign) dashas</h2><p>Sign dashas mo…"
+  },
+  {
+   "file": "src/pages/dashas.html",
+   "line": 1,
+   "text": "Vol. 2, Ch. 46",
+   "vol": 2,
+   "chapter": 46,
+   "verses": null,
+   "claim": "…order and trigger</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 2, Ch. 46–49 (Kalachakra and the several rasi dashas — Chara, Sthira, Yogardha, Kendra, Karaka, Shoola, Drig, Trikona, Mandoo…"
+  },
+  {
+   "file": "src/pages/dignity.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 3, vv. 49–54",
+   "vol": 1,
+   "chapter": 3,
+   "verses": [
+    49,
+    54
+   ],
+   "claim": "…so owns Capricorn</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 3, vv. 49–54 — exaltation signs and deep degrees 10, 3, 28, 15, 5, 27, 20; debilitation in the 7th at the same degree;…"
+  },
+  {
+   "file": "src/pages/dignity.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 3",
+   "vol": 1,
+   "chapter": 3,
+   "verses": null,
+   "claim": "…bust</b> — they are points, not bodies.</li></ul><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 3 (‘as for the exaltations and debilitation of the nodes, there are different views’); co-lordship of Aquarius (Rahu)…"
+  },
+  {
+   "file": "src/pages/dignity.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 3, v. 55",
+   "vol": 1,
+   "chapter": 3,
+   "verses": [
+    55,
+    55
+   ],
+   "claim": "…d>Sun, Moon, Mars</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 3, v. 55 (the Moolatrikona-based natural friendship formula).</p><h3>Temporal (Tatkalika) friendship</h3><p>Relative t…"
+  },
+  {
+   "file": "src/pages/grahas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 3",
+   "vol": 1,
+   "chapter": 3,
+   "verses": null,
+   "claim": "…ineation though they are not luminous bodies.</p><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 3 (planetary characters, castes, gunas, elements, sexes, seasons, dhatu/moola/jeeva); karaka significations recur acro…"
+  },
+  {
+   "file": "src/pages/grahas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 3",
+   "vol": 1,
+   "chapter": 3,
+   "verses": null,
+   "claim": "…ears — used in one dasha scheme (see Dashas).</p><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 3 (gunas vv. 22; castes vv. 21; sexes v. 19; elements v. 20; seasons vv. 45–46; dhatu/moola/jeeva v. 47).</p><h2 id=\"a…"
+  },
+  {
+   "file": "src/pages/lagna.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 3",
+   "vol": 1,
+   "chapter": 3,
+   "verses": null,
+   "claim": "…vitality, temperament, and how life unfolds.</p><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 3–4 (the rising sign as Lagna; roughly two hours per sign, varying by latitude — about 1° every four minutes of clock…"
+  },
+  {
+   "file": "src/pages/rashis.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 3",
+   "vol": 1,
+   "chapter": 3,
+   "verses": null,
+   "claim": "…Venus in earthy Taurus more than airy Libra).</p><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 3 (own-sign strength: male planets in male signs and female planets in female signs gain full strength; the note on Ma…"
+  },
+  {
+   "file": "src/pages/rashis.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 4",
+   "vol": 1,
+   "chapter": 4,
+   "verses": null,
+   "claim": "…ve dignity, aspects, vargas and dashas alike.</p><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 4 (descriptions and classifications of the signs; the Kalapurusha limb-scheme).</p><h2 id=\"profiles\">The twelve signs…"
+  },
+  {
+   "file": "src/pages/special-points.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 29",
+   "vol": 1,
+   "chapter": 29,
+   "verses": null,
+   "claim": "…isces even though the body/self is Scorpio.</div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 29 (Bhava Padas — Arudha computation, the exceptions, and the twelve named padas incl. Lagna Pada and Dara Pada); grah…"
+  },
+  {
+   "file": "src/pages/special-points.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 31",
+   "vol": 1,
+   "chapter": 31,
+   "verses": null,
+   "claim": "…eir 7ths) is read for fame and fortune.</li></ul><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 31 (Argala and its obstruction; effects of unobstructed argala on each house).</p><h2 id=\"karaka\">Chara Karakas — the…"
+  },
+  {
+   "file": "src/pages/special-points.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 32, vv. 13–17",
+   "vol": 1,
+   "chapter": 32,
+   "verses": [
+    13,
+    17
+   ],
+   "claim": "…b> the career/mind, the <b>DK</b> the spouse.</p><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 32, vv. 13–17 (the chara-karaka order and status).</p><h2 id=\"karakamsa\">Karakamsa — the soul's navamsa</h2><p>The <b>…"
+  },
+  {
+   "file": "src/pages/special-points.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 33",
+   "vol": 1,
+   "chapter": 33,
+   "verses": null,
+   "claim": "…d the Putrakaraka (see the Yogas page).</li></ul><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 33 (Karakamsa); applied throughout the Raja Yoga chapter, Ch. 39.</p><div class=\"mine\"><b>Study note.</b> Compute thes…"
+  },
+  {
+   "file": "src/pages/special-points.html",
+   "line": 1,
+   "text": "Ch. 39",
+   "vol": null,
+   "chapter": 39,
+   "verses": null,
+   "claim": "…Source</span> BPHS, Vol. 1, Ch. 33 (Karakamsa); applied throughout the Raja Yoga chapter, Ch. 39.</p><div class=\"mine\"><b>Study note.</b> Compute these once per chart and keep them beside the rasi chart. The houses answe…"
+  },
+  {
+   "file": "src/pages/strength.html",
+   "line": 1,
+   "text": "Ch. 6",
+   "vol": null,
+   "chapter": 6,
+   "verses": null,
+   "claim": "…><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 7, vv. 30–32 (Vimsopaka grades) and Ch. 6 (varga groupings).</p><div class=\"mine\"><b>Study note.</b> Full Shadbala needs exact longitudes and software. Without them,…"
+  },
+  {
+   "file": "src/pages/strength.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 7, vv. 30–32",
+   "vol": 1,
+   "chapter": 7,
+   "verses": [
+    30,
+    32
+   ],
+   "claim": "….0</td><td>~0–25%</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 7, vv. 30–32 (Vimsopaka grades) and Ch. 6 (varga groupings).</p><div class=\"mine\"><b>Study note.</b> Full Shadbala nee…"
+  },
+  {
+   "file": "src/pages/strength.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 27",
+   "vol": 1,
+   "chapter": 27,
+   "verses": null,
+   "claim": "…aturn</td><td>5.0</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 27 (Shadbala — the Uchcha-bala formula, the Saptavargaja values 45/30/20/15/10/4/2, Kendradi 60/30/15, and the six com…"
+  },
+  {
+   "file": "src/pages/strength.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 27",
+   "vol": 1,
+   "chapter": 27,
+   "verses": null,
+   "claim": "…one under-delivers even under a capable lord.</p><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 27 (Bhava Bala components).</p><h2 id=\"ishta\">Ishta and Kashta Bala — benefic vs difficult potency</h2><p>From a plane…"
+  },
+  {
+   "file": "src/pages/strength.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 28",
+   "vol": 1,
+   "chapter": 28,
+   "verses": null,
+   "claim": "…translate into good vs difficult tendencies.</p><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 28 (Ishta & Kashta phala from the Uchcha and Cheshta rays; the Subhanka scale).</p><h2 id=\"vim\">Vimsopaka Bala — divis…"
+  },
+  {
+   "file": "src/pages/vargas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 6",
+   "vol": 1,
+   "chapter": 6,
+   "verses": null,
+   "claim": "…>refine</b> the rasi chart, never replace it.</p><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 6 (definition and reckoning of each division) and Ch. 7 (the Shad/Sapta/Dasa/Shodasa varga groupings and Vimsopaka str…"
+  },
+  {
+   "file": "src/pages/vargas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 6",
+   "vol": 1,
+   "chapter": 6,
+   "verses": null,
+   "claim": "…ng 2nd/11th, indicate sustained wealth.</li></ul><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 6 (Hora reckoning) and Ch. 7 (Hora effects — the three 'male' planets reveal in the Sun's hora, Moon/Venus/Saturn in t…"
+  },
+  {
+   "file": "src/pages/vargas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 6",
+   "vol": 1,
+   "chapter": 6,
+   "verses": null,
+   "claim": "…iblings & courage</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 6 (Drekkana) and the bhava chapters for co-born matters.</p><h2 id=\"d4\">D4 · Chaturthamsa — fortune, property, fixed a…"
+  },
+  {
+   "file": "src/pages/vargas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 6",
+   "vol": 1,
+   "chapter": 6,
+   "verses": null,
+   "claim": "…pense of property</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 6 (Chaturthamsa; deities Sanaka etc.).</p><h2 id=\"d7\">D7 · Saptamsa — children & progeny</h2><p>Read for children — th…"
+  },
+  {
+   "file": "src/pages/vargas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 6",
+   "vol": 1,
+   "chapter": 6,
+   "verses": null,
+   "claim": "…bears on progeny</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 6 (Saptamsa; deities Kshaara-Ksheera etc.).</p><h2 id=\"d9\">D9 · Navamsa — dharma, marriage & planetary ripening</h2><p…"
+  },
+  {
+   "file": "src/pages/vargas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 6",
+   "vol": 1,
+   "chapter": 6,
+   "verses": null,
+   "claim": "…marriage & dharma</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 6 (Navamsa; Deva/Manushya/Rakshasa nature) and Ch. 7 (Vargottama & Vimsopaka).</p><h2 id=\"d10\">D10 · Dasamsa — profess…"
+  },
+  {
+   "file": "src/pages/vargas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 6",
+   "vol": 1,
+   "chapter": 6,
+   "verses": null,
+   "claim": "…n career & status</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 6 (Dasamsa; the ten directional deities).</p><h2 id=\"d12\">D12 · Dvadasamsa — parents & ancestry</h2><p>Read for the pa…"
+  },
+  {
+   "file": "src/pages/vargas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 6",
+   "vol": 1,
+   "chapter": 6,
+   "verses": null,
+   "claim": "…arents & ancestry</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 6 (Dvadasamsa; deities Ganesa, Ashwini-Kumaras, Yama, Sarpa).</p><h2 id=\"d16\">D16 · Shodasamsa — vehicles, comforts, h…"
+  },
+  {
+   "file": "src/pages/vargas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 6",
+   "vol": 1,
+   "chapter": 6,
+   "verses": null,
+   "claim": "…pense of comforts</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 6 (Shodasamsa/Kalamsa).</p><h2 id=\"d20\">D20 · Vimsamsa — spiritual practice & worship</h2><p>Read for sadhana, devotio…"
+  },
+  {
+   "file": "src/pages/vargas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 6",
+   "vol": 1,
+   "chapter": 6,
+   "verses": null,
+   "claim": "…ration (moksha) ★</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 6 (Vimsamsa).</p><h2 id=\"d24\">D24 · Chaturvimsamsa (Siddhamsa) — education & learning</h2><p>Read for formal education…"
+  },
+  {
+   "file": "src/pages/vargas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 6",
+   "vol": 1,
+   "chapter": 6,
+   "verses": null,
+   "claim": "…ears on education</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 6 (Chaturvimsamsa).</p><h2 id=\"d27\">D27 · Bhamsa (Nakshatramsa) — strengths & stamina</h2><p>Read for underlying vital…"
+  },
+  {
+   "file": "src/pages/vargas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 6",
+   "vol": 1,
+   "chapter": 6,
+   "verses": null,
+   "claim": "…rengths & stamina</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 6 (Bhamsa/Saptavimsamsa).</p><h2 id=\"d30\">D30 · Trimsamsa — misfortunes, health & character</h2><p>Reckoned unusually:…"
+  },
+  {
+   "file": "src/pages/vargas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 6",
+   "vol": 1,
+   "chapter": 6,
+   "verses": null,
+   "claim": "…dden weaknesses ★</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 6 (Trimsamsa allocation to the five non-luminous planets by odd/even sign).</p><div class=\"caution\"><b>Handle with car…"
+  },
+  {
+   "file": "src/pages/vargas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 6",
+   "vol": 1,
+   "chapter": 6,
+   "verses": null,
+   "claim": "…uspicious effects</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 6 (Khavedamsa).</p><h2 id=\"d45\">D45 · Akshavedamsa — conduct & character (paternal legacy)</h2><p>A finer chart for to…"
+  },
+  {
+   "file": "src/pages/vargas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 6",
+   "vol": 1,
+   "chapter": 6,
+   "verses": null,
+   "claim": "…nduct & character</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 6 (Akshavedamsa).</p><h2 id=\"d60\">D60 · Shashtiamsa — the karmic totality</h2><p>The subtlest division — half a degree…"
+  },
+  {
+   "file": "src/pages/vargas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 6",
+   "vol": 1,
+   "chapter": 6,
+   "verses": null,
+   "claim": "…elease & moksha ★</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 6 (Shashtiamsa; the 60 named amsas and their benefic/malefic tone).</p><div class=\"caution\"><b>Handle with care.</b> D…"
+  },
+  {
+   "file": "src/pages/vargas.html",
+   "line": 1,
+   "text": "Ch. 7",
+   "vol": null,
+   "chapter": 7,
+   "verses": null,
+   "claim": "…\"><span>Source</span> BPHS, Vol. 1, Ch. 6 (definition and reckoning of each division) and Ch. 7 (the Shad/Sapta/Dasa/Shodasa varga groupings and Vimsopaka strength).</p><h2 id=\"list\">The sixteen divisions</h2><div class=…"
+  },
+  {
+   "file": "src/pages/vargas.html",
+   "line": 1,
+   "text": "Ch. 7",
+   "vol": null,
+   "chapter": 7,
+   "verses": null,
+   "claim": "…lth.</li></ul><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 6 (Hora reckoning) and Ch. 7 (Hora effects — the three 'male' planets reveal in the Sun's hora, Moon/Venus/Saturn in the Moon's hora).</p><h2 id=\"d3\">D3…"
+  },
+  {
+   "file": "src/pages/vargas.html",
+   "line": 1,
+   "text": "Ch. 7",
+   "vol": null,
+   "chapter": 7,
+   "verses": null,
+   "claim": "…src\"><span>Source</span> BPHS, Vol. 1, Ch. 6 (Navamsa; Deva/Manushya/Rakshasa nature) and Ch. 7 (Vargottama & Vimsopaka).</p><h2 id=\"d10\">D10 · Dasamsa — profession, status, action</h2><p>Read for career, authority and h…"
+  },
+  {
+   "file": "src/pages/yogas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 35",
+   "vol": 1,
+   "chapter": 35,
+   "verses": null,
+   "claim": "…)…Yuga(2)…Gola(1)</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 35 (the 32 Nabhasa yogas and their effects).</p><h2 id=\"raja\">Raja Yogas — combinations for power & status</h2><ul><li…"
+  },
+  {
+   "file": "src/pages/yogas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 36",
+   "vol": 1,
+   "chapter": 36,
+   "verses": null,
+   "claim": "…oquence, standing</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 36 (Gaja-Kesari, Amala, Parvata, Kahala, Chamara, Sankha, Bheri, Mridanga, Srinatha, Sarada, Matsya, Kurma, Khadga, La…"
+  },
+  {
+   "file": "src/pages/yogas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 37",
+   "vol": 1,
+   "chapter": 37,
+   "verses": null,
+   "claim": "…lasting standing</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 37 (Adhi, Sunapha, Anapha, Duradhura, Kemadruma, and the Moon's Dhana yoga); Chandra-Mangala and Gaja-Kesari appear in…"
+  },
+  {
+   "file": "src/pages/yogas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 38",
+   "vol": 1,
+   "chapter": 38,
+   "verses": null,
+   "claim": "…quence, fame, balance), malefics the reverse.</p><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 38 (Vesi, Vosi, Ubhayachari).</p><h2 id=\"nabhasa\">Nabhasa yogas — the 'shape of the chart'</h2><p>Thirty-two yogas des…"
+  },
+  {
+   "file": "src/pages/yogas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 39",
+   "vol": 1,
+   "chapter": 39,
+   "verses": null,
+   "claim": "…rise from low beginnings to prominence.</li></ul><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 39 (Raja Yogas; Maha Raja yoga; Karakamsa/AK+PK) and Ch. 40 (yogas for royal association). Vipareeta and Neechabhanga…"
+  },
+  {
+   "file": "src/pages/yogas.html",
+   "line": 1,
+   "text": "Ch. 40",
+   "vol": null,
+   "chapter": 40,
+   "verses": null,
+   "claim": "…span>Source</span> BPHS, Vol. 1, Ch. 39 (Raja Yogas; Maha Raja yoga; Karakamsa/AK+PK) and Ch. 40 (yogas for royal association). Vipareeta and Neechabhanga are classical developments (Phaladeepika/Saravali) grounded in BP…"
+  },
+  {
+   "file": "src/pages/yogas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 41",
+   "vol": 1,
+   "chapter": 41,
+   "verses": null,
+   "claim": "…d strong angular+trinal lords in mutual link.</p><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 41 (Dhana Yogas — the roles of the angular, trinal and wealth-house lords and their divisional dignities).</p><h2 id=\"…"
+  },
+  {
+   "file": "src/pages/yogas.html",
+   "line": 1,
+   "text": "Vol. 1, Ch. 42",
+   "vol": 1,
+   "chapter": 42,
+   "verses": null,
+   "claim": "…ountervailing strength and Dhana yogas.</li></ul><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 42 (combinations for penury) and the longevity/maraka chapters (Ch. 43–44) — see the Avasthas & Longevity page, where…"
+  },
+  {
+   "file": "src/pages/yogas.html",
+   "line": 1,
+   "text": "Ch. 43",
+   "vol": null,
+   "chapter": 43,
+   "verses": null,
+   "claim": "…</span> BPHS, Vol. 1, Ch. 42 (combinations for penury) and the longevity/maraka chapters (Ch. 43–44) — see the Avasthas & Longevity page, where these are handled with full caution.</p><h2 id=\"checklist\">The judging check…"
+  }
+ ]
+}

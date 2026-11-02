@@ -13,14 +13,14 @@
    the honest thing is to show all three positions with their provenance rather
    than pick one and present it as the rule:
 
-     BPHS TEXT. Vol. 2, ch. 79, v. 9 gives the condition and the victor test
+     BPHS TEXT. Vol. 2, Ch. 79, v. 9 gives the condition and the victor test
      directly: a war when the five tārā grahas are "within one degree of each
      other"; Śukra conquers whether north or south; among the other four, the
      one standing to the NORTH conquers and the one to the south is defeated.
      The luminaries are not in the list. This is a verse, and the scene labels
      it as one.
 
-     TRANSLATOR'S NOTE, Vol. 1, ch. 11. Santhanam reports a different test as
+     TRANSLATOR'S NOTE, Vol. 1, Ch. 11. Santhanam reports a different test as
      the one commonly taught — that of two planets on the same degree, the one
      with the LESSER LONGITUDE wins. He gives it as what "we are taught", not
      as Parāśara's words.
@@ -103,7 +103,7 @@ function myNextWar(fromMs, horizonDays) {
 function myVerdicts(a, b, A, B) {
   var out = [];
 
-  /* 1. BPHS Vol. 2 ch. 79 v. 9 — Śukra always; otherwise the northern one. */
+  /* 1. BPHS Vol. 2, Ch. 79, v. 9 — Śukra always; otherwise the northern one. */
   var v1;
   if (a === "Venus" || b === "Venus")
     v1 = { who: "Venus", why: "Śukra conquers whether north or south" };
@@ -113,7 +113,7 @@ function myVerdicts(a, b, A, B) {
            (A.lat > B.lat ? A.lat : B.lat).toFixed(2) + "° vs " +
            (A.lat > B.lat ? B.lat : A.lat).toFixed(2) + "°)" };
   }
-  out.push({ src: "bphs", cite: "BPHS Vol. 2, ch. 79, v. 9", v: v1 });
+  out.push({ src: "bphs", cite: "BPHS Vol. 2, Ch. 79, v. 9", v: v1 });
 
   /* 2. the test Santhanam reports as commonly taught: lesser longitude.
 

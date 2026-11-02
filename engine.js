@@ -1376,7 +1376,7 @@ function sbCompound(p,other,houseP,houseO,natFriend){
   if(nat==="enemy"&&temp==="friend")return "neutral";
   return "neutral";
 }
-/* Sphuta Drishti — BPHS Ch.26, vv. 1-12. The aspectual angle is measured from the
+/* Sphuta Drishti — BPHS Ch. 26, vv. 1–12. The aspectual angle is measured from the
    aspecting planet to the aspected point; the six rules below give the value in Virupas,
    with the extra allowances the sage specifies for Mars, Jupiter and Saturn. */
 function sphutaDrishti(aspector,lonFrom,lonTo){
@@ -1715,7 +1715,7 @@ window.__kAsc=function(inp,offMin){
 /* Sidereal longitude AND geocentric ecliptic latitude together.
    tropLon() has the latitude in hand at line 67 and throws it away, because
    every chart calculation on this site needs only the longitude. The graha
-   yuddha scene needs the other one: BPHS Vol. 2 ch. 79 decides the victor by
+   yuddha scene needs the other one: BPHS Vol. 2, Ch. 79 decides the victor by
    which planet stands to the north, and north of the ECLIPTIC — the śara or
    vikṣepa — is a latitude, not a declination. Returning both from one call
    also guarantees the pair are read at the same instant. */

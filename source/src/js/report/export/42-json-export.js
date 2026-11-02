@@ -389,7 +389,7 @@ function jxGuide(){
       "derived.sensitivity says which figures a one-minute birth-time error would change. "+
         "Divisional lagnas and anything built on them are the first to move.",
       "Nathonnatha within shadbala is measured from clock noon rather than local apparent noon.",
-      "Vimsopaka weights and Varga Visva values follow BPHS Ch. 7 vv. 21-25.",
+      "Vimsopaka weights and Varga Visva values follow BPHS Ch. 7, vv. 21–25.",
       "Drik Bala uses the exact Sphuta Drishti formula of BPHS Ch. 26.",
       "Arudha exception cases take the 4th from the house when the pada falls in the 7th; "+
         "some software takes the 10th instead.",
