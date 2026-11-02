@@ -31,6 +31,8 @@ source/
   test/citation-verify.mjs        every BPHS citation, checked as a citation
   test/make-citation-registry.py  writes data/citations.json from the source
   data/citations.json             196 citations, 82 loci, 36 files
+  test/make-bphs-witness.py       writes data/bphs-witness.json from the PDFs
+  data/bphs-witness.json          what the uploaded edition attests
 ```
 
 ## The certified window
@@ -229,6 +231,77 @@ because it was round, and promptly flagged the source's own `BPHS, Vol. 2, Ch.
 46` as suspicious. **The citation was right and the assumption was wrong.** That
 is the use of a registry — it sent someone to look instead of assuming — and the
 figure now travels with the quotation that settles it.
+
+### Resolving a citation against the edition
+
+The registry checks a citation's **shape**. `data/bphs-witness.json` lets
+`citation-verify.mjs` also ask whether the chapter and verse it names can be
+**found** — built by `make-bphs-witness.py` from the project's own two PDFs read
+out as text.
+
+**Not the Sanskrit mūla, and the witness says so.** That was the plan;
+`sa.wikisource.org` is not on this environment's fetch allowlist and
+`sanskritdocuments.org` disallows robots. No workaround was attempted. It turned
+out to be the better outcome anyway: every citation here is keyed to Santhanam's
+**English** numbering, so a mūla witness would have needed a reconciliation pass
+between two numbering schemes — and that pass would itself have been the
+unverified step. The edition the citations point at is the right thing to check
+them against.
+
+**No verse text is stored, only structure and hashes.** The check this has to
+support is resolution — does the cited chapter and verse exist — and that needs
+structure. It also keeps a scanned edition out of a public repository.
+
+The witness is three things of decreasing strength, and the harness uses each
+for only what it can bear:
+
+| | |
+|---|---|
+| `chapters` | which chapters exist and in which volume. **Strong** — stated in both prefaces. |
+| `verseMax` | the highest verse marker legibly read. A **bound**, not a count. |
+| `attested` | the markers actually read. **Incomplete by construction.** |
+
+That last word matters. This is OCR of a scanned 1984 printing: verse 1 of
+chapter 46 prints as `t.`, 6–11 as `6-ll.`, 44–49 as `4449.`. A citation the
+scan cannot read **has not been shown wrong**, so a flat pass/fail would be the
+dishonest shape here. Each citation lands in one of four classes instead:
+
+```
+43  resolve      every verse in the range was read in that chapter
+34  plausible    below the chapter's legible bound, marker not legible
+ 1  beyond bound needs a reasoned note
+ 3  unsegmented  the chapter's running head is illegible
+```
+
+The counts are **ratcheted against a baseline committed in the harness**, not in
+the generated witness — a baseline that regenerated with the data could never
+fail. They may only improve.
+
+### Reasoned notes, which are checked and not merely asserted
+
+A citation past its chapter's bound needs an entry in `RESOLUTION_NOTES` naming
+a phrase that must appear in that chapter, and the builder checks it. There is
+one, and it is instructive.
+
+`BPHS Ch. 37, vv. 11–13` backs the Kemadruma rule. The chapter's legible bound
+is 10, because vv. 7–10 print as `7.10, SUNAPHA, ANAPHA AND DURADHARA` and the
+marker for 11–13 is lost in a run of unrecoverable Devanagari. But the Kemadruma
+passage sits in chapter 37 directly after verse 10, which is where vv. 11–13
+fall — so the note names `Kemadruma`, the builder confirms it is there, and the
+harness fails if it ever stops being. **The content is attested where the number
+is not.** An exception that stops corroborating fails exactly like an unlisted
+overrun.
+
+Recovering the `N.M.` range pattern was worth doing before any of this: it took
+chapter 7's bound from 29 to 43 and chapter 37's from 6 to 10, and dropped the
+beyond-bound count from 9 citations to 1. Its guards — the second number must
+exceed the first by no more than twenty, and a capital must follow — are what
+keep it out of the Vimsopaka tables, which are full of lines like `3.0` and
+`20.0`.
+
+Regenerate with
+`python3 test/make-bphs-witness.py <vol1.txt> <vol2.txt>`, the two project PDFs
+read out as text.
 
 ### What the first run found
 

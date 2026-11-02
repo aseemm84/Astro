@@ -182,6 +182,116 @@ head("the checks fail on a bad citation");
   const d = clone(); d.citations.pop();
   is(JSON.stringify(d) !== JSON.stringify(reg),
      "a registry with a row removed no longer matches the source");
+
+  /* And the resolution side: a citation past a chapter's legible bound with no
+     reasoned note must not pass, and a note that no longer corroborates must
+     not either. Both run through the same predicates the live checks use. */
+  const W = JSON.parse(readFileSync(ROOT + "/source/data/bphs-witness.json", "utf8"));
+  const ch37 = W.chapters["37"];
+  const fabricated = { chapter: 37, verses: [90, 95] };
+  const beyond = fabricated.verses[1] > ch37.verseMax;
+  const covered = (W.resolutions || []).some(n => n.chapter === fabricated.chapter
+    && n.verses[0] === fabricated.verses[0] && n.verses[1] === fabricated.verses[1]);
+  is(beyond && !covered,
+     "an invented Ch. 37, vv. 90–95 is beyond the bound (" + ch37.verseMax
+     + ") and covered by no note, so it would fail");
+
+  const stale = (W.resolutions || []).map(n => ({ ...n, corroborated: false }));
+  is(!stale.every(n => n.corroborated === true),
+     "a resolution note that stopped corroborating would fail too");
+}
+
+/* ---- 5. resolve each citation against the witness ----------------------
+   The registry checks a citation's SHAPE. This checks whether the chapter and
+   verse it names can be found in the edition the project actually cites —
+   source/data/bphs-witness.json, built by make-bphs-witness.py from the two
+   uploaded PDFs.
+
+   It cannot be a flat pass/fail, and pretending it could would be the
+   dishonest move here. The witness is OCR of a scanned 1984 printing whose
+   verse markers are sometimes unreadable: verse 1 of chapter 46 prints as
+   "t.", 6-11 as "6-ll.", 7-10 as "7.10," with the hyphen turned into a full
+   stop. A citation the scan cannot read has not been shown wrong. So each
+   citation lands in one of four classes, the counts are RATCHETED against a
+   committed baseline, and only a real regression fails.                     */
+
+head("every citation resolves against the uploaded edition");
+{
+  const W = JSON.parse(readFileSync(ROOT + "/source/data/bphs-witness.json", "utf8"));
+  const WP = W._provenance;
+  const unseg = new Set(WP.unsegmented);
+
+  is(WP.chapters === P.maxChapter && WP.volumeSplit === P.volumeSplit,
+     "the witness and the registry agree on the edition (97 chapters, 45/52)");
+  is(/not on this environment's fetch allowlist|robots/.test(WP.notTheMula),
+     "the witness says why the Sanskrit mūla is not the source");
+  is(/INCOMPLETE BY CONSTRUCTION/.test(WP.strength),
+     "and that its verse attestation is incomplete by construction");
+  is(/only structure and hashes/.test(WP.noTextStored),
+     "and that no verse text is stored, only structure");
+
+  const cls = { attested: [], withinBound: [], beyondBound: [], unsegmented: [] };
+  for (const r of C) {
+    if (!r.verses) continue;
+    if (unseg.has(r.chapter)) { cls.unsegmented.push(r); continue; }
+    const rec = W.chapters[String(r.chapter)];
+    if (!rec) { cls.unsegmented.push(r); continue; }
+    const a = new Set(rec.attested);
+    const want = [];
+    for (let v = r.verses[0]; v <= r.verses[1]; v++) want.push(v);
+    if (want.every(v => a.has(v))) cls.attested.push(r);
+    else if (rec.verseMax != null && r.verses[1] <= rec.verseMax) cls.withinBound.push(r);
+    else cls.beyondBound.push(r);
+  }
+
+  console.log("  of " + C.filter(r => r.verses).length + " citations that name verses:");
+  console.log("    " + String(cls.attested.length).padStart(3)
+    + "  resolve — every verse in the range was read in that chapter");
+  console.log("    " + String(cls.withinBound.length).padStart(3)
+    + "  plausible — below the highest verse read there, but the marker itself was not legible");
+  console.log("    " + String(cls.beyondBound.length).padStart(3)
+    + "  beyond the chapter's legible bound — each needs a reasoned note");
+  console.log("    " + String(cls.unsegmented.length).padStart(3)
+    + "  in a chapter whose running head the scan lost entirely");
+
+  /* THE RATCHET. Committed here and not in the generated witness, because a
+     baseline that regenerated with the data could never fail. These may only
+     improve: better OCR handling moves citations from the weaker classes into
+     'attested', and that is a test to update, not a test to fear. */
+  const BASE = { attested: 43, withinBound: 34, beyondBound: 1, unsegmented: 3 };
+  is(cls.attested.length >= BASE.attested,
+     "at least " + BASE.attested + " citations fully resolve (" + cls.attested.length + ")");
+  is(cls.beyondBound.length <= BASE.beyondBound,
+     "no more than " + BASE.beyondBound + " citation sits beyond its chapter's bound ("
+     + cls.beyondBound.length + ")");
+  is(cls.unsegmented.length <= BASE.unsegmented,
+     "no more than " + BASE.unsegmented + " citations fall in an unsegmented chapter ("
+     + cls.unsegmented.length + ")");
+
+  /* Every beyond-bound citation must be covered by a resolution note whose
+     corroborating phrase was actually FOUND in that chapter. An exception that
+     stops corroborating fails exactly like an unlisted overrun. */
+  const notes = W.resolutions || [];
+  for (const r of cls.beyondBound) {
+    const n = notes.find(x => x.chapter === r.chapter
+      && x.verses[0] === r.verses[0] && x.verses[1] === r.verses[1]);
+    is(!!n, "Ch. " + r.chapter + ", vv. " + r.verses.join("–")
+       + " (beyond the bound) has a reasoned note — " + r.file + ":" + r.line);
+    if (n) is(n.corroborated === true,
+      "and its note corroborates: “" + n.corroborates + "” is present in chapter "
+      + n.chapter + "’s text");
+  }
+  is(notes.every(n => n.corroborated === true),
+     "every resolution note in the witness corroborates against the text");
+  is(notes.every(n => typeof n.why === "string" && typeof n.reasoning === "string"),
+     "and each carries both why the scan failed and why the citation still stands");
+
+  if (cls.unsegmented.length) {
+    const chs = [...new Set(cls.unsegmented.map(r => r.chapter))];
+    console.log("  unsegmented chapters cited: " + chs.join(", ")
+      + " — the running head is illegible, so the chapter cannot be bounded at all. "
+      + "Not evidence against the citation, and not evidence for it.");
+  }
 }
 
 if (LIST) {
