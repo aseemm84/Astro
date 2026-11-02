@@ -180,9 +180,14 @@
   };
 
   /* ===== the foot: mark, place, promise, handle ============================ */
+  /* Where the foot begins, published so a caller laying out its own text can
+     stop above it instead of being drawn over. foot() uses this itself, so
+     there is one definition of the boundary and not two that drift apart. */
+  NCard.footTop = function (W, H) { return H - W * 0.155; };
+
   NCard.foot = function (c, W, H, o) {
     o = o || {};
-    var pad = o.pad, mk = W * 0.082, fx = pad, fy = H - W * 0.155;
+    var pad = o.pad, mk = W * 0.082, fx = pad, fy = NCard.footTop(W, H);
     if (MARK) { try { c.drawImage(MARK, fx, fy, mk, mk); } catch (e) {} }
     var tx = fx + mk + W * 0.022;
     c.textAlign = "left";

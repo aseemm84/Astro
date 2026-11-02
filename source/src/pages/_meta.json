@@ -190,5 +190,13 @@
   "layout": "",
   "has_aside": true,
   "desc": "Measured accuracy of the Nirayana chart engines: per-graha residuals against ERFA over 1800–2200, what they cost each varga, nakṣatra and daśā boundary, the 5.83° spread across seventeen ayanāṃśa conventions, and the Sūrya Siddhānta tiers."
+ },
+ "starwheel": {
+  "title": "Star wheel &mdash; the whole sky for any day &mdash; {{BRAND}}",
+  "h1": "Star wheel",
+  "sub": "The whole sky as a tilted disc for any day and place, with that day’s pañcāṅga beneath it — no birth chart needed.",
+  "layout": "",
+  "has_aside": true,
+  "desc": "The tilted star wheel for any day and place, with the twenty-seven yogatārās at their own longitude and latitude, the whole day’s tithi, nakṣatra, yoga and karaṇa with their end-times, kṣaya and adhika tithis named, and a customisable card to share."
  }
 }

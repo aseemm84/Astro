@@ -608,6 +608,17 @@ def build_shared():
         # carry it — and it reads nothing from the network, which is what lets
         # the whole page work from a file:// URL.
         "accuracy.js": brandify(jsread(SRC, "js", "accuracy.js")),
+        # starwheel.html. It REUSES the report's own star-wheel renderer rather
+        # than carrying a second copy: report/sky/40-star-wheel.js is pure — a
+        # sky snapshot in, SVG out — so it is concatenated here as well as into
+        # the report bundle. Two implementations of that projection would
+        # eventually disagree, and a wheel that disagreed with the report's
+        # would be worse than no wheel. The prelude supplies the two helpers it
+        # expects from the report's scope and nothing else.
+        "starwheel.js": brandify(
+            jsread(SRC, "js", "starwheel-prelude.js") + "\n" +
+            jsread(SRC, "js", "report", "sky", "40-star-wheel.js") + "\n" +
+            jsread(SRC, "js", "starwheel-ui.js")),
         # The city list, loading and search, shared so the calendar does not grow
         # a second copy of "which city is this and what is its offset". Lazy: the
         # 3 MB of rows are fetched only when somebody actually searches.

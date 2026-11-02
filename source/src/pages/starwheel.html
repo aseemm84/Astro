@@ -1,0 +1,73 @@
+<p class="lede">The whole sky as a tilted disc &mdash; the horizon fixed, the zodiac turning through it &mdash; for any day and any place, with <b>no birth chart required</b>. Beneath it, the whole of that day&rsquo;s pa&ntilde;c&amacr;&#7749;ga rather than a single reading at sunrise, because a tithi is a stretch of time and not a label on a date.</p>
+
+<div class="swbar" id="swcontrols">
+  <label>Day <input type="date" id="sw-date" class="swin"></label>
+  <label>At
+    <select id="sw-when" class="swin">
+      <option value="sunrise">Sunrise</option>
+      <option value="noon">Local noon</option>
+      <option value="sunset">Sunset</option>
+      <option value="midnight">Midnight</option>
+      <option value="now">This moment</option>
+      <option value="custom">A time I choose</option>
+    </select>
+  </label>
+  <label id="sw-timewrap" hidden>Time <input type="time" id="sw-time" class="swin" value="06:00"></label>
+  <label>Place <span id="sw-place" class="swplace"></span></label>
+  <label>Ayan&amacr;&#7745;&#347;a <select id="sw-ayan" class="swin"></select></label>
+  <span class="swsp"></span>
+  <button type="button" class="swbtn" data-sw="step" data-unit="d" data-k="-1">&minus;1 day</button>
+  <button type="button" class="swbtn" data-sw="step" data-unit="d" data-k="1">+1 day</button>
+  <button type="button" class="swbtn" data-sw="today">Today</button>
+</div>
+
+<h2 id="wheel">The wheel</h2>
+<p class="swstamp" id="sw-stamp"></p>
+<div class="swwrap"><div id="swhost" class="swhost"></div></div>
+<div class="swtoggles" id="sw-toggles"></div>
+<p class="k-note" id="sw-wheelnote"></p>
+
+<h2 id="day">The whole day</h2>
+<p>Each limb is a condition on a longitude, so each one <i>ends</i> at an instant rather than at midnight. The strip below is the day from sunrise to the next sunrise, with every segment that touches it and the moment each one closes.</p>
+<div class="swwrap"><div id="sw-strip"></div></div>
+<div id="sw-limbs" class="axgrid"></div>
+
+<h2 id="tithi">The tithi, in detail</h2>
+<p>A tithi runs from about nineteen hours to about twenty-six, because the Moon&rsquo;s speed varies by some fifteen per cent over a month. So it drifts against the clock: one can span two sunrises and be counted twice, and one can begin and end between two sunrises and be counted not at all. Both are named below when they happen.</p>
+<div id="sw-tithi"></div>
+
+<h2 id="card">A card to share</h2>
+<p>The same day, composed for a feed. Everything is drawn in your browser from the figures above &mdash; nothing is uploaded, and no image is fetched.</p>
+<div class="swbar" id="sw-cardbar">
+  <label>Shape <select id="sw-ratio" class="swin"></select></label>
+  <label>Palette <select id="sw-theme" class="swin"></select></label>
+  <label>Headline <select id="sw-head" class="swin">
+    <option value="tithi">Tithi and pak&#7779;a</option>
+    <option value="nak">Nak&#7779;atra</option>
+    <option value="date">The date itself</option>
+    <option value="masa">The lunar month</option>
+  </select></label>
+  <span class="swsp"></span>
+  <label class="swchk"><input type="checkbox" id="sw-c-wheel" checked> Star wheel</label>
+  <label class="swchk"><input type="checkbox" id="sw-c-phase" checked> Moon phase</label>
+  <label class="swchk"><input type="checkbox" id="sw-c-limbs" checked> Five limbs</label>
+  <label class="swchk"><input type="checkbox" id="sw-c-ends" checked> End-times</label>
+  <label class="swchk"><input type="checkbox" id="sw-c-sun" checked> Sunrise &amp; sunset</label>
+  <label class="swchk"><input type="checkbox" id="sw-c-fest" checked> Festival, if any</label>
+  <label class="swchk"><input type="checkbox" id="sw-c-place" checked> Place</label>
+</div>
+<div class="swcardwrap"><canvas id="sw-canvas" class="swcanvas"></canvas></div>
+<div class="swbar">
+  <button type="button" class="swbtn swprimary" data-sw="png">Download the card</button>
+  <button type="button" class="swbtn" data-sw="copy">Copy the caption</button>
+  <span class="swmsg" id="sw-msg"></span>
+</div>
+<div class="swcap"><label>Caption <textarea id="sw-caption" class="swtext" rows="4"></textarea></label></div>
+
+<h2 id="reading">How to read the wheel</h2>
+<div class="note"><b>Why it is tilted.</b> A flat zodiac wheel draws the ecliptic as a circle around the observer, which is the one thing it is not. Seen from a place on the Earth the ecliptic is a great circle crossing the horizon at an angle that changes through the day, and the tilt here is what carries that: the horizon line stays put, the zodiac turns through it, and a graha below the line is a graha below the horizon &mdash; not visible, whatever the chart says about it.</div>
+<p>The outer band is the twelve r&amacr;&#347;is, the inner the twenty-seven nak&#7779;atras. Each yogat&amacr;r&amacr; &mdash; the junction star a nak&#7779;atra is named for &mdash; is plotted at its own longitude <i>and its own latitude</i>, which is why they do not sit on the ecliptic line: Citr&amacr; is nearly two degrees south of it, and Revat&iacute; almost exactly on it. The grahas are plotted the same way, so the Moon visibly departs from the line and the Sun never does.</p>
+
+<p class="src"><span>Source</span> The five limbs and the lunar month follow BPHS and standard sidereal computation. The yogat&amacr;r&amacr; longitudes come from the HYG catalogue reduced to the stated ayan&amacr;&#7745;&#347;a; see <a href="now.html">Hindu time now</a> for this moment, <a href="calendar.html">Calendar</a> for the month, <a href="accuracy.html">Accuracy</a> for what these figures are measured to, and <a href="kundli.html">Kundli 2.0</a> to cast a full chart.</p>
+
+<script src="starwheel.js" defer></script>
