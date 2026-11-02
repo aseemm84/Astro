@@ -114,7 +114,15 @@ head("it draws with no chart saved at all");
     hasChart: (function () { try { return !!localStorage.getItem("learnhoro.chart"); }
                              catch (e) { return false; } })(),
     svg: !!document.querySelector("#swhost svg"),
-    grahas: document.querySelectorAll("#swhost .swh-g").length,
+    /* Counted as surfaces OR lettered discs: the page draws each graha as its
+       lit surface now, which replaced the .swh-g disc this used to count — so
+       the old count went to zero while nine grahas were plainly on the wheel.
+       Either rendering satisfies "the graha is plotted"; which one is checked
+       separately below. */
+    grahas: document.querySelectorAll("#swhost .swh-g").length +
+            document.querySelectorAll("#swhost image.swh-art").length,
+    sprites: document.querySelectorAll("#swhost image.swh-art").length,
+    spriteLabels: document.querySelectorAll("#swhost text.swh-artlab").length,
     stars: document.querySelectorAll("#swhost .swh-star").length,
     natal: document.querySelectorAll("#swhost .swh-l, #swhost .swh-a, #swhost .swh-u").length,
     stamp: (document.getElementById("sw-stamp") || {}).textContent || "",
@@ -123,7 +131,13 @@ head("it draws with no chart saved at all");
   is(errs.length === 0, "no page errors" + (errs.length ? ": " + errs[0] : ""));
   is(!r.hasChart, "no chart is in storage");
   is(r.svg, "and the wheel still draws");
-  is(r.grahas >= 9, "all nine grahas are plotted (" + r.grahas + " labels)");
+  is(r.grahas >= 9, "all nine grahas are plotted (" + r.grahas + ")");
+  is(r.sprites === 9, "each one as its lit surface (" + r.sprites + " sprites)");
+  /* The surface replaced the lettered disc, and with it the only thing saying
+     WHICH graha it was: the first build of this drew nine unlabelled spheres.
+     A sphere is not self-identifying, so the name is not optional. */
+  is(r.spriteLabels === 9,
+     "and each surface is named (" + r.spriteLabels + " labels)");
   is(r.stars >= 20, "the yogatārās are plotted (" + r.stars + ")");
   is(r.natal === 0,
      "and nothing natal appears — no lagna point, ārūḍha or upagraha (" + r.natal + ")");
@@ -350,6 +364,83 @@ head("the place can be changed, and a high latitude keeps the date asked for");
   is(/2 November 2026/.test(r.stamp),
      "and so does the wheel — 64°N does not roll it back a day (" +
      r.stamp.slice(0, 34) + ")");
+}
+const CFG={sel:"sw-wtheme",host:"swhost",label:".swh-rasi",ground:"rect"};
+
+/* ───── the palettes, and whether anyone can read them ───────────────────────
+   Colours picked by hand are exactly the thing that looks fine in the one
+   combination the author happened to open. Each palette is applied in turn and
+   the rāśi lettering is measured against the ground it is written on — the
+   first pass of this had pale blue rāśi names on cream parchment at 1.4:1,
+   because the shapes were themed in JS and the lettering in CSS and only one
+   of the two moved.
+
+   The surfaces are asserted NOT to change: a palette recolours the chrome, and
+   Maṅgala stays rust whatever is behind it, because that colour is the body
+   rather than the decoration. */
+head("every palette is legible, and none of them repaints the grahas");
+{
+  const { p, errs } = await open();
+  const r = await p.evaluate(async (cfg) => {
+    const wait = ms => new Promise(r2 => setTimeout(r2, ms));
+    const lum = c => {
+      const m = /rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)/.exec(c);
+      if (!m) return null;
+      const f = v => { v = +v / 255; return v <= 0.03928 ? v / 12.92
+                                                        : Math.pow((v + 0.055) / 1.055, 2.4); };
+      return 0.2126 * f(m[1]) + 0.7152 * f(m[2]) + 0.0722 * f(m[3]);
+    };
+    const ratio = (a, b) => {
+      const x = lum(a), y = lum(b);
+      if (x == null || y == null) return null;
+      return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+    };
+    const sel = document.getElementById(cfg.sel);
+    const names = Array.from(sel.options).map(o => o.value).filter(Boolean);
+    const out = [];
+    let firstHref = null;
+    for (const n of names) {
+      sel.value = n; sel.dispatchEvent(new Event("change", { bubbles: true }));
+      await wait(700);
+      const host = document.getElementById(cfg.host);
+      const label = host.querySelector(cfg.label);
+      const ground = host.querySelector(cfg.ground);
+      const img = host.querySelector("image");
+      const href = img ? (img.getAttribute("href") || "").slice(0, 64) : null;
+      if (firstHref === null) firstHref = href;
+      /* The star wheel's ground is a gradient, so its computed fill is
+         url(#swhbg) and resolves to no colour at all — the first run of this
+         reported every palette "unmeasured", which is a measurement failing,
+         not a palette passing. A gradient is resolved to its stops and scored
+         against the WORST of them, since the lettering crosses the whole
+         sweep. */
+      let gfill = ground ? getComputedStyle(ground).fill : null;
+      let grounds = [gfill];
+      const um = /url\(["']?#([^"')]+)/.exec(gfill || "");
+      if (um) {
+        const grad = host.ownerDocument.getElementById(um[1]);
+        grounds = grad ? Array.from(grad.querySelectorAll("stop")).map(
+          st => getComputedStyle(st).stopColor) : [];
+      }
+      const rs = label ? grounds.map(g => ratio(getComputedStyle(label).fill, g))
+                               .filter(v => v != null) : [];
+      out.push({ n, ratio: rs.length ? Math.min.apply(null, rs) : null,
+        sameSprite: href === firstHref });
+    }
+    sel.value = ""; sel.dispatchEvent(new Event("change", { bubbles: true }));
+    await wait(500);
+    return { names, out };
+  }, CFG);
+  await p.close();
+  is(errs.filter(e => !/cities\.json|scheme "file"/.test(e)).length === 0, "no page errors");
+  is(r.names.length >= 5, "the page offers " + r.names.length + " named palettes");
+  r.out.forEach(o => {
+    is(o.ratio != null && o.ratio >= 4.5,
+       o.n + ": rāśi lettering reads at " +
+       (o.ratio == null ? "unmeasured" : o.ratio.toFixed(1) + ":1") + " on its own ground");
+  });
+  is(r.out.every(o => o.sameSprite),
+     "and no palette repaints a graha surface");
 }
 
 await browser.close();

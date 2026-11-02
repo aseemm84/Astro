@@ -208,7 +208,8 @@
     ["degrees", "Degrees"],
     ["retro", "Retrograde mark"],
     ["speed", "Speed arrows"],
-    ["lanes", "Separate crowded grahas"]
+    ["lanes", "Separate crowded grahas"],
+    ["art", "Graha surfaces"]
   ];
   var GRAHAS = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn",
                 "Rahu", "Ketu"];
@@ -277,6 +278,14 @@
       if (t.id === "ec-date" || t.id === "ec-time") {
         stop(); S.base = baseFromFields(); S.offset = 0; draw(null);
       } else if (t.id === "ec-ayan") { S.ayan = t.value; draw(null); }
+      else if (t.id === "ec-theme") {
+        /* The palette is CSS, scoped to [data-wtheme] on the host, so nothing
+           is redrawn: the renderer's inline fills are presentation attributes
+           and a CSS rule outranks them. An empty value removes the attribute
+           and the page falls back to the site theme. */
+        if (t.value) host.setAttribute("data-wtheme", t.value);
+        else host.removeAttribute("data-wtheme");
+      }
       else if (t.id === "ec-span") {
         /* Keep where we are in the span proportionally, rather than keeping the
            offset in minutes: widening the span would otherwise leave the wheel
@@ -298,6 +307,8 @@
         stop();
         S.offset = (+t.value / 1000) * S.span;
         draw(null);
+      } else if (t.id === "ec-tilt") {
+        window.SKY_OPT.tilt = +t.value || 0; draw(null);
       } else if (t.id === "ec-trail") {
         var pc = +t.value || 0;
         window.SKY_OPT.trail = pc > 0;
@@ -319,7 +330,10 @@
   need([
     { src: "engine.js", have: function () { return !!window.quickSky; } },
     { src: "panchanga.js", have: function () { return !!(window.NP && window.NP.day); } },
-    { src: "places.js", have: function () { return !!window.NPlaces; } }
+    { src: "places.js", have: function () { return !!window.NPlaces; } },
+    /* the lit graha surfaces, last so the wheel is on screen with lettered
+       discs before the 44 KB of surface renderer arrives */
+    { src: "bodies.js", have: function () { return !!window.NSprite; } }
   ], function () {
     S.place = (window.NP.savedPlace && window.NP.savedPlace()) ||
               (window.NP.PLACES && window.NP.PLACES[0]) ||
@@ -354,17 +368,10 @@
     window.SKY_VARGA = "D1";
     window.SKY_ASPECT = "none";
     window.SKY_OPT.natal = false;
+    window.SKY_OPT.art = true;      /* this page draws surfaces; the report does not */
     window.SKY_OPT.trail = false;
-    /* Flat, and no control to change it. skyLiveMount builds the furniture —
-       the rāśi wedges, their labels, the nakṣatra ring — as a SIBLING of the
-       group the tilt transform is applied to, so raising the tilt squashes the
-       grahas and the axes while the rings stay circular, and every graha is
-       then drawn off the wedge it belongs to. Tilting the furniture as well
-       needs each of its fifty-one text labels counter-scaled, and a remount on
-       every step of the slider since skyLiveKey does not include the tilt.
-       That is a change to a renderer three production pages share, so it is
-       not made from here. The report's own Sky tab exposes the same slider and
-       has the same fault; it is recorded, not worked around. */
+    /* Opens flat, which is the chart convention; the slider leans the whole
+       wheel, furniture included, so a graha cannot leave its rāśi. */
     window.SKY_OPT.tilt = 0;
     window.SKY_NATAL = null;
     fillSelects();

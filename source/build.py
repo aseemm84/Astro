@@ -615,6 +615,18 @@ def build_shared():
         # eventually disagree, and a wheel that disagreed with the report's
         # would be worse than no wheel. The prelude supplies the two helpers it
         # expects from the report's scope and nothing else.
+        # The lit graha surfaces, as a bundle any page can load. They were
+        # already here — 54-motion-bodies.js builds each surface per pixel and
+        # lights it, and sp-bodies.js caches discs of it — but both lived only
+        # inside the reel/studio bundle, so the wheels drew lettered dots while
+        # the real surfaces sat a few hundred kilobytes away. sp-bodies.js
+        # reaches moBody by SCOPE, not by window, so the two must be
+        # concatenated together and in this order; 54-motion-bodies.js is
+        # self-contained apart from that.
+        "bodies.js": brandify(
+            jsread(SRC, "js", "report", "motion", "54-motion-bodies.js") + "\n" +
+            jsread(SRC, "js", "sp-bodies.js") + "\n" +
+            jsread(SRC, "js", "graha-sprite.js")),
         # The animated ecliptic wheel, same bargain as the star wheel: the page
         # gets report/sky/37-ecliptic-wheel.js itself rather than a copy, so it
         # and the report's Sky tab animate through one renderer. 02-varga-lagna

@@ -241,7 +241,9 @@
     h.innerHTML = OPT.map(function (o) {
       return '<label class="swchk"><input type="checkbox" data-swtog="' + o[0] + '"' +
         (SWH_SHOW[o[0]] ? " checked" : "") + "> " + o[1] + "</label>";
-    }).join("");
+    }).join("") +
+      '<label class="swchk"><input type="checkbox" id="sw-art" checked> ' +
+      'Graha surfaces</label>';
   }
 
   /* ---- the day --------------------------------------------------------- */
@@ -572,9 +574,25 @@
       }
       else if (t.id === "sw-time") { S.time = t.value; render(); }
       else if (t.id === "sw-ayan") { S.ayan = t.value; render(); }
+      else if (t.id === "sw-wtheme") {
+        /* The star wheel's colours come from swhPal(), which already chose
+           between a night sky and a print sheet; a named theme is a third case
+           of that same decision. Null restores the original pair, so the
+           report's own tab is untouched. This renderer builds a string, so the
+           palette needs a redraw rather than a stylesheet. */
+        window.SWH_THEME = t.value || null;
+        /* The shapes come from swhPal() in JS; the LETTERING is CSS and was
+           written for a night sky, so the host carries the name as well and
+           pages.css moves the text with it. Without this a pale palette left
+           pale blue rāśi names on cream. */
+        if (t.value) host.setAttribute("data-wtheme", t.value);
+        else host.removeAttribute("data-wtheme");
+        drawWheel(); drawCard();
+      }
       else if (t.id === "sw-ratio") { S.ratio = t.value; drawCard(); }
       else if (t.id === "sw-theme") { S.theme = t.value; drawCard(); }
       else if (t.id === "sw-head") { S.head = t.value; drawCard(); }
+      else if (t.id === "sw-art") { window.SWH_ART = t.checked; drawWheel(); drawCard(); }
       else if (t.id && /^sw-c-/.test(t.id)) drawCard();
       else if (t.getAttribute && t.getAttribute("data-swtog")) {
         SWH_SHOW[t.getAttribute("data-swtog")] = t.checked;
@@ -646,7 +664,12 @@
        loaded a page controller and left NP undefined. */
     { src: "panchanga.js", have: function () { return !!(window.NP && window.NP.day); } },
     { src: "places.js", have: function () { return !!window.NPlaces; } },
-    { src: "cards.js", have: function () { return !!window.NCard; } }
+    { src: "cards.js", have: function () { return !!window.NCard; } },
+    /* the lit graha surfaces. 44 KB, and last in the list, so the wheel is
+       already on screen with lettered discs before the sprites replace them —
+       a reader on a slow link sees a correct wheel immediately rather than an
+       empty box. */
+    { src: "bodies.js", have: function () { return !!window.NSprite; } }
   ], function () {
     S.place = (window.NP.savedPlace && window.NP.savedPlace()) ||
               (window.NP.PLACES && window.NP.PLACES[0]) ||
@@ -685,6 +708,9 @@
       di.min = window.NP.RANGE.min + "-01-01";
       di.max = window.NP.RANGE.max + "-12-31";
     }
+    /* This page draws the surfaces; the report's Star wheel tab does not, and
+       the renderer defaults to off so that stays true. */
+    window.SWH_ART = true;
     fillSelects();
     toggles();
     bind();

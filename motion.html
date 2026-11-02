@@ -2473,7 +2473,7 @@ html[data-theme="emerald"] .wsnext.lead{
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-11-02.ded8d22";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself — of forty-four in all. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html" class="active">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
+</script><script>window.__kBuild="2026-11-02.3330339";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself — of forty-four in all. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html" class="active">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
 
 <p class="mochartbar" id="mo-chart"></p>
 <div id="mo-host" class="kreport"><p class="k-status" id="mo-status">Loading the scenes…</p></div>
@@ -10252,14 +10252,19 @@ function skyArc(cx,cy,r,a0,a1){
    wedge is traversed in the positive (clockwise) direction — sweep 1 — and the inner
    arc back again with sweep 0. These were the other way round until 2026-10, which bowed
    every wedge to the wrong side of its chord: about 12px at the sign ring's radius. */
-function skyWedge(cx,cy,r0,r1,a0,a1,fill,op){
+/* `cls` is additive and optional: the wedges carried no class at all, so a
+   page wanting to recolour the sign bands had nothing to select. A class
+   changes nothing on its own — CSS beats a presentation attribute only where a
+   rule exists — so the report, which defines no such rule, renders exactly as
+   before. */
+function skyWedge(cx,cy,r0,r1,a0,a1,fill,op,cls){
   var p=[skyXY(cx,cy,r1,a0),skyXY(cx,cy,r1,a1),skyXY(cx,cy,r0,a1),skyXY(cx,cy,r0,a0)];
   var lg=(((a1-a0)%360+360)%360)>180?1:0;
   return '<path d="M'+p[0][0].toFixed(1)+','+p[0][1].toFixed(1)+
     ' A'+r1+','+r1+' 0 '+lg+' 1 '+p[1][0].toFixed(1)+','+p[1][1].toFixed(1)+
     ' L'+p[2][0].toFixed(1)+','+p[2][1].toFixed(1)+
     ' A'+r0+','+r0+' 0 '+lg+' 0 '+p[3][0].toFixed(1)+','+p[3][1].toFixed(1)+
-    ' Z" fill="'+fill+'" fill-opacity="'+op+'"/>';
+    ' Z" fill="'+fill+'" fill-opacity="'+op+'"'+(cls?' class="'+cls+'"':'')+'/>';
 }
 /* A divisional chart maps a longitude to a varga sign. To place a planet on a wheel
    we also want a position *within* that sign, so the continuous varga longitude is
@@ -10311,8 +10316,22 @@ var SKY_OPT={
      turning the fast ones off. Nothing is being hidden from the arithmetic — only from
      the drawing. */
   show:{Sun:true,Moon:true,Mars:true,Mercury:true,Jupiter:true,Venus:true,Saturn:true,
-        Rahu:true,Ketu:true}
+        Rahu:true,Ketu:true},
+  /* Draw each graha as its lit surface instead of a lettered disc. OFF here:
+     the report's Sky tab is a production page and keeps the discs it has
+     always had, so this renderer stays byte-identical for it. ecliptic.html
+     turns it on, having loaded bodies.js. If the sprites are unavailable
+     NSprite.href returns null and the lettered disc is drawn, because a wheel
+     with no grahas on it is worse than a plain one. */
+  art:false
 };
+/* A drawing convention, the same one sp-cosmos.js uses: relative sizes so the
+   Sun reads as the Sun and Mercury as Mercury. NOT apparent magnitude and not
+   true angular diameter — the Sun and Moon subtend about half a degree each
+   and every other graha is a point. */
+var SKY_ART_R={Sun:1.45,Moon:1.15,Jupiter:1.25,Saturn:1.2,Venus:1.0,
+               Mars:0.88,Mercury:0.8,Rahu:0.8,Ketu:0.8};
+var SKY_MOON_PHASE=180;
 
 /* ---------------------------------------------------------------------------
    Lane packing. Crowding is resolved by stacking inward, never by sliding a glyph
@@ -10350,13 +10369,13 @@ function skyDM(lon){
    --------------------------------------------------------------------------- */
 function skyFurniture(S,showNak){
   var cx=360,cy=360,o='';
-  o+='<circle cx="360" cy="360" r="350" fill="#fbf8f0" stroke="#1d2340" stroke-width="2"/>';
+  o+='<circle cx="360" cy="360" r="350" fill="#fbf8f0" stroke="#1d2340" stroke-width="2" class="sk-ground"/>';
   for(var s=0;s<12;s++){
     var a0=s*30;
-    o+=skyWedge(cx,cy,300,350,a0,a0+30,SKY_ELEM[s],0.16);
+    o+=skyWedge(cx,cy,300,350,a0,a0+30,SKY_ELEM[s],0.16,"sk-band sk-el"+(s%4));
     o+='<line x1="'+skyXY(cx,cy,300,a0)[0].toFixed(1)+'" y1="'+skyXY(cx,cy,300,a0)[1].toFixed(1)+
        '" x2="'+skyXY(cx,cy,350,a0)[0].toFixed(1)+'" y2="'+skyXY(cx,cy,350,a0)[1].toFixed(1)+
-       '" stroke="#1d2340" stroke-width="1"/>';
+       '" stroke="#1d2340" stroke-width="1" class="sk-spoke"/>';
     var m=skyXY(cx,cy,325,a0+15);
     o+='<text x="'+m[0].toFixed(1)+'" y="'+(m[1]+2).toFixed(1)+'" class="sk-rasi">'+SA[s]+'</text>';
     var lm=skyXY(cx,cy,325,a0+24);
@@ -10368,28 +10387,28 @@ function skyFurniture(S,showNak){
   var seg=40/3;
   for(var n=0;showNak&&n<27;n++){
     var b0=n*seg;
-    if(n%2===0) o+=skyWedge(cx,cy,252,300,b0,b0+seg,"#1d2340",0.05);
+    if(n%2===0) o+=skyWedge(cx,cy,252,300,b0,b0+seg,"#1d2340",0.05,"sk-nakband");
     o+='<line x1="'+skyXY(cx,cy,252,b0)[0].toFixed(1)+'" y1="'+skyXY(cx,cy,252,b0)[1].toFixed(1)+
        '" x2="'+skyXY(cx,cy,300,b0)[0].toFixed(1)+'" y2="'+skyXY(cx,cy,300,b0)[1].toFixed(1)+
-       '" stroke="#8b8fa8" stroke-width="0.7"/>';
+       '" stroke="#8b8fa8" stroke-width="0.7" class="sk-nakdiv"/>';
     for(var q=1;q<4;q++){
       var t=b0+q*seg/4;
       o+='<line x1="'+skyXY(cx,cy,252,t)[0].toFixed(1)+'" y1="'+skyXY(cx,cy,252,t)[1].toFixed(1)+
          '" x2="'+skyXY(cx,cy,264,t)[0].toFixed(1)+'" y2="'+skyXY(cx,cy,264,t)[1].toFixed(1)+
-         '" stroke="#b9bccd" stroke-width="0.5"/>';
+         '" stroke="#b9bccd" stroke-width="0.5" class="sk-pada"/>';
     }
     var nm=skyXY(cx,cy,276,b0+seg/2);
     o+='<text x="'+nm[0].toFixed(1)+'" y="'+nm[1].toFixed(1)+'" class="sk-nak" transform="rotate('+
        (((b0+seg/2)>90&&(b0+seg/2)<270)?(180-(b0+seg/2)-90):(-(b0+seg/2)+90)).toFixed(1)+
        ' '+nm[0].toFixed(1)+' '+nm[1].toFixed(1)+')">'+SKY_NAKA[n]+'</text>';
   }
-  o+='<circle cx="360" cy="360" r="252" fill="none" stroke="#1d2340" stroke-width="1"/>';
+  o+='<circle cx="360" cy="360" r="252" fill="none" stroke="#1d2340" stroke-width="1" class="sk-inner"/>';
   // degree ticks every 10°
   for(var d=0;d<360;d+=10){
     var r0=(d%30===0)?232:242;
     o+='<line x1="'+skyXY(cx,cy,r0,d)[0].toFixed(1)+'" y1="'+skyXY(cx,cy,r0,d)[1].toFixed(1)+
        '" x2="'+skyXY(cx,cy,252,d)[0].toFixed(1)+'" y2="'+skyXY(cx,cy,252,d)[1].toFixed(1)+
-       '" stroke="#c3c6d6" stroke-width="0.6"/>';
+       '" stroke="#c3c6d6" stroke-width="0.6" class="sk-tick"/>';
   }
   return o;
 }
@@ -10470,17 +10489,73 @@ function sklEl(tag,attrs,parent){
   if(parent) parent.appendChild(n);
   return n;
 }
-function skyLiveKey(){ return SKY_VARGA+"|"+(SKY_OPT.nakshatra?1:0)+"|"+(SKY_OPT.natal?1:0); }
+/* The tilt is part of the key because the furniture is markup built once: a
+   change to it has to rebuild the wheel, not merely move what is in it. */
+function skyLiveKey(){ return SKY_VARGA+"|"+(SKY_OPT.nakshatra?1:0)+"|"+(SKY_OPT.natal?1:0)+
+  "|"+Math.round(SKY_OPT.tilt||0); }
+
+/* Undo the group's vertical squash for each piece of lettering, about its own
+   anchor point, so the wheel leans but the words do not become short and fat.
+   translate(x,y) scale(1,1/kY) translate(-x,-y) leaves the anchor exactly where
+   it was and stretches only the glyphs. At tilt 0 nothing is written at all,
+   which is what keeps the flat wheel byte-identical to the one this replaced. */
+function skyUnsquashText(g){
+  var t=(SKY_OPT.tilt||0)*Math.PI/180;
+  if(!SKY_OPT.tilt) return;
+  var inv=1/Math.cos(t);
+  var tx=g.querySelectorAll("text");
+  for(var i=0;i<tx.length;i++){
+    var x=parseFloat(tx[i].getAttribute("x")||0), y=parseFloat(tx[i].getAttribute("y")||0);
+    /* PREPENDED, never assigned. The nakṣatra labels already carry a
+       rotate() that lays each one along the ring, and setting the transform
+       outright threw it away: tilted, all twenty-seven went horizontal while
+       the rāśi labels — which have no rotation — looked fine, so the first
+       version of this passed a test that only checked the rāśis. An SVG
+       transform list applies right to left, so the unsquash goes in FRONT of
+       whatever was already there. */
+    var had=tx[i].getAttribute("transform")||"";
+    tx[i].setAttribute("transform","translate("+x.toFixed(1)+","+y.toFixed(1)+
+      ") scale(1,"+inv.toFixed(4)+") translate("+(-x).toFixed(1)+","+(-y).toFixed(1)+")"+
+      (had?" "+had:""));
+  }
+}
+/* THE TILT APPLIES TO THE WHOLE WHEEL, FURNITURE INCLUDED.
+   It did not, and that was a real fault rather than a rough edge: the
+   furniture — the rāśi wedges, their labels, the nakṣatra ring — was written
+   into the <svg> root and the tilt group was created as its SIBLING, so
+   raising the tilt squashed the grahas, the axes and the trails onto an
+   ellipse while the rings that ARE the ecliptic plane stayed circular. Every
+   graha was then drawn at a smaller radius than the wedge it belongs to, which
+   at 40° is a visible fraction of a sign: the wheel misplaced grahas, and the
+   report's own Sky tab has shipped that slider for as long as it has had one.
+
+   The furniture is now built INSIDE the tilt group, so one transform carries
+   the entire wheel and a graha cannot leave its rāśi. Two consequences handled
+   below: the group's vertical squash would also squash the lettering, so each
+   furniture text is counter-scaled about its own anchor; and the furniture is
+   static markup made once at mount, so skyLiveKey now carries the tilt and a
+   change to it remounts.
+
+   This is an ORTHOGRAPHIC lean — the circle seen from far off, which is an
+   ellipse — and not the perspective view sp-cosmos.js builds for the casting
+   ceremony, where the near edge is larger than the far one. Perspective here
+   would mean projecting every wedge corner per frame and depth-sorting the
+   bodies, which is a rewrite of a renderer three production pages share. The
+   lean is geometrically honest about where each graha is, which is the part
+   that was wrong. */
 function skyLiveMount(host,S){
   host.innerHTML='<svg viewBox="0 0 720 720" class="skysvg" role="img" aria-label="Ecliptic wheel: '+
     'the rāśis with each graha at its true longitude, animated through time">'+
     '<title>Ecliptic wheel</title>'+
-    skyFurniture(S,SKY_VARGA==="D1"&&SKY_OPT.nakshatra)+'</svg>';
+    '<g class="sk-tilt">'+
+    skyFurniture(S,SKY_VARGA==="D1"&&SKY_OPT.nakshatra)+'</g></svg>';
   var svg=host.firstChild;
-  var tiltG=sklEl("g",{"class":"sk-tilt"},svg);        // everything that moves lives in here
+  var tiltG=svg.querySelector("g.sk-tilt");            // the whole wheel lives in here
+  skyUnsquashText(tiltG);
   var C={svg:svg,tilt:tiltG,key:skyLiveKey(),rad:{},natal:{},tran:{},trail:{},asp:{}};
 
-  sklEl("circle",{cx:360,cy:360,r:120,fill:"none",stroke:"#d8d8e4","stroke-width":1},tiltG);
+  sklEl("circle",{cx:360,cy:360,r:120,fill:"none",stroke:"#d8d8e4","stroke-width":1,
+    "class":"sk-core"},tiltG);
   if(SKY_OPT.natal){
     sklEl("circle",{cx:360,cy:360,r:142,fill:"none",stroke:"#cdd2e0","stroke-width":1,
       "stroke-dasharray":"3 5"},tiltG);
@@ -10519,7 +10594,22 @@ function skyLiveMount(host,S){
     rr.textContent="R";
     var ar=sklEl("line",{stroke:"#5a6a80","stroke-width":1.6,opacity:0,"marker-end":""},inner);
     var dg=sklEl("text",{x:0,y:0,"text-anchor":"middle","class":"sk-deg"},g);
-    C.tran[n]={g:g,inner:inner,tick:tick,retro:rr,deg:dg,arrow:ar};
+    /* the lit surface, and the name under it. Both live in `inner` so the
+       tilt's counter-scale applies to them exactly as it does to the disc.
+       The label is NOT optional when the surface is showing: the first build
+       of this drew nine unlabelled spheres, and a sphere does not say which
+       graha it is the way "Ma" does. */
+    /* A hairline at the sprite's own edge. The Moon is drawn at its real
+       phase, so near a new Moon its surface is almost entirely unlit — an
+       honest black disc that on a cream wheel simply cannot be seen. The ring
+       gives every surface a locatable boundary without painting light onto a
+       body that has none, which a brightened disc would. */
+    var ha=sklEl("circle",{cx:0,cy:0,r:0,fill:"none",opacity:0,"class":"sk-arthalo"},inner);
+    var im=sklEl("image",{x:0,y:0,width:0,height:0,opacity:0,"class":"sk-art"},inner);
+    var al=sklEl("text",{x:0,y:0,"text-anchor":"middle","class":"sk-artlab",opacity:0},inner);
+    al.textContent=GL[n];
+    C.tran[n]={g:g,inner:inner,tick:tick,retro:rr,deg:dg,arrow:ar,
+               circ:inner.firstChild,glyph:t,art:im,artlab:al,halo:ha};
     C.trail[n]=sklEl("path",{fill:"none","stroke-width":2,"stroke-linecap":"round",opacity:0.75},C.trailG);
     C.rad[n]=null;
   });
@@ -10529,6 +10619,20 @@ function skyLiveMount(host,S){
   return C;
 }
 var SKY_LIVE_R=[232,204,176,148];
+/* Fewer lanes, further apart, when surfaces are drawn. The lane packer stacks
+   crowded grahas INWARD, so four grahas at nearly one longitude land on four
+   successive lanes — and 28px of lane spacing cannot hold a 38px sprite, which
+   is why widening the packer's clearance alone changed nothing: the collision
+   was radial, between lanes, not angular within one. 42px of spacing clears
+   the largest surface (the Sun, 1.45 × 13 = 18.9 radius) with room for the
+   caption. FOUR lanes, not three: with three, a fourth crowded graha clamps
+   onto the last lane and is drawn directly on top of whatever is already
+   there, which is how Guru and Ketu ended up sharing one disc and one
+   caption. 36px of spacing with a 16px largest radius clears the discs; the
+   caption is set BESIDE each surface rather than under it, because a caption
+   hanging 26px below a disc reaches into the lane inside it whatever the
+   spacing is. */
+var SKY_LIVE_R_ART=[238,202,166,130];
 var SKY_NATAL_R=[124,98,72];
 /* longitude of a graha at an arbitrary instant, in whatever varga is showing —
    used by the trails, which need positions the snapshot does not carry */
@@ -10538,6 +10642,9 @@ function skyLonAt(en,date){
 }
 function skyLiveSync(S,date,dt){
   var C=SKL; if(!C) return;
+  /* the Moon at its real phase: the elongation from the Sun in this very
+     snapshot, so the disc cannot disagree with the tithi derived from it */
+  SKY_MOON_PHASE=(window.NSprite?window.NSprite.moonPhase(S):180);
   var cx=360, cy=360, VG=SKY_VARGA;
   var t=SKY_OPT.tilt*Math.PI/180, kY=Math.cos(t), lift=Math.sin(t)*SKY_OPT.latExag;
   C.tilt.setAttribute("transform", SKY_OPT.tilt?("translate(0,"+(cy*(1-kY)).toFixed(2)+") scale(1,"+kY.toFixed(4)+")"):"");
@@ -10596,8 +10703,13 @@ function skyLiveSync(S,date,dt){
   var cur=S.planets.filter(function(p){ return SKY_OPT.show[p.en]; }).map(function(p){
     return {en:p.en, lon:skyVargaLon(VG,p.sid), lat:p.lat||0, retro:!!p.retro, speed:p.speed||0};
   }).sort(function(a,b){return a.lon-b.lon;});
-  if(SKY_OPT.lanes) skyLanes(cur,SKY_LIVE_R,13);
-  else cur.forEach(function(p){ p.r=SKY_LIVE_R[0]; p.lane=0; });
+  /* The lane packer clears two discs of the radius it is given. A surface is
+     drawn larger than the lettered disc it replaced — the Sun at 1.45× — so
+     passing 13 while drawing 19 let crowded grahas overlap again, which is
+     the exact collision lanes exist to prevent. */
+  var LANES=(SKY_OPT.art&&window.NSprite&&window.NSprite.ready())?SKY_LIVE_R_ART:SKY_LIVE_R;
+  if(SKY_OPT.lanes) skyLanes(cur,LANES,SKY_OPT.art?19:13);
+  else cur.forEach(function(p){ p.r=LANES[0]; p.lane=0; });
   // a graha with something directly inside it loses its degree label, which would print on top
   var occ=[];
   cur.forEach(function(p){
@@ -10619,9 +10731,61 @@ function skyLiveSync(S,date,dt){
     N.tick.setAttribute("x1",t0[0].toFixed(1)); N.tick.setAttribute("y1",t0[1].toFixed(1));
     N.tick.setAttribute("x2",t1[0].toFixed(1)); N.tick.setAttribute("y2",t1[1].toFixed(1));
     N.tick.setAttribute("opacity",show?1:0);
+    /* surface or lettered disc, never both. href returns null when bodies.js
+       is not loaded or a surface cannot be built, and the disc comes back. */
+    var art=(SKY_OPT.art && window.NSprite && window.NSprite.ready())
+      ? window.NSprite.href(p.en, 11*(SKY_ART_R[p.en]||1),
+          p.en==="Moon"?SKY_MOON_PHASE:null)
+      : null;
+    if(art){
+      var ar2=11*(SKY_ART_R[p.en]||1);
+      N.art.setAttributeNS("http://www.w3.org/1999/xlink","href",art);
+      N.art.setAttribute("href",art);
+      N.art.setAttribute("x",(-ar2).toFixed(1)); N.art.setAttribute("y",(-ar2).toFixed(1));
+      N.art.setAttribute("width",(2*ar2).toFixed(1));
+      N.art.setAttribute("height",(2*ar2).toFixed(1));
+      N.art.setAttribute("opacity",show?1:0);
+      N.halo.setAttribute("r",ar2.toFixed(1));
+      N.halo.setAttribute("opacity",show?1:0);
+      /* The name and the degree go on ONE line under the surface, not two.
+         Stacked, they collided — the degree text sits at a fixed y and the
+         name landed on top of it, printing "¹Sa⁵⁰′". One line also keeps a
+         26px sprite from carrying a two-line caption. */
+      N.artlab.setAttribute("opacity",0);
+      N.circ.setAttribute("opacity",0); N.glyph.setAttribute("opacity",0);
+    } else {
+      N.art.setAttribute("opacity",0); N.artlab.setAttribute("opacity",0);
+      N.halo.setAttribute("opacity",0);
+      N.circ.setAttribute("opacity",1); N.glyph.setAttribute("opacity",1);
+    }
     N.retro.setAttribute("opacity",(show&&SKY_OPT.retro&&p.retro)?1:0);
-    N.deg.textContent=(show&&SKY_OPT.degrees&&!p.hasInner)?skyDM(p.lon):"";
-    N.deg.setAttribute("y",(SKY_OPT.tilt?(20*invY):20).toFixed(1));
+    /* With a surface showing, the lettered disc is gone and this caption is
+       the only thing naming the graha, so the name is always printed and the
+       degree joins it when asked for. */
+    var degTxt=(show&&SKY_OPT.degrees&&!p.hasInner)?skyDM(p.lon):"";
+    N.deg.textContent=art?(GL[p.en]+(degTxt?" "+degTxt:"")):degTxt;
+    N.deg.setAttribute("class",art?"sk-artlab":"sk-deg");
+    if(art){
+      /* beside, not below: the group is translated but never rotated, so
+         "below" is screen-down at every longitude and reaches straight into
+         the next lane in */
+      /* Below, centred. Beside was tried both ways and neither works: set to
+         one side it crosses back over the wheel for half the grahas, and
+         flipped with the hemisphere it runs outward into the rāśi ring, which
+         is only 12px beyond the outermost lane. Below has one cost — it
+         reaches toward the lane inside — and that cost is paid by dropping the
+         DEGREE from a crowded graha, keeping the two-letter name, which fits.
+         hasInner is the renderer's own flag for "something occupies the next
+         lane in at this longitude", already computed for exactly this. */
+      N.deg.setAttribute("x",0);
+      N.deg.setAttribute("text-anchor","middle");
+      var degY=11*(SKY_ART_R[p.en]||1)+9;
+      N.deg.setAttribute("y",(SKY_OPT.tilt?(degY*invY):degY).toFixed(1));
+    } else {
+      N.deg.setAttribute("x",0);
+      N.deg.setAttribute("text-anchor","middle");
+      N.deg.setAttribute("y",(SKY_OPT.tilt?(20*invY):20).toFixed(1));
+    }
     if(SKY_OPT.speed && show){
       // direction and pace: the arrow points the way the graha is going, length by speed
       var k=Math.max(-1,Math.min(1,p.speed/1.2)), len=8+Math.abs(k)*12;
@@ -11200,6 +11364,17 @@ var SWH_NAK=["Aśvinī","Bharaṇī","Kṛttikā","Rohiṇī","Mṛgaśira","Ār
 "P.Āṣāḍhā","U.Āṣāḍhā","Śravaṇa","Dhaniṣṭhā","Śatabhiṣā","P.Bhādra","U.Bhādra","Revatī"];
 var SWH_W=980, SWH_H=660, SWH_CX=490, SWH_CY=366, SWH_R=330;
 var SWH_SHOW={grahas:true,stars:true,connect:true,upagrahas:false,special:false,arudhas:false};
+/* Draw each graha as its lit surface rather than a lettered disc. OFF here on
+   purpose: the report's own Star wheel tab is a production page and keeps the
+   lettered discs it has always had, so this file renders byte-identically for
+   it. The standalone starwheel.html turns it on, having loaded bodies.js.
+   Nothing changes if the sprites are unavailable — href() returns null and the
+   lettered disc is drawn, because a wheel with no grahas on it would be worse
+   than a plain one. */
+var SWH_ART=false;
+var SWH_MOON_PHASE=180;
+var SWH_ART_R={Sun:1.45,Moon:1.15,Jupiter:1.25,Saturn:1.2,Venus:1.0,
+               Mars:0.88,Mercury:0.8,Rahu:0.8,Ketu:0.8};
 
 function swhEsc(s){return esc(s);}
 function swhPt(lon,lag,lat,r){ return swProject(lon,lag,lat||0,r,SWH_CX,SWH_CY,SW_TILT_DEG); }
@@ -11229,7 +11404,46 @@ function swhNatalPoints(D,J){
 }
 var SWH_PRINT=false;
 /* Paper needs the opposite of a night sky. Same geometry, inverted palette. */
+/* NAMED PALETTES. The wheel already had two — a night sky and a print sheet,
+   chosen by SWH_PRINT — so a theme is a third case of a decision this file
+   already made rather than a new mechanism bolted beside it. SWH_THEME is null
+   by default, which returns the original two exactly, so the report's Star
+   wheel tab is untouched.
+
+   The graha surfaces are NOT themed. A palette recolours the ground, the
+   rings, the dividers and the lettering; Maṅgala stays rust and Śukra stays
+   pale whatever the ground behind them, because those colours are the body and
+   not the decoration. `star` and `bright` do move, since a star drawn for a
+   dark sky disappears on a pale one. */
+var SWH_THEMES={
+  night:   {bg0:"#141c33",bg1:"#05070e",house:["#1a2445","#141b36"],hstroke:"#2c3a66",
+            rasi:["#1c2748","#16203c"],rstroke:"#31406e",nak:["#111a34","#0d1529"],
+            nstroke:"#26325a",tick:"#2e3a66",ecl:"#7a6733",horizon:"#63788c",
+            star:"#ffe9a8",bright:"#cfd9ff",glow:1,inside:"#4a6a8a",outside:"#c4643f"},
+  parchment:{bg0:"#fffdf6",bg1:"#f2ead6",house:["#efe6cf","#f7f1e1"],hstroke:"#c9b48a",
+            rasi:["#ebe0c6","#f4ecd9"],rstroke:"#b9a271",nak:["#f3ecda","#faf5e8"],
+            nstroke:"#cdbb95",tick:"#c9b48a",ecl:"#9a7b2a",horizon:"#8a7a5a",
+            star:"#6b5a1e",bright:"#4a5a86",glow:0,inside:"#7a8a6a",outside:"#b4532f"},
+  indigo:  {bg0:"#1b1740",bg1:"#080617",house:["#241f52","#1a1640"],hstroke:"#3b3277",
+            rasi:["#272156","#1e1946"],rstroke:"#453a86",nak:["#191442","#110e2e"],
+            nstroke:"#342c6a",tick:"#3b3277",ecl:"#8a6fb0",horizon:"#7b6fa8",
+            star:"#ffe6c0",bright:"#d9d2ff",glow:1,inside:"#5a5aa0",outside:"#d2764a"},
+  ember:   {bg0:"#2a140d",bg1:"#0d0604",house:["#3a1c12","#2a140d"],hstroke:"#63301c",
+            rasi:["#40200f","#30180b"],rstroke:"#74391f",nak:["#2a1309","#1a0b05"],
+            nstroke:"#552916",tick:"#63301c",ecl:"#c08a3a",horizon:"#a07a5a",
+            star:"#ffd9a0",bright:"#ffc9b0",glow:1,inside:"#8a6a4a",outside:"#e08a50"},
+  verdant: {bg0:"#0d241c",bg1:"#040d09",house:["#123024","#0d241c"],hstroke:"#1f5240",
+            rasi:["#15372a","#0f2a20"],rstroke:"#246049",nak:["#0c2017","#06140e"],
+            nstroke:"#1b4634",tick:"#1f5240",ecl:"#9a9a3a",horizon:"#6a8a7a",
+            star:"#eaf0b0",bright:"#bfe6d0",glow:1,inside:"#4a8a6a",outside:"#c4643f"},
+  mono:    {bg0:"#1d1d1f",bg1:"#070708",house:["#2a2a2d","#1f1f22"],hstroke:"#44444a",
+            rasi:["#2e2e32","#242428"],rstroke:"#4e4e55",nak:["#1b1b1e","#131316"],
+            nstroke:"#3a3a40",tick:"#44444a",ecl:"#8a8a90",horizon:"#75757c",
+            star:"#f0f0f2",bright:"#d0d0d6",glow:1,inside:"#70707a",outside:"#a8a8b0"}
+};
+var SWH_THEME=null;
 function swhPal(){
+  if(SWH_THEME && SWH_THEMES[SWH_THEME]) return SWH_THEMES[SWH_THEME];
   return SWH_PRINT
    ? {bg0:"#ffffff",bg1:"#f4f4fb",house:["#eceaf5","#f6f5fb"],hstroke:"#b9bccd",
       rasi:["#e6e9f6","#f1f2f9"],rstroke:"#9aa0c0",nak:["#f0f1f8","#f7f8fc"],nstroke:"#b9bccd",
@@ -11335,6 +11549,12 @@ function swhRender(S,natal){
   /* the natal ascendant. At the birth moment it lies exactly on the eastern horizon;
      step the clock and it drifts, which is precisely how far the sky has turned since. */
   if(natal.lagna!=null) pts.push({n:"Lg",lon:natal.lagna,lat:0,cls:"l",full:"natal lagna"});
+  /* the Moon is drawn at its REAL phase, because this same page prints the
+     tithi and a moon-phase card beside the wheel; a full Moon on the wheel
+     next to a waning crescent on the card would be a contradiction, not a
+     stylistic choice. Every other graha is drawn full, which is what a chart
+     token means. */
+  SWH_MOON_PHASE=(window.NSprite?window.NSprite.moonPhase(S):180);
   if(SWH_SHOW.grahas) S.planets.forEach(function(p){
     pts.push({n:GL[p.en]||p.en,lon:p.sid,lat:p.lat||0,cls:"g",full:p.en}); });
   if(SWH_SHOW.upagrahas) natal.upagrahas.forEach(function(x){ pts.push({n:x.n.slice(0,2),lon:x.lon,lat:0,cls:"u",full:x.n}); });
@@ -11346,18 +11566,52 @@ function swhRender(S,natal){
   pts.forEach(function(p){
     var q={x:p.p.x,y:p.p.y};
     for(var g=0;g<10;g++){
-      var clash=placed.some(function(o2){ return Math.hypot(o2.x-q.x,o2.y-q.y)<26; });
+      /* same reason as the ecliptic wheel's lane radius: a surface is drawn
+         larger than the lettered disc, so the clearance has to grow with it */
+      var clr=(SWH_ART&&p.cls==="g")?38:26;
+      var clash=placed.some(function(o2){ return Math.hypot(o2.x-q.x,o2.y-q.y)<clr; });
       if(!clash) break;
       var ar=Math.atan2(q.y-SWH_CY,q.x-SWH_CX);
-      q={x:q.x-Math.cos(ar)*27,y:q.y-Math.sin(ar)*27};
+      q={x:q.x-Math.cos(ar)*(clr+1),y:q.y-Math.sin(ar)*(clr+1)};
     }
     placed.push(q);
     var rr=(11*p.p.scale).toFixed(1);
     o+='<line x1="'+p.p.x.toFixed(1)+'" y1="'+p.p.y.toFixed(1)+'" x2="'+q.x.toFixed(1)+'" y2="'+
        q.y.toFixed(1)+'" stroke="#55628c" stroke-width="0.6"/>';
-    o+='<circle cx="'+q.x.toFixed(1)+'" cy="'+q.y.toFixed(1)+'" r="'+rr+'" class="swh-pt swh-'+p.cls+'"/>';
-    o+='<text x="'+q.x.toFixed(1)+'" y="'+(q.y+3.6).toFixed(1)+'" class="swh-plab" font-size="'+
-       (10*p.p.scale).toFixed(1)+'">'+swhEsc(p.n)+'</text>';
+    /* the lit surface, when this page has asked for it and the sprites loaded;
+       only the nine grahas have surfaces — a natal lagna or an arūḍha is a
+       computed point, not a body, and is never given one */
+    var art=(SWH_ART && p.cls==="g" && window.NSprite && window.NSprite.ready())
+      ? window.NSprite.href(p.full, 11*p.p.scale,
+          p.full==="Moon" ? SWH_MOON_PHASE : null)
+      : null;
+    if(art){
+      /* Relative sizes, the same convention sp-cosmos.js uses for the casting
+         ceremony: a drawing convention so the Sun reads as the Sun and Mercury
+         as Mercury, NOT apparent magnitude and not true angular diameter —
+         the Sun and Moon subtend half a degree each and everything else is a
+         point. SWH_ART_R is the multiplier on the wheel's own glyph radius. */
+      var ar=11*p.p.scale*(SWH_ART_R[p.full]||1), d2=(2*ar).toFixed(1);
+      /* a hairline at the sprite's edge: the Moon is drawn at its real phase,
+         so near a new Moon it is an honest black disc that the night sky
+         swallows whole. The ring locates it without inventing light. */
+      o+='<circle cx="'+q.x.toFixed(1)+'" cy="'+q.y.toFixed(1)+'" r="'+ar.toFixed(1)+
+         '" class="swh-arthalo"/>';
+      o+='<image href="'+art+'" x="'+(q.x-ar).toFixed(1)+'" y="'+
+         (q.y-ar).toFixed(1)+'" width="'+d2+'" height="'+d2+
+         '" class="swh-art"><title>'+swhEsc(p.full)+'</title></image>';
+      /* The surface replaced the lettered disc, and with it the only thing
+         that said WHICH graha this was — the first build of this was nine
+         unlabelled spheres. The name goes below the disc rather than on it,
+         so it names the body without covering the surface it names. */
+      o+='<text x="'+q.x.toFixed(1)+'" y="'+(q.y+ar+8.5*p.p.scale).toFixed(1)+
+         '" class="swh-artlab" font-size="'+(9.5*p.p.scale).toFixed(1)+'">'+
+         swhEsc(p.n)+'</text>';
+    } else {
+      o+='<circle cx="'+q.x.toFixed(1)+'" cy="'+q.y.toFixed(1)+'" r="'+rr+'" class="swh-pt swh-'+p.cls+'"/>';
+      o+='<text x="'+q.x.toFixed(1)+'" y="'+(q.y+3.6).toFixed(1)+'" class="swh-plab" font-size="'+
+         (10*p.p.scale).toFixed(1)+'">'+swhEsc(p.n)+'</text>';
+    }
   });
   o+='</svg>';
   return o;

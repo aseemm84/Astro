@@ -1767,6 +1767,208 @@ html[data-theme] svg.skysvg .sk-plnat{fill:var(--sem-dim)}
 .ecoff{margin:.1rem 0 1rem;color:var(--muted,#6b665e);font-size:.92rem}
 .swrange{vertical-align:middle;width:9rem}
 
+/* the graha surfaces, and the name under each. The label needs a dark halo:
+   it sits over the night sky in places and over a lit disc's glow in others,
+   and a single flat fill was legible against one and not the other. */
+.swhsvg .swh-artlab{fill:#eef1fb;text-anchor:middle;font-weight:600;
+  paint-order:stroke;stroke:rgba(8,11,26,.85);stroke-width:2.6px;
+  stroke-linejoin:round}
+.swhsvg image.swh-art{image-rendering:auto}
+.swhsvg .swh-arthalo{fill:none;stroke:rgba(190,205,245,.42);stroke-width:1}
+svg.skysvg .sk-arthalo{stroke:rgba(40,46,78,.38);stroke-width:1}
+svg.skysvg .sk-artlab{font-size:9.5px;font-weight:600;fill:#2a2f4a;text-anchor:middle;
+  paint-order:stroke;stroke:rgba(255,253,246,.9);stroke-width:2.4px;stroke-linejoin:round}
+
+/* ===== wheel palettes ======================================================
+   A theme recolours the GROUND, the rings, the dividers and the lettering. It
+   does NOT recolour the graha surfaces: Maṅgala stays rust and Śukra stays
+   pale whatever is behind them, because those are the body rather than the
+   decoration. The sign bands are the one piece of chrome that carries hue of
+   its own — the five elements — so a theme sets their opacity rather than
+   replacing their colours, except mono, which takes it to zero.
+
+   Scoped to [data-wtheme] on the host, which only these two pages set, so the
+   report's Sky tab inherits none of it. CSS beats a presentation attribute,
+   which is the whole reason this works without touching the renderer's inline
+   fills — the renderer only had to grow class names for the pieces that had
+   none. */
+
+.echost[data-wtheme="parchment"] svg.skysvg .sk-ground{fill:#fffdf6;stroke:#8a7345}
+.echost[data-wtheme="parchment"] svg.skysvg .sk-band{fill-opacity:0.18}
+.echost[data-wtheme="parchment"] svg.skysvg .sk-spoke{stroke:#8a7345}
+.echost[data-wtheme="parchment"] svg.skysvg .sk-inner{stroke:#8a7345}
+.echost[data-wtheme="parchment"] svg.skysvg .sk-tick{stroke:#cdbb95}
+.echost[data-wtheme="parchment"] svg.skysvg .sk-core{stroke:#ddd0b0}
+.echost[data-wtheme="parchment"] svg.skysvg .sk-nakband{fill:#7a6336}
+.echost[data-wtheme="parchment"] svg.skysvg .sk-nakdiv{stroke:#b2a07c}
+.echost[data-wtheme="parchment"] svg.skysvg .sk-pada{stroke:#cdbb95}
+.echost[data-wtheme="parchment"] svg.skysvg .sk-rasi{fill:#3a2f18}
+.echost[data-wtheme="parchment"] svg.skysvg .sk-lord{fill:#9a8a63}
+.echost[data-wtheme="parchment"] svg.skysvg .sk-nak{fill:#5a4d33}
+.echost[data-wtheme="parchment"] svg.skysvg .sk-c1,.echost[data-wtheme="parchment"] svg.skysvg .sk-c2{fill:#9a8a63}
+.echost[data-wtheme="parchment"] svg.skysvg .sk-deg{fill:#9a8a63}
+.echost[data-wtheme="parchment"] svg.skysvg .sk-artlab{fill:#3a2f18;stroke:rgba(255,253,246,.9)}
+.echost[data-wtheme="parchment"] svg.skysvg .sk-arthalo{stroke:rgba(60,48,24,.38)}
+.echost[data-wtheme="parchment"] svg.skysvg .sk-tran circle{fill:#fffdf6;stroke:#3a2f18}
+.echost[data-wtheme="parchment"] svg.skysvg .sk-pl{fill:#3a2f18}
+.echost[data-wtheme="parchment"] svg.skysvg .sk-tran line{stroke:#3a2f18}
+
+.echost[data-wtheme="night"] svg.skysvg .sk-ground{fill:#0b1020;stroke:#36406b}
+.echost[data-wtheme="night"] svg.skysvg .sk-band{fill-opacity:0.22}
+.echost[data-wtheme="night"] svg.skysvg .sk-spoke{stroke:#36406b}
+.echost[data-wtheme="night"] svg.skysvg .sk-inner{stroke:#36406b}
+.echost[data-wtheme="night"] svg.skysvg .sk-tick{stroke:#2b3357}
+.echost[data-wtheme="night"] svg.skysvg .sk-core{stroke:#2b3357}
+.echost[data-wtheme="night"] svg.skysvg .sk-nakband{fill:#9fb0e0}
+.echost[data-wtheme="night"] svg.skysvg .sk-nakdiv{stroke:#3a4472}
+.echost[data-wtheme="night"] svg.skysvg .sk-pada{stroke:#2b3357}
+.echost[data-wtheme="night"] svg.skysvg .sk-rasi{fill:#dfe5fb}
+.echost[data-wtheme="night"] svg.skysvg .sk-lord{fill:#8e97bd}
+.echost[data-wtheme="night"] svg.skysvg .sk-nak{fill:#aeb7d8}
+.echost[data-wtheme="night"] svg.skysvg .sk-c1,.echost[data-wtheme="night"] svg.skysvg .sk-c2{fill:#8e97bd}
+.echost[data-wtheme="night"] svg.skysvg .sk-deg{fill:#8e97bd}
+.echost[data-wtheme="night"] svg.skysvg .sk-artlab{fill:#eef1fb;stroke:rgba(8,11,26,.85)}
+.echost[data-wtheme="night"] svg.skysvg .sk-arthalo{stroke:rgba(190,205,245,.42)}
+.echost[data-wtheme="night"] svg.skysvg .sk-tran circle{fill:#121a30;stroke:#9fb0e0}
+.echost[data-wtheme="night"] svg.skysvg .sk-pl{fill:#eef1fb}
+.echost[data-wtheme="night"] svg.skysvg .sk-tran line{stroke:#9fb0e0}
+
+.echost[data-wtheme="indigo"] svg.skysvg .sk-ground{fill:#120f2e;stroke:#473c86}
+.echost[data-wtheme="indigo"] svg.skysvg .sk-band{fill-opacity:0.24}
+.echost[data-wtheme="indigo"] svg.skysvg .sk-spoke{stroke:#473c86}
+.echost[data-wtheme="indigo"] svg.skysvg .sk-inner{stroke:#473c86}
+.echost[data-wtheme="indigo"] svg.skysvg .sk-tick{stroke:#332a66}
+.echost[data-wtheme="indigo"] svg.skysvg .sk-core{stroke:#332a66}
+.echost[data-wtheme="indigo"] svg.skysvg .sk-nakband{fill:#b9a8e8}
+.echost[data-wtheme="indigo"] svg.skysvg .sk-nakdiv{stroke:#4a3f84}
+.echost[data-wtheme="indigo"] svg.skysvg .sk-pada{stroke:#332a66}
+.echost[data-wtheme="indigo"] svg.skysvg .sk-rasi{fill:#e6e0ff}
+.echost[data-wtheme="indigo"] svg.skysvg .sk-lord{fill:#9a8fc6}
+.echost[data-wtheme="indigo"] svg.skysvg .sk-nak{fill:#b7acdf}
+.echost[data-wtheme="indigo"] svg.skysvg .sk-c1,.echost[data-wtheme="indigo"] svg.skysvg .sk-c2{fill:#9a8fc6}
+.echost[data-wtheme="indigo"] svg.skysvg .sk-deg{fill:#9a8fc6}
+.echost[data-wtheme="indigo"] svg.skysvg .sk-artlab{fill:#f0ecff;stroke:rgba(12,9,32,.85)}
+.echost[data-wtheme="indigo"] svg.skysvg .sk-arthalo{stroke:rgba(200,185,250,.42)}
+.echost[data-wtheme="indigo"] svg.skysvg .sk-tran circle{fill:#1b1640;stroke:#b9a8e8}
+.echost[data-wtheme="indigo"] svg.skysvg .sk-pl{fill:#f0ecff}
+.echost[data-wtheme="indigo"] svg.skysvg .sk-tran line{stroke:#b9a8e8}
+
+.echost[data-wtheme="ember"] svg.skysvg .sk-ground{fill:#1d0d07;stroke:#6b3a20}
+.echost[data-wtheme="ember"] svg.skysvg .sk-band{fill-opacity:0.24}
+.echost[data-wtheme="ember"] svg.skysvg .sk-spoke{stroke:#6b3a20}
+.echost[data-wtheme="ember"] svg.skysvg .sk-inner{stroke:#6b3a20}
+.echost[data-wtheme="ember"] svg.skysvg .sk-tick{stroke:#4a2614}
+.echost[data-wtheme="ember"] svg.skysvg .sk-core{stroke:#4a2614}
+.echost[data-wtheme="ember"] svg.skysvg .sk-nakband{fill:#e8b98a}
+.echost[data-wtheme="ember"] svg.skysvg .sk-nakdiv{stroke:#6b3a20}
+.echost[data-wtheme="ember"] svg.skysvg .sk-pada{stroke:#4a2614}
+.echost[data-wtheme="ember"] svg.skysvg .sk-rasi{fill:#ffe6cf}
+.echost[data-wtheme="ember"] svg.skysvg .sk-lord{fill:#c0906a}
+.echost[data-wtheme="ember"] svg.skysvg .sk-nak{fill:#dcb795}
+.echost[data-wtheme="ember"] svg.skysvg .sk-c1,.echost[data-wtheme="ember"] svg.skysvg .sk-c2{fill:#c0906a}
+.echost[data-wtheme="ember"] svg.skysvg .sk-deg{fill:#c0906a}
+.echost[data-wtheme="ember"] svg.skysvg .sk-artlab{fill:#fff0e0;stroke:rgba(22,9,4,.85)}
+.echost[data-wtheme="ember"] svg.skysvg .sk-arthalo{stroke:rgba(248,206,160,.42)}
+.echost[data-wtheme="ember"] svg.skysvg .sk-tran circle{fill:#2a140d;stroke:#e8b98a}
+.echost[data-wtheme="ember"] svg.skysvg .sk-pl{fill:#fff0e0}
+.echost[data-wtheme="ember"] svg.skysvg .sk-tran line{stroke:#e8b98a}
+
+.echost[data-wtheme="verdant"] svg.skysvg .sk-ground{fill:#081a13;stroke:#1f5240}
+.echost[data-wtheme="verdant"] svg.skysvg .sk-band{fill-opacity:0.22}
+.echost[data-wtheme="verdant"] svg.skysvg .sk-spoke{stroke:#1f5240}
+.echost[data-wtheme="verdant"] svg.skysvg .sk-inner{stroke:#1f5240}
+.echost[data-wtheme="verdant"] svg.skysvg .sk-tick{stroke:#143a2b}
+.echost[data-wtheme="verdant"] svg.skysvg .sk-core{stroke:#143a2b}
+.echost[data-wtheme="verdant"] svg.skysvg .sk-nakband{fill:#9fd8bd}
+.echost[data-wtheme="verdant"] svg.skysvg .sk-nakdiv{stroke:#1f5240}
+.echost[data-wtheme="verdant"] svg.skysvg .sk-pada{stroke:#143a2b}
+.echost[data-wtheme="verdant"] svg.skysvg .sk-rasi{fill:#dff3e8}
+.echost[data-wtheme="verdant"] svg.skysvg .sk-lord{fill:#7fae99}
+.echost[data-wtheme="verdant"] svg.skysvg .sk-nak{fill:#a9ceba}
+.echost[data-wtheme="verdant"] svg.skysvg .sk-c1,.echost[data-wtheme="verdant"] svg.skysvg .sk-c2{fill:#7fae99}
+.echost[data-wtheme="verdant"] svg.skysvg .sk-deg{fill:#7fae99}
+.echost[data-wtheme="verdant"] svg.skysvg .sk-artlab{fill:#eafaf1;stroke:rgba(4,14,9,.85)}
+.echost[data-wtheme="verdant"] svg.skysvg .sk-arthalo{stroke:rgba(170,225,198,.42)}
+.echost[data-wtheme="verdant"] svg.skysvg .sk-tran circle{fill:#0d2a1f;stroke:#9fd8bd}
+.echost[data-wtheme="verdant"] svg.skysvg .sk-pl{fill:#eafaf1}
+.echost[data-wtheme="verdant"] svg.skysvg .sk-tran line{stroke:#9fd8bd}
+
+.echost[data-wtheme="mono"] svg.skysvg .sk-ground{fill:#141416;stroke:#4a4a52}
+.echost[data-wtheme="mono"] svg.skysvg .sk-band{fill-opacity:0.0}
+.echost[data-wtheme="mono"] svg.skysvg .sk-spoke{stroke:#4a4a52}
+.echost[data-wtheme="mono"] svg.skysvg .sk-inner{stroke:#4a4a52}
+.echost[data-wtheme="mono"] svg.skysvg .sk-tick{stroke:#333338}
+.echost[data-wtheme="mono"] svg.skysvg .sk-core{stroke:#333338}
+.echost[data-wtheme="mono"] svg.skysvg .sk-nakband{fill:#c8c8ce}
+.echost[data-wtheme="mono"] svg.skysvg .sk-nakdiv{stroke:#4a4a52}
+.echost[data-wtheme="mono"] svg.skysvg .sk-pada{stroke:#333338}
+.echost[data-wtheme="mono"] svg.skysvg .sk-rasi{fill:#ececf0}
+.echost[data-wtheme="mono"] svg.skysvg .sk-lord{fill:#9a9aa2}
+.echost[data-wtheme="mono"] svg.skysvg .sk-nak{fill:#c0c0c8}
+.echost[data-wtheme="mono"] svg.skysvg .sk-c1,.echost[data-wtheme="mono"] svg.skysvg .sk-c2{fill:#9a9aa2}
+.echost[data-wtheme="mono"] svg.skysvg .sk-deg{fill:#9a9aa2}
+.echost[data-wtheme="mono"] svg.skysvg .sk-artlab{fill:#f4f4f6;stroke:rgba(10,10,12,.85)}
+.echost[data-wtheme="mono"] svg.skysvg .sk-arthalo{stroke:rgba(210,210,218,.42)}
+.echost[data-wtheme="mono"] svg.skysvg .sk-tran circle{fill:#202024;stroke:#c8c8ce}
+.echost[data-wtheme="mono"] svg.skysvg .sk-pl{fill:#f4f4f6}
+.echost[data-wtheme="mono"] svg.skysvg .sk-tran line{stroke:#c8c8ce}
+
+/* ===== star-wheel palettes: the lettering ==================================
+   swhPal() in 40-star-wheel.js carries the ground, the rings and the dividers,
+   because that file already chose its colours in JS. The LETTERING is CSS and
+   was written for a night sky, so a pale palette left pale blue rāśi names on
+   cream — legible to nobody. These rules move the text with the palette. The
+   label halo flips with it too: a dark outline exists to lift a name off a
+   night sky and does the opposite on parchment. */
+
+.swhost[data-wtheme="night"] .swhsvg .swh-rasi{fill:#aebcea}
+.swhost[data-wtheme="night"] .swhsvg .swh-nak{fill:#7f8cbb}
+.swhost[data-wtheme="night"] .swhsvg .swh-h{fill:#63709e}
+.swhost[data-wtheme="night"] .swhsvg .swh-e{fill:#7fc98a}
+.swhost[data-wtheme="night"] .swhsvg .swh-w{fill:#d98a7a}
+.swhost[data-wtheme="night"] .swhsvg .swh-artlab{fill:#eef1fb;stroke:rgba(8,11,26,.85)}
+.swhost[data-wtheme="night"] .swhsvg .swh-arthalo{stroke:rgba(190,205,245,.42)}
+
+.swhost[data-wtheme="parchment"] .swhsvg .swh-rasi{fill:#4a3f22}
+.swhost[data-wtheme="parchment"] .swhsvg .swh-nak{fill:#6b5c38}
+.swhost[data-wtheme="parchment"] .swhsvg .swh-h{fill:#7a6a45}
+.swhost[data-wtheme="parchment"] .swhsvg .swh-e{fill:#2f6b3a}
+.swhost[data-wtheme="parchment"] .swhsvg .swh-w{fill:#a2452f}
+.swhost[data-wtheme="parchment"] .swhsvg .swh-artlab{fill:#2a2208;stroke:rgba(255,253,246,.92)}
+.swhost[data-wtheme="parchment"] .swhsvg .swh-arthalo{stroke:rgba(70,56,26,.42)}
+
+.swhost[data-wtheme="indigo"] .swhsvg .swh-rasi{fill:#cdc2ff}
+.swhost[data-wtheme="indigo"] .swhsvg .swh-nak{fill:#9a8fc6}
+.swhost[data-wtheme="indigo"] .swhsvg .swh-h{fill:#8277b4}
+.swhost[data-wtheme="indigo"] .swhsvg .swh-e{fill:#8fd6a0}
+.swhost[data-wtheme="indigo"] .swhsvg .swh-w{fill:#e8a08f}
+.swhost[data-wtheme="indigo"] .swhsvg .swh-artlab{fill:#f0ecff;stroke:rgba(12,9,32,.85)}
+.swhost[data-wtheme="indigo"] .swhsvg .swh-arthalo{stroke:rgba(200,185,250,.42)}
+
+.swhost[data-wtheme="ember"] .swhsvg .swh-rasi{fill:#f0c9a0}
+.swhost[data-wtheme="ember"] .swhsvg .swh-nak{fill:#c0906a}
+.swhost[data-wtheme="ember"] .swhsvg .swh-h{fill:#a87a55}
+.swhost[data-wtheme="ember"] .swhsvg .swh-e{fill:#9ac97f}
+.swhost[data-wtheme="ember"] .swhsvg .swh-w{fill:#e8a07a}
+.swhost[data-wtheme="ember"] .swhsvg .swh-artlab{fill:#fff0e0;stroke:rgba(22,9,4,.85)}
+.swhost[data-wtheme="ember"] .swhsvg .swh-arthalo{stroke:rgba(248,206,160,.42)}
+
+.swhost[data-wtheme="verdant"] .swhsvg .swh-rasi{fill:#b8e3cc}
+.swhost[data-wtheme="verdant"] .swhsvg .swh-nak{fill:#7fae99}
+.swhost[data-wtheme="verdant"] .swhsvg .swh-h{fill:#6b9a84}
+.swhost[data-wtheme="verdant"] .swhsvg .swh-e{fill:#a8e08a}
+.swhost[data-wtheme="verdant"] .swhsvg .swh-w{fill:#e0a08a}
+.swhost[data-wtheme="verdant"] .swhsvg .swh-artlab{fill:#eafaf1;stroke:rgba(4,14,9,.85)}
+.swhost[data-wtheme="verdant"] .swhsvg .swh-arthalo{stroke:rgba(170,225,198,.42)}
+
+.swhost[data-wtheme="mono"] .swhsvg .swh-rasi{fill:#d8d8de}
+.swhost[data-wtheme="mono"] .swhsvg .swh-nak{fill:#9a9aa2}
+.swhost[data-wtheme="mono"] .swhsvg .swh-h{fill:#8a8a92}
+.swhost[data-wtheme="mono"] .swhsvg .swh-e{fill:#cfcfd6}
+.swhost[data-wtheme="mono"] .swhsvg .swh-w{fill:#b8b8c0}
+.swhost[data-wtheme="mono"] .swhsvg .swh-artlab{fill:#f4f4f6;stroke:rgba(10,10,12,.85)}
+.swhost[data-wtheme="mono"] .swhsvg .swh-arthalo{stroke:rgba(210,210,218,.42)}
+
 /* ===== Generated theme overrides =====================================
    Written by source/tools/gen-theme-overrides.py from the literal
    colours in app.css and pages.css. Do not edit by hand: regenerate.
@@ -2574,6 +2776,15 @@ html[data-theme] nav.site .themepick select option{
   <label id="sw-timewrap" hidden>Time <input type="time" id="sw-time" class="swin" value="06:00"></label>
   <label class="swplacewrap">Place <span id="sw-place" class="swpick"></span></label>
   <label>Ayan&amacr;&#7745;&#347;a <select id="sw-ayan" class="swin"></select></label>
+  <label>Palette <select id="sw-wtheme" class="swin">
+    <option value="">Site default</option>
+    <option value="night">Night</option>
+    <option value="parchment">Parchment</option>
+    <option value="indigo">Indigo</option>
+    <option value="ember">Ember</option>
+    <option value="verdant">Verdant</option>
+    <option value="mono">Monochrome</option>
+  </select></label>
   <span class="swsp"></span>
   <button type="button" class="swbtn" data-sw="step" data-unit="d" data-k="-1">&minus;1 day</button>
   <button type="button" class="swbtn" data-sw="step" data-unit="d" data-k="1">+1 day</button>
@@ -2626,6 +2837,10 @@ html[data-theme] nav.site .themepick select option{
 <h2 id="reading">How to read the wheel</h2>
 <div class="note"><b>Why it is tilted.</b> A flat zodiac wheel draws the ecliptic as a circle around the observer, which is the one thing it is not. Seen from a place on the Earth the ecliptic is a great circle crossing the horizon at an angle that changes through the day, and the tilt here is what carries that: the horizon line stays put, the zodiac turns through it, and a graha below the line is a graha below the horizon &mdash; not visible, whatever the chart says about it.</div>
 <p>The outer band is the twelve r&amacr;&#347;is, the inner the twenty-seven nak&#7779;atras. Each yogat&amacr;r&amacr; &mdash; the junction star a nak&#7779;atra is named for &mdash; is plotted at its own longitude <i>and its own latitude</i>, which is why they do not sit on the ecliptic line: Citr&amacr; is nearly two degrees south of it, and Revat&iacute; almost exactly on it. The grahas are plotted the same way, so the Moon visibly departs from the line and the Sun never does.</p>
+
+<h3 id="surfaces">The graha surfaces and the palette</h3>
+<p>Each graha is drawn as a lit sphere, built pixel by pixel in your browser and lit from the direction of the Sun; nothing is downloaded. The <b>Moon is at its real phase</b>, so it agrees with the tithi and the card below rather than contradicting them &mdash; near a new Moon it is almost entirely dark, and the hairline at its edge is what makes a dark Moon findable. <b>R&amacr;hu and Ketu are drawn as shadow discs</b> and given no surface at all: they are ch&amacr;y&amacr; grahas, the points where the Moon&rsquo;s path crosses the ecliptic, and a photosphere for a node would be a picture of something that does not exist. The relative sizes are a drawing convention so each body reads as itself &mdash; not apparent magnitude, and not true angular diameter.</p>
+<p>The palette moves the sky, the rings, the dividers and the lettering, and leaves the grahas alone, since those colours are the body rather than the decoration. Switching the surfaces off restores the lettered discs, which is also what happens by itself if the surface renderer cannot load.</p>
 
 <p class="src"><span>Source</span> The five limbs and the lunar month follow BPHS and standard sidereal computation. The yogat&amacr;r&amacr; longitudes come from the HYG catalogue reduced to the stated ayan&amacr;&#7745;&#347;a; see <a href="now.html">Hindu time now</a> for this moment, <a href="calendar.html">Calendar</a> for the month, <a href="accuracy.html">Accuracy</a> for what these figures are measured to, and <a href="kundli.html">Kundli 2.0</a> to cast a full chart.</p>
 

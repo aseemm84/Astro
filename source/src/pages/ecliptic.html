@@ -5,6 +5,15 @@
   <label>Time <input type="time" id="ec-time" class="swin" value="12:00"></label>
   <label class="ecplace">Place <span id="ec-place" class="ecpick"></span></label>
   <label>Ayan&amacr;&#7745;&#347;a <select id="ec-ayan" class="swin"></select></label>
+  <label>Palette <select id="ec-theme" class="swin">
+    <option value="">Site default</option>
+    <option value="parchment">Parchment</option>
+    <option value="night">Night</option>
+    <option value="indigo">Indigo</option>
+    <option value="ember">Ember</option>
+    <option value="verdant">Verdant</option>
+    <option value="mono">Monochrome</option>
+  </select></label>
   <span class="swsp"></span>
   <button type="button" class="swbtn" data-ec="now">This moment</button>
 </div>
@@ -50,6 +59,7 @@
 <div class="swtoggles" id="ec-toggles"></div>
 <div class="swbar">
   <label>Varga <select id="ec-varga" class="swin"></select></label>
+  <label>Tilt <input type="range" id="ec-tilt" class="swrange" min="0" max="70" step="1" value="0"></label>
   <label>Aspects <select id="ec-asp" class="swin">
     <option value="none" selected>none</option>
     <option value="all">every gr&amacr;ha d&#7771;&#7779;&#7789;i</option>
@@ -62,7 +72,18 @@
 <h2 id="reading">How to read it</h2>
 <div class="note"><b>The wheel is sidereal and the longitudes are true.</b> Each graha sits at its own degree within its r&amacr;&#347;i, not at the sign&rsquo;s centre, and the degree is printed beside it. A graha moving backwards against the stars is marked <b>R</b>; the Sun and Moon never are. Where two grahas would overlap they are moved onto separate rings rather than drawn on top of one another, so a conjunction reads as two discs close in angle rather than one disc hiding another.</div>
 <p>The <b>trails</b> slider draws where each graha has been over the preceding part of the span, which is the only way a retrograde loop becomes visible as a loop: the trail doubles back on itself and crosses.</p>
-<div class="note"><b>Why there is no tilt here.</b> This wheel is flat, which is the chart convention: Jyoti&#7779;a works in longitude alone and treats every graha as though it sat exactly on the ecliptic. A tilt control was built for this page and then removed, because the renderer tilts the grahas without tilting the rings that <i>are</i> the ecliptic plane, so a tilted wheel drew each graha displaced from the r&amacr;&#347;i it is actually in. A control that misplaces a graha is worse than no control. For the sky laid back into the plane you would really see it in &mdash; with each graha at its own ecliptic latitude, and the local horizon across it &mdash; use the <a href="starwheel.html">Star wheel</a>, which projects for that from the start.</div>
+<p>The <b>tilt</b> slider lays the whole wheel back out of the flat chart convention. At zero it is the conventional flat wheel; raised, the rings and the grahas lean together, and each graha also lifts by its own ecliptic latitude &mdash; so the Moon can be <i>seen</i> crossing the plane at a node rather than merely said to. Jyoti&#7779;a works in longitude alone and treats every graha as sitting exactly on the ecliptic, which is why the flat wheel is the convention; the lift is a way of seeing what the numbers mean, not a classical quantity.</p>
+<div class="note"><b>What the tilt is, exactly.</b> It is an <i>orthographic</i> lean &mdash; the wheel as a circle seen from far off, which is an ellipse. It is not a perspective view: the near edge is not drawn larger than the far one. That distinction is worth stating because an earlier version of this control leaned only the grahas and left the rings circular, so every graha was drawn displaced from the r&amacr;&#347;i it was actually in. The whole wheel now carries one transform, so a graha cannot leave its sign however far it is tilted.</div>
+<h3 id="surfaces">The graha surfaces</h3>
+<p>Each graha is drawn as a lit sphere rather than a lettered disc: the surface is built pixel by pixel in your browser and lit from the direction of the Sun. Nothing is downloaded &mdash; there is no image file anywhere in this, and the same renderer draws the bodies in the Motion reels.</p>
+<ul>
+<li><b>The Moon is drawn at its real phase</b>, taken from its elongation from the Sun at the moment shown. Near a new Moon it is therefore almost entirely dark, which is the honest answer; the hairline at its edge is there so a dark Moon can still be found. Every other graha is drawn full, which is what a token on a chart wheel means.</li>
+<li><b>R&amacr;hu and Ketu have no surface and are given none.</b> They are ch&amacr;y&amacr; grahas &mdash; the two points where the Moon&rsquo;s path crosses the ecliptic &mdash; not bodies, and inventing a photosphere for a node would be a picture of something that does not exist. They are drawn as shadow discs.</li>
+<li><b>The sizes are a drawing convention, not a measurement.</b> The Sun is drawn largest and Mercury smallest so that each reads as itself; this is neither apparent magnitude nor true angular diameter. The Sun and Moon each subtend about half a degree, and every other graha is a point.</li>
+<li>Turn the surfaces off and the lettered discs come back, which is also what happens by itself if the surface renderer cannot load.</li>
+</ul>
+<h3 id="palette">Palettes</h3>
+<p>The palette recolours the ground, the rings, the dividers and the lettering. It deliberately does <i>not</i> recolour the grahas: Ma&#7749;gala stays rust and &Sacute;ukra stays pale whatever sits behind them, because those colours belong to the body rather than to the decoration. The one piece of chrome that carries hue of its own is the band of elements behind the r&amacr;&#347;i names, so a palette adjusts its strength instead of replacing it &mdash; and Monochrome takes it away altogether.</p>
 <p>Changing the <b>varga</b> redraws the same grahas at their divisional longitudes &mdash; a graha&rsquo;s position within its varga sign, stretched across the thirty degrees, so motion within a division is visible rather than being snapped to the sign. Tri&#7747;&#347;&amacr;&#7745;&#347;a is the exception: its five parts are unequal, so a graha there is placed at the centre of its varga sign.</p>
 
 <p class="src"><span>Source</span> The r&amacr;&#347;i and nak&#7779;atra divisions and graha d&#7771;&#7779;&#7789;i follow BPHS; the d&#7771;&#7779;&#7789;i drawn here is <i>graha</i> dr&#7779;&#7789;i, not r&amacr;&#347;i d&#7771;&#7779;&#7789;i. Positions are sidereal, from the built-in engine at the ayan&amacr;&#7745;&#347;a shown; see <a href="starwheel.html">Star wheel</a> for the same sky against the local horizon, <a href="accuracy.html">Accuracy</a> for what these positions are measured to, and <a href="kundli.html">Kundli 2.0</a> to cast a full chart.</p>

@@ -83,14 +83,19 @@ function skyArc(cx,cy,r,a0,a1){
    wedge is traversed in the positive (clockwise) direction — sweep 1 — and the inner
    arc back again with sweep 0. These were the other way round until 2026-10, which bowed
    every wedge to the wrong side of its chord: about 12px at the sign ring's radius. */
-function skyWedge(cx,cy,r0,r1,a0,a1,fill,op){
+/* `cls` is additive and optional: the wedges carried no class at all, so a
+   page wanting to recolour the sign bands had nothing to select. A class
+   changes nothing on its own — CSS beats a presentation attribute only where a
+   rule exists — so the report, which defines no such rule, renders exactly as
+   before. */
+function skyWedge(cx,cy,r0,r1,a0,a1,fill,op,cls){
   var p=[skyXY(cx,cy,r1,a0),skyXY(cx,cy,r1,a1),skyXY(cx,cy,r0,a1),skyXY(cx,cy,r0,a0)];
   var lg=(((a1-a0)%360+360)%360)>180?1:0;
   return '<path d="M'+p[0][0].toFixed(1)+','+p[0][1].toFixed(1)+
     ' A'+r1+','+r1+' 0 '+lg+' 1 '+p[1][0].toFixed(1)+','+p[1][1].toFixed(1)+
     ' L'+p[2][0].toFixed(1)+','+p[2][1].toFixed(1)+
     ' A'+r0+','+r0+' 0 '+lg+' 0 '+p[3][0].toFixed(1)+','+p[3][1].toFixed(1)+
-    ' Z" fill="'+fill+'" fill-opacity="'+op+'"/>';
+    ' Z" fill="'+fill+'" fill-opacity="'+op+'"'+(cls?' class="'+cls+'"':'')+'/>';
 }
 /* A divisional chart maps a longitude to a varga sign. To place a planet on a wheel
    we also want a position *within* that sign, so the continuous varga longitude is
@@ -142,8 +147,22 @@ var SKY_OPT={
      turning the fast ones off. Nothing is being hidden from the arithmetic — only from
      the drawing. */
   show:{Sun:true,Moon:true,Mars:true,Mercury:true,Jupiter:true,Venus:true,Saturn:true,
-        Rahu:true,Ketu:true}
+        Rahu:true,Ketu:true},
+  /* Draw each graha as its lit surface instead of a lettered disc. OFF here:
+     the report's Sky tab is a production page and keeps the discs it has
+     always had, so this renderer stays byte-identical for it. ecliptic.html
+     turns it on, having loaded bodies.js. If the sprites are unavailable
+     NSprite.href returns null and the lettered disc is drawn, because a wheel
+     with no grahas on it is worse than a plain one. */
+  art:false
 };
+/* A drawing convention, the same one sp-cosmos.js uses: relative sizes so the
+   Sun reads as the Sun and Mercury as Mercury. NOT apparent magnitude and not
+   true angular diameter — the Sun and Moon subtend about half a degree each
+   and every other graha is a point. */
+var SKY_ART_R={Sun:1.45,Moon:1.15,Jupiter:1.25,Saturn:1.2,Venus:1.0,
+               Mars:0.88,Mercury:0.8,Rahu:0.8,Ketu:0.8};
+var SKY_MOON_PHASE=180;
 
 /* ---------------------------------------------------------------------------
    Lane packing. Crowding is resolved by stacking inward, never by sliding a glyph
@@ -181,13 +200,13 @@ function skyDM(lon){
    --------------------------------------------------------------------------- */
 function skyFurniture(S,showNak){
   var cx=360,cy=360,o='';
-  o+='<circle cx="360" cy="360" r="350" fill="#fbf8f0" stroke="#1d2340" stroke-width="2"/>';
+  o+='<circle cx="360" cy="360" r="350" fill="#fbf8f0" stroke="#1d2340" stroke-width="2" class="sk-ground"/>';
   for(var s=0;s<12;s++){
     var a0=s*30;
-    o+=skyWedge(cx,cy,300,350,a0,a0+30,SKY_ELEM[s],0.16);
+    o+=skyWedge(cx,cy,300,350,a0,a0+30,SKY_ELEM[s],0.16,"sk-band sk-el"+(s%4));
     o+='<line x1="'+skyXY(cx,cy,300,a0)[0].toFixed(1)+'" y1="'+skyXY(cx,cy,300,a0)[1].toFixed(1)+
        '" x2="'+skyXY(cx,cy,350,a0)[0].toFixed(1)+'" y2="'+skyXY(cx,cy,350,a0)[1].toFixed(1)+
-       '" stroke="#1d2340" stroke-width="1"/>';
+       '" stroke="#1d2340" stroke-width="1" class="sk-spoke"/>';
     var m=skyXY(cx,cy,325,a0+15);
     o+='<text x="'+m[0].toFixed(1)+'" y="'+(m[1]+2).toFixed(1)+'" class="sk-rasi">'+SA[s]+'</text>';
     var lm=skyXY(cx,cy,325,a0+24);
@@ -199,28 +218,28 @@ function skyFurniture(S,showNak){
   var seg=40/3;
   for(var n=0;showNak&&n<27;n++){
     var b0=n*seg;
-    if(n%2===0) o+=skyWedge(cx,cy,252,300,b0,b0+seg,"#1d2340",0.05);
+    if(n%2===0) o+=skyWedge(cx,cy,252,300,b0,b0+seg,"#1d2340",0.05,"sk-nakband");
     o+='<line x1="'+skyXY(cx,cy,252,b0)[0].toFixed(1)+'" y1="'+skyXY(cx,cy,252,b0)[1].toFixed(1)+
        '" x2="'+skyXY(cx,cy,300,b0)[0].toFixed(1)+'" y2="'+skyXY(cx,cy,300,b0)[1].toFixed(1)+
-       '" stroke="#8b8fa8" stroke-width="0.7"/>';
+       '" stroke="#8b8fa8" stroke-width="0.7" class="sk-nakdiv"/>';
     for(var q=1;q<4;q++){
       var t=b0+q*seg/4;
       o+='<line x1="'+skyXY(cx,cy,252,t)[0].toFixed(1)+'" y1="'+skyXY(cx,cy,252,t)[1].toFixed(1)+
          '" x2="'+skyXY(cx,cy,264,t)[0].toFixed(1)+'" y2="'+skyXY(cx,cy,264,t)[1].toFixed(1)+
-         '" stroke="#b9bccd" stroke-width="0.5"/>';
+         '" stroke="#b9bccd" stroke-width="0.5" class="sk-pada"/>';
     }
     var nm=skyXY(cx,cy,276,b0+seg/2);
     o+='<text x="'+nm[0].toFixed(1)+'" y="'+nm[1].toFixed(1)+'" class="sk-nak" transform="rotate('+
        (((b0+seg/2)>90&&(b0+seg/2)<270)?(180-(b0+seg/2)-90):(-(b0+seg/2)+90)).toFixed(1)+
        ' '+nm[0].toFixed(1)+' '+nm[1].toFixed(1)+')">'+SKY_NAKA[n]+'</text>';
   }
-  o+='<circle cx="360" cy="360" r="252" fill="none" stroke="#1d2340" stroke-width="1"/>';
+  o+='<circle cx="360" cy="360" r="252" fill="none" stroke="#1d2340" stroke-width="1" class="sk-inner"/>';
   // degree ticks every 10°
   for(var d=0;d<360;d+=10){
     var r0=(d%30===0)?232:242;
     o+='<line x1="'+skyXY(cx,cy,r0,d)[0].toFixed(1)+'" y1="'+skyXY(cx,cy,r0,d)[1].toFixed(1)+
        '" x2="'+skyXY(cx,cy,252,d)[0].toFixed(1)+'" y2="'+skyXY(cx,cy,252,d)[1].toFixed(1)+
-       '" stroke="#c3c6d6" stroke-width="0.6"/>';
+       '" stroke="#c3c6d6" stroke-width="0.6" class="sk-tick"/>';
   }
   return o;
 }
@@ -301,17 +320,73 @@ function sklEl(tag,attrs,parent){
   if(parent) parent.appendChild(n);
   return n;
 }
-function skyLiveKey(){ return SKY_VARGA+"|"+(SKY_OPT.nakshatra?1:0)+"|"+(SKY_OPT.natal?1:0); }
+/* The tilt is part of the key because the furniture is markup built once: a
+   change to it has to rebuild the wheel, not merely move what is in it. */
+function skyLiveKey(){ return SKY_VARGA+"|"+(SKY_OPT.nakshatra?1:0)+"|"+(SKY_OPT.natal?1:0)+
+  "|"+Math.round(SKY_OPT.tilt||0); }
+
+/* Undo the group's vertical squash for each piece of lettering, about its own
+   anchor point, so the wheel leans but the words do not become short and fat.
+   translate(x,y) scale(1,1/kY) translate(-x,-y) leaves the anchor exactly where
+   it was and stretches only the glyphs. At tilt 0 nothing is written at all,
+   which is what keeps the flat wheel byte-identical to the one this replaced. */
+function skyUnsquashText(g){
+  var t=(SKY_OPT.tilt||0)*Math.PI/180;
+  if(!SKY_OPT.tilt) return;
+  var inv=1/Math.cos(t);
+  var tx=g.querySelectorAll("text");
+  for(var i=0;i<tx.length;i++){
+    var x=parseFloat(tx[i].getAttribute("x")||0), y=parseFloat(tx[i].getAttribute("y")||0);
+    /* PREPENDED, never assigned. The nakṣatra labels already carry a
+       rotate() that lays each one along the ring, and setting the transform
+       outright threw it away: tilted, all twenty-seven went horizontal while
+       the rāśi labels — which have no rotation — looked fine, so the first
+       version of this passed a test that only checked the rāśis. An SVG
+       transform list applies right to left, so the unsquash goes in FRONT of
+       whatever was already there. */
+    var had=tx[i].getAttribute("transform")||"";
+    tx[i].setAttribute("transform","translate("+x.toFixed(1)+","+y.toFixed(1)+
+      ") scale(1,"+inv.toFixed(4)+") translate("+(-x).toFixed(1)+","+(-y).toFixed(1)+")"+
+      (had?" "+had:""));
+  }
+}
+/* THE TILT APPLIES TO THE WHOLE WHEEL, FURNITURE INCLUDED.
+   It did not, and that was a real fault rather than a rough edge: the
+   furniture — the rāśi wedges, their labels, the nakṣatra ring — was written
+   into the <svg> root and the tilt group was created as its SIBLING, so
+   raising the tilt squashed the grahas, the axes and the trails onto an
+   ellipse while the rings that ARE the ecliptic plane stayed circular. Every
+   graha was then drawn at a smaller radius than the wedge it belongs to, which
+   at 40° is a visible fraction of a sign: the wheel misplaced grahas, and the
+   report's own Sky tab has shipped that slider for as long as it has had one.
+
+   The furniture is now built INSIDE the tilt group, so one transform carries
+   the entire wheel and a graha cannot leave its rāśi. Two consequences handled
+   below: the group's vertical squash would also squash the lettering, so each
+   furniture text is counter-scaled about its own anchor; and the furniture is
+   static markup made once at mount, so skyLiveKey now carries the tilt and a
+   change to it remounts.
+
+   This is an ORTHOGRAPHIC lean — the circle seen from far off, which is an
+   ellipse — and not the perspective view sp-cosmos.js builds for the casting
+   ceremony, where the near edge is larger than the far one. Perspective here
+   would mean projecting every wedge corner per frame and depth-sorting the
+   bodies, which is a rewrite of a renderer three production pages share. The
+   lean is geometrically honest about where each graha is, which is the part
+   that was wrong. */
 function skyLiveMount(host,S){
   host.innerHTML='<svg viewBox="0 0 720 720" class="skysvg" role="img" aria-label="Ecliptic wheel: '+
     'the rāśis with each graha at its true longitude, animated through time">'+
     '<title>Ecliptic wheel</title>'+
-    skyFurniture(S,SKY_VARGA==="D1"&&SKY_OPT.nakshatra)+'</svg>';
+    '<g class="sk-tilt">'+
+    skyFurniture(S,SKY_VARGA==="D1"&&SKY_OPT.nakshatra)+'</g></svg>';
   var svg=host.firstChild;
-  var tiltG=sklEl("g",{"class":"sk-tilt"},svg);        // everything that moves lives in here
+  var tiltG=svg.querySelector("g.sk-tilt");            // the whole wheel lives in here
+  skyUnsquashText(tiltG);
   var C={svg:svg,tilt:tiltG,key:skyLiveKey(),rad:{},natal:{},tran:{},trail:{},asp:{}};
 
-  sklEl("circle",{cx:360,cy:360,r:120,fill:"none",stroke:"#d8d8e4","stroke-width":1},tiltG);
+  sklEl("circle",{cx:360,cy:360,r:120,fill:"none",stroke:"#d8d8e4","stroke-width":1,
+    "class":"sk-core"},tiltG);
   if(SKY_OPT.natal){
     sklEl("circle",{cx:360,cy:360,r:142,fill:"none",stroke:"#cdd2e0","stroke-width":1,
       "stroke-dasharray":"3 5"},tiltG);
@@ -350,7 +425,22 @@ function skyLiveMount(host,S){
     rr.textContent="R";
     var ar=sklEl("line",{stroke:"#5a6a80","stroke-width":1.6,opacity:0,"marker-end":""},inner);
     var dg=sklEl("text",{x:0,y:0,"text-anchor":"middle","class":"sk-deg"},g);
-    C.tran[n]={g:g,inner:inner,tick:tick,retro:rr,deg:dg,arrow:ar};
+    /* the lit surface, and the name under it. Both live in `inner` so the
+       tilt's counter-scale applies to them exactly as it does to the disc.
+       The label is NOT optional when the surface is showing: the first build
+       of this drew nine unlabelled spheres, and a sphere does not say which
+       graha it is the way "Ma" does. */
+    /* A hairline at the sprite's own edge. The Moon is drawn at its real
+       phase, so near a new Moon its surface is almost entirely unlit — an
+       honest black disc that on a cream wheel simply cannot be seen. The ring
+       gives every surface a locatable boundary without painting light onto a
+       body that has none, which a brightened disc would. */
+    var ha=sklEl("circle",{cx:0,cy:0,r:0,fill:"none",opacity:0,"class":"sk-arthalo"},inner);
+    var im=sklEl("image",{x:0,y:0,width:0,height:0,opacity:0,"class":"sk-art"},inner);
+    var al=sklEl("text",{x:0,y:0,"text-anchor":"middle","class":"sk-artlab",opacity:0},inner);
+    al.textContent=GL[n];
+    C.tran[n]={g:g,inner:inner,tick:tick,retro:rr,deg:dg,arrow:ar,
+               circ:inner.firstChild,glyph:t,art:im,artlab:al,halo:ha};
     C.trail[n]=sklEl("path",{fill:"none","stroke-width":2,"stroke-linecap":"round",opacity:0.75},C.trailG);
     C.rad[n]=null;
   });
@@ -360,6 +450,20 @@ function skyLiveMount(host,S){
   return C;
 }
 var SKY_LIVE_R=[232,204,176,148];
+/* Fewer lanes, further apart, when surfaces are drawn. The lane packer stacks
+   crowded grahas INWARD, so four grahas at nearly one longitude land on four
+   successive lanes — and 28px of lane spacing cannot hold a 38px sprite, which
+   is why widening the packer's clearance alone changed nothing: the collision
+   was radial, between lanes, not angular within one. 42px of spacing clears
+   the largest surface (the Sun, 1.45 × 13 = 18.9 radius) with room for the
+   caption. FOUR lanes, not three: with three, a fourth crowded graha clamps
+   onto the last lane and is drawn directly on top of whatever is already
+   there, which is how Guru and Ketu ended up sharing one disc and one
+   caption. 36px of spacing with a 16px largest radius clears the discs; the
+   caption is set BESIDE each surface rather than under it, because a caption
+   hanging 26px below a disc reaches into the lane inside it whatever the
+   spacing is. */
+var SKY_LIVE_R_ART=[238,202,166,130];
 var SKY_NATAL_R=[124,98,72];
 /* longitude of a graha at an arbitrary instant, in whatever varga is showing —
    used by the trails, which need positions the snapshot does not carry */
@@ -369,6 +473,9 @@ function skyLonAt(en,date){
 }
 function skyLiveSync(S,date,dt){
   var C=SKL; if(!C) return;
+  /* the Moon at its real phase: the elongation from the Sun in this very
+     snapshot, so the disc cannot disagree with the tithi derived from it */
+  SKY_MOON_PHASE=(window.NSprite?window.NSprite.moonPhase(S):180);
   var cx=360, cy=360, VG=SKY_VARGA;
   var t=SKY_OPT.tilt*Math.PI/180, kY=Math.cos(t), lift=Math.sin(t)*SKY_OPT.latExag;
   C.tilt.setAttribute("transform", SKY_OPT.tilt?("translate(0,"+(cy*(1-kY)).toFixed(2)+") scale(1,"+kY.toFixed(4)+")"):"");
@@ -427,8 +534,13 @@ function skyLiveSync(S,date,dt){
   var cur=S.planets.filter(function(p){ return SKY_OPT.show[p.en]; }).map(function(p){
     return {en:p.en, lon:skyVargaLon(VG,p.sid), lat:p.lat||0, retro:!!p.retro, speed:p.speed||0};
   }).sort(function(a,b){return a.lon-b.lon;});
-  if(SKY_OPT.lanes) skyLanes(cur,SKY_LIVE_R,13);
-  else cur.forEach(function(p){ p.r=SKY_LIVE_R[0]; p.lane=0; });
+  /* The lane packer clears two discs of the radius it is given. A surface is
+     drawn larger than the lettered disc it replaced — the Sun at 1.45× — so
+     passing 13 while drawing 19 let crowded grahas overlap again, which is
+     the exact collision lanes exist to prevent. */
+  var LANES=(SKY_OPT.art&&window.NSprite&&window.NSprite.ready())?SKY_LIVE_R_ART:SKY_LIVE_R;
+  if(SKY_OPT.lanes) skyLanes(cur,LANES,SKY_OPT.art?19:13);
+  else cur.forEach(function(p){ p.r=LANES[0]; p.lane=0; });
   // a graha with something directly inside it loses its degree label, which would print on top
   var occ=[];
   cur.forEach(function(p){
@@ -450,9 +562,61 @@ function skyLiveSync(S,date,dt){
     N.tick.setAttribute("x1",t0[0].toFixed(1)); N.tick.setAttribute("y1",t0[1].toFixed(1));
     N.tick.setAttribute("x2",t1[0].toFixed(1)); N.tick.setAttribute("y2",t1[1].toFixed(1));
     N.tick.setAttribute("opacity",show?1:0);
+    /* surface or lettered disc, never both. href returns null when bodies.js
+       is not loaded or a surface cannot be built, and the disc comes back. */
+    var art=(SKY_OPT.art && window.NSprite && window.NSprite.ready())
+      ? window.NSprite.href(p.en, 11*(SKY_ART_R[p.en]||1),
+          p.en==="Moon"?SKY_MOON_PHASE:null)
+      : null;
+    if(art){
+      var ar2=11*(SKY_ART_R[p.en]||1);
+      N.art.setAttributeNS("http://www.w3.org/1999/xlink","href",art);
+      N.art.setAttribute("href",art);
+      N.art.setAttribute("x",(-ar2).toFixed(1)); N.art.setAttribute("y",(-ar2).toFixed(1));
+      N.art.setAttribute("width",(2*ar2).toFixed(1));
+      N.art.setAttribute("height",(2*ar2).toFixed(1));
+      N.art.setAttribute("opacity",show?1:0);
+      N.halo.setAttribute("r",ar2.toFixed(1));
+      N.halo.setAttribute("opacity",show?1:0);
+      /* The name and the degree go on ONE line under the surface, not two.
+         Stacked, they collided — the degree text sits at a fixed y and the
+         name landed on top of it, printing "¹Sa⁵⁰′". One line also keeps a
+         26px sprite from carrying a two-line caption. */
+      N.artlab.setAttribute("opacity",0);
+      N.circ.setAttribute("opacity",0); N.glyph.setAttribute("opacity",0);
+    } else {
+      N.art.setAttribute("opacity",0); N.artlab.setAttribute("opacity",0);
+      N.halo.setAttribute("opacity",0);
+      N.circ.setAttribute("opacity",1); N.glyph.setAttribute("opacity",1);
+    }
     N.retro.setAttribute("opacity",(show&&SKY_OPT.retro&&p.retro)?1:0);
-    N.deg.textContent=(show&&SKY_OPT.degrees&&!p.hasInner)?skyDM(p.lon):"";
-    N.deg.setAttribute("y",(SKY_OPT.tilt?(20*invY):20).toFixed(1));
+    /* With a surface showing, the lettered disc is gone and this caption is
+       the only thing naming the graha, so the name is always printed and the
+       degree joins it when asked for. */
+    var degTxt=(show&&SKY_OPT.degrees&&!p.hasInner)?skyDM(p.lon):"";
+    N.deg.textContent=art?(GL[p.en]+(degTxt?" "+degTxt:"")):degTxt;
+    N.deg.setAttribute("class",art?"sk-artlab":"sk-deg");
+    if(art){
+      /* beside, not below: the group is translated but never rotated, so
+         "below" is screen-down at every longitude and reaches straight into
+         the next lane in */
+      /* Below, centred. Beside was tried both ways and neither works: set to
+         one side it crosses back over the wheel for half the grahas, and
+         flipped with the hemisphere it runs outward into the rāśi ring, which
+         is only 12px beyond the outermost lane. Below has one cost — it
+         reaches toward the lane inside — and that cost is paid by dropping the
+         DEGREE from a crowded graha, keeping the two-letter name, which fits.
+         hasInner is the renderer's own flag for "something occupies the next
+         lane in at this longitude", already computed for exactly this. */
+      N.deg.setAttribute("x",0);
+      N.deg.setAttribute("text-anchor","middle");
+      var degY=11*(SKY_ART_R[p.en]||1)+9;
+      N.deg.setAttribute("y",(SKY_OPT.tilt?(degY*invY):degY).toFixed(1));
+    } else {
+      N.deg.setAttribute("x",0);
+      N.deg.setAttribute("text-anchor","middle");
+      N.deg.setAttribute("y",(SKY_OPT.tilt?(20*invY):20).toFixed(1));
+    }
     if(SKY_OPT.speed && show){
       // direction and pace: the arrow points the way the graha is going, length by speed
       var k=Math.max(-1,Math.min(1,p.speed/1.2)), len=8+Math.abs(k)*12;
@@ -797,7 +961,8 @@ function skyHorizonOf(eq,S){
     ["degrees", "Degrees"],
     ["retro", "Retrograde mark"],
     ["speed", "Speed arrows"],
-    ["lanes", "Separate crowded grahas"]
+    ["lanes", "Separate crowded grahas"],
+    ["art", "Graha surfaces"]
   ];
   var GRAHAS = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn",
                 "Rahu", "Ketu"];
@@ -866,6 +1031,14 @@ function skyHorizonOf(eq,S){
       if (t.id === "ec-date" || t.id === "ec-time") {
         stop(); S.base = baseFromFields(); S.offset = 0; draw(null);
       } else if (t.id === "ec-ayan") { S.ayan = t.value; draw(null); }
+      else if (t.id === "ec-theme") {
+        /* The palette is CSS, scoped to [data-wtheme] on the host, so nothing
+           is redrawn: the renderer's inline fills are presentation attributes
+           and a CSS rule outranks them. An empty value removes the attribute
+           and the page falls back to the site theme. */
+        if (t.value) host.setAttribute("data-wtheme", t.value);
+        else host.removeAttribute("data-wtheme");
+      }
       else if (t.id === "ec-span") {
         /* Keep where we are in the span proportionally, rather than keeping the
            offset in minutes: widening the span would otherwise leave the wheel
@@ -887,6 +1060,8 @@ function skyHorizonOf(eq,S){
         stop();
         S.offset = (+t.value / 1000) * S.span;
         draw(null);
+      } else if (t.id === "ec-tilt") {
+        window.SKY_OPT.tilt = +t.value || 0; draw(null);
       } else if (t.id === "ec-trail") {
         var pc = +t.value || 0;
         window.SKY_OPT.trail = pc > 0;
@@ -908,7 +1083,10 @@ function skyHorizonOf(eq,S){
   need([
     { src: "engine.js", have: function () { return !!window.quickSky; } },
     { src: "panchanga.js", have: function () { return !!(window.NP && window.NP.day); } },
-    { src: "places.js", have: function () { return !!window.NPlaces; } }
+    { src: "places.js", have: function () { return !!window.NPlaces; } },
+    /* the lit graha surfaces, last so the wheel is on screen with lettered
+       discs before the 44 KB of surface renderer arrives */
+    { src: "bodies.js", have: function () { return !!window.NSprite; } }
   ], function () {
     S.place = (window.NP.savedPlace && window.NP.savedPlace()) ||
               (window.NP.PLACES && window.NP.PLACES[0]) ||
@@ -943,17 +1121,10 @@ function skyHorizonOf(eq,S){
     window.SKY_VARGA = "D1";
     window.SKY_ASPECT = "none";
     window.SKY_OPT.natal = false;
+    window.SKY_OPT.art = true;      /* this page draws surfaces; the report does not */
     window.SKY_OPT.trail = false;
-    /* Flat, and no control to change it. skyLiveMount builds the furniture —
-       the rāśi wedges, their labels, the nakṣatra ring — as a SIBLING of the
-       group the tilt transform is applied to, so raising the tilt squashes the
-       grahas and the axes while the rings stay circular, and every graha is
-       then drawn off the wedge it belongs to. Tilting the furniture as well
-       needs each of its fifty-one text labels counter-scaled, and a remount on
-       every step of the slider since skyLiveKey does not include the tilt.
-       That is a change to a renderer three production pages share, so it is
-       not made from here. The report's own Sky tab exposes the same slider and
-       has the same fault; it is recorded, not worked around. */
+    /* Opens flat, which is the chart convention; the slider leans the whole
+       wheel, furniture included, so a graha cannot leave its rāśi. */
     window.SKY_OPT.tilt = 0;
     window.SKY_NATAL = null;
     fillSelects();

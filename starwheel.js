@@ -23,6 +23,17 @@ var SWH_NAK=["Aśvinī","Bharaṇī","Kṛttikā","Rohiṇī","Mṛgaśira","Ār
 "P.Āṣāḍhā","U.Āṣāḍhā","Śravaṇa","Dhaniṣṭhā","Śatabhiṣā","P.Bhādra","U.Bhādra","Revatī"];
 var SWH_W=980, SWH_H=660, SWH_CX=490, SWH_CY=366, SWH_R=330;
 var SWH_SHOW={grahas:true,stars:true,connect:true,upagrahas:false,special:false,arudhas:false};
+/* Draw each graha as its lit surface rather than a lettered disc. OFF here on
+   purpose: the report's own Star wheel tab is a production page and keeps the
+   lettered discs it has always had, so this file renders byte-identically for
+   it. The standalone starwheel.html turns it on, having loaded bodies.js.
+   Nothing changes if the sprites are unavailable — href() returns null and the
+   lettered disc is drawn, because a wheel with no grahas on it would be worse
+   than a plain one. */
+var SWH_ART=false;
+var SWH_MOON_PHASE=180;
+var SWH_ART_R={Sun:1.45,Moon:1.15,Jupiter:1.25,Saturn:1.2,Venus:1.0,
+               Mars:0.88,Mercury:0.8,Rahu:0.8,Ketu:0.8};
 
 function swhEsc(s){return esc(s);}
 function swhPt(lon,lag,lat,r){ return swProject(lon,lag,lat||0,r,SWH_CX,SWH_CY,SW_TILT_DEG); }
@@ -52,7 +63,46 @@ function swhNatalPoints(D,J){
 }
 var SWH_PRINT=false;
 /* Paper needs the opposite of a night sky. Same geometry, inverted palette. */
+/* NAMED PALETTES. The wheel already had two — a night sky and a print sheet,
+   chosen by SWH_PRINT — so a theme is a third case of a decision this file
+   already made rather than a new mechanism bolted beside it. SWH_THEME is null
+   by default, which returns the original two exactly, so the report's Star
+   wheel tab is untouched.
+
+   The graha surfaces are NOT themed. A palette recolours the ground, the
+   rings, the dividers and the lettering; Maṅgala stays rust and Śukra stays
+   pale whatever the ground behind them, because those colours are the body and
+   not the decoration. `star` and `bright` do move, since a star drawn for a
+   dark sky disappears on a pale one. */
+var SWH_THEMES={
+  night:   {bg0:"#141c33",bg1:"#05070e",house:["#1a2445","#141b36"],hstroke:"#2c3a66",
+            rasi:["#1c2748","#16203c"],rstroke:"#31406e",nak:["#111a34","#0d1529"],
+            nstroke:"#26325a",tick:"#2e3a66",ecl:"#7a6733",horizon:"#63788c",
+            star:"#ffe9a8",bright:"#cfd9ff",glow:1,inside:"#4a6a8a",outside:"#c4643f"},
+  parchment:{bg0:"#fffdf6",bg1:"#f2ead6",house:["#efe6cf","#f7f1e1"],hstroke:"#c9b48a",
+            rasi:["#ebe0c6","#f4ecd9"],rstroke:"#b9a271",nak:["#f3ecda","#faf5e8"],
+            nstroke:"#cdbb95",tick:"#c9b48a",ecl:"#9a7b2a",horizon:"#8a7a5a",
+            star:"#6b5a1e",bright:"#4a5a86",glow:0,inside:"#7a8a6a",outside:"#b4532f"},
+  indigo:  {bg0:"#1b1740",bg1:"#080617",house:["#241f52","#1a1640"],hstroke:"#3b3277",
+            rasi:["#272156","#1e1946"],rstroke:"#453a86",nak:["#191442","#110e2e"],
+            nstroke:"#342c6a",tick:"#3b3277",ecl:"#8a6fb0",horizon:"#7b6fa8",
+            star:"#ffe6c0",bright:"#d9d2ff",glow:1,inside:"#5a5aa0",outside:"#d2764a"},
+  ember:   {bg0:"#2a140d",bg1:"#0d0604",house:["#3a1c12","#2a140d"],hstroke:"#63301c",
+            rasi:["#40200f","#30180b"],rstroke:"#74391f",nak:["#2a1309","#1a0b05"],
+            nstroke:"#552916",tick:"#63301c",ecl:"#c08a3a",horizon:"#a07a5a",
+            star:"#ffd9a0",bright:"#ffc9b0",glow:1,inside:"#8a6a4a",outside:"#e08a50"},
+  verdant: {bg0:"#0d241c",bg1:"#040d09",house:["#123024","#0d241c"],hstroke:"#1f5240",
+            rasi:["#15372a","#0f2a20"],rstroke:"#246049",nak:["#0c2017","#06140e"],
+            nstroke:"#1b4634",tick:"#1f5240",ecl:"#9a9a3a",horizon:"#6a8a7a",
+            star:"#eaf0b0",bright:"#bfe6d0",glow:1,inside:"#4a8a6a",outside:"#c4643f"},
+  mono:    {bg0:"#1d1d1f",bg1:"#070708",house:["#2a2a2d","#1f1f22"],hstroke:"#44444a",
+            rasi:["#2e2e32","#242428"],rstroke:"#4e4e55",nak:["#1b1b1e","#131316"],
+            nstroke:"#3a3a40",tick:"#44444a",ecl:"#8a8a90",horizon:"#75757c",
+            star:"#f0f0f2",bright:"#d0d0d6",glow:1,inside:"#70707a",outside:"#a8a8b0"}
+};
+var SWH_THEME=null;
 function swhPal(){
+  if(SWH_THEME && SWH_THEMES[SWH_THEME]) return SWH_THEMES[SWH_THEME];
   return SWH_PRINT
    ? {bg0:"#ffffff",bg1:"#f4f4fb",house:["#eceaf5","#f6f5fb"],hstroke:"#b9bccd",
       rasi:["#e6e9f6","#f1f2f9"],rstroke:"#9aa0c0",nak:["#f0f1f8","#f7f8fc"],nstroke:"#b9bccd",
@@ -158,6 +208,12 @@ function swhRender(S,natal){
   /* the natal ascendant. At the birth moment it lies exactly on the eastern horizon;
      step the clock and it drifts, which is precisely how far the sky has turned since. */
   if(natal.lagna!=null) pts.push({n:"Lg",lon:natal.lagna,lat:0,cls:"l",full:"natal lagna"});
+  /* the Moon is drawn at its REAL phase, because this same page prints the
+     tithi and a moon-phase card beside the wheel; a full Moon on the wheel
+     next to a waning crescent on the card would be a contradiction, not a
+     stylistic choice. Every other graha is drawn full, which is what a chart
+     token means. */
+  SWH_MOON_PHASE=(window.NSprite?window.NSprite.moonPhase(S):180);
   if(SWH_SHOW.grahas) S.planets.forEach(function(p){
     pts.push({n:GL[p.en]||p.en,lon:p.sid,lat:p.lat||0,cls:"g",full:p.en}); });
   if(SWH_SHOW.upagrahas) natal.upagrahas.forEach(function(x){ pts.push({n:x.n.slice(0,2),lon:x.lon,lat:0,cls:"u",full:x.n}); });
@@ -169,18 +225,52 @@ function swhRender(S,natal){
   pts.forEach(function(p){
     var q={x:p.p.x,y:p.p.y};
     for(var g=0;g<10;g++){
-      var clash=placed.some(function(o2){ return Math.hypot(o2.x-q.x,o2.y-q.y)<26; });
+      /* same reason as the ecliptic wheel's lane radius: a surface is drawn
+         larger than the lettered disc, so the clearance has to grow with it */
+      var clr=(SWH_ART&&p.cls==="g")?38:26;
+      var clash=placed.some(function(o2){ return Math.hypot(o2.x-q.x,o2.y-q.y)<clr; });
       if(!clash) break;
       var ar=Math.atan2(q.y-SWH_CY,q.x-SWH_CX);
-      q={x:q.x-Math.cos(ar)*27,y:q.y-Math.sin(ar)*27};
+      q={x:q.x-Math.cos(ar)*(clr+1),y:q.y-Math.sin(ar)*(clr+1)};
     }
     placed.push(q);
     var rr=(11*p.p.scale).toFixed(1);
     o+='<line x1="'+p.p.x.toFixed(1)+'" y1="'+p.p.y.toFixed(1)+'" x2="'+q.x.toFixed(1)+'" y2="'+
        q.y.toFixed(1)+'" stroke="#55628c" stroke-width="0.6"/>';
-    o+='<circle cx="'+q.x.toFixed(1)+'" cy="'+q.y.toFixed(1)+'" r="'+rr+'" class="swh-pt swh-'+p.cls+'"/>';
-    o+='<text x="'+q.x.toFixed(1)+'" y="'+(q.y+3.6).toFixed(1)+'" class="swh-plab" font-size="'+
-       (10*p.p.scale).toFixed(1)+'">'+swhEsc(p.n)+'</text>';
+    /* the lit surface, when this page has asked for it and the sprites loaded;
+       only the nine grahas have surfaces — a natal lagna or an arūḍha is a
+       computed point, not a body, and is never given one */
+    var art=(SWH_ART && p.cls==="g" && window.NSprite && window.NSprite.ready())
+      ? window.NSprite.href(p.full, 11*p.p.scale,
+          p.full==="Moon" ? SWH_MOON_PHASE : null)
+      : null;
+    if(art){
+      /* Relative sizes, the same convention sp-cosmos.js uses for the casting
+         ceremony: a drawing convention so the Sun reads as the Sun and Mercury
+         as Mercury, NOT apparent magnitude and not true angular diameter —
+         the Sun and Moon subtend half a degree each and everything else is a
+         point. SWH_ART_R is the multiplier on the wheel's own glyph radius. */
+      var ar=11*p.p.scale*(SWH_ART_R[p.full]||1), d2=(2*ar).toFixed(1);
+      /* a hairline at the sprite's edge: the Moon is drawn at its real phase,
+         so near a new Moon it is an honest black disc that the night sky
+         swallows whole. The ring locates it without inventing light. */
+      o+='<circle cx="'+q.x.toFixed(1)+'" cy="'+q.y.toFixed(1)+'" r="'+ar.toFixed(1)+
+         '" class="swh-arthalo"/>';
+      o+='<image href="'+art+'" x="'+(q.x-ar).toFixed(1)+'" y="'+
+         (q.y-ar).toFixed(1)+'" width="'+d2+'" height="'+d2+
+         '" class="swh-art"><title>'+swhEsc(p.full)+'</title></image>';
+      /* The surface replaced the lettered disc, and with it the only thing
+         that said WHICH graha this was — the first build of this was nine
+         unlabelled spheres. The name goes below the disc rather than on it,
+         so it names the body without covering the surface it names. */
+      o+='<text x="'+q.x.toFixed(1)+'" y="'+(q.y+ar+8.5*p.p.scale).toFixed(1)+
+         '" class="swh-artlab" font-size="'+(9.5*p.p.scale).toFixed(1)+'">'+
+         swhEsc(p.n)+'</text>';
+    } else {
+      o+='<circle cx="'+q.x.toFixed(1)+'" cy="'+q.y.toFixed(1)+'" r="'+rr+'" class="swh-pt swh-'+p.cls+'"/>';
+      o+='<text x="'+q.x.toFixed(1)+'" y="'+(q.y+3.6).toFixed(1)+'" class="swh-plab" font-size="'+
+         (10*p.p.scale).toFixed(1)+'">'+swhEsc(p.n)+'</text>';
+    }
   });
   o+='</svg>';
   return o;
@@ -611,7 +701,9 @@ window.__swhGetDrawn=function(){ return SWH_OFFSET; };
     h.innerHTML = OPT.map(function (o) {
       return '<label class="swchk"><input type="checkbox" data-swtog="' + o[0] + '"' +
         (SWH_SHOW[o[0]] ? " checked" : "") + "> " + o[1] + "</label>";
-    }).join("");
+    }).join("") +
+      '<label class="swchk"><input type="checkbox" id="sw-art" checked> ' +
+      'Graha surfaces</label>';
   }
 
   /* ---- the day --------------------------------------------------------- */
@@ -942,9 +1034,25 @@ window.__swhGetDrawn=function(){ return SWH_OFFSET; };
       }
       else if (t.id === "sw-time") { S.time = t.value; render(); }
       else if (t.id === "sw-ayan") { S.ayan = t.value; render(); }
+      else if (t.id === "sw-wtheme") {
+        /* The star wheel's colours come from swhPal(), which already chose
+           between a night sky and a print sheet; a named theme is a third case
+           of that same decision. Null restores the original pair, so the
+           report's own tab is untouched. This renderer builds a string, so the
+           palette needs a redraw rather than a stylesheet. */
+        window.SWH_THEME = t.value || null;
+        /* The shapes come from swhPal() in JS; the LETTERING is CSS and was
+           written for a night sky, so the host carries the name as well and
+           pages.css moves the text with it. Without this a pale palette left
+           pale blue rāśi names on cream. */
+        if (t.value) host.setAttribute("data-wtheme", t.value);
+        else host.removeAttribute("data-wtheme");
+        drawWheel(); drawCard();
+      }
       else if (t.id === "sw-ratio") { S.ratio = t.value; drawCard(); }
       else if (t.id === "sw-theme") { S.theme = t.value; drawCard(); }
       else if (t.id === "sw-head") { S.head = t.value; drawCard(); }
+      else if (t.id === "sw-art") { window.SWH_ART = t.checked; drawWheel(); drawCard(); }
       else if (t.id && /^sw-c-/.test(t.id)) drawCard();
       else if (t.getAttribute && t.getAttribute("data-swtog")) {
         SWH_SHOW[t.getAttribute("data-swtog")] = t.checked;
@@ -1016,7 +1124,12 @@ window.__swhGetDrawn=function(){ return SWH_OFFSET; };
        loaded a page controller and left NP undefined. */
     { src: "panchanga.js", have: function () { return !!(window.NP && window.NP.day); } },
     { src: "places.js", have: function () { return !!window.NPlaces; } },
-    { src: "cards.js", have: function () { return !!window.NCard; } }
+    { src: "cards.js", have: function () { return !!window.NCard; } },
+    /* the lit graha surfaces. 44 KB, and last in the list, so the wheel is
+       already on screen with lettered discs before the sprites replace them —
+       a reader on a slow link sees a correct wheel immediately rather than an
+       empty box. */
+    { src: "bodies.js", have: function () { return !!window.NSprite; } }
   ], function () {
     S.place = (window.NP.savedPlace && window.NP.savedPlace()) ||
               (window.NP.PLACES && window.NP.PLACES[0]) ||
@@ -1055,6 +1168,9 @@ window.__swhGetDrawn=function(){ return SWH_OFFSET; };
       di.min = window.NP.RANGE.min + "-01-01";
       di.max = window.NP.RANGE.max + "-12-31";
     }
+    /* This page draws the surfaces; the report's Star wheel tab does not, and
+       the renderer defaults to off so that stays true. */
+    window.SWH_ART = true;
     fillSelects();
     toggles();
     bind();
