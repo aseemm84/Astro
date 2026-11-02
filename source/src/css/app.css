@@ -1183,3 +1183,29 @@ html[data-theme] .moreadh,html[data-theme] .moreadf{color:var(--text-soft)}
 .kreport .kappnote.bad{color:var(--sem-bad,#a1493a);font-weight:600}
 .kreport .kappnote b{color:var(--text,inherit)}
 html[data-theme] .kreport .kappnote{color:var(--text-soft)}
+
+/* The key to the ayanāṃśa ruler's sixteen lines. Four families, each a short
+   list, because sixteen flat rows are a wall and four groups of three or six
+   are read at a glance. The swatch is a graphic and the name beside it does
+   the work, so nothing here depends on telling two colours apart. */
+.kreport .kaylegend{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:12px 20px;margin:10px 0 6px}
+.kreport .kaylgrp{min-width:0}
+.kreport .kaylh{font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.05em;color:var(--text-soft,#4a4e68);margin:0 0 5px;
+  padding-bottom:3px;border-bottom:1px solid var(--line)}
+.kreport .kaylh .kmut{text-transform:none;letter-spacing:0;font-weight:400;font-size:11px}
+.kreport ul.kaylist{list-style:none;margin:0;padding:0}
+.kreport ul.kaylist li{display:flex;align-items:baseline;gap:7px;
+  font-size:12.5px;line-height:1.55;padding:1px 0}
+.kreport ul.kaylist li.on{font-weight:700}
+.kreport .kaysw{flex:0 0 auto;width:10px;height:10px;border-radius:50%;
+  align-self:center;box-shadow:0 0 0 1px rgba(0,0,0,.18)}
+.kreport .kaysw.cur{width:13px;height:13px;box-shadow:0 0 0 2px var(--gold)}
+.kreport .kaynm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.kreport .kayval{flex:0 0 auto;font-variant-numeric:tabular-nums;color:var(--muted-2)}
+.kreport .kaycur{flex:0 0 auto;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.04em;color:var(--gold-ink,#5a4410)}
+html[data-theme] .kreport .kaycur{color:var(--accent)}
+html[data-theme] .kreport .kaysw{box-shadow:0 0 0 1px rgba(255,255,255,.28)}

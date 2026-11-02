@@ -46,6 +46,94 @@ function ayanQuickPick(J){
       esc(m.name)+' · '+m.deg.toFixed(3)+'°</option>'; }).join("")+'</select>';
 }
 
+/* ---- a colour per standard, and the families they fall into ----
+   Sixteen marks on one strip cannot be told apart by position, and the
+   rotated names that tried to do it were clipped to three characters and,
+   worse, five of them began with the same word. A colour each, with a
+   legend, says it properly — and the legend can carry the exact value
+   besides, which no label on the strip ever could.
+
+   Sixteen arbitrary colours would be sixteen things to distinguish at once,
+   which nobody can. They are grouped instead: HUE carries the family — blues
+   and violets for the fixed-epoch standards, greens for the moving-star
+   definitions, ambers for Sūrya Siddhānta and the classical values, crimson
+   for this site's own — and the shade separates members within a family. You
+   find the family first and the member second, which is two easy judgements
+   instead of one impossible one.
+
+   Every value sits in the middle of the lightness range on purpose: these
+   lines are drawn on a near-white ground in two palettes and a near-black
+   one in three, and a colour tuned for either would disappear into the
+   other. Colour is never the only channel — the legend names every line, the
+   hover title carries the full name and the figure, and the table above
+   lists all sixteen in order. */
+var AYAN_FAM=[
+  ["Fixed-epoch standards","a zero point fixed once, then carried forward at the precession rate",
+   ["lahiri","raman","kp","yukteshwar","bhasin","fagan"]],
+  ["Moving star","the anchoring star is tracked, so the zero point is recomputed rather than carried",
+   ["truechitra","truerevati","truepushya"]],
+  ["Sūrya Siddhānta and classical","from the text, and from the readings later editors took of it",
+   ["ss_text","ss_rate","ss_swiss","ss_revati","ss_citra","aryabhata"]],
+  ["This site's own","Revatī at 359°50′, computed to the precision the text states and no further",
+   ["nirayana_revati"]]
+];
+var AYAN_COL={
+  lahiri:"#2f6fb5", raman:"#6f93d4", kp:"#1f8a8a", yukteshwar:"#5bb0ae",
+  bhasin:"#4a5fa8", fagan:"#8a7fd0",
+  truechitra:"#2f8f52", truerevati:"#63b36a", truepushya:"#93b03f",
+  ss_text:"#c9922a", ss_rate:"#e0a94a", ss_swiss:"#b5742a",
+  ss_revati:"#d9893f", ss_citra:"#a35f2a", aryabhata:"#8d7149",
+  nirayana_revati:"#b0343c"
+};
+function ayanColour(k){ return AYAN_COL[k]||"#8b8676"; }
+/* exposed so the suite can assert every declared mode has a colour and a
+   family — a mode missing either still draws, which is why it needs saying */
+try{ window.__ayanColours=AYAN_COL; window.__ayanFamilies=AYAN_FAM; }catch(e){}
+
+
+/* ---- the key to the sixteen lines ----
+   Grouped by family rather than listed flat, because the colours are grouped
+   the same way: four short lists are read at a glance and sixteen rows are
+   not. Each entry carries the exact value, which is the thing the strip
+   itself can never show, and the one in use is marked in words as well as by
+   weight.
+
+   A standard with no colour of its own would fall back to grey and be
+   indistinguishable from any other that did; the suite asserts that every
+   mode the engine declares appears in exactly one family and has a colour. */
+function ayanLegend(L,CUR){
+  var byKey={}; L.forEach(function(m){ byKey[m.key]=m; });
+  var placed={}, out="";
+  AYAN_FAM.forEach(function(F){
+    var items=F[2].filter(function(k){ return byKey[k]; });
+    if(!items.length) return;
+    out+='<div class="kaylgrp"><div class="kaylh">'+esc(F[0])+
+         '<span class="kmut"> \u2014 '+esc(F[1])+'</span></div><ul class="kaylist">'+
+      items.map(function(k){
+        placed[k]=1;
+        var m=byKey[k], cur=(k===CUR);
+        return '<li'+(cur?' class="on"':'')+'>'+
+          '<i class="kaysw'+(cur?" cur":"")+'" style="background:'+ayanColour(k)+'" aria-hidden="true"></i>'+
+          '<span class="kaynm">'+esc(m.name)+'</span>'+
+          '<span class="kayval">'+m.deg.toFixed(3)+'\u00b0</span>'+
+          (cur?'<span class="kaycur">in use</span>':'')+'</li>';
+      }).join("")+'</ul></div>';
+  });
+  /* anything the families missed, rather than silently dropping it */
+  var orphan=L.filter(function(m){ return !placed[m.key]; });
+  if(orphan.length) out+='<div class="kaylgrp"><div class="kaylh">Other</div><ul class="kaylist">'+
+    orphan.map(function(m){ return '<li><i class="kaysw" style="background:'+ayanColour(m.key)+
+      '"></i><span class="kaynm">'+esc(m.name)+'</span><span class="kayval">'+
+      m.deg.toFixed(3)+'\u00b0</span></li>'; }).join("")+'</ul></div>';
+  /* two of the sixteen are the same series and draw one line between them;
+     saying so is better than letting a reader hunt for a missing colour */
+  var same=L.filter(function(m){ return m.key==="ss_swiss"||m.key==="aryabhata"; });
+  var note=(same.length===2 && Math.abs(same[0].deg-same[1].deg)<0.0005)
+    ? '<p class="klegend">\u0100ryabha\u1e6da and the Swiss S\u016brya Siddh\u0101nta are the same '+
+      'series to four decimals, so their two lines sit exactly on top of each other.</p>' : "";
+  return '<div class="kaylegend">'+out+'</div>'+note;
+}
+
 /* ---- the shifted chart ----
    Returns everything the tables below need for one ayanāṃśa value. */
 function ayanSnap(D,a){
@@ -185,10 +273,11 @@ function ayanPane(D,J){
      the names are; and the names come from the engine's own short tags, which
      are chosen to be distinct from one another rather than truncated from a
      full name that five others share a first word with. */
-  var LABFONT=8.5, LABCH=LABFONT*0.62;      /* ≈ advance per character, rotated */
-  var tags=L.map(function(m){ return (window.__ayanModes[m.key]||{}).s||m.key; });
-  var TOP=Math.ceil(Math.max.apply(null,tags.map(function(t){ return t.length; }))*LABCH)+16;
-  var y0b=TOP+6;                            /* the lanes start below the label band */
+  /* The rotated names are gone and the legend below carries them instead, so
+     the band above the lanes no longer has to hold sixty-character words
+     turned on their side. Twelve pixels is enough for the marks to start
+     above the first lane and be seen to belong to the whole strip. */
+  var y0b=16;
   /* One pass of snapshots, shared by every lane. Snapping inside each lane's
      own loop recomputed the same fourteen charts fourteen times over. */
   var SAMP=[];
@@ -225,23 +314,23 @@ function ayanPane(D,J){
      last one drawn. Marks that lose their label are not lost — they are the
      ones you read by hovering, and the table above names every one of them in
      order anyway. */
-  var HH=y0b+LANES.length*RH+34, marks='', lastLab=-1e9, LABGAP=12;
-  L.forEach(function(m,mi){
-    var xx=xr(m.deg), cur=(m.key===CUR);
-    marks+='<g><title>'+esc(m.name)+' \u2014 '+m.deg.toFixed(4)+'\u00b0</title>'+
-      '<line x1="'+xx.toFixed(1)+'" y1="'+(TOP-2)+'" x2="'+xx.toFixed(1)+'" y2="'+(HH-26)+
-      '" stroke="'+(cur?"#a1493a":"#b9ad90")+'" stroke-width="'+(cur?2:0.7)+
-      '"'+(cur?'':' stroke-dasharray="2 3"')+'/>';
-    /* the mode in use always gets its name, whatever it would collide with */
-    if(cur || xx-lastLab>=LABGAP){
-      lastLab=Math.max(lastLab,xx);
-      /* anchored at the BOTTOM of the band and rotated so it reads upward into
-         the room reserved above, rather than off the edge of it */
-      marks+='<text x="'+xx.toFixed(1)+'" y="'+(TOP-6)+'" class="ty'+(cur?' tycur':'')+
-        '" transform="rotate(-90 '+xx.toFixed(1)+' '+(TOP-6)+')" style="text-anchor:start">'+
-        esc(tags[mi])+'</text>';
-    }
-    marks+='</g>';
+  /* One line per standard, in its own colour. No names on the strip: at this
+     density a name is either clipped or on top of its neighbour, and the
+     legend below has room for the full name AND the exact value, which the
+     strip never did. The line in use is drawn solid and twice as thick as
+     well as coloured, so it is findable without relying on colour at all. */
+  var HH=y0b+LANES.length*RH+34, marks='';
+  L.forEach(function(m){
+    var xx=xr(m.deg), cur=(m.key===CUR), col=ayanColour(m.key);
+    marks+='<g><title>'+esc(m.name)+' \u2014 '+m.deg.toFixed(4)+'\u00b0'+
+      (cur?' (in use)':'')+'</title>'+
+      '<line x1="'+xx.toFixed(1)+'" y1="'+(y0b-10)+'" x2="'+xx.toFixed(1)+'" y2="'+(HH-26)+
+      '" stroke="'+col+'" stroke-width="'+(cur?2.6:1.3)+'" stroke-linecap="round"'+
+      (cur?'':' stroke-dasharray="3 3" opacity="0.85"')+'/>'+
+      /* a cap at the top so a dashed line still shows its colour clearly at a
+         glance, and so the mark has something to aim a pointer at */
+      '<circle cx="'+xx.toFixed(1)+'" cy="'+(y0b-10)+'" r="'+(cur?3.4:2.4)+
+      '" fill="'+col+'"/></g>';
   });
   for(var t=Math.ceil(X0);t<=X1;t++){ var xt=xr(t);
     marks+='<text x="'+xt.toFixed(1)+'" y="'+(HH-8)+'" class="ty">'+t+'\u00b0</text>'; }
@@ -334,8 +423,11 @@ function ayanPane(D,J){
     'from the '+D.ayan.toFixed(3)+'° this chart was cast on.</p>'+
     tbl(["Placement","Room below","Room above","Holds for ayanāṃśa","Standards outside","Margin"],[mrows])+
     '<h4 class="ksub">The whole range at once</h4><div class="kayanwrap">'+svg+'</div>'+
-    '<p class="klegend">Each band is one sign (or nakṣatra) held across that stretch of ayanāṃśa. Gold marks the '+
-    'value this chart uses; the red line is where it sits, the dotted lines are the other fifteen standards.</p>'+
+    ayanLegend(L,CUR)+
+    '<p class="klegend">Each band is one sign (or nakṣatra) held across that stretch of ayanāṃśa. '+
+    'The gold bands are the ones this chart\u2019s own value falls in. Every standard has a line of '+
+    'its own colour, named in the key above \u2014 the one in use is solid and thicker, the rest are '+
+    'dotted. Hovering any line gives its full name and value.</p>'+
     dtxt+
     '<div class="kbox"><b>What holds</b>'+esc(verdict)+
     (invNames.length?' Unchanged throughout: '+esc(invNames.join(", "))+'.':'')+

@@ -1204,6 +1204,32 @@ html[data-theme] .moreadh,html[data-theme] .moreadf{color:var(--text-soft)}
 .kreport .kappnote b{color:var(--text,inherit)}
 html[data-theme] .kreport .kappnote{color:var(--text-soft)}
 
+/* The key to the ayanāṃśa ruler's sixteen lines. Four families, each a short
+   list, because sixteen flat rows are a wall and four groups of three or six
+   are read at a glance. The swatch is a graphic and the name beside it does
+   the work, so nothing here depends on telling two colours apart. */
+.kreport .kaylegend{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:12px 20px;margin:10px 0 6px}
+.kreport .kaylgrp{min-width:0}
+.kreport .kaylh{font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.05em;color:var(--text-soft,#4a4e68);margin:0 0 5px;
+  padding-bottom:3px;border-bottom:1px solid var(--line)}
+.kreport .kaylh .kmut{text-transform:none;letter-spacing:0;font-weight:400;font-size:11px}
+.kreport ul.kaylist{list-style:none;margin:0;padding:0}
+.kreport ul.kaylist li{display:flex;align-items:baseline;gap:7px;
+  font-size:12.5px;line-height:1.55;padding:1px 0}
+.kreport ul.kaylist li.on{font-weight:700}
+.kreport .kaysw{flex:0 0 auto;width:10px;height:10px;border-radius:50%;
+  align-self:center;box-shadow:0 0 0 1px rgba(0,0,0,.18)}
+.kreport .kaysw.cur{width:13px;height:13px;box-shadow:0 0 0 2px var(--gold)}
+.kreport .kaynm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;
+  white-space:nowrap}
+.kreport .kayval{flex:0 0 auto;font-variant-numeric:tabular-nums;color:var(--muted-2)}
+.kreport .kaycur{flex:0 0 auto;font-size:10px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.04em;color:var(--gold-ink,#5a4410)}
+html[data-theme] .kreport .kaycur{color:var(--accent)}
+html[data-theme] .kreport .kaysw{box-shadow:0 0 0 1px rgba(255,255,255,.28)}
+
 /* ===== Generated theme overrides =====================================
    Written by source/tools/gen-theme-overrides.py from the literal
    colours in app.css and pages.css. Do not edit by hand: regenerate.
@@ -2447,7 +2473,7 @@ html[data-theme="emerald"] .wsnext.lead{
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-11-02.75016d9";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Nirayana Kundli 2.0</h1><p class="sub">A full sidereal chart computed in your browser, now with Śrīpati bhāva-chalita as a house system of its own, a year of real transits for any year, and twelve Candra-rāśi readings that need no chart at all.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html" class="active">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#cast">Cast a chart now</a><a href="#gochara">Vārṣika Gochara</a><a href="#rashiphal">Twelve rāśi readings</a><a href="#what">What a kundli is</a><a href="#need">What you need</a><a href="#how">How a chart is cast</a><a href="#read">How to read what comes back</a><a href="#limits">Accuracy, attribution & limits</a></aside><main><p class="lead">A <b>kundli</b> (janma-kundali) is a birth chart: a map of the sky at the exact moment and place of birth, projected onto the twelve bhavas counted from the Lagna. Enter the birth details and the whole chart is computed below, in this browser. Everything after it explains what a chart is and how it is cast.</p><h2 id="cast">Cast a chart now<span class="kdeva">जन्म-कुण्डली</span></h2><p>Everything is computed <b>in your browser</b> — nothing is sent anywhere, and the page works offline.</p>
+</script><script>window.__kBuild="2026-11-02.e047fa1";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Nirayana Kundli 2.0</h1><p class="sub">A full sidereal chart computed in your browser, now with Śrīpati bhāva-chalita as a house system of its own, a year of real transits for any year, and twelve Candra-rāśi readings that need no chart at all.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html" class="active">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#cast">Cast a chart now</a><a href="#gochara">Vārṣika Gochara</a><a href="#rashiphal">Twelve rāśi readings</a><a href="#what">What a kundli is</a><a href="#need">What you need</a><a href="#how">How a chart is cast</a><a href="#read">How to read what comes back</a><a href="#limits">Accuracy, attribution & limits</a></aside><main><p class="lead">A <b>kundli</b> (janma-kundali) is a birth chart: a map of the sky at the exact moment and place of birth, projected onto the twelve bhavas counted from the Lagna. Enter the birth details and the whole chart is computed below, in this browser. Everything after it explains what a chart is and how it is cast.</p><h2 id="cast">Cast a chart now<span class="kdeva">जन्म-कुण्डली</span></h2><p>Everything is computed <b>in your browser</b> — nothing is sent anywhere, and the page works offline.</p>
 <div id="k-inputs">
 <div class="k-form">
   <div class="k-full"><label for="k-name">Name (optional — appears on the report)</label><input type="text" id="k-name" placeholder="e.g. Aseem Mehrotra" autocomplete="off"></div>
@@ -9227,6 +9253,94 @@ function ayanQuickPick(J){
       esc(m.name)+' · '+m.deg.toFixed(3)+'°</option>'; }).join("")+'</select>';
 }
 
+/* ---- a colour per standard, and the families they fall into ----
+   Sixteen marks on one strip cannot be told apart by position, and the
+   rotated names that tried to do it were clipped to three characters and,
+   worse, five of them began with the same word. A colour each, with a
+   legend, says it properly — and the legend can carry the exact value
+   besides, which no label on the strip ever could.
+
+   Sixteen arbitrary colours would be sixteen things to distinguish at once,
+   which nobody can. They are grouped instead: HUE carries the family — blues
+   and violets for the fixed-epoch standards, greens for the moving-star
+   definitions, ambers for Sūrya Siddhānta and the classical values, crimson
+   for this site's own — and the shade separates members within a family. You
+   find the family first and the member second, which is two easy judgements
+   instead of one impossible one.
+
+   Every value sits in the middle of the lightness range on purpose: these
+   lines are drawn on a near-white ground in two palettes and a near-black
+   one in three, and a colour tuned for either would disappear into the
+   other. Colour is never the only channel — the legend names every line, the
+   hover title carries the full name and the figure, and the table above
+   lists all sixteen in order. */
+var AYAN_FAM=[
+  ["Fixed-epoch standards","a zero point fixed once, then carried forward at the precession rate",
+   ["lahiri","raman","kp","yukteshwar","bhasin","fagan"]],
+  ["Moving star","the anchoring star is tracked, so the zero point is recomputed rather than carried",
+   ["truechitra","truerevati","truepushya"]],
+  ["Sūrya Siddhānta and classical","from the text, and from the readings later editors took of it",
+   ["ss_text","ss_rate","ss_swiss","ss_revati","ss_citra","aryabhata"]],
+  ["This site's own","Revatī at 359°50′, computed to the precision the text states and no further",
+   ["nirayana_revati"]]
+];
+var AYAN_COL={
+  lahiri:"#2f6fb5", raman:"#6f93d4", kp:"#1f8a8a", yukteshwar:"#5bb0ae",
+  bhasin:"#4a5fa8", fagan:"#8a7fd0",
+  truechitra:"#2f8f52", truerevati:"#63b36a", truepushya:"#93b03f",
+  ss_text:"#c9922a", ss_rate:"#e0a94a", ss_swiss:"#b5742a",
+  ss_revati:"#d9893f", ss_citra:"#a35f2a", aryabhata:"#8d7149",
+  nirayana_revati:"#b0343c"
+};
+function ayanColour(k){ return AYAN_COL[k]||"#8b8676"; }
+/* exposed so the suite can assert every declared mode has a colour and a
+   family — a mode missing either still draws, which is why it needs saying */
+try{ window.__ayanColours=AYAN_COL; window.__ayanFamilies=AYAN_FAM; }catch(e){}
+
+
+/* ---- the key to the sixteen lines ----
+   Grouped by family rather than listed flat, because the colours are grouped
+   the same way: four short lists are read at a glance and sixteen rows are
+   not. Each entry carries the exact value, which is the thing the strip
+   itself can never show, and the one in use is marked in words as well as by
+   weight.
+
+   A standard with no colour of its own would fall back to grey and be
+   indistinguishable from any other that did; the suite asserts that every
+   mode the engine declares appears in exactly one family and has a colour. */
+function ayanLegend(L,CUR){
+  var byKey={}; L.forEach(function(m){ byKey[m.key]=m; });
+  var placed={}, out="";
+  AYAN_FAM.forEach(function(F){
+    var items=F[2].filter(function(k){ return byKey[k]; });
+    if(!items.length) return;
+    out+='<div class="kaylgrp"><div class="kaylh">'+esc(F[0])+
+         '<span class="kmut"> \u2014 '+esc(F[1])+'</span></div><ul class="kaylist">'+
+      items.map(function(k){
+        placed[k]=1;
+        var m=byKey[k], cur=(k===CUR);
+        return '<li'+(cur?' class="on"':'')+'>'+
+          '<i class="kaysw'+(cur?" cur":"")+'" style="background:'+ayanColour(k)+'" aria-hidden="true"></i>'+
+          '<span class="kaynm">'+esc(m.name)+'</span>'+
+          '<span class="kayval">'+m.deg.toFixed(3)+'\u00b0</span>'+
+          (cur?'<span class="kaycur">in use</span>':'')+'</li>';
+      }).join("")+'</ul></div>';
+  });
+  /* anything the families missed, rather than silently dropping it */
+  var orphan=L.filter(function(m){ return !placed[m.key]; });
+  if(orphan.length) out+='<div class="kaylgrp"><div class="kaylh">Other</div><ul class="kaylist">'+
+    orphan.map(function(m){ return '<li><i class="kaysw" style="background:'+ayanColour(m.key)+
+      '"></i><span class="kaynm">'+esc(m.name)+'</span><span class="kayval">'+
+      m.deg.toFixed(3)+'\u00b0</span></li>'; }).join("")+'</ul></div>';
+  /* two of the sixteen are the same series and draw one line between them;
+     saying so is better than letting a reader hunt for a missing colour */
+  var same=L.filter(function(m){ return m.key==="ss_swiss"||m.key==="aryabhata"; });
+  var note=(same.length===2 && Math.abs(same[0].deg-same[1].deg)<0.0005)
+    ? '<p class="klegend">\u0100ryabha\u1e6da and the Swiss S\u016brya Siddh\u0101nta are the same '+
+      'series to four decimals, so their two lines sit exactly on top of each other.</p>' : "";
+  return '<div class="kaylegend">'+out+'</div>'+note;
+}
+
 /* ---- the shifted chart ----
    Returns everything the tables below need for one ayanāṃśa value. */
 function ayanSnap(D,a){
@@ -9366,10 +9480,11 @@ function ayanPane(D,J){
      the names are; and the names come from the engine's own short tags, which
      are chosen to be distinct from one another rather than truncated from a
      full name that five others share a first word with. */
-  var LABFONT=8.5, LABCH=LABFONT*0.62;      /* ≈ advance per character, rotated */
-  var tags=L.map(function(m){ return (window.__ayanModes[m.key]||{}).s||m.key; });
-  var TOP=Math.ceil(Math.max.apply(null,tags.map(function(t){ return t.length; }))*LABCH)+16;
-  var y0b=TOP+6;                            /* the lanes start below the label band */
+  /* The rotated names are gone and the legend below carries them instead, so
+     the band above the lanes no longer has to hold sixty-character words
+     turned on their side. Twelve pixels is enough for the marks to start
+     above the first lane and be seen to belong to the whole strip. */
+  var y0b=16;
   /* One pass of snapshots, shared by every lane. Snapping inside each lane's
      own loop recomputed the same fourteen charts fourteen times over. */
   var SAMP=[];
@@ -9406,23 +9521,23 @@ function ayanPane(D,J){
      last one drawn. Marks that lose their label are not lost — they are the
      ones you read by hovering, and the table above names every one of them in
      order anyway. */
-  var HH=y0b+LANES.length*RH+34, marks='', lastLab=-1e9, LABGAP=12;
-  L.forEach(function(m,mi){
-    var xx=xr(m.deg), cur=(m.key===CUR);
-    marks+='<g><title>'+esc(m.name)+' \u2014 '+m.deg.toFixed(4)+'\u00b0</title>'+
-      '<line x1="'+xx.toFixed(1)+'" y1="'+(TOP-2)+'" x2="'+xx.toFixed(1)+'" y2="'+(HH-26)+
-      '" stroke="'+(cur?"#a1493a":"#b9ad90")+'" stroke-width="'+(cur?2:0.7)+
-      '"'+(cur?'':' stroke-dasharray="2 3"')+'/>';
-    /* the mode in use always gets its name, whatever it would collide with */
-    if(cur || xx-lastLab>=LABGAP){
-      lastLab=Math.max(lastLab,xx);
-      /* anchored at the BOTTOM of the band and rotated so it reads upward into
-         the room reserved above, rather than off the edge of it */
-      marks+='<text x="'+xx.toFixed(1)+'" y="'+(TOP-6)+'" class="ty'+(cur?' tycur':'')+
-        '" transform="rotate(-90 '+xx.toFixed(1)+' '+(TOP-6)+')" style="text-anchor:start">'+
-        esc(tags[mi])+'</text>';
-    }
-    marks+='</g>';
+  /* One line per standard, in its own colour. No names on the strip: at this
+     density a name is either clipped or on top of its neighbour, and the
+     legend below has room for the full name AND the exact value, which the
+     strip never did. The line in use is drawn solid and twice as thick as
+     well as coloured, so it is findable without relying on colour at all. */
+  var HH=y0b+LANES.length*RH+34, marks='';
+  L.forEach(function(m){
+    var xx=xr(m.deg), cur=(m.key===CUR), col=ayanColour(m.key);
+    marks+='<g><title>'+esc(m.name)+' \u2014 '+m.deg.toFixed(4)+'\u00b0'+
+      (cur?' (in use)':'')+'</title>'+
+      '<line x1="'+xx.toFixed(1)+'" y1="'+(y0b-10)+'" x2="'+xx.toFixed(1)+'" y2="'+(HH-26)+
+      '" stroke="'+col+'" stroke-width="'+(cur?2.6:1.3)+'" stroke-linecap="round"'+
+      (cur?'':' stroke-dasharray="3 3" opacity="0.85"')+'/>'+
+      /* a cap at the top so a dashed line still shows its colour clearly at a
+         glance, and so the mark has something to aim a pointer at */
+      '<circle cx="'+xx.toFixed(1)+'" cy="'+(y0b-10)+'" r="'+(cur?3.4:2.4)+
+      '" fill="'+col+'"/></g>';
   });
   for(var t=Math.ceil(X0);t<=X1;t++){ var xt=xr(t);
     marks+='<text x="'+xt.toFixed(1)+'" y="'+(HH-8)+'" class="ty">'+t+'\u00b0</text>'; }
@@ -9515,8 +9630,11 @@ function ayanPane(D,J){
     'from the '+D.ayan.toFixed(3)+'° this chart was cast on.</p>'+
     tbl(["Placement","Room below","Room above","Holds for ayanāṃśa","Standards outside","Margin"],[mrows])+
     '<h4 class="ksub">The whole range at once</h4><div class="kayanwrap">'+svg+'</div>'+
-    '<p class="klegend">Each band is one sign (or nakṣatra) held across that stretch of ayanāṃśa. Gold marks the '+
-    'value this chart uses; the red line is where it sits, the dotted lines are the other fifteen standards.</p>'+
+    ayanLegend(L,CUR)+
+    '<p class="klegend">Each band is one sign (or nakṣatra) held across that stretch of ayanāṃśa. '+
+    'The gold bands are the ones this chart\u2019s own value falls in. Every standard has a line of '+
+    'its own colour, named in the key above \u2014 the one in use is solid and thicker, the rest are '+
+    'dotted. Hovering any line gives its full name and value.</p>'+
     dtxt+
     '<div class="kbox"><b>What holds</b>'+esc(verdict)+
     (invNames.length?' Unchanged throughout: '+esc(invNames.join(", "))+'.':'')+
@@ -26712,4 +26830,4 @@ window.buildKundliReport=function(J){
 })();
 ;
 </script>
-<h2 id="read">How to read what comes back<span class="kdeva">फल-विवेचन</span></h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits<span class="kdeva">प्रामाणिकता एवं सीमा</span></h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-11-02.75016d9</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. There is no second source and no remote option: the engine on this page is the only one, so nothing about a chart leaves the machine it is cast on.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>
+<h2 id="read">How to read what comes back<span class="kdeva">फल-विवेचन</span></h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits<span class="kdeva">प्रामाणिकता एवं सीमा</span></h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-11-02.e047fa1</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. There is no second source and no remote option: the engine on this page is the only one, so nothing about a chart leaves the machine it is cast on.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>

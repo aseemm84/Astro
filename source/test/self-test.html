@@ -377,6 +377,35 @@ function runAyanamsaChecks(W){
       noTag.length===0, noTag.length?noTag.join(", "):Object.keys(AM0).length+" tagged");
     check("and no two share one, which is the whole point of having them",
       dupe.length===0, dupe.length?dupe.join(" · "):Object.keys(tags).length+" distinct");
+    /* Every mode must also have a colour and a family. A mode with neither
+       falls back to grey on the ruler and to an "Other" heap in the legend —
+       it would still draw, which is exactly why it needs asserting: a
+       sixteenth standard added without a colour looks like a fifteen-colour
+       chart with one line missing, and nothing throws. */
+    /* W, not doc.defaultView: this function is handed the window and never
+       the document, and reaching for a name that is not in scope stops the
+       whole suite rather than failing one check. */
+    var COL=W.__ayanColours, FAM=W.__ayanFamilies;
+    if(COL&&FAM){
+      var noCol=Object.keys(AM0).filter(function(m){ return !COL[m]; });
+      var seen={}, twice=[], unknown=[];
+      FAM.forEach(function(f){ f[2].forEach(function(k){
+        if(seen[k]) twice.push(k); seen[k]=1;
+        if(!AM0[k]) unknown.push(k); }); });
+      var unplaced=Object.keys(AM0).filter(function(m){ return !seen[m]; });
+      check("every ayanāṃśa has a line colour of its own",
+        noCol.length===0 && new Set(Object.keys(AM0).map(function(m){return COL[m];})).size===Object.keys(AM0).length,
+        noCol.length ? "no colour: "+noCol.join(", ") : Object.keys(AM0).length+" distinct colours");
+      check("and sits in exactly one family in the legend",
+        unplaced.length===0 && twice.length===0 && unknown.length===0,
+        unplaced.length ? "not in any family: "+unplaced.join(", ")
+          : twice.length ? "in two families: "+twice.join(", ")
+          : unknown.length ? "family names a mode the engine does not: "+unknown.join(", ")
+          : FAM.length+" families covering all "+Object.keys(AM0).length);
+    } else {
+      check("the ruler's colour and family tables are reachable", false,
+        "__ayanColours / __ayanFamilies not exposed");
+    }
     check("no tag is long enough to need truncating in the ruler",
       Object.keys(tags).every(function(t){ return t.length<=14; }),
       "longest: "+Object.keys(tags).sort(function(a,b){return b.length-a.length;})[0]);
