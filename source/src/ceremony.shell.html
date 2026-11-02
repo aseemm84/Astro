@@ -1,0 +1,131 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>The casting ceremony — {{BRAND}}</title><!--HEAD--><!--CSS--><!--THEMEJS--></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="{{BRAND}} — home"><span class="lhmarkwrap"><!--LOGO--></span><span class="lhword"><span class="lhname">{{BRAND}}</span><span class="lhdeva">{{BRAND_DEVA}}</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>The casting ceremony</h1><p class="sub">The nine grahas winding back to a moment, and settling onto the nakṣatra ring where they stood. Turn it, tilt it, and run it for any moment you like.</p></header><nav class="site">{{NAV}}</nav><div class="layout onecol wide"><main>
+
+<div class="cerbar" id="cer-bar">
+  <div class="cerfield"><label for="cer-date">Date</label><input type="date" id="cer-date"></div>
+  <div class="cerfield"><label for="cer-time">Time</label><input type="time" id="cer-time"></div>
+  <button type="button" class="k-btn" id="cer-go">Run the ceremony</button>
+  <button type="button" class="k-btn sec" id="cer-now">Now</button>
+  <button type="button" class="k-btn sec" id="cer-chart" hidden>My chart’s moment</button>
+  <span class="k-status" id="cer-status"></span>
+</div>
+
+<p class="lead">Everywhere else on this site the ceremony is a <b>veil</b>: it covers the second or
+two while a chart is computed, and lifts when the chart is ready. That makes it something you see
+and cannot look at. This page is the same ceremony with nothing behind it — no chart waiting, no
+clock running out — so it can be watched, turned and run again.</p>
+
+<h2 id="what">What you are looking at<span class="kdeva">दृश्य-विवरण</span></h2>
+<p>The ring is the <b>nakṣatra ring</b>: twenty-seven divisions of 13°20′ each, running
+anticlockwise from the start of Aśvinī. The nine discs are the grahas, drawn from the same images
+the Motion scenes use. They begin where the sky stands <i>now</i> and wind back to where it stood
+at the moment in the field above, trailing the path they took to get there.</p>
+<p>The wind-back is the point. A chart is not a picture of the sky as it is; it is a picture of
+the sky as it was, at one place, at one instant. The ceremony is that sentence drawn rather than
+written.</p>
+<div class="mine"><b>Study note.</b> The positions are the engine's own — the same sidereal
+longitudes the chart report uses, under whichever ayanāṃśa this browser is set to. The ring is to
+scale and the discs are not: a graha drawn at its true angular size would be invisible. Nothing
+here is a chart, and nothing here is read for meaning; it is the arithmetic of a chart, moving.</div>
+
+<h2 id="how">Turning it<span class="kdeva">परिभ्रमण</span></h2>
+<ul>
+  <li><b>Drag</b> the ring to spin it. It keeps the spin when you let go.</li>
+  <li><b>Reveal</b>, <b>Escape</b> or a click on the backdrop ends it.</li>
+  <li>It also ends itself after a while, so a window left open does not keep animating.</li>
+  <li>If this machine is set to <b>reduced motion</b>, the drift stops and the wind-back is brief.
+      That is the system preference being honoured, not a fault.</li>
+</ul>
+
+<h2 id="limits">Accuracy &amp; limits<span class="kdeva">सीमा</span></h2>
+<p>The longitudes are computed here, by the engine this site carries, and nothing is fetched to
+draw them. The ring is a teaching diagram: it shows where the grahas were in longitude, and says
+nothing about latitude, distance or visibility. A graha shown at the top of the ring was not
+overhead.</p>
+<div class="caution"><b>Handle with care.</b> This is an illustration of a calculation. It is not
+a prediction, and nothing about a person can be read from it.</div>
+
+</main></div><footer>{{FOOTER}}</footer>
+<!--JS0-->
+<!--JS1-->
+<!--JS2-->
+<script>
+/* The ceremony, run on demand rather than as a veil.
+ *
+ * SPCosmos.ceremony(date) is exactly what the Cast button raises. The only
+ * difference here is that nothing is being computed behind it, so nothing
+ * lifts it: it runs its wind-back, settles, and waits for the reader. That
+ * is also why this page calls SPCosmos.end() itself once the animation has
+ * had time to arrive — without it the overlay would sit at its own ceiling
+ * rather than reaching the state where Reveal means something.
+ *
+ * ui.js is deliberately not in this page's bundles, exactly as on the Motion
+ * page: it is the chart form's script and writes to elements that do not
+ * exist here. The date and time fields below are this page's own. */
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  function pad(n) { return String(n).padStart(2, "0"); }
+  function setNow() {
+    var d = new Date();
+    $("cer-date").value = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+    $("cer-time").value = pad(d.getHours()) + ":" + pad(d.getMinutes());
+  }
+  function moment() {
+    var d = $("cer-date").value, t = $("cer-time").value || "12:00";
+    if (!d) return null;
+    var ms = Date.parse(d + "T" + t + ":00");
+    return isNaN(ms) ? null : new Date(ms);
+  }
+  function run() {
+    if (!window.SPCosmos || !window.SPCosmos.ceremony) {
+      $("cer-status").textContent = "The ceremony layer is still loading.";
+      setTimeout(run, 150); return;
+    }
+    var m = moment();
+    if (!m) { $("cer-status").textContent = "Pick a date first."; return; }
+    $("cer-status").textContent = "";
+    window.SPCosmos.ceremony(m);
+    /* Nothing is being computed behind this one, so nothing will lift it.
+       Hand it the cue the chart would have given, once the wind-back has had
+       time to run — the overlay's own floor holds it until then, so this
+       cannot cut the animation short. */
+    setTimeout(function () {
+      try { window.SPCosmos.end(); } catch (e) {}
+    }, 400);
+  }
+  /* A chart cast on this machine gives the ceremony something worth winding
+     back to. Same record the Motion page reads; absent, the button is not
+     shown at all rather than shown and dead. */
+  function birthMoment() {
+    var raw = null;
+    try { raw = localStorage.getItem("nirayana.birth"); } catch (e) { return null; }
+    if (!raw) return null;
+    var i = null;
+    try { i = JSON.parse(raw); } catch (e) { return null; }
+    if (!i || i.year == null) return null;
+    var ms = Date.UTC(i.year, (i.month || 1) - 1, i.day || 1, i.hour || 0, i.minute || 0);
+    return { date: new Date(ms - (i.tzHours || 0) * 3600000), name: i.name || null };
+  }
+  function boot() {
+    setNow();
+    $("cer-go").addEventListener("click", run);
+    $("cer-now").addEventListener("click", function () { setNow(); run(); });
+    var b = birthMoment();
+    if (b) {
+      var btn = $("cer-chart");
+      btn.hidden = false;
+      btn.textContent = b.name ? "→ " + b.name + "’s moment" : "→ My chart’s moment";
+      btn.addEventListener("click", function () {
+        var d = b.date;
+        $("cer-date").value = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
+        $("cer-time").value = pad(d.getHours()) + ":" + pad(d.getMinutes());
+        run();
+      });
+    }
+  }
+  if (document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", boot);
+  else boot();
+})();
+</script>
+</body></html>

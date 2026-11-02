@@ -22,7 +22,14 @@ var MO_NEEDS_CHART={
   lagna:1,      /* adaptable to here-and-now later */
   bhava:1,      /* needs the chart's houses and vargas */
   rashi:1,      /* places the reader's grahas on the strip */
-  nakfull:1     /* the same */
+  nakfull:1,    /* the same */
+  /* the three built on the chart's own engines, added with them. They are
+     here rather than beside their scenes because this list IS the gate — the
+     app-shell harness compares it with its own copy, and a second place to
+     add an entry is a second place for the two to drift apart. */
+  kakshya:1,    /* there is no kakṣyā reading without an ashtakavarga */
+  chara:1,      /* the sequence counts from the lagna */
+  varsha:1      /* a solar return needs a natal Sun to return to */
 };
 function moHasChart(){ return !!(MO.J && MO.J.input); }
 function moSceneAvailable(k){ return moHasChart() || !MO_NEEDS_CHART[k]; }

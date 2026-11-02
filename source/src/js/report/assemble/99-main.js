@@ -90,6 +90,11 @@ window.buildKundliReport=function(J){
     brows.push('<tr><td><b>SAV</b></td>'+sc+'<td class="knum"><b>'+D.av.sarva_total+'</b></td></tr>');
     body+='<h4 class="ksub">Bhinnāṣṭakavarga</h4><div class="ktwrap"><table class="ktbl khm"><thead><tr>'+hd+'</tr></thead><tbody>'+brows.join("")+'</tbody></table></div>';
     H.push(sec("Ashtakavarga","benefic points",body+avCharts(D)+shodhanaSection(D)+aAv(D)));
+    /* The prastāra is the same computation with the sum not yet taken, so it
+       belongs beside the totals it adds up to rather than in a section of its
+       own elsewhere. */
+    H.push(sec("Prastārāṣṭakavarga and kakṣyā","the bindus before they were added up",
+      pane(function(){ return prastaraSection(D,J); },"Prastārāṣṭakavarga")));
     H.push(sec("Divisional ashtakavarga","benefic points inside D9 and D10",vargaAvSection(D)));}
 
   // vargas
@@ -184,6 +189,10 @@ window.buildKundliReport=function(J){
     H.push(sec("Antardaśā & pratyantardaśā","complete 120-year tree",dashaTreeSection(D)));}
   H.push(sec("Aṣṭottarī daśā","the conditional 108-year cycle",ashtottariSection(D)));
   H.push(sec("Yoginī daśā","the 36-year cycle",yoginiSection(D)));
+  H.push(sec("Chara daśā","Jaimini — a sign-based clock",
+    pane(function(){ return charaDashaSection(D); },"Chara daśā")));
+  H.push(sec("Varṣaphala","Tājika — the year's own chart",
+    pane(function(){ return varshaphalaSection(D,J); },"Varṣaphala")));
 
   // transits
   if(D.transits.length){

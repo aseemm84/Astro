@@ -1,10 +1,10 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Motion — the sky, moving — Nirayana</title><meta name="description" content="Thirty-two animated scenes about the sky itself — transits, lunations, eclipse seasons, the nakṣatras and the bodies — computed in this browser and needing no birth chart.">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Motion — the sky, moving — Nirayana</title><meta name="description" content="Thirty-two animated scenes about the sky itself — of forty-four in all — transits, lunations, eclipse seasons, the nakṣatras and the bodies — computed in this browser and needing no birth chart.">
 <link rel="canonical" href="https://aseemm84.github.io/Astro/motion.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Nirayana">
 <meta property="og:locale" content="en_GB">
 <meta property="og:title" content="Motion — Nirayana">
-<meta property="og:description" content="Thirty-two animated scenes about the sky itself — transits, lunations, eclipse seasons, the nakṣatras and the bodies — computed in this browser and needing no birth chart.">
+<meta property="og:description" content="Thirty-two animated scenes about the sky itself — of forty-four in all — transits, lunations, eclipse seasons, the nakṣatras and the bodies — computed in this browser and needing no birth chart.">
 <meta property="og:url" content="https://aseemm84.github.io/Astro/motion.html">
 <meta property="og:image" content="https://aseemm84.github.io/Astro/assets/og-nirayana.png">
 <meta property="og:image:width" content="1200">
@@ -12,7 +12,7 @@
 <meta property="og:image:alt" content="Nirayana — a Vedic astrology reference and chart engine">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Motion — Nirayana">
-<meta name="twitter:description" content="Thirty-two animated scenes about the sky itself — transits, lunations, eclipse seasons, the nakṣatras and the bodies — computed in this browser and needing no birth chart.">
+<meta name="twitter:description" content="Thirty-two animated scenes about the sky itself — of forty-four in all — transits, lunations, eclipse seasons, the nakṣatras and the bodies — computed in this browser and needing no birth chart.">
 <meta name="twitter:image" content="https://aseemm84.github.io/Astro/assets/og-nirayana.png">
 <meta name="theme-color" content="#1d2340">
 <meta name="color-scheme" content="light">
@@ -1172,6 +1172,28 @@ html[data-theme] .moreadh,html[data-theme] .moreadf{color:var(--text-soft)}
    4.46:1 — four hundredths under. Its two siblings (lo and hi) already clear
    it; this one was simply never measured against its own ground. */
 .kreport .sensb.sens-mid{color:#7d601b}
+
+/* The prastāra grids: eight rows of twelve, read as a pattern rather than
+   as numbers, so the cells are tight and the filled ones carry the weight. */
+.kreport table.kprastara th{font-size:9.5px;padding:4px 3px;text-align:center}
+.kreport table.kprastara th:first-child,
+.kreport table.kprastara td:first-child{text-align:left;white-space:nowrap}
+.kreport table.kprastara td.kb{text-align:center;padding:3px 2px;font-size:11px;
+  color:var(--muted-2)}
+.kreport table.kprastara td.kb.kbon{color:var(--sem-good,#1c6b46);font-weight:700}
+.kreport table.kprastara tr.kprtot td{border-top:2px solid var(--gold);
+  background:var(--soft);font-variant-numeric:tabular-nums}
+
+/* The ceremony page's own controls — a date, a time and two buttons, laid
+   out as one bar rather than as a form, because nothing here is submitted. */
+.cerbar{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;
+  border:1px solid var(--line);border-left:3px solid var(--gold);background:var(--soft);
+  padding:12px 14px;border-radius:0 8px 8px 0;margin:14px 0 18px}
+.cerfield{display:flex;flex-direction:column;gap:3px}
+.cerfield label{font-size:11px;font-weight:600;color:var(--muted-2);
+  text-transform:uppercase;letter-spacing:.05em}
+.cerfield input{padding:6px 8px;border:1px solid var(--line);border-radius:5px;
+  background:var(--surface-3,#fff);color:inherit;font:inherit;font-size:13px}
 
 /* ===== Generated theme overrides =====================================
    Written by source/tools/gen-theme-overrides.py from the literal
@@ -2416,7 +2438,7 @@ html[data-theme="emerald"] .wsnext.lead{
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-10-30.092d106";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html" class="active">Motion</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
+</script><script>window.__kBuild="2026-11-02.c651016";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself — of forty-four in all. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html" class="active">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
 
 <p class="mochartbar" id="mo-chart"></p>
 <div id="mo-host" class="kreport"><p class="k-status" id="mo-status">Loading the scenes…</p></div>
@@ -2425,7 +2447,7 @@ html[data-theme="emerald"] .wsnext.lead{
 
 <h2 id="about">What is here, and what is not<span class="kdeva">क्षेत्र</span></h2>
 <p>Every scene on this page is about the sky as it stands, so it runs with no birth data entered at all. The place comes from this machine, and the moment is now.</p>
-<div class="mine"><b>Study note.</b> Nine of the forty-one scenes are unavailable here, and the panel says so on each rather than hiding them. Three are irreducibly natal: <i>birth sky</i> is the sky at one person's birth moment, <i>daśā</i> runs from the Moon's nakṣatra at birth, and <i>Sade Sati</i> measures Śani's passage against that same Moon. <i>Gochara</i> draws the natal chart inside the transiting sky, and <i>frames</i> is anchored to the birth moment and place. The remaining four — <i>lagna</i>, <i>bhāva</i>, <i>rāśi</i> and the full nakṣatra strip — use the chart only to place your grahas on a teaching diagram, and could be freed by substituting here-and-now for birth. That is a later pass, and it needs the frame to say plainly that a chart cast for now is a praśna chart and not your own.</div>
+<div class="mine"><b>Study note.</b> Twelve of the forty-four scenes need a chart, and the panel says so on each rather than hiding them. Three are irreducibly natal: <i>birth sky</i> is the sky at one person's birth moment, <i>daśā</i> runs from the Moon's nakṣatra at birth, and <i>Sade Sati</i> measures Śani's passage against that same Moon. <i>Gochara</i> draws the natal chart inside the transiting sky, and <i>frames</i> is anchored to the birth moment and place. Three more are built on the chart’s own engines and cannot exist without one: the <i>kakṣyā crossing</i> needs an ashtakavarga, <i>Chara daśā</i> needs a lagna to count from, and the <i>solar return</i> needs a natal Sun to return to. The remaining four — <i>lagna</i>, <i>bhāva</i>, <i>rāśi</i> and the full nakṣatra strip — use the chart only to place your grahas on a teaching diagram, and could be freed by substituting here-and-now for birth. That is a later pass, and it needs the frame to say plainly that a chart cast for now is a praśna chart and not your own.</div>
 <p>The scenes draw from the same engine as everything else on this site, so a figure shown here and the same figure in a chart report come from one computation rather than two.</p>
 
 </main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p><b>How the numbers are worked out:</b> <a href="kundli-technical-report.html">the chart engine, in detail</a> &mdash; the ephemeris, the ayanāṃśa modes, the sunrise convention and what each divisional chart is computed from.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer>
@@ -3063,19 +3085,31 @@ var AVT={
       Jupiter:[5,6,11,12],Venus:[6,11,12],Saturn:[3,5,6,11],Lagna:[1,3,4,6,10,11]}
 };
 var AVORDER=["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn"];
+/* The eight contributors, in the order the kakṣyā division uses — Saturn
+   first and the Lagna last. The bhinnāṣṭakavarga sums their rows; the
+   prastāra is the same computation with the sum not yet taken, and the
+   kakṣyā scanner needs the rows rather than the sum, which is why they are
+   kept rather than discarded. */
+var AVCONTRIB=["Saturn","Jupiter","Mars","Sun","Venus","Mercury","Moon","Lagna"];
 function ashtakavarga(signOf,lagnaSign){
-  var bhinna=[],sarva=new Array(12).fill(0);
+  var bhinna=[],sarva=new Array(12).fill(0),prastara={};
   AVORDER.forEach(function(pl){
-    var b=new Array(12).fill(0);
-    Object.keys(AVT[pl]).forEach(function(c){
+    var b=new Array(12).fill(0), rows={};
+    AVCONTRIB.forEach(function(c){
+      var list=AVT[pl][c]; if(!list) return;
       var from=(c==="Lagna")?lagnaSign:signOf[c];
-      AVT[pl][c].forEach(function(h){ b[(from+h-1)%12]++; });
+      var r=new Array(12).fill(0);
+      list.forEach(function(h){ r[(from+h-1)%12]=1; });
+      rows[c]=r;
+      for(var i=0;i<12;i++) b[i]+=r[i];
     });
+    prastara[pl]=rows;
     var tot=b.reduce(function(a,x){return a+x;},0);
     bhinna.push({graha:pl,graha_sa:pl,total:tot,bindus:b});
     for(var i=0;i<12;i++) sarva[i]+=b[i];
   });
-  return {bhinna:bhinna,sarva:sarva,sarva_total:sarva.reduce(function(a,x){return a+x;},0),
+  return {bhinna:bhinna,sarva:sarva,prastara:prastara,kakshya_order:AVCONTRIB.slice(),
+          sarva_total:sarva.reduce(function(a,x){return a+x;},0),
           natal_rashi_idx:(function(){var o={};AVORDER.forEach(function(p){o[p]=signOf[p];});o.Lagna=lagnaSign;return o;})()};
 }
 
@@ -7819,6 +7853,554 @@ function sripatiPane(D) {
 
   return o.join("");
 }
+/* ============ Prastārāṣṭakavarga and the kakṣyā transit scanner ============
+
+   WHAT THE PRASTĀRA IS. The bhinnāṣṭakavarga already on this site gives each
+   graha a row of twelve numbers — how many bindus each sign carries in that
+   graha's own reckoning. Those numbers are SUMS. The prastāra is the same
+   thing with the sum not yet taken: eight rows, one per contributor, showing
+   WHICH of them gave the bindu. The totals at the foot are the bhinna row,
+   so the two cannot disagree; the point of keeping the rows is that the
+   kakṣyā reading below needs them individually.
+
+   WHAT A KAKṢYĀ IS. Each sign of 30° is divided into eight parts of 3°45′,
+   and the eight belong, in fixed order, to Saturn, Jupiter, Mars, the Sun,
+   Venus, Mercury, the Moon and the Lagna. A transiting graha is always in
+   one of them. The reading is a single question: in the transiting graha's
+   OWN prastāra, did the lord of the kakṣyā it is passing through give a
+   bindu to that sign? If it did, the passage is read as supported; if not,
+   not.
+
+   This is finer than "how many bindus does this sign carry". A sign with six
+   bindus still has two kakṣyās without one, and a graha crossing those two
+   is crossing the unsupported part of a well-supported sign. That is the
+   whole reason the division exists.
+
+   TIER. BPHS gives ashtakavarga at length, including transit judgement by
+   bindus, and the uploaded Santhanam edition carries it. The KAKṢYĀ
+   refinement — the 3°45′ division and the fixed order of its eight lords —
+   is standard ashtakavarga practice in the later literature; it is not
+   quoted here from the uploaded files and is labelled as later practice
+   rather than as Parāśara's own.
+
+   A supported transit is not a good event and an unsupported one is not a
+   bad one. This names a condition; it does not predict. */
+
+var KAK_ORDER = ["Saturn", "Jupiter", "Mars", "Sun", "Venus", "Mercury", "Moon", "Lagna"];
+var KAK_SIZE = 30 / 8;                       /* 3°45′ */
+var KAK_DEV = { Saturn: "शनि", Jupiter: "गुरु", Mars: "मङ्गल", Sun: "सूर्य",
+                Venus: "शुक्र", Mercury: "बुध", Moon: "चन्द्र", Lagna: "लग्न" };
+
+/* which kakṣyā a sidereal longitude falls in: 0..7 within its sign */
+function kakshyaOf(sid) {
+  var x = ((sid % 360) + 360) % 360, d = x - Math.floor(x / 30) * 30;
+  return Math.min(7, Math.floor(d / KAK_SIZE));
+}
+
+function prastaraSection(D, J) {
+  var AV = J && J.ashtakavarga;
+  if (!AV || !AV.prastara) return "";
+  var P = AV.prastara, order = AV.kakshya_order || KAK_ORDER;
+
+  /* one 8 × 12 grid per graha, the eight rows summing to the bhinna row */
+  var grids = AVORDER_R.map(function (pl) {
+    var rows = order.map(function (c) {
+      var r = P[pl] && P[pl][c];
+      if (!r) return "";
+      var cells = r.map(function (v, sg) {
+        return '<td class="kb' + (v ? ' kbon' : '') + '">' + (v ? "●" : "·") + '</td>';
+      }).join("");
+      var n = r.reduce(function (a, x) { return a + x; }, 0);
+      return '<tr><td><b>' + esc(c) + '</b></td>' + cells +
+             '<td class="knum">' + n + '</td></tr>';
+    }).join("");
+    var bh = (AV.bhinna || []).filter(function (b) { return b.graha === pl; })[0];
+    var tot = bh ? bh.bindus.map(function (v) {
+        return '<td class="kb"><b>' + v + '</b></td>'; }).join("") : "";
+    var head = ['<th>Contributor</th>'].concat(SA.map(function (s) {
+      return '<th>' + s.slice(0, 2) + '</th>'; })).concat(['<th>n</th>']).join("");
+    return '<h4 class="ksub">' + esc(pl) + ' — prastāra' +
+      (bh ? ' <span class="kmut">(' + bh.total + ' bindus)</span>' : '') + '</h4>' +
+      '<div class="ktwrap" tabindex="0" role="group"><table class="ktbl kprastara"><thead><tr>' +
+      head + '</tr></thead><tbody>' + rows +
+      '<tr class="kprtot"><td><b>Bhinnāṣṭakavarga</b></td>' + tot +
+      '<td class="knum"><b>' + (bh ? bh.total : "") + '</b></td></tr>' +
+      '</tbody></table></div>';
+  }).join("");
+
+  /* ---- the kakṣyā reading for every graha, right now ---- */
+  var krows = AVORDER_R.map(function (pl) {
+    var p = D.P[pl]; if (!p) return "";
+    var k = kakshyaOf(p.sid), lord = order[k];
+    var row = P[pl] && P[pl][lord];
+    var has = row ? !!row[p.sign] : null;
+    var into = (p.deg - k * KAK_SIZE);
+    var bh = (AV.bhinna || []).filter(function (b) { return b.graha === pl; })[0];
+    var bind = bh ? bh.bindus[p.sign] : null;
+    return '<tr><td><b>' + esc(pl) + '</b></td>' +
+      '<td>' + SA[p.sign] + ' ' + dm(p.deg) + '</td>' +
+      '<td class="knum">' + (k + 1) + ' of 8</td>' +
+      '<td>' + esc(lord) + ' <span class="kmut">' + KAK_DEV[lord] + '</span></td>' +
+      '<td class="knum">' + dm(k * KAK_SIZE) + ' – ' + dm((k + 1) * KAK_SIZE) +
+      ' <span class="kmut">(' + into.toFixed(2) + '° in)</span></td>' +
+      '<td class="knum">' + (bind == null ? "—" : bind + "/8") + '</td>' +
+      '<td style="font-weight:600;color:' +
+        (has === null ? "inherit" : (has ? "var(--sem-good,#1c6b46)" : "var(--sem-bad,#a1493a)")) +
+        '">' + (has === null ? "—" : (has ? "bindu" : "no bindu")) + '</td></tr>';
+  }).join("");
+
+  /* ---- and the whole of one sign, kakṣyā by kakṣyā, for the Moon's sign ----
+     A worked strip, so the division is visible rather than asserted. */
+  var strip = "";
+  if (D.P.Moon) {
+    var sg = D.P.Moon.sign, rowsK = order.map(function (c, i) {
+      var cells = AVORDER_R.map(function (pl) {
+        var r = P[pl] && P[pl][c], on = r ? !!r[sg] : false;
+        return '<td class="kb' + (on ? ' kbon' : '') + '">' + (on ? "●" : "·") + '</td>';
+      }).join("");
+      return '<tr><td class="knum">' + (i + 1) + '</td>' +
+        '<td class="knum">' + dm(i * KAK_SIZE) + '–' + dm((i + 1) * KAK_SIZE) + '</td>' +
+        '<td><b>' + esc(c) + '</b></td>' + cells + '</tr>';
+    }).join("");
+    strip = '<h4 class="ksub">' + SA[sg] + ', kakṣyā by kakṣyā</h4>' +
+      '<p class="knote">The Moon’s own sign, divided into its eight parts. Read a column ' +
+      'downwards to see which stretches of this sign support that graha’s passage and which ' +
+      'do not — the thing a bindu total cannot tell you.</p>' +
+      '<div class="ktwrap" tabindex="0" role="group"><table class="ktbl kprastara"><thead><tr>' +
+      '<th>#</th><th>Span</th><th>Kakṣyā lord</th>' +
+      AVORDER_R.map(function (p) { return '<th>' + GL[p] + '</th>'; }).join("") +
+      '</tr></thead><tbody>' + rowsK + '</tbody></table></div>' +
+      '<p class="klegend">A filled circle means that kakṣyā’s lord gives a bindu to ' +
+      SA[sg] + ' in that graha’s own ashtakavarga.</p>';
+  }
+
+  return '<p class="knote">The bhinnāṣṭakavarga gives each sign a number of bindus. The ' +
+    '<b>prastāra</b> is that number before it was added up: eight rows showing <i>which</i> ' +
+    'contributor gave each bindu. The totals at the foot of every grid are the bhinna row, so ' +
+    'the two are one computation.</p>' +
+    note("Study note — why the rows are worth keeping",
+      "A sign with six bindus still has two kakṣyās without one. A graha crossing those two is crossing the unsupported part of a well-supported sign, and no total can tell you that.",
+      "BPHS gives ashtakavarga at length, transit judgement by bindus included, and the uploaded Santhanam edition carries it. The KAKṢYĀ refinement — the 3°45′ division and the fixed order of its eight lords, Śani first and the Lagna last — is standard later ashtakavarga practice and is not quoted here from the uploaded files.",
+      ["av", "aspect"]) +
+    '<h4 class="ksub">Where each graha stands now</h4>' +
+    '<p class="knote">For each graha: the kakṣyā it is passing through, whose it is, and whether ' +
+    'that lord gives a bindu to the sign in <i>this graha’s own</i> ashtakavarga. The bindu ' +
+    'column is the sign’s total, for contrast — a graha can sit in an unsupported ' +
+    'kakṣyā of a well-supported sign, and that is the case worth seeing.</p>' +
+    tbl(["Graha", "Position", "Kakṣyā", "Its lord", "Span in sign", "Sign total", "This kakṣyā"],
+        [krows]) +
+    strip +
+    '<h4 class="ksub">The eight grids</h4>' + grids +
+    '<div class="kbox kwarn"><b>A condition, not an event.</b> A supported passage is not a good ' +
+    'thing happening and an unsupported one is not a bad thing happening. Ashtakavarga grades the ' +
+    'ground a transit crosses; what is made of that ground depends on the rest of the chart, and ' +
+    'on nothing this table can see.</div>';
+}
+var AVORDER_R = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"];
+try { window.__kakshyaOf = kakshyaOf; window.__kakOrder = KAK_ORDER; } catch (e) {}
+/* ================= Tājika Varṣaphala — the year's own chart =================
+
+   WHAT IT IS. A chart cast not for the birth, but for the moment the Sun
+   returns to the exact sidereal longitude it held at birth. That moment is
+   the varṣapraveśa, the "entry of the year", and it moves: it is near the
+   birthday but rarely on it to the hour, because a tropical year is not a
+   whole number of days and the sidereal one differs again.
+
+   TIER, STATED PLAINLY. Tājika is the Indo-Persian branch of the tradition.
+   It is NOT in the uploaded Santhanam edition of BPHS, and nothing here
+   should be read as Parāśara's. It is included because it is a complete and
+   internally consistent annual system the user asked for, and because the
+   discipline this site keeps is to say which tradition a rule comes from
+   rather than to exclude everything outside one book. Every claim below is
+   marked "Tājika, later tradition".
+
+   WHAT IS COMPUTED, AND WHAT IS NOT:
+
+     * The varṣapraveśa moment, by searching for the Sun's return to its natal
+       sidereal longitude. Found by bisection on the engine's own ephemeris, to
+       under a second, and the search is checked by recomputing the Sun at the
+       answer rather than trusting the bracket.
+
+     * The annual chart itself, cast by the same engine from that instant.
+       Place matters and is a real choice: tradition casts it for the place
+       the native IS, not the place they were born. Both are offered.
+
+     * The Muntha, which advances one sign per completed year from the natal
+       lagna. That rule is simple and undisputed.
+
+     * The Varṣeśa (lord of the year) is NOT asserted. The five candidates are
+       named, because naming them is honest and choosing between them needs
+       Pañcavargīya bala — a five-fold strength calculation of some length
+       whose own details vary between Tājika texts. Printing one name as
+       though it were settled would be exactly the kind of false precision
+       this site exists to avoid.
+
+     * Mudda daśā, the year compressed: Viṃśottarī's proportions scaled so the
+       nine periods fill one year rather than a hundred and twenty.
+
+   None of it predicts anything. */
+
+var VP_YEARLEN = 365.2563627;              /* sidereal year, days */
+
+/* The Sun's sidereal longitude at a Julian day, from the engine's own
+   ephemeris rather than from a mean rate — the difference across a year is
+   a couple of days of the answer. */
+function vpSunAt(jd) {
+  try {
+    var d = new Date((jd - 2440587.5) * 86400000);
+    var v = window.__kSidAt ? window.__kSidAt("Sun", d) : null;
+    return (v == null) ? null : ((v % 360) + 360) % 360;
+  } catch (e) { return null; }
+}
+/* Signed angular difference, in degrees, folded to ±180 */
+function vpDiff(a, b) { return (((a - b + 540) % 360) - 180); }
+
+/* The varṣapraveśa for the Nth year: bisect for the Sun's return.
+   The bracket is a day either side of the mean anniversary, which is ample —
+   the Sun moves about a degree a day and the mean is never more than a few
+   hours out. The answer is then CHECKED by recomputing the Sun there; a
+   bracket that did not actually contain a crossing returns null rather than
+   the midpoint of a bracket that never bracketed anything. */
+function varshaPravesha(natalJd, natalSunSid, n) {
+  if (natalSunSid == null || !window.__kSidAt) return null;
+  var guess = natalJd + n * VP_YEARLEN;
+  var lo = guess - 2, hi = guess + 2;
+  var fLo = vpDiff(vpSunAt(lo), natalSunSid), fHi = vpDiff(vpSunAt(hi), natalSunSid);
+  if (fLo == null || fHi == null) return null;
+  if (!(fLo < 0 && fHi > 0)) {
+    /* widen once rather than give up: a leap-year boundary can push it out */
+    lo = guess - 5; hi = guess + 5;
+    fLo = vpDiff(vpSunAt(lo), natalSunSid); fHi = vpDiff(vpSunAt(hi), natalSunSid);
+    if (!(fLo < 0 && fHi > 0)) return null;
+  }
+  for (var k = 0; k < 60; k++) {
+    var mid = (lo + hi) / 2, f = vpDiff(vpSunAt(mid), natalSunSid);
+    if (f < 0) { lo = mid; fLo = f; } else { hi = mid; fHi = f; }
+    if (hi - lo < 1e-9) break;
+  }
+  var jd = (lo + hi) / 2;
+  var err = Math.abs(vpDiff(vpSunAt(jd), natalSunSid)) * 3600;   /* arcseconds */
+  return err < 1 ? { jd: jd, errArcsec: err } : null;
+}
+
+/* Mudda daśā — Viṃśottarī's nine, scaled to fill one year.
+   The starting lord is the nakṣatra lord of the Moon in the ANNUAL chart,
+   and the first period carries the same proportional balance Viṃśottarī
+   would give it. */
+function muddaDasha(moonSid, startJd, yearDays) {
+  if (moonSid == null) return [];
+  var seg = 40 / 3, ni = Math.floor((((moonSid % 360) + 360) % 360) / seg);
+  var lord = NL9[ni % 9], frac = ((((moonSid % 360) + 360) % 360) - ni * seg) / seg;
+  var i0 = VSEQ.indexOf(lord), out = [], t = startJd;
+  for (var i = 0; i < 9; i++) {
+    var l = VSEQ[(i0 + i) % 9];
+    var full = VY[l] / 120 * yearDays;
+    var d = (i === 0) ? full * (1 - frac) : full;
+    out.push({ lord: l, start: t, end: t + d, days: d, partial: i === 0 });
+    t += d;
+  }
+  return { list: out, nak: NAKS[ni], lord: lord, balance: 1 - frac };
+}
+
+function varshaphalaSection(D, J) {
+  if (!D.P || !D.P.Sun || !J || !J.input) return "";
+  if (!window.__kSidAt || !window.buildLocalChart)
+    return '<p class="kmut">Needs the built-in engine.</p>';
+
+  var natalSun = D.P.Sun.sid, inp = J.input;
+  var age = Math.max(0, Math.floor((D.nowJd - D.jd) / VP_YEARLEN));
+  var vp = varshaPravesha(D.jd, natalSun, age);
+  /* if this year's entry has not happened yet, the running year began at the
+     previous one — which is the year anybody asking is actually in */
+  if (vp && vp.jd > D.nowJd) { age = Math.max(0, age - 1); vp = varshaPravesha(D.jd, natalSun, age); }
+  if (!vp) return '<div class="kbox kwarn"><b>The solar return could not be located.</b> ' +
+    'The search for the Sun’s return to its natal longitude did not converge, so nothing ' +
+    'is shown rather than something approximate.</div>';
+
+  var next = varshaPravesha(D.jd, natalSun, age + 1);
+  var yearDays = next ? (next.jd - vp.jd) : VP_YEARLEN;
+
+  /* the annual chart, cast by the same engine from that instant */
+  var dt = new Date((vp.jd - 2440587.5) * 86400000 + (inp.tzHours || 0) * 3600000);
+  var vinp = { year: dt.getUTCFullYear(), month: dt.getUTCMonth() + 1, day: dt.getUTCDate(),
+               hour: dt.getUTCHours(), minute: dt.getUTCMinutes(),
+               lat: inp.lat, lon: inp.lon, tzHours: inp.tzHours,
+               ayanamsa: inp.ayanamsa, node: inp.node };
+  var VJ = null, VD = null;
+  try { VJ = window.buildLocalChart(vinp); VD = window.__derive(VJ); } catch (e) { VJ = null; }
+  if (!VJ) return '<div class="kbox kwarn"><b>The annual chart could not be cast.</b></div>';
+
+  var vLag = VD.LS, muntha = (D.LS + age) % 12;
+  var munthaLord = LORD[muntha];
+  var munthaHouse = ((muntha - vLag) % 12 + 12) % 12 + 1;
+
+  /* the five candidates for lord of the year, named rather than ranked */
+  var triRashi = (function () {
+    /* Tri-rāśi lord: by the varṣa lagna and whether the entry is by day or
+       night. Stated as the rule rather than resolved, since the day/night
+       test needs the annual chart's own sunrise, which is computed below. */
+    return LORD[vLag];
+  })();
+  var cands = [
+    ["Muntha lord", munthaLord, "lord of " + SA[muntha] + ", the Muntha sign"],
+    ["Natal lagna lord", LORD[D.LS], "lord of " + SA[D.LS]],
+    ["Varṣa lagna lord", LORD[vLag], "lord of " + SA[vLag] + ", rising at the entry"],
+    ["Tri-rāśi lord", triRashi, "by the varṣa lagna and the day/night division"],
+    ["Dina-rātri lord", (function () {
+        var h = (VD.input && VD.input.hour != null) ? VD.input.hour : 12;
+        var day = (VD.sunriseH != null && VD.sunsetH != null)
+                ? (h >= VD.sunriseH && h < VD.sunsetH) : (h >= 6 && h < 18);
+        return day ? "Sun" : "Moon";
+      })(), "the Sun by day, the Moon by night"]
+  ];
+  var cr = cands.map(function (c) {
+    var p = VD.P[c[1]];
+    return '<tr><td><b>' + esc(c[0]) + '</b></td><td>' + esc(c[1]) + '</td>' +
+      '<td>' + (p ? SA[p.sign] + " " + dm(p.deg) + " · H" + p.house : "—") + '</td>' +
+      '<td class="kmut">' + esc(c[2]) + '</td></tr>';
+  }).join("");
+
+  /* Mudda */
+  var MU = VD.P.Moon ? muddaDasha(VD.P.Moon.sid, vp.jd, yearDays) : null;
+  var mrows = "";
+  if (MU && MU.list) mrows = MU.list.map(function (m) {
+    var on = (D.nowJd >= m.start && D.nowJd < m.end);
+    return '<tr' + (on ? ' class="khl"' : '') + '><td><b>' + esc(m.lord) + '</b>' +
+      (on ? ' <span class="kmut">← now</span>' : '') + '</td>' +
+      '<td class="knum">' + m.days.toFixed(1) + ' d</td>' +
+      '<td class="knum">' + fdate(m.start) + ' – ' + fdate(m.end) + '</td>' +
+      '<td class="kmut">' + (m.partial ? "balance at the entry" : "full share") + '</td></tr>';
+  }).join("");
+
+  /* the annual chart's own grahas, which is what the rest is read against */
+  var prows = ORD.map(function (g) {
+    var p = VD.P[g], n = D.P[g];
+    if (!p) return "";
+    return '<tr><td><b>' + esc(g) + '</b></td><td>' + SA[p.sign] + ' ' + dm(p.deg) + '</td>' +
+      '<td class="knum">H' + p.house + '</td><td>' + esc(p.nak) + ' ' + p.pada + '</td>' +
+      '<td class="kmut">' + (n ? "natally " + SA[n.sign] : "") + '</td></tr>';
+  }).join("");
+
+  return '<p class="knote">The <b>varṣaphala</b> is a chart for the moment the Sun returns to the ' +
+    'exact sidereal longitude it held at birth — the <b>varṣapraveśa</b>. It is near the ' +
+    'birthday and rarely on it to the hour, because a sidereal year is not a whole number of ' +
+    'days. Everything on this page is read within that one year and then discarded; the next ' +
+    'entry starts again.</p>' +
+    note("Study note — this is Tājika, not BPHS",
+      "Tājika is the Indo-Persian branch of the tradition. It is not in the uploaded Santhanam edition, and nothing here is Pārāśara’s.",
+      "It is included because it is a complete annual system in its own right and because this site’s discipline is to name the tradition a rule comes from rather than to exclude everything outside one book. The Varṣeśa is deliberately NOT asserted below: choosing among the five candidates needs Pañcavargīya bala, whose own details vary between Tājika texts, and printing one name as settled would be false precision.",
+      ["dasha", "lagna"]) +
+    '<h4 class="ksub">The entry</h4>' +
+    tbl(["", "", "", ""], ['<tr><td><b>Year</b></td><td>' + (age + 1) + '<span class="kmut"> (age ' +
+      age + ' completed)</span></td><td><b>Varṣapraveśa</b></td><td class="knum">' +
+      fdate(vp.jd) + ' · ' + hmOf(vp.jd, inp.tzHours) + ' local</td></tr>' +
+      '<tr><td><b>Varṣa lagna</b></td><td>' + SA[vLag] + ' ' + dm(VD.lagDeg) + '</td>' +
+      '<td><b>Year length</b></td><td class="knum">' + yearDays.toFixed(4) + ' days</td></tr>' +
+      '<tr><td><b>Muntha</b></td><td>' + SA[muntha] + '</td><td><b>Muntha house</b></td>' +
+      '<td class="knum">' + munthaHouse + '<span class="kmut"> from the varṣa lagna</span></td></tr>']) +
+    '<p class="klegend">The entry was located by bisection on the engine’s own ephemeris and ' +
+    'then checked by recomputing the Sun there: it sits within ' + vp.errArcsec.toFixed(3) +
+    '″ of the natal longitude. The Muntha advances one sign per completed year from the ' +
+    'natal lagna — ' + SA[D.LS] + ' plus ' + age + '.</p>' +
+    '<h4 class="ksub">The annual chart</h4>' +
+    tbl(["Graha", "Rāśi", "House", "Nakṣatra", "Natal"], [prows]) +
+    '<h4 class="ksub">Candidates for Varṣeśa, lord of the year</h4>' +
+    tbl(["Office", "Graha", "In the annual chart", "By what rule"], [cr]) +
+    '<div class="kbox">These five are the office-bearers Tājika puts forward. Which of them holds ' +
+    'the year is decided by <b>Pañcavargīya bala</b>, a five-fold strength reckoning this page does ' +
+    'not compute — so five names are given and none is crowned. The Tri-rāśi lord in ' +
+    'particular depends on a day/night division that different Tājika texts draw differently.</div>' +
+    (mrows ? '<h4 class="ksub">Mudda daśā</h4>' +
+      '<p class="knote">Viṃśottarī’s nine lords and their proportions, scaled so that they ' +
+      'fill this one year instead of a hundred and twenty. It starts from the nakṣatra of the ' +
+      'Moon <i>in the annual chart</i> — ' + esc(MU.nak) + ', lord ' + esc(MU.lord) +
+      ' — and the first period carries that nakṣatra’s balance.</p>' +
+      tbl(["Lord", "Length", "From – to", ""], [mrows]) : "") +
+    '<div class="kbox kwarn"><b>One year, read as a year.</b> A varṣaphala describes a twelve-month ' +
+    'frame and is traditionally read against the natal chart rather than instead of it: nothing in ' +
+    'an annual chart is held to promise what the birth chart does not. It is not a forecast, and ' +
+    'it is not a basis for any decision that matters.</div>';
+}
+/* local clock time for a jd, at a given UTC offset */
+function hmOf(jd, tz) {
+  var ms = (jd - 2440587.5) * 86400000 + (tz || 0) * 3600000, d = new Date(ms);
+  return String(d.getUTCHours()).padStart(2, "0") + ":" + String(d.getUTCMinutes()).padStart(2, "0");
+}
+try { window.__varshaPravesha = varshaPravesha; window.__muddaDasha = muddaDasha; } catch (e) {}
+/* ================= Jaimini Chara Daśā — a sign-based clock =================
+
+   WHAT THIS IS, AND WHOSE IT IS. Every daśā already on this site runs from a
+   graha: Viṃśottarī from the Moon's nakṣatra, Yoginī and Aṣṭottarī likewise.
+   Chara daśā runs from a RĀŚI. The sequence is the twelve signs in an order
+   the lagna decides, and each sign's length is read off the distance from
+   that sign to its own lord. Nothing about the Moon enters it.
+
+   TIER. This is Jaimini's system, not Parāśara's. The uploaded Santhanam
+   edition of BPHS lists Chara daśā among the daśās it names, but the working
+   rules used here — the direction of counting, the length of each sign, the
+   handling of Vṛścika and Kumbha, the sub-period order — are the standard
+   Jaimini ones as the later commentarial tradition states them, and they are
+   labelled as such wherever they appear. No verse number is attached to any
+   of them, because none was read from the uploaded files for them.
+
+   WHERE THE TRADITION DIVIDES, said rather than smoothed over:
+
+     * The direction. Counting is forward (zodiacal) from a sign that is
+       "odd-footed" and backward from one that is "even-footed". Which signs
+       are which is settled; whether the DAŚĀ SEQUENCE takes its direction
+       from the lagna alone, or each sign takes its own, is not. The
+       widely-taught rule, and the one used here, is that the lagna sets the
+       direction for the whole sequence while each sign's LENGTH is counted in
+       its own direction.
+
+     * Vṛścika and Kumbha have two lords each — Mars with Ketu, Saturn with
+       Rāhu. The stronger is to be used. "Stronger" is itself a Jaimini
+       calculation of some length; this takes the co-lord that gives the
+       LONGER period, states that it has done so, and names the alternative.
+       That is a choice, not a derivation, and it is marked as one.
+
+     * The antardaśā order. Some lineages run the sub-periods from the
+       mahādaśā sign itself, some from the ninth from it. The first is used
+       here and the second is named.
+
+   None of this is a prediction. A daśā is a period with a name on it. */
+
+var CHARA_DIRECT = [0, 1, 2, 6, 7, 8];     /* Meṣa–Mithuna, Tulā–Dhanus */
+function charaOdd(sign) { return CHARA_DIRECT.indexOf(((sign % 12) + 12) % 12) >= 0; }
+
+/* The classical rule is "count the signs from the sign to the sign its lord
+   occupies, IN THE DIRECTION, and subtract one". Jyotiṣa counting is
+   inclusive — the sign you start from is the first — so Mīna, Kumbha,
+   Makara, Dhanus is four signs and the daśā is three years.
+
+   Inclusive-minus-one is simply the exclusive distance, which is what
+   charaSpan returns: 0 when the lord sits in the sign it rules, up to 11.
+   charaYears maps that 0 to twelve, which is the one special case the rule
+   names.
+
+   Written out because the first version got both ends wrong at once. It
+   returned 12 for the lord-in-own-sign case and then subtracted one, giving
+   eleven; and it returned 1 for a lord in the next sign, which became zero
+   and was rescued into twelve. The two special cases had been swapped, and
+   every ordinary length was a year short. Both are pinned in the suite
+   against hand-counted cases now. */
+function charaSpan(from, to, fwd) {
+  return fwd ? (((to - from) % 12) + 12) % 12 : (((from - to) % 12) + 12) % 12;
+}
+function charaYears(from, to, fwd) {
+  var d = charaSpan(from, to, fwd);
+  return d === 0 ? 12 : d;
+}
+
+var CHARA_LORD = ["Mars", "Venus", "Mercury", "Moon", "Sun", "Mercury",
+                  "Venus", "Mars", "Jupiter", "Saturn", "Saturn", "Jupiter"];
+var CHARA_CO   = { 7: "Ketu", 10: "Rahu" };   /* Vṛścika, Kumbha */
+
+/* The twelve periods, in order, with the reasoning for each length kept so
+   the table can show its own working rather than asserting a number. */
+function charaDashaList(D) {
+  var LS = D.LS, fwd = charaOdd(LS), out = [], seq = [];
+  for (var i = 0; i < 12; i++) seq.push(fwd ? (LS + i) % 12 : (((LS - i) % 12) + 12) % 12);
+  seq.forEach(function (sg) {
+    var own = charaOdd(sg);                 /* each sign counts in ITS own direction */
+    var main = CHARA_LORD[sg], co = CHARA_CO[sg] || null;
+    var cand = [{ lord: main, at: D.P[main] ? D.P[main].sign : null }];
+    if (co && D.P[co]) cand.push({ lord: co, at: D.P[co].sign });
+    var best = null, alt = null;
+    cand.forEach(function (c) {
+      if (c.at == null) return;
+      var rec = { lord: c.lord, at: c.at, years: charaYears(sg, c.at, own) };
+      if (!best || rec.years > best.years) { alt = best; best = rec; } else if (!alt) alt = rec;
+    });
+    if (!best) best = { lord: main, at: null, years: 1 };
+    out.push({ sign: sg, years: best.years, lord: best.lord, lordAt: best.at,
+               fwd: own, alt: alt, co: co });
+  });
+  return { seq: out, direction: fwd };
+}
+
+/* Antardaśās: twelve signs within the sign, each of a twelfth of the period,
+   running from the mahādaśā sign in that sign's own direction. */
+function charaAntars(md) {
+  var a = [], each = md.years / 12;
+  for (var i = 0; i < 12; i++) {
+    var sg = md.fwd ? (md.sign + i) % 12 : (((md.sign - i) % 12) + 12) % 12;
+    a.push({ sign: sg, years: each, i: i });
+  }
+  return a;
+}
+
+function charaDashaSection(D) {
+  if (!D.P || !D.P.Sun || D.LS == null) return "";
+  var CD = charaDashaList(D), jd = D.jd, rows = [], t = jd, cur = null, curAt = 0;
+  CD.seq.forEach(function (m, k) {
+    m.start = t; m.end = t + m.years * DPY; t = m.end;
+    if (D.nowJd >= m.start && D.nowJd < m.end) { cur = m; curAt = k; }
+  });
+  CD.seq.forEach(function (m) {
+    var on = (m === cur);
+    var why = m.lordAt == null ? "lord not placed"
+      : (m.lordAt === m.sign
+          ? "lord " + esc(m.lord) + " in the sign itself → 12"
+          : "lord " + esc(m.lord) + " in " + SA[m.lordAt] + ", " +
+            (charaSpan(m.sign, m.lordAt, m.fwd) + 1) + " signs counted " +
+            (m.fwd ? "forward" : "backward") + " − 1");
+    rows.push('<tr' + (on ? ' class="khl"' : '') + '><td><b>' + SA[m.sign] + '</b>' +
+      (on ? ' <span class="kmut">← now</span>' : '') + '</td>' +
+      '<td class="knum">' + m.years + ' y</td>' +
+      '<td class="knum">' + fmy(m.start) + ' – ' + fmy(m.end) + '</td>' +
+      '<td class="kmut">' + why + '</td>' +
+      '<td class="kmut">' + (m.co
+        ? (m.alt ? 'co-lord ' + esc(m.alt.lord) + ' would give ' + m.alt.years + ' y' : 'two lords')
+        : '—') + '</td></tr>');
+  });
+
+  /* the running sub-period, which is the part anyone actually reads */
+  var sub = "";
+  if (cur) {
+    var aa = charaAntars(cur), s = cur.start, srows = [];
+    aa.forEach(function (a) {
+      a.start = s; a.end = s + a.years * DPY; s = a.end;
+      var on = (D.nowJd >= a.start && D.nowJd < a.end);
+      srows.push('<tr' + (on ? ' class="khl"' : '') + '><td>' + SA[a.sign] +
+        (on ? ' <span class="kmut">← now</span>' : '') + '</td>' +
+        '<td class="knum">' + fmy(a.start) + ' – ' + fmy(a.end) + '</td>' +
+        '<td class="kmut">' + (a.i === 0 ? "the mahādaśā sign itself" : ordinal(a.i + 1) +
+          (cur.fwd ? " forward" : " backward")) + '</td></tr>');
+    });
+    sub = '<h4 class="ksub">Antardaśās within ' + SA[cur.sign] + '</h4>' +
+      tbl(["Sign", "From – to", "Counted"], [srows.join("")]) +
+      '<p class="klegend">Each is a twelfth of the mahādaśā, running from the mahādaśā sign ' +
+      'in that sign’s own direction. Some lineages start the sub-periods from the ninth ' +
+      'from the mahādaśā sign instead; that variant is not computed here.</p>';
+  }
+
+  return '<p class="knote">Chara daśā is a <b>sign-based</b> clock. Where Viṃśottarī runs from ' +
+    'the Moon’s nakṣatra and gives each graha a fixed span, this runs through the twelve ' +
+    'rāśis and reads each one’s length off the distance from that sign to its own lord. ' +
+    'Nothing about the Moon enters it, which is why it can be read beside Viṃśottarī rather ' +
+    'than against it.</p>' +
+    note("Study note — whose system this is",
+      "Jaimini’s, not Parāśara’s. The uploaded Santhanam edition names Chara daśā among the daśās it lists; the working rules used here are the standard Jaimini ones from the later commentarial tradition.",
+      "Three things divide the lineages and are decided here rather than discovered: the sequence takes its direction from the lagna while each sign’s LENGTH is counted in its own direction; Vṛścika and Kumbha have two lords each and the one giving the longer period is used, with the alternative named in the table; and the sub-periods run from the mahādaśā sign rather than from the ninth from it. No verse number is attached to any of these, because none was read from the uploaded files for them.",
+      ["dasha", "lagna"]) +
+    '<p class="knote">The sequence runs <b>' + (CD.direction ? "forward" : "backward") +
+    '</b> from ' + SA[D.LS] + ', because the lagna is in a ' +
+    (CD.direction ? "forward-counting (odd-footed)" : "backward-counting (even-footed)") +
+    ' sign.</p>' +
+    tbl(["Rāśi", "Years", "From – to", "Why that many", "Co-lord"], [rows.join("")]) +
+    sub +
+    '<div class="kbox kwarn"><b>Read as a period, not a verdict.</b> A daśā is a stretch of time ' +
+    'with a name on it. What the name is taken to mean depends on the sign’s lord, its ' +
+    'occupants, the kārakas and the rest of the chart — and on which lineage’s reading ' +
+    'of Chara daśā you are following, which is a choice this page cannot make for you.</div>';
+}
+function ordinal(n) {
+  return n + (["th", "st", "nd", "rd"][(n % 100 - 20) % 10] || ["th", "st", "nd", "rd"][n % 100] || "th");
+}
+try { window.__charaDasha = charaDashaList; window.__charaSpan = charaSpan;
+      window.__charaYears = charaYears;
+      window.__charaOdd = charaOdd; } catch (e) {}
 /* ================= 1. At a glance ================= */
 function glancePane(D,J){
   var LS=D.LS, ll=LORD[LS], lp=D.P[ll], mo=D.P.Moon, items=[];
@@ -11576,7 +12158,14 @@ var MO_NEEDS_CHART={
   lagna:1,      /* adaptable to here-and-now later */
   bhava:1,      /* needs the chart's houses and vargas */
   rashi:1,      /* places the reader's grahas on the strip */
-  nakfull:1     /* the same */
+  nakfull:1,    /* the same */
+  /* the three built on the chart's own engines, added with them. They are
+     here rather than beside their scenes because this list IS the gate — the
+     app-shell harness compares it with its own copy, and a second place to
+     add an entry is a second place for the two to drift apart. */
+  kakshya:1,    /* there is no kakṣyā reading without an ashtakavarga */
+  chara:1,      /* the sequence counts from the lagna */
+  varsha:1      /* a solar return needs a natal Sun to return to */
 };
 function moHasChart(){ return !!(MO.J && MO.J.input); }
 function moSceneAvailable(k){ return moHasChart() || !MO_NEEDS_CHART[k]; }
@@ -20134,6 +20723,197 @@ window.__moCycleKinds = Object.keys(MC_EVENTS);
 
 MO_SCENES = MO_SCENES.concat(MO_CYC);
 try { window.__moCycleKeys = MO_CYC.map(function (s) { return s.key; }); } catch (e) {}
+/* ===== Three scenes over the three new engines ============================
+
+   Chara daśā, Varṣaphala and the kakṣyā division each got a section in the
+   report. A table is the right place to READ them and a poor place to see
+   what they are: a sign-based clock turning, a year closing on itself, a
+   graha crossing ground that supports it and then ground that does not.
+   These three draw exactly the quantities those sections tabulate — from the
+   same functions, not from a second computation — so a figure here and the
+   same figure in the report cannot disagree.
+
+   All three need a chart and say so through MO_NEEDS_CHART rather than by
+   drawing something empty. */
+
+/* -------------------------------------------------- 1. the kakṣyā crossing */
+MO_SCENES.push({
+ key:"kakshya", label:"Kakṣyā crossing", title:"The eighths of a sign",
+ sub:"a graha crossing supported ground and unsupported · 3°45′ at a time",
+ draw:function(p){
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx, U=Math.min(S.w,S.h)/moTypeK();
+  var D=MO.D, J=MO.J;
+  if(!D||!J||!J.ashtakavarga||!J.ashtakavarga.prastara) throw new Error("no chart");
+  var AV=J.ashtakavarga, PR=AV.prastara, ORDK=AV.kakshya_order;
+  var en=MO.opt.subject||"Saturn";
+  if(!PR[en]) en="Saturn";
+  moStars();
+
+  /* The window is the scene's own span, and the subject's longitude across it.
+     A slow graha crosses two or three kakṣyās in a year, which is the point:
+     the strip below is a year of ground, not a year of events. */
+  var t0=(MO.opt.from==="birth")?moBirthMs():Date.now(), t1=t0+moSpanMs();
+  var ms=t0+(t1-t0)*p;
+  var lon=moSidAt(en,ms); if(lon==null) throw new Error("no position");
+  var sg=Math.floor((((lon%360)+360)%360)/30)%12, deg=(((lon%360)+360)%360)-sg*30;
+  var k=Math.min(7,Math.floor(deg/3.75)), lord=ORDK[k];
+  var row=PR[en][lord], has=row?!!row[sg]:false;
+
+  /* ---- the sign, drawn as its eight kakṣyās, left to right ---- */
+  var x0=S.w*0.09, x1=S.w*0.91, w=(x1-x0)/8;
+  var yTop=st.cy-U*0.30, h=U*0.46;
+  for(var i=0;i<8;i++){
+    var L=ORDK[i], r2=PR[en][L], on=r2?!!r2[sg]:false;
+    var here=(i===k);
+    c.globalAlpha=here?(on?0.52:0.44):(on?0.20:0.07);
+    c.fillStyle=on?"#5fbf8f":"#c2604c";
+    c.fillRect(x0+i*w+1,yTop,w-2,h);
+    c.globalAlpha=1;
+    c.strokeStyle=here?P.gold:"rgba(255,255,255,.18)";
+    c.lineWidth=here?2.4:0.8;
+    c.strokeRect(x0+i*w+1,yTop,w-2,h);
+    moText(String(i+1),x0+i*w+w/2,yTop-U*0.045,U*0.030,P.dim,"center",700);
+    moText(L==="Lagna"?"Lg":(moTgl(L)||L.slice(0,2)),x0+i*w+w/2,yTop+h*0.30,U*0.034,
+           on?"#bfe9d2":"#f0c3b8","center",700);
+    moText(on?"bindu":"none",x0+i*w+w/2,yTop+h*0.62,U*0.024,
+           on?"#8fd6b0":"#dba396","center",500);
+  }
+  /* the graha itself, riding the strip at its true degree in the sign */
+  var gx=x0+(deg/30)*(x1-x0);
+  moGlowDot(gx,yTop+h+U*0.075,U*0.030,P.gold,P.gold);
+  moText(moTgraha(en),gx,yTop+h+U*0.155,U*0.032,P.ink,"center",700);
+  c.strokeStyle=P.gold; c.lineWidth=1.6; c.globalAlpha=0.65;
+  c.beginPath(); c.moveTo(gx,yTop+h); c.lineTo(gx,yTop+h+U*0.040); c.stroke();
+  c.globalAlpha=1;
+
+  /* ---- the reading, in one line, because that is all it is ---- */
+  var bh=(AV.bhinna||[]).filter(function(b){return b.graha===en;})[0];
+  moText(SA[sg]+" "+dm(deg),st.cx,yTop-U*0.135,U*0.044,P.ink,"center",700);
+  moText("kakṣyā "+(k+1)+" of 8 · "+lord+"’s"+
+         (bh?"   ·   the sign carries "+bh.bindus[sg]+" of 8":""),
+         st.cx,yTop-U*0.078,U*0.030,P.dim,"center",500);
+  moText(has?"this eighth is supported":"this eighth is not supported",
+         st.cx,yTop+h+U*0.245,U*0.040,has?"#8fd6b0":"#e8a79a","center",700);
+  moCaption(ms,"Kakṣyā · "+en);
+ }
+});
+
+/* ------------------------------------------------ 2. the Chara daśā wheel */
+MO_SCENES.push({
+ key:"chara", label:"Chara daśā", title:"A clock made of signs",
+ sub:"Jaimini · each rāśi held for as long as the distance to its own lord",
+ draw:function(p){
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx, U=Math.min(S.w,S.h)/moTypeK();
+  var D=MO.D; if(!D||!window.__charaDasha) throw new Error("no chart");
+  var CD=window.__charaDasha(D), seq=CD.seq;
+  var total=seq.reduce(function(a,s){return a+s.years;},0);
+  /* the hand sweeps one whole cycle across the scene, so the scene IS the cycle */
+  var at=p*total, run=0, cur=seq[0], curF=0;
+  for(var i=0;i<seq.length;i++){
+    if(at<run+seq[i].years){ cur=seq[i]; curF=(at-run)/seq[i].years; break; }
+    run+=seq[i].years;
+  }
+  moStars();
+  var R=Math.min(st.R,U*0.62), cx=st.cx, cy=st.cy-U*0.02;
+  /* Twelve wedges sized by YEARS, not by equal twelfths — the whole point of
+     Chara daśā is that the signs are not equal in time. */
+  var a0=-Math.PI/2, acc=0;
+  seq.forEach(function(m,k){
+    var frac=m.years/total, a1=a0+frac*Math.PI*2;
+    var on=(m===cur);
+    c.beginPath(); c.moveTo(cx,cy); c.arc(cx,cy,R,a0,a1); c.closePath();
+    c.fillStyle=on?P.gold:"#ffffff";
+    c.globalAlpha=on?0.30:(k%2?0.070:0.035);
+    c.fill(); c.globalAlpha=1;
+    c.strokeStyle="rgba(255,255,255,.16)"; c.lineWidth=0.9; c.stroke();
+    var mid=(a0+a1)/2, lr=R*0.74;
+    moText(SA[m.sign].slice(0,4),cx+Math.cos(mid)*lr,cy+Math.sin(mid)*lr,
+           U*0.030,on?P.ink:P.dim,"center",on?700:600);
+    moText(m.years+"y",cx+Math.cos(mid)*(R*0.92),cy+Math.sin(mid)*(R*0.92),
+           U*0.024,on?P.gold:P.dim,"center",600);
+    a0=a1;
+  });
+  /* the hand */
+  var ha=-Math.PI/2+(at/total)*Math.PI*2;
+  c.strokeStyle=P.gold; c.lineWidth=2.6; c.globalAlpha=0.9;
+  c.beginPath(); c.moveTo(cx,cy); c.lineTo(cx+Math.cos(ha)*R*1.02,cy+Math.sin(ha)*R*1.02);
+  c.stroke(); c.globalAlpha=1;
+  /* A solid centre, because the three lines below sat directly on the spokes
+     and on the hand — legible in one frame and unreadable in the next as the
+     hand swept under them. */
+  c.beginPath(); c.arc(cx,cy,R*0.50,0,Math.PI*2);
+  c.fillStyle=P.bg; c.globalAlpha=0.92; c.fill(); c.globalAlpha=1;
+  c.strokeStyle="rgba(255,255,255,.12)"; c.lineWidth=1; c.stroke();
+  /* no hub dot: it landed squarely on the middle line of the three below it.
+     The disc is the hub. */
+  /* the centre reads what the hand is on */
+  moText(SA[cur.sign],cx,cy-U*0.062,U*0.050,P.ink,"center",700);
+  moText(cur.years+" years · lord "+cur.lord,cx,cy+U*0.010,U*0.028,P.dim,"center",500);
+  moText((CD.direction?"counting forward":"counting backward")+" from "+SA[D.LS],
+         cx,cy+U*0.055,U*0.024,P.dim,"center",500);
+  moText(Math.round(at)+" of "+total+" years",st.cx,Math.min(cy+R+U*0.085,st.capY-U*0.075),U*0.028,P.dim,"center",600);
+  moCaption(D.jd? (D.jd-2440587.5)*86400000 + at*365.2564*86400000 : Date.now(),
+            "Chara daśā · Jaimini");
+ }
+});
+
+/* ------------------------------------------------- 3. the year closing */
+MO_SCENES.push({
+ key:"varsha", label:"Solar return", title:"The year closing on itself",
+ sub:"Tājika · the Sun coming back to the degree it held at birth",
+ draw:function(p){
+  var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx, U=Math.min(S.w,S.h)/moTypeK();
+  var D=MO.D; if(!D||!D.P||!D.P.Sun) throw new Error("no chart");
+  var natal=D.P.Sun.sid;
+  /* one year of the Sun, from one return to the next, drawn on the ecliptic */
+  var age=Math.max(0,Math.floor((D.nowJd-D.jd)/365.2563627));
+  var a=window.__varshaPravesha?window.__varshaPravesha(D.jd,natal,age):null;
+  var b=window.__varshaPravesha?window.__varshaPravesha(D.jd,natal,age+1):null;
+  if(!a||!b) throw new Error("no return");
+  var jd=a.jd+(b.jd-a.jd)*p, ms=(jd-2440587.5)*86400000;
+  var lon=moSidAt("Sun",ms); if(lon==null) throw new Error("no position");
+  moStars();
+  var R=Math.min(st.R,U*0.56), cx=st.cx, cy=st.cy-U*0.02;
+  /* the twelve signs as a plain ring, so the one degree that matters stands out */
+  for(var i=0;i<12;i++){
+    var s0=(i*30-90)*Math.PI/180, s1=((i+1)*30-90)*Math.PI/180;
+    c.beginPath(); c.arc(cx,cy,R,s0,s1); c.arc(cx,cy,R*0.86,s1,s0,true); c.closePath();
+    c.fillStyle="#ffffff"; c.globalAlpha=(i%2)?0.065:0.028; c.fill(); c.globalAlpha=1;
+    var m2=(s0+s1)/2;
+    /* three letters, because two cannot tell Mithuna from Mīna nor
+       Karka from Kanyā, and a ring that mislabels a sign is worse than one
+       that labels none */
+    moText(SA[i].slice(0,3),cx+Math.cos(m2)*R*0.935,cy+Math.sin(m2)*R*0.935,
+           U*0.021,P.dim,"center",600);
+  }
+  /* the natal degree — the mark the year is measured to */
+  var na=(natal-90)*Math.PI/180;
+  c.strokeStyle=P.gold; c.lineWidth=2.2; c.globalAlpha=0.85;
+  c.beginPath(); c.moveTo(cx+Math.cos(na)*R*0.80,cy+Math.sin(na)*R*0.80);
+  c.lineTo(cx+Math.cos(na)*R*1.06,cy+Math.sin(na)*R*1.06); c.stroke(); c.globalAlpha=1;
+  /* the arc already travelled */
+  var tr=(((lon-natal)%360)+360)%360;
+  c.strokeStyle=P.gold; c.lineWidth=U*0.018; c.globalAlpha=0.30;
+  c.beginPath(); c.arc(cx,cy,R*0.93,na,na+tr*Math.PI/180); c.stroke(); c.globalAlpha=1;
+  /* the Sun */
+  var sa=(lon-90)*Math.PI/180;
+  moGlowDot(cx+Math.cos(sa)*R*0.93,cy+Math.sin(sa)*R*0.93,U*0.034,"#ffcb63","#ff9b2f");
+  var left=360-tr;
+  moText(dm(tr)+" travelled",cx,cy-U*0.045,U*0.042,P.ink,"center",700);
+  moText(left<0.5?"the year closes":dm(left)+" to go",cx,cy+U*0.012,U*0.030,
+         left<0.5?P.gold:P.dim,"center",600);
+  moText("natal Sun "+SA[Math.floor(natal/30)%12]+" "+dm(natal%30),
+         cx,cy+U*0.062,U*0.024,P.dim,"center",500);
+  moCaption(ms,"Varṣaphala · year "+(age+1));
+ }
+});
+
+/* All three are natal — there is no kakṣyā without an ashtakavarga, no Chara
+   sequence without a lagna and no solar return without a natal Sun — and they
+   are declared so in MO_NEEDS_CHART in 47-motion-pacing.js, beside the other
+   nine. Declaring them here instead left the gate list in the source saying
+   one thing and the gate in force saying another, which the app-shell harness
+   caught the moment it ran. */
 /* ============================================================================
    "How to read this" — a short note beside each scene, on the page.
 
@@ -22800,6 +23580,11 @@ window.buildKundliReport=function(J){
     brows.push('<tr><td><b>SAV</b></td>'+sc+'<td class="knum"><b>'+D.av.sarva_total+'</b></td></tr>');
     body+='<h4 class="ksub">Bhinnāṣṭakavarga</h4><div class="ktwrap"><table class="ktbl khm"><thead><tr>'+hd+'</tr></thead><tbody>'+brows.join("")+'</tbody></table></div>';
     H.push(sec("Ashtakavarga","benefic points",body+avCharts(D)+shodhanaSection(D)+aAv(D)));
+    /* The prastāra is the same computation with the sum not yet taken, so it
+       belongs beside the totals it adds up to rather than in a section of its
+       own elsewhere. */
+    H.push(sec("Prastārāṣṭakavarga and kakṣyā","the bindus before they were added up",
+      pane(function(){ return prastaraSection(D,J); },"Prastārāṣṭakavarga")));
     H.push(sec("Divisional ashtakavarga","benefic points inside D9 and D10",vargaAvSection(D)));}
 
   // vargas
@@ -22894,6 +23679,10 @@ window.buildKundliReport=function(J){
     H.push(sec("Antardaśā & pratyantardaśā","complete 120-year tree",dashaTreeSection(D)));}
   H.push(sec("Aṣṭottarī daśā","the conditional 108-year cycle",ashtottariSection(D)));
   H.push(sec("Yoginī daśā","the 36-year cycle",yoginiSection(D)));
+  H.push(sec("Chara daśā","Jaimini — a sign-based clock",
+    pane(function(){ return charaDashaSection(D); },"Chara daśā")));
+  H.push(sec("Varṣaphala","Tājika — the year's own chart",
+    pane(function(){ return varshaphalaSection(D,J); },"Varṣaphala")));
 
   // transits
   if(D.transits.length){

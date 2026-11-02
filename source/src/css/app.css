@@ -1152,3 +1152,25 @@ html[data-theme] .moreadh,html[data-theme] .moreadf{color:var(--text-soft)}
    4.46:1 — four hundredths under. Its two siblings (lo and hi) already clear
    it; this one was simply never measured against its own ground. */
 .kreport .sensb.sens-mid{color:#7d601b}
+
+/* The prastāra grids: eight rows of twelve, read as a pattern rather than
+   as numbers, so the cells are tight and the filled ones carry the weight. */
+.kreport table.kprastara th{font-size:9.5px;padding:4px 3px;text-align:center}
+.kreport table.kprastara th:first-child,
+.kreport table.kprastara td:first-child{text-align:left;white-space:nowrap}
+.kreport table.kprastara td.kb{text-align:center;padding:3px 2px;font-size:11px;
+  color:var(--muted-2)}
+.kreport table.kprastara td.kb.kbon{color:var(--sem-good,#1c6b46);font-weight:700}
+.kreport table.kprastara tr.kprtot td{border-top:2px solid var(--gold);
+  background:var(--soft);font-variant-numeric:tabular-nums}
+
+/* The ceremony page's own controls — a date, a time and two buttons, laid
+   out as one bar rather than as a form, because nothing here is submitted. */
+.cerbar{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;
+  border:1px solid var(--line);border-left:3px solid var(--gold);background:var(--soft);
+  padding:12px 14px;border-radius:0 8px 8px 0;margin:14px 0 18px}
+.cerfield{display:flex;flex-direction:column;gap:3px}
+.cerfield label{font-size:11px;font-weight:600;color:var(--muted-2);
+  text-transform:uppercase;letter-spacing:.05em}
+.cerfield input{padding:6px 8px;border:1px solid var(--line);border-radius:5px;
+  background:var(--surface-3,#fff);color:inherit;font:inherit;font-size:13px}

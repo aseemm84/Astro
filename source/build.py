@@ -245,7 +245,7 @@ def build_motion():
     writes to elements that exist only on the builder; including it here would
     fail the way the Workstation did before it was given a hidden scaffold."""
     shell = read(SRC, "motion.shell.html")
-    desc = ("Thirty-two animated scenes about the sky itself \u2014 transits, lunations, "
+    desc = ("Thirty-two animated scenes about the sky itself \u2014 of forty-four in all \u2014 transits, lunations, "
             "eclipse seasons, the nak\u1e63atras and the bodies \u2014 computed in this "
             "browser and needing no birth chart.")
     for tok in ("<!--HEAD-->", "{{NAV}}", "<!--CSS-->", "<!--THEMEJS-->",
@@ -275,6 +275,53 @@ def build_motion():
     for tok, body, tag in parts:
         shell = shell.replace(tok, "<%s>%s</%s>" % (tag, brandify(body), tag))
     print("  motion build id %s" % stamp)
+    return shell
+
+
+def build_ceremony():
+    """The casting ceremony, on a page of its own.
+
+    Everywhere else the ceremony is a veil over a computation. Here there is
+    no computation behind it, so it can be watched rather than merely seen.
+
+    Same bundles as the Motion page minus the report: the engine supplies the
+    longitudes, sp-cosmos draws them, and this page's own script runs it for a
+    moment the reader picks. ui.js is excluded for the same reason as on
+    Motion — it is the chart form's script and writes to elements that are not
+    here.
+    """
+    shell = read(SRC, "ceremony.shell.html")
+    desc = ("The nine grahas winding back to a chosen moment and settling onto the "
+            "nak\u1e63atra ring \u2014 the casting ceremony, on a page where it can be "
+            "turned, tilted and run again.")
+    for tok in ("<!--HEAD-->", "{{NAV}}", "<!--CSS-->", "<!--THEMEJS-->",
+                "<!--JS0-->", "<!--JS1-->", "<!--JS2-->", "{{FOOTER}}"):
+        if tok not in shell:
+            raise SystemExit("token %s missing from the ceremony shell" % tok)
+    shell = shell.replace("<!--HEAD-->",
+                          head_meta(desc, "ceremony.html",
+                                    "The casting ceremony \u2014 " + BRAND["name"]))
+    shell = shell.replace("{{NAV}}", nav_html("ceremony.html"))
+    shell = shell.replace("{{FOOTER}}", read(SRC, "pages", "_footer.html"))
+    shell = brandify(shell).replace("<!--LOGO-->", logo_mark())
+    parts = [("<!--CSS-->", read(SRC, "css", "app.css") + "\n" +
+                            read(SRC, "css", "theme-auto.css") + "\n" +
+                            read(SRC, "css", "theme.css") + "\n" +
+                            read(SRC, "css", "cosmos.css"), "style"),
+             ("<!--THEMEJS-->", read(SRC, "js", "theme.js"), "script"),
+             ("<!--JS0-->", read(VEND, "astronomy.browser.min.js"), "script"),
+             ("<!--JS1-->", jsread(SRC, "js", "engine.js"), "script"),
+             # 54-motion-bodies supplies the graha discs the ring is drawn
+             # with; without it sp-cosmos falls back to plain dots, which is a
+             # working ceremony but not this one.
+             ("<!--JS2-->", jsread(SRC, "js", "report", "motion", "54-motion-bodies.js") +
+                            "\n" + jsread(SRC, "js", "sp-cosmos.js"), "script")]
+    stamp = build_stamp([shell] + [b for _, b, _ in parts])
+    shell = shell.replace("</head>",
+        '<script>window.__kBuild=%s;</script></head>' % json.dumps(stamp))
+    for tok, body, tag in parts:
+        shell = shell.replace(tok, "<%s>%s</%s>" % (tag, brandify(body), tag))
+    print("  ceremony build id %s" % stamp)
     return shell
 
 
@@ -975,7 +1022,8 @@ def main():
     outdir = args[args.index("--out") + 1] if "--out" in args else default_out
     built = {"kundli.html": build_kundli(),
              "kinetic-workstation.html": build_workstation(),
-             "motion.html": build_motion()}
+             "motion.html": build_motion(),
+             "ceremony.html": build_ceremony()}
     built.update(build_pages())
     built.update(build_shared())
     built.update(build_adopted())

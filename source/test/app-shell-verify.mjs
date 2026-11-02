@@ -107,7 +107,17 @@ console.log("\nthe website is untouched");
 console.log("\nthe app build");
 sh("python3", ["build.py", "--app"], SRC);
 const pages = fs.readdirSync(APP).filter(f => f.endsWith(".html")).sort();
-ok("every page is built", pages.length === 30, pages.length + " pages");
+/* The count came from counting, so it had to be edited every time a page was
+   added — and a bare number tells a later reader nothing about what it is
+   asserting. The nav is the real invariant: every destination the app's own
+   sidebar offers must exist as a built file, and nothing the sidebar names
+   may be missing. A new page passes this by being in the nav, which is the
+   thing that actually has to be true. */
+const navApp = JSON.parse(fs.readFileSync(path.join(SRC, "src", "pages", "_nav-app.json"), "utf8"));
+const missing = navApp.map(r => r[0]).filter(f => pages.indexOf(f) < 0);
+ok("every page the app's sidebar names is built", missing.length === 0,
+   missing.length ? "missing: " + missing.join(", ")
+                  : pages.length + " pages, all " + navApp.length + " nav destinations present");
 ok("app-shell.css and app-shell.js ship", fs.existsSync(path.join(APP, "app-shell.css")) &&
    fs.existsSync(path.join(APP, "app-shell.js")));
 ok("no service worker in the app", !fs.existsSync(path.join(APP, "sw.js")));

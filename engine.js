@@ -632,19 +632,31 @@ var AVT={
       Jupiter:[5,6,11,12],Venus:[6,11,12],Saturn:[3,5,6,11],Lagna:[1,3,4,6,10,11]}
 };
 var AVORDER=["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn"];
+/* The eight contributors, in the order the kakṣyā division uses — Saturn
+   first and the Lagna last. The bhinnāṣṭakavarga sums their rows; the
+   prastāra is the same computation with the sum not yet taken, and the
+   kakṣyā scanner needs the rows rather than the sum, which is why they are
+   kept rather than discarded. */
+var AVCONTRIB=["Saturn","Jupiter","Mars","Sun","Venus","Mercury","Moon","Lagna"];
 function ashtakavarga(signOf,lagnaSign){
-  var bhinna=[],sarva=new Array(12).fill(0);
+  var bhinna=[],sarva=new Array(12).fill(0),prastara={};
   AVORDER.forEach(function(pl){
-    var b=new Array(12).fill(0);
-    Object.keys(AVT[pl]).forEach(function(c){
+    var b=new Array(12).fill(0), rows={};
+    AVCONTRIB.forEach(function(c){
+      var list=AVT[pl][c]; if(!list) return;
       var from=(c==="Lagna")?lagnaSign:signOf[c];
-      AVT[pl][c].forEach(function(h){ b[(from+h-1)%12]++; });
+      var r=new Array(12).fill(0);
+      list.forEach(function(h){ r[(from+h-1)%12]=1; });
+      rows[c]=r;
+      for(var i=0;i<12;i++) b[i]+=r[i];
     });
+    prastara[pl]=rows;
     var tot=b.reduce(function(a,x){return a+x;},0);
     bhinna.push({graha:pl,graha_sa:pl,total:tot,bindus:b});
     for(var i=0;i<12;i++) sarva[i]+=b[i];
   });
-  return {bhinna:bhinna,sarva:sarva,sarva_total:sarva.reduce(function(a,x){return a+x;},0),
+  return {bhinna:bhinna,sarva:sarva,prastara:prastara,kakshya_order:AVCONTRIB.slice(),
+          sarva_total:sarva.reduce(function(a,x){return a+x;},0),
           natal_rashi_idx:(function(){var o={};AVORDER.forEach(function(p){o[p]=signOf[p];});o.Lagna=lagnaSign;return o;})()};
 }
 
