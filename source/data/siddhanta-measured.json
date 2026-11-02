@@ -1,0 +1,264 @@
+{
+ "_provenance": {
+  "what": "The Sūrya Siddhānta's own constants — revolution counts, epicycle circumferences, apogee longitudes — measured against a modern sky, with the text's equations untouched.",
+  "why": "ss-engine.js with the text's constants lands degrees from the real sky, which is the method's own accuracy and makes it a museum piece. This makes the tradition's method castable while keeping its form.",
+  "notTheText": "THIS IS NOT THE SŪRYA SIDDHĀNTA'S ANSWER and must never be presented as one. It is the text's METHOD carrying measured numbers. The bare text stays selectable and unchanged; siddhanta-measured-verify.mjs asserts it is still bit-identical.",
+  "parameters": "One per classical quantity: a bīja on each body's revolutions, a scale on each manda and śīghra paridhi (which keeps the odd/even interpolation the text prescribes and moves only its size), and an offset on each mandocca. Twenty-seven numbers, every one of them a quantity the tradition has a name for. No free terms were added.",
+  "outOfSample": "The 400 reference samples are split by index: even fitted, odd held out and never seen by the optimiser. The holdout figures are the ones to read; a fit judged on its own residuals tells you nothing.",
+  "timescale": "The ahargaṇa comes from the civil instant exactly as a caller supplies it, not from TT. A siddhānta has no ΔT, so fitting in TT would have reported residuals no user could reproduce. ΔT stays an unmodelled systematic that the holdout numbers include.",
+  "frame": "Sidereal on the site's own Lahiri polynomial, not the text's libration ayanāṃśa, because a measured tier exists to be comparable with the modern engine on the same chart. The text's ayanāṃśa stays on the unfitted path.",
+  "reference": "ERFA (IAU SOFA) via astropy: epv00 for the Sun, moon98 for the Moon, plan94 for the five tara-grahas, gst06a and obl06/nut06a for Earth orientation.",
+  "span": "1800-2200",
+  "generator": "source/test/fit-siddhanta.mjs",
+  "checkedBy": "source/test/siddhanta-measured-verify.mjs",
+  "fitSamples": 187,
+  "holdoutSamples": 213,
+  "iterations": 1500
+ },
+ "lahiri": [
+  0.000307083556492,
+  1.39688796382,
+  23.857092356
+ ],
+ "baseEpochLon": {
+  "Rāhu": 180
+ },
+ "params": {
+  "epoch.Sūrya": -11.495656022938753,
+  "bija.Sūrya": 28.316340046775004,
+  "mandaOdd.Sūrya": 0.862936607436593,
+  "mandaEven.Sūrya": 0.8804439098023978,
+  "mandocca.Sūrya": 1.755074276346737,
+  "epoch.Candra": -6.798197188983609,
+  "bija.Candra": 23.98271263424615,
+  "epoch.candraUcca": 125.59505261617409,
+  "bija.candraUcca": -97.51306928542868,
+  "mandaOdd.Candra": 1.2355961885637685,
+  "mandaEven.Candra": 1.2326491683056089,
+  "epoch.Maṅgala": -24.175960729163435,
+  "bija.Maṅgala": 61.22466644131986,
+  "mandaOdd.Maṅgala": 1.0448289321212183,
+  "mandaEven.Maṅgala": 1.00926427336411,
+  "sighraOdd.Maṅgala": 1.002089479680015,
+  "sighraEven.Maṅgala": 1.021151139425689,
+  "mandocca.Maṅgala": 19.689307706945222,
+  "epoch.Budha": -32.14843828331287,
+  "bija.Budha": 63.13564575839088,
+  "mandaOdd.Budha": 1.376075011483989,
+  "mandaEven.Budha": 1.162068551747379,
+  "sighraOdd.Budha": 1.0170294969949158,
+  "sighraEven.Budha": 1.0442672923651537,
+  "mandocca.Budha": 1.7057313766244038,
+  "epoch.Guru": 14.552691562260698,
+  "bija.Guru": -45.010815449886174,
+  "mandaOdd.Guru": 1.0794027852638806,
+  "mandaEven.Guru": 1.0946517099697055,
+  "sighraOdd.Guru": 1.0017751827277683,
+  "sighraEven.Guru": 0.9588847135110883,
+  "mandocca.Guru": 7.864371245029663,
+  "epoch.Śukra": 23.109001646469558,
+  "bija.Śukra": -72.87216548912119,
+  "mandaOdd.Śukra": 0.822049367477661,
+  "mandaEven.Śukra": 0.8911454532975249,
+  "sighraOdd.Śukra": 0.9935234127408319,
+  "sighraEven.Śukra": 1.0017207430640087,
+  "mandocca.Śukra": -12.811351451017067,
+  "epoch.Śani": -54.99789391040725,
+  "bija.Śani": 143.69346659451747,
+  "mandaOdd.Śani": 0.800343218673827,
+  "mandaEven.Śani": 0.7957841580241336,
+  "sighraOdd.Śani": 0.9794449445667087,
+  "sighraEven.Śani": 0.9447417904450287,
+  "mandocca.Śani": 8.457986163620314
+ },
+ "residuals": {
+  "Sūrya": {
+   "params": {
+    "epoch.Sūrya": -11.495656022938753,
+    "bija.Sūrya": 28.316340046775004,
+    "mandaOdd.Sūrya": 0.862936607436593,
+    "mandaEven.Sūrya": 0.8804439098023978,
+    "mandocca.Sūrya": 1.755074276346737
+   },
+   "bare": {
+    "rms": 39.474,
+    "worst": 76.276
+   },
+   "fit": {
+    "rms": 1.0579,
+    "worst": 2.4938
+   },
+   "holdout": {
+    "rms": 1.0406,
+    "worst": 3.1182,
+    "mean": 0.0325
+   },
+   "gain": 37.9
+  },
+  "Candra": {
+   "params": {
+    "epoch.Candra": -6.798197188983609,
+    "bija.Candra": 23.98271263424615,
+    "epoch.candraUcca": 125.59505261617409,
+    "bija.candraUcca": -97.51306928542868,
+    "mandaOdd.Candra": 1.2355961885637685,
+    "mandaEven.Candra": 1.2326491683056089
+   },
+   "bare": {
+    "rms": 378.052,
+    "worst": 708.83
+   },
+   "fit": {
+    "rms": 62.1609,
+    "worst": 141.2825
+   },
+   "holdout": {
+    "rms": 61.6159,
+    "worst": 147.9552,
+    "mean": -2.6671
+   },
+   "gain": 6.1
+  },
+  "Maṅgala": {
+   "params": {
+    "epoch.Maṅgala": -24.175960729163435,
+    "bija.Maṅgala": 61.22466644131986,
+    "mandaOdd.Maṅgala": 1.0448289321212183,
+    "mandaEven.Maṅgala": 1.00926427336411,
+    "sighraOdd.Maṅgala": 1.002089479680015,
+    "sighraEven.Maṅgala": 1.021151139425689,
+    "mandocca.Maṅgala": 19.689307706945222
+   },
+   "bare": {
+    "rms": 206.809,
+    "worst": 761.557
+   },
+   "fit": {
+    "rms": 44.8537,
+    "worst": 177.0009
+   },
+   "holdout": {
+    "rms": 58.2675,
+    "worst": 303.3648,
+    "mean": 2.0942
+   },
+   "gain": 3.5
+  },
+  "Budha": {
+   "params": {
+    "epoch.Budha": -32.14843828331287,
+    "bija.Budha": 63.13564575839088,
+    "mandaOdd.Budha": 1.376075011483989,
+    "mandaEven.Budha": 1.162068551747379,
+    "sighraOdd.Budha": 1.0170294969949158,
+    "sighraEven.Budha": 1.0442672923651537,
+    "mandocca.Budha": 1.7057313766244038
+   },
+   "bare": {
+    "rms": 152.778,
+    "worst": 503.354
+   },
+   "fit": {
+    "rms": 94.9029,
+    "worst": 198.4928
+   },
+   "holdout": {
+    "rms": 107.1138,
+    "worst": 232.8319,
+    "mean": 8.5345
+   },
+   "gain": 1.4
+  },
+  "Guru": {
+   "params": {
+    "epoch.Guru": 14.552691562260698,
+    "bija.Guru": -45.010815449886174,
+    "mandaOdd.Guru": 1.0794027852638806,
+    "mandaEven.Guru": 1.0946517099697055,
+    "sighraOdd.Guru": 1.0017751827277683,
+    "sighraEven.Guru": 0.9588847135110883,
+    "mandocca.Guru": 7.864371245029663
+   },
+   "bare": {
+    "rms": 284.793,
+    "worst": 493.115
+   },
+   "fit": {
+    "rms": 6.0148,
+    "worst": 17.4495
+   },
+   "holdout": {
+    "rms": 5.9942,
+    "worst": 16.1135,
+    "mean": -0.0995
+   },
+   "gain": 47.5
+  },
+  "Śukra": {
+   "params": {
+    "epoch.Śukra": 23.109001646469558,
+    "bija.Śukra": -72.87216548912119,
+    "mandaOdd.Śukra": 0.822049367477661,
+    "mandaEven.Śukra": 0.8911454532975249,
+    "sighraOdd.Śukra": 0.9935234127408319,
+    "sighraEven.Śukra": 1.0017207430640087,
+    "mandocca.Śukra": -12.811351451017067
+   },
+   "bare": {
+    "rms": 365.801,
+    "worst": 1627.116
+   },
+   "fit": {
+    "rms": 7.9557,
+    "worst": 24.7641
+   },
+   "holdout": {
+    "rms": 8.3882,
+    "worst": 26.1288,
+    "mean": 2.2868
+   },
+   "gain": 43.6
+  },
+  "Śani": {
+   "params": {
+    "epoch.Śani": -54.99789391040725,
+    "bija.Śani": 143.69346659451747,
+    "mandaOdd.Śani": 0.800343218673827,
+    "mandaEven.Śani": 0.7957841580241336,
+    "sighraOdd.Śani": 0.9794449445667087,
+    "sighraEven.Śani": 0.9447417904450287,
+    "mandocca.Śani": 8.457986163620314
+   },
+   "bare": {
+    "rms": 381.677,
+    "worst": 633.466
+   },
+   "fit": {
+    "rms": 7.2841,
+    "worst": 19.362
+   },
+   "holdout": {
+    "rms": 7.2984,
+    "worst": 22.9315,
+    "mean": 1.8913
+   },
+   "gain": 52.3
+  }
+ },
+ "lunarDiagnostic": {
+  "rms": 61.87,
+  "correlationWithEvection": 0.86,
+  "correlationWithVariation": -0.452,
+  "amplitudeArcmin": {
+   "evection": 75.9,
+   "variation": -39.7,
+   "anomaly": 3.4
+  },
+  "textbookArcmin": {
+   "evection": 76.4,
+   "variation": 39.5
+  },
+  "rmsAfterRemovingThem": 13.95,
+  "reading": "The Moon's residual after the fit IS the evection and the variation. Regressed on their arguments it yields amplitudes within one per cent of the textbook values, and removing just those two terms drops its rms from 61.9′ to 14.0′. Neither term exists in this theory, and neither can be produced by any choice of revolution count, paridhi or mandocca — so the Moon's limit here is the absence of terms, not the value of numbers. Supplying them would make this a different astronomy wearing the same parameters, which is the line this tier does not cross."
+ }
+}

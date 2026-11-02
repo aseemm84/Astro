@@ -33,6 +33,9 @@ source/
   data/citations.json             196 citations, 82 loci, 36 files
   test/make-bphs-witness.py       writes data/bphs-witness.json from the PDFs
   data/bphs-witness.json          what the uploaded edition attests
+  test/fit-siddhanta.mjs          fits the text's constants to a modern sky
+  test/siddhanta-measured-verify.mjs   and holds that fit honest
+  data/siddhanta-measured.json    46 fitted constants and their residuals
 ```
 
 ## The certified window
@@ -317,6 +320,83 @@ its volume. And the range separator was optional independently of the second
 number, so `v. 9 — Śukra always` matched with the em-dash swallowed and came out
 as `v. 9 —`. Both times the source was fine and the tool was wrong, which is the
 normal case and worth expecting.
+
+## The measured siddhānta tier
+
+`ss-engine.js` computes with the Sūrya Siddhānta's own constants and lands
+degrees from the real sky. That is the method's accuracy, the engine reports it
+rather than hiding it, and it makes the file a good scholarly object and a
+useless one for casting a chart.
+
+`SSEngine.measured()` swaps in constants fitted by `test/fit-siddhanta.mjs`,
+keeping **every equation exactly as it is** — madhyama, manda, śīghra, the
+epicycle interpolation, the 24-entry sine table. What moves is a bīja on each
+body's revolutions, an epoch longitude, a scale on each paridhi of the pair the
+text states, and an offset on each mandocca: 46 numbers, every one a quantity
+the tradition itself treats as correctable. `bare()` puts them all back, and
+`siddhanta-measured-verify.mjs` asserts the restored engine is **bit-identical**
+to one that never heard of the tier.
+
+**It is not the Sūrya Siddhānta's answer** and any page showing it must say so.
+It is the text's method carrying measured numbers.
+
+### What it reaches, out of sample
+
+213 instants the optimiser never saw:
+
+| | | | |
+|---|---|---|---|
+| Sūrya **1.0′** | Guru **6.0′** | Śani **7.3′** | Śukra **8.4′** |
+| Maṅgala 58′ | Candra 62′ | Budha 107′ | |
+
+Against the bare text that is ×38 for the Sun and ×52 for Saturn — and only
+×6, ×3.5 and ×1.4 for the Moon, Mars and Mercury.
+
+### The split is a finding, not a shortcoming of the fit
+
+Obvious readings deserve testing, so the Moon's residual is regressed on the
+arguments of the two largest terms this theory does not have. It yields an
+**evection of 75.9′ against the textbook 76.4′** and a **variation of 39.7′
+against 39.5′** — recovered from the residual alone, to under one per cent — and
+removing just those two drops its rms from 62′ to 14′.
+
+So the Moon's limit here is **the absence of terms, not the value of numbers**,
+and no bīja, paridhi or mandocca could supply them: an evection is a function of
+the elongation and nothing in the parameter set is. Budha's and Maṅgala's
+eccentricities are likewise past what a single epicycle can carry. Supplying the
+missing terms would make this a different astronomy wearing the same parameters,
+which is the line this tier does not cross. The diagnostic is **re-measured by
+the harness, not quoted from the file**.
+
+### Three decisions that make it science rather than curve-drawing
+
+* **Out of sample.** The 400 reference samples split by a deterministic hash of
+  the instant; the holdout half is never seen by the optimiser and is what gets
+  reported. The split was alternate indices at first, which was wrong — the grid
+  advances about a year per sample, so even/odd is a two-year cadence and Mars's
+  period is 1.88 years. Fit and holdout were sampling nearly the same phase of
+  Mars's cycle, the one thing a holdout must not do. A hash has no period to
+  resonate with.
+* **One parameter per classical quantity.** No free terms. The harness asserts
+  every parameter name is a classical quantity and that no body carries more
+  than eight.
+* **Fitted the way production calls it** — ahargaṇa from the civil instant, not
+  from TT. A siddhānta has no ΔT, so fitting in TT would have reported residuals
+  no user could reproduce. ΔT stays an unmodelled systematic inside the holdout
+  numbers, which is the honest place for it.
+
+The frame is the site's own Lahiri sidereal, not the text's libration ayanāṃśa,
+because a measured tier exists to be comparable with the modern engine on the
+same chart. The text's ayanāṃśa stays on the unfitted path.
+
+**The epoch longitude was the parameter that mattered.** Without it the Sun
+stalled at 15.6′ where a single-epicycle Sun should reach two or three, because
+the bīja had to absorb both the constant offset between the text's sidereal zero
+and the frame being fitted to *and* the drift, with one number for two jobs.
+Adding it is not a liberty: a correction to where a graha stood at the epoch is
+precisely what a saṃskāra is. The Sun went to 1.04′.
+
+Refit with `node test/fit-siddhanta.mjs --iters 1500` (about four minutes).
 
 ## The report modules
 

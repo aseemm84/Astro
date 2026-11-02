@@ -4346,9 +4346,99 @@ function moOwn(src){
            "different astronomy wearing the same parameters" }
   ];
 
+  /* ===== THE MEASURED TIER ==================================================
+
+     The engine above computes with the text's own constants and lands degrees
+     from the real sky — Śani 6.4° out in 2026, the Moon 6.3°. That is the
+     method's own accuracy, it is reported rather than hidden, and it makes
+     this a good scholarly object and a useless one for casting a chart.
+
+     measured() keeps every EQUATION exactly as it is — madhyama, manda,
+     śīghra, the epicycle interpolation, the twenty-four-entry sine table —
+     and swaps in constants fitted to a modern sky by
+     source/test/fit-siddhanta.mjs: a bīja on each body's revolutions, an
+     epoch longitude, a scale on each paridhi of the pair the text states, and
+     an offset on each mandocca. Every one of those is a quantity the tradition
+     itself treats as correctable; no term is added and no formula changes.
+
+     IT IS NOT THE SŪRYA SIDDHĀNTA'S ANSWER. It is the text's method carrying
+     measured numbers, and any page showing it must say so. bare() puts every
+     constant back, and siddhanta-measured-verify.mjs asserts the restored
+     engine is bit-identical to one that never heard of this.
+
+     WHAT IT REACHES, out of sample on 213 instants never seen by the fit:
+
+         Sūrya 1.0′    Guru 6.0′    Śani 7.3′    Śukra 8.4′
+         Maṅgala 58′   Candra 62′   Budha 107′
+
+     The split is not a surprise and it is not a shortcoming of the fit. The
+     Moon's residual, regressed on the arguments of the two terms this theory
+     lacks, yields an evection of 75.9′ against the textbook 76.4′ and a
+     variation of 39.7′ against 39.5′, and removing just those two drops its
+     rms from 62′ to 14′. The Moon's limit here is the ABSENCE OF TERMS, not
+     the value of numbers, and no bīja or paridhi can supply them. Budha's and
+     Maṅgala's eccentricities are likewise past what one epicycle can carry.
+     Adding the missing terms would make this a different astronomy wearing the
+     same parameters, which is the line this tier does not cross. */
+  var MEASURED = null;      /* set by setMeasured(), from the fitted data file */
+  var BASE_CONST = {
+    rev: JSON.parse(JSON.stringify(YUGA.rev)),
+    epi: JSON.parse(JSON.stringify(EPI)),
+    mandocca: JSON.parse(JSON.stringify(MANDOCCA)),
+    epoch: JSON.parse(JSON.stringify(EPOCH_LON))
+  };
+  function restoreConstants(){
+    OPT.bija = null;
+    for (var b in BASE_CONST.epi) {
+      EPI[b].manda = BASE_CONST.epi[b].manda.slice();
+      EPI[b].sighra = BASE_CONST.epi[b].sighra ? BASE_CONST.epi[b].sighra.slice() : null;
+    }
+    for (var m in BASE_CONST.mandocca) MANDOCCA[m] = BASE_CONST.mandocca[m];
+    for (var e in EPOCH_LON) delete EPOCH_LON[e];
+    for (var e2 in BASE_CONST.epoch) EPOCH_LON[e2] = BASE_CONST.epoch[e2];
+  }
+  /* Hand it the parsed source/data/siddhanta-measured.json. Kept as an
+     argument rather than fetched or inlined: this file must stay loadable with
+     no network and no build step, and a page that wants the measured tier can
+     decide for itself whether to ship 6 KB of fitted constants. */
+  function setMeasured(doc){ MEASURED = (doc && doc.params) ? doc : null; return !!MEASURED; }
+  function applyMeasured(){
+    if (!MEASURED) return false;
+    var P = MEASURED.params, bija = {}, k;
+    for (k in BASE_CONST.rev) if (P["bija." + k] != null) bija[k] = P["bija." + k];
+    OPT.bija = bija;
+    for (var b in BASE_CONST.epi) {
+      var mo = P["mandaOdd." + b], me = P["mandaEven." + b];
+      var so = P["sighraOdd." + b], se = P["sighraEven." + b];
+      EPI[b].manda = [BASE_CONST.epi[b].manda[0] * (mo == null ? 1 : mo),
+                      BASE_CONST.epi[b].manda[1] * (me == null ? 1 : me)];
+      EPI[b].sighra = BASE_CONST.epi[b].sighra
+        ? [BASE_CONST.epi[b].sighra[0] * (so == null ? 1 : so),
+           BASE_CONST.epi[b].sighra[1] * (se == null ? 1 : se)] : null;
+    }
+    for (var m in BASE_CONST.mandocca)
+      MANDOCCA[m] = BASE_CONST.mandocca[m] + (P["mandocca." + m] || 0);
+    for (var e in EPOCH_LON) delete EPOCH_LON[e];
+    for (var e2 in BASE_CONST.epoch) EPOCH_LON[e2] = BASE_CONST.epoch[e2];
+    for (k in BASE_CONST.rev)
+      if (P["epoch." + k] != null)
+        EPOCH_LON[k] = (BASE_CONST.epoch[k] || 0) + P["epoch." + k];
+    return true;
+  }
+
   window.SSEngine = {
     /* configuration */
     OPT: OPT,
+    /* the measured tier — see the note above it */
+    setMeasured: setMeasured,
+    measured: applyMeasured,
+    bare: restoreConstants,
+    isMeasured: function(){ return !!(MEASURED && OPT.bija); },
+    measuredInfo: function(){
+      return MEASURED ? { residuals: MEASURED.residuals,
+                          lunarDiagnostic: MEASURED.lunarDiagnostic,
+                          provenance: MEASURED._provenance } : null;
+    },
     options: function (o) {
       if (o) { for (var k in o) if (OPT.hasOwnProperty(k)) OPT[k] = o[k]; }
       return { sines: OPT.sines, ayana: OPT.ayana, bija: OPT.bija };
