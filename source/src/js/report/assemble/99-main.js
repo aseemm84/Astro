@@ -234,6 +234,7 @@ window.buildKundliReport=function(J){
   if((J.substrate_stamp||"").indexOf("LearnHoro built-in")>=0)
     H.push('<div class="kbox"><b>Computed in your browser</b>Every figure here — positions, ashtakavarga, yogas, Bhay\u0101ta/Bhabhoga and the da\u015b\u0101 tree — was computed locally by the built-in engine (astronomy-engine, MIT) with the '+esc(ayanNameOf(J))+' ayan\u0101\u1e43\u015ba; no network call was made, and this page carries no code that could make one. \u0100r\u016b\u1e0dha exception cases follow the rule this site documents: the 4th from the house when the pada falls in the 7th.</div>');
   H.push('<div class="kbox kwarn"><b>What this is</b>A technical presentation of a traditional system, for study and reflection — not a prediction, diagnosis, or basis for medical, financial, legal or personal decisions. Positions and engine-computed values come from the chart engine; houses, nakṣatra-pādas, combustion, Moolatrikona by degree and the daśā sequence are recomputed here. Charts with planets at sign edges are sensitive to the exact birth time.</div>');
+  H.push(spanBand(D));
   var full=H.join("").replace('<!--KINDEX-->', sectionIndex());
   // runtime hooks for the interactive panes (events, compatibility, today's tools)
   window.__kApi={
@@ -258,7 +259,13 @@ window.buildKundliReport=function(J){
   };
   function pane(fn,name){ try{ return fn(); }catch(e){ return paneErr(name,e); } }
   var PANES=[
-    ["overview","Overview",function(){ return glancePane(D,J)+'<h4 class="ksub">Explore the chart</h4>'+interactiveChart(D,J); }],
+    /* The out-of-window band leads the Overview, not just the Full report.
+       It was pushed only onto the full report at first, which put it in a
+       section the default view does not show — the band was in the HTML and
+       invisible, which is the same as absent. A disclosure nobody reads is not
+       a disclosure, so it goes where the reader lands. It returns the empty
+       string for every date inside the window, which span-verify.mjs pins. */
+    ["overview","Overview",function(){ return spanBand(D)+glancePane(D,J)+'<h4 class="ksub">Explore the chart</h4>'+interactiveChart(D,J); }],
     ["now","Now",function(){ return nowPane(D,J); }],
     ["timeline","Life timeline",function(){ return timelinePane(D); }],
     ["path","Reading path",function(){ return pathPane(D,J); }],

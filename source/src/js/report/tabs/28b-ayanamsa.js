@@ -439,5 +439,20 @@ function ayanPane(D,J){
     'civil convention your other sources use — and then apply it everywhere: D1, every varga, every daśā, every '+
     'transit. Mixing frames between sections is the one error here that is unambiguous. Where a placement above '+
     'is marked <i>on the edge</i> or <i>close</i>, say which ayanāṃśa the reading assumes rather than stating it '+
-    'flat. See '+tabLink("btime","Birth-time check")+' for the other axis.</div>';
+    'flat. See '+tabLink("btime","Birth-time check")+' for the other axis.</div>'+
+    /* This pane is where someone compares distant epochs, so it is where the
+       question "do these polynomials still hold out there?" actually arises.
+       The answer is better than expected and worth saying, because the natural
+       assumption — that a quadratic fitted over four centuries cannot be
+       trusted over twenty — would send a reader fixing the wrong thing. */
+    '<div class="kbox"><b>How far these hold</b>Every polynomial above was fitted over 1800–2200, '+
+    'but their linear and quadratic terms turn out to reproduce IAU 2006 accumulated precession to '+
+    'five figures (5028.7967 against 5028.7962 ″/century; 1.105501 against 1.105435 ″/century²). '+
+    'What they omit is only that series’ cubic and higher, worth about 0.3″ as far back as '+
+    '1000 CE and 0.2″ as far forward as 3000 CE — well under a hundredth of a nakṣatra pāda. The '+
+    'star-anchored definitions (True Chitrapakṣa, True Revatī, True Puṣya) carry their usual ≈20″ of '+
+    'non-polynomial wobble on top, which is the star’s own apparent motion and not the '+
+    'polynomial’s shortcoming. Outside 1800–2200 the quantity that actually degrades is the '+
+    'Moon, not the ayanāṃśa, and a chart dated outside that window says so at the top of '+
+    tabLink("overview","Overview")+'.</div>';
 }

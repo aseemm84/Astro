@@ -170,10 +170,22 @@ def mean_node_deg(jd_tt):
 def main():
     out_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "fixtures")
     os.makedirs(out_dir, exist_ok=True)
-    out_path = os.path.join(out_dir, "reference-ecliptic.json")
 
+    # make-reference-fixture.py [n] [y0 y1 outname]
+    #   no arguments          → 400 samples, 1800–2200, reference-ecliptic.json
+    #   "300 1000 3000 wide"  → the WIDE fixture, for measuring what happens
+    #                           outside the certified window. ERFA's plan94 is
+    #                           itself only documented over 1000–3000, so that
+    #                           is the widest honest span and the wide fixture
+    #                           stops there rather than pretending about 500 CE.
     n = int(sys.argv[1]) if len(sys.argv) > 1 else 400
-    grid = stratified_instants(1800, 2200, n)
+    y0 = int(sys.argv[2]) if len(sys.argv) > 3 else 1800
+    y1 = int(sys.argv[3]) if len(sys.argv) > 3 else 2200
+    name = sys.argv[4] if len(sys.argv) > 4 else None
+    out_path = os.path.join(out_dir, "reference-ecliptic-%s.json" % name if name
+                            else "reference-ecliptic.json")
+
+    grid = stratified_instants(y0, y1, n)
 
     samples = []
     with solar_system_ephemeris.set(EPHEMERIS):
@@ -275,7 +287,7 @@ def main():
                 "Computed by intersecting the ecliptic with the horizon plane as "
                 "vectors and selecting the rising root, not by the closed form "
                 "engine.js uses, so the two are genuinely comparable.",
-            "span": "1800-2200",
+            "span": "%d-%d" % (y0, y1),
             "samples": len(samples),
             "places": PLACES,
             "astropy": astropy.__version__,

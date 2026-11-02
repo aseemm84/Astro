@@ -89,3 +89,56 @@ function rname(r){if(r==null)return "?";if(typeof r==="string")return r;return r
 function ridx(r){if(r&&typeof r==="object"&&r.idx!=null)return r.idx;var n=rname(r);var i=SIGNS.indexOf(n);return i<0?0:i;}
 
 
+
+/* ===== the certified window, said out loud ================================
+
+   engine.js checks itself over 1800–2200 and answers outside it anyway, which
+   is right — the Sūrya Siddhānta page exists to look at 500 CE. What was wrong
+   until now is that a chart dated 1350 or 2400 came back looking exactly as
+   confident as one dated 1984 and said nothing about the difference.
+
+   So: when the date falls outside the window the report says which quantity
+   degrades, by how much, and what that is worth in the two units a reader here
+   actually works in. The figures are not written here — they come from
+   window.__kSpan, which carries the measurement committed in
+   source/test/fixtures/reference-ecliptic-wide.json, so the prose and the
+   measurement cannot drift apart. span-verify.mjs asserts that they haven't.
+
+   Inside the window this returns the empty string and the report is unchanged,
+   which is the behaviour span-verify.mjs pins first. */
+function arcLabel(sec){
+  return sec>=60 ? (sec/60).toFixed(1).replace(/\.0$/,"")+"′" : Math.round(sec)+"″";
+}
+function spanBand(D){
+  var S=null;
+  try{ S=window.__kSpan&&window.__kSpan(D.jd); }catch(e){ return ""; }
+  if(!S||S.inside) return "";
+  var H='<div class="kbox kwarn"><b>Outside the checked window — '+esc(S.yearLabel)+'</b>'
+    + 'This chart is still cast in full. What changes is how finely any of it can be '
+    + 'trusted, and that is worth stating rather than leaving to assumption. The engine '
+    + 'is held to an independent computation of the sky over '+S.span[0]+'–'+S.span[1]
+    + ' and this date lies outside it. ';
+  H += 'The ayanāṃśa is not the limit: its polynomials turn out to carry IAU 2006 '
+    + 'precession to five figures in both the linear and the quadratic term, so they stay '
+    + 'within about a third of an arcsecond as far out as 1000 CE — a fitted quadratic had '
+    + 'no right to extrapolate twenty centuries that well, and it does. ';
+  if(S.measured){
+    H += '<b>The Moon is the limit.</b> Against that independent sky it differs by up to '
+      + arcLabel(S.moonArcsec)+' here, against '+arcLabel(10)+' inside the window — roughly '
+      + (S.tithiSeconds>=120 ? Math.round(S.tithiSeconds/60)+' minutes' : S.tithiSeconds+' seconds')
+      + ' on a tithi, yoga or karaṇa end-instant, and about '
+      + (S.d60Fraction<1 ? 'a '+Math.round(1/S.d60Fraction)+'th of' : S.d60Fraction.toFixed(1)+'×')
+      + ' a D60 aṃśa. Either side may be responsible — the reference’s own lunar series '
+      + 'degrades away from its best range too — so this is a disagreement, and therefore an '
+      + 'uncertainty, not an error in the chart. ';
+    H += 'Rāśi, nakṣatra and pāda placements are untouched at this scale. Fine pañcāṅga '
+      + 'instants, the D60, and a daśā boundary read to the day are the things to hold '
+      + 'loosely.';
+  } else {
+    H += '<b>No figure is quoted for this date, deliberately.</b> The reference used to '
+      + 'measure the engine is itself only documented over 1000–3000 CE, and a number '
+      + 'invented beyond that would be worse than silence. Read the placements as '
+      + 'indicative and do not rest anything on a fine distinction.';
+  }
+  return H+'</div>';
+}

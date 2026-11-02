@@ -21,6 +21,77 @@ var D2R=Math.PI/180, R2D=180/Math.PI;
 function jdFromUTC(y,m,d,ut){if(m<=2){y--;m+=12;}var A=Math.floor(y/100),B=2-A+Math.floor(A/4);
   return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+B-1524.5+ut/24;}
 function Tof(jd){return (jd-2451545.0)/36525.0;}
+
+/* ===== THE CERTIFIED WINDOW ===============================================
+
+   1800–2200 is where this engine is CHECKED, not where it stops working. The
+   ayanāṃśa polynomials below were fitted over it; source/test/reference-verify
+   .mjs holds the positions to an independent ERFA sky across it on 400
+   stratified instants. Outside it the engine still answers — and must, because
+   the Sūrya Siddhānta page exists precisely to look at 500 CE — but until this
+   block existed it answered with exactly the same confidence and said nothing,
+   which is the one thing the project's own standard forbids.
+
+   WHAT ACTUALLY DEGRADES, measured rather than assumed. Two surprises:
+
+   The ayanāṃśa is NOT the problem. Its linear and quadratic coefficients turn
+   out to match IAU 2006's accumulated precession p_A to five figures
+   (5028.7967 vs 5028.7962 ″/cy; 1.105501 vs 1.105435 ″/cy²), so what the
+   polynomial omits is only p_A's cubic and higher — worth 0.31″ at 1000 CE,
+   0.16″ at 3000 CE, and not 37″ until 1500 BCE. A fitted quadratic had no
+   right to extrapolate twenty centuries that well; it does, and saying
+   otherwise in a caution would have been a false alarm.
+
+   THE MOON is the limit. Against the independent reference, worst-case
+   longitude disagreement by band (source/test/fixtures/reference-ecliptic-
+   wide.json, 300 samples 1000–3000, measured by span-verify.mjs):
+
+       1000–1399   205″      1400–1799    73″
+       1800–2200    10″  ← the certified window
+       2201–2599    56″      2600–3000   164″
+
+   Each figure is the measured worst case rounded UP, because a band that
+   quoted less than it measured would be a false reassurance. span-verify.mjs
+   remeasures all five from the committed fixture and fails on either side of
+   that: a figure below its measurement, or one more than twice it. The first
+   run of that check caught two of these quoted a tenth of an arcsecond low,
+   which is exactly the kind of slip a hand-typed caution accumulates.
+
+   Either side may be responsible — ERFA's own lunar series degrades away from
+   1900–2100 too — so this is a DISAGREEMENT and therefore an uncertainty, not
+   an engine error. It is quoted as such. Beyond 1000–3000 nothing is quoted at
+   all, because ERFA's planetary series is itself only documented over that
+   range and a number invented past it would be worse than silence. */
+var SPAN=[1800,2200];
+var SPAN_BANDS=[
+  {from:1000,to:1399,moon:205},
+  {from:1400,to:1799,moon:73},
+  {from:1800,to:2200,moon:10},
+  {from:2201,to:2599,moon:56},
+  {from:2600,to:3000,moon:164}
+];
+function yearOfJd(jd){ return 2000+(jd-2451545.0)/365.25; }
+/* The chart's standing relative to the window. Returns the year, whether it is
+   inside, the measured Moon disagreement for its band (null where nothing has
+   been measured), and that figure translated into the two units a reader of
+   this site actually works in: seconds on a pañcāṅga end-instant (the Moon's
+   elongation moves ~0.55″/s) and the fraction of a D60 aṃśa (1800″). */
+function spanStatus(jd){
+  var y=yearOfJd(jd), inside=(y>=SPAN[0]&&y<=SPAN[1]), band=null;
+  for(var i=0;i<SPAN_BANDS.length;i++)
+    if(y>=SPAN_BANDS[i].from&&y<=SPAN_BANDS[i].to){ band=SPAN_BANDS[i]; break; }
+  var moon=band?band.moon:null;
+  /* FLOOR, not round. A chart dated 21 July 500 CE is decimal year 500.55, and
+     rounding it labelled the band "501 CE" — a date the reader never typed.
+     Floor also gives the right astronomical-to-BCE conversion: year 0 is 1 BCE,
+     so y < 1 maps to (1 − floor y) BCE. */
+  var yi=Math.floor(y);
+  return {year:y, yearLabel:(yi<1?(1-yi)+" BCE":yi+" CE"),
+          inside:inside, span:SPAN.slice(), measured:!!band,
+          moonArcsec:moon,
+          tithiSeconds:moon==null?null:Math.round(moon/0.55),
+          d60Fraction:moon==null?null:moon/1800};
+}
 /* Lahiri ayanamsa — quadratic fitted to Swiss Ephemeris (residual < 0.001") */
 /* Ayanamsa. Each set of coefficients was fitted to Swiss Ephemeris over 1800-2200
    (quarterly samples) and the residual measured. Lahiri, Raman and Krishnamurti
@@ -1238,7 +1309,13 @@ try{ window.__AVT=AVT; window.__ayan=ayanamsa;
         and a divergence would be invisible — both would return a plausible
         sign. Exposing this one lets the suite assert that the two agree across
         the whole zodiac, rather than leaving it to a reading of the source. */
-     window.__vargaSign=vargaSign; }catch(e){}
+     window.__vargaSign=vargaSign;
+     /* The certified window, so the report and the ayanāṃśa pane can say what
+        a date outside it costs instead of leaving a reader to assume there is
+        no cost. SPAN_BANDS travels with it so the band's figures can be
+        asserted against the committed measurement rather than retyped. */
+     window.__kSpan=spanStatus; window.__kSpanBands=SPAN_BANDS;
+     window.__kSpanWindow=SPAN; }catch(e){}
 /* sidereal lagna for the birth input shifted by offMin minutes — used by the birth-time check */
 /* The pañcāṅga primitives, exposed for pages outside the report bundle. now.html
    and the calendar both need the tithi, the māsa and the ṛtu at an arbitrary

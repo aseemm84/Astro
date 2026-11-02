@@ -27,7 +27,52 @@ source/
   test/reference-verify.mjs       the engine against an INDEPENDENT sky
   test/make-reference-fixture.py  writes the fixture that harness holds it to
   test/fixtures/                  reference-ecliptic.json — 400 ERFA samples
+  test/span-verify.mjs            the certified window and its band
 ```
+
+## The certified window
+
+1800–2200 is where the engine is **checked**, not where it stops working. The
+ayanāṃśa polynomials were fitted over it and `reference-verify.mjs` holds the
+positions to an independent sky across it. Outside it the engine still answers —
+the Sūrya Siddhānta page exists to look at 500 CE, and refusing would make it
+useless — but the report now says what the date costs instead of answering with
+the same confidence and saying nothing.
+
+`window.__kSpan(jd)` returns the year, whether it is inside, and the measured
+Moon disagreement for its band; `spanBand(D)` in `report/core/01-helpers.js`
+renders that as a box, and returns the empty string inside the window. The band
+leads the **Overview** tab, not only the Full report.
+
+Two things the measurement settled, both contrary to the obvious guess:
+
+* **The ayanāṃśa is not the limit.** Its linear and quadratic coefficients
+  reproduce IAU 2006 accumulated precession to five figures (5028.7967 against
+  5028.7962 ″/cy; 1.105501 against 1.105435 ″/cy²), so the polynomial omits only
+  that series' cubic and higher — 0.31″ at 1000 CE, 0.16″ at 3000 CE, and not
+  37″ until 1500 BCE. A quadratic fitted over four centuries had no right to
+  extrapolate twenty that well. Cautioning about it would have been a false
+  alarm, and would have sent someone tightening the wrong thing.
+* **The Moon is the limit.** Worst-case disagreement with the reference by band,
+  from `fixtures/reference-ecliptic-wide.json` (300 samples, 1000–3000):
+  205″ for 1000–1399, 73″ for 1400–1799, **10″ inside the window**, 56″ for
+  2201–2599, 164″ for 2600–3000. Either side may be responsible — ERFA's own
+  lunar series degrades away from 1900–2100 too — so the band calls it a
+  disagreement and therefore an uncertainty, not an engine error. Past 1000–3000
+  nothing is quoted at all, because the reference is itself only documented over
+  that range.
+
+Regenerate the wide fixture with
+`python3 test/make-reference-fixture.py 300 1000 3000 wide`. `span-verify.mjs`
+remeasures all five bands from it and fails if a quoted figure falls below its
+measurement **or** exceeds twice it — the first run caught two quoted a tenth of
+an arcsecond low, which is the slip a hand-typed caution accumulates.
+
+Its last section casts real charts in a browser and reads `innerText`. That
+exists because the first version of the band was pushed onto the Full report
+only: it was in the DOM, in no visible tab, and every other check passed. A
+disclosure nobody can read is not a disclosure, and `innerHTML` cannot tell the
+difference.
 
 ## The one check that is not the site checking itself
 

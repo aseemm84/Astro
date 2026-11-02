@@ -2473,7 +2473,7 @@ html[data-theme="emerald"] .wsnext.lead{
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-11-02.d993de1";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself — of forty-four in all. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html" class="active">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
+</script><script>window.__kBuild="2026-11-02.a80b445";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself — of forty-four in all. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html" class="active">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
 
 <p class="mochartbar" id="mo-chart"></p>
 <div id="mo-host" class="kreport"><p class="k-status" id="mo-status">Loading the scenes…</p></div>
@@ -2770,6 +2770,77 @@ var D2R=Math.PI/180, R2D=180/Math.PI;
 function jdFromUTC(y,m,d,ut){if(m<=2){y--;m+=12;}var A=Math.floor(y/100),B=2-A+Math.floor(A/4);
   return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+B-1524.5+ut/24;}
 function Tof(jd){return (jd-2451545.0)/36525.0;}
+
+/* ===== THE CERTIFIED WINDOW ===============================================
+
+   1800–2200 is where this engine is CHECKED, not where it stops working. The
+   ayanāṃśa polynomials below were fitted over it; source/test/reference-verify
+   .mjs holds the positions to an independent ERFA sky across it on 400
+   stratified instants. Outside it the engine still answers — and must, because
+   the Sūrya Siddhānta page exists precisely to look at 500 CE — but until this
+   block existed it answered with exactly the same confidence and said nothing,
+   which is the one thing the project's own standard forbids.
+
+   WHAT ACTUALLY DEGRADES, measured rather than assumed. Two surprises:
+
+   The ayanāṃśa is NOT the problem. Its linear and quadratic coefficients turn
+   out to match IAU 2006's accumulated precession p_A to five figures
+   (5028.7967 vs 5028.7962 ″/cy; 1.105501 vs 1.105435 ″/cy²), so what the
+   polynomial omits is only p_A's cubic and higher — worth 0.31″ at 1000 CE,
+   0.16″ at 3000 CE, and not 37″ until 1500 BCE. A fitted quadratic had no
+   right to extrapolate twenty centuries that well; it does, and saying
+   otherwise in a caution would have been a false alarm.
+
+   THE MOON is the limit. Against the independent reference, worst-case
+   longitude disagreement by band (source/test/fixtures/reference-ecliptic-
+   wide.json, 300 samples 1000–3000, measured by span-verify.mjs):
+
+       1000–1399   205″      1400–1799    73″
+       1800–2200    10″  ← the certified window
+       2201–2599    56″      2600–3000   164″
+
+   Each figure is the measured worst case rounded UP, because a band that
+   quoted less than it measured would be a false reassurance. span-verify.mjs
+   remeasures all five from the committed fixture and fails on either side of
+   that: a figure below its measurement, or one more than twice it. The first
+   run of that check caught two of these quoted a tenth of an arcsecond low,
+   which is exactly the kind of slip a hand-typed caution accumulates.
+
+   Either side may be responsible — ERFA's own lunar series degrades away from
+   1900–2100 too — so this is a DISAGREEMENT and therefore an uncertainty, not
+   an engine error. It is quoted as such. Beyond 1000–3000 nothing is quoted at
+   all, because ERFA's planetary series is itself only documented over that
+   range and a number invented past it would be worse than silence. */
+var SPAN=[1800,2200];
+var SPAN_BANDS=[
+  {from:1000,to:1399,moon:205},
+  {from:1400,to:1799,moon:73},
+  {from:1800,to:2200,moon:10},
+  {from:2201,to:2599,moon:56},
+  {from:2600,to:3000,moon:164}
+];
+function yearOfJd(jd){ return 2000+(jd-2451545.0)/365.25; }
+/* The chart's standing relative to the window. Returns the year, whether it is
+   inside, the measured Moon disagreement for its band (null where nothing has
+   been measured), and that figure translated into the two units a reader of
+   this site actually works in: seconds on a pañcāṅga end-instant (the Moon's
+   elongation moves ~0.55″/s) and the fraction of a D60 aṃśa (1800″). */
+function spanStatus(jd){
+  var y=yearOfJd(jd), inside=(y>=SPAN[0]&&y<=SPAN[1]), band=null;
+  for(var i=0;i<SPAN_BANDS.length;i++)
+    if(y>=SPAN_BANDS[i].from&&y<=SPAN_BANDS[i].to){ band=SPAN_BANDS[i]; break; }
+  var moon=band?band.moon:null;
+  /* FLOOR, not round. A chart dated 21 July 500 CE is decimal year 500.55, and
+     rounding it labelled the band "501 CE" — a date the reader never typed.
+     Floor also gives the right astronomical-to-BCE conversion: year 0 is 1 BCE,
+     so y < 1 maps to (1 − floor y) BCE. */
+  var yi=Math.floor(y);
+  return {year:y, yearLabel:(yi<1?(1-yi)+" BCE":yi+" CE"),
+          inside:inside, span:SPAN.slice(), measured:!!band,
+          moonArcsec:moon,
+          tithiSeconds:moon==null?null:Math.round(moon/0.55),
+          d60Fraction:moon==null?null:moon/1800};
+}
 /* Lahiri ayanamsa — quadratic fitted to Swiss Ephemeris (residual < 0.001") */
 /* Ayanamsa. Each set of coefficients was fitted to Swiss Ephemeris over 1800-2200
    (quarterly samples) and the residual measured. Lahiri, Raman and Krishnamurti
@@ -3987,7 +4058,13 @@ try{ window.__AVT=AVT; window.__ayan=ayanamsa;
         and a divergence would be invisible — both would return a plausible
         sign. Exposing this one lets the suite assert that the two agree across
         the whole zodiac, rather than leaving it to a reading of the source. */
-     window.__vargaSign=vargaSign; }catch(e){}
+     window.__vargaSign=vargaSign;
+     /* The certified window, so the report and the ayanāṃśa pane can say what
+        a date outside it costs instead of leaving a reader to assume there is
+        no cost. SPAN_BANDS travels with it so the band's figures can be
+        asserted against the committed measurement rather than retyped. */
+     window.__kSpan=spanStatus; window.__kSpanBands=SPAN_BANDS;
+     window.__kSpanWindow=SPAN; }catch(e){}
 /* sidereal lagna for the birth input shifted by offMin minutes — used by the birth-time check */
 /* The pañcāṅga primitives, exposed for pages outside the report bundle. now.html
    and the calendar both need the tithi, the māsa and the ṛtu at an arbitrary
@@ -4575,6 +4652,59 @@ function rname(r){if(r==null)return "?";if(typeof r==="string")return r;return r
 function ridx(r){if(r&&typeof r==="object"&&r.idx!=null)return r.idx;var n=rname(r);var i=SIGNS.indexOf(n);return i<0?0:i;}
 
 
+
+/* ===== the certified window, said out loud ================================
+
+   engine.js checks itself over 1800–2200 and answers outside it anyway, which
+   is right — the Sūrya Siddhānta page exists to look at 500 CE. What was wrong
+   until now is that a chart dated 1350 or 2400 came back looking exactly as
+   confident as one dated 1984 and said nothing about the difference.
+
+   So: when the date falls outside the window the report says which quantity
+   degrades, by how much, and what that is worth in the two units a reader here
+   actually works in. The figures are not written here — they come from
+   window.__kSpan, which carries the measurement committed in
+   source/test/fixtures/reference-ecliptic-wide.json, so the prose and the
+   measurement cannot drift apart. span-verify.mjs asserts that they haven't.
+
+   Inside the window this returns the empty string and the report is unchanged,
+   which is the behaviour span-verify.mjs pins first. */
+function arcLabel(sec){
+  return sec>=60 ? (sec/60).toFixed(1).replace(/\.0$/,"")+"′" : Math.round(sec)+"″";
+}
+function spanBand(D){
+  var S=null;
+  try{ S=window.__kSpan&&window.__kSpan(D.jd); }catch(e){ return ""; }
+  if(!S||S.inside) return "";
+  var H='<div class="kbox kwarn"><b>Outside the checked window — '+esc(S.yearLabel)+'</b>'
+    + 'This chart is still cast in full. What changes is how finely any of it can be '
+    + 'trusted, and that is worth stating rather than leaving to assumption. The engine '
+    + 'is held to an independent computation of the sky over '+S.span[0]+'–'+S.span[1]
+    + ' and this date lies outside it. ';
+  H += 'The ayanāṃśa is not the limit: its polynomials turn out to carry IAU 2006 '
+    + 'precession to five figures in both the linear and the quadratic term, so they stay '
+    + 'within about a third of an arcsecond as far out as 1000 CE — a fitted quadratic had '
+    + 'no right to extrapolate twenty centuries that well, and it does. ';
+  if(S.measured){
+    H += '<b>The Moon is the limit.</b> Against that independent sky it differs by up to '
+      + arcLabel(S.moonArcsec)+' here, against '+arcLabel(10)+' inside the window — roughly '
+      + (S.tithiSeconds>=120 ? Math.round(S.tithiSeconds/60)+' minutes' : S.tithiSeconds+' seconds')
+      + ' on a tithi, yoga or karaṇa end-instant, and about '
+      + (S.d60Fraction<1 ? 'a '+Math.round(1/S.d60Fraction)+'th of' : S.d60Fraction.toFixed(1)+'×')
+      + ' a D60 aṃśa. Either side may be responsible — the reference’s own lunar series '
+      + 'degrades away from its best range too — so this is a disagreement, and therefore an '
+      + 'uncertainty, not an error in the chart. ';
+    H += 'Rāśi, nakṣatra and pāda placements are untouched at this scale. Fine pañcāṅga '
+      + 'instants, the D60, and a daśā boundary read to the day are the things to hold '
+      + 'loosely.';
+  } else {
+    H += '<b>No figure is quoted for this date, deliberately.</b> The reference used to '
+      + 'measure the engine is itself only documented over 1000–3000 CE, and a number '
+      + 'invented beyond that would be worse than silence. Read the placements as '
+      + 'indicative and do not rest anything on a fine distinction.';
+  }
+  return H+'</div>';
+}
 /* ---------- divisional chart lagnas (formulas verified against engine positions) ---------- */
 function vargaLagna(code,sid){
   var s=Math.floor(sid/30)%12,d=sid-s*30,odd=(s%2===0),M=s%3,p;
@@ -9590,7 +9720,22 @@ function ayanPane(D,J){
     'civil convention your other sources use — and then apply it everywhere: D1, every varga, every daśā, every '+
     'transit. Mixing frames between sections is the one error here that is unambiguous. Where a placement above '+
     'is marked <i>on the edge</i> or <i>close</i>, say which ayanāṃśa the reading assumes rather than stating it '+
-    'flat. See '+tabLink("btime","Birth-time check")+' for the other axis.</div>';
+    'flat. See '+tabLink("btime","Birth-time check")+' for the other axis.</div>'+
+    /* This pane is where someone compares distant epochs, so it is where the
+       question "do these polynomials still hold out there?" actually arises.
+       The answer is better than expected and worth saying, because the natural
+       assumption — that a quadratic fitted over four centuries cannot be
+       trusted over twenty — would send a reader fixing the wrong thing. */
+    '<div class="kbox"><b>How far these hold</b>Every polynomial above was fitted over 1800–2200, '+
+    'but their linear and quadratic terms turn out to reproduce IAU 2006 accumulated precession to '+
+    'five figures (5028.7967 against 5028.7962 ″/century; 1.105501 against 1.105435 ″/century²). '+
+    'What they omit is only that series’ cubic and higher, worth about 0.3″ as far back as '+
+    '1000 CE and 0.2″ as far forward as 3000 CE — well under a hundredth of a nakṣatra pāda. The '+
+    'star-anchored definitions (True Chitrapakṣa, True Revatī, True Puṣya) carry their usual ≈20″ of '+
+    'non-polynomial wobble on top, which is the star’s own apparent motion and not the '+
+    'polynomial’s shortcoming. Outside 1800–2200 the quantity that actually degrades is the '+
+    'Moon, not the ayanāṃśa, and a chart dated outside that window says so at the top of '+
+    tabLink("overview","Overview")+'.</div>';
 }
 /* --- dignity --- */
 function gbDignity(D,J,p){
@@ -24091,6 +24236,7 @@ window.buildKundliReport=function(J){
   if((J.substrate_stamp||"").indexOf("LearnHoro built-in")>=0)
     H.push('<div class="kbox"><b>Computed in your browser</b>Every figure here — positions, ashtakavarga, yogas, Bhay\u0101ta/Bhabhoga and the da\u015b\u0101 tree — was computed locally by the built-in engine (astronomy-engine, MIT) with the '+esc(ayanNameOf(J))+' ayan\u0101\u1e43\u015ba; no network call was made, and this page carries no code that could make one. \u0100r\u016b\u1e0dha exception cases follow the rule this site documents: the 4th from the house when the pada falls in the 7th.</div>');
   H.push('<div class="kbox kwarn"><b>What this is</b>A technical presentation of a traditional system, for study and reflection — not a prediction, diagnosis, or basis for medical, financial, legal or personal decisions. Positions and engine-computed values come from the chart engine; houses, nakṣatra-pādas, combustion, Moolatrikona by degree and the daśā sequence are recomputed here. Charts with planets at sign edges are sensitive to the exact birth time.</div>');
+  H.push(spanBand(D));
   var full=H.join("").replace('<!--KINDEX-->', sectionIndex());
   // runtime hooks for the interactive panes (events, compatibility, today's tools)
   window.__kApi={
@@ -24115,7 +24261,13 @@ window.buildKundliReport=function(J){
   };
   function pane(fn,name){ try{ return fn(); }catch(e){ return paneErr(name,e); } }
   var PANES=[
-    ["overview","Overview",function(){ return glancePane(D,J)+'<h4 class="ksub">Explore the chart</h4>'+interactiveChart(D,J); }],
+    /* The out-of-window band leads the Overview, not just the Full report.
+       It was pushed only onto the full report at first, which put it in a
+       section the default view does not show — the band was in the HTML and
+       invisible, which is the same as absent. A disclosure nobody reads is not
+       a disclosure, so it goes where the reader lands. It returns the empty
+       string for every date inside the window, which span-verify.mjs pins. */
+    ["overview","Overview",function(){ return spanBand(D)+glancePane(D,J)+'<h4 class="ksub">Explore the chart</h4>'+interactiveChart(D,J); }],
     ["now","Now",function(){ return nowPane(D,J); }],
     ["timeline","Life timeline",function(){ return timelinePane(D); }],
     ["path","Reading path",function(){ return pathPane(D,J); }],
