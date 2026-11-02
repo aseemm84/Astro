@@ -307,16 +307,30 @@ function Tof(jd){return (jd-2451545.0)/36525.0;}
    longitude disagreement by band (source/test/fixtures/reference-ecliptic-
    wide.json, 300 samples 1000–3000, measured by span-verify.mjs):
 
-       1000–1399   205″      1400–1799    73″
-       1800–2200    10″  ← the certified window
-       2201–2599    56″      2600–3000   164″
+       band         Moon   tithi end   nakṣatra end
+       1000–1399    205″       452 s          416 s
+       1400–1799     73″       162 s          148 s
+       1800–2200     15″        34 s           31 s   ← the certified window
+       2201–2599     56″       123 s          113 s
+       2600–3000    164″       359 s          333 s
 
-   Each figure is the measured worst case rounded UP, because a band that
-   quoted less than it measured would be a false reassurance. span-verify.mjs
-   remeasures all five from the committed fixture and fails on either side of
-   that: a figure below its measurement, or one more than twice it. The first
-   run of that check caught two of these quoted a tenth of an arcsecond low,
-   which is exactly the kind of slip a hand-typed caution accumulates.
+   The two time columns are what the longitude column is actually worth to a
+   reader of this site, and they are MEASURED, not divided out of the Moon
+   figure. A tithi, yoga or karaṇa boundary is a condition on the Moon's
+   ELONGATION from the Sun, which closes at about 0.45″/s at its slowest, so
+   the two errors combine through the elongation rather than through the Moon's
+   own motion — estimating it from the Moon alone understated 1000–1399 by a
+   fifth. A nakṣatra boundary is the Moon alone at about 0.49″/s.
+
+   Each figure is the measured worst case rounded UP, because a band quoting
+   less than it measured would be a false reassurance. span-verify.mjs
+   remeasures every one of them and fails on either side: a figure below its
+   measurement, or one more than twice it. That check has now caught three real
+   slips — two bands quoted a tenth of an arcsecond low, and the certified
+   window quoted 10″ because it had been remeasured from the 60 samples the
+   WIDE fixture happens to place inside it, when the dense 400-sample fixture
+   that actually certifies the window measures 14.8″. Each band is paired with
+   the fixture that samples it best now, and the harness asserts the pairing.
 
    Either side may be responsible — ERFA's own lunar series degrades away from
    1900–2100 too — so this is a DISAGREEMENT and therefore an uncertainty, not
@@ -325,18 +339,18 @@ function Tof(jd){return (jd-2451545.0)/36525.0;}
    range and a number invented past it would be worse than silence. */
 var SPAN=[1800,2200];
 var SPAN_BANDS=[
-  {from:1000,to:1399,moon:205},
-  {from:1400,to:1799,moon:73},
-  {from:1800,to:2200,moon:10},
-  {from:2201,to:2599,moon:56},
-  {from:2600,to:3000,moon:164}
+  {from:1000,to:1399,moon:205,instant:452,nak:416,ref:"wide"},
+  {from:1400,to:1799,moon:73, instant:162,nak:148,ref:"wide"},
+  {from:1800,to:2200,moon:15, instant:34, nak:31, ref:"dense"},
+  {from:2201,to:2599,moon:56, instant:123,nak:113,ref:"wide"},
+  {from:2600,to:3000,moon:164,instant:359,nak:333,ref:"wide"}
 ];
 function yearOfJd(jd){ return 2000+(jd-2451545.0)/365.25; }
-/* The chart's standing relative to the window. Returns the year, whether it is
-   inside, the measured Moon disagreement for its band (null where nothing has
-   been measured), and that figure translated into the two units a reader of
-   this site actually works in: seconds on a pañcāṅga end-instant (the Moon's
-   elongation moves ~0.55″/s) and the fraction of a D60 aṃśa (1800″). */
+/* The chart's standing relative to the window: the year, whether it is inside,
+   and for its band the measured Moon disagreement, the measured worst-case
+   error on a tithi/yoga/karaṇa end-instant, the same for a nakṣatra boundary,
+   and the Moon figure as a fraction of a D60 aṃśa (1800″). All null outside
+   1000–3000, where nothing has been measured. */
 function spanStatus(jd){
   var y=yearOfJd(jd), inside=(y>=SPAN[0]&&y<=SPAN[1]), band=null;
   for(var i=0;i<SPAN_BANDS.length;i++)
@@ -350,7 +364,9 @@ function spanStatus(jd){
   return {year:y, yearLabel:(yi<1?(1-yi)+" BCE":yi+" CE"),
           inside:inside, span:SPAN.slice(), measured:!!band,
           moonArcsec:moon,
-          tithiSeconds:moon==null?null:Math.round(moon/0.55),
+          /* measured, not divided out of the Moon figure — see the note above */
+          tithiSeconds:band?band.instant:null,
+          nakSeconds:band?band.nak:null,
           d60Fraction:moon==null?null:moon/1800};
 }
 /* Lahiri ayanamsa — quadratic fitted to Swiss Ephemeris (residual < 0.001") */

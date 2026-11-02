@@ -27,7 +27,7 @@ source/
   test/reference-verify.mjs       the engine against an INDEPENDENT sky
   test/make-reference-fixture.py  writes the fixture that harness holds it to
   test/fixtures/                  reference-ecliptic.json — 400 ERFA samples
-  test/span-verify.mjs            the certified window and its band
+  test/span-verify.mjs            the certified window, its band and tolerances
 ```
 
 ## The certified window
@@ -64,9 +64,61 @@ Two things the measurement settled, both contrary to the obvious guess:
 
 Regenerate the wide fixture with
 `python3 test/make-reference-fixture.py 300 1000 3000 wide`. `span-verify.mjs`
-remeasures all five bands from it and fails if a quoted figure falls below its
-measurement **or** exceeds twice it — the first run caught two quoted a tenth of
-an arcsecond low, which is the slip a hand-typed caution accumulates.
+remeasures every quoted figure and fails if one falls below its measurement
+**or** exceeds twice it. That check has caught three real slips so far: two
+bands quoted a tenth of an arcsecond low, and the certified window quoted 10″
+because it had been remeasured from the 60 samples the *wide* fixture happens to
+place inside it, when the dense 400-sample fixture that actually certifies the
+window measures 14.8″. **Each band now names the fixture that samples it best
+(`ref: "dense"` or `"wide"`) and the harness asserts the pairing** — a band
+remeasured from the wrong fixture is the failure mode that passes every check.
+
+### What the figures are worth in time
+
+Each band also carries the end-instant error in **seconds**, measured rather
+than divided out of the Moon figure. A tithi, yoga or karaṇa boundary is a
+condition on the Moon's *elongation* from the Sun, which closes at about
+0.45″/s at its slowest, so the Sun and Moon errors combine through the
+elongation and not through the Moon's own motion — estimating it from the Moon
+alone understated 1000–1399 by about a fifth. A nakṣatra boundary is the Moon
+alone, at about 0.49″/s.
+
+| Band | Moon | tithi end | nakṣatra end |
+|---|---|---|---|
+| 1000–1399 | 205″ | 452 s | 416 s |
+| 1400–1799 | 73″ | 162 s | 148 s |
+| **1800–2200** | **15″** | **34 s** | **31 s** |
+| 2201–2599 | 56″ | 123 s | 113 s |
+| 2600–3000 | 164″ | 359 s | 333 s |
+
+Inside the window both timing figures are under a minute, which is **why
+printing every instant to the minute is honest** — and nothing on the site ever
+printed a computed instant to the second, so that part was already right. What
+was missing is that an unqualified "05:42" reads as exact. `now.html` and
+`calendar.html` now carry a tolerance line filled from these same figures at
+render time, so the sentence cannot drift from the measurement.
+
+The split between the two pages is deliberate: **the calendar refuses outside
+1800–2200 and the chart engine discloses.** `panchanga.js` has enforced
+`NP.RANGE` all along and the year input declares `min`/`max` on itself, so a
+month grid of end-times nobody should rely on is never printed; a chart for 500
+CE is worth casting with a band on it. That also means the calendar's note needs
+no out-of-window branch — one would be unreachable code masquerading as a
+safeguard.
+
+### One thing the ΔT line in `reference-verify.mjs` does *not* mean
+
+It prints the gap between the UT that puts the engine at the fixture's TT and
+the fixture's UTC — about 375 s by 2200. An earlier version of that comment
+called it "a real uncertainty in civil-time results after 2027". **That
+overstated it.** astropy runs here with no IERS data, so its UT1 is just UTC and
+its TT−UTC is the definitional 32.184 s plus leap seconds — not a ΔT model at
+all. The printed quantity is therefore very nearly **ΔT itself**, not the spread
+between predictions of it. astronomy-engine uses an observed table through 2027
+and a prediction after; predictions diverge the further out they run; and
+nothing here measures that spread, because two sources are not enough and one of
+them is not modelling the quantity. It is printed as a magnitude and nothing is
+claimed from it.
 
 Its last section casts real charts in a browser and reads `innerText`. That
 exists because the first version of the band was pushed onto the Full report

@@ -404,6 +404,34 @@
       card("Muhūrta", hc?hc.muhurta:"—",
            hc?(hc.mi+" of 30 &middot; "+clock(hc.mFrom,tz)+" – "+clock(hc.mTo,tz)):"");
 
+    /* How far to trust the end-times just rendered.
+       Every instant on this page is printed to the minute, which is the right
+       precision and already was — but nothing said WHY it stops there, and an
+       unqualified "05:42" reads as exact. The figures come from the engine's
+       measured bands (source/test/fixtures, remeasured by span-verify.mjs) and
+       not from a sentence typed here, so the claim and the measurement cannot
+       drift apart. The limit is the Moon: a tithi, yoga or karaṇa boundary is a
+       condition on its elongation from the Sun, which closes at about half an
+       arcsecond per second, so a Moon good to fifteen arcseconds places that
+       boundary to about half a minute. */
+    var tol=$("nowtol");
+    if(tol){
+      var SP=null;
+      try{ SP=window.__kSpan&&window.__kSpan(now/86400000+2440587.5); }catch(e){}
+      var secs=function(s){ return s<100?(s+" seconds"):(Math.round(s/60)+" minutes"); };
+      tol.innerHTML = (SP&&SP.tithiSeconds!=null)
+        ? "<b>How exact these are.</b> Every time above is given to the minute, and that is as "+
+          "fine as the computation honestly goes. Checked against an independent computation of "+
+          "the same sky over "+SP.span[0]+"–"+SP.span[1]+", the tithi, yoga and karaṇa "+
+          "end-instants sit within about "+secs(SP.tithiSeconds)+" of it, and a nakṣatra "+
+          "boundary within about "+secs(SP.nakSeconds)+". Sunrise, and everything counted from "+
+          "it — the ghaṭī, the muhūrta, the horā, the "+
+          "choghaḍiyā, rāhu kāla — also carries the convention named "+
+          "on its card, which against a printed pañcāṅga is usually the larger "+
+          "difference of the two."
+        : "";
+    }
+
     var later=$("nowlater");
     if(later) later.innerHTML=
       card("Horā", hora?SA_GRAHA[hora.lord]:"—",

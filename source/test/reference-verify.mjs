@@ -27,9 +27,18 @@
  *    timescale disagreement, not an ephemeris error, and which only became
  *    obvious when the residual was bucketed by half-century. ttUt() below
  *    solves for the UT that puts the engine at the fixture's TT, so the
- *    comparison is of astronomy alone. The ΔT disagreement is then measured
- *    and PRINTED, because it is a real uncertainty in civil-time results after
- *    2027 and belongs in the open, but it is not a failure.
+ *    comparison is of astronomy alone. The gap is then measured and PRINTED,
+ *    but read it for what it is: astropy here runs with no IERS data, so its
+ *    UT1 is just UTC and its TT−UTC is the definitional 32.184 s plus leap
+ *    seconds, not a ΔT model at all. The quantity printed below is therefore
+ *    very nearly ΔT ITSELF — about 375 s by 2200 — and NOT the uncertainty in
+ *    predicting it. An earlier version of this comment called it "a real
+ *    uncertainty in civil-time results after 2027", which overstated it: the
+ *    honest position is that astronomy-engine uses an observed ΔT table
+ *    through 2027 and a prediction after, that predictions diverge from each
+ *    other more the further out they run, and that NOTHING HERE MEASURES THAT
+ *    SPREAD — two sources are not enough, and one of them is not modelling the
+ *    quantity. So it is printed as a magnitude and nothing is claimed from it.
  *
  * 2. THE BARS ARE NOT ALL EQUAL, AND THE LOOSE ONES ARE NOT CLAIMS. ERFA's
  *    plan94 has a documented longitude error of 71″ for Jupiter and 81″ for
@@ -339,12 +348,14 @@ head("the ascendant branch fix corrects the poles and nothing else");
   }
 }
 
-head("the Δ T disagreement, stated rather than failed");
+head("the Δ T magnitude, stated and nothing claimed from it");
 const D = stats(dT);
 console.log("  the UT that puts the engine at the fixture's TT differs from the fixture's");
 console.log("  UTC by " + f3(D.mean) + " s on average and " + f3(D.max) + " s at worst.");
-console.log("  That is the gap between astronomy-engine's Δ T prediction and a TAI-derived");
-console.log("  TT, and after 2027 it is a genuine uncertainty in any civil-time result.");
+console.log("  Read that as Δ T ITSELF, not as an uncertainty in it: astropy runs here with");
+console.log("  no IERS data, so its UT1 is UTC and its TT−UTC is definitional. Nothing in");
+console.log("  this harness measures the SPREAD between Δ T predictions, which is the thing");
+console.log("  that actually limits a civil-time result after 2027.");
 {
   const eps = Object.keys(byEpoch).sort((a, b) => a - b);
   console.log("  Moon longitude residual by half-century, AT MATCHED TT (arcsec, worst):");

@@ -109,6 +109,14 @@ function ridx(r){if(r&&typeof r==="object"&&r.idx!=null)return r.idx;var n=rname
 function arcLabel(sec){
   return sec>=60 ? (sec/60).toFixed(1).replace(/\.0$/,"")+"′" : Math.round(sec)+"″";
 }
+/* Seconds of TIME, read the way a person would say them. Half a minute stays
+   seconds; past two minutes nobody wants "452 seconds". */
+function secLabel(s){
+  if(s==null) return "—";
+  if(s<100) return Math.round(s)+" seconds";
+  var m=s/60;
+  return (m<10?m.toFixed(1).replace(/\.0$/,""):String(Math.round(m)))+" minutes";
+}
 function spanBand(D){
   var S=null;
   try{ S=window.__kSpan&&window.__kSpan(D.jd); }catch(e){ return ""; }
@@ -124,16 +132,16 @@ function spanBand(D){
     + 'no right to extrapolate twenty centuries that well, and it does. ';
   if(S.measured){
     H += '<b>The Moon is the limit.</b> Against that independent sky it differs by up to '
-      + arcLabel(S.moonArcsec)+' here, against '+arcLabel(10)+' inside the window — roughly '
-      + (S.tithiSeconds>=120 ? Math.round(S.tithiSeconds/60)+' minutes' : S.tithiSeconds+' seconds')
-      + ' on a tithi, yoga or karaṇa end-instant, and about '
+      + arcLabel(S.moonArcsec)+' here, against '+arcLabel(15)+' inside the window. Measured '
+      + 'through to what that is worth: up to '+secLabel(S.tithiSeconds)+' on a tithi, yoga or '
+      + 'karaṇa end-instant, up to '+secLabel(S.nakSeconds)+' on a nakṣatra boundary, and about '
       + (S.d60Fraction<1 ? 'a '+Math.round(1/S.d60Fraction)+'th of' : S.d60Fraction.toFixed(1)+'×')
       + ' a D60 aṃśa. Either side may be responsible — the reference’s own lunar series '
       + 'degrades away from its best range too — so this is a disagreement, and therefore an '
       + 'uncertainty, not an error in the chart. ';
-    H += 'Rāśi, nakṣatra and pāda placements are untouched at this scale. Fine pañcāṅga '
-      + 'instants, the D60, and a daśā boundary read to the day are the things to hold '
-      + 'loosely.';
+    H += 'Rāśi and pāda placements are untouched at this scale, and so is the nakṣatra unless '
+      + 'the Moon sits within '+secLabel(S.nakSeconds)+' of its edge. Fine pañcāṅga instants, '
+      + 'the D60, and a daśā boundary read to the day are the things to hold loosely.';
   } else {
     H += '<b>No figure is quoted for this date, deliberately.</b> The reference used to '
       + 'measure the engine is itself only documented over 1000–3000 CE, and a number '

@@ -899,6 +899,34 @@
       "Sunrise is " + esc(NP.convLabel()) + ", and every figure on this page " +
       "follows from it — a Hindu calendar is only valid for the place it was " +
       "computed for.";
+    /* How far to trust this month's end-times — and it has to follow the month
+       on screen, because this page navigates to any year in range and a single
+       present-day figure would be wrong at both ends. The numbers come from the
+       engine's measured bands rather than from a sentence written here, so they
+       cannot drift from what span-verify.mjs asserts. */
+    var tl = $("ctol");
+    if (tl) {
+      var SP = null;
+      try { SP = window.__kSpan && window.__kSpan(2451545 + (S.y + 0.5 - 2000) * 365.25); }
+      catch (e) {}
+      var secs = function (s) {
+        return s < 100 ? (s + " seconds") : (Math.round(s / 60) + " minutes");
+      };
+      tl.innerHTML = (SP && SP.tithiSeconds != null)
+        ? "<b>How exact the end-times are.</b> Every one is given to the minute, which is as "
+          + "fine as the computation honestly goes. Against an independent computation of the "
+          + "same sky, a tithi, yoga or karaṇa end here sits within about " + secs(SP.tithiSeconds)
+          + " of it, and a nakṣatra boundary within about " + secs(SP.nakSeconds) + "."
+          /* No out-of-window branch here, deliberately: NP.RANGE already
+             refuses 1800–2200 and renderMonth never runs outside it, so a
+             wider-figures sentence would be unreachable code pretending to be
+             a safeguard. The calendar REFUSES where the chart engine
+             DISCLOSES, which is the right split — a month grid of unreliable
+             end-times is not worth printing, a chart for 500 CE is. */
+          + " The sunrise convention named above is a separate difference, and against a "
+          + "printed pañcāṅga usually the larger of the two."
+        : "";
+    }
     writeHash();
   }
 
