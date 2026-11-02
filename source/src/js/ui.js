@@ -944,7 +944,12 @@
       if(b.__bound) return; b.__bound=true;
       b.addEventListener("click",function(ev){
         ev.preventDefault();
-        try{ if(window.__printFullReport) window.__printFullReport(); }catch(e){}
+        /* the app writes a file the browser can print; everywhere else the
+           browser's own dialog is right there */
+        try{
+          if(window.__isApp && window.__printStandalone) window.__printStandalone();
+          else if(window.__printFullReport) window.__printFullReport();
+        }catch(e){}
       });
     });
     r.querySelectorAll("[data-ktab]").forEach(function(b){

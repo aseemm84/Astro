@@ -1579,3 +1579,12 @@ html[data-theme] .moreadh,html[data-theme] .moreadf{color:var(--text-soft)}
   text-transform:uppercase;letter-spacing:.05em}
 .cerfield input{padding:6px 8px;border:1px solid var(--line);border-radius:5px;
   background:var(--surface-3,#fff);color:inherit;font:inherit;font-size:13px}
+
+/* The line the app's two hand-off buttons write under themselves. An alert
+   would be a modal the reader has to dismiss before acting on what it said. */
+.kreport .kappnote{margin:8px 0 0;font-size:12.5px;line-height:1.5;
+  color:var(--muted-2);max-width:70ch}
+.kreport .kappnote:empty{display:none}
+.kreport .kappnote.bad{color:var(--sem-bad,#a1493a);font-weight:600}
+.kreport .kappnote b{color:var(--text,inherit)}
+html[data-theme] .kreport .kappnote{color:var(--text-soft)}

@@ -270,14 +270,26 @@ window.buildKundliReport=function(J){
     ["btime","Birth-time check",function(){ return birthTimePane(D); }],
     ["ayan","Ayanāṃśa",function(){ return pane(function(){ return ayanPane(D,J); },"Ayanāṃśa"); }],
     ["match","Compatibility",function(){ return matchPane(); }],
-    ["full","Full report",function(){ return '<div class="krprint">'+
-      '<button type="button" class="k-btn" data-krprint>Print full report ('+
-      (PANES.length-1)+' tabs)</button>'+
-      '<span class="krphint">Builds one PDF of every tab — the daśā tree fully expanded, all sixteen '+
-      'divisional wheels, and the star wheel with every group shown. The input form, the tab bar and '+
+    /* The two labels differ between the website and the app because the two
+       buttons DO different things there, and a label that describes the
+       website's behaviour inside the app is how both of these came to look
+       broken: one raised no dialog, the other opened no tab. */
+    ["full","Full report",function(){ var app=!!window.__isApp; return '<div class="krprint">'+
+      '<button type="button" class="k-btn" data-krprint>'+
+      (app?'Save the full report to print ('+(PANES.length-1)+' tabs)'
+          :'Print full report ('+(PANES.length-1)+' tabs)')+'</button>'+
+      '<span class="krphint">'+
+      (app?'Writes one file holding every tab — the daśā tree fully expanded, all sixteen '+
+           'divisional wheels, and the star wheel with every group shown. Open it and your browser '+
+           'offers the print dialog, with Save as PDF beside it. '
+          :'Builds one PDF of every tab — the daśā tree fully expanded, all sixteen '+
+           'divisional wheels, and the star wheel with every group shown. ')+
+      'The input form, the tab bar and '+
       'every control are left out, and the sky views are cast at the birth moment.</span></div>'+
       '<div class="krprint krdash">'+
-      '<a class="k-btn" href="dashboard.html" target="_blank" rel="noopener" data-kdash>Open the visual dashboard &#8599;</a>'+
+      '<a class="k-btn" href="dashboard.html"'+(app?'':' target="_blank" rel="noopener"')+
+      ' data-kdash>'+(app?'Save the visual dashboard to open in your browser'
+                         :'Open the visual dashboard &#8599;')+'</a>'+
       '<span class="krphint">A separate page of interactive charts, including the divisional analysis '+
       'that is not in these tabs: every varga read as a chart of its own, dignity across all sixteen, '+
       'whole-sign dṛṣṭi within a division, and ashtakavarga for each. '+
