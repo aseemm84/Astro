@@ -23,8 +23,65 @@ source/
     js/ui.js                form, city search, save/open, download
     js/report/              46 modules, grouped below
     pages/                  the 14 reference pages and their shell
-  test/self-test.html     318 checks — development only, not linked from the site
+  test/self-test.html     352 checks — development only, not linked from the site
+  test/reference-verify.mjs       the engine against an INDEPENDENT sky
+  test/make-reference-fixture.py  writes the fixture that harness holds it to
+  test/fixtures/                  reference-ecliptic.json — 400 ERFA samples
 ```
+
+## The one check that is not the site checking itself
+
+Everything in `test/` except `reference-verify.mjs` compares the site to itself:
+two copies of the varga formulas against each other, the prastāra against the
+bhinna totals it must sum to, the Chara lengths against cases counted by hand.
+All of that has caught real regressions and none of it would notice if the
+POSITIONS went wrong, because there was nothing to compare them to.
+
+`reference-verify.mjs` compares them to a sky computed by ERFA — the IAU's own
+SOFA algorithms, through astropy — on 400 instants spread over 1800–2200 and
+stratified so every month and every hour appears. Regenerate the fixture with
+`python3 test/make-reference-fixture.py` (needs astropy; takes about 25 s) and
+run the harness with `node test/reference-verify.mjs`, or `--verbose` for the
+fixture's provenance. It needs no browser and takes two seconds.
+
+Three things worth knowing before changing a bar in it:
+
+* **It compares on Terrestrial Time, not UTC.** astronomy-engine treats its
+  Date as UT and applies its own ΔT; the fixture's TT predicts nothing. At a
+  common UTC the two ΔT models disagree by about 375 s by 2200, which displaces
+  the Moon 219″ and is indistinguishable from an ephemeris fault — it showed as
+  a clean monotonic ramp and was only obvious once the residual was bucketed by
+  half-century. The harness solves for the UT that puts the engine at each
+  sample's TT, and reports the ΔT gap separately: it is a genuine uncertainty in
+  civil-time results after 2027, so it is printed rather than hidden, and not
+  failed on.
+* **The bars are unequal on purpose.** ERFA's `plan94` has a documented
+  longitude error of 71″ for Jupiter and 81″ for Saturn against 0.1″ for the
+  Sun, and the fixture carries that table so every bar can be justified from it
+  rather than chosen to pass. A tight Saturn bar would fail on the reference,
+  not the engine. The Sun and Moon — which fix the ayanāṃśa frame, the nakṣatra,
+  the tithi and every daśā boundary — are where the reference is strongest and
+  the bars are tightest, which is the right way round here.
+* **It found a real bug on its first run.** `ascendant()` returned the
+  DESCENDANT above the Arctic circle: zero disagreement at or below 66°, 4% at
+  67°, 21% at 70°, 38% at 80°. Every bhāva was rotated by six for anyone born
+  that far north, silently. The branch is tested now instead of assumed, and the
+  harness asserts both halves of that — the flip fires at Tromsø and moves the
+  lagna by 180°, and at the three ordinary latitudes it never fires and the
+  lagna is bit-identical to before the fix.
+
+The lagna is checked in two separated pieces, which is worth copying elsewhere:
+given the engine's own sidereal time and obliquity, its closed form must equal
+an independent horizon-plane intersection exactly (it does — 0.000″ at all four
+places), and what remains when the reference supplies its own Earth orientation
+is the 12.4″ sidereal-time gap seen through the geometry, amplified about
+ninefold near the pole. Testing the construction and its inputs separately is
+why a 112″ polar residual could be attributed rather than merely tolerated.
+
+A JPL DE kernel would beat `plan94` for the outer planets. `naif.jpl.nasa.gov`
+is not reachable from this environment, so if it ever becomes so, set
+`EPHEMERIS` in the generator to `de440s` and every planet bar can drop by an
+order of magnitude with no other change.
 
 ## The report modules
 

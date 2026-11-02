@@ -466,12 +466,39 @@ function lonAndSpeed(name,date){
   var diff=b-a; if(diff>180)diff-=360; if(diff<-180)diff+=360;
   return {lon:c, speed:diff/(2*h)};
 }
+/* Is the ecliptic point lam RISING — east of the meridian — at this sidereal
+   angle and latitude? Needed because the closed form in ascendant() cannot
+   tell the ascendant from the descendant everywhere. The point is carried to
+   equatorial coordinates and its azimuth taken from north through east, so the
+   eastern half of the sky is 0° < A < 180°. */
+function isRisingPoint(lam,ramc,eps,phi){
+  var x=Math.cos(lam), y=Math.sin(lam)*Math.cos(eps), z=Math.sin(lam)*Math.sin(eps);
+  var ra=Math.atan2(y,x), dec=Math.asin(z), H=ramc-ra;
+  var az=Math.atan2(-Math.cos(dec)*Math.sin(H),
+                     Math.sin(dec)*Math.cos(phi)-Math.cos(dec)*Math.sin(phi)*Math.cos(H));
+  az=((az*R2D)%360+360)%360;
+  return az>0 && az<180;
+}
 function ascendant(jd,date,lat,lon,ay){
   var gast=Astronomy.SiderealTime(date);
   var lst=((gast+lon/15)%24+24)%24, ramc=lst*15*D2R;
   var T=Tof(jd), eps=(23.439291111-0.0130041667*T-1.638e-7*T*T)*D2R, phi=lat*D2R;
-  var a=Math.atan2(Math.cos(ramc), -(Math.sin(ramc)*Math.cos(eps)+Math.tan(phi)*Math.sin(eps)))*R2D;
-  return norm(norm(a)-ay);
+  var a=Math.atan2(Math.cos(ramc), -(Math.sin(ramc)*Math.cos(eps)+Math.tan(phi)*Math.sin(eps)));
+  /* The two intersections of the ecliptic with the horizon lie 180° apart, and
+     the formula above picks the right one only while tan(phi) stays modest.
+     Beyond the polar circles it does not: reference-verify.mjs, comparing
+     against the horizon-plane intersection computed as vectors, found this
+     returning the DESCENDANT for 41% of sampled instants at Tromsø (69.65°N) —
+     every bhāva rotated by six, silently, for anyone born above the Arctic
+     circle. The scan that bounded it found zero disagreement at or below 66°,
+     4% at 67°, 21% at 70° and 38% at 80°, which is where the ecliptic can lie
+     wholly above or below the horizon and the branch stops being decidable
+     from the signs alone. So the branch is tested now rather than assumed.
+     At or below 66° the flip never fires and the value is unchanged, which
+     reference-verify.mjs asserts explicitly rather than leaving to a reading
+     of this comment. */
+  if(!isRisingPoint(a,ramc,eps,phi)) a+=Math.PI;
+  return norm(norm(a*R2D)-ay);
 }
 function nak(deg){var seg=40/3,x=norm(deg),i=Math.min(Math.floor(x/seg),26);
   return {idx:i,name:NAKN[i],pada:Math.floor((x-i*seg)/(seg/4))+1,lord:NAKL[i%9]};}
