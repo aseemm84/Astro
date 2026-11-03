@@ -1,0 +1,46 @@
+<p class="lede">Jyoti&#7779;a divides one circle several times over, and the divisions are nested rather than rival. Twelve r&amacr;&#347;is, twenty-seven nak&#7779;atras, a hundred and eight p&amacr;das &mdash; each a cut of the same 360&deg;, each used for a different purpose. This page draws all three at once for any longitude you like, with <b>no birth chart required</b>, and everything on it is computed in your browser as you read.</p>
+
+<h2 id="wheel">One circle, cut three ways<span class="kdeva">त्रिविधं विभाजनम्</span></h2>
+<p>Drag the pointer. The outer ring is the twelve r&amacr;&#347;is of 30&deg; each, the middle ring the twenty-seven nak&#7779;atras of 13&deg;20&prime;, and the inner ring the hundred and eight p&amacr;das of 3&deg;20&prime;. A p&amacr;da is a quarter of a nak&#7779;atra; nine p&amacr;das make one r&amacr;&#347;i exactly, which is the fact the nav&amacr;&#7745;&#347;a rests on.</p>
+<div class="aywrap"><div id="dv-wheel"></div></div>
+<div class="aybar">
+  <label>Longitude <input type="range" id="dv-lon" min="0" max="359.99" step="0.01" value="0"></label>
+  <span class="ayread" id="dv-lonread"></span>
+  <span class="swsp"></span>
+  <label>Colour by <select id="dv-paint" class="swin">
+    <option value="none">nothing &mdash; plain</option>
+    <option value="elem" selected>element</option>
+    <option value="qual">movable, fixed, dual</option>
+    <option value="lord">r&amacr;&#347;i lord</option>
+    <option value="parity">odd and even</option>
+  </select></label>
+  <button type="button" class="swbtn" data-dv="moon">Where the Moon is now</button>
+</div>
+<div id="dv-read"></div>
+
+<h2 id="nested">Why nine p&amacr;das to a r&amacr;&#347;i matters<span class="kdeva">नवांश-सम्बन्धः</span></h2>
+<p>27 &times; 4 = 108, and 108 &divide; 12 = 9. So the p&amacr;da grid and the <b>nav&amacr;&#7745;&#347;a</b> grid are the same grid: each p&amacr;da is exactly one nav&amacr;&#7745;&#347;a, and stepping one p&amacr;da steps one nav&amacr;&#7745;&#347;a sign. That is not a coincidence anyone arranged &mdash; it follows from quartering a twenty-seventh of a circle &mdash; but it is the reason a p&amacr;da is worth naming at all.</p>
+<div class="aywrap"><div id="dv-pada"></div></div>
+<p class="k-note" id="dv-padanote"></p>
+
+<h2 id="lords">The twenty-seven carry nine lords, three times round<span class="kdeva">नक्षत्र-स्वामिनः</span></h2>
+<p>The nak&#7779;atra lords are not arbitrary and are not twenty-seven different things: they are the nine Vi&#7747;&#347;ottar&imacr; lords in a fixed order, repeated three times around the circle. Colouring the ring by lord makes the repeat visible at once, and it is the whole mechanism by which a Moon&rsquo;s position becomes a da&#347;&amacr; sequence.</p>
+<div class="aywrap"><div id="dv-lords"></div></div>
+<div class="note"><b>What a p&amacr;da of the Moon is worth.</b> One hundred and twenty years of Vi&#7747;&#347;ottar&imacr; map onto a single nak&#7779;atra of 13&deg;20&prime;. A whole nak&#7779;atra is therefore 120 years, a p&amacr;da is 30 years, and one arcminute of Moon is about <span id="dv-perarc"></span>. That is the conversion that makes birth-time accuracy matter, and it is computed here rather than quoted.</div>
+
+<h2 id="classes">How the twelve are classified<span class="kdeva">राशि-वर्गीकरणम्</span></h2>
+<p>BPHS sorts the r&amacr;&#347;is several ways at once, and a sign is all of its classifications simultaneously. The table is the same data the wheel is coloured from.</p>
+<div id="dv-table"></div>
+
+<h2 id="now">Where the grahas stand now<span class="kdeva">अधुना</span></h2>
+<p>Chart-independent: this is the sky at the moment and place below, with each graha placed in all three divisions at once.</p>
+<div class="aybar">
+  <label>Moment <input type="datetime-local" id="dv-when" class="swin"></label>
+  <label>Place <span id="dv-place" class="swpick"></span></label>
+  <button type="button" class="swbtn" data-dv="now">This moment</button>
+</div>
+<div id="dv-nowtab"></div>
+
+<p class="src"><span>Source</span> The r&amacr;&#347;i and nak&#7779;atra divisions and the nak&#7779;atra lords follow BPHS, Vol. 1 &mdash; the elemental, modal and parity classifications are given across its early chapters; please verify exact verse numbers against the uploaded translation. Longitudes are sidereal, from the built-in engine at the ayan&amacr;&#7745;&#347;a this browser is set to; see <a href="rashis.html">Rashis</a> and <a href="108-nakshatra-padas.html">108 Padas</a> for the written accounts, <a href="ayanamsa.html">Ayan&amacr;&#7745;&#347;a</a> for what fixes the zero these divisions are measured from, and <a href="kundli.html">Kundli 2.0</a> to cast a chart.</p>
+
+<script src="divisions.js" defer></script>

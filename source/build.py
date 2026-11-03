@@ -632,6 +632,15 @@ def build_shared():
             jsread(SRC, "js", "report", "motion", "54-motion-bodies.js") + "\n" +
             jsread(SRC, "js", "sp-bodies.js") + "\n" +
             jsread(SRC, "js", "graha-sprite.js")),
+        "divisions.js": brandify(jsread(SRC, "js", "divisions-ui.js")),
+        # graha-lab.html. There is no renderer to share here: the dignity
+        # ribbon is a drawing of the SCHEME rather than of a sky. What the page
+        # must not do is restate that scheme, so it reads window.__kDign — the
+        # engine's own digOf and the tables behind it — and carries no dignity
+        # rules of its own. A second copy would eventually disagree with the
+        # chart report about whether a graha is in its own sign, and a reader
+        # would have no way to tell which of the two was wrong.
+        "graha-lab.js": brandify(jsread(SRC, "js", "graha-lab-ui.js")),
         # The bhāva-systems page. 72-sripati.js is the report's own Śrīpati
         # construction, concatenated rather than reimplemented so a cusp here
         # and a cusp in the chart report cannot disagree; it has no free

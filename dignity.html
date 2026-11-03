@@ -2269,6 +2269,165 @@ html[data-theme="emerald"] .aysvg .ay-rate{fill:#ff9c80}
   margin-right:.35rem}
 .bhbar i{display:block;height:100%;background:#1c6b46}
 
+/* ===== divisions.html ======================================================
+   Three nested rings, so the ring a mark belongs to has to be readable at a
+   glance: the rāśis take whatever the colour-by control says, the nakṣatras
+   and pādas stay neutral, and the single selected cell in each ring is the
+   only thing that lights up. */
+.dvsvg{width:100%;height:auto;display:block}
+.dvsvg .dv-pada{fill:var(--muted-2,#5a5e78);fill-opacity:.06}
+.dvsvg .dv-pada.alt{fill-opacity:.02}
+.dvsvg .dv-pada.on{fill:var(--sem-bad,#a1493a);fill-opacity:.65}
+.dvsvg .dv-nak{fill:var(--muted-2,#5a5e78);fill-opacity:.09}
+.dvsvg .dv-nak.alt{fill-opacity:.04}
+.dvsvg .dv-nak.on{fill:#b08a2a;fill-opacity:.45}
+.dvsvg .dv-naklab{font-size:9px;fill:var(--muted-2,#5a5e78);text-anchor:middle}
+.dvsvg .dv-naklab.on{font-size:11px;font-weight:700;fill:#8a6a1e}
+.dvsvg .dv-rasi{fill:var(--muted-2,#5a5e78);fill-opacity:.08;
+  stroke:var(--border-2,#d8d8e6);stroke-width:.6}
+.dvsvg .dv-rasi.on{stroke:var(--sem-bad,#a1493a);stroke-width:2}
+.dvsvg .dv-rasilab{font-size:12px;font-weight:600;fill:var(--text,#20233a);
+  text-anchor:middle}
+.dvsvg .dv-rasilab.on{font-weight:800}
+.dvsvg .dv-ptr{stroke:var(--sem-bad,#a1493a);stroke-width:2.5}
+.dvsvg .dv-hub{fill:var(--sem-bad,#a1493a)}
+.dvsvg .dv-c1{font-size:21px;font-weight:700;fill:var(--text,#20233a);text-anchor:middle}
+.dvsvg .dv-c2{font-size:14px;fill:#8a6a1e;text-anchor:middle;font-weight:600}
+.dvsvg .dv-c3{font-size:12px;fill:var(--muted-2,#5a5e78);text-anchor:middle}
+
+/* the element / mode / parity / lord palettes, shared by the ring and the
+   chips in the table so the two cannot drift apart */
+.dvsvg .dv-rasi.e0,.dvchip.e0{fill:#c2492f;background:#c2492f22;border-color:#c2492f}
+.dvsvg .dv-rasi.e1,.dvchip.e1{fill:#6a7f3a;background:#6a7f3a22;border-color:#8aa352}
+.dvsvg .dv-rasi.e2,.dvchip.e2{fill:#c9a24b;background:#c9a24b22;border-color:#c9a24b}
+.dvsvg .dv-rasi.e3,.dvchip.e3{fill:#3f7fa6;background:#3f7fa622;border-color:#5f9fd0}
+.dvsvg .dv-rasi.q0,.dvchip.q0{fill:#a1493a;background:#a1493a22;border-color:#d0604a}
+.dvsvg .dv-rasi.q1,.dvchip.q1{fill:#3f6fa6;background:#3f6fa622;border-color:#5f9fd0}
+.dvsvg .dv-rasi.q2,.dvchip.q2{fill:#1c6b46;background:#1c6b4622;border-color:#2f9c6a}
+.dvsvg .dv-rasi.p0{fill:#8a6a1e}
+.dvsvg .dv-rasi.p1{fill:#44579e}
+.dvsvg .dv-rasi.l0{fill:#d8a13a}.dvsvg .dv-rasi.l1{fill:#9aa6c8}
+.dvsvg .dv-rasi.l2{fill:#c2492f}.dvsvg .dv-rasi.l3{fill:#2f7d55}
+.dvsvg .dv-rasi.l4{fill:#c9a24b}.dvsvg .dv-rasi.l5{fill:#8fb8d8}
+.dvsvg .dv-rasi.l6{fill:#6b6a8a}
+.dvsvg .dv-rasi[class*="e"],.dvsvg .dv-rasi[class*="q"],
+.dvsvg .dv-rasi[class*="p"],.dvsvg .dv-rasi[class*="l"]{fill-opacity:.30}
+.dvsvg .dv-rasi.plain{fill:var(--muted-2,#5a5e78);fill-opacity:.08}
+/* The chip's hue sits in its background and its left edge; the TEXT follows
+   the theme. Hardcoding a dark ink here is what made these chips measure
+   1.4:1 on the emerald palette — the tint is translucent, so on a dark
+   surface the ink and the ground met in the middle. */
+.dvchip{display:inline-block;padding:.08rem .45rem;border-radius:5px;
+  font-size:.8rem;font-weight:600;color:var(--text,#20233a);
+  border-left:3px solid var(--muted-2,#5a5e78)}
+
+/* the two flat strips */
+.dvsvg .dv-pstrip{fill-opacity:.85}
+.dvsvg .dv-pstrip.n0{fill:#c2492f}.dvsvg .dv-pstrip.n1{fill:#6a7f3a}
+.dvsvg .dv-pstrip.n2{fill:#c9a24b}.dvsvg .dv-pstrip.n3{fill:#3f7fa6}
+.dvsvg .dv-pstrip.n4{fill:#a1493a}.dvsvg .dv-pstrip.n5{fill:#4f7f4a}
+.dvsvg .dv-pstrip.n6{fill:#b08a2a}.dvsvg .dv-pstrip.n7{fill:#44579e}
+.dvsvg .dv-pstrip.n8{fill:#8a4a6a}.dvsvg .dv-pstrip.n9{fill:#2f7d55}
+.dvsvg .dv-pstrip.n10{fill:#7a7f99}.dvsvg .dv-pstrip.n11{fill:#6b5a8a}
+.dvsvg .dv-pdiv{stroke:var(--text,#20233a);stroke-width:1.2}
+.dvsvg .dv-plab{font-size:10.5px;fill:var(--muted-2,#5a5e78);text-anchor:middle}
+.dvsvg .dv-phead{font-size:12px;fill:var(--muted-2,#5a5e78)}
+.dvsvg .dv-lstrip{fill-opacity:.85}
+.dvsvg .dv-lstrip.v0{fill:#6b5a8a}.dvsvg .dv-lstrip.v1{fill:#8fb8d8}
+.dvsvg .dv-lstrip.v2{fill:#d8a13a}.dvsvg .dv-lstrip.v3{fill:#9aa6c8}
+.dvsvg .dv-lstrip.v4{fill:#c2492f}.dvsvg .dv-lstrip.v5{fill:#8a4a6a}
+.dvsvg .dv-lstrip.v6{fill:#c9a24b}.dvsvg .dv-lstrip.v7{fill:#5a6a80}
+.dvsvg .dv-lstrip.v8{fill:#2f7d55}
+.dvsvg .dv-lglyph{font-size:12px;font-weight:700;fill:#fff;text-anchor:middle}
+.dvsvg .dv-lnak{font-size:9.5px;fill:var(--muted-2,#5a5e78);text-anchor:end}
+.dvsvg .dv-cyc{stroke:var(--text,#20233a);stroke-width:1.6}
+
+/* .axcell — a value with its label under it, inside an .axgrid. The accuracy
+   page builds its cells as .axcard/.axk/.axv and so this class had never
+   existed; the two new pages used it and their cells rendered as one run-on
+   line of text ("Meṣa 0°00′00″Rāśi — fire · movable"). Defined once here for
+   both. */
+.axcell{display:flex;flex-direction:column;gap:.2rem;padding:.6rem .7rem;
+  border:1px solid var(--border-2,#d8d8e6);border-radius:9px;
+  background:var(--surface-2,#f4f4fb)}
+.axcell b{font-size:1.02rem;line-height:1.25;color:var(--text,#20233a)}
+.axcell span{font-size:.84rem;color:var(--muted-2,#5a5e78);line-height:1.35}
+
+
+/* ===== graha-lab.html ======================================================
+   One colour per dignity, used by the ribbon's bands, by the key, by the
+   readout chips and by the cards — one scale, so a colour means the same
+   thing wherever it appears on the page. The scale is deliberately ordered
+   rather than categorical: exaltation and debilitation are the two poles and
+   get the two strongest hues, own/mūlatrikoṇa sit near the good pole, enemy
+   near the bad one, and neutral is left grey so the eye skips it. */
+.glsvg{width:100%;height:auto;display:block}
+.glsvg .gl-grid{stroke:var(--border-2,#d8d8e6);stroke-width:.8}
+.glsvg .gl-sign{font-size:10.5px;fill:var(--muted-2,#5a5e78);text-anchor:middle}
+.glsvg .gl-row{font-size:12.5px;font-weight:600;fill:var(--text,#20233a);
+  text-anchor:end}
+.glsvg .gl-key{font-size:10.5px;fill:var(--muted-2,#5a5e78)}
+.glsvg .gl-ptr{stroke:var(--text-strong,#13152b);stroke-width:2}
+.glsvg .gl-mark{fill:var(--surface,#fff);stroke:var(--text-strong,#13152b);
+  stroke-width:1.8}
+
+.glsvg .gl-d{stroke:none}
+.glsvg .gl-d.exalted{fill:#1c6b46}
+.glsvg .gl-d.moolatrikona{fill:#2f7d55}
+.glsvg .gl-d.own{fill:#6a9a5a}
+.glsvg .gl-d.friend{fill:#8fb8d8}
+.glsvg .gl-d.neutral{fill:var(--muted-2,#5a5e78);fill-opacity:.22}
+.glsvg .gl-d.enemy{fill:#c9873a}
+.glsvg .gl-d.debilitated{fill:#a1493a}
+.glsvg .gl-d.node{fill:var(--muted-2,#5a5e78);fill-opacity:.12}
+
+/* the speed chart */
+.glsvg .gl-sbar{stroke:var(--muted-2,#5a5e78);stroke-width:3;stroke-linecap:round}
+.glsvg .gl-sbar.retro{stroke:#a1493a}
+.glsvg .gl-sdot{fill:var(--text-strong,#13152b)}
+.glsvg .gl-sdot.retro{fill:#a1493a}
+.glsvg .gl-sval{font-size:11px;fill:var(--muted-2,#5a5e78)}
+
+/* the nine cards */
+.glcards{display:grid;gap:.8rem;margin:.9rem 0;
+  grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))}
+.glcard{border:1px solid var(--border-2,#d8d8e6);border-radius:11px;
+  padding:.7rem .8rem;background:var(--surface-2,#f4f4fb)}
+.glhead{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.glhead b{font-size:1.06rem;color:var(--text-strong,#13152b)}
+.glnat{font-size:.74rem;font-weight:700;padding:.06rem .45rem;border-radius:5px;
+  text-transform:lowercase;color:var(--text,#20233a);
+  border-left:3px solid var(--muted-2,#5a5e78)}
+.glnat.benefic{background:#2f9c6a22;border-left-color:#2f9c6a}
+.glnat.malefic{background:#d0604a22;border-left-color:#d0604a}
+.glnat.conditional{background:#c9a24b22;border-left-color:#c9a24b}
+.glcard .glnote{font-size:.84rem;color:var(--muted-2,#5a5e78);margin:.35rem 0 0;
+  line-height:1.4}
+.gldl{display:grid;grid-template-columns:auto 1fr;gap:.12rem .5rem;
+  margin:.55rem 0 0;font-size:.84rem}
+.gldl dt{color:var(--muted-2,#5a5e78)}
+.gldl dd{margin:0;color:var(--text,#20233a)}
+.glnow{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;
+  margin-top:.6rem;padding-top:.55rem;
+  border-top:1px solid var(--border-2,#d8d8e6);font-size:.88rem}
+.glspd{font-size:.8rem;color:var(--muted-2,#5a5e78)}
+
+/* The dignity chip, wherever it appears. Same bargain as .dvchip: the hue is
+   the left edge and a faint tint, the ink is the theme's own, so the chip
+   stays readable on all five palettes. The specificity on `span` beats
+   `.axcell span`, which would otherwise grey it out in the readout. */
+span.gldig{display:inline-block;font-size:.78rem;font-weight:700;
+  padding:.06rem .45rem;border-radius:5px;color:var(--text,#20233a);
+  background:var(--surface-3,#ececf6);
+  border-left:3px solid var(--muted-2,#5a5e78)}
+span.gldig.exalted{background:#2f9c6a22;border-left-color:#2f9c6a}
+span.gldig.moolatrikona{background:#3fae7c22;border-left-color:#3fae7c}
+span.gldig.own{background:#6fb45f22;border-left-color:#6fb45f}
+span.gldig.friend{background:#5f9fd022;border-left-color:#5f9fd0}
+span.gldig.neutral{background:#5a5e7818;border-left-color:#8a8ea6}
+span.gldig.enemy{background:#d08a3a22;border-left-color:#d08a3a}
+span.gldig.debilitated{background:#d0604a22;border-left-color:#d0604a}
+span.gldig.node{background:#5a5e7812;border-left-color:#8a8ea6}
 
 /* ===== Generated theme overrides =====================================
    Written by source/tools/gen-theme-overrides.py from the literal
@@ -3060,4 +3219,4 @@ html[data-theme] nav.site .themepick select option{
     return true;
   }, list: THEMES };
 })();
-</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Planetary Dignity & Relationships</h1><p class="sub">Exaltation, debilitation, Moolatrikona and own sign; the three tiers of friendship; combustion, war and retrogression; and the nodes.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html" class="active">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#exalt">Exaltation, debilitation, Moolatrikona & own sign</a><a href="#nodes">Rahu and Ketu — the nodes</a><a href="#friend">Friendship and enmity</a><a href="#states">Combustion, planetary war & retrogression</a><a href="#neecha">Cancellation and the reality check</a></aside><main><p class="lead">Dignity measures the <b>quality of the ground</b> a planet stands on. Strength (Shadbala) says how loudly it can speak; dignity says whether what it says is sweet or sour. The two are read together.</p><h2 id="exalt">Exaltation, debilitation, Moolatrikona & own sign</h2><p>Each of the seven planets has an exaltation sign (with a precise <i>deep</i> degree of maximum power), a debilitation sign exactly opposite at the same degree, a <b>Moolatrikona</b> (root-trine — nearly as strong as exaltation), and own sign(s).</p><div class="tw"><table class="tbl"><thead><tr><th>Graha</th><th>Exaltation (deep°)</th><th>Debilitation (deep°)</th><th>Moolatrikona & own sign</th></tr></thead><tbody><tr><td>Sun</td><td>Aries 10°</td><td>Libra 10°</td><td>Leo — 0°–20° Moolatrikona, 20°–30° own</td></tr><tr><td>Moon</td><td>Taurus 3°</td><td>Scorpio 3°</td><td>Cancer own; Taurus (after 3°) taken as Moolatrikona by tradition</td></tr><tr><td>Mars</td><td>Capricorn 28°</td><td>Cancer 28°</td><td>Aries — 0°–12° Moolatrikona, 12°–30° own; also owns Scorpio</td></tr><tr><td>Mercury</td><td>Virgo 15°</td><td>Pisces 15°</td><td>Virgo — 15°–20° Moolatrikona, 20°–30° own; also owns Gemini</td></tr><tr><td>Jupiter</td><td>Cancer 5°</td><td>Capricorn 5°</td><td>Sagittarius — 0°–10° Moolatrikona, 10°–30° own; also owns Pisces</td></tr><tr><td>Venus</td><td>Pisces 27°</td><td>Virgo 27°</td><td>Libra — 0°–15° Moolatrikona, 15°–30° own; also owns Taurus</td></tr><tr><td>Saturn</td><td>Libra 20°</td><td>Aries 20°</td><td>Aquarius — 0°–20° Moolatrikona, 20°–30° own; also owns Capricorn</td></tr></tbody></table></div><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 3, vv. 49–54 — exaltation signs and deep degrees 10, 3, 28, 15, 5, 27, 20; debilitation in the 7th at the same degree; the Moolatrikona ranges for the six planets named.</p><h3>The strength ladder inside a sign</h3><p>From strongest to weakest positional footing: <b>exalted → Moolatrikona → own → great friend → friend → neutral → enemy → great enemy → debilitated</b>. This exact ladder is scored in Saptavargaja Bala (see Strength).</p><h2 id="nodes">Rahu and Ketu — the nodes</h2><p>BPHS states plainly that <b>there are different views</b> on the exaltation and debilitation of the nodes, and it does not fix a single standard. What the text does note is a <b>co-lordship</b>: Rahu co-signifies Aquarius and Ketu co-signifies Scorpio. The most widely used tradition adds the exaltations below — use them knowingly, as tradition rather than settled BPHS doctrine.</p><div class="tw"><table class="tbl"><thead><tr><th>Node</th><th>Exaltation (tradition)</th><th>Debilitation (tradition)</th><th>BPHS co-lordship</th></tr></thead><tbody><tr><td>Rahu</td><td>Taurus (some say Gemini)</td><td>Scorpio (some say Sagittarius)</td><td>co-signifies / ‘rules’ Aquarius (with Saturn)</td></tr><tr><td>Ketu</td><td>Scorpio (some say Sagittarius)</td><td>Taurus (some say Gemini)</td><td>co-signifies / ‘rules’ Scorpio (with Mars)</td></tr></tbody></table></div><ul><li>Because the nodes have no undisputed own sign, many astrologers judge them chiefly by their <b>dispositor</b> (the lord of the sign they occupy) and by <b>conjunctions and aspects</b>.</li><li>Rahu is often read as behaving like <b>Saturn</b>, and Ketu like <b>Mars</b>, when a functional flavour is needed.</li><li>The nodes are <b>not scored in Shadbala</b> and are <b>not treated as combust</b> — they are points, not bodies.</li></ul><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 3 (‘as for the exaltations and debilitation of the nodes, there are different views’); co-lordship of Aquarius (Rahu) and Scorpio (Ketu) noted in Ch. 29 and Ch. 46.</p><div class="caution"><b>Handle with care.</b> Node dignity is genuinely unsettled across texts and lineages. State which convention you are using, and lean on dispositor and association rather than treating a node ‘exaltation’ as decisive.</div><h2 id="friend">Friendship and enmity</h2><h3>Natural (Naisargika) friendship</h3><p>Parashara gives a positional rule: from a planet's Moolatrikona sign, the lords of the 2nd, 4th, 5th, 8th, 9th and 12th are friends (plus the lord of its exaltation sign); the lords of the 3rd, 6th, 7th, 10th and 11th are enemies; a lord arising both ways is neutral.</p><div class="tw"><table class="tbl"><thead><tr><th>Graha</th><th>Friends</th><th>Neutral</th><th>Enemies</th></tr></thead><tbody><tr><td>Sun</td><td>Moon, Mars, Jupiter</td><td>Mercury</td><td>Venus, Saturn</td></tr><tr><td>Moon</td><td>Sun, Mercury</td><td>Mars, Jupiter, Venus, Saturn</td><td>—</td></tr><tr><td>Mars</td><td>Sun, Moon, Jupiter</td><td>Venus, Saturn</td><td>Mercury</td></tr><tr><td>Mercury</td><td>Sun, Venus</td><td>Mars, Jupiter, Saturn</td><td>Moon</td></tr><tr><td>Jupiter</td><td>Sun, Moon, Mars</td><td>Saturn</td><td>Mercury, Venus</td></tr><tr><td>Venus</td><td>Mercury, Saturn</td><td>Mars, Jupiter</td><td>Sun, Moon</td></tr><tr><td>Saturn</td><td>Mercury, Venus</td><td>Jupiter</td><td>Sun, Moon, Mars</td></tr></tbody></table></div><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 3, v. 55 (the Moolatrikona-based natural friendship formula).</p><h3>Temporal (Tatkalika) friendship</h3><p>Relative to a planet's own position in the chart, planets in the <b>2nd, 3rd, 4th, 10th, 11th and 12th</b> from it are <b>temporary friends</b>; those in the 1st, 5th, 6th, 7th, 8th and 9th are <b>temporary enemies</b>. This changes chart to chart.</p><h3>Compound (Panchadha) relationship</h3><p>Combine natural + temporal to get the fivefold relationship used in Saptavargaja Bala:</p><div class="tw"><table class="tbl"><thead><tr><th>Natural + Temporal</th><th>Result</th></tr></thead><tbody><tr><td>friend + friend</td><td>great friend (Adhimitra)</td></tr><tr><td>friend + enemy / enemy + friend</td><td>neutral (Sama)</td></tr><tr><td>neutral + friend</td><td>friend</td></tr><tr><td>neutral + enemy</td><td>enemy</td></tr><tr><td>enemy + enemy</td><td>great enemy (Adhishatru)</td></tr></tbody></table></div><h2 id="states">Combustion, planetary war & retrogression</h2><p class="term"><b>Combustion (Astangata)</b> — a planet too near the Sun is 'burnt' — its results are scorched. The nodes are exempt.</p><div class="tw"><table class="tbl"><thead><tr><th>Graha</th><th>Combustion orb</th><th>If retrograde</th></tr></thead><tbody><tr><td>Moon</td><td>12°</td><td>—</td></tr><tr><td>Mars</td><td>17°</td><td>—</td></tr><tr><td>Mercury</td><td>14°</td><td>12° (retrograde)</td></tr><tr><td>Jupiter</td><td>11°</td><td>—</td></tr><tr><td>Venus</td><td>10°</td><td>8° (retrograde)</td></tr><tr><td>Saturn</td><td>16°</td><td>—</td></tr></tbody></table></div><p class="term"><b>Planetary war (Graha Yuddha)</b> — when two non-node planets are very close (within ~1°), the one with the lower longitude (or brighter) 'wins'; the loser is weakened. Scored inside Cheshta Bala.</p><p class="term"><b>Retrogression (Vakra)</b> — a retrograde planet is considered strong in motion (high Cheshta Bala) and its significations intensify, though its expression can be inward or repeating.</p><p class="src"><span>Source</span> BPHS, Vol. 1 — combustion orbs table; planetary war and retrograde strength are quantified under Cheshta Bala, Ch. 27–28.</p><h2 id="neecha">Cancellation and the reality check</h2><p>Dignity is a starting condition, not a verdict. <b>Neechabhanga</b> (cancellation of debilitation) is common — e.g. when the debilitated planet's dispositor, or the planet that would be exalted in that sign, is in a kendra from the Lagna or the Moon; then a debilitated planet can behave powerfully. Equally, an exalted planet that is combust, in a dusthana, or hemmed by malefics may deliver little.</p><div class="caution"><b>Handle with care.</b> Never read exaltation as guaranteed good or debilitation as doom. Always combine dignity with house ownership, placement, aspects, strength and dasha before drawing a conclusion.</div><div class="mine"><b>Study note.</b> Practical order for judging a planet's dignity: (1) note its sign — exalted / own / MT / friend / neutral / enemy / debilitated; (2) check for neechabhanga or affliction that flips the first read; (3) confirm in the Navamsa (a planet dignified in both D1 and D9 is genuinely strong; vargottama especially).</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p><b>How the numbers are worked out:</b> <a href="kundli-technical-report.html">the chart engine, in detail</a> &mdash; the ephemeris, the ayanāṃśa modes, the sunrise convention and what each divisional chart is computed from.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>
+</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Planetary Dignity & Relationships</h1><p class="sub">Exaltation, debilitation, Moolatrikona and own sign; the three tiers of friendship; combustion, war and retrogression; and the nodes.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html" class="active">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#exalt">Exaltation, debilitation, Moolatrikona & own sign</a><a href="#nodes">Rahu and Ketu — the nodes</a><a href="#friend">Friendship and enmity</a><a href="#states">Combustion, planetary war & retrogression</a><a href="#neecha">Cancellation and the reality check</a></aside><main><p class="lead">Dignity measures the <b>quality of the ground</b> a planet stands on. Strength (Shadbala) says how loudly it can speak; dignity says whether what it says is sweet or sour. The two are read together.</p><h2 id="exalt">Exaltation, debilitation, Moolatrikona & own sign</h2><p>Each of the seven planets has an exaltation sign (with a precise <i>deep</i> degree of maximum power), a debilitation sign exactly opposite at the same degree, a <b>Moolatrikona</b> (root-trine — nearly as strong as exaltation), and own sign(s).</p><div class="tw"><table class="tbl"><thead><tr><th>Graha</th><th>Exaltation (deep°)</th><th>Debilitation (deep°)</th><th>Moolatrikona & own sign</th></tr></thead><tbody><tr><td>Sun</td><td>Aries 10°</td><td>Libra 10°</td><td>Leo — 0°–20° Moolatrikona, 20°–30° own</td></tr><tr><td>Moon</td><td>Taurus 3°</td><td>Scorpio 3°</td><td>Cancer own; Taurus (after 3°) taken as Moolatrikona by tradition</td></tr><tr><td>Mars</td><td>Capricorn 28°</td><td>Cancer 28°</td><td>Aries — 0°–12° Moolatrikona, 12°–30° own; also owns Scorpio</td></tr><tr><td>Mercury</td><td>Virgo 15°</td><td>Pisces 15°</td><td>Virgo — 15°–20° Moolatrikona, 20°–30° own; also owns Gemini</td></tr><tr><td>Jupiter</td><td>Cancer 5°</td><td>Capricorn 5°</td><td>Sagittarius — 0°–10° Moolatrikona, 10°–30° own; also owns Pisces</td></tr><tr><td>Venus</td><td>Pisces 27°</td><td>Virgo 27°</td><td>Libra — 0°–15° Moolatrikona, 15°–30° own; also owns Taurus</td></tr><tr><td>Saturn</td><td>Libra 20°</td><td>Aries 20°</td><td>Aquarius — 0°–20° Moolatrikona, 20°–30° own; also owns Capricorn</td></tr></tbody></table></div><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 3, vv. 49–54 — exaltation signs and deep degrees 10, 3, 28, 15, 5, 27, 20; debilitation in the 7th at the same degree; the Moolatrikona ranges for the six planets named.</p><h3>The strength ladder inside a sign</h3><p>From strongest to weakest positional footing: <b>exalted → Moolatrikona → own → great friend → friend → neutral → enemy → great enemy → debilitated</b>. This exact ladder is scored in Saptavargaja Bala (see Strength).</p><h2 id="nodes">Rahu and Ketu — the nodes</h2><p>BPHS states plainly that <b>there are different views</b> on the exaltation and debilitation of the nodes, and it does not fix a single standard. What the text does note is a <b>co-lordship</b>: Rahu co-signifies Aquarius and Ketu co-signifies Scorpio. The most widely used tradition adds the exaltations below — use them knowingly, as tradition rather than settled BPHS doctrine.</p><div class="tw"><table class="tbl"><thead><tr><th>Node</th><th>Exaltation (tradition)</th><th>Debilitation (tradition)</th><th>BPHS co-lordship</th></tr></thead><tbody><tr><td>Rahu</td><td>Taurus (some say Gemini)</td><td>Scorpio (some say Sagittarius)</td><td>co-signifies / ‘rules’ Aquarius (with Saturn)</td></tr><tr><td>Ketu</td><td>Scorpio (some say Sagittarius)</td><td>Taurus (some say Gemini)</td><td>co-signifies / ‘rules’ Scorpio (with Mars)</td></tr></tbody></table></div><ul><li>Because the nodes have no undisputed own sign, many astrologers judge them chiefly by their <b>dispositor</b> (the lord of the sign they occupy) and by <b>conjunctions and aspects</b>.</li><li>Rahu is often read as behaving like <b>Saturn</b>, and Ketu like <b>Mars</b>, when a functional flavour is needed.</li><li>The nodes are <b>not scored in Shadbala</b> and are <b>not treated as combust</b> — they are points, not bodies.</li></ul><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 3 (‘as for the exaltations and debilitation of the nodes, there are different views’); co-lordship of Aquarius (Rahu) and Scorpio (Ketu) noted in Ch. 29 and Ch. 46.</p><div class="caution"><b>Handle with care.</b> Node dignity is genuinely unsettled across texts and lineages. State which convention you are using, and lean on dispositor and association rather than treating a node ‘exaltation’ as decisive.</div><h2 id="friend">Friendship and enmity</h2><h3>Natural (Naisargika) friendship</h3><p>Parashara gives a positional rule: from a planet's Moolatrikona sign, the lords of the 2nd, 4th, 5th, 8th, 9th and 12th are friends (plus the lord of its exaltation sign); the lords of the 3rd, 6th, 7th, 10th and 11th are enemies; a lord arising both ways is neutral.</p><div class="tw"><table class="tbl"><thead><tr><th>Graha</th><th>Friends</th><th>Neutral</th><th>Enemies</th></tr></thead><tbody><tr><td>Sun</td><td>Moon, Mars, Jupiter</td><td>Mercury</td><td>Venus, Saturn</td></tr><tr><td>Moon</td><td>Sun, Mercury</td><td>Mars, Jupiter, Venus, Saturn</td><td>—</td></tr><tr><td>Mars</td><td>Sun, Moon, Jupiter</td><td>Venus, Saturn</td><td>Mercury</td></tr><tr><td>Mercury</td><td>Sun, Venus</td><td>Mars, Jupiter, Saturn</td><td>Moon</td></tr><tr><td>Jupiter</td><td>Sun, Moon, Mars</td><td>Saturn</td><td>Mercury, Venus</td></tr><tr><td>Venus</td><td>Mercury, Saturn</td><td>Mars, Jupiter</td><td>Sun, Moon</td></tr><tr><td>Saturn</td><td>Mercury, Venus</td><td>Jupiter</td><td>Sun, Moon, Mars</td></tr></tbody></table></div><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 3, v. 55 (the Moolatrikona-based natural friendship formula).</p><h3>Temporal (Tatkalika) friendship</h3><p>Relative to a planet's own position in the chart, planets in the <b>2nd, 3rd, 4th, 10th, 11th and 12th</b> from it are <b>temporary friends</b>; those in the 1st, 5th, 6th, 7th, 8th and 9th are <b>temporary enemies</b>. This changes chart to chart.</p><h3>Compound (Panchadha) relationship</h3><p>Combine natural + temporal to get the fivefold relationship used in Saptavargaja Bala:</p><div class="tw"><table class="tbl"><thead><tr><th>Natural + Temporal</th><th>Result</th></tr></thead><tbody><tr><td>friend + friend</td><td>great friend (Adhimitra)</td></tr><tr><td>friend + enemy / enemy + friend</td><td>neutral (Sama)</td></tr><tr><td>neutral + friend</td><td>friend</td></tr><tr><td>neutral + enemy</td><td>enemy</td></tr><tr><td>enemy + enemy</td><td>great enemy (Adhishatru)</td></tr></tbody></table></div><h2 id="states">Combustion, planetary war & retrogression</h2><p class="term"><b>Combustion (Astangata)</b> — a planet too near the Sun is 'burnt' — its results are scorched. The nodes are exempt.</p><div class="tw"><table class="tbl"><thead><tr><th>Graha</th><th>Combustion orb</th><th>If retrograde</th></tr></thead><tbody><tr><td>Moon</td><td>12°</td><td>—</td></tr><tr><td>Mars</td><td>17°</td><td>—</td></tr><tr><td>Mercury</td><td>14°</td><td>12° (retrograde)</td></tr><tr><td>Jupiter</td><td>11°</td><td>—</td></tr><tr><td>Venus</td><td>10°</td><td>8° (retrograde)</td></tr><tr><td>Saturn</td><td>16°</td><td>—</td></tr></tbody></table></div><p class="term"><b>Planetary war (Graha Yuddha)</b> — when two non-node planets are very close (within ~1°), the one with the lower longitude (or brighter) 'wins'; the loser is weakened. Scored inside Cheshta Bala.</p><p class="term"><b>Retrogression (Vakra)</b> — a retrograde planet is considered strong in motion (high Cheshta Bala) and its significations intensify, though its expression can be inward or repeating.</p><p class="src"><span>Source</span> BPHS, Vol. 1 — combustion orbs table; planetary war and retrograde strength are quantified under Cheshta Bala, Ch. 27–28.</p><h2 id="neecha">Cancellation and the reality check</h2><p>Dignity is a starting condition, not a verdict. <b>Neechabhanga</b> (cancellation of debilitation) is common — e.g. when the debilitated planet's dispositor, or the planet that would be exalted in that sign, is in a kendra from the Lagna or the Moon; then a debilitated planet can behave powerfully. Equally, an exalted planet that is combust, in a dusthana, or hemmed by malefics may deliver little.</p><div class="caution"><b>Handle with care.</b> Never read exaltation as guaranteed good or debilitation as doom. Always combine dignity with house ownership, placement, aspects, strength and dasha before drawing a conclusion.</div><div class="mine"><b>Study note.</b> Practical order for judging a planet's dignity: (1) note its sign — exalted / own / MT / friend / neutral / enemy / debilitated; (2) check for neechabhanga or affliction that flips the first read; (3) confirm in the Navamsa (a planet dignified in both D1 and D9 is genuinely strong; vargottama especially).</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p><b>How the numbers are worked out:</b> <a href="kundli-technical-report.html">the chart engine, in detail</a> &mdash; the ephemeris, the ayanāṃśa modes, the sunrise convention and what each divisional chart is computed from.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>

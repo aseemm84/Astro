@@ -1734,6 +1734,11 @@ window.__kEclip=function(name,ms){
    to publish a quantitative graha-drishti matrix. Exported rather than copied, so the
    matrix and Drik Bala can never disagree. */
 window.sphutaDrishti=sphutaDrishti;
+/* Dignity, published so a page can ask the engine rather than restate the
+   tables. digOf is what every dignity on this site is decided by; exporting
+   it means the graha page and the chart report cannot disagree about whether
+   a graha is in its own sign. Additive — nothing here changes behaviour. */
+window.__kDign={of:digOf,EXALT:EXALT,DEBIL:DEBIL,OWNS:OWNS,MTR:MTR,FRD:FRD,ENM:ENM,LORD:LORD};
 window.calculateSripatiHouses=function(ascSid,mcSid){
   if(window.SPSripati&&window.SPSripati.build) return window.SPSripati.build(ascSid,mcSid);
   return null;

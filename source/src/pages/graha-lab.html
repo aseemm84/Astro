@@ -1,0 +1,38 @@
+<p class="lede">A graha is not good or bad; it is somewhere. The same Ma&#7749;gala is exalted in one r&amacr;&#347;i and fallen in the one opposite, and everything between those two poles is a graded condition the tradition names. This page draws the whole scheme at once &mdash; every graha&rsquo;s dignity across all 360&deg; &mdash; for any moment, with <b>no birth chart required</b>.</p>
+
+<h2 id="ribbon">The whole dignity scheme, in one picture<span class="kdeva">अवस्था-पट्टः</span></h2>
+<p>Each row is one graha and runs the full circle from 0&deg; Me&#7779;a to 30&deg; M&imacr;na. The colour is what that graha&rsquo;s condition would be standing there. Everything you need to know about dignity is in this one image: the two poles 180&deg; apart, the own signs, the narrow band of m&umacr;latriko&#7751;a inside one of them, and the friendships filling the rest.</p>
+<div class="aywrap"><div id="gl-ribbon"></div></div>
+<div class="aybar">
+  <label>Longitude <input type="range" id="gl-lon" min="0" max="359.9" step="0.1" value="0"></label>
+  <span class="ayread" id="gl-lonread"></span>
+  <span class="swsp"></span>
+  <button type="button" class="swbtn" data-gl="now">Put the grahas where they are now</button>
+</div>
+<div id="gl-at"></div>
+
+<h2 id="why">Why the band is narrow in one place<span class="kdeva">मूलत्रिकोणम्</span></h2>
+<p><b>M&umacr;latriko&#7751;a</b> &mdash; literally &ldquo;root triangle&rdquo; &mdash; is a stretch of degrees within one particular sign where a graha is held to be at its most effective: stronger than merely owning the sign, but not the same as exaltation. It is the only dignity here that is a range of degrees rather than a whole sign, which is why the ribbon carries a thin stripe rather than a full band for it.</p>
+<div id="gl-mt"></div>
+<div class="note"><b>Two of the seven have no stripe, and that is a decision rather than an omission.</b> Candra&rsquo;s m&umacr;latriko&#7751;a falls in V&#7771;&#7779;abha and Budha&rsquo;s in Kany&amacr; &mdash; and those are the very signs in which each is exalted. This site&rsquo;s engine resolves dignity in a fixed order and tests exaltation first, so for those two the whole sign reads as exaltation and the narrower band never surfaces. Classically, exaltation has an exact degree (Candra&rsquo;s is V&#7771;&#7779;abha 3&deg;) while sign-level dignity treats the whole r&amacr;&#347;i as exalted; the two accounts only collide for these two grahas. The table above marks which rows are affected, and the ribbon shows what the engine actually decides rather than a tidier scheme it does not use.</div>
+
+<h2 id="cards">The nine, one by one<span class="kdeva">नव-ग्रहाः</span></h2>
+<p>Natural character, what each owns, where it rises and falls, and &mdash; computed live &mdash; where it stands at the moment below, in what condition, and how fast.</p>
+<div class="aybar">
+  <label>Moment <input type="datetime-local" id="gl-when" class="swin"></label>
+  <label>Place <span id="gl-place" class="swpick"></span></label>
+  <button type="button" class="swbtn" data-gl="nowm">This moment</button>
+</div>
+<div id="gl-cards" class="glcards"></div>
+
+<h2 id="speed">How fast they actually move<span class="kdeva">गति-भेदः</span></h2>
+<p>The difference in speed between the grahas is the reason a chart is a moment rather than a season. The Moon crosses a whole nak&#7779;atra in about a day; &Sacute;ani takes two and a half years to cross a r&amacr;&#347;i. Drawn on one logarithmic scale, because a linear one would show the Moon and nothing else.</p>
+<div class="aywrap"><div id="gl-speed"></div></div>
+<p class="k-note" id="gl-speednote"></p>
+
+<h2 id="nodes">R&amacr;hu and Ketu are not in this scheme<span class="kdeva">छाया-ग्रहौ</span></h2>
+<div class="note">The two nodes have <b>no sign rulership</b> in BPHS, and so no own sign, no m&umacr;latriko&#7751;a, and no friendship scheme of the kind the seven have. They are ch&amacr;y&amacr; grahas &mdash; shadow grahas, the two points where the Moon&rsquo;s path crosses the ecliptic &mdash; and later tradition assigns them exaltations and rulerships in several incompatible ways. This site&rsquo;s engine returns the condition <i>node</i> for both rather than picking one of those traditions, and the ribbon above leaves them out for the same reason. Where they stand and how they move is shown with the others, because that much is simply arithmetic.</div>
+
+<p class="src"><span>Source</span> Exaltation, debilitation, own signs, m&umacr;latriko&#7751;a ranges and the natural friendships follow BPHS, Vol. 1 &mdash; the relevant chapters are those on the grahas and on planetary dignity; please verify exact verse numbers against the uploaded translation. Every dignity shown here is decided by the engine&rsquo;s own <code>digOf</code>, the same function the chart report uses. See <a href="grahas.html">Grahas</a> and <a href="dignity.html">Dignity</a> for the written accounts, <a href="strength.html">Strength</a> for &#346;a&#7693;bala, and <a href="kundli.html">Kundli 2.0</a> to cast a chart.</p>
+
+<script src="graha-lab.js" defer></script>

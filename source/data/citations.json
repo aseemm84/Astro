@@ -10,9 +10,9 @@
   "volumeSplit": 45,
   "volumeSplitSource": "BPHS-Santhanam Vol. 1, preface: \"The present volume—first volume—contains 45 chapters while the remaining 52 chapters have been put in the second volume.\" Vol. 2 opens at Chapter 46, \"Dasas (Periods) of planets\".",
   "maxChapter": 97,
-  "citations": 196,
+  "citations": 198,
   "distinctLoci": 82,
-  "files": 36
+  "files": 37
  },
  "chaptersCited": [
   3,
@@ -1642,6 +1642,24 @@
    "chapter": 45,
    "verses": null,
    "claim": "…te that makes the result full, medium or nil.</p><p class=\"src\"><span>Source</span> BPHS, Vol. 1, Ch. 45 (Avasthas — Baladi, Jagradadi, Deeptadi, Lajjitadi, and the twelve Sayanadi states with their sub-state modifiers a…"
+  },
+  {
+   "file": "src/pages/bhava-systems.html",
+   "line": 44,
+   "text": "Vol. 1, Ch. 11",
+   "vol": 1,
+   "chapter": 11,
+   "verses": null,
+   "claim": "<p class=\"src\"><span>Source</span> The twelve significations follow BPHS, Vol. 1, Ch. 11 and Ch. 24; please verify exact verse numbers against the uploaded translation. The &Sacute;r&imacr;pati construction and the fifte…"
+  },
+  {
+   "file": "src/pages/bhava-systems.html",
+   "line": 44,
+   "text": "Ch. 24",
+   "vol": null,
+   "chapter": 24,
+   "verses": null,
+   "claim": "…class=\"src\"><span>Source</span> The twelve significations follow BPHS, Vol. 1, Ch. 11 and Ch. 24; please verify exact verse numbers against the uploaded translation. The &Sacute;r&imacr;pati construction and the fifteen-…"
   },
   {
    "file": "src/pages/bhavas.html",

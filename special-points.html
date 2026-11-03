@@ -2269,6 +2269,165 @@ html[data-theme="emerald"] .aysvg .ay-rate{fill:#ff9c80}
   margin-right:.35rem}
 .bhbar i{display:block;height:100%;background:#1c6b46}
 
+/* ===== divisions.html ======================================================
+   Three nested rings, so the ring a mark belongs to has to be readable at a
+   glance: the rāśis take whatever the colour-by control says, the nakṣatras
+   and pādas stay neutral, and the single selected cell in each ring is the
+   only thing that lights up. */
+.dvsvg{width:100%;height:auto;display:block}
+.dvsvg .dv-pada{fill:var(--muted-2,#5a5e78);fill-opacity:.06}
+.dvsvg .dv-pada.alt{fill-opacity:.02}
+.dvsvg .dv-pada.on{fill:var(--sem-bad,#a1493a);fill-opacity:.65}
+.dvsvg .dv-nak{fill:var(--muted-2,#5a5e78);fill-opacity:.09}
+.dvsvg .dv-nak.alt{fill-opacity:.04}
+.dvsvg .dv-nak.on{fill:#b08a2a;fill-opacity:.45}
+.dvsvg .dv-naklab{font-size:9px;fill:var(--muted-2,#5a5e78);text-anchor:middle}
+.dvsvg .dv-naklab.on{font-size:11px;font-weight:700;fill:#8a6a1e}
+.dvsvg .dv-rasi{fill:var(--muted-2,#5a5e78);fill-opacity:.08;
+  stroke:var(--border-2,#d8d8e6);stroke-width:.6}
+.dvsvg .dv-rasi.on{stroke:var(--sem-bad,#a1493a);stroke-width:2}
+.dvsvg .dv-rasilab{font-size:12px;font-weight:600;fill:var(--text,#20233a);
+  text-anchor:middle}
+.dvsvg .dv-rasilab.on{font-weight:800}
+.dvsvg .dv-ptr{stroke:var(--sem-bad,#a1493a);stroke-width:2.5}
+.dvsvg .dv-hub{fill:var(--sem-bad,#a1493a)}
+.dvsvg .dv-c1{font-size:21px;font-weight:700;fill:var(--text,#20233a);text-anchor:middle}
+.dvsvg .dv-c2{font-size:14px;fill:#8a6a1e;text-anchor:middle;font-weight:600}
+.dvsvg .dv-c3{font-size:12px;fill:var(--muted-2,#5a5e78);text-anchor:middle}
+
+/* the element / mode / parity / lord palettes, shared by the ring and the
+   chips in the table so the two cannot drift apart */
+.dvsvg .dv-rasi.e0,.dvchip.e0{fill:#c2492f;background:#c2492f22;border-color:#c2492f}
+.dvsvg .dv-rasi.e1,.dvchip.e1{fill:#6a7f3a;background:#6a7f3a22;border-color:#8aa352}
+.dvsvg .dv-rasi.e2,.dvchip.e2{fill:#c9a24b;background:#c9a24b22;border-color:#c9a24b}
+.dvsvg .dv-rasi.e3,.dvchip.e3{fill:#3f7fa6;background:#3f7fa622;border-color:#5f9fd0}
+.dvsvg .dv-rasi.q0,.dvchip.q0{fill:#a1493a;background:#a1493a22;border-color:#d0604a}
+.dvsvg .dv-rasi.q1,.dvchip.q1{fill:#3f6fa6;background:#3f6fa622;border-color:#5f9fd0}
+.dvsvg .dv-rasi.q2,.dvchip.q2{fill:#1c6b46;background:#1c6b4622;border-color:#2f9c6a}
+.dvsvg .dv-rasi.p0{fill:#8a6a1e}
+.dvsvg .dv-rasi.p1{fill:#44579e}
+.dvsvg .dv-rasi.l0{fill:#d8a13a}.dvsvg .dv-rasi.l1{fill:#9aa6c8}
+.dvsvg .dv-rasi.l2{fill:#c2492f}.dvsvg .dv-rasi.l3{fill:#2f7d55}
+.dvsvg .dv-rasi.l4{fill:#c9a24b}.dvsvg .dv-rasi.l5{fill:#8fb8d8}
+.dvsvg .dv-rasi.l6{fill:#6b6a8a}
+.dvsvg .dv-rasi[class*="e"],.dvsvg .dv-rasi[class*="q"],
+.dvsvg .dv-rasi[class*="p"],.dvsvg .dv-rasi[class*="l"]{fill-opacity:.30}
+.dvsvg .dv-rasi.plain{fill:var(--muted-2,#5a5e78);fill-opacity:.08}
+/* The chip's hue sits in its background and its left edge; the TEXT follows
+   the theme. Hardcoding a dark ink here is what made these chips measure
+   1.4:1 on the emerald palette — the tint is translucent, so on a dark
+   surface the ink and the ground met in the middle. */
+.dvchip{display:inline-block;padding:.08rem .45rem;border-radius:5px;
+  font-size:.8rem;font-weight:600;color:var(--text,#20233a);
+  border-left:3px solid var(--muted-2,#5a5e78)}
+
+/* the two flat strips */
+.dvsvg .dv-pstrip{fill-opacity:.85}
+.dvsvg .dv-pstrip.n0{fill:#c2492f}.dvsvg .dv-pstrip.n1{fill:#6a7f3a}
+.dvsvg .dv-pstrip.n2{fill:#c9a24b}.dvsvg .dv-pstrip.n3{fill:#3f7fa6}
+.dvsvg .dv-pstrip.n4{fill:#a1493a}.dvsvg .dv-pstrip.n5{fill:#4f7f4a}
+.dvsvg .dv-pstrip.n6{fill:#b08a2a}.dvsvg .dv-pstrip.n7{fill:#44579e}
+.dvsvg .dv-pstrip.n8{fill:#8a4a6a}.dvsvg .dv-pstrip.n9{fill:#2f7d55}
+.dvsvg .dv-pstrip.n10{fill:#7a7f99}.dvsvg .dv-pstrip.n11{fill:#6b5a8a}
+.dvsvg .dv-pdiv{stroke:var(--text,#20233a);stroke-width:1.2}
+.dvsvg .dv-plab{font-size:10.5px;fill:var(--muted-2,#5a5e78);text-anchor:middle}
+.dvsvg .dv-phead{font-size:12px;fill:var(--muted-2,#5a5e78)}
+.dvsvg .dv-lstrip{fill-opacity:.85}
+.dvsvg .dv-lstrip.v0{fill:#6b5a8a}.dvsvg .dv-lstrip.v1{fill:#8fb8d8}
+.dvsvg .dv-lstrip.v2{fill:#d8a13a}.dvsvg .dv-lstrip.v3{fill:#9aa6c8}
+.dvsvg .dv-lstrip.v4{fill:#c2492f}.dvsvg .dv-lstrip.v5{fill:#8a4a6a}
+.dvsvg .dv-lstrip.v6{fill:#c9a24b}.dvsvg .dv-lstrip.v7{fill:#5a6a80}
+.dvsvg .dv-lstrip.v8{fill:#2f7d55}
+.dvsvg .dv-lglyph{font-size:12px;font-weight:700;fill:#fff;text-anchor:middle}
+.dvsvg .dv-lnak{font-size:9.5px;fill:var(--muted-2,#5a5e78);text-anchor:end}
+.dvsvg .dv-cyc{stroke:var(--text,#20233a);stroke-width:1.6}
+
+/* .axcell — a value with its label under it, inside an .axgrid. The accuracy
+   page builds its cells as .axcard/.axk/.axv and so this class had never
+   existed; the two new pages used it and their cells rendered as one run-on
+   line of text ("Meṣa 0°00′00″Rāśi — fire · movable"). Defined once here for
+   both. */
+.axcell{display:flex;flex-direction:column;gap:.2rem;padding:.6rem .7rem;
+  border:1px solid var(--border-2,#d8d8e6);border-radius:9px;
+  background:var(--surface-2,#f4f4fb)}
+.axcell b{font-size:1.02rem;line-height:1.25;color:var(--text,#20233a)}
+.axcell span{font-size:.84rem;color:var(--muted-2,#5a5e78);line-height:1.35}
+
+
+/* ===== graha-lab.html ======================================================
+   One colour per dignity, used by the ribbon's bands, by the key, by the
+   readout chips and by the cards — one scale, so a colour means the same
+   thing wherever it appears on the page. The scale is deliberately ordered
+   rather than categorical: exaltation and debilitation are the two poles and
+   get the two strongest hues, own/mūlatrikoṇa sit near the good pole, enemy
+   near the bad one, and neutral is left grey so the eye skips it. */
+.glsvg{width:100%;height:auto;display:block}
+.glsvg .gl-grid{stroke:var(--border-2,#d8d8e6);stroke-width:.8}
+.glsvg .gl-sign{font-size:10.5px;fill:var(--muted-2,#5a5e78);text-anchor:middle}
+.glsvg .gl-row{font-size:12.5px;font-weight:600;fill:var(--text,#20233a);
+  text-anchor:end}
+.glsvg .gl-key{font-size:10.5px;fill:var(--muted-2,#5a5e78)}
+.glsvg .gl-ptr{stroke:var(--text-strong,#13152b);stroke-width:2}
+.glsvg .gl-mark{fill:var(--surface,#fff);stroke:var(--text-strong,#13152b);
+  stroke-width:1.8}
+
+.glsvg .gl-d{stroke:none}
+.glsvg .gl-d.exalted{fill:#1c6b46}
+.glsvg .gl-d.moolatrikona{fill:#2f7d55}
+.glsvg .gl-d.own{fill:#6a9a5a}
+.glsvg .gl-d.friend{fill:#8fb8d8}
+.glsvg .gl-d.neutral{fill:var(--muted-2,#5a5e78);fill-opacity:.22}
+.glsvg .gl-d.enemy{fill:#c9873a}
+.glsvg .gl-d.debilitated{fill:#a1493a}
+.glsvg .gl-d.node{fill:var(--muted-2,#5a5e78);fill-opacity:.12}
+
+/* the speed chart */
+.glsvg .gl-sbar{stroke:var(--muted-2,#5a5e78);stroke-width:3;stroke-linecap:round}
+.glsvg .gl-sbar.retro{stroke:#a1493a}
+.glsvg .gl-sdot{fill:var(--text-strong,#13152b)}
+.glsvg .gl-sdot.retro{fill:#a1493a}
+.glsvg .gl-sval{font-size:11px;fill:var(--muted-2,#5a5e78)}
+
+/* the nine cards */
+.glcards{display:grid;gap:.8rem;margin:.9rem 0;
+  grid-template-columns:repeat(auto-fit,minmax(15rem,1fr))}
+.glcard{border:1px solid var(--border-2,#d8d8e6);border-radius:11px;
+  padding:.7rem .8rem;background:var(--surface-2,#f4f4fb)}
+.glhead{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.glhead b{font-size:1.06rem;color:var(--text-strong,#13152b)}
+.glnat{font-size:.74rem;font-weight:700;padding:.06rem .45rem;border-radius:5px;
+  text-transform:lowercase;color:var(--text,#20233a);
+  border-left:3px solid var(--muted-2,#5a5e78)}
+.glnat.benefic{background:#2f9c6a22;border-left-color:#2f9c6a}
+.glnat.malefic{background:#d0604a22;border-left-color:#d0604a}
+.glnat.conditional{background:#c9a24b22;border-left-color:#c9a24b}
+.glcard .glnote{font-size:.84rem;color:var(--muted-2,#5a5e78);margin:.35rem 0 0;
+  line-height:1.4}
+.gldl{display:grid;grid-template-columns:auto 1fr;gap:.12rem .5rem;
+  margin:.55rem 0 0;font-size:.84rem}
+.gldl dt{color:var(--muted-2,#5a5e78)}
+.gldl dd{margin:0;color:var(--text,#20233a)}
+.glnow{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;
+  margin-top:.6rem;padding-top:.55rem;
+  border-top:1px solid var(--border-2,#d8d8e6);font-size:.88rem}
+.glspd{font-size:.8rem;color:var(--muted-2,#5a5e78)}
+
+/* The dignity chip, wherever it appears. Same bargain as .dvchip: the hue is
+   the left edge and a faint tint, the ink is the theme's own, so the chip
+   stays readable on all five palettes. The specificity on `span` beats
+   `.axcell span`, which would otherwise grey it out in the readout. */
+span.gldig{display:inline-block;font-size:.78rem;font-weight:700;
+  padding:.06rem .45rem;border-radius:5px;color:var(--text,#20233a);
+  background:var(--surface-3,#ececf6);
+  border-left:3px solid var(--muted-2,#5a5e78)}
+span.gldig.exalted{background:#2f9c6a22;border-left-color:#2f9c6a}
+span.gldig.moolatrikona{background:#3fae7c22;border-left-color:#3fae7c}
+span.gldig.own{background:#6fb45f22;border-left-color:#6fb45f}
+span.gldig.friend{background:#5f9fd022;border-left-color:#5f9fd0}
+span.gldig.neutral{background:#5a5e7818;border-left-color:#8a8ea6}
+span.gldig.enemy{background:#d08a3a22;border-left-color:#d08a3a}
+span.gldig.debilitated{background:#d0604a22;border-left-color:#d0604a}
+span.gldig.node{background:#5a5e7812;border-left-color:#8a8ea6}
 
 /* ===== Generated theme overrides =====================================
    Written by source/tools/gen-theme-overrides.py from the literal
@@ -3060,4 +3219,4 @@ html[data-theme] nav.site .themepick select option{
     return true;
   }, list: THEMES };
 })();
-</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Arudhas, Argala, Karakas & Karakamsa</h1><p class="sub">Image-points and how to read the Arudha Lagna and Upapada, interventions, both karaka schemes, and the Karakamsa lagna.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html" class="active">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#arudha">Arudha Pada — the image of a house</a><a href="#argala">Argala — intervention</a><a href="#karaka">Chara Karakas — the significators by longitude</a><a href="#karakamsa">Karakamsa — the soul's navamsa</a></aside><main><p class="lead">Alongside the Parashari framework, BPHS carries a set of Jaimini-style tools: <b>image-points</b> (Arudhas), <b>interventions</b> (Argala), the <b>significators-by-longitude</b> (Chara Karakas), and the <b>Karakamsa</b>. Parashara sows them (Ch. 29–33); Jaimini later develops them.</p><h2 id="arudha">Arudha Pada — the image of a house</h2><p>A house shows a matter's <i>reality</i>; its <b>Arudha</b> shows how that matter <i>appears</i> — its projection into the world, its reputation and manifestation.</p><p class="term"><b>Computation</b> — Count how many signs the house-lord sits from its house; from the lord, count that many signs again. The sign reached is the Arudha.</p><p class="term"><b>Exceptions</b> — A pada can never fall on the house itself or the 7th from it. If the count lands on the same house, take the 10th from it instead; if on the 7th, take the 4th from the house. (If the lord sits in the 4th or 10th from its house, that occupied sign is the Arudha directly.)</p><p>Every house has a pada; the two most used are the <b>Arudha Lagna</b> (image of the self) and the <b>Upapada</b> (image of the 12th — a principal marriage indicator).</p><div class="tw"><table class="tbl"><thead><tr><th>Bhava Pada</th><th>What its Arudha shows</th></tr></thead><tbody><tr><td>1 · Lagna Pada (Arudha Lagna, AL)</td><td>the projected self — public image, status, how the world sees you</td></tr><tr><td>2 · Dhana Pada</td><td>the image of wealth and family</td></tr><tr><td>3 · Vikrama Pada</td><td>the image of courage & siblings</td></tr><tr><td>4 · Sukha (Matru) Pada</td><td>the image of home, property & mother</td></tr><tr><td>5 · Mantra (Putra) Pada</td><td>the image of children, learning & power</td></tr><tr><td>6 · Roga (Satru) Pada</td><td>the image of enemies, debts & disease</td></tr><tr><td>7 · Dara Pada (DP)</td><td>the image of spouse & partnerships</td></tr><tr><td>8 · Marana Pada</td><td>the image of upheaval & endings</td></tr><tr><td>9 · Pitru Pada</td><td>the image of fortune, father & dharma</td></tr><tr><td>10 · Karma Pada</td><td>the image of career & status</td></tr><tr><td>11 · Labha Pada</td><td>the image of gains & networks</td></tr><tr><td>12 · Upapada (Vyaya Pada, UL)</td><td>the image of loss & letting-go — and the key pointer for marriage & spouse</td></tr></tbody></table></div><div class="ex"><b>Worked example.</b> Scorpio Lagna with Mars (its lord) in Cancer — Mars is 9 signs from the Lagna; counting 9 signs on from Cancer reaches Pisces. So Pisces is the Arudha Lagna: the person's public image is coloured by Pisces even though the body/self is Scorpio.</div><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 29 (Bhava Padas — Arudha computation, the exceptions, and the twelve named padas incl. Lagna Pada and Dara Pada); graha-arudhas (a pada for each planet) are given in the same chapter.</p><h3>Reading the Arudha Lagna & Upapada</h3><ul><li>Benefics in or aspecting the <b>Arudha Lagna</b> raise status and public regard; malefics can bring notoriety or a harsh image. Wealth is read from the <b>2nd from AL</b> (the Arudha of wealth).</li><li>The <b>Upapada (UL)</b> and its lord describe the spouse and the marriage's dignity; the <b>2nd from UL</b> shows the sustenance/longevity of the marriage. Malefics there can indicate strain — read cautiously and never as a fixed verdict.</li></ul><h2 id="argala">Argala — intervention</h2><p><b>Argala</b> is a 'bolt' — a planet in certain houses from a point intervenes in its results; a planet in the opposing house obstructs that intervention (<b>Virodhargala</b>).</p><div class="tw"><table class="tbl"><thead><tr><th>Argala from the…</th><th>Obstructed from the…</th></tr></thead><tbody><tr><td>2nd</td><td>12th</td></tr><tr><td>4th</td><td>10th</td></tr><tr><td>11th</td><td>3rd</td></tr><tr><td>5th</td><td>9th</td></tr><tr><td>3rd (by malefics especially)</td><td>(counter by the 11th)</td></tr></tbody></table></div><ul><li>Benefic argala helps the matters of the point; malefic argala stresses them; both give mixed results.</li><li>Argala on the Lagna and the Arudha Lagna (and their 7ths) is read for fame and fortune.</li></ul><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 31 (Argala and its obstruction; effects of unobstructed argala on each house).</p><h2 id="karaka">Chara Karakas — the significators by longitude</h2><p>Rank the planets by <b>degree within their sign</b>, highest first; each rank becomes a movable significator. BPHS's eight-karaka scheme:</p><div class="tw"><table class="tbl"><thead><tr><th>Karaka</th><th>Signifies</th><th>Rank by longitude</th></tr></thead><tbody><tr><td>Atmakaraka (AK)</td><td>the self, soul, the inner ruler — the most important karaka</td><td>highest longitude</td></tr><tr><td>Amatyakaraka (AmK)</td><td>career, counsel, livelihood, the mind's minister</td><td>2nd highest</td></tr><tr><td>Bhratrikaraka (BK)</td><td>siblings, guru, courage, discrimination</td><td>3rd</td></tr><tr><td>Matrikaraka (MK)</td><td>mother, home, learning, emotional nature</td><td>4th</td></tr><tr><td>Pitrikaraka (PiK)</td><td>father (in the 8-karaka scheme)</td><td>5th</td></tr><tr><td>Putrakaraka (PuK)</td><td>children, intelligence, creativity, past merit</td><td>6th</td></tr><tr><td>Gnatikaraka (GK)</td><td>kin, cousins, obstacles, spirituality, litigation</td><td>7th</td></tr><tr><td>Darakaraka (DK)</td><td>spouse, marriage, partnership</td><td>lowest longitude</td></tr></tbody></table></div><div class="note"><b>Translator / commentary.</b> A seven-karaka variant is also used (merging Pitri/Putra into a single Putra-karaka and dropping one planet); some schemes include Rahu, counting its longitude in reverse. State which scheme you use.</div><p>Read the karakas as living significators alongside the fixed houses: the <b>AK</b> is the soul's agenda (strongest planet, inner king), the <b>AmK</b> the career/mind, the <b>DK</b> the spouse.</p><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 32, vv. 13–17 (the chara-karaka order and status).</p><h2 id="karakamsa">Karakamsa — the soul's navamsa</h2><p>The <b>Karakamsa</b> is the Navamsa (D9) sign occupied by the Atmakaraka, projected back into the rasi as a reference lagna. Read from it, planets and signs describe the soul's deeper agenda — vocation, spirituality, and the karmic themes of the life.</p><ul><li>Planets in and aspecting the Karakamsa show innate talents and drives (e.g. benefics for learning and grace, malefics for sharp or technical gifts).</li><li>Many <b>Raja Yogas</b> are judged from the Karakamsa together with the Atmakaraka and the Putrakaraka (see the Yogas page).</li></ul><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 33 (Karakamsa); applied throughout the Raja Yoga chapter, Ch. 39.</p><div class="mine"><b>Study note.</b> Compute these once per chart and keep them beside the rasi chart. The houses answer 'what is', the Arudhas answer 'how it looks', and the Karakamsa answers 'what the soul is here to do' — three angles on the same life.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p><b>How the numbers are worked out:</b> <a href="kundli-technical-report.html">the chart engine, in detail</a> &mdash; the ephemeris, the ayanāṃśa modes, the sunrise convention and what each divisional chart is computed from.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>
+</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Arudhas, Argala, Karakas & Karakamsa</h1><p class="sub">Image-points and how to read the Arudha Lagna and Upapada, interventions, both karaka schemes, and the Karakamsa lagna.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html" class="active">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#arudha">Arudha Pada — the image of a house</a><a href="#argala">Argala — intervention</a><a href="#karaka">Chara Karakas — the significators by longitude</a><a href="#karakamsa">Karakamsa — the soul's navamsa</a></aside><main><p class="lead">Alongside the Parashari framework, BPHS carries a set of Jaimini-style tools: <b>image-points</b> (Arudhas), <b>interventions</b> (Argala), the <b>significators-by-longitude</b> (Chara Karakas), and the <b>Karakamsa</b>. Parashara sows them (Ch. 29–33); Jaimini later develops them.</p><h2 id="arudha">Arudha Pada — the image of a house</h2><p>A house shows a matter's <i>reality</i>; its <b>Arudha</b> shows how that matter <i>appears</i> — its projection into the world, its reputation and manifestation.</p><p class="term"><b>Computation</b> — Count how many signs the house-lord sits from its house; from the lord, count that many signs again. The sign reached is the Arudha.</p><p class="term"><b>Exceptions</b> — A pada can never fall on the house itself or the 7th from it. If the count lands on the same house, take the 10th from it instead; if on the 7th, take the 4th from the house. (If the lord sits in the 4th or 10th from its house, that occupied sign is the Arudha directly.)</p><p>Every house has a pada; the two most used are the <b>Arudha Lagna</b> (image of the self) and the <b>Upapada</b> (image of the 12th — a principal marriage indicator).</p><div class="tw"><table class="tbl"><thead><tr><th>Bhava Pada</th><th>What its Arudha shows</th></tr></thead><tbody><tr><td>1 · Lagna Pada (Arudha Lagna, AL)</td><td>the projected self — public image, status, how the world sees you</td></tr><tr><td>2 · Dhana Pada</td><td>the image of wealth and family</td></tr><tr><td>3 · Vikrama Pada</td><td>the image of courage & siblings</td></tr><tr><td>4 · Sukha (Matru) Pada</td><td>the image of home, property & mother</td></tr><tr><td>5 · Mantra (Putra) Pada</td><td>the image of children, learning & power</td></tr><tr><td>6 · Roga (Satru) Pada</td><td>the image of enemies, debts & disease</td></tr><tr><td>7 · Dara Pada (DP)</td><td>the image of spouse & partnerships</td></tr><tr><td>8 · Marana Pada</td><td>the image of upheaval & endings</td></tr><tr><td>9 · Pitru Pada</td><td>the image of fortune, father & dharma</td></tr><tr><td>10 · Karma Pada</td><td>the image of career & status</td></tr><tr><td>11 · Labha Pada</td><td>the image of gains & networks</td></tr><tr><td>12 · Upapada (Vyaya Pada, UL)</td><td>the image of loss & letting-go — and the key pointer for marriage & spouse</td></tr></tbody></table></div><div class="ex"><b>Worked example.</b> Scorpio Lagna with Mars (its lord) in Cancer — Mars is 9 signs from the Lagna; counting 9 signs on from Cancer reaches Pisces. So Pisces is the Arudha Lagna: the person's public image is coloured by Pisces even though the body/self is Scorpio.</div><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 29 (Bhava Padas — Arudha computation, the exceptions, and the twelve named padas incl. Lagna Pada and Dara Pada); graha-arudhas (a pada for each planet) are given in the same chapter.</p><h3>Reading the Arudha Lagna & Upapada</h3><ul><li>Benefics in or aspecting the <b>Arudha Lagna</b> raise status and public regard; malefics can bring notoriety or a harsh image. Wealth is read from the <b>2nd from AL</b> (the Arudha of wealth).</li><li>The <b>Upapada (UL)</b> and its lord describe the spouse and the marriage's dignity; the <b>2nd from UL</b> shows the sustenance/longevity of the marriage. Malefics there can indicate strain — read cautiously and never as a fixed verdict.</li></ul><h2 id="argala">Argala — intervention</h2><p><b>Argala</b> is a 'bolt' — a planet in certain houses from a point intervenes in its results; a planet in the opposing house obstructs that intervention (<b>Virodhargala</b>).</p><div class="tw"><table class="tbl"><thead><tr><th>Argala from the…</th><th>Obstructed from the…</th></tr></thead><tbody><tr><td>2nd</td><td>12th</td></tr><tr><td>4th</td><td>10th</td></tr><tr><td>11th</td><td>3rd</td></tr><tr><td>5th</td><td>9th</td></tr><tr><td>3rd (by malefics especially)</td><td>(counter by the 11th)</td></tr></tbody></table></div><ul><li>Benefic argala helps the matters of the point; malefic argala stresses them; both give mixed results.</li><li>Argala on the Lagna and the Arudha Lagna (and their 7ths) is read for fame and fortune.</li></ul><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 31 (Argala and its obstruction; effects of unobstructed argala on each house).</p><h2 id="karaka">Chara Karakas — the significators by longitude</h2><p>Rank the planets by <b>degree within their sign</b>, highest first; each rank becomes a movable significator. BPHS's eight-karaka scheme:</p><div class="tw"><table class="tbl"><thead><tr><th>Karaka</th><th>Signifies</th><th>Rank by longitude</th></tr></thead><tbody><tr><td>Atmakaraka (AK)</td><td>the self, soul, the inner ruler — the most important karaka</td><td>highest longitude</td></tr><tr><td>Amatyakaraka (AmK)</td><td>career, counsel, livelihood, the mind's minister</td><td>2nd highest</td></tr><tr><td>Bhratrikaraka (BK)</td><td>siblings, guru, courage, discrimination</td><td>3rd</td></tr><tr><td>Matrikaraka (MK)</td><td>mother, home, learning, emotional nature</td><td>4th</td></tr><tr><td>Pitrikaraka (PiK)</td><td>father (in the 8-karaka scheme)</td><td>5th</td></tr><tr><td>Putrakaraka (PuK)</td><td>children, intelligence, creativity, past merit</td><td>6th</td></tr><tr><td>Gnatikaraka (GK)</td><td>kin, cousins, obstacles, spirituality, litigation</td><td>7th</td></tr><tr><td>Darakaraka (DK)</td><td>spouse, marriage, partnership</td><td>lowest longitude</td></tr></tbody></table></div><div class="note"><b>Translator / commentary.</b> A seven-karaka variant is also used (merging Pitri/Putra into a single Putra-karaka and dropping one planet); some schemes include Rahu, counting its longitude in reverse. State which scheme you use.</div><p>Read the karakas as living significators alongside the fixed houses: the <b>AK</b> is the soul's agenda (strongest planet, inner king), the <b>AmK</b> the career/mind, the <b>DK</b> the spouse.</p><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 32, vv. 13–17 (the chara-karaka order and status).</p><h2 id="karakamsa">Karakamsa — the soul's navamsa</h2><p>The <b>Karakamsa</b> is the Navamsa (D9) sign occupied by the Atmakaraka, projected back into the rasi as a reference lagna. Read from it, planets and signs describe the soul's deeper agenda — vocation, spirituality, and the karmic themes of the life.</p><ul><li>Planets in and aspecting the Karakamsa show innate talents and drives (e.g. benefics for learning and grace, malefics for sharp or technical gifts).</li><li>Many <b>Raja Yogas</b> are judged from the Karakamsa together with the Atmakaraka and the Putrakaraka (see the Yogas page).</li></ul><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 33 (Karakamsa); applied throughout the Raja Yoga chapter, Ch. 39.</p><div class="mine"><b>Study note.</b> Compute these once per chart and keep them beside the rasi chart. The houses answer 'what is', the Arudhas answer 'how it looks', and the Karakamsa answers 'what the soul is here to do' — three angles on the same life.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p><b>How the numbers are worked out:</b> <a href="kundli-technical-report.html">the chart engine, in detail</a> &mdash; the ephemeris, the ayanāṃśa modes, the sunrise convention and what each divisional chart is computed from.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>
