@@ -632,6 +632,13 @@ def build_shared():
             jsread(SRC, "js", "report", "motion", "54-motion-bodies.js") + "\n" +
             jsread(SRC, "js", "sp-bodies.js") + "\n" +
             jsread(SRC, "js", "graha-sprite.js")),
+        # The bhāva-systems page. 72-sripati.js is the report's own Śrīpati
+        # construction, concatenated rather than reimplemented so a cusp here
+        # and a cusp in the chart report cannot disagree; it has no free
+        # globals, which is what makes that possible.
+        "bhava-systems.js": brandify(
+            jsread(SRC, "js", "report", "sections", "72-sripati.js") + "\n" +
+            jsread(SRC, "js", "bhava-systems-ui.js")),
         # The ayanāṃśa page. svg-film.js travels with it because the page
         # films its own rings, through the same module the ceremony uses.
         "ayanamsa.js": brandify(

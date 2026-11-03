@@ -1,0 +1,46 @@
+<p class="lede">A r&amacr;&#347;i is a twelfth of the zodiac and nobody disputes where it starts. A <b>bh&amacr;va</b> is a twelfth of <i>a life</i>, and where one begins is a question the tradition answers in more than one way. This page draws the answers on top of each other for any moment and place, with <b>no birth chart required</b>, so you can see exactly where they agree, where they part, and which grahas they actually disagree about.</p>
+
+<div class="aybar" id="bh-bar">
+  <label>Moment <input type="datetime-local" id="bh-when" class="swin"></label>
+  <label>Place <span id="bh-place" class="swpick"></span></label>
+  <button type="button" class="swbtn" data-bh="now">This moment</button>
+</div>
+<p class="swstamp" id="bh-stamp"></p>
+
+<h2 id="three">Three ways to cut the same circle<span class="kdeva">त्रिविधा भाव-व्यवस्था</span></h2>
+<div class="aygrid">
+  <div class="aycard"><h3>Whole sign</h3><p>The r&amacr;&#347;i holding the lagna <i>is</i> the first bh&amacr;va, edge to edge. The next sign is the second, and so on. House boundaries and sign boundaries are the same thing, so a graha&rsquo;s sign and its house never disagree. This is the method BPHS uses throughout.</p></div>
+  <div class="aycard"><h3>Equal from the lagna</h3><p>The first bh&amacr;va begins at the lagna&rsquo;s exact degree and runs 30&deg;, and so on round. Every house is the same width, but they no longer line up with the signs &mdash; a graha can be in one sign and the next house.</p></div>
+  <div class="aycard"><h3>&Sacute;r&imacr;pati</h3><p>The lagna and the <b>MC</b> &mdash; the degree culminating overhead &mdash; are both fixed, and the quadrants between them are divided. The two are not 90&deg; apart except at the equator, so the houses come out <b>unequal</b>, and how unequal depends on the latitude and the time of day.</p></div>
+</div>
+
+<h2 id="wheel">All three at once<span class="kdeva">समाक्षेपः</span></h2>
+<p>The outer ring is the r&amacr;&#347;is. Inside it the three sets of house boundaries are drawn as separate rings, so where they diverge is visible directly rather than by comparing two tables.</p>
+<div class="aywrap"><div id="bh-wheel"></div></div>
+<div class="swtoggles" id="bh-toggles"></div>
+
+<h2 id="shift">Which grahas the systems disagree about<span class="kdeva">भेद-सूची</span></h2>
+<p>This is the only question that matters in practice. Most of the time the three agree about most grahas; the interesting cases are the ones near a junction.</p>
+<div id="bh-table"></div>
+
+<h2 id="latitude">Why &Sacute;r&imacr;pati houses are unequal<span class="kdeva">अक्षांश-प्रभावः</span></h2>
+<p>Drag the latitude. At the equator the quadrants are nearly even and &Sacute;r&imacr;pati is close to equal houses. Move north or south and the ecliptic meets the horizon at a steeper or shallower angle through the day, the lagna and the MC stop being a quarter-circle apart, and the houses stretch and squeeze. Past the polar circle the construction can fail outright, and the page says so rather than drawing something.</p>
+<div class="aybar">
+  <label>Latitude <input type="range" id="bh-lat" min="-72" max="72" step="1" value="24"></label>
+  <span class="ayread" id="bh-latread"></span>
+</div>
+<div class="aywrap"><div id="bh-latplot"></div></div>
+<p class="k-note" id="bh-latnote"></p>
+
+<h2 id="cusp">The madhya, the sandhi, and the fifteen degrees<span class="kdeva">भाव-मध्य-सन्धि</span></h2>
+<p>&Sacute;r&imacr;pati does not only move the boundaries; it gives the inside of a bh&amacr;va a shape. The <b>madhya</b> is the middle of the house, where a graha gives its fullest result for that bh&amacr;va. The <b>sandhi</b> is the junction between two houses, where it gives none. Between the two the effect falls away across about fifteen degrees.</p>
+<div class="aywrap"><div id="bh-cusp"></div></div>
+<div class="note"><b>A weight for reading, not a score.</b> The curve is how the Benares edition states the rule, drawn. It is not a measured quantity and nothing on this site multiplies anything by it; a graha at a sandhi is not &ldquo;zero per cent&rdquo; of anything, it is a graha the text says gives no result for <i>that</i> bh&amacr;va. Where a house is narrower than thirty degrees it reaches its sandhi before the fifteen degrees are spent, and the sandhi wins, because the text is explicit about the junction.</div>
+
+<h2 id="meanings">What the twelve are for<span class="kdeva">भाव-फलानि</span></h2>
+<p>The significations below are the BPHS baseline. They overlap deliberately &mdash; a bh&amacr;va is a field of life rather than a single topic &mdash; and BPHS judges each one together with its lord, its occupants, the aspects on it and the running da&#347;&amacr;, never from the house alone.</p>
+<div id="bh-meanings" class="axgrid"></div>
+
+<p class="src"><span>Source</span> The twelve significations follow BPHS, Vol. 1, Ch. 11 and Ch. 24; please verify exact verse numbers against the uploaded translation. The &Sacute;r&imacr;pati construction and the fifteen-degree rule follow the Benares edition as implemented in this site&rsquo;s own &Sacute;r&imacr;pati module, which the chart report uses unchanged; see <a href="bhavas.html">Bhavas</a> for the written significations, <a href="lagna.html">Lagna</a> for the ascendant itself, and <a href="kundli.html">Kundli 2.0</a> to cast a chart.</p>
+
+<script src="bhava-systems.js" defer></script>

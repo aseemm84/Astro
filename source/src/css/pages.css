@@ -2213,3 +2213,39 @@ html[data-theme="emerald"] .aysvg .ay-rate{fill:#ff9c80}
 .ayminival b.contest{color:var(--sem-bad,#a1493a)}
 .aysvg .ay-dkey{font-size:11px;font-weight:600}
 
+/* ===== bhava-systems.html ===================================================
+   Colour carries the system, and only the system: the rāśis are neutral, and
+   each of the three house rings keeps one hue wherever it appears — on the
+   wheel, in the table, on the curves. */
+.bhsvg{width:100%;height:auto;display:block}
+.bhsvg .bh-rasi{fill:var(--muted-2,#5a5e78);fill-opacity:.07}
+.bhsvg .bh-rasi.alt{fill-opacity:.03}
+.bhsvg .bh-rasilab{font-size:12px;font-weight:600;fill:var(--muted-2,#5a5e78);
+  text-anchor:middle}
+.bhsvg .bh-whole{fill:#b08a2a;fill-opacity:.22;stroke:#b08a2a;stroke-width:.6}
+.bhsvg .bh-whole.alt{fill-opacity:.10}
+.bhsvg .bh-equal{fill:#44579e;fill-opacity:.22;stroke:#44579e;stroke-width:.6}
+.bhsvg .bh-equal.alt{fill-opacity:.10}
+.bhsvg .bh-sri{fill:#1c6b46;fill-opacity:.24;stroke:#1c6b46;stroke-width:.6}
+.bhsvg .bh-sri.alt{fill-opacity:.11}
+.bhsvg .bh-hn{font-size:11px;font-weight:700;fill:var(--text,#20233a);text-anchor:middle}
+.bhsvg .bh-lagna{stroke:var(--sem-bad,#a1493a);stroke-width:3}
+.bhsvg .bh-mc{stroke:#3f6fa6;stroke-width:3;stroke-dasharray:7 5}
+.bhsvg .bh-axlab{font-size:12px;font-weight:700;text-anchor:middle}
+.bhsvg .bh-axlab.bh-lagna{fill:var(--sem-bad,#a1493a);stroke:none}
+.bhsvg .bh-axlab.bh-mc{fill:#3f6fa6;stroke:none}
+.bhsvg .bh-g{fill:var(--surface-3,#fff);stroke:var(--text,#20233a);stroke-width:1.2}
+.bhsvg .bh-glab{font-size:11px;font-weight:700;fill:var(--text,#20233a);text-anchor:middle}
+.bhsvg .bh-cv{fill:none;stroke-width:2.5}
+.bhsvg .bh-cv.c0{stroke:#1c6b46}
+.bhsvg .bh-cv.c1{stroke:var(--sem-bad,#a1493a);stroke-dasharray:6 4}
+.bhsvg .bh-cvlab{font-size:11.5px;font-weight:600;text-anchor:end}
+.bhsvg .bh-cvlab.c0{fill:#1c6b46}
+.bhsvg .bh-cvlab.c1{fill:var(--sem-bad,#a1493a)}
+.bhsvg .bh-now{stroke:var(--sem-bad,#a1493a);stroke-width:1.5;stroke-dasharray:4 3}
+.bhsum{margin:.6rem 0 .2rem;font-size:1rem}
+.bhbar{display:inline-block;width:5.5rem;height:8px;border-radius:4px;
+  background:var(--border,#e7e7f0);overflow:hidden;vertical-align:middle;
+  margin-right:.35rem}
+.bhbar i{display:block;height:100%;background:#1c6b46}
+

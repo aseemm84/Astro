@@ -199,6 +199,14 @@
   "has_aside": true,
   "desc": "The animated sidereal ecliptic wheel for any moment and place: the twelve rāśis and twenty-seven nakṣatras with each graha at its true longitude, played through a span from six hours to thirty years, with trails that make a retrograde loop visible, graha dṛṣṭi as chords, a settable tilt, and any of the sixteen vargas."
  },
+ "bhava-systems": {
+  "title": "Bh\u0101va systems \u2014 where a house begins &mdash; {{BRAND}}",
+  "h1": "Bh\u0101va systems",
+  "sub": "Whole sign, equal and \u015ar\u012bpati drawn on one circle for any moment and place \u2014 and exactly which grahas they disagree about.",
+  "layout": "",
+  "has_aside": true,
+  "desc": "The three ways of dividing the twelve bh\u0101vas compared on one wheel for any moment and place: whole sign, equal from the lagna, and the \u015ar\u012bpati construction from the lagna and the MC, with the grahas each system places differently, the fifteen-degree madhya rule drawn, and how far latitude distorts the houses."
+ },
  "ayanamsa": {
   "title": "Ayan\u0101\u1e43\u015ba \u2014 the gap between two zodiacs &mdash; {{BRAND}}",
   "h1": "Ayan\u0101\u1e43\u015ba",
