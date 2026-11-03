@@ -277,6 +277,13 @@ head("the star-anchored definitions, and what the plot actually shows");
       note: document.getElementById("ay-driftnote").textContent,
       on: document.querySelectorAll("#ay-starwheel .ay-swstar.on").length,
       stars: document.querySelectorAll("#ay-starwheel .ay-swstar").length,
+      out: document.querySelectorAll("#ay-starwheel .ay-swstar.out").length,
+      zero: !!document.querySelector("#ay-starwheel .ay-swzero"),
+      arc: !!document.querySelector("#ay-starwheel .ay-swarc"),
+      ayan: !!document.querySelector("#ay-starwheel .ay-swequinox"),
+      segs: document.querySelectorAll("#ay-starwheel .ay-swseg").length,
+      seglabs: document.querySelectorAll("#ay-starwheel .ay-swseglab").length,
+      foot: (document.querySelector("#ay-starwheel .ay-swfoot") || {}).textContent || "",
     });
     const citra = grab();
     const s2 = document.getElementById("ay-anchor");
@@ -293,6 +300,24 @@ head("the star-anchored definitions, and what the plot actually shows");
   is(errs.filter(quiet).length === 0, "no page errors");
   is(r.citra.stars === 27, "all twenty-seven junction stars are on the wheel");
   is(r.citra.on === 1, "with the anchor star marked");
+  /* The figure's first version showed where the stars are and nothing about
+     anchoring: no sidereal zero, so the section's whole claim — the ayanāṃśa
+     is whatever puts THIS star at THAT longitude — had nothing to point at.
+     These three are the parts that were missing, so they are pinned. */
+  is(r.citra.zero, "the sidereal zero is drawn, which is what the anchor is measured from");
+  is(r.citra.arc, "and the arc from it to the anchor longitude");
+  is(r.citra.ayan, "with the ayanāṃśa back to the equinox in the same picture");
+  is(r.citra.segs === 27 && r.citra.seglabs === 27,
+     "the names sit on the twenty-seven equal divisions, which is what they name");
+  /* Citrā's and Svātī's junction stars are 0.39° apart and BOTH lie in
+     Citrā's segment, which is why the first drawing printed them on top of
+     one another. That is the sky, so the page states it rather than nudging
+     the labels apart. */
+  is(r.citra.out === 7,
+     "and the seven stars lying outside their own nakṣatra are marked (" +
+     r.citra.out + ")");
+  is(/7 of the 27 fall outside/.test(r.citra.foot),
+     "the figure says so in words too");
   is(r.families >= 2, "and a family to choose (" + r.families + ")");
   is(r.citra.lines >= 2, "the Citrā family plots " + r.citra.lines + " definitions");
   is(r.revati.note !== r.citra.note && /Revat/.test(r.revati.note),

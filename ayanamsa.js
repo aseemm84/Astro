@@ -1003,6 +1003,27 @@ function vargaCharts(D){
              keys: f.keys.filter(function (k) { return !!modes()[k]; }) };
   }
 
+  /* THE ANCHOR, DRAWN AS THE STATEMENT IT IS.
+     The first version of this put all twenty-seven names at their stars'
+     longitudes on a ring whose ticks marked the equal divisions, and drew a
+     dashed line from the centre to the anchor. It showed where the stars are
+     and not one thing about anchoring: there was no sidereal zero on it, so
+     the claim the section makes — the ayanāṃśa is whatever number puts THIS
+     star at THAT longitude — had nothing to point at. Worse, Spica sits at
+     179.985° and is held at 180°, so the pin and the star coincided and the
+     line looked like decoration.
+
+     Now the figure carries the whole sentence: the sidereal zero, the arc
+     from it to the anchor star, which IS the stated longitude, and the
+     equinox a further ayanāṃśa back, which is the number being defined.
+
+     The names moved to the segment CENTRES, because that is what they name.
+     Stars are dots at their true longitudes, which is a different thing, and
+     the seven that fall outside the nakṣatra named after them are marked as
+     such — Citrā's and Svātī's stars are 0.39° apart and BOTH sit in Citrā's
+     segment, which is why the old drawing had them printed on top of one
+     another. That is the sky, not a layout fault, so it is labelled rather
+     than nudged apart. */
   function drawStarWheel() {
     var h = $("ay-starwheel");
     if (!h) return;
@@ -1010,47 +1031,88 @@ function vargaCharts(D){
     if (!Y.length) { h.innerHTML = ""; return; }
     var sel = ($("ay-anchor") || {}).value || "Citrā";
     var A = famOf(sel);
-    var W = 700, H = 620, cx = 350, cy = 310;
+    var ay = ayanAt(S.ringMode, S.year) || 0;
+    var W = 760, H = 700, cx = 380, cy = 350;
+    var RO = 300, RI = 262, RS = 232;      /* names ring, divisions, stars */
+    var NW = 360 / 27;
     var o = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="aysvg" role="img" ' +
-      'aria-label="The twenty-seven junction stars on a ring, with the anchor star ' +
-      'and the longitude it is held at marked">' +
-      '<title>The junction stars, and the one this definition is pinned to</title>';
-    o += '<circle cx="' + cx + '" cy="' + cy + '" r="250" class="ay-swring"/>';
-    /* the 27 nakṣatra divisions, and each junction star at its own longitude */
+      'aria-label="The twenty-seven nakṣatra divisions with their junction stars, ' +
+      'the sidereal zero, and the arc to the star this definition anchors to">' +
+      '<title>What a star-anchored definition actually says</title>';
+
+    /* the twenty-seven equal divisions */
     for (var i = 0; i < 27; i++) {
-      var b0 = i * (360 / 27);
-      var p0 = xy(cx, cy, 236, b0), p1 = xy(cx, cy, 264, b0);
-      o += '<line x1="' + p0[0].toFixed(1) + '" y1="' + p0[1].toFixed(1) + '" x2="' +
-           p1[0].toFixed(1) + '" y2="' + p1[1].toFixed(1) + '" class="ay-swdiv"/>';
+      var b0 = i * NW, isA = A && Y[i] && Y[i].nak === A.star;
+      o += '<path d="' + wedge(cx, cy, RI, RO, b0, b0 + NW) +
+           '" class="ay-swseg' + (i % 2 ? " alt" : "") + (isA ? " on" : "") + '"/>';
+      var m = xy(cx, cy, (RI + RO) / 2, b0 + NW / 2);
+      var ang = b0 + NW / 2;
+      var rot = (ang > 90 && ang < 270) ? (180 - ang - 90) : (-ang + 90);
+      o += '<text x="' + m[0].toFixed(1) + '" y="' + (m[1] + 3).toFixed(1) +
+           '" class="ay-swseglab' + (isA ? " on" : "") + '" transform="rotate(' +
+           rot.toFixed(1) + ' ' + m[0].toFixed(1) + ' ' + m[1].toFixed(1) + ')">' +
+           esc((Y[i] || {}).nak || "") + '</text>';
     }
+    /* each junction star at its OWN longitude, which is not the centre of the
+       division named after it and for seven of them is not even inside it */
     Y.forEach(function (st) {
       var isA = A && st.nak === A.star;
-      var p = xy(cx, cy, 250, st.sid);
+      var p = xy(cx, cy, RS, st.sid);
+      var t0 = xy(cx, cy, RS, st.sid), t1 = xy(cx, cy, RI, st.sid);
+      o += '<line x1="' + t0[0].toFixed(1) + '" y1="' + t0[1].toFixed(1) + '" x2="' +
+           t1[0].toFixed(1) + '" y2="' + t1[1].toFixed(1) + '" class="ay-swtick' +
+           (st.inside ? "" : " out") + '"/>';
       o += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' +
-           (isA ? 8 : 3.4) + '" class="ay-swstar' + (isA ? " on" : "") + '"/>';
-      var l = xy(cx, cy, isA ? 286 : 274, st.sid);
-      o += '<text x="' + l[0].toFixed(1) + '" y="' + (l[1] + 3).toFixed(1) +
-           '" class="ay-swlab' + (isA ? " on" : "") + '">' + esc(st.nak) + '</text>';
+           (isA ? 7 : 3.6) + '" class="ay-swstar' + (isA ? " on" : "") +
+           (st.inside ? "" : " out") + '"/>';
     });
+
+    /* THE SIDEREAL ZERO — the thing the whole definition exists to place */
+    var z = xy(cx, cy, RO + 18, 0);
+    o += '<line x1="' + cx + '" y1="' + cy + '" x2="' + z[0].toFixed(1) + '" y2="' +
+         z[1].toFixed(1) + '" class="ay-swzero"/>';
+    /* anchored to START and set inside the line's end: at anchor-end it ran
+       off the left edge of the box and read "idereal 0°" */
+    o += '<text x="' + (z[0] + 6).toFixed(1) + '" y="' + (z[1] - 12).toFixed(1) +
+         '" class="ay-swzlab">sidereal 0°</text>';
+    /* the equinox, an ayanāṃśa back from it — the same angle as the rings figure */
+    var e = xy(cx, cy, RO + 18, -ay);
+    o += '<line x1="' + cx + '" y1="' + cy + '" x2="' + e[0].toFixed(1) + '" y2="' +
+         e[1].toFixed(1) + '" class="ay-swequinox"/>';
+    o += '<path d="' + wedge(cx, cy, 0, 96, -ay, 0) + '" class="ay-gap"/>';
+    var em = xy(cx, cy, 128, -ay / 2);
+    o += '<text x="' + em[0].toFixed(1) + '" y="' + em[1].toFixed(1) +
+         '" class="ay-swaylab">ayanāṃśa ' + esc(dm(ay)) + '</text>';
+
     if (A) {
-      /* the line from the centre to where the definition INSISTS the star sits */
-      var t = xy(cx, cy, 250, A.at);
-      o += '<line x1="' + cx + '" y1="' + cy + '" x2="' + t[0].toFixed(1) + '" y2="' +
-           t[1].toFixed(1) + '" class="ay-swpin"/>';
       var st2 = Y.filter(function (x) { return x.nak === A.star; })[0];
-      o += '<text x="' + cx + '" y="' + (cy - 14) + '" class="ay-swhead">' +
-           esc(A.star) + ' held at</text>';
-      o += '<text x="' + cx + '" y="' + (cy + 24) + '" class="ay-swval">' +
+      /* the arc from the sidereal zero round to the anchor longitude: this is
+         the definition's actual claim, drawn */
+      o += '<path d="' + wedge(cx, cy, 150, 162, 0, A.at) + '" class="ay-swarc"/>';
+      /* ONE statement, not two. A centred block repeating the star and the
+         longitude sat on top of the ayanāṃśa label and said nothing the arc
+         label had not already said. */
+      var am = xy(cx, cy, 186, A.at / 2);
+      o += '<text x="' + am[0].toFixed(1) + '" y="' + (am[1] - 10).toFixed(1) +
+           '" class="ay-swarclab">' + esc(A.star) + ' is held at ' +
            esc(dm(A.at)) + '</text>';
-      o += '<text x="' + cx + '" y="' + (cy + 48) + '" class="ay-swsub">' +
-           A.keys.length + (A.keys.length === 1 ? " definition names it"
-                                                : " definitions name it") + '</text>';
+      o += '<text x="' + am[0].toFixed(1) + '" y="' + (am[1] + 9).toFixed(1) +
+           '" class="ay-swsub">from the sidereal zero — ' + A.keys.length +
+           (A.keys.length === 1 ? " definition says so" : " definitions say so") +
+           '</text>';
       var rd = $("ay-anchorread");
       if (rd && st2) {
         rd.innerHTML = esc(st2.star) + " (" + esc(st2.bayer) + "), the yogatārā of " +
-          esc(A.star) + " — magnitude " + st2.mag.toFixed(2);
+          esc(A.star) + " — magnitude " + st2.mag.toFixed(2) + ". " +
+          (st2.inside ? "It lies inside the nakṣatra named after it."
+                      : "<b>It lies outside the nakṣatra named after it.</b>");
       }
     }
+    /* say the awkward thing rather than let it look like a drawing fault */
+    var outN = Y.filter(function (x) { return !x.inside; }).length;
+    o += '<text x="' + cx + '" y="' + (H - 14) + '" class="ay-swfoot">' +
+         'dots are the junction stars at their true longitudes; ' + outN +
+         ' of the 27 fall outside the nakṣatra named after them</text>';
     o += "</svg>";
     h.innerHTML = o;
     drawDrift(sel);
