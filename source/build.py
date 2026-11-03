@@ -636,6 +636,13 @@ def build_shared():
         # films its own rings, through the same module the ceremony uses.
         "ayanamsa.js": brandify(
             jsread(SRC, "js", "svg-film.js") + "\n" +
+            # the report's own chart builder, so the rāśi chart this page
+            # draws is the chart the report draws and not a lookalike. The
+            # prelude supplies the three names it reads from the report's
+            # scope; it is a top-level function and cannot see into the
+            # page controller's closure.
+            jsread(SRC, "js", "ayanamsa-prelude.js") + "\n" +
+            jsread(SRC, "js", "report", "core", "04-chart-svg.js") + "\n" +
             jsread(SRC, "js", "ayanamsa-ui.js")),
         # The animated ecliptic wheel, same bargain as the star wheel: the page
         # gets report/sky/37-ecliptic-wheel.js itself rather than a copy, so it

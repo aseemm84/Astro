@@ -34,6 +34,13 @@
 <p>The equinox is defined by where the Earth&rsquo;s equator cuts the Sun&rsquo;s path. Move the axis and you move the equator with it, so the <b>equinox point slides backwards along the zodiac</b> &mdash; about 50 arcseconds a year, which is one degree in roughly seventy-two years and a whole sign in about 2,150. The stars stay where they are. The seasons do not. The ayan&amacr;&#7745;&#347;a is the running total of that slide.</p>
 <div class="mine"><b>Nothing is going wrong.</b> This is not an error in anybody&rsquo;s astronomy and not a correction for one. It is a real motion of the Earth, known to Hipparchus in the second century BCE and discussed in the siddh&amacr;ntas as <i>ayana-calana</i>. Both zodiacs are internally consistent; they are answers to two different questions.</p>
 
+<h2 id="derive">How it is actually obtained<span class="kdeva">साधन-क्रमः</span></h2>
+<p>Five steps, each one drawn. Nothing below needs any mathematics until the last step, and the last step is one multiplication and two additions.</p>
+<div class="aywrap"><div id="ay-derive"></div></div>
+<ol class="aysteps" id="ay-steplist"></ol>
+<p>And here is that arithmetic carried out, for the year you have selected, with the real numbers of the definition you have selected:</p>
+<div class="ayworked" id="ay-worked"></div>
+
 <h2 id="equation">The equation, drawn<span class="kdeva">समीकरणम्</span></h2>
 <p>Almost every ayan&amacr;&#7745;&#347;a in use is one short formula. You do not need to read it to use this page, but it is three ideas and no more:</p>
 <div class="ayeq" id="ay-eq"></div>
@@ -41,6 +48,20 @@
 <div class="aywrap"><div id="ay-terms"></div></div>
 <p>The middle term does nearly all the work: it is the one degree per seventy-two years. The last term is tiny over any human span and matters only when you reach centuries away &mdash; which is exactly why different definitions agree about <i>rate</i> and disagree about <i>starting value</i>.</p>
 <div class="note"><b>The other kind of definition.</b> A few ayan&amacr;&#7745;&#347;as are not a formula at all. They name a star and insist it sit at a stated longitude &mdash; Citr&amacr; (Spica) at exactly 180&deg;, or Revat&iacute; (&zeta; Piscium) at 359&deg;50&prime;. The ayan&amacr;&#7745;&#347;a is then whatever number makes that true today, recomputed from the star&rsquo;s real position. These move slightly differently from any polynomial, because a star has a motion of its own.</div>
+
+<h2 id="stars">The ones pinned to a star<span class="kdeva">योगतारा-बद्ध</span></h2>
+<p>Not every definition is a formula. Some name a junction star &mdash; the <b>yogat&amacr;r&amacr;</b> a nak&#7779;atra is named for &mdash; and declare that it shall sit at a stated longitude. The ayan&amacr;&#7745;&#347;a is then whatever number makes that true. Three of the twenty-seven are used this way.</p>
+<div class="aywrap"><div id="ay-starwheel"></div></div>
+<div class="aybar">
+  <label>Anchor <select id="ay-anchor" class="swin"></select></label>
+  <span class="ayread" id="ay-anchorread"></span>
+</div>
+<h3 id="movable">Held, or merely set down once</h3>
+<p>Several definitions can name the <i>same</i> star and still disagree, and the plot below shows by how much. A <b>held</b> definition recomputes the ayan&amacr;&#7745;&#347;a from the star for every date, so the star stays exactly at its stated longitude &mdash; that is the flat line at zero. The others either set the star down at one epoch and then advanced the whole frame by precession, or fitted a polynomial to the same anchor. Each is drawn as its distance from the held one, in arcminutes.</p>
+<div class="note"><b>Two different things are visible, and they are worth telling apart.</b> Some of these curves are nearly <i>flat and far from zero</i> &mdash; a standing disagreement about where the star should be put, inherited from a different epoch or a different measurement of the star, which barely changes over two thousand years. Others <i>start near zero and walk away</i>, and only that second kind is drift in the sense of a frame slowly losing the star it was named for. The figures under the plot give both numbers for each definition: how far away it is now, and how much that distance moved across the span shown.</div>
+<div class="aywrap"><div id="ay-drift"></div></div>
+<p class="k-note" id="ay-driftnote"></p>
+<div class="mine"><b>Neither is a mistake.</b> Holding a star keeps the frame tied to the sky you can actually see, at the cost of inheriting that one star&rsquo;s own motion and the error in measuring it. Setting it down once keeps the frame smooth and predictable, at the cost of slowly parting from the very star it was named for. The plot is that trade-off measured rather than argued &mdash; and it was measured <i>before</i> this paragraph was written, which is why it does not claim that every curve drifts. Most of the Citr&amacr; family&rsquo;s disagreement turns out to be a standing offset, not a drift at all.</div>
 
 <h2 id="impact">What it changes &mdash; and what it cannot<span class="kdeva">फल-भेदः</span></h2>
 <p>This is the part most worth knowing, and it is not what most people expect. Changing the ayan&amacr;&#7745;&#347;a does <b>not</b> change the sky. Every graha is exactly where it was; only the <i>label</i> you give its position changes. So some things move, and some things are mathematically incapable of moving.</p>
@@ -52,6 +73,17 @@
   <button type="button" class="swbtn" data-ay="now">This moment</button>
 </div>
 <div class="note"><b>Why tithi cannot move.</b> A tithi is the <i>gap</i> between the Moon and the Sun. Subtract the same ayan&amacr;&#7745;&#347;a from both and the gap is unchanged &mdash; it cancels, exactly, for every definition that exists or could ever be invented. The same goes for kara&#7751;a, which is half a tithi, and for v&amacr;ra, which is just the day of the week. <b>A yoga, however, is the <i>sum</i> of the two</b>, so the ayan&amacr;&#7745;&#347;a does not cancel there &mdash; it doubles. Change the ayan&amacr;&#7745;&#347;a by one degree and the yoga quantity moves by two. The figures above are measured, so you can watch that happen.</div>
+
+<h2 id="chart">What it does to an actual chart<span class="kdeva">कुण्डली-भेदः</span></h2>
+<p>All of the above becomes concrete here. The chart below is cast for the moment and place above, and the only thing changing is the number being subtracted. Drag it and watch grahas cross from one r&amacr;&#347;i into the next.</p>
+<div class="aybar">
+  <label>Ayan&amacr;&#7745;&#347;a <input type="range" id="ay-chartay" min="0" max="30" step="0.01"></label>
+  <span class="ayread" id="ay-chartread"></span>
+  <span class="swsp"></span>
+  <label>Jump to <select id="ay-chartjump" class="swin"></select></label>
+</div>
+<div class="aychartwrap"><div id="ay-chartsvg"></div><div id="ay-chartedge"></div></div>
+<p>The column on the right is the part worth studying: for each graha it gives <b>how far the ayan&amacr;&#7745;&#347;a would have to move</b> before that graha changes r&amacr;&#347;i, and before it changes nak&#7779;atra. A graha sitting a few arcminutes from a boundary is one that the seventeen published definitions do not agree about &mdash; and the span of those definitions is marked on each bar, so you can see at a glance which disagreements are real and which are academic.</p>
 
 <h2 id="spread">Seventeen answers to one question<span class="kdeva">मत-भेदः</span></h2>
 <p>This site offers seventeen definitions. They disagree with each other by more than five degrees &mdash; and the engine&rsquo;s own uncertainty about where a graha is sits near one arcsecond. <b>The choice of convention matters about a thousand times more than the quality of the arithmetic.</b> If this site and another disagree about a chart, this is almost always why.</p>

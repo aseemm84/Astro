@@ -190,6 +190,145 @@
 })();
 ;
 
+/* What report/core/04-chart-svg.js expects from the report's scope.
+
+   The rāśi chart on this page is northChart() — the report's own builder,
+   concatenated after this — so the chart a reader sees here is the chart the
+   report draws rather than a lookalike that would drift from it. It was
+   written inside a bundle that already had these three, so they are supplied
+   here, and ayanamsa-verify asserts each is character-identical to the
+   report's copy; a drift would then fail a test rather than quietly produce
+   a chart that disagreed with the real one.
+
+   They are declared at the top level on purpose: northChart is a top-level
+   function and cannot see anything inside the page controller's closure. */
+var GL={Sun:"Su",Moon:"Mo",Mars:"Ma",Mercury:"Me",Jupiter:"Ju",Venus:"Ve",Saturn:"Sa",Rahu:"Ra",Ketu:"Ke"};
+var SA=["Meṣa","Vṛṣabha","Mithuna","Karka","Siṃha","Kanyā","Tulā","Vṛścika","Dhanus","Makara","Kumbha","Mīna"];
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+;
+
+/* ---------- SVG chart builders ---------- */
+var NPOS=[[200,100],[100,33],[33,100],[100,200],[33,300],[100,367],[200,300],[300,367],[367,300],[300,200],[367,100],[300,33]];
+function northChart(signOf,occOf,title,sub){
+  var o='<svg viewBox="0 0 400 400" class="kchartsvg" role="img" aria-label="'+esc(title)+
+        (sub?', '+esc(sub):'')+'"><title>'+esc(title)+(sub?' — '+esc(sub):'')+'</title>';
+  o+='<rect x="0" y="0" width="400" height="400" fill="#fbf8f0" stroke="#1d2340" stroke-width="2.5"/>';
+  o+='<path d="M0,0 L400,400 M400,0 L0,400 M200,0 L400,200 L200,400 L0,200 Z" fill="none" stroke="#1d2340" stroke-width="1.4"/>';
+  for(var i=0;i<12;i++){var h=i+1,x=NPOS[i][0],y=NPOS[i][1],sg=signOf(h),occ=occOf(h);
+    o+='<text x="'+x+'" y="'+(y-22)+'" class="hn">'+h+'</text>';
+    o+='<text x="'+x+'" y="'+(y-8)+'" class="hs">'+SA[sg]+'</text>';
+    occ.forEach(function(pl,k){o+='<text x="'+x+'" y="'+(y+8+k*13)+'" class="hp">'+pl+'</text>';});}
+  return '<figure class="kchartfig"><figcaption><b>'+esc(title)+'</b><span>'+esc(sub)+'</span></figcaption>'+o+'</svg></figure>';
+}
+function southChart(map,LS,title,sub){
+  var grid={11:[0,0],0:[0,1],1:[0,2],2:[0,3],3:[1,3],4:[2,3],5:[3,3],6:[3,2],7:[3,1],8:[3,0],9:[2,0],10:[1,0]};
+  var o='<svg viewBox="0 0 400 400" class="kchartsvg" role="img" aria-label="'+esc(title)+
+        (sub?', '+esc(sub):'')+'"><title>'+esc(title)+(sub?' — '+esc(sub):'')+'</title>';
+  o+='<rect x="0" y="0" width="400" height="400" fill="#fbf8f0" stroke="#1d2340" stroke-width="2.5"/>';
+  Object.keys(grid).forEach(function(k){var sg=+k,r=grid[k][0],c=grid[k][1],x=c*100,y=r*100,hl=(sg===LS);
+    o+='<rect x="'+x+'" y="'+y+'" width="100" height="100" fill="'+(hl?"#f4edda":"#fbf8f0")+'" stroke="#1d2340" stroke-width="1.2"/>';
+    o+='<text x="'+(x+6)+'" y="'+(y+15)+'" class="ss">'+SA[sg]+'</text>';
+    o+='<text x="'+(x+94)+'" y="'+(y+15)+'" class="sh">'+(((sg-LS)%12+12)%12+1)+'</text>';
+    (map[sg]||[]).forEach(function(pl,i){o+='<text x="'+(x+50)+'" y="'+(y+36+i*14)+'" class="sp">'+pl+'</text>';});
+    if(hl)o+='<text x="'+(x+50)+'" y="'+(y+92)+'" class="slag">Lagna</text>';});
+  return '<figure class="kchartfig"><figcaption><b>'+esc(title)+'</b><span>'+esc(sub)+'</span></figcaption>'+o+'</svg></figure>';
+}
+function savChart(D){
+  if(!D.av||!D.av.sarva)return "";
+  var sav=D.av.sarva,W=760,H=150,pad=34,bw=(W-2*pad)/12;
+  var o='<svg viewBox="0 0 '+W+' '+H+'" class="kwsvg" role="img" aria-label="Sarvashtakavarga by house">';
+  [35,30,25,20].forEach(function(val){var y=H-40-(val-15)*4.2;
+    o+='<line x1="'+pad+'" y1="'+y.toFixed(1)+'" x2="'+(W-pad)+'" y2="'+y.toFixed(1)+'" stroke="#ded6c0" stroke-width="1" stroke-dasharray="3 3"/>';
+    o+='<text x="'+(pad-6)+'" y="'+(y+3).toFixed(1)+'" class="ax" style="text-anchor:end">'+val+'</text>';});
+  for(var h=1;h<=12;h++){var sg=(D.LS+h-1)%12,v=sav[sg],x=pad+(h-1)*bw+3,bh=Math.max((v-15)*4.2,2),y=H-40-bh;
+    var col=v>=30?"#1c6b46":(v>=25?"#b08a2e":"#a1493a");
+    o+='<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+(bw-6).toFixed(1)+'" height="'+bh.toFixed(1)+'" fill="'+col+'" rx="2"/>';
+    o+='<text x="'+(x+(bw-6)/2).toFixed(1)+'" y="'+(y-5).toFixed(1)+'" class="bv">'+v+'</text>';
+    o+='<text x="'+(x+(bw-6)/2).toFixed(1)+'" y="'+(H-24)+'" class="ax">'+h+'</text>';
+    o+='<text x="'+(x+(bw-6)/2).toFixed(1)+'" y="'+(H-11)+'" class="axs">'+SA[sg].slice(0,4)+'</text>';}
+  o+='<line x1="'+pad+'" y1="'+(H-40)+'" x2="'+(W-pad)+'" y2="'+(H-40)+'" stroke="#1d2340" stroke-width="1.2"/></svg>';
+  return o;
+}
+function timeline(D){
+  if(!D.mds)return "";
+  var mds=D.mds,t0=mds[0].start,t1=mds[8].end,span=t1-t0,W=760,H=120,pad=10,now=D.nowJd;
+  var cols={Ketu:"#8a6a5c",Venus:"#b58fb0",Sun:"#c08a3e",Moon:"#8fa9c4",Mars:"#a1493a",Rahu:"#6a5a86",Jupiter:"#1c6b46",Saturn:"#4a5064",Mercury:"#2b7a6f"};
+  var o='<svg viewBox="0 0 '+W+' '+H+'" class="kwsvg" role="img" aria-label="Vimshottari life timeline">';
+  mds.forEach(function(m){var x=pad+(m.start-t0)/span*(W-2*pad),w=(m.end-m.start)/span*(W-2*pad);
+    o+='<rect x="'+x.toFixed(1)+'" y="34" width="'+Math.max(w,1).toFixed(1)+'" height="34" fill="'+cols[m.lord]+'" opacity="0.9"/>';
+    if(w>34){o+='<text x="'+(x+w/2).toFixed(1)+'" y="55" class="tl">'+m.lord.slice(0,2)+'</text>';
+      o+='<text x="'+(x+w/2).toFixed(1)+'" y="80" class="ty">'+fmy(m.start).slice(-4)+'</text>';}});
+  var xn=pad+(now-t0)/span*(W-2*pad);
+  o+='<line x1="'+xn.toFixed(1)+'" y1="24" x2="'+xn.toFixed(1)+'" y2="78" stroke="#a1493a" stroke-width="2"/>';
+  o+='<circle cx="'+xn.toFixed(1)+'" cy="24" r="3.5" fill="#a1493a"/><text x="'+xn.toFixed(1)+'" y="17" class="now">now</text>';
+  o+='<text x="'+pad+'" y="103" class="ty" style="text-anchor:start">birth · '+fmy(t0)+'</text>';
+  o+='<text x="'+(W-pad)+'" y="103" class="ty" style="text-anchor:end">'+fmy(t1)+'</text></svg>';
+  return o;
+}
+function prog(lab,lord,pct,s,e2){
+  return '<div class="kprow"><div class="kplab">'+esc(lab)+'<b>'+esc(lord)+'</b></div>'+
+   '<div class="kpbar"><span style="width:'+pct.toFixed(1)+'%"></span></div>'+
+   '<div class="kppct">'+Math.round(pct)+'%</div>'+
+   '<div class="kpdate">'+fdate(s)+' → '+fdate(e2)+'</div></div>';
+}
+function tbl(head,rows,cls){
+  return '<div class="ktwrap" tabindex="0" role="group"><table class="ktbl '+(cls||"")+'"><thead><tr>'+
+   head.map(function(h){return '<th scope="col">'+h+"</th>";}).join("")+
+   '</tr></thead><tbody>'+rows.join("")+'</tbody></table></div>';
+}
+var __secN=0, __secList=[], __secUsed={};
+/* stable, readable ids ("Vimśottarī daśā" → ks-vimsottari-dasa) so other panes can link into the report */
+function slug(t){ return String(t).normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase()
+  .replace(/&/g," and ").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,""); }
+function secId(title){ ++__secN; var s="ks-"+slug(title), id=s, n=2;
+  while(__secUsed[id]) id=s+"-"+(n++); __secUsed[id]=1; return id; }
+function sec(title,side,body){
+  var id=secId(title); __secList.push({id:id,title:title});
+  return '<section class="ksec" id="'+id+'" aria-labelledby="'+id+'-h"><h3 class="kh" id="'+id+'-h">'+
+    esc(title)+sensBadge(title)+(side?'<span>'+esc(side)+'</span>':'')+'</h3>'+body+'</section>';
+}
+function sectionIndex(){
+  if(__secList.length<4) return "";
+  return '<nav class="kindex" aria-label="Report sections"><b>Jump to</b><div class="kindex-links">'+
+    __secList.map(function(s){ return '<a href="#'+s.id+'">'+esc(s.title)+'</a>'; }).join("")+
+    '</div></nav>';
+}
+
+
+function vargaCharts(D){
+  var g='<div class="kvgrid">';
+  D.vargas.forEach(function(v){
+    if(v.lagna==null)return;
+    var vl=v.lagna;
+    var occ={};Object.keys(v.pos).forEach(function(k){(occ[v.pos[k]]=occ[v.pos[k]]||[]).push(GL[k]);});
+    g+=northChart(function(h){return (vl+h-1)%12;},
+      function(h){var sg=(vl+h-1)%12,a=(occ[sg]||[]).slice();if(h===1)a.unshift("Lg");return a;},
+      v.code+" · "+(v.en||""), "lagna "+SA[vl]);
+  });
+  g+='</div>';
+  var rows=D.vargas.map(function(v){
+    if(v.lagna==null)return "";
+    var cx=CRUX[v.code];if(!cx)return "";
+    var cs=(v.lagna+cx[0]-1)%12, lord=LORD[cs];
+    var occ=[];Object.keys(v.pos).forEach(function(k){if(v.pos[k]===cs)occ.push(k);});
+    var lh=(v.pos[lord]!=null)?(((v.pos[lord]-v.lagna)%12+12)%12+1):null;
+    var ld=(v.pos[lord]!=null)?dignity(lord,v.pos[lord],null):null;
+    return '<tr><td><b>'+esc(v.code)+'</b> <span class="kmut">'+esc(v.en||"")+'</span></td>'+
+      '<td>'+SA[v.lagna]+'</td><td>'+cx[0]+' — '+esc(cx[1])+'</td><td>'+SA[cs]+'</td>'+
+      '<td>'+(occ.join(", ")||"—")+'</td>'+
+      '<td>'+esc(lord)+(lh?" — H"+lh+" "+chip(ld):"")+'</td></tr>';
+  }).filter(Boolean);
+  return '<p class="knote">Each division rendered as its own chart, with its own lagna computed from the ascendant '+
+   'degree. Houses are counted from that varga lagna. The table then reads the house that <i>is</i> the subject of '+
+   'each division — its sign, what sits there, and where its lord went.</p>'+g+
+   '<h4 class="ksub">The crux house of each division</h4>'+
+   tbl(["Division","Varga lagna","Crux house","Its sign","Occupants","Lord of crux house"],rows)+
+   '<div class="kbox">Varga lagna formulas are standard Parāśarī reckonings; each was checked against the engine\'s '+
+   'own planet positions for this chart and reproduces all nine exactly. Reading all twelve houses inside a varga is '+
+   'later analytical practice rather than explicit BPHS verses.</div>';
+}
+;
+
 /* ayanamsa.html — what the ayanāṃśa is, what it changes, and one you make.
  *
  * CHART-INDEPENDENT. Nothing natal is read; the only inputs are a year, a
@@ -250,11 +389,10 @@
   }
   function modes() { return window.__ayanModes || {}; }
   function modeKeys() { return Object.keys(modes()); }
-  function esc(s) {
-    return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
-    });
-  }
+  /* esc, SA and GL come from ayanamsa-prelude.js at the top level, because
+     northChart needs them there too and two copies of a thing like SA is
+     exactly how a page ends up disagreeing with the report about the name of
+     a rāśi. */
   function dm(x) {
     var neg = x < 0; x = Math.abs(x);
     var d = Math.floor(x), m = (x - d) * 60, mi = Math.floor(m),
@@ -274,8 +412,6 @@
     return n;
   }
 
-  var SA = ["Meṣa", "Vṛṣabha", "Mithuna", "Karka", "Siṃha", "Kanyā",
-            "Tulā", "Vṛścika", "Dhanus", "Makara", "Kumbha", "Mīna"];
   var NAK = ["Aśvinī", "Bharaṇī", "Kṛttikā", "Rohiṇī", "Mṛgaśira", "Ārdrā",
              "Punarvasu", "Puṣya", "Āśleṣā", "Maghā", "P.Phalgunī", "U.Phalgunī",
              "Hasta", "Citrā", "Svātī", "Viśākhā", "Anurādhā", "Jyeṣṭhā", "Mūla",
@@ -440,14 +576,17 @@
     var span = Math.max(1, Math.max.apply(null, parts.map(function (p) {
       return Math.abs(p.v);
     })));
-    var W = 620, H = 190, mid = 310;
+    /* the value is printed beyond the end of its bar, so the box needs room
+       for the longest bar AND its label — at 620 wide the first one read
+       "+23.857" with the degree sign off the edge */
+    var W = 760, H = 190, mid = 286;
     var o = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="aysvg" role="img" ' +
       'aria-label="The three terms of the formula, as bars, at the chosen year">' +
       '<title>What each term contributes</title>';
     o += '<line x1="' + mid + '" y1="14" x2="' + mid + '" y2="' + (H - 34) + '" class="ay-axis0"/>';
     parts.forEach(function (p, i) {
       var y = 26 + i * 42;
-      var w = Math.abs(p.v) / span * 250;
+      var w = Math.abs(p.v) / span * 230;
       var x = p.v >= 0 ? mid : mid - w;
       o += '<rect x="' + x.toFixed(1) + '" y="' + y + '" width="' + Math.max(1, w).toFixed(1) +
            '" height="22" class="ay-bar ' + p.k + '"/>';
@@ -729,6 +868,407 @@
   }
   function msg(id, t) { var e = $(id); if (e) e.innerHTML = t; }
 
+
+  /* ======================================================================
+     THE DERIVATION — five steps, drawn
+     ====================================================================== */
+  var STEPS = [
+    ["Two great circles", "The Sun's yearly path (the ecliptic) and the Earth's " +
+     "equator projected outward are two circles on the sky, tilted 23½° apart. " +
+     "They must cross at two points."],
+    ["One of them is the equinox", "The crossing the Sun passes going north is " +
+     "the spring equinox. It is a point in the sky, not a date, and it is where " +
+     "the tropical zodiac starts."],
+    ["It does not stay put", "The Earth's axis sweeps a cone, so the equator " +
+     "swings with it, so the crossing slides along the ecliptic — about 50″ a year, " +
+     "always in the same direction."],
+    ["Choose a fixed zero", "Pick a starting point tied to the stars instead. " +
+     "Every definition on this page is a different answer to exactly this one " +
+     "question, and there is no way to settle it by measurement."],
+    ["Measure between them", "The angle from the sliding equinox to the fixed " +
+     "zero IS the ayanāṃśa. Subtract it from a tropical longitude and you have a " +
+     "sidereal one."]
+  ];
+  function drawDerive() {
+    var h = $("ay-derive");
+    if (!h) return;
+    var W = 700, H = 330, cx = 300, cy = 170, R = 128;
+    var ay = ayanAt(S.ringMode, S.year) || 0;
+    var o = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="aysvg" role="img" ' +
+      'aria-label="The ecliptic and the equator crossing at the equinox, with the ' +
+      'ayanāṃśa measured from there to the sidereal zero">' +
+      '<title>Where the number comes from</title>';
+    /* the two great circles, as ellipses seen edge-on-ish */
+    o += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + R + '" ry="' + (R * 0.34) +
+         '" class="ay-ecl"/>';
+    o += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + R + '" ry="' + (R * 0.34) +
+         '" transform="rotate(-23.4 ' + cx + ' ' + cy + ')" class="ay-equ"/>';
+    /* the crossing points */
+    o += '<circle cx="' + (cx - R) + '" cy="' + cy + '" r="6" class="ay-equinox"/>';
+    o += '<circle cx="' + (cx + R) + '" cy="' + cy + '" r="4" class="ay-equinox alt"/>';
+    o += '<text x="' + (cx - R) + '" y="' + (cy + 28) + '" class="ay-dlab eq">equinox</text>';
+    /* the sidereal zero, ay degrees along the ecliptic from the equinox */
+    var t = Math.PI - ay * Math.PI / 180;
+    var sx = cx + R * Math.cos(t), sy = cy - R * 0.34 * Math.sin(t);
+    o += '<circle cx="' + sx.toFixed(1) + '" cy="' + sy.toFixed(1) + '" r="6" class="ay-zero"/>';
+    o += '<text x="' + sx.toFixed(1) + '" y="' + (sy - 14).toFixed(1) +
+         '" class="ay-dlab zero">sidereal zero</text>';
+    /* the measured angle */
+    o += '<path d="M' + (cx - R) + ',' + cy + ' A' + R + ',' + (R * 0.34) +
+         ' 0 0 1 ' + sx.toFixed(1) + ',' + sy.toFixed(1) + '" class="ay-measure"/>';
+    o += '<text x="' + cx + '" y="' + (cy - R * 0.34 - 16) + '" class="ay-dval">' +
+         esc(dm(ay)) + '</text>';
+    o += '<text x="' + (cx + R - 10) + '" y="' + (cy - 12) + '" class="ay-dlab ecl">ecliptic</text>';
+    o += '<text x="' + (cx + 46) + '" y="' + (cy - 74) + '" class="ay-dlab equ">equator</text>';
+    /* the arrow of the slide */
+    o += '<path d="M' + (cx - R - 30) + ',' + (cy + 54) + ' l34,0 m-8,-5 l8,5 l-8,5" ' +
+         'class="ay-slide"/>';
+    o += '<text x="' + (cx - R - 30) + '" y="' + (cy + 74) +
+         '" class="ay-dlab slide">the equinox slides this way, 50″ a year</text>';
+    o += "</svg>";
+    h.innerHTML = o;
+
+    var ol = $("ay-steplist");
+    if (ol && !ol.firstChild) {
+      ol.innerHTML = STEPS.map(function (st) {
+        return "<li><b>" + esc(st[0]) + "</b> " + esc(st[1]) + "</li>";
+      }).join("");
+    }
+    drawWorked(ay);
+  }
+
+  /* The arithmetic, carried out rather than described. A formula printed is a
+     formula; a formula with this year's numbers in it is something a reader
+     can check against a calculator, which is the point. */
+  function drawWorked(total) {
+    var h = $("ay-worked");
+    if (!h) return;
+    var M = modes()[S.ringMode];
+    if (!M) return;
+    if (!M.c) {
+      h.innerHTML = '<p class="ayeqnote">' + esc(M.name) + ' is stated as a rule ' +
+        'rather than as this formula, so there is no line of arithmetic to show. ' +
+        'Its own description is in the table further down.</p>';
+      return;
+    }
+    var T = (S.year - 2000) / 100;
+    var a = M.c[2], b = M.c[1] * T, c2 = M.c[0] * T * T;
+    h.innerHTML =
+      '<table class="ayworktab"><tbody>' +
+      row("the year you chose", yearLabel(S.year)) +
+      row("centuries since 2000 &nbsp;<i>T</i>", "(" + Math.round(S.year) +
+          " − 2000) ÷ 100 = <b>" + T.toFixed(4) + "</b>") +
+      row("where it stood in 2000", "<b>" + a.toFixed(6) + "°</b>") +
+      row("plus the steady opening", M.c[1].toFixed(6) + "° × " + T.toFixed(4) +
+          " = <b>" + (b >= 0 ? "+" : "−") + Math.abs(b).toFixed(6) + "°</b>") +
+      row("plus the change in that rate", M.c[0].toFixed(8) + "° × " + T.toFixed(4) +
+          "² = <b>" + (c2 >= 0 ? "+" : "−") + Math.abs(c2).toFixed(6) + "°</b>") +
+      '<tr class="tot"><td>the ayanāṃśa</td><td><b>' + (a + b + c2).toFixed(6) +
+      '°</b> &nbsp;=&nbsp; <b>' + esc(dm(a + b + c2)) + '</b></td></tr>' +
+      '</tbody></table>' +
+      '<p class="ayeqnote">Subtract that from any tropical longitude and the ' +
+      'answer is sidereal. That subtraction is the whole of what an ayanāṃśa ' +
+      'is for.</p>';
+    function row(k, v) { return "<tr><td>" + k + "</td><td>" + v + "</td></tr>"; }
+  }
+
+  /* ======================================================================
+     THE STAR-ANCHORED DEFINITIONS
+     ====================================================================== */
+  /* Which published definitions name a star, and which star. Taken from the
+     engine's own notes rather than from a list kept here, so a definition
+     cannot be described as anchored to a star the engine does not anchor it
+     to. `held` marks the ones recomputed from the star for every date; the
+     others set it down at an epoch and then advance by precession. */
+  /* The star FAMILIES: every definition this engine carries that names the
+     same junction star. `held` is the one that recomputes from the star for
+     every date; the rest set it down at an epoch and advance by precession,
+     or fit a polynomial to it.
+
+     Which definition names which star is read off the engine's own notes
+     rather than asserted here, so the page cannot claim an anchor the engine
+     does not make. */
+  var FAMILIES = [
+    { star: "Citrā", at: 180, held: "truechitra",
+      keys: ["truechitra", "lahiri", "nirayana_citra", "ss_citra"] },
+    { star: "Revatī", at: 359 + 50 / 60, held: "truerevati",
+      keys: ["truerevati", "nirayana_revati", "ss_revati"] },
+    { star: "Puṣya", at: 106, held: "truepushya", keys: ["truepushya"] }
+  ];
+  function famOf(star) {
+    var f = FAMILIES.filter(function (x) { return x.star === star; })[0];
+    if (!f) return null;
+    /* drop any the engine does not actually carry */
+    return { star: f.star, at: f.at, held: f.held,
+             keys: f.keys.filter(function (k) { return !!modes()[k]; }) };
+  }
+
+  function drawStarWheel() {
+    var h = $("ay-starwheel");
+    if (!h) return;
+    var Y = window.YOGATARAS || [];
+    if (!Y.length) { h.innerHTML = ""; return; }
+    var sel = ($("ay-anchor") || {}).value || "Citrā";
+    var A = famOf(sel);
+    var W = 700, H = 620, cx = 350, cy = 310;
+    var o = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="aysvg" role="img" ' +
+      'aria-label="The twenty-seven junction stars on a ring, with the anchor star ' +
+      'and the longitude it is held at marked">' +
+      '<title>The junction stars, and the one this definition is pinned to</title>';
+    o += '<circle cx="' + cx + '" cy="' + cy + '" r="250" class="ay-swring"/>';
+    /* the 27 nakṣatra divisions, and each junction star at its own longitude */
+    for (var i = 0; i < 27; i++) {
+      var b0 = i * (360 / 27);
+      var p0 = xy(cx, cy, 236, b0), p1 = xy(cx, cy, 264, b0);
+      o += '<line x1="' + p0[0].toFixed(1) + '" y1="' + p0[1].toFixed(1) + '" x2="' +
+           p1[0].toFixed(1) + '" y2="' + p1[1].toFixed(1) + '" class="ay-swdiv"/>';
+    }
+    Y.forEach(function (st) {
+      var isA = A && st.nak === A.star;
+      var p = xy(cx, cy, 250, st.sid);
+      o += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="' +
+           (isA ? 8 : 3.4) + '" class="ay-swstar' + (isA ? " on" : "") + '"/>';
+      var l = xy(cx, cy, isA ? 286 : 274, st.sid);
+      o += '<text x="' + l[0].toFixed(1) + '" y="' + (l[1] + 3).toFixed(1) +
+           '" class="ay-swlab' + (isA ? " on" : "") + '">' + esc(st.nak) + '</text>';
+    });
+    if (A) {
+      /* the line from the centre to where the definition INSISTS the star sits */
+      var t = xy(cx, cy, 250, A.at);
+      o += '<line x1="' + cx + '" y1="' + cy + '" x2="' + t[0].toFixed(1) + '" y2="' +
+           t[1].toFixed(1) + '" class="ay-swpin"/>';
+      var st2 = Y.filter(function (x) { return x.nak === A.star; })[0];
+      o += '<text x="' + cx + '" y="' + (cy - 14) + '" class="ay-swhead">' +
+           esc(A.star) + ' held at</text>';
+      o += '<text x="' + cx + '" y="' + (cy + 24) + '" class="ay-swval">' +
+           esc(dm(A.at)) + '</text>';
+      o += '<text x="' + cx + '" y="' + (cy + 48) + '" class="ay-swsub">' +
+           A.keys.length + (A.keys.length === 1 ? " definition names it"
+                                                : " definitions name it") + '</text>';
+      var rd = $("ay-anchorread");
+      if (rd && st2) {
+        rd.innerHTML = esc(st2.star) + " (" + esc(st2.bayer) + "), the yogatārā of " +
+          esc(A.star) + " — magnitude " + st2.mag.toFixed(2);
+      }
+    }
+    o += "</svg>";
+    h.innerHTML = o;
+    drawDrift(sel);
+  }
+
+  /* Every definition naming this star, plotted as its distance from the one
+     that HOLDS the star — which is zero by construction, so the plot reads
+     directly as "how far from the star's stated longitude each of these
+     actually puts it".
+
+     WHAT THE CURVES TURNED OUT TO SHOW, which is not what was first written
+     here. The prose originally said the set-down definitions slide away from
+     the star. Measured, the Citrā family is dominated by a near-CONSTANT
+     offset — Sūrya Siddhānta's Citrā sits about 50′ from True Chitrapakṣa
+     and changes by only 1.4′ across two thousand years — while Lahiri, the
+     polynomial fitted to the same anchor, starts within a quarter of an
+     arcminute and departs by about 1.4′ over the same span. Those are two
+     different stories and only the second is drift, so the page now reports
+     the numbers and names which is which rather than telling one story about
+     both. */
+  function drawDrift(star) {
+    var h = $("ay-drift");
+    if (!h) return;
+    var F = famOf(star);
+    if (!F || F.keys.length < 2) {
+      h.innerHTML = '<p class="ayeqnote">Only one definition on this site is ' +
+        'anchored to ' + esc(star || "") + ', so there is nothing to compare it ' +
+        'against here. Citrā and Revatī each have several.</p>';
+      if ($("ay-driftnote")) $("ay-driftnote").textContent = "";
+      return;
+    }
+    var y0 = 1000, y1 = 3000, N = 50;
+    var series = F.keys.filter(function (k) { return k !== F.held; }).map(function (k) {
+      var pts = [];
+      for (var i = 0; i <= N; i++) {
+        var y = y0 + (y1 - y0) * i / N;
+        var ah = ayanAt(F.held, y), ak = ayanAt(k, y);
+        if (ah == null || ak == null) continue;
+        pts.push({ y: y, v: (ah - ak) * 60 });        /* arcminutes */
+      }
+      return { key: k, name: (modes()[k] || {}).s || k, pts: pts };
+    }).filter(function (s2) { return s2.pts.length; });
+    if (!series.length) { h.innerHTML = ""; return; }
+
+    var all = [];
+    series.forEach(function (s2) { s2.pts.forEach(function (q) { all.push(q.v); }); });
+    all.push(0);
+    var lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
+    var pad = Math.max(2, (hi - lo) * 0.18);
+    lo -= pad; hi += pad;
+    var W = 700, H = 300, L = 86, Rr = 120, T = 22, B = 42;
+    var sx = function (y) { return L + (y - y0) / (y1 - y0) * (W - L - Rr); };
+    var sy = function (v) { return T + (1 - (v - lo) / (hi - lo)) * (H - T - B); };
+    var o = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="aysvg" role="img" ' +
+      'aria-label="Each definition naming this star, as its distance in ' +
+      'arcminutes from the one that holds the star, over two thousand years">' +
+      '<title>The definitions that name this star, compared</title>';
+    /* the zero line IS the held definition */
+    o += '<line x1="' + L + '" y1="' + sy(0).toFixed(1) + '" x2="' + (W - Rr) +
+         '" y2="' + sy(0).toFixed(1) + '" class="ay-axis0"/>';
+    o += '<text x="' + (L - 8) + '" y="' + (sy(0) + 4).toFixed(1) +
+         '" class="ay-dtick">on the star</text>';
+    [lo + pad, hi - pad].forEach(function (v) {
+      o += '<text x="' + (L - 8) + '" y="' + (sy(v) + 4).toFixed(1) +
+           '" class="ay-dtick">' + (v > 0 ? "+" : "") + v.toFixed(0) + '′</text>';
+    });
+    var COL = ["#a1493a", "#1c6b46", "#3f6fa6", "#8a6a1f"];
+    series.forEach(function (s2, i) {
+      var d2 = s2.pts.map(function (q, j) {
+        return (j ? "L" : "M") + sx(q.y).toFixed(1) + "," + sy(q.v).toFixed(1);
+      }).join(" ");
+      o += '<path d="' + d2 + '" class="ay-dline" stroke="' + COL[i % COL.length] + '"/>';
+      var last = s2.pts[s2.pts.length - 1];
+      o += '<text x="' + (W - Rr + 8) + '" y="' + (sy(last.v) + 4).toFixed(1) +
+           '" class="ay-dkey" fill="' + COL[i % COL.length] + '">' + esc(s2.name) + '</text>';
+    });
+    [y0, 1500, 2000, 2500, y1].forEach(function (y) {
+      o += '<text x="' + sx(y).toFixed(1) + '" y="' + (H - 16) +
+           '" class="ay-dx">' + yearLabel(y) + '</text>';
+    });
+    o += "</svg>";
+    h.innerHTML = o;
+
+    /* the note states, for each, the offset now and how much it MOVED —
+       because those are the two different things the curves show */
+    var n = $("ay-driftnote");
+    if (!n) return;
+    n.innerHTML = "Measured against <b>" +
+      esc((modes()[F.held] || {}).name || F.held) + "</b>, which holds " +
+      esc(F.star) + " at its stated longitude for every date. " +
+      series.map(function (s2) {
+        var a0 = s2.pts[0].v, a1 = s2.pts[s2.pts.length - 1].v;
+        var nowV = (function () {
+          var ah = ayanAt(F.held, S.year), ak = ayanAt(s2.key, S.year);
+          return (ah == null || ak == null) ? null : (ah - ak) * 60;
+        })();
+        return "<b>" + esc((modes()[s2.key] || {}).name || s2.key) + "</b> is " +
+          (nowV == null ? "—" : (Math.abs(nowV) < 1
+            ? Math.abs(nowV * 60).toFixed(0) + "″"
+            : Math.abs(nowV).toFixed(1) + "′")) +
+          " away at " + esc(yearLabel(S.year)) + " and moves " +
+          Math.abs(a1 - a0).toFixed(1) + "′ across the two thousand years shown";
+      }).join("; ") + ".";
+  }
+
+  /* ======================================================================
+     WHAT IT DOES TO A CHART
+     ====================================================================== */
+  var CHART_AY = null;          /* null means "follow the selected definition" */
+
+  function chartSky() {
+    /* The engine is asked for TROPICAL longitudes once, by taking a sidereal
+       set under a known definition and adding its ayanāṃśa back. Everything
+       below is then a subtraction, so dragging the slider costs nothing and
+       the grahas cannot wander for any reason other than the number. */
+    var s = skyUnder("lahiri");
+    if (!s) return null;
+    var base = s.ayanamsa;
+    return {
+      ayan: base,
+      planets: s.planets.map(function (p) {
+        return { en: p.en, trop: ((p.sid + base) % 360 + 360) % 360 };
+      }),
+      lagnaTrop: ((s.lagna + base) % 360 + 360) % 360
+    };
+  }
+
+  function drawChart() {
+    var h = $("ay-chartsvg");
+    if (!h || typeof northChart !== "function") return;
+    var sky = chartSky();
+    if (!sky) { h.innerHTML = ""; return; }
+    var ay = CHART_AY == null ? (ayanAt(S.ringMode, S.year) || 0) : CHART_AY;
+    var sid = function (trop) { return ((trop - ay) % 360 + 360) % 360; };
+    var lag = Math.floor(sid(sky.lagnaTrop) / 30);
+    var occ = {};
+    sky.planets.forEach(function (p) {
+      var sg = Math.floor(sid(p.trop) / 30);
+      (occ[sg] = occ[sg] || []).push(GL[p.en] || p.en);
+    });
+    h.innerHTML = northChart(
+      function (house) { return (lag + house - 1) % 12; },
+      function (house) { return occ[(lag + house - 1) % 12] || []; },
+      "Rāśi (D1)", "at ayanāṃśa " + dm(ay));
+
+    /* the column that answers "what actually changes" */
+    var NAKW = 360 / 27;
+    var rows = sky.planets.map(function (p) {
+      var L = sid(p.trop);
+      return {
+        en: p.en,
+        sign: SA[Math.floor(L / 30)],
+        nak: NAK[Math.floor(L / NAKW)],
+        /* how much MORE ayanāṃśa before this graha drops into the previous
+           division: raising the ayanāṃśa lowers the sidereal longitude, so
+           the boundary it approaches is the one below it */
+        toSign: L - Math.floor(L / 30) * 30,
+        toNak: L - Math.floor(L / NAKW) * NAKW
+      };
+    });
+    var all = modeKeys().map(function (k) { return ayanAt(k, S.year); })
+                        .filter(function (v) { return v != null; });
+    var spanLo = Math.min.apply(null, all), spanHi = Math.max.apply(null, all);
+    var e = $("ay-chartedge");
+    if (!e) return;
+    var maxBar = 30;
+    e.innerHTML = '<table class="aytab aychtab"><thead><tr><th>Graha</th>' +
+      '<th>rāśi</th><th>nakṣatra</th><th>how much ayanāṃśa until it changes</th>' +
+      '</tr></thead><tbody>' +
+      rows.map(function (r) {
+        var ws = (r.toSign / maxBar) * 100, wn = (r.toNak / maxBar) * 100;
+        /* the published definitions span this much; a graha closer to its
+           boundary than that span is one they genuinely disagree about */
+        var contested = r.toSign < (spanHi - spanLo);
+        return '<tr><td>' + esc(r.en) + '</td><td>' + esc(r.sign) + '</td><td>' +
+          esc(r.nak) + '</td><td class="aybarcell">' +
+          '<span class="aymini"><i class="s" style="width:' + ws.toFixed(1) + '%"></i>' +
+          '<i class="n" style="width:' + wn.toFixed(1) + '%"></i></span>' +
+          '<span class="ayminival">' + esc(dm(r.toSign)) + ' to the rāśi, ' +
+          esc(dm(r.toNak)) + ' to the nakṣatra' +
+          (contested ? ' <b class="contest">— inside the span of the seventeen</b>' : '') +
+          '</span></td></tr>';
+      }).join("") + '</tbody></table>';
+  }
+
+  function fillChartControls() {
+    var j = $("ay-chartjump");
+    if (j && !j.options.length) {
+      j.innerHTML = '<option value="">follow the selection above</option>' +
+        modeKeys().map(function (k) {
+          return '<option value="' + esc(k) + '">' + esc((modes()[k] || {}).name || k) +
+            "</option>";
+        }).join("");
+    }
+    var r = $("ay-chartay");
+    if (r && CHART_AY == null) {
+      var v = ayanAt(S.ringMode, S.year);
+      if (v != null) r.value = String(v);
+    }
+    var rd = $("ay-chartread");
+    if (rd) {
+      var cur = CHART_AY == null ? (ayanAt(S.ringMode, S.year) || 0) : CHART_AY;
+      rd.textContent = dm(cur) + (CHART_AY == null ? "  (following the selection)" : "");
+    }
+  }
+
+  function fillAnchorSelect() {
+    var a = $("ay-anchor");
+    if (!a || a.options.length) return;
+    a.innerHTML = FAMILIES.map(function (x) {
+      var f = famOf(x.star);
+      return '<option value="' + esc(x.star) + '"' +
+        (x.star === "Citrā" ? " selected" : "") + ">" + esc(x.star) +
+        " — " + f.keys.length +
+        (f.keys.length === 1 ? " definition" : " definitions") + "</option>";
+    }).join("");
+  }
+
   /* ---- 7. the card and the film ------------------------------------------ */
   function cardMeta() {
     var ay = ayanAt(S.ringMode, S.year);
@@ -868,8 +1408,12 @@
   }
   function redraw() {
     drawRings();
+    drawDerive();
+    drawStarWheel();
     drawSpread();
     drawImpact();
+    fillChartControls();
+    drawChart();
     syncSand();
     drawCard();
   }
@@ -877,12 +1421,22 @@
   function bind() {
     document.addEventListener("input", function (e) {
       var t = e.target;
-      if (t.id === "ay-year") { S.year = +t.value; drawRings(); drawSpread(); syncSand(); drawCard(); }
+      if (t.id === "ay-year") {
+        S.year = +t.value;
+        drawRings(); drawDerive(); drawSpread(); drawDrift(($("ay-anchor")||{}).value);
+        fillChartControls(); drawChart(); syncSand(); drawCard();
+      }
+      else if (t.id === "ay-chartay") { CHART_AY = +t.value; fillChartControls(); drawChart(); }
       else if (/^ay-c[012]$/.test(t.id)) syncSand();
     });
     document.addEventListener("change", function (e) {
       var t = e.target;
-      if (t.id === "ay-ringmode") { S.ringMode = t.value; redraw(); }
+      if (t.id === "ay-ringmode") { S.ringMode = t.value; CHART_AY = null; redraw(); }
+      else if (t.id === "ay-anchor") { drawStarWheel(); }
+      else if (t.id === "ay-chartjump") {
+        CHART_AY = t.value ? ayanAt(t.value, S.year) : null;
+        fillChartControls(); drawChart();
+      }
       else if (t.id === "ay-ratio") { S.ratio = t.value; drawCard(); }
       else if (t.id === "ay-cardkind") { S.cardKind = t.value; drawCard(); }
       else if (t.id === "ay-when") {
@@ -961,6 +1515,8 @@
       }).join("");
     }
     fillModeSelect();
+    fillAnchorSelect();
+    fillChartControls();
     syncYear();
     syncWhen();
     sandbox();

@@ -216,6 +216,104 @@ head("the card is a real image of the real drawing");
   is(errs.filter(quiet).length === 0, "no page errors");
 }
 
+/* ───── the chart simulation ─────────────────────────────────────────────── */
+head("the chart answers 'what actually changes' by changing");
+{
+  const { p, errs } = await open();
+  const r = await p.evaluate(async () => {
+    const wait = ms => new Promise(r2 => setTimeout(r2, ms));
+    const signs = () => [...document.querySelectorAll("#ay-chartedge tbody tr")]
+      .map(tr => tr.querySelectorAll("td")[1].textContent);
+    const set = async v => {
+      const e = document.getElementById("ay-chartay");
+      e.value = String(v); e.dispatchEvent(new Event("input", { bubbles: true }));
+      await wait(350);
+    };
+    const isChart = !!document.querySelector("#ay-chartsvg svg.kchartsvg");
+    const glyphs = document.querySelectorAll("#ay-chartsvg .hp").length;
+    await set(20); const a = signs();
+    await set(28); const b = signs();
+    const moved = a.filter((v, i) => v !== b[i]).length;
+    /* Whether any graha happens to sit within the span of the seventeen is a
+       property of the instant, not of the code, so the count is checked
+       against one worked out here from the table's own printed figures
+       rather than asserted to be non-zero — which would have been a test of
+       the date. */
+    const jd = y => 2451545.0 + (y - 2000) * 365.2425;
+    const vals = Object.keys(window.__ayanModes)
+      .map(k => window.__ayanFor(k, jd(2026))).filter(v => v != null);
+    const span = Math.max(...vals) - Math.min(...vals);
+    const toSign = [...document.querySelectorAll("#ay-chartedge tbody tr")].map(tr => {
+      const m2 = /(\d+)°(\d+)′(\d+)″ to the rāśi/.exec(tr.textContent);
+      return m2 ? (+m2[1]) + (+m2[2]) / 60 + (+m2[3]) / 3600 : null;
+    }).filter(v => v != null);
+    return { isChart, glyphs, n: a.length, moved,
+             contested: document.querySelectorAll("#ay-chartedge .contest").length,
+             expected: toSign.filter(v => v < span).length,
+             span: +span.toFixed(3) };
+  });
+  await p.close();
+  is(errs.filter(quiet).length === 0, "no page errors");
+  /* the report's own northChart, not a lookalike built for this page */
+  is(r.isChart, "the rāśi chart is the report's own chart builder");
+  is(r.glyphs >= 9, "with every graha placed in it (" + r.glyphs + " glyphs)");
+  is(r.n === 9, "and nine grahas in the table beside it");
+  is(r.moved >= 3, "moving the ayanāṃśa from 20° to 28° moves " + r.moved +
+     " of them into a different rāśi — which is the whole point of the section");
+  is(r.contested === r.expected,
+     "the contested flag marks exactly the grahas within the " + r.span +
+     "° span of the seventeen (" + r.contested + " flagged, " + r.expected +
+     " qualify)");
+}
+
+/* ───── the star-anchored definitions ────────────────────────────────────── */
+head("the star-anchored definitions, and what the plot actually shows");
+{
+  const { p, errs } = await open();
+  const r = await p.evaluate(async () => {
+    const wait = ms => new Promise(r2 => setTimeout(r2, ms));
+    const grab = () => ({
+      lines: document.querySelectorAll("#ay-drift .ay-dline").length,
+      note: document.getElementById("ay-driftnote").textContent,
+      on: document.querySelectorAll("#ay-starwheel .ay-swstar.on").length,
+      stars: document.querySelectorAll("#ay-starwheel .ay-swstar").length,
+    });
+    const citra = grab();
+    const s2 = document.getElementById("ay-anchor");
+    s2.value = "Revatī"; s2.dispatchEvent(new Event("change", { bubbles: true }));
+    await wait(700);
+    const revati = grab();
+    /* the engine's own note for its Citrā mode states a figure this page
+       measures independently; if they ever disagree one of them is wrong */
+    const engineNote = (window.__ayanModes.nirayana_citra || {}).note || "";
+    return { citra, revati, engineNote,
+             families: document.getElementById("ay-anchor").options.length };
+  });
+  await p.close();
+  is(errs.filter(quiet).length === 0, "no page errors");
+  is(r.citra.stars === 27, "all twenty-seven junction stars are on the wheel");
+  is(r.citra.on === 1, "with the anchor star marked");
+  is(r.families >= 2, "and a family to choose (" + r.families + ")");
+  is(r.citra.lines >= 2, "the Citrā family plots " + r.citra.lines + " definitions");
+  is(r.revati.note !== r.citra.note && /Revat/.test(r.revati.note),
+     "choosing Revatī replots it for that star");
+  /* The page's measurement against the engine's own documented figure. The
+     engine's note for this site's Citrā mode says it sits 49.2′ from True
+     Chitrapakṣa; the plot derives that independently from the two modes, so
+     agreement is a cross-check of the page AND of the note. */
+  const m = /(\d+\.\d)′ away/.exec(
+    (/Nirayana–Chitrapakṣa \(this site\) is ([\d.]+)′/.exec(r.citra.note) || [])[0] || "");
+  const measured = Number((/Nirayana–Chitrapakṣa \(this site\) is ([\d.]+)′/
+    .exec(r.citra.note) || [0, 0])[1]);
+  is(/49\.2′ from True Chitrapak/.test(r.engineNote),
+     "the engine's note states a figure for this site's Citrā mode");
+  is(Math.abs(measured - 49.2) < 0.3,
+     "and the plot measures it independently as " + measured +
+     "′ — the two agree");
+  /* the honest part: the page must not claim every curve drifts */
+  is(!/every curve/i.test(r.citra.note), "the note reports each definition separately");
+}
+
 await browser.close();
 console.log("\n" + (fail ? "FAIL" : "PASS") + " ayanamsa-verify — " + pass
             + " passed, " + fail + " failed");
