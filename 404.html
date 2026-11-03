@@ -2429,6 +2429,131 @@ span.gldig.enemy{background:#d08a3a22;border-left-color:#d08a3a}
 span.gldig.debilitated{background:#d0604a22;border-left-color:#d0604a}
 span.gldig.node{background:#5a5e7812;border-left-color:#8a8ea6}
 
+/* ===== siddhanta.html, the sandbox and the geometry ========================
+   Everything here is themed through tokens rather than the page's original
+   hardcoded canvas palette, because these panels are SVG and a reader on a
+   dark palette has to be able to read them. */
+.sslsvg{width:100%;height:auto;display:block}
+.sslsvg .ssl-grid{stroke:var(--border-2,#d8d8e6);stroke-width:1}
+.sslsvg .ssl-quad{stroke:var(--border-2,#d8d8e6);stroke-width:1;
+  stroke-dasharray:3 4}
+.sslsvg .ssl-ax{font-size:10.5px;fill:var(--muted-2,#5a5e78);text-anchor:end}
+.sslsvg .ssl-cap{font-size:10.5px;fill:var(--muted-2,#5a5e78)}
+.sslsvg .ssl-cap.mid{text-anchor:middle}
+.sslsvg .ssl-head{font-size:12.5px;font-weight:700;fill:var(--text,#20233a);
+  text-anchor:middle}
+.sslsvg .ssl-tag{font-size:10px;fill:var(--muted-2,#5a5e78)}
+
+/* the jyā table */
+.sslsvg .ssl-true{fill:none;stroke:var(--muted-2,#5a5e78);stroke-width:1.4}
+.sslsvg .ssl-entry{fill:#c9a24b;stroke:var(--surface,#fff);stroke-width:1}
+.sslsvg .ssl-res{fill:none;stroke:#d0604a;stroke-width:1.6}
+
+/* the epicycle construction */
+.sslsvg .ssl-def{fill:none;stroke:var(--border-2,#d8d8e6);stroke-width:1.4}
+.sslsvg .ssl-apsis{stroke:var(--muted-2,#5a5e78);stroke-width:1;
+  stroke-dasharray:5 4}
+.sslsvg .ssl-epi{fill:none;stroke:#c9a24b;stroke-width:1.6}
+.sslsvg .ssl-epid{fill:none;stroke:#c9a24b;stroke-width:.9;stroke-dasharray:2 3;
+  opacity:.6}
+.sslsvg .ssl-arm{stroke:var(--muted-2,#5a5e78);stroke-width:1.4}
+.sslsvg .ssl-arm2{stroke:#c9a24b;stroke-width:1.6}
+.sslsvg .ssl-karna{stroke:#2f9c6a;stroke-width:2}
+.sslsvg .ssl-eqarc{fill:none;stroke:#d0604a;stroke-width:2.4}
+.sslsvg .ssl-o{fill:var(--text-strong,#13152b)}
+.sslsvg .ssl-m{fill:var(--muted-2,#5a5e78)}
+.sslsvg .ssl-g{fill:#d0604a;stroke:var(--surface,#fff);stroke-width:1.5}
+
+/* the equation curves */
+.sslsvg .ssl-cv{fill:none;stroke-width:2}
+.sslsvg .ssl-cv.manda{stroke:#5f9fd0}
+.sslsvg .ssl-cv.sighra{stroke:#c9a24b}
+.sslsvg .ssl-leg{font-size:11px;font-weight:600}
+.sslsvg .ssl-leg.manda{fill:#3f7fa6}
+.sslsvg .ssl-leg.sighra{fill:#8a6a1e}
+.sslsvg .ssl-ptr{stroke:var(--text-strong,#13152b);stroke-width:1.5}
+
+/* the three skies */
+.sslsvg .ssl-sign{fill:var(--muted-2,#5a5e78);fill-opacity:.07;
+  stroke:var(--border-2,#d8d8e6);stroke-width:.6}
+.sslsvg .ssl-sign.alt{fill-opacity:.03}
+.sslsvg .ssl-signlab{font-size:11.5px;fill:var(--text,#20233a);
+  text-anchor:middle;font-weight:600}
+.sslsvg .ssl-orb{fill:none;stroke:var(--border-2,#d8d8e6);stroke-width:.8;
+  stroke-dasharray:2 4}
+.sslsvg .ssl-mark{stroke:var(--surface,#fff);stroke-width:1.4}
+.sslsvg .ssl-mark.mod{fill:#2f9c6a}
+.sslsvg .ssl-mark.fit{fill:#5f9fd0}
+.sslsvg .ssl-mark.bare{fill:#c9a24b}
+.sslsvg .ssl-orblab{font-size:10px;text-anchor:middle;font-weight:700}
+.sslsvg .ssl-orblab.mod{fill:#1f7a52}
+.sslsvg .ssl-orblab.fit{fill:#3f7fa6}
+.sslsvg .ssl-orblab.bare{fill:#8a6a1e}
+.sslsvg .ssl-ptname{font-size:10.5px;fill:var(--muted-2,#5a5e78);
+  text-anchor:middle}
+.sslsvg .ssl-hub{font-size:12px;fill:var(--muted-2,#5a5e78);text-anchor:middle}
+
+/* the sandbox sliders */
+.sslab{display:grid;grid-template-columns:14rem 1fr 5rem 1fr;gap:.5rem .7rem;
+  align-items:center;padding:.3rem 0;font-size:.84rem}
+.sslabk{color:var(--text,#20233a);font-weight:600}
+.sslabv{font-variant-numeric:tabular-nums;text-align:right;
+  color:var(--text-strong,#13152b);font-weight:700}
+.sslabu{font-size:.78rem;color:var(--muted-2,#5a5e78)}
+.sslide{width:100%}
+@media (max-width:720px){
+  .sslab{grid-template-columns:1fr auto;gap:.2rem .5rem}
+  .sslide{grid-column:1 / -1}
+  .sslabu{grid-column:1 / -1}
+}
+.ssscore tr.on{background:var(--surface-3,#ececf6)}
+.ssbarcell{width:38%}
+.ssbar{display:block;height:9px;border-radius:5px;
+  background:var(--border,#e7e7f0);overflow:hidden}
+.ssbar i{display:block;height:100%;background:#c9873a}
+.ssbar.good i{background:#2f9c6a}
+.ssread{font-size:.84rem;color:var(--muted-2,#5a5e78);
+  font-variant-numeric:tabular-nums;align-self:center}
+
+/* ===== engine-lab.html =====================================================
+   One colour per engine, used by every lane, dot and lane label, and a fifth
+   for the conventions — which are deliberately NOT on the engine scale,
+   because the page's argument is that they are a different kind of thing. */
+.elsvg{width:100%;height:auto;display:block}
+.elsvg .el-axis{stroke:var(--border-2,#d8d8e6);stroke-width:1.2}
+.elsvg .el-tick{stroke:var(--border-2,#d8d8e6);stroke-width:1}
+.elsvg .el-vgrid{stroke:var(--border-2,#d8d8e6);stroke-width:.8;
+  stroke-dasharray:2 5}
+.elsvg .el-ticklab{font-size:10px;fill:var(--muted-2,#5a5e78);text-anchor:middle}
+.elsvg .el-ax{font-size:10px;fill:var(--muted-2,#5a5e78);text-anchor:end}
+.elsvg .el-ptlab{font-size:9.5px;fill:var(--muted-2,#5a5e78);text-anchor:middle}
+.elsvg .el-ptlab.divs{fill:var(--text,#20233a);font-weight:600}
+.elsvg .el-lane,.elsvg .el-lanelab{font-size:10.5px;font-weight:700;
+  text-anchor:end}
+.elsvg .el-lanelab{text-anchor:end}
+.elsvg .el-lane{text-anchor:start}
+.elsvg .el-pt{stroke:var(--surface,#fff);stroke-width:1.2}
+.elsvg .el-pt.mod,.elsvg .el-lane.mod,.elsvg .el-lanelab.mod{fill:#2f9c6a}
+.elsvg .el-pt.fit,.elsvg .el-lane.fit,.elsvg .el-lanelab.fit{fill:#5f9fd0}
+.elsvg .el-pt.bare,.elsvg .el-lanelab.bare{fill:#c9a24b}
+.elsvg .el-pt.conv,.elsvg .el-lanelab.conv{fill:#d0604a}
+.elsvg .el-lanelab.divs{fill:var(--text,#20233a)}
+.elsvg .el-div{stroke:var(--text,#20233a);stroke-width:1.8}
+.elsvg .el-cursor{stroke:var(--text-strong,#13152b);stroke-width:1.6}
+.elsvg .el-curve{fill:none;stroke:#d0604a;stroke-width:2}
+.elsvg .el-band{fill:var(--muted-2,#5a5e78);fill-opacity:.07}
+.elsvg .el-band.cert{fill:#2f9c6a;fill-opacity:.12}
+.elsvg .el-bandlab{font-size:10px;fill:var(--muted-2,#5a5e78);text-anchor:middle}
+.elsvg .el-bandlab.cert{fill:#1f7a52;font-weight:700}
+
+.elwide{flex:1 1 20rem}
+.elwide input[type=range]{width:100%}
+.elcost{margin:.9rem 0}
+.elwho{display:flex;flex-wrap:wrap;gap:.3rem 1.1rem;margin:.5rem 0 0;
+  font-size:.8rem;color:var(--muted-2,#5a5e78)}
+.elwho b{color:var(--text,#20233a)}
+.elwhy,.elharness{font-size:.8rem;color:var(--muted-2,#5a5e78)}
+
 /* ===== Generated theme overrides =====================================
    Written by source/tools/gen-theme-overrides.py from the literal
    colours in app.css and pages.css. Do not edit by hand: regenerate.
@@ -3219,7 +3344,7 @@ html[data-theme] nav.site .themepick select option{
     return true;
   }, list: THEMES };
 })();
-</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Page not found</h1><p class="sub">That address is not on this site — here is where the links usually point.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol"><main><p class="lead">That address is not on this site. It may have been mistyped, or it may have been a page that has since been renamed &mdash; this site is a few years of notes being reorganised as they grow, and some pages have moved.</p>
+</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Page not found</h1><p class="sub">That address is not on this site — here is where the links usually point.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol"><main><p class="lead">That address is not on this site. It may have been mistyped, or it may have been a page that has since been renamed &mdash; this site is a few years of notes being reorganised as they grow, and some pages have moved.</p>
 
 <h2 id="where">Where you probably wanted to go</h2>
 

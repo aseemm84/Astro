@@ -66,6 +66,41 @@ that the inner planets go round the Sun, in a scheme that never says so.</p>
 </div>
 <div id="ss-working"></div>
 
+<h3 id="epicycle">The geometry those four steps are doing</h3>
+
+<p>The words <i>manda</i> and <i>&#347;&imacr;ghra</i> name two circles, and no amount of
+prose substitutes for seeing them. Below is the construction the engine is
+actually evaluating: a <b>deferent</b> of radius 3438 carrying the mean graha,
+and an <b>epicycle</b> whose circumference the text gives in degrees of that
+deferent &mdash; so a parid hi of 14&deg; means an epicycle 14/360 of the
+deferent&rsquo;s own circumference. The displacement that epicycle produces,
+measured as an angle back at the centre, <i>is</i> the equation.</p>
+
+<p>Two things are worth watching as you drag the anomaly. The epicycle
+<b>breathes</b>: the text gives two circumferences, one for the ends of the odd
+quadrants and one for the even, and the value between them is interpolated by
+the sine of the anomaly &mdash; so the dashed rings are the two stated sizes and
+the solid one is what is being used at this instant. And for the
+&#347;&imacr;ghra step the <b>karna</b> &mdash; the hypotenuse from the centre
+to the graha &mdash; is not the radius, which is why that equation divides by
+it and the manda equation does not.</p>
+
+<div class="ssrow">
+  <label class="ssfield"><span>Graha</span><select id="ss-epibody"></select></label>
+  <label class="ssfield"><span>Anomaly</span>
+    <input id="ss-anom" type="range" min="0" max="360" step="0.5" value="90"></label>
+  <span class="ssread" id="ss-anomread"></span>
+  <button type="button" class="swbtn" data-ss="anomnow">Use this moment&rsquo;s anomaly</button>
+  <button type="button" class="swbtn" data-ss="anomspin">Sweep</button>
+</div>
+<div class="aywrap"><div id="ss-epi"></div></div>
+<p class="ssnote" id="ss-epinote"></p>
+
+<p>And the same two equations as curves across the whole anomaly, which is
+where the interpolation becomes visible: a pure epicycle would give a clean
+sine, and the kinks at the quadrant ends are the breathing above, drawn.</p>
+<div class="aywrap"><div id="ss-curve"></div></div>
+
 <h2 id="trig">Its own trigonometry</h2>
 
 <p>The Sūrya Siddhānta has no sine function. It has a <b>table</b> of
@@ -95,6 +130,20 @@ in the same direction and partly cancel.</p>
     </select></label>
 </div>
 <div id="ss-trig"></div>
+
+<p>Drawn, the table is almost indistinguishable from a true sine &mdash; which
+is both the point and the reason the residual has to be magnified before
+anything can be seen of it. The lower trace is that same error multiplied fifty
+times. Its sawtooth is the signature of linear interpolation between tabulated
+points: near zero at every entry, largest in the middle of each interval, and
+mostly on one side of the line, because a sine is concave over each step and a
+straight line cuts the corner. <i>Mostly</i>, not always &mdash; the twenty-four
+entries are whole numbers, so each is itself rounded by up to seven tenths, and
+in a few intervals that rounding is enough to push the chord above the curve
+rather than below it. Two different errors are therefore visible at once: the
+coarseness of the grid, and the roundness of the numbers on it.</p>
+<div class="aywrap"><div id="ss-jya"></div></div>
+<p class="ssnote" id="ss-jyanote"></p>
 
 <h2 id="day">The day where you are standing</h2>
 
@@ -150,11 +199,77 @@ Sun is several degrees. This is that, drawn.</p>
         aria-label="The difference between the two methods, over time"></canvas>
 <p class="ssnote" id="ss-driftnote"></p>
 
-<p>The Moon's line has a different cause and is worth looking at separately.
+<p>The Moon&rsquo;s line has a different cause and is worth looking at separately.
 Its sidereal month is barely a second too long — the synodic month is accurate
 to about a tenth of a second, which is remarkable — but a second a month for
 five thousand years is most of a day, and most of a day of the Moon is eleven
 degrees.</p>
+
+<h2 id="sandbox">Close the gap yourself<span class="kdeva">बीज-संस्कारः</span></h2>
+
+<p>The drift above is a few degrees. The tradition has a name for what you do
+about it: <b>b&imacr;ja</b> &mdash; a &ldquo;seed&rdquo; correction, a small
+adjustment to a revolution count applied by a later astronomer who had looked at
+the sky and found the inherited number wanting. Correcting a siddh&amacr;nta
+this way is not a modern liberty taken with the text; it is what the
+siddh&amacr;ntic tradition did to itself for a thousand years.</p>
+
+<p>So the knobs below are the ones the tradition itself treats as correctable,
+and nothing else. <b>No equation changes and no term is added.</b> Every slider
+moves a constant: revolutions in a Mah&amacr;yuga, the two circumferences of
+each epicycle, the direction of the apsis, the longitude at epoch. The score
+beside each graha is its own error against this site&rsquo;s modern engine,
+recomputed as you drag.</p>
+
+<div class="ssrow">
+  <label class="ssfield"><span>Graha</span><select id="ss-sbody"></select></label>
+  <button type="button" class="swbtn" data-ss="bare">The text as written</button>
+  <button type="button" class="swbtn" data-ss="fitted">The fitted tier</button>
+  <button type="button" class="swbtn" data-ss="auto">Fit this graha for me</button>
+</div>
+<div id="ss-sliders"></div>
+<div id="ss-score"></div>
+<p class="ssnote" id="ss-scorenote"></p>
+
+<div class="note"><b>What you are scored against, exactly.</b> The error is the
+root-mean-square difference in sidereal longitude against this
+site&rsquo;s modern engine, over <span id="ss-nsamp">a fixed set of</span>
+instants spread across 1800&ndash;2200 and fixed before you touch anything, at
+the ayan&amacr;&#7745;&#347;a and sine setting currently selected. It is an
+honest score and not a published figure: the project&rsquo;s stated residuals
+for the fitted tier were measured out of sample, on instants its optimiser
+never saw, which is a harder test than this one. Expect your hand-tuned numbers
+to look better here than they would there.</div>
+
+<p><b>The fitted tier</b> is this page&rsquo;s own answer to the same exercise,
+done by an optimiser rather than by hand: forty-six constants of exactly the
+kinds above, fitted to a modern sky. It is worth loading after you have tried it
+yourself, because what it does and does not achieve is the most interesting
+thing on this page. S&umacr;rya, Guru, &Sacute;ani and &Sacute;ukra come down by
+factors of forty and more. Candra, Budha and Ma&#7749;gala barely move &mdash;
+and they cannot, because what limits them is not the <i>value</i> of any
+constant but the <i>absence</i> of terms this astronomy does not have. The
+Moon&rsquo;s leftover error, decomposed, turns out to contain the evection and
+the variation at very nearly their textbook sizes. No seed correction can
+supply a term that was never there.</p>
+
+<div class="note"><b>This is not the S&umacr;rya Siddh&amacr;nta&rsquo;s
+answer</b> once you have moved anything, and neither is the fitted tier. Both
+are the text&rsquo;s <i>method</i> carrying numbers from somewhere else. The
+page says so wherever either is shown, and the engine restores every original
+constant exactly when you press <i>the text as written</i>.</p>
+
+<h2 id="three">The three skies on one ring<span class="kdeva">त्रयं वृत्तम्</span></h2>
+
+<p>The same moment computed three ways: the text as written, the fitted tier,
+and the modern ephemeris. Where the three marks for a graha sit almost on top of
+one another the older method was already good; where they fan apart you are
+looking at the limit of a one-epicycle theory, and which of the two siddh&amacr;ntic
+marks is nearer the modern one tells you whether the problem was the numbers or
+the shape of the model.</p>
+
+<div class="aywrap"><div id="ss-ring"></div></div>
+<div id="ss-ringtab"></div>
 
 <h2 id="absent">What is not here</h2>
 
@@ -180,6 +295,7 @@ fifth-century theory and a modern one.</p>
      page can put the two side by side: a Sūrya Siddhānta sunrise against a
      modern one, a Sūrya Siddhānta tithi against a modern tithi. Without it
      the comparison columns are simply blank, which is a worse page. -->
+{{DATA:siddhanta-measured}}
 <script src="engine.js" defer></script>
 <script src="panchanga.js" defer></script>
 <script src="siddhanta.js" defer></script>

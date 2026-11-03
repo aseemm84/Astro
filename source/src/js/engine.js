@@ -1478,6 +1478,27 @@ window.sphutaDrishti=sphutaDrishti;
    it means the graha page and the chart report cannot disagree about whether
    a graha is in its own sign. Additive — nothing here changes behaviour. */
 window.__kDign={of:digOf,EXALT:EXALT,DEBIL:DEBIL,OWNS:OWNS,MTR:MTR,FRD:FRD,ENM:ENM,LORD:LORD};
+/* Viṃśottarī, as a table and as the one function that turns a Moon's sidereal
+   longitude into the daśā running at birth. Published for the same reason as
+   the dignity tables above: the report has this, and so did two pages, each
+   from its own copy. A page that asks here cannot drift from the report, and
+   engine-verify asserts the balance this computes equals the one the chart
+   report arrives at independently. Additive; nothing in the engine changes. */
+var VIMS_ORDER=["Ketu","Venus","Sun","Moon","Mars","Rahu","Jupiter","Saturn","Mercury"],
+    VIMS_YEARS={Ketu:7,Venus:20,Sun:6,Moon:10,Mars:7,Rahu:18,Jupiter:16,Saturn:19,Mercury:17};
+window.__kVims={
+  order:VIMS_ORDER, years:VIMS_YEARS, total:120,
+  /* nakṣatra index 0-26 → its lord: the nine in order, three times round */
+  lordOfNak:function(i){ return VIMS_ORDER[((i%27)+27)%27%9]; },
+  /* the mahādaśā running at birth and its unspent remainder, in years */
+  atMoon:function(sid){
+    var seg=40/3, mn=((sid%360)+360)%360, ni=Math.floor(mn/seg);
+    var lord=VIMS_ORDER[ni%9], full=VIMS_YEARS[lord];
+    var frac=(mn-ni*seg)/seg;
+    return {nak:ni, lord:lord, full:full, elapsed:frac,
+            balance:full*(1-frac)};
+  }
+};
 window.calculateSripatiHouses=function(ascSid,mcSid){
   if(window.SPSripati&&window.SPSripati.build) return window.SPSripati.build(ascSid,mcSid);
   return null;

@@ -409,6 +409,27 @@
     c.setTransform(dpr, 0, 0, dpr, 0, 0);
     c.clearRect(0, 0, w, h);
 
+    /* THE PALETTE COMES FROM THE THEME, not from this file.
+       A canvas is an image as far as the contrast harness is concerned, so
+       the hardcoded greys this chart began with passed every check and were
+       still unreadable on the three dark palettes: grey-on-near-black axis
+       labels under a curve the reader could not see. Read the tokens the
+       stylesheet has already resolved, and fall back to the original values
+       when a token is missing so an older stylesheet still draws. */
+    function tok(name, dflt) {
+      try {
+        var v = getComputedStyle(cv).getPropertyValue(name).trim();
+        return v || dflt;
+      } catch (e) { return dflt; }
+    }
+    var CLR = {
+      grid: tok("--border-2", "#c9c9d8"),
+      faint: tok("--border", "#eceaf2"),
+      ink: tok("--muted-2", "#6c7089"),
+      line: "#c9a24b",
+      now: tok("--sem-bad", "#b5533c")
+    };
+
     /* EVERY SAMPLE AT THE SAME POINT IN THE YEAR.
 
        Sampling at evenly spaced instants put each one at a different season,
@@ -439,14 +460,14 @@
     function Y(d) { return Tp + (h - Tp - B) * (1 - (d - lo) / (hi - lo)); }
 
     /* the zero line, which is the thing the curve is measured against */
-    c.strokeStyle = "#c9c9d8"; c.lineWidth = 1;
+    c.strokeStyle = CLR.grid; c.lineWidth = 1;
     c.beginPath(); c.moveTo(L, Y(0)); c.lineTo(w - R, Y(0)); c.stroke();
-    c.fillStyle = "#6c7089";
+    c.fillStyle = CLR.ink;
     c.font = "11px system-ui,-apple-system,sans-serif";
     c.textAlign = "right"; c.textBaseline = "middle";
     [lo + pad, 0, hi - pad].forEach(function (v) {
       c.fillText(v.toFixed(1) + "°", L - 6, Y(v));
-      c.strokeStyle = "#eceaf2";
+      c.strokeStyle = CLR.faint;
       c.beginPath(); c.moveTo(L, Y(v)); c.lineTo(w - R, Y(v)); c.stroke();
     });
     c.textAlign = "center"; c.textBaseline = "top";
@@ -454,7 +475,7 @@
       var yy = from + (to - from) * k / 4;
       c.fillText(Math.round(yy), X(yy), h - B + 6);
     }
-    c.strokeStyle = "#c9a24b"; c.lineWidth = 2;
+    c.strokeStyle = CLR.line; c.lineWidth = 2;
     c.beginPath();
     pts.forEach(function (p, i2) {
       if (i2) c.lineTo(X(p.y), Y(p.d)); else c.moveTo(X(p.y), Y(p.d));
@@ -463,10 +484,10 @@
     /* where we are now */
     var nowY = new Date().getUTCFullYear();
     if (nowY > from && nowY < to) {
-      c.strokeStyle = "#b5533c"; c.setLineDash([4, 4]);
+      c.strokeStyle = CLR.now; c.setLineDash([4, 4]);
       c.beginPath(); c.moveTo(X(nowY), Tp); c.lineTo(X(nowY), h - B); c.stroke();
       c.setLineDash([]);
-      c.fillStyle = "#b5533c"; c.textAlign = "left";
+      c.fillStyle = CLR.now; c.textAlign = "left";
       c.fillText("now", X(nowY) + 4, Tp + 2);
     }
     var note = $("ss-driftnote");

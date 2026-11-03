@@ -641,6 +641,14 @@ def build_shared():
         # chart report about whether a graha is in its own sign, and a reader
         # would have no way to tell which of the two was wrong.
         "graha-lab.js": brandify(jsread(SRC, "js", "graha-lab-ui.js")),
+        # engine-lab.html puts the three engines to the same questions, so it
+        # needs the siddhāntic one as well as the modern one its page already
+        # loads. ss-engine.js is concatenated rather than copied for the usual
+        # reason: a second Sūrya Siddhānta would eventually disagree with the
+        # one on siddhanta.html, and the whole page is an argument about
+        # engines agreeing.
+        "engine-lab.js": brandify(jsread(SRC, "js", "ss-engine.js") + "\n" +
+                                  jsread(SRC, "js", "engine-lab-ui.js")),
         # The bhāva-systems page. 72-sripati.js is the report's own Śrīpati
         # construction, concatenated rather than reimplemented so a cusp here
         # and a cusp in the chart report cannot disagree; it has no free
@@ -739,8 +747,15 @@ def build_shared():
         # The Sūrya Siddhānta page carries the engine and its own view. The
         # engine is also inside the two studio bundles, because the nodes it
         # publishes live there — one implementation, three places it is read.
+        # The Sūrya Siddhānta page. ss-lab.js is a SECOND module rather than
+        # more of ss-page.js, and deliberately: ss-page.js owns every panel
+        # that page already had, all of it verified, and the sandbox has no
+        # business reaching into it. The lab reads window.SSEngine and the
+        # window.__ss handle ss-page.js publishes, and writes only into hosts
+        # that did not exist before it.
         "siddhanta.js": brandify(jsread(SRC, "js", "ss-engine.js") + "\n" +
-                                 jsread(SRC, "js", "ss-page.js")),
+                                 jsread(SRC, "js", "ss-page.js") + "\n" +
+                                 jsread(SRC, "js", "ss-lab.js")),
         # The simulator: a gravitational integrator, the scenario library,
         # the renderer and the page. It needs engine.js beside it for the
         # state vectors the runs start from — the initial conditions are the

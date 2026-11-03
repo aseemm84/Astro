@@ -1,0 +1,136 @@
+<p class="lede">This site carries more than one engine. A modern ephemeris computes
+every ordinary page; a working S&umacr;rya Siddh&amacr;nta computes the classical
+one; and a third tier runs the siddh&amacr;nta&rsquo;s own equations on constants
+measured against a modern sky. This page puts all three to the same questions and
+measures what their disagreements are actually worth &mdash; because an error in
+arcseconds means nothing until it is converted into the units the work is done
+in. <b>No birth chart required</b>, and everything below is computed in your
+browser as you read.</p>
+
+<h2 id="bench">Ask all three the same question<span class="kdeva">त्रि-प्रश्नः</span></h2>
+
+<p>Arcseconds are the wrong unit for judging an engine, because nobody reads a
+chart in arcseconds. What a reader wants to know is whether the answer
+<i>changes</i> &mdash; whether the nak&#7779;atra is the same nak&#7779;atra, whether
+the tithi is the same tithi. So pick the question rather than the body, and the
+last column says whether the three engines actually disagree <i>about the
+answer</i>.</p>
+
+<div class="aybar">
+  <label>Question <select id="el-q" class="swin">
+    <option value="lon">Where is each graha?</option>
+    <option value="nak" selected>Which nak&#7779;atra and p&amacr;da is the Moon in?</option>
+    <option value="tithi">What tithi is it?</option>
+    <option value="dasha">Which Vi&#7747;&#347;ottar&imacr; da&#347;&amacr; would a birth now begin in?</option>
+    <option value="vara">Which v&amacr;ra is it?</option>
+  </select></label>
+  <label>Moment <input type="datetime-local" id="el-when" class="swin"></label>
+  <label>Place <span id="el-place" class="swpick"></span></label>
+  <button type="button" class="swbtn" data-el="now">This moment</button>
+</div>
+<div id="el-answer"></div>
+<p class="k-note" id="el-verdict"></p>
+
+<h3 id="rates">How often they agree, over a span you choose</h3>
+
+<p>One moment proves nothing &mdash; the three engines might happen to agree
+today and part company tomorrow. So this samples the question across a span and
+reports the <b>rate</b>. Watch what happens to the tithi: the siddh&amacr;nta
+names the same nak&#7779;atra as the modern engine most of the time and the same
+v&amacr;ra always, because a weekday is arithmetic on a day count and carries no
+position at all &mdash; but the tithi, which is the difference of two longitudes
+and so collects both errors, is the one a reader would notice.</p>
+
+<div class="aybar">
+  <label>From <input type="number" id="el-from" class="swin" value="1900" min="-500" max="2900" step="10"></label>
+  <label>To <input type="number" id="el-to" class="swin" value="2100" min="-500" max="3000" step="10"></label>
+  <label>Samples <select id="el-n" class="swin">
+    <option value="120">120</option>
+    <option value="400" selected>400</option>
+    <option value="1200">1200</option>
+  </select></label>
+  <button type="button" class="swbtn" data-el="roll">Measure the agreement</button>
+</div>
+<div id="el-rates"></div>
+<p class="k-note" id="el-ratenote"></p>
+
+<h2 id="cost">What an arcsecond is worth<span class="kdeva">कला-मूल्यम्</span></h2>
+
+<p>This is the conversion that makes the rest of the page meaningful, and it is
+the one most often skipped. An engine&rsquo;s accuracy is quoted in arcseconds; a
+chart is read in r&amacr;&#347;is, nak&#7779;atras, p&amacr;das, a&#7745;&#347;as and
+da&#347;&amacr; periods. Drag the slider and watch the same quantity restated in
+every one of those units at once. The markers underneath are where each engine
+and each body actually sits, measured.</p>
+
+<div class="aybar">
+  <label class="elwide">Error in longitude
+    <input type="range" id="el-arc" min="-1" max="4.3" step="0.01" value="1.17"></label>
+  <span class="ayread" id="el-arcread"></span>
+</div>
+<div id="el-marks"></div>
+<div id="el-cost"></div>
+
+<div class="note"><b>The one that surprises people.</b> One hundred and twenty
+years of Vi&#7747;&#347;ottar&imacr; are mapped onto a single nak&#7779;atra of
+13&deg;20&prime;. Dividing one by the other gives a fixed exchange rate between
+the Moon&rsquo;s position and da&#347;&amacr; time &mdash; shown above, computed
+rather than quoted &mdash; and it is steep enough that an error far too small to
+move the Moon out of its p&amacr;da still moves a mah&amacr;da&#347;&amacr;
+boundary by about a fortnight. It is also why one minute of birth-time
+uncertainty is worth about a month of da&#347;&amacr;, which is a larger
+correction than any engine on this page contributes.</div>
+
+<h2 id="scale">The engines are not the problem<span class="kdeva">सम्प्रदाय-भेदः</span></h2>
+
+<p>Everything above, and every convention this site has to choose between, on one
+logarithmic ruler from an arcsecond to ten degrees. The ruler is the argument:
+the gap between the best and worst <i>engine</i> is a matter of arcminutes, while
+the gap between two defensible <i>conventions</i> &mdash; which ayan&amacr;&#7745;&#347;a,
+which anchor star, which definition of sunrise &mdash; is measured in degrees.
+Anyone comparing this site&rsquo;s output with another almanac will be looking at
+the right-hand end of this ruler, not the left.</p>
+
+<div class="aywrap"><div id="el-ruler"></div></div>
+<p class="k-note" id="el-rulernote"></p>
+
+<h2 id="bands">Where the modern engine stops being certified<span class="kdeva">सीमा</span></h2>
+
+<p>The modern engine is held to an independent computation of the sky over
+1800&ndash;2200, and outside that window the honest statement is a
+<i>disagreement</i> rather than an error, because the reference degrades away from
+the present too. Drag the year and the band is named, with what it costs the
+question you chose at the top of the page.</p>
+
+<div class="aybar">
+  <label class="elwide">Year <input type="range" id="el-year" min="1000" max="3000" step="1" value="2026"></label>
+  <span class="ayread" id="el-yearread"></span>
+</div>
+<div class="aywrap"><div id="el-band"></div></div>
+<p class="k-note" id="el-bandnote"></p>
+
+<h2 id="which">Which engine answers which question<span class="kdeva">यन्त्र-विभागः</span></h2>
+
+<p>Generated from the measured figures rather than written out, so it cannot
+drift from them. &ldquo;Measured&rdquo; means compared against code other than
+this project&rsquo;s; &ldquo;convention&rdquo; means a choice with no correct
+value, which is not an error however large it is.</p>
+
+<div id="el-which"></div>
+
+<div class="note"><b>What none of these engines is.</b> None of them is a
+prediction, and the difference between two of their columns is not an error in
+either one. Neither siddh&amacr;ntic tier should be used to cast a chart you
+intend to read: the fitted tier leaves the Moon about sixty arcminutes out, which
+is most of a p&amacr;da, and the bare text leaves it several degrees out. They
+are here so that the arithmetic the tradition was built on can be seen working,
+and so that its distance from a modern computation is a thing you can measure
+instead of a thing you are told.</div>
+
+{{DATA:accuracy}}
+{{DATA:siddhanta-measured}}
+<p class="src"><span>Sources</span> Modern positions from astronomy-engine v2 (MIT, vendored); the reference they are measured against is ERFA, the IAU SOFA algorithms, via astropy. The siddh&amacr;ntic engine and its fitted tier are this project&rsquo;s own, generated by <code>fit-siddhanta</code> and checked by <code>siddhanta-measured-verify</code>; every figure drawn here comes from <code>accuracy.json</code> and <code>siddhanta-measured.json</code>, written by the harnesses named on each row. No BPHS verse is cited on this page, deliberately: planetary theory is not what BPHS supplies. See <a href="accuracy.html">Accuracy</a> for the measurements in full, <a href="siddhanta.html">S&umacr;rya Siddh&amacr;nta</a> for the classical engine and its sandbox, <a href="ayanamsa.html">Ayan&amacr;&#7745;&#347;a</a> for the convention that dominates the ruler above, and <a href="kundli.html">Kundli 2.0</a> to cast a chart.</p>
+
+<script src="engine.js" defer></script>
+<script src="panchanga.js" defer></script>
+<script src="engine-lab.js" defer></script>

@@ -1,10 +1,10 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sūrya Siddhānta — the older sky, computed — Nirayana</title><meta name="description" content="A working Sūrya Siddhānta engine: ahargaa, yuga revolutions, manda and śīghra epicycles, true longitudes — set beside a modern ephemeris, with the drift between them drawn.">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sūrya Siddhānta — the older sky, computed — Nirayana</title><meta name="description" content="A working Sūrya Siddhānta engine: ahargaṇa, yuga revolutions, manda and śīghra epicycles, true longitudes — set beside a modern ephemeris, with the drift between them drawn.">
 <link rel="canonical" href="https://aseemm84.github.io/Astro/siddhanta.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Nirayana">
 <meta property="og:locale" content="en_GB">
 <meta property="og:title" content="Sūrya Siddhānta — the older sky, computed — Nirayana">
-<meta property="og:description" content="A working Sūrya Siddhānta engine: ahargaa, yuga revolutions, manda and śīghra epicycles, true longitudes — set beside a modern ephemeris, with the drift between them drawn.">
+<meta property="og:description" content="A working Sūrya Siddhānta engine: ahargaṇa, yuga revolutions, manda and śīghra epicycles, true longitudes — set beside a modern ephemeris, with the drift between them drawn.">
 <meta property="og:url" content="https://aseemm84.github.io/Astro/siddhanta.html">
 <meta property="og:image" content="https://aseemm84.github.io/Astro/assets/og-nirayana.png">
 <meta property="og:image:width" content="1200">
@@ -12,7 +12,7 @@
 <meta property="og:image:alt" content="Nirayana — a Vedic astrology reference and chart engine">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Sūrya Siddhānta — the older sky, computed — Nirayana">
-<meta name="twitter:description" content="A working Sūrya Siddhānta engine: ahargaa, yuga revolutions, manda and śīghra epicycles, true longitudes — set beside a modern ephemeris, with the drift between them drawn.">
+<meta name="twitter:description" content="A working Sūrya Siddhānta engine: ahargaṇa, yuga revolutions, manda and śīghra epicycles, true longitudes — set beside a modern ephemeris, with the drift between them drawn.">
 <meta name="twitter:image" content="https://aseemm84.github.io/Astro/assets/og-nirayana.png">
 <meta name="theme-color" content="#1d2340">
 <meta name="color-scheme" content="light">
@@ -2429,6 +2429,131 @@ span.gldig.enemy{background:#d08a3a22;border-left-color:#d08a3a}
 span.gldig.debilitated{background:#d0604a22;border-left-color:#d0604a}
 span.gldig.node{background:#5a5e7812;border-left-color:#8a8ea6}
 
+/* ===== siddhanta.html, the sandbox and the geometry ========================
+   Everything here is themed through tokens rather than the page's original
+   hardcoded canvas palette, because these panels are SVG and a reader on a
+   dark palette has to be able to read them. */
+.sslsvg{width:100%;height:auto;display:block}
+.sslsvg .ssl-grid{stroke:var(--border-2,#d8d8e6);stroke-width:1}
+.sslsvg .ssl-quad{stroke:var(--border-2,#d8d8e6);stroke-width:1;
+  stroke-dasharray:3 4}
+.sslsvg .ssl-ax{font-size:10.5px;fill:var(--muted-2,#5a5e78);text-anchor:end}
+.sslsvg .ssl-cap{font-size:10.5px;fill:var(--muted-2,#5a5e78)}
+.sslsvg .ssl-cap.mid{text-anchor:middle}
+.sslsvg .ssl-head{font-size:12.5px;font-weight:700;fill:var(--text,#20233a);
+  text-anchor:middle}
+.sslsvg .ssl-tag{font-size:10px;fill:var(--muted-2,#5a5e78)}
+
+/* the jyā table */
+.sslsvg .ssl-true{fill:none;stroke:var(--muted-2,#5a5e78);stroke-width:1.4}
+.sslsvg .ssl-entry{fill:#c9a24b;stroke:var(--surface,#fff);stroke-width:1}
+.sslsvg .ssl-res{fill:none;stroke:#d0604a;stroke-width:1.6}
+
+/* the epicycle construction */
+.sslsvg .ssl-def{fill:none;stroke:var(--border-2,#d8d8e6);stroke-width:1.4}
+.sslsvg .ssl-apsis{stroke:var(--muted-2,#5a5e78);stroke-width:1;
+  stroke-dasharray:5 4}
+.sslsvg .ssl-epi{fill:none;stroke:#c9a24b;stroke-width:1.6}
+.sslsvg .ssl-epid{fill:none;stroke:#c9a24b;stroke-width:.9;stroke-dasharray:2 3;
+  opacity:.6}
+.sslsvg .ssl-arm{stroke:var(--muted-2,#5a5e78);stroke-width:1.4}
+.sslsvg .ssl-arm2{stroke:#c9a24b;stroke-width:1.6}
+.sslsvg .ssl-karna{stroke:#2f9c6a;stroke-width:2}
+.sslsvg .ssl-eqarc{fill:none;stroke:#d0604a;stroke-width:2.4}
+.sslsvg .ssl-o{fill:var(--text-strong,#13152b)}
+.sslsvg .ssl-m{fill:var(--muted-2,#5a5e78)}
+.sslsvg .ssl-g{fill:#d0604a;stroke:var(--surface,#fff);stroke-width:1.5}
+
+/* the equation curves */
+.sslsvg .ssl-cv{fill:none;stroke-width:2}
+.sslsvg .ssl-cv.manda{stroke:#5f9fd0}
+.sslsvg .ssl-cv.sighra{stroke:#c9a24b}
+.sslsvg .ssl-leg{font-size:11px;font-weight:600}
+.sslsvg .ssl-leg.manda{fill:#3f7fa6}
+.sslsvg .ssl-leg.sighra{fill:#8a6a1e}
+.sslsvg .ssl-ptr{stroke:var(--text-strong,#13152b);stroke-width:1.5}
+
+/* the three skies */
+.sslsvg .ssl-sign{fill:var(--muted-2,#5a5e78);fill-opacity:.07;
+  stroke:var(--border-2,#d8d8e6);stroke-width:.6}
+.sslsvg .ssl-sign.alt{fill-opacity:.03}
+.sslsvg .ssl-signlab{font-size:11.5px;fill:var(--text,#20233a);
+  text-anchor:middle;font-weight:600}
+.sslsvg .ssl-orb{fill:none;stroke:var(--border-2,#d8d8e6);stroke-width:.8;
+  stroke-dasharray:2 4}
+.sslsvg .ssl-mark{stroke:var(--surface,#fff);stroke-width:1.4}
+.sslsvg .ssl-mark.mod{fill:#2f9c6a}
+.sslsvg .ssl-mark.fit{fill:#5f9fd0}
+.sslsvg .ssl-mark.bare{fill:#c9a24b}
+.sslsvg .ssl-orblab{font-size:10px;text-anchor:middle;font-weight:700}
+.sslsvg .ssl-orblab.mod{fill:#1f7a52}
+.sslsvg .ssl-orblab.fit{fill:#3f7fa6}
+.sslsvg .ssl-orblab.bare{fill:#8a6a1e}
+.sslsvg .ssl-ptname{font-size:10.5px;fill:var(--muted-2,#5a5e78);
+  text-anchor:middle}
+.sslsvg .ssl-hub{font-size:12px;fill:var(--muted-2,#5a5e78);text-anchor:middle}
+
+/* the sandbox sliders */
+.sslab{display:grid;grid-template-columns:14rem 1fr 5rem 1fr;gap:.5rem .7rem;
+  align-items:center;padding:.3rem 0;font-size:.84rem}
+.sslabk{color:var(--text,#20233a);font-weight:600}
+.sslabv{font-variant-numeric:tabular-nums;text-align:right;
+  color:var(--text-strong,#13152b);font-weight:700}
+.sslabu{font-size:.78rem;color:var(--muted-2,#5a5e78)}
+.sslide{width:100%}
+@media (max-width:720px){
+  .sslab{grid-template-columns:1fr auto;gap:.2rem .5rem}
+  .sslide{grid-column:1 / -1}
+  .sslabu{grid-column:1 / -1}
+}
+.ssscore tr.on{background:var(--surface-3,#ececf6)}
+.ssbarcell{width:38%}
+.ssbar{display:block;height:9px;border-radius:5px;
+  background:var(--border,#e7e7f0);overflow:hidden}
+.ssbar i{display:block;height:100%;background:#c9873a}
+.ssbar.good i{background:#2f9c6a}
+.ssread{font-size:.84rem;color:var(--muted-2,#5a5e78);
+  font-variant-numeric:tabular-nums;align-self:center}
+
+/* ===== engine-lab.html =====================================================
+   One colour per engine, used by every lane, dot and lane label, and a fifth
+   for the conventions — which are deliberately NOT on the engine scale,
+   because the page's argument is that they are a different kind of thing. */
+.elsvg{width:100%;height:auto;display:block}
+.elsvg .el-axis{stroke:var(--border-2,#d8d8e6);stroke-width:1.2}
+.elsvg .el-tick{stroke:var(--border-2,#d8d8e6);stroke-width:1}
+.elsvg .el-vgrid{stroke:var(--border-2,#d8d8e6);stroke-width:.8;
+  stroke-dasharray:2 5}
+.elsvg .el-ticklab{font-size:10px;fill:var(--muted-2,#5a5e78);text-anchor:middle}
+.elsvg .el-ax{font-size:10px;fill:var(--muted-2,#5a5e78);text-anchor:end}
+.elsvg .el-ptlab{font-size:9.5px;fill:var(--muted-2,#5a5e78);text-anchor:middle}
+.elsvg .el-ptlab.divs{fill:var(--text,#20233a);font-weight:600}
+.elsvg .el-lane,.elsvg .el-lanelab{font-size:10.5px;font-weight:700;
+  text-anchor:end}
+.elsvg .el-lanelab{text-anchor:end}
+.elsvg .el-lane{text-anchor:start}
+.elsvg .el-pt{stroke:var(--surface,#fff);stroke-width:1.2}
+.elsvg .el-pt.mod,.elsvg .el-lane.mod,.elsvg .el-lanelab.mod{fill:#2f9c6a}
+.elsvg .el-pt.fit,.elsvg .el-lane.fit,.elsvg .el-lanelab.fit{fill:#5f9fd0}
+.elsvg .el-pt.bare,.elsvg .el-lanelab.bare{fill:#c9a24b}
+.elsvg .el-pt.conv,.elsvg .el-lanelab.conv{fill:#d0604a}
+.elsvg .el-lanelab.divs{fill:var(--text,#20233a)}
+.elsvg .el-div{stroke:var(--text,#20233a);stroke-width:1.8}
+.elsvg .el-cursor{stroke:var(--text-strong,#13152b);stroke-width:1.6}
+.elsvg .el-curve{fill:none;stroke:#d0604a;stroke-width:2}
+.elsvg .el-band{fill:var(--muted-2,#5a5e78);fill-opacity:.07}
+.elsvg .el-band.cert{fill:#2f9c6a;fill-opacity:.12}
+.elsvg .el-bandlab{font-size:10px;fill:var(--muted-2,#5a5e78);text-anchor:middle}
+.elsvg .el-bandlab.cert{fill:#1f7a52;font-weight:700}
+
+.elwide{flex:1 1 20rem}
+.elwide input[type=range]{width:100%}
+.elcost{margin:.9rem 0}
+.elwho{display:flex;flex-wrap:wrap;gap:.3rem 1.1rem;margin:.5rem 0 0;
+  font-size:.8rem;color:var(--muted-2,#5a5e78)}
+.elwho b{color:var(--text,#20233a)}
+.elwhy,.elharness{font-size:.8rem;color:var(--muted-2,#5a5e78)}
+
 /* ===== Generated theme overrides =====================================
    Written by source/tools/gen-theme-overrides.py from the literal
    colours in app.css and pages.css. Do not edit by hand: regenerate.
@@ -3219,7 +3344,7 @@ html[data-theme] nav.site .themepick select option{
     return true;
   }, list: THEMES };
 })();
-</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Sūrya Siddhānta</h1><p class="sub">The same sky, computed the older way — and the distance between the two, drawn.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html" class="active">Sūrya Siddhānta</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#what">What this is, and what it is not</a><a href="#params">The parameters it uses</a><a href="#now">The two skies</a><a href="#working">The working, step by step</a><a href="#trig">Its own trigonometry</a><a href="#day">The day where you are standing</a><a href="#panchanga">The pañcāṅga, the old way</a><a href="#eclipses">Eclipses</a><a href="#drift">The drift</a><a href="#absent">What is not here</a><a href="#use">Using it</a></aside><main><p class="ssnote">Everything on this page is computed in your browser, twice —
+</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Sūrya Siddhānta</h1><p class="sub">The same sky, computed the older way — the two set side by side, the epicycles drawn, and the text's own constants open to correction.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html" class="active">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#what">What this is, and what it is not</a><a href="#params">The parameters it uses</a><a href="#now">The two skies</a><a href="#working">The working, step by step</a><a href="#trig">Its own trigonometry</a><a href="#day">The day where you are standing</a><a href="#panchanga">The pañcāṅga, the old way</a><a href="#eclipses">Eclipses</a><a href="#drift">The drift</a><a href="#sandbox">Close the gap yourself</a><a href="#three">The three skies on one ring</a><a href="#absent">What is not here</a><a href="#use">Using it</a></aside><main><p class="ssnote">Everything on this page is computed in your browser, twice —
 once the way the Sūrya Siddhānta does it and once with this site's modern
 ephemeris — so the two can be set beside each other.</p>
 
@@ -3287,6 +3412,41 @@ that the inner planets go round the Sun, in a scheme that never says so.</p>
 </div>
 <div id="ss-working"></div>
 
+<h3 id="epicycle">The geometry those four steps are doing</h3>
+
+<p>The words <i>manda</i> and <i>&#347;&imacr;ghra</i> name two circles, and no amount of
+prose substitutes for seeing them. Below is the construction the engine is
+actually evaluating: a <b>deferent</b> of radius 3438 carrying the mean graha,
+and an <b>epicycle</b> whose circumference the text gives in degrees of that
+deferent &mdash; so a parid hi of 14&deg; means an epicycle 14/360 of the
+deferent&rsquo;s own circumference. The displacement that epicycle produces,
+measured as an angle back at the centre, <i>is</i> the equation.</p>
+
+<p>Two things are worth watching as you drag the anomaly. The epicycle
+<b>breathes</b>: the text gives two circumferences, one for the ends of the odd
+quadrants and one for the even, and the value between them is interpolated by
+the sine of the anomaly &mdash; so the dashed rings are the two stated sizes and
+the solid one is what is being used at this instant. And for the
+&#347;&imacr;ghra step the <b>karna</b> &mdash; the hypotenuse from the centre
+to the graha &mdash; is not the radius, which is why that equation divides by
+it and the manda equation does not.</p>
+
+<div class="ssrow">
+  <label class="ssfield"><span>Graha</span><select id="ss-epibody"></select></label>
+  <label class="ssfield"><span>Anomaly</span>
+    <input id="ss-anom" type="range" min="0" max="360" step="0.5" value="90"></label>
+  <span class="ssread" id="ss-anomread"></span>
+  <button type="button" class="swbtn" data-ss="anomnow">Use this moment&rsquo;s anomaly</button>
+  <button type="button" class="swbtn" data-ss="anomspin">Sweep</button>
+</div>
+<div class="aywrap"><div id="ss-epi"></div></div>
+<p class="ssnote" id="ss-epinote"></p>
+
+<p>And the same two equations as curves across the whole anomaly, which is
+where the interpolation becomes visible: a pure epicycle would give a clean
+sine, and the kinks at the quadrant ends are the breathing above, drawn.</p>
+<div class="aywrap"><div id="ss-curve"></div></div>
+
 <h2 id="trig">Its own trigonometry</h2>
 
 <p>The Sūrya Siddhānta has no sine function. It has a <b>table</b> of
@@ -3316,6 +3476,20 @@ in the same direction and partly cancel.</p>
     </select></label>
 </div>
 <div id="ss-trig"></div>
+
+<p>Drawn, the table is almost indistinguishable from a true sine &mdash; which
+is both the point and the reason the residual has to be magnified before
+anything can be seen of it. The lower trace is that same error multiplied fifty
+times. Its sawtooth is the signature of linear interpolation between tabulated
+points: near zero at every entry, largest in the middle of each interval, and
+mostly on one side of the line, because a sine is concave over each step and a
+straight line cuts the corner. <i>Mostly</i>, not always &mdash; the twenty-four
+entries are whole numbers, so each is itself rounded by up to seven tenths, and
+in a few intervals that rounding is enough to push the chord above the curve
+rather than below it. Two different errors are therefore visible at once: the
+coarseness of the grid, and the roundness of the numbers on it.</p>
+<div class="aywrap"><div id="ss-jya"></div></div>
+<p class="ssnote" id="ss-jyanote"></p>
 
 <h2 id="day">The day where you are standing</h2>
 
@@ -3371,11 +3545,77 @@ Sun is several degrees. This is that, drawn.</p>
         aria-label="The difference between the two methods, over time"></canvas>
 <p class="ssnote" id="ss-driftnote"></p>
 
-<p>The Moon's line has a different cause and is worth looking at separately.
+<p>The Moon&rsquo;s line has a different cause and is worth looking at separately.
 Its sidereal month is barely a second too long — the synodic month is accurate
 to about a tenth of a second, which is remarkable — but a second a month for
 five thousand years is most of a day, and most of a day of the Moon is eleven
 degrees.</p>
+
+<h2 id="sandbox">Close the gap yourself<span class="kdeva">बीज-संस्कारः</span></h2>
+
+<p>The drift above is a few degrees. The tradition has a name for what you do
+about it: <b>b&imacr;ja</b> &mdash; a &ldquo;seed&rdquo; correction, a small
+adjustment to a revolution count applied by a later astronomer who had looked at
+the sky and found the inherited number wanting. Correcting a siddh&amacr;nta
+this way is not a modern liberty taken with the text; it is what the
+siddh&amacr;ntic tradition did to itself for a thousand years.</p>
+
+<p>So the knobs below are the ones the tradition itself treats as correctable,
+and nothing else. <b>No equation changes and no term is added.</b> Every slider
+moves a constant: revolutions in a Mah&amacr;yuga, the two circumferences of
+each epicycle, the direction of the apsis, the longitude at epoch. The score
+beside each graha is its own error against this site&rsquo;s modern engine,
+recomputed as you drag.</p>
+
+<div class="ssrow">
+  <label class="ssfield"><span>Graha</span><select id="ss-sbody"></select></label>
+  <button type="button" class="swbtn" data-ss="bare">The text as written</button>
+  <button type="button" class="swbtn" data-ss="fitted">The fitted tier</button>
+  <button type="button" class="swbtn" data-ss="auto">Fit this graha for me</button>
+</div>
+<div id="ss-sliders"></div>
+<div id="ss-score"></div>
+<p class="ssnote" id="ss-scorenote"></p>
+
+<div class="note"><b>What you are scored against, exactly.</b> The error is the
+root-mean-square difference in sidereal longitude against this
+site&rsquo;s modern engine, over <span id="ss-nsamp">a fixed set of</span>
+instants spread across 1800&ndash;2200 and fixed before you touch anything, at
+the ayan&amacr;&#7745;&#347;a and sine setting currently selected. It is an
+honest score and not a published figure: the project&rsquo;s stated residuals
+for the fitted tier were measured out of sample, on instants its optimiser
+never saw, which is a harder test than this one. Expect your hand-tuned numbers
+to look better here than they would there.</div>
+
+<p><b>The fitted tier</b> is this page&rsquo;s own answer to the same exercise,
+done by an optimiser rather than by hand: forty-six constants of exactly the
+kinds above, fitted to a modern sky. It is worth loading after you have tried it
+yourself, because what it does and does not achieve is the most interesting
+thing on this page. S&umacr;rya, Guru, &Sacute;ani and &Sacute;ukra come down by
+factors of forty and more. Candra, Budha and Ma&#7749;gala barely move &mdash;
+and they cannot, because what limits them is not the <i>value</i> of any
+constant but the <i>absence</i> of terms this astronomy does not have. The
+Moon&rsquo;s leftover error, decomposed, turns out to contain the evection and
+the variation at very nearly their textbook sizes. No seed correction can
+supply a term that was never there.</p>
+
+<div class="note"><b>This is not the S&umacr;rya Siddh&amacr;nta&rsquo;s
+answer</b> once you have moved anything, and neither is the fitted tier. Both
+are the text&rsquo;s <i>method</i> carrying numbers from somewhere else. The
+page says so wherever either is shown, and the engine restores every original
+constant exactly when you press <i>the text as written</i>.</p>
+
+<h2 id="three">The three skies on one ring<span class="kdeva">त्रयं वृत्तम्</span></h2>
+
+<p>The same moment computed three ways: the text as written, the fitted tier,
+and the modern ephemeris. Where the three marks for a graha sit almost on top of
+one another the older method was already good; where they fan apart you are
+looking at the limit of a one-epicycle theory, and which of the two siddh&amacr;ntic
+marks is nearer the modern one tells you whether the problem was the numbers or
+the shape of the model.</p>
+
+<div class="aywrap"><div id="ss-ring"></div></div>
+<div id="ss-ringtab"></div>
 
 <h2 id="absent">What is not here</h2>
 
@@ -3401,6 +3641,270 @@ fifth-century theory and a modern one.</p>
      page can put the two side by side: a Sūrya Siddhānta sunrise against a
      modern one, a Sūrya Siddhānta tithi against a modern tithi. Without it
      the comparison columns are simply blank, which is a worse page. -->
+<script type="application/json" id="data-siddhanta-measured">{
+ "_provenance": {
+  "what": "The Sūrya Siddhānta's own constants — revolution counts, epicycle circumferences, apogee longitudes — measured against a modern sky, with the text's equations untouched.",
+  "why": "ss-engine.js with the text's constants lands degrees from the real sky, which is the method's own accuracy and makes it a museum piece. This makes the tradition's method castable while keeping its form.",
+  "notTheText": "THIS IS NOT THE SŪRYA SIDDHĀNTA'S ANSWER and must never be presented as one. It is the text's METHOD carrying measured numbers. The bare text stays selectable and unchanged; siddhanta-measured-verify.mjs asserts it is still bit-identical.",
+  "parameters": "One per classical quantity: a bīja on each body's revolutions, a scale on each manda and śīghra paridhi (which keeps the odd/even interpolation the text prescribes and moves only its size), and an offset on each mandocca. Twenty-seven numbers, every one of them a quantity the tradition has a name for. No free terms were added.",
+  "outOfSample": "The 400 reference samples are split by index: even fitted, odd held out and never seen by the optimiser. The holdout figures are the ones to read; a fit judged on its own residuals tells you nothing.",
+  "timescale": "The ahargaṇa comes from the civil instant exactly as a caller supplies it, not from TT. A siddhānta has no ΔT, so fitting in TT would have reported residuals no user could reproduce. ΔT stays an unmodelled systematic that the holdout numbers include.",
+  "frame": "Sidereal on the site's own Lahiri polynomial, not the text's libration ayanāṃśa, because a measured tier exists to be comparable with the modern engine on the same chart. The text's ayanāṃśa stays on the unfitted path.",
+  "reference": "ERFA (IAU SOFA) via astropy: epv00 for the Sun, moon98 for the Moon, plan94 for the five tara-grahas, gst06a and obl06/nut06a for Earth orientation.",
+  "span": "1800-2200",
+  "generator": "source/test/fit-siddhanta.mjs",
+  "checkedBy": "source/test/siddhanta-measured-verify.mjs",
+  "fitSamples": 187,
+  "holdoutSamples": 213,
+  "iterations": 1500
+ },
+ "lahiri": [
+  0.000307083556492,
+  1.39688796382,
+  23.857092356
+ ],
+ "baseEpochLon": {
+  "Rāhu": 180
+ },
+ "params": {
+  "epoch.Sūrya": -11.495656022938753,
+  "bija.Sūrya": 28.316340046775004,
+  "mandaOdd.Sūrya": 0.862936607436593,
+  "mandaEven.Sūrya": 0.8804439098023978,
+  "mandocca.Sūrya": 1.755074276346737,
+  "epoch.Candra": -6.798197188983609,
+  "bija.Candra": 23.98271263424615,
+  "epoch.candraUcca": 125.59505261617409,
+  "bija.candraUcca": -97.51306928542868,
+  "mandaOdd.Candra": 1.2355961885637685,
+  "mandaEven.Candra": 1.2326491683056089,
+  "epoch.Maṅgala": -24.175960729163435,
+  "bija.Maṅgala": 61.22466644131986,
+  "mandaOdd.Maṅgala": 1.0448289321212183,
+  "mandaEven.Maṅgala": 1.00926427336411,
+  "sighraOdd.Maṅgala": 1.002089479680015,
+  "sighraEven.Maṅgala": 1.021151139425689,
+  "mandocca.Maṅgala": 19.689307706945222,
+  "epoch.Budha": -32.14843828331287,
+  "bija.Budha": 63.13564575839088,
+  "mandaOdd.Budha": 1.376075011483989,
+  "mandaEven.Budha": 1.162068551747379,
+  "sighraOdd.Budha": 1.0170294969949158,
+  "sighraEven.Budha": 1.0442672923651537,
+  "mandocca.Budha": 1.7057313766244038,
+  "epoch.Guru": 14.552691562260698,
+  "bija.Guru": -45.010815449886174,
+  "mandaOdd.Guru": 1.0794027852638806,
+  "mandaEven.Guru": 1.0946517099697055,
+  "sighraOdd.Guru": 1.0017751827277683,
+  "sighraEven.Guru": 0.9588847135110883,
+  "mandocca.Guru": 7.864371245029663,
+  "epoch.Śukra": 23.109001646469558,
+  "bija.Śukra": -72.87216548912119,
+  "mandaOdd.Śukra": 0.822049367477661,
+  "mandaEven.Śukra": 0.8911454532975249,
+  "sighraOdd.Śukra": 0.9935234127408319,
+  "sighraEven.Śukra": 1.0017207430640087,
+  "mandocca.Śukra": -12.811351451017067,
+  "epoch.Śani": -54.99789391040725,
+  "bija.Śani": 143.69346659451747,
+  "mandaOdd.Śani": 0.800343218673827,
+  "mandaEven.Śani": 0.7957841580241336,
+  "sighraOdd.Śani": 0.9794449445667087,
+  "sighraEven.Śani": 0.9447417904450287,
+  "mandocca.Śani": 8.457986163620314
+ },
+ "residuals": {
+  "Sūrya": {
+   "params": {
+    "epoch.Sūrya": -11.495656022938753,
+    "bija.Sūrya": 28.316340046775004,
+    "mandaOdd.Sūrya": 0.862936607436593,
+    "mandaEven.Sūrya": 0.8804439098023978,
+    "mandocca.Sūrya": 1.755074276346737
+   },
+   "bare": {
+    "rms": 39.474,
+    "worst": 76.276
+   },
+   "fit": {
+    "rms": 1.0579,
+    "worst": 2.4938
+   },
+   "holdout": {
+    "rms": 1.0406,
+    "worst": 3.1182,
+    "mean": 0.0325
+   },
+   "gain": 37.9
+  },
+  "Candra": {
+   "params": {
+    "epoch.Candra": -6.798197188983609,
+    "bija.Candra": 23.98271263424615,
+    "epoch.candraUcca": 125.59505261617409,
+    "bija.candraUcca": -97.51306928542868,
+    "mandaOdd.Candra": 1.2355961885637685,
+    "mandaEven.Candra": 1.2326491683056089
+   },
+   "bare": {
+    "rms": 378.052,
+    "worst": 708.83
+   },
+   "fit": {
+    "rms": 62.1609,
+    "worst": 141.2825
+   },
+   "holdout": {
+    "rms": 61.6159,
+    "worst": 147.9552,
+    "mean": -2.6671
+   },
+   "gain": 6.1
+  },
+  "Maṅgala": {
+   "params": {
+    "epoch.Maṅgala": -24.175960729163435,
+    "bija.Maṅgala": 61.22466644131986,
+    "mandaOdd.Maṅgala": 1.0448289321212183,
+    "mandaEven.Maṅgala": 1.00926427336411,
+    "sighraOdd.Maṅgala": 1.002089479680015,
+    "sighraEven.Maṅgala": 1.021151139425689,
+    "mandocca.Maṅgala": 19.689307706945222
+   },
+   "bare": {
+    "rms": 206.809,
+    "worst": 761.557
+   },
+   "fit": {
+    "rms": 44.8537,
+    "worst": 177.0009
+   },
+   "holdout": {
+    "rms": 58.2675,
+    "worst": 303.3648,
+    "mean": 2.0942
+   },
+   "gain": 3.5
+  },
+  "Budha": {
+   "params": {
+    "epoch.Budha": -32.14843828331287,
+    "bija.Budha": 63.13564575839088,
+    "mandaOdd.Budha": 1.376075011483989,
+    "mandaEven.Budha": 1.162068551747379,
+    "sighraOdd.Budha": 1.0170294969949158,
+    "sighraEven.Budha": 1.0442672923651537,
+    "mandocca.Budha": 1.7057313766244038
+   },
+   "bare": {
+    "rms": 152.778,
+    "worst": 503.354
+   },
+   "fit": {
+    "rms": 94.9029,
+    "worst": 198.4928
+   },
+   "holdout": {
+    "rms": 107.1138,
+    "worst": 232.8319,
+    "mean": 8.5345
+   },
+   "gain": 1.4
+  },
+  "Guru": {
+   "params": {
+    "epoch.Guru": 14.552691562260698,
+    "bija.Guru": -45.010815449886174,
+    "mandaOdd.Guru": 1.0794027852638806,
+    "mandaEven.Guru": 1.0946517099697055,
+    "sighraOdd.Guru": 1.0017751827277683,
+    "sighraEven.Guru": 0.9588847135110883,
+    "mandocca.Guru": 7.864371245029663
+   },
+   "bare": {
+    "rms": 284.793,
+    "worst": 493.115
+   },
+   "fit": {
+    "rms": 6.0148,
+    "worst": 17.4495
+   },
+   "holdout": {
+    "rms": 5.9942,
+    "worst": 16.1135,
+    "mean": -0.0995
+   },
+   "gain": 47.5
+  },
+  "Śukra": {
+   "params": {
+    "epoch.Śukra": 23.109001646469558,
+    "bija.Śukra": -72.87216548912119,
+    "mandaOdd.Śukra": 0.822049367477661,
+    "mandaEven.Śukra": 0.8911454532975249,
+    "sighraOdd.Śukra": 0.9935234127408319,
+    "sighraEven.Śukra": 1.0017207430640087,
+    "mandocca.Śukra": -12.811351451017067
+   },
+   "bare": {
+    "rms": 365.801,
+    "worst": 1627.116
+   },
+   "fit": {
+    "rms": 7.9557,
+    "worst": 24.7641
+   },
+   "holdout": {
+    "rms": 8.3882,
+    "worst": 26.1288,
+    "mean": 2.2868
+   },
+   "gain": 43.6
+  },
+  "Śani": {
+   "params": {
+    "epoch.Śani": -54.99789391040725,
+    "bija.Śani": 143.69346659451747,
+    "mandaOdd.Śani": 0.800343218673827,
+    "mandaEven.Śani": 0.7957841580241336,
+    "sighraOdd.Śani": 0.9794449445667087,
+    "sighraEven.Śani": 0.9447417904450287,
+    "mandocca.Śani": 8.457986163620314
+   },
+   "bare": {
+    "rms": 381.677,
+    "worst": 633.466
+   },
+   "fit": {
+    "rms": 7.2841,
+    "worst": 19.362
+   },
+   "holdout": {
+    "rms": 7.2984,
+    "worst": 22.9315,
+    "mean": 1.8913
+   },
+   "gain": 52.3
+  }
+ },
+ "lunarDiagnostic": {
+  "rms": 61.87,
+  "correlationWithEvection": 0.86,
+  "correlationWithVariation": -0.452,
+  "amplitudeArcmin": {
+   "evection": 75.9,
+   "variation": -39.7,
+   "anomaly": 3.4
+  },
+  "textbookArcmin": {
+   "evection": 76.4,
+   "variation": 39.5
+  },
+  "rmsAfterRemovingThem": 13.95,
+  "reading": "The Moon's residual after the fit IS the evection and the variation. Regressed on their arguments it yields amplitudes within one per cent of the textbook values, and removing just those two terms drops its rms from 61.9′ to 14.0′. Neither term exists in this theory, and neither can be produced by any choice of revolution count, paridhi or mandocca — so the Moon's limit here is the absence of terms, not the value of numbers. Supplying them would make this a different astronomy wearing the same parameters, which is the line this tier does not cross."
+ }
+}</script>
 <script src="engine.js" defer></script>
 <script src="panchanga.js" defer></script>
 <script src="siddhanta.js" defer></script>

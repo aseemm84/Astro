@@ -161,11 +161,19 @@
  },
  "siddhanta": {
   "title": "Sūrya Siddhānta — the older sky, computed — {{BRAND}}",
-  "desc": "A working Sūrya Siddhānta engine: ahargaa, yuga revolutions, manda and śīghra epicycles, true longitudes — set beside a modern ephemeris, with the drift between them drawn.",
+  "desc": "A working Sūrya Siddhānta engine: ahargaṇa, yuga revolutions, manda and śīghra epicycles, true longitudes — set beside a modern ephemeris, with the drift between them drawn.",
   "h1": "Sūrya Siddhānta",
-  "sub": "The same sky, computed the older way — and the distance between the two, drawn.",
+  "sub": "The same sky, computed the older way — the two set side by side, the epicycles drawn, and the text's own constants open to correction.",
   "layout": "",
   "has_aside": true
+ },
+ "engine-lab": {
+  "title": "Engine lab — three engines, one question &mdash; {{BRAND}}",
+  "h1": "Engine lab",
+  "sub": "The modern ephemeris, the Sūrya Siddhānta and its fitted tier put to the same questions — and what their disagreements are actually worth.",
+  "layout": "",
+  "has_aside": true,
+  "desc": "Every engine in the project asked the same question at once — where the grahas are, which nakṣatra, which tithi, which daśā — with the agreement rate measured over any span, a converter that turns arcseconds into fractions of a division and days of Viṃśottarī, and one logarithmic ruler showing that the conventions disagree by degrees where the engines disagree by arcminutes."
  },
  "simulation": {
   "title": "Simulation — what if the Moon moved? — {{BRAND}}",
