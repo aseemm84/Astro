@@ -121,9 +121,21 @@
       o += '<text x="' + m[0].toFixed(1) + '" y="' + (m[1] + 4).toFixed(1) +
            '" class="ay-sidlab">' + esc(SA[s]) + '</text>';
     }
-    /* the tropical ring — tied to the equinox, so it creeps backwards */
+    /* The tropical ring — tied to the equinox, so it creeps BACKWARDS against
+       the stars. The sign matters and was wrong here: this ring's coordinate
+       is sidereal longitude (the outer ring is drawn fixed at s·30 and
+       labelled with the sidereal rāśis), and a tropical longitude λ has
+       sidereal longitude λ − ayanāṃśa. So tropical zero belongs at −ayanāṃśa,
+       not at +ayanāṃśa.
+
+       Drawn the wrong way it put the vernal equinox in sidereal Meṣa. It is
+       in sidereal Mīna — which is exactly what the phrase "the age of Pisces"
+       refers to — and the error also ran the precession the wrong way round,
+       so the inner ring crept FORWARDS against the stars while the caption
+       beneath it said backwards. The star-anchor figure further down this
+       same page had it right, which is how the two came to disagree. */
     for (var t = 0; t < 12; t++) {
-      var b0 = t * 30 + ay;
+      var b0 = t * 30 - ay;
       o += '<path d="' + wedge(cx, cy, 176, 226, b0, b0 + 30) +
            '" class="ay-trop' + (t % 2 ? " alt" : "") + '"/>';
       var q = xy(cx, cy, 201, b0 + 15);
@@ -131,21 +143,21 @@
            '" class="ay-troplab">' + esc(SA[t]) + '</text>';
     }
     /* the two zeros, and the angle between them, which IS the ayanāṃśa */
-    var z1 = xy(cx, cy, 300, 0), z2 = xy(cx, cy, 300, ay);
+    var z1 = xy(cx, cy, 300, 0), z2 = xy(cx, cy, 300, -ay);
     o += '<line x1="' + cx + '" y1="' + cy + '" x2="' + z1[0].toFixed(1) + '" y2="' +
          z1[1].toFixed(1) + '" class="ay-zsid"/>';
     o += '<line x1="' + cx + '" y1="' + cy + '" x2="' + z2[0].toFixed(1) + '" y2="' +
          z2[1].toFixed(1) + '" class="ay-ztrop"/>';
     if (Math.abs(ay) > 0.01) {
-      o += '<path d="' + wedge(cx, cy, 0, 150, Math.min(0, ay), Math.max(0, ay)) +
+      o += '<path d="' + wedge(cx, cy, 0, 150, Math.min(0, -ay), Math.max(0, -ay)) +
            '" class="ay-gap"/>';
     }
-    var lab1 = xy(cx, cy, 312, 0), lab2 = xy(cx, cy, 312, ay);
+    var lab1 = xy(cx, cy, 312, 0), lab2 = xy(cx, cy, 312, -ay);
     o += '<text x="' + lab1[0].toFixed(1) + '" y="' + (lab1[1] - 6).toFixed(1) +
          '" class="ay-zlab sid">stars 0°</text>';
     o += '<text x="' + lab2[0].toFixed(1) + '" y="' + (lab2[1] + 16).toFixed(1) +
          '" class="ay-zlab trop">equinox 0°</text>';
-    var mid = xy(cx, cy, 92, ay / 2);
+    var mid = xy(cx, cy, 92, -ay / 2);
     o += '<text x="' + mid[0].toFixed(1) + '" y="' + mid[1].toFixed(1) +
          '" class="ay-gapval">' + (ay >= 0 ? "" : "−") +
          Math.abs(ay).toFixed(2) + '°</text>';
@@ -172,19 +184,26 @@
       'aria-label="The Earth\'s axis sweeping a cone once in about 25,800 years">' +
       '<title>Why the equinox moves</title>';
     var cx = 230, base = 250, apexY = 70;
-    /* the cone the axis sweeps */
-    o += '<ellipse cx="' + cx + '" cy="' + apexY + '" rx="86" ry="26" class="ay-conetop"/>';
-    o += '<path d="M' + (cx - 86) + ',' + apexY + ' L' + cx + ',' + base +
-         ' L' + (cx + 86) + ',' + apexY + '" class="ay-cone"/>';
+    /* The cone the axis sweeps. Its half-angle IS the obliquity, because the
+       axis is what sweeps it — so the radius of the circle it traces is set
+       from the height rather than chosen to look right. Drawn by eye it came
+       out at 25.5° against an obliquity of 23.44°, which left the Earth's
+       axis sitting off the cone it is supposed to lie on. */
+    var EPS = 23.44;
+    var coneR = (base - apexY) * Math.tan(EPS * Math.PI / 180);
+    o += '<ellipse cx="' + cx + '" cy="' + apexY + '" rx="' + coneR.toFixed(1) +
+         '" ry="' + (coneR * 0.30).toFixed(1) + '" class="ay-conetop"/>';
+    o += '<path d="M' + (cx - coneR).toFixed(1) + ',' + apexY + ' L' + cx + ',' + base +
+         ' L' + (cx + coneR).toFixed(1) + ',' + apexY + '" class="ay-cone"/>';
     /* the Earth, tilted */
-    o += '<g transform="translate(' + cx + ',' + base + ') rotate(-23.4)">' +
+    o += '<g transform="translate(' + cx + ',' + base + ') rotate(-' + EPS + ')">' +
          '<ellipse cx="0" cy="0" rx="42" ry="42" class="ay-earth"/>' +
          '<line x1="0" y1="-66" x2="0" y2="66" class="ay-axis"/>' +
          '<line x1="-48" y1="0" x2="48" y2="0" class="ay-equator"/>' +
          '</g>';
     o += '<text x="' + cx + '" y="' + (apexY - 36) + '" class="ay-conelab">' +
          'the axis comes back here in ≈25,800 years</text>';
-    o += '<text x="' + (cx + 104) + '" y="' + (base - 54) +
+    o += '<text x="' + (cx + coneR + 22).toFixed(1) + '" y="' + (base - 54) +
          '" class="ay-conetilt">tilt 23½°</text>';
     /* the consequence, stated beside it */
     var tx = 470;
@@ -561,39 +580,99 @@
   function drawDerive() {
     var h = $("ay-derive");
     if (!h) return;
-    var W = 700, H = 330, cx = 300, cy = 170, R = 128;
+    var W = 700, H = 360, cx = 320, cy = 186, R = 128;
     var ay = ayanAt(S.ringMode, S.year) || 0;
     var o = '<svg viewBox="0 0 ' + W + ' ' + H + '" class="aysvg" role="img" ' +
       'aria-label="The ecliptic and the equator crossing at the equinox, with the ' +
       'ayanāṃśa measured from there to the sidereal zero">' +
       '<title>Where the number comes from</title>';
-    /* the two great circles, as ellipses seen edge-on-ish */
-    o += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + R + '" ry="' + (R * 0.34) +
-         '" class="ay-ecl"/>';
-    o += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + R + '" ry="' + (R * 0.34) +
-         '" transform="rotate(-23.4 ' + cx + ' ' + cy + ')" class="ay-equ"/>';
-    /* the crossing points */
+    /* THE TWO GREAT CIRCLES. They must cross at exactly two points, opposite
+       each other, because any two great circles on a sphere do. The first
+       version drew two congruent ellipses and rotated one of them by the
+       obliquity, which crosses at FOUR points and — worse — left the marked
+       equinox lying nowhere near the equator ellipse at all (it was off it by
+       a factor of 2.2).
+
+       Two great circles sharing a line of nodes, seen from a direction square
+       to that line, project to two ellipses with the SAME major axis and
+       different minor axes. So both are drawn unrotated with rx = R, and they
+       meet exactly at (cx ± R, cy) — which is where the equinoxes are marked,
+       because the line of nodes IS the equinox line. */
+    /* Derived, not eyeballed. Under this projection a great circle in a plane
+       containing the node line and tilted α about it draws as an ellipse of
+       semi-axes (R, R·cos α) — so the drawn flattening IS cos α. The ecliptic
+       is given 0.34 because it looks right, which fixes α_e = 70.1°; the
+       equator is then a further obliquity away, α_q = α_e − ε, and its
+       flattening follows. Subtracting the two flattenings, as a first attempt
+       did, produces a NEGATIVE radius. */
+    var EPS_D = 23.44;
+    /* How open the projection is. 0.34 was chosen to look like a plane seen
+       nearly edge-on, and it made the figure unreadable: near the ends of the
+       node line a flat ellipse puts 24° of longitude into a few pixels, so
+       the two zeros sat on top of each other and the arc between them — the
+       whole quantity the figure exists to show — could not be seen. Opened
+       up, the same 24° spans about thirty pixels. The geometry is unchanged;
+       only the vantage point is higher. */
+    var kEcl = 0.55;
+    var aEcl = Math.acos(kEcl);
+    var kEqu = Math.abs(Math.cos(aEcl - EPS_D * Math.PI / 180));
+    o += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + R + '" ry="' +
+         (R * kEcl).toFixed(1) + '" class="ay-ecl"/>';
+    o += '<ellipse cx="' + cx + '" cy="' + cy + '" rx="' + R + '" ry="' +
+         (R * kEqu).toFixed(1) + '" class="ay-equ"/>';
+    /* the crossing points — the line of nodes, which is the equinox line */
     o += '<circle cx="' + (cx - R) + '" cy="' + cy + '" r="6" class="ay-equinox"/>';
     o += '<circle cx="' + (cx + R) + '" cy="' + cy + '" r="4" class="ay-equinox alt"/>';
-    o += '<text x="' + (cx - R) + '" y="' + (cy + 28) + '" class="ay-dlab eq">equinox</text>';
-    /* the sidereal zero, ay degrees along the ecliptic from the equinox */
-    var t = Math.PI - ay * Math.PI / 180;
-    var sx = cx + R * Math.cos(t), sy = cy - R * 0.34 * Math.sin(t);
-    o += '<circle cx="' + sx.toFixed(1) + '" cy="' + sy.toFixed(1) + '" r="6" class="ay-zero"/>';
-    o += '<text x="' + sx.toFixed(1) + '" y="' + (sy - 14).toFixed(1) +
+
+    /* the sidereal zero, an ayanāṃśa along the ecliptic from the equinox.
+       Parametrised on the SAME ellipse the ecliptic is drawn as, so the point
+       sits on the curve rather than near it. */
+    var ePt = function (deg) {
+      var t2 = (180 - deg) * Math.PI / 180;
+      return [cx + R * Math.cos(t2), cy - R * kEcl * Math.sin(t2)];
+    };
+    var sp = ePt(ay);
+
+    /* THE MEASURED ARC, drawn along the ecliptic. Correct geometry is not
+       enough on an explainer: the first version marked both ends and left the
+       angle between them invisible, with its value floating in the middle of
+       the figure attached to nothing. */
+    var arc = "";
+    for (var k = 0; k <= 24; k++) {
+      var q = ePt(ay * k / 24);
+      arc += (k ? "L" : "M") + q[0].toFixed(1) + "," + q[1].toFixed(1);
+    }
+    o += '<path d="' + arc + '" class="ay-measure"/>';
+    o += '<circle cx="' + sp[0].toFixed(1) + '" cy="' + sp[1].toFixed(1) +
+         '" r="6" class="ay-zero"/>';
+
+    /* the value, set clear of the figure with a leader to the arc it measures */
+    var mid = ePt(ay / 2);
+    var lx = cx - R - 46, ly = cy - R * kEcl - 34;
+    o += '<line x1="' + lx.toFixed(1) + '" y1="' + (ly + 6).toFixed(1) + '" x2="' +
+         mid[0].toFixed(1) + '" y2="' + mid[1].toFixed(1) + '" class="ay-lead"/>';
+    o += '<text x="' + lx.toFixed(1) + '" y="' + ly.toFixed(1) +
+         '" class="ay-dval">' + esc(dm(ay)) + '</text>';
+    o += '<text x="' + lx.toFixed(1) + '" y="' + (ly + 17).toFixed(1) +
+         '" class="ay-dsub">the ayanāṃśa</text>';
+
+    /* the two ends of the node line, named */
+    o += '<text x="' + (cx - R - 8) + '" y="' + (cy + 20) +
+         '" class="ay-dlab eq">equinox</text>';
+    o += '<text x="' + (sp[0] + 10).toFixed(1) + '" y="' + (sp[1] - 10).toFixed(1) +
          '" class="ay-dlab zero">sidereal zero</text>';
-    /* the measured angle */
-    o += '<path d="M' + (cx - R) + ',' + cy + ' A' + R + ',' + (R * 0.34) +
-         ' 0 0 1 ' + sx.toFixed(1) + ',' + sy.toFixed(1) + '" class="ay-measure"/>';
-    o += '<text x="' + cx + '" y="' + (cy - R * 0.34 - 16) + '" class="ay-dval">' +
-         esc(dm(ay)) + '</text>';
-    o += '<text x="' + (cx + R - 10) + '" y="' + (cy - 12) + '" class="ay-dlab ecl">ecliptic</text>';
-    o += '<text x="' + (cx + 46) + '" y="' + (cy - 74) + '" class="ay-dlab equ">equator</text>';
-    /* the arrow of the slide */
-    o += '<path d="M' + (cx - R - 30) + ',' + (cy + 54) + ' l34,0 m-8,-5 l8,5 l-8,5" ' +
-         'class="ay-slide"/>';
-    o += '<text x="' + (cx - R - 30) + '" y="' + (cy + 74) +
-         '" class="ay-dlab slide">the equinox slides this way, 50″ a year</text>';
+    /* the circles, named where they are not crossing anything */
+    /* clear of the EQUATOR, which is the outer of the two here — placed
+       against the ecliptic's own extent it sat across the other curve */
+    o += '<text x="' + cx + '" y="' + (cy + R * kEqu + 20).toFixed(1) +
+         '" class="ay-dlab ecl">the ecliptic — the Sun\'s path</text>';
+    o += '<text x="' + cx + '" y="' + (cy - R * kEqu - 12).toFixed(1) +
+         '" class="ay-dlab equ">the equator, projected outward</text>';
+    /* and the direction of the slide, below everything */
+    var ax = cx - R - 20, ayl = cy + R * kEqu + 48;
+    o += '<path d="M' + ax + ',' + ayl + ' l40,0 m-9,-5 l9,5 l-9,5" class="ay-slide"/>';
+    o += '<text x="' + (ax + 48) + '" y="' + (ayl + 4) +
+         '" class="ay-dlab slide">the equinox slides this way, about 50″ a year</text>';
     o += "</svg>";
     h.innerHTML = o;
 
@@ -724,10 +803,18 @@
     }
     /* each junction star at its OWN longitude, which is not the centre of the
        division named after it and for seven of them is not even inside it */
+    /* The catalogue stores each star's sidereal longitude under LAHIRI. This
+       ring's zero is the definition currently selected, so the stars have to
+       be re-based into that frame or they would be drawn against a zero that
+       is not theirs — up to a degree out when the selection is Fagan. Same
+       correction the star-wheel page makes, and for the same reason. */
+    var frame = (ayanAt("lahiri", S.year) || 0) - ay;
+    var starLon = function (sid) { return ((sid + frame) % 360 + 360) % 360; };
     Y.forEach(function (st) {
       var isA = A && st.nak === A.star;
-      var p = xy(cx, cy, RS, st.sid);
-      var t0 = xy(cx, cy, RS, st.sid), t1 = xy(cx, cy, RI, st.sid);
+      var L = starLon(st.sid);
+      var p = xy(cx, cy, RS, L);
+      var t0 = xy(cx, cy, RS, L), t1 = xy(cx, cy, RI, L);
       o += '<line x1="' + t0[0].toFixed(1) + '" y1="' + t0[1].toFixed(1) + '" x2="' +
            t1[0].toFixed(1) + '" y2="' + t1[1].toFixed(1) + '" class="ay-swtick' +
            (st.inside ? "" : " out") + '"/>';
@@ -932,7 +1019,7 @@
     var rows = sky.planets.map(function (p) {
       var L = sid(p.trop);
       return {
-        en: p.en,
+        en: p.en, trop: p.trop,
         sign: SA[Math.floor(L / 30)],
         nak: NAK[Math.floor(L / NAKW)],
         /* how much MORE ayanāṃśa before this graha drops into the previous
@@ -945,6 +1032,14 @@
     var all = modeKeys().map(function (k) { return ayanAt(k, S.year); })
                         .filter(function (v) { return v != null; });
     var spanLo = Math.min.apply(null, all), spanHi = Math.max.apply(null, all);
+    /* Whether the published definitions actually disagree about a graha's
+       rāśi is decided by ASKING them, not by comparing its distance from the
+       boundary against the span. The span test is a good approximation and is
+       wrong near a boundary in either direction — a graha one arcminute past
+       a cusp is contested, one a degree before it may not be. */
+    var signAt = function (trop, a) {
+      return Math.floor((((trop - a) % 360 + 360) % 360) / 30);
+    };
     var e = $("ay-chartedge");
     if (!e) return;
     var maxBar = 30;
@@ -955,7 +1050,7 @@
         var ws = (r.toSign / maxBar) * 100, wn = (r.toNak / maxBar) * 100;
         /* the published definitions span this much; a graha closer to its
            boundary than that span is one they genuinely disagree about */
-        var contested = r.toSign < (spanHi - spanLo);
+        var contested = signAt(r.trop, spanLo) !== signAt(r.trop, spanHi);
         return '<tr><td>' + esc(r.en) + '</td><td>' + esc(r.sign) + '</td><td>' +
           esc(r.nak) + '</td><td class="aybarcell">' +
           '<span class="aymini"><i class="s" style="width:' + ws.toFixed(1) + '%"></i>' +

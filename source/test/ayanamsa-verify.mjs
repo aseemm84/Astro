@@ -243,14 +243,22 @@ head("the chart answers 'what actually changes' by changing");
     const vals = Object.keys(window.__ayanModes)
       .map(k => window.__ayanFor(k, jd(2026))).filter(v => v != null);
     const span = Math.max(...vals) - Math.min(...vals);
-    const toSign = [...document.querySelectorAll("#ay-chartedge tbody tr")].map(tr => {
-      const m2 = /(\d+)°(\d+)′(\d+)″ to the rāśi/.exec(tr.textContent);
-      return m2 ? (+m2[1]) + (+m2[2]) / 60 + (+m2[3]) / 3600 : null;
-    }).filter(v => v != null);
+    /* The expectation is worked out by ASKING the extreme definitions what
+       rāśi each graha falls in, which is what the page now does. An earlier
+       version of both compared the distance-to-boundary against the span,
+       which is an approximation that is wrong on either side of a cusp. */
+    const lo = Math.min(...vals), hi = Math.max(...vals);
+    const sky = window.quickSky({ year: 2026, month: 11, day: 3, hour: 12, minute: 0,
+      second: 0, tzHours: 5.5, lat: 23.17, lon: 75.78, ayanamsa: "lahiri" });
+    const base = sky.ayanamsa;
+    const expected = sky.planets.filter(pl => {
+      const trop = ((pl.sid + base) % 360 + 360) % 360;
+      const sg = a2 => Math.floor((((trop - a2) % 360 + 360) % 360) / 30);
+      return sg(lo) !== sg(hi);
+    }).length;
     return { isChart, glyphs, n: a.length, moved,
              contested: document.querySelectorAll("#ay-chartedge .contest").length,
-             expected: toSign.filter(v => v < span).length,
-             span: +span.toFixed(3) };
+             expected, span: +span.toFixed(3) };
   });
   await p.close();
   is(errs.filter(quiet).length === 0, "no page errors");
@@ -337,6 +345,89 @@ head("the star-anchored definitions, and what the plot actually shows");
      "′ — the two agree");
   /* the honest part: the page must not claim every curve drifts */
   is(!/every curve/i.test(r.citra.note), "the note reports each definition separately");
+}
+
+/* ───── the geometry of the drawings ─────────────────────────────────────── */
+head("the figures are geometrically what they claim to be");
+{
+  const { p, errs } = await open();
+  const r = await p.evaluate(async () => {
+    const wait = ms => new Promise(r2 => setTimeout(r2, ms));
+    const jd = y => 2451545.0 + (y - 2000) * 365.2425;
+    const inv = (x, y, cx, cy) => {
+      const a = Math.atan2(cy - y, x - cx) * 180 / Math.PI;
+      return ((180 - a) % 360 + 360) % 360;
+    };
+    /* --- the rings: where do they put the vernal equinox? --- */
+    const ringsAt = () => {
+      const t = document.querySelector("#ay-rings .ay-ztrop");
+      return inv(+t.getAttribute("x2"), +t.getAttribute("y2"), 350, 336);
+    };
+    const ay2026 = window.__ayanFor("lahiri", jd(2026));
+    const atNow = ringsAt();
+    /* and does it run BACKWARDS against the stars as the caption says? */
+    const yr = document.getElementById("ay-year");
+    yr.value = "2626"; yr.dispatchEvent(new Event("input", { bubbles: true }));
+    await wait(400);
+    const atLater = ringsAt();
+    yr.value = "2026"; yr.dispatchEvent(new Event("input", { bubbles: true }));
+    await wait(400);
+
+    /* --- the star-anchor figure must agree with the rings --- */
+    const eq = document.querySelector("#ay-starwheel .ay-swequinox");
+    const swAt = inv(+eq.getAttribute("x2"), +eq.getAttribute("y2"), 380, 350);
+
+    /* --- the derivation: two great circles cross exactly twice --- */
+    const g = document.querySelector("#ay-derive svg");
+    const [e1, e2] = g.querySelectorAll("ellipse");
+    const cx = +e1.getAttribute("cx"), cy = +e1.getAttribute("cy");
+    const R = +e1.getAttribute("rx"), r1 = +e1.getAttribute("ry"), r2 = +e2.getAttribute("ry");
+    const marks = [...g.querySelectorAll(".ay-equinox")]
+      .map(c => ({ x: +c.getAttribute("cx"), y: +c.getAttribute("cy") }));
+    const onE = (m, rx, ry) =>
+      Math.abs(((m.x - cx) / rx) ** 2 + ((m.y - cy) / ry) ** 2 - 1);
+
+    /* --- the cone's half-angle is the obliquity --- */
+    const top = document.querySelector("#ay-cone .ay-conetop");
+    const coneHalf = Math.atan(+top.getAttribute("rx") / (250 - 70)) * 180 / Math.PI;
+
+    return { ay2026, atNow, atLater, swAt, R, r1, r2,
+             marks: marks.length,
+             onEcl: marks.map(m => onE(m, R, r1)),
+             onEqu: marks.map(m => onE(m, R, r2)),
+             coneHalf };
+  });
+  await p.close();
+  is(errs.filter(quiet).length === 0, "no page errors");
+
+  /* THE ONE THAT WAS WRONG. The ring's coordinate is sidereal longitude, so
+     the vernal equinox belongs at −ayanāṃśa. Drawn at +ayanāṃśa it sat in
+     sidereal Meṣa; it is in Mīna, which is what "the age of Pisces" means. */
+  const want = ((-r.ay2026) % 360 + 360) % 360;
+  is(Math.abs(r.atNow - want) < 0.05,
+     "the rings put the equinox at " + r.atNow.toFixed(2) + "°, which is −ayanāṃśa");
+  is(Math.floor(r.atNow / 30) === 11,
+     "that is sidereal Mīna, where the equinox actually is");
+  /* and it must creep BACKWARDS, as the caption under it says */
+  const moved = ((r.atLater - r.atNow + 540) % 360) - 180;
+  is(moved < -2,
+     "six centuries on it has moved " + moved.toFixed(1) +
+     "° — backwards against the stars, as the caption says");
+  /* the two figures on this page must agree with each other; they did not */
+  is(Math.abs(((r.swAt - r.atNow + 540) % 360) - 180) < 0.1,
+     "the star-anchor figure puts it in the same place (" + r.swAt.toFixed(2) + "°)");
+
+  /* two great circles meet at exactly two points, and those are the equinoxes */
+  is(r.marks === 2, "the derivation marks exactly two crossings");
+  is(r.r2 > 0, "the equator ellipse has a positive radius (" + r.r2 + ")");
+  is(Math.max(...r.onEcl) < 1e-6 && Math.max(...r.onEqu) < 1e-6,
+     "and both marks lie on BOTH circles, so the crossings are real crossings");
+  is(Math.abs(r.r1 - r.r2) > 1,
+     "the two are drawn at different tilts (" + r.r1 + " vs " + r.r2 + ")");
+
+  is(Math.abs(r.coneHalf - 23.44) < 0.1,
+     "the precession cone's half-angle is the obliquity, " +
+     r.coneHalf.toFixed(2) + "°");
 }
 
 await browser.close();
