@@ -2473,7 +2473,7 @@ html[data-theme="emerald"] .wsnext.lead{
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-11-02.ad66d9b";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>The casting ceremony</h1><p class="sub">The nine grahas winding back to a moment, and settling onto the nakṣatra ring where they stood. Turn it, tilt it, and run it for any moment you like.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html" class="active">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
+</script><script>window.__kBuild="2026-11-03.6d74b78";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>The casting ceremony</h1><p class="sub">The nine grahas winding back to a moment, and settling onto the nakṣatra ring where they stood. Turn it, tilt it, and run it for any moment you like.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html" class="active">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
 
 <div class="cerbar" id="cer-bar">
   <div class="cerfield"><label for="cer-date">Date</label><input type="date" id="cer-date"></div>
@@ -2482,6 +2482,18 @@ html[data-theme="emerald"] .wsnext.lead{
   <button type="button" class="k-btn sec" id="cer-now">Now</button>
   <button type="button" class="k-btn sec" id="cer-chart" hidden>My chart’s moment</button>
   <span class="k-status" id="cer-status"></span>
+</div>
+
+<div class="cerbar" id="cer-recbar">
+  <label class="swchk"><input type="checkbox" id="cer-rec" checked> Record it while it runs</label>
+  <div class="cerfield"><label for="cer-shape">Shape</label>
+    <select id="cer-shape">
+      <option value="1080x1920" selected>9:16 — story / reel</option>
+      <option value="1080x1350">4:5 — feed</option>
+      <option value="1080x1080">1:1 — square</option>
+    </select></div>
+  <button type="button" class="k-btn sec" id="cer-save" disabled>Save the recording</button>
+  <span class="k-status" id="cer-recstatus"></span>
 </div>
 
 <p class="lead">Everywhere else on this site the ceremony is a <b>veil</b>: it covers the second or
@@ -2505,11 +2517,28 @@ here is a chart, and nothing here is read for meaning; it is the arithmetic of a
 <h2 id="how">Turning it<span class="kdeva">परिभ्रमण</span></h2>
 <ul>
   <li><b>Drag</b> the ring to spin it. It keeps the spin when you let go.</li>
-  <li><b>Reveal</b>, <b>Escape</b> or a click on the backdrop ends it.</li>
-  <li>It also ends itself after a while, so a window left open does not keep animating.</li>
+  <li><b>End the ceremony</b>, <b>Escape</b> or a click on the backdrop closes it.</li>
+  <li>On this page it does <b>not</b> close itself. Everywhere else the ceremony is a veil over
+      a chart being computed, and a veil that outlives the thing it veils would seal you out of
+      your own report — so there it lifts on three separate timers. Here there is nothing behind
+      it, so nothing is being withheld, and it stays up until you close it.</li>
   <li>If this machine is set to <b>reduced motion</b>, the drift stops and the wind-back is brief.
       That is the system preference being honoured, not a fault.</li>
 </ul>
+
+<h2 id="record">Recording it<span class="kdeva">अभिलेखन</span></h2>
+<p>Tick <b>Record it while it runs</b> before starting, turn the ring however you like, then close
+the ceremony and press <b>Save the recording</b>. You get a video file sized for a feed.</p>
+<div class="mine"><b>It is not a screen recording.</b> Nothing is filmed and no permission is
+asked for — your screen, your cursor and your browser are not in the file. What is kept while you
+watch is the <i>motion</i>: the wind-back and the angle you turned the ring to, as numbers. The
+ceremony is then re-run from those numbers one frame at a time, each frame drawn and encoded
+before the next is asked for. So the result is the same on a slow machine as a fast one, only
+produced later, and a busy moment cannot drop a frame or make the spin stutter — which is exactly
+what a screen recording would have done. The wheel in the file is the real one, photographed
+each frame rather than redrawn by a second copy of the projection.</p>
+<p>The file is encoded by your browser, which means MP4 in Safari and WebM nearly everywhere
+else. Both upload. Nothing is sent anywhere at any point.</p>
 
 <h2 id="limits">Accuracy &amp; limits<span class="kdeva">सीमा</span></h2>
 <p>The longitudes are computed here, by the engine this site carries, and nothing is fetched to
@@ -5572,6 +5601,11 @@ function moOwn(src){
   }
 
   var OVER = null, OVRAF = null, OVDONE = null;
+  var CER_FRAME = null;        /* the stepping seam while a ceremony is up */
+  /* the headline, subtitle and button label are caller-supplied now, and go
+     into an innerHTML string, so they are escaped rather than trusted */
+  function cesc(x){ return String(x==null?"":x).replace(/[&<>"]/g,function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
 
   var SUPPRESS = 0;
   function ceremony(birthDate, opts) {
@@ -5589,6 +5623,26 @@ function moOwn(src){
     });
     if (!anyKnown) return;               /* no engine, no ceremony */
 
+    /* WORDING IS AN OPTION, because this overlay is raised from two places
+       that mean different things by it. Over a kundli it really is winding
+       back to a birth moment and the way out really is the chart, so those
+       stay the defaults and that caller passes nothing. The ceremony page
+       winds back to a moment somebody typed into a date field, where "the
+       birth moment" is simply false and "Reveal Kundli" points at a kundli
+       that does not exist. */
+    var LINE = opts.line || "जन्म-क्षण की ओर लौट रहा है आकाश…";
+    var SUBLINE = opts.sub || "Winding the sky back to the birth moment";
+    var CTA = opts.cta || "Reveal Kundli";
+    /* HOLD: keep the overlay up until the reader closes it.
+       The three timers below exist for one reason — a veil that can outlive
+       the thing it is veiling is a trap, and over a kundli the reader would
+       be sealed out of their own report. On the ceremony page there is no
+       report behind it: the overlay IS the page's content, and nothing is
+       waiting. A bound that protects nothing is just a thing that snatches
+       the view away mid-drag, so this caller turns them off. Escape, the
+       backdrop and the button still close it, so there is always a way out —
+       which is the part of the original rule that was never about timers. */
+    var HOLD = !!opts.hold;
     var reduced = calm();
     OVER = document.createElement("div");
     OVER.className = "castover";
@@ -5609,14 +5663,14 @@ function moOwn(src){
       '<circle class="castring2" r="60"/>' +
       '<g class="castlagna"></g><g class="casttrails"></g><g class="castbodies"></g>' +
       '</g></svg></div>' +
-      '<p class="castline" id="cast-line">जन्म-क्षण की ओर लौट रहा है आकाश…</p>' +
-      '<p class="castsub">Winding the sky back to the birth moment</p>' +
+      '<p class="castline" id="cast-line">'+cesc(LINE)+'</p>' +
+      '<p class="castsub">'+cesc(SUBLINE)+'</p>' +
       '<p class="castdate" id="cast-date"></p>' +
       '<p class="casthint">Every position below is computed, not animated — ' +
       'each graha is moving along its own real longitude. ' +
       '<b>Drag to turn the ring.</b></p>' +
       '<div class="castacts"><button type="button" class="k-btn castreveal" id="cast-reveal">' +
-      'Reveal Kundli</button></div>' +
+      cesc(CTA)+'</button></div>' +
       '</div>';
     document.body.appendChild(OVER);
     document.body.classList.add("casting");
@@ -5877,6 +5931,29 @@ function moOwn(src){
     /* The ring keeps turning after the grahas land, slowly, so the settled
        sky is something to watch rather than a frozen diagram. Dragging takes
        it over; letting go hands it back. */
+    /* THE STEPPING SEAM, for the recorder.
+       place(p) is the single entry that draws everything, and SPIN is the
+       ring's rotation; both live in this closure, which is why nothing
+       outside could drive the ceremony before. CER_FRAME publishes exactly
+       those two so an exporter can set a frame deterministically — no clock,
+       no rAF — and read them back while the reader is playing. It is the
+       alternative to a second copy of this projection living in the
+       recorder, which would drift from this one the first time either was
+       touched. Live playback does not consult it. */
+    CER_FRAME = {
+      read: function () { return { p: LASTP, spin: SPIN }; },
+      set: function (st) {
+        if (!OVER) return false;
+        if (st && typeof st.spin === "number") SPIN = st.spin;
+        place(st && typeof st.p === "number" ? st.p : LASTP);
+        return true;
+      },
+      svg: function () { return OVER ? OVER.querySelector(".castwheel") : null; },
+      pause: function () {
+        if (OVRAF) { cancelAnimationFrame(OVRAF); OVRAF = null; }
+        if (SPINRAF) { cancelAnimationFrame(SPINRAF); SPINRAF = null; }
+      }
+    };
     var DRAG = null;
     var LASTTS = 0;
     function spinLoop(ts) {
@@ -5928,7 +6005,9 @@ function moOwn(src){
        the wind-back finishes, plus a beat to let the settled sky be seen.
        The ceiling is still there in case the chart never arrives. */
     var floorAt = Date.now() + DUR + (reduced ? 0 : 420);
-    var ceiling = setTimeout(close, reduced ? 1200 : 9000);
+    /* HOLD removes all three bounds. Each is a timeout, so "no bound" is a
+       null handle and the clears below are written to tolerate one. */
+    var ceiling = HOLD ? null : setTimeout(close, reduced ? 1200 : 9000);
 
     /* ---- how it lifts ----------------------------------------------------
        The ring is now something to play with, so the veil has to be allowed
@@ -5941,8 +6020,9 @@ function moOwn(src){
        their own report. */
     var LINGER = reduced ? 300 : 9000, HARD = reduced ? 1500 : 45000;
     var lingerT = null;
-    var hardT = setTimeout(close, HARD);
+    var hardT = HOLD ? null : setTimeout(close, HARD);
     function linger() {
+      if (HOLD) return;                   /* it stays until it is closed */
       if (!OVER || !OVER.classList.contains("ready")) return;
       if (lingerT) clearTimeout(lingerT);
       lingerT = setTimeout(close, LINGER);
@@ -5951,7 +6031,7 @@ function moOwn(src){
       var wait = Math.max(0, floorAt - Date.now());
       setTimeout(function () {
         if (!OVER) return;
-        clearTimeout(ceiling);
+        if (ceiling) clearTimeout(ceiling);
         OVER.classList.add("ready");        /* the report is behind the veil now */
         linger();
       }, wait);
@@ -5973,11 +6053,12 @@ function moOwn(src){
       if (OVRAF) { cancelAnimationFrame(OVRAF); OVRAF = null; }
       if (SPINRAF) { cancelAnimationFrame(SPINRAF); SPINRAF = null; }
       if (lingerT) { clearTimeout(lingerT); lingerT = null; }
-      clearTimeout(hardT); clearTimeout(ceiling);
+      if (hardT) clearTimeout(hardT);
+      if (ceiling) clearTimeout(ceiling);
       document.removeEventListener("keydown", onKey);
       OVER.classList.add("gone");
       var node = OVER;
-      OVER = null; OVDONE = null;
+      OVER = null; OVDONE = null; CER_FRAME = null;
       document.body.classList.remove("casting");
       setTimeout(function () {
         node.parentNode && node.parentNode.removeChild(node);
@@ -6129,7 +6210,322 @@ function moOwn(src){
   function view(o) { if (VIEW) VIEW(o || {}); }
   window.SPCosmos = { view: view, ceremony: ceremony, end: endCeremony,
                       abort: abortCeremony,
+                      /* null unless a ceremony is on screen */
+                      frame: function () { return CER_FRAME; },
                       sky: syncSky, mount: mountSky, unmount: unmountSky };
+})();
+;
+
+/* ceremony-record.js — the casting ceremony, recorded as a shareable file.
+ *
+ * WHAT THIS IS, AND WHAT IT IS NOT. It is not a screen recorder. Nothing is
+ * sampled from a clock while it plays, so nothing can be dropped by a busy
+ * machine: the reader's spin is TRACED while they play, and then the ceremony
+ * is RE-RUN frame by frame, each frame drawn, rasterised and handed to the
+ * encoder before the next one is asked for. The output is constant frame rate
+ * by construction and identical on a slow laptop and a fast one, only later.
+ * That is the same bargain 58-motion-capture.js makes for the Motion scenes,
+ * and the reasoning there is worth reading; this file differs only in that
+ * the thing being stepped is an SVG rather than a canvas.
+ *
+ * WHY IT HAS TO RASTERISE. The ceremony is drawn in SVG — twenty-seven
+ * nakṣatra sectors, the spokes, the sign names and nine lit graha sprites,
+ * all under a perspective divide. There is no canvas to captureStream() from.
+ * The honest options were to re-implement the whole projection in canvas 2D,
+ * which puts a second copy of it in the repository to drift from the first,
+ * or to photograph the real one each frame. This photographs the real one:
+ * serialise the live SVG, draw it into a canvas, push the frame. One
+ * renderer, and the video cannot disagree with what was on screen.
+ *
+ * THE CSS HAS TO COME WITH IT. An <img> pointed at serialised SVG is an
+ * isolated document: it cannot see cosmos.css, so every class-driven fill,
+ * stroke and font would fall back to black-on-nothing. Each element's
+ * computed values for the properties that matter are written onto it as
+ * presentation attributes before serialising. This is why the first frame
+ * costs more than the rest.
+ *
+ * NOTHING LEAVES THE MACHINE. MediaRecorder is in the browser, the graha
+ * sprites are data URIs and the serialised SVG has no external reference, so
+ * the canvas is never tainted and no permission is asked for. There is no
+ * getDisplayMedia here: the reader is never shown a "share your screen"
+ * dialog, and the file contains the ceremony rather than their desktop.
+ */
+(function () {
+  "use strict";
+
+  var NS = "http://www.w3.org/2000/svg";
+
+  /* ---- the trace -------------------------------------------------------
+     What the reader did, as data: the wind-back progress and the ring's
+     rotation, sampled while they watch. Two numbers per sample is enough to
+     reproduce the whole ceremony, because place(p) is a pure function of
+     them. */
+  var TRACE = null, RAF = null;
+
+  function sampling() { return !!TRACE; }
+
+  function start() {
+    var f = window.SPCosmos && window.SPCosmos.frame && window.SPCosmos.frame();
+    if (!f) return false;
+    TRACE = { t0: now(), rows: [] };
+    tick();
+    return true;
+  }
+  function now() {
+    return (window.performance && performance.now) ? performance.now() : Date.now();
+  }
+  function tick() {
+    if (!TRACE) return;
+    var f = window.SPCosmos && window.SPCosmos.frame && window.SPCosmos.frame();
+    if (!f) {
+      /* The overlay has gone. STOP SAMPLING, but do not discard: stop() is
+         what hands the take to its owner, and calling it from in here raced
+         the caller watching for the same event — whichever ran first took
+         the rows and the other got null. The sampler ends the take; only
+         stop() clears it. */
+      if (RAF) { cancelAnimationFrame(RAF); RAF = null; }
+      TRACE.closed = true;
+      return;
+    }
+    var st = f.read();
+    TRACE.rows.push({ t: now() - TRACE.t0, p: st.p, spin: st.spin });
+    RAF = requestAnimationFrame(tick);
+  }
+  function stop() {
+    if (RAF) { cancelAnimationFrame(RAF); RAF = null; }
+    var t = TRACE; TRACE = null;
+    return t && t.rows.length > 1 ? t : null;
+  }
+  function length(t) {
+    return t && t.rows.length ? t.rows[t.rows.length - 1].t : 0;
+  }
+
+  /* The state at an arbitrary instant. The rows are in order, so this walks
+     rather than searches; spin is interpolated because the ring drifts
+     continuously and a step would show as a stutter the reader never made. */
+  function at(trace, ms) {
+    var r = trace.rows, i;
+    if (ms <= r[0].t) return r[0];
+    if (ms >= r[r.length - 1].t) return r[r.length - 1];
+    for (i = 1; i < r.length; i++) {
+      if (r[i].t >= ms) {
+        var a = r[i - 1], b = r[i], span = b.t - a.t;
+        var k = span > 0 ? (ms - a.t) / span : 0;
+        return { t: ms, p: a.p + (b.p - a.p) * k, spin: a.spin + (b.spin - a.spin) * k };
+      }
+    }
+    return r[r.length - 1];
+  }
+
+  /* ---- rasterising the live SVG ---------------------------------------- */
+
+  /* Only the properties that actually draw. Copying the whole computed style
+     makes a document several megabytes per frame, which is slower to
+     serialise than the drawing is to make. */
+  var PROPS = ["fill", "fill-opacity", "stroke", "stroke-width", "stroke-opacity",
+               "stroke-dasharray", "stroke-linecap", "stroke-linejoin", "opacity",
+               "font-family", "font-size", "font-weight", "font-style",
+               "text-anchor", "letter-spacing", "paint-order", "display",
+               "dominant-baseline"];
+
+  function inlineStyles(src, dst) {
+    var a = src.querySelectorAll("*"), b = dst.querySelectorAll("*"), i, j;
+    /* the root carries its own styling too */
+    bake(src, dst);
+    for (i = 0; i < a.length && i < b.length; i++) bake(a[i], b[i]);
+    function bake(from, to) {
+      var cs = window.getComputedStyle(from);
+      if (!cs) return;
+      for (j = 0; j < PROPS.length; j++) {
+        var v = cs.getPropertyValue(PROPS[j]);
+        if (v) to.setAttribute(PROPS[j], v);
+      }
+      to.removeAttribute("class");
+    }
+  }
+
+  /* A promise for one <img> holding the SVG as it stands right now. */
+  function snapshot(svg) {
+    return new Promise(function (res, rej) {
+      var copy = svg.cloneNode(true);
+      inlineStyles(svg, copy);
+      /* CROPPED TO THE DRAWING, not to the viewBox. The overlay's viewBox
+         (-205 -165 410 330) is sized for a page where the wheel sits in the
+         middle of a dialog with room around it; fitting that box to a feed
+         frame spent a third of the width on empty margin and left the ring
+         looking like a postage stamp in the first export. getBBox gives the
+         union of what is actually drawn, so the crop follows the ring and
+         its labels however the perspective has swung them. */
+      var vb = svg.getAttribute("viewBox") || "0 0 410 330";
+      var box = vb.split(/\s+/).map(Number);
+      try {
+        var bb = svg.getBBox();
+        if (bb && bb.width > 1 && bb.height > 1) {
+          var m = Math.max(bb.width, bb.height) * 0.03;    /* a hair of air */
+          box = [bb.x - m, bb.y - m, bb.width + m * 2, bb.height + m * 2];
+        }
+      } catch (e) {}
+      copy.setAttribute("xmlns", NS);
+      copy.setAttribute("viewBox", box.join(" "));
+      copy.setAttribute("width", box[2]);
+      copy.setAttribute("height", box[3]);
+      var txt = new XMLSerializer().serializeToString(copy);
+      /* a data: URI rather than a blob: URL — a blob URL is same-origin and
+         fine in a browser, but under file:// the origin is "null" and some
+         engines refuse it, and this site has to work opened from Finder */
+      var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(txt);
+      var im = new Image();
+      im.onload = function () { res({ img: im, w: +box[2], h: +box[3] }); };
+      im.onerror = function () { rej(new Error("the wheel could not be rasterised")); };
+      im.src = url;
+    });
+  }
+
+  /* ---- the frame --------------------------------------------------------
+     Composed for a feed rather than cropped from a page: a tall canvas, the
+     wheel across the middle, and the words the overlay itself carries. The
+     reader's browser chrome, cursor and desktop are not in it, because this
+     never photographed their screen. */
+  function compose(c, W, H, shot, meta) {
+    var g = c.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, "#131a33");
+    g.addColorStop(0.55, "#0a0e1d");
+    g.addColorStop(1, "#05070e");
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+
+    /* The wheel fills the band between the words above and the footer below,
+       centred in it. The band is computed rather than guessed so that a 1:1
+       frame and a 9:16 frame both place it sensibly instead of one of them
+       having a field of empty sky. */
+    var top = Math.round(H * (meta.date ? 0.265 : 0.225));
+    var bot = Math.round(H * 0.80);
+    var availW = W - Math.round(W * 0.03) * 2, availH = bot - top;
+    var k = Math.min(availW / shot.w, availH / shot.h);
+    var dw = shot.w * k, dh = shot.h * k;
+    c.drawImage(shot.img, (W - dw) / 2, top + (availH - dh) / 2, dw, dh);
+
+    c.textAlign = "center";
+    c.fillStyle = "#f3e9cf";
+    c.font = "600 " + Math.round(W * 0.052) + "px Georgia, serif";
+    c.fillText(meta.line || "", W / 2, Math.round(H * 0.135));
+    c.fillStyle = "#9fa8c6";
+    c.font = Math.round(W * 0.030) + "px Georgia, serif";
+    c.fillText(meta.sub || "", W / 2, Math.round(H * 0.175));
+    if (meta.date) {
+      c.fillStyle = "#e8c874";
+      c.font = "600 " + Math.round(W * 0.040) + "px Georgia, serif";
+      c.fillText(meta.date, W / 2, Math.round(H * 0.225));
+    }
+    c.fillStyle = "#8d96b4";
+    c.font = Math.round(W * 0.024) + "px Georgia, serif";
+    c.fillText(meta.foot || "", W / 2, Math.round(H * 0.845));
+    if (meta.handle) {
+      c.fillStyle = "#e8c874";
+      c.font = "600 " + Math.round(W * 0.030) + "px Georgia, serif";
+      c.fillText(meta.handle, W / 2, Math.round(H * 0.895));
+    }
+  }
+
+  /* ---- the encoder ------------------------------------------------------
+     captureStream(0) means "this stream produces no frames on its own"; every
+     frame is pushed deliberately with requestFrame() once its draw has
+     finished. That is what makes the rate constant rather than a measurement
+     of how busy the machine was. */
+  function pickMime() {
+    var want = ["video/mp4;codecs=avc1.42E01E", "video/mp4;codecs=h264",
+                "video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"];
+    if (typeof MediaRecorder === "undefined") return null;
+    for (var i = 0; i < want.length; i++) {
+      try { if (MediaRecorder.isTypeSupported(want[i])) return want[i]; } catch (e) {}
+    }
+    return null;
+  }
+
+  /* Record `trace` into a file. Returns a promise for {blob, ext, frames}. */
+  function render(trace, opt) {
+    opt = opt || {};
+    var fps = opt.fps || 30;
+    var W = opt.width || 1080, H = opt.height || 1920;
+    var hold = opt.holdMs == null ? 1200 : opt.holdMs;   /* a beat on the settled sky */
+    var f = window.SPCosmos && window.SPCosmos.frame && window.SPCosmos.frame();
+    if (!f) return Promise.reject(new Error("the ceremony is not on screen"));
+    var svg = f.svg();
+    if (!svg) return Promise.reject(new Error("the wheel is not on screen"));
+    var mime = pickMime();
+    if (!mime) return Promise.reject(new Error("this browser cannot encode video"));
+
+    /* the live loops would fight the stepping, so they stop for the duration */
+    f.pause();
+
+    var cv = document.createElement("canvas");
+    cv.width = W; cv.height = H;
+    var c = cv.getContext("2d");
+    if (!cv.captureStream) return Promise.reject(new Error("this browser cannot capture a canvas"));
+    var stream = cv.captureStream(0);
+    var track = stream.getVideoTracks()[0];
+    var rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 10000000 });
+    var chunks = [];
+    rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
+
+    /* HOW THE TIMELINE IS PACED, and why not by frame number.
+       captureStream(0) + requestFrame() stamps each frame with the moment it
+       was pushed, so the file's duration is the wall time the render took,
+       not frames ÷ fps. Stepping the content by 1/fps therefore produced a
+       correct-looking 203-frame take that played for 15.5s instead of 6.8s —
+       the whole ceremony at half speed, because rasterising a frame costs
+       about 76ms and the encoder believed every one of them.
+
+       So the content is paced by ELAPSED TIME instead. Frame i shows the
+       ceremony as it stood at the wall-clock moment i is being pushed, which
+       makes the file's speed and length match what the reader actually did.
+       What varies with the machine is the number of frames inside that
+       duration — smoothness — rather than the speed of the motion. That is
+       the right thing to trade: a choppier video of the right ceremony beats
+       a smooth video of a slower one.
+
+       `total` is now only an estimate, used to report progress. */
+    var runMs = length(trace) + hold;
+    var total = Math.max(1, Math.round(runMs / 1000 * fps));
+    var meta = opt.meta || {};
+    var done, fail;
+    var out = new Promise(function (a, b) { done = a; fail = b; });
+
+    rec.onstop = function () {
+      var ext = mime.indexOf("mp4") >= 0 ? "mp4" : "webm";
+      done({ blob: new Blob(chunks, { type: mime }), ext: ext, frames: i,
+             seconds: runMs / 1000 });
+    };
+    rec.start();
+
+    var i = 0, t0 = now();
+    function next() {
+      var elapsed = now() - t0;
+      if (elapsed >= runMs) {
+        try { rec.stop(); } catch (e) { fail(e); }
+        return;
+      }
+      var st = at(trace, Math.min(length(trace), elapsed));
+      f.set({ p: st.p, spin: st.spin });
+      snapshot(svg).then(function (shot) {
+        compose(c, W, H, shot, meta);
+        try { track.requestFrame(); } catch (e) {}
+        i++;
+        if (opt.onProgress) opt.onProgress(Math.min(1, (now() - t0) / runMs));
+        /* yield to the event loop so the page can paint its progress and a
+           long export does not read as a hang */
+        setTimeout(next, 0);
+      }).catch(function (e) {
+        try { rec.stop(); } catch (e2) {}
+        fail(e);
+      });
+    }
+    next();
+    return out;
+  }
+
+  window.CerRec = { start: start, stop: stop, sampling: sampling,
+                    length: length, at: at, render: render,
+                    snapshot: snapshot, pickMime: pickMime };
 })();
 ;
 </script>
@@ -6169,7 +6565,16 @@ function moOwn(src){
     var m = moment();
     if (!m) { $("cer-status").textContent = "Pick a date first."; return; }
     $("cer-status").textContent = "";
-    window.SPCosmos.ceremony(m);
+    /* hold: nothing is being computed behind this one, so none of the three
+       timers that protect a reader's access to their report are protecting
+       anything here. The wording goes with it — there is no birth moment on
+       this page, only the one in the field above, and no kundli to reveal. */
+    window.SPCosmos.ceremony(m, {
+      hold: true,
+      line: "चुने हुए क्षण की ओर लौट रहा है आकाश…",
+      sub: "Winding the sky back to the chosen moment",
+      cta: "End the ceremony"
+    });
     /* Nothing is being computed behind this one, so nothing will lift it.
        Hand it the cue the chart would have given, once the wind-back has had
        time to run — the overlay's own floor holds it until then, so this
@@ -6177,6 +6582,96 @@ function moOwn(src){
     setTimeout(function () {
       try { window.SPCosmos.end(); } catch (e) {}
     }, 400);
+    startRecording(m);
+  }
+
+  /* ---- recording ------------------------------------------------------
+     The trace runs for as long as the ceremony is on screen. It is stopped
+     by the overlay going away rather than by a button, because "stop
+     recording" and "close the ceremony" are the same intention and asking
+     for both would only create the state where one was done and not the
+     other. */
+  var TAKE = null;
+  function startRecording(m) {
+    TAKE = null;
+    $("cer-save").disabled = true;
+    if (!$("cer-rec").checked || !window.CerRec) { recStatus(""); return; }
+    recStatus("Recording…");
+    var tries = 0;
+    (function arm() {
+      if (window.CerRec.start()) { watchForClose(m); return; }
+      if (++tries < 40) { setTimeout(arm, 50); return; }
+      recStatus("Could not start the recording.");
+    })();
+  }
+  function watchForClose(m) {
+    /* The overlay owns its own lifetime — Escape, the backdrop and the
+       button all close it — so this watches for it to go rather than
+       intercepting every way out and inevitably missing one. */
+    var iv = setInterval(function () {
+      var live = window.SPCosmos.frame && window.SPCosmos.frame();
+      if (live) return;
+      clearInterval(iv);
+      TAKE = { trace: window.CerRec.stop(), moment: m };
+      if (!TAKE.trace) { TAKE = null; recStatus(""); return; }
+      var secs = (window.CerRec.length(TAKE.trace) / 1000).toFixed(1);
+      $("cer-save").disabled = false;
+      recStatus(secs + "s recorded — ready to save.");
+    }, 120);
+  }
+  function recStatus(t) { $("cer-recstatus").textContent = t; }
+
+  function save() {
+    if (!TAKE) return;
+    /* The ceremony has to be on screen to be photographed, because the frame
+       seam drives the real wheel rather than a copy of it. It is raised
+       again, silently, stepped through the trace, and closed. */
+    var sh = ($("cer-shape").value || "1080x1920").split("x");
+    $("cer-save").disabled = true;
+    recStatus("Re-running the ceremony, frame by frame…");
+    window.SPCosmos.ceremony(TAKE.moment, {
+      hold: true,
+      line: "चुने हुए क्षण की ओर लौट रहा है आकाश…",
+      sub: "Winding the sky back to the chosen moment",
+      cta: "End the ceremony"
+    });
+    setTimeout(function () {
+      try { window.SPCosmos.end(); } catch (e) {}
+      var d = TAKE.moment;
+      window.CerRec.render(TAKE.trace, {
+        width: +sh[0], height: +sh[1], fps: 30,
+        meta: {
+          line: "आकाश लौट रहा है",
+          sub: "The sky, wound back to",
+          date: d.toLocaleDateString(undefined,
+            { year: "numeric", month: "long", day: "numeric" }) + " · " +
+            String(d.getHours()).padStart(2, "0") + ":" +
+            String(d.getMinutes()).padStart(2, "0"),
+          foot: "Computed in the browser · sidereal · nakṣatra ring",
+          handle: "@Nirayana.Soft"
+        },
+        onProgress: function (f) {
+          recStatus("Rendering… " + Math.round(f * 100) + "%");
+        }
+      }).then(function (r) {
+        try { window.SPCosmos.abort(); } catch (e) {}
+        var url = URL.createObjectURL(r.blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "nirayana-ceremony." + r.ext;
+        document.body.appendChild(a); a.click();
+        setTimeout(function () {
+          URL.revokeObjectURL(url);
+          a.parentNode && a.parentNode.removeChild(a);
+        }, 2000);
+        recStatus(r.frames + " frames · " + r.seconds.toFixed(1) + "s saved.");
+        $("cer-save").disabled = false;
+      }).catch(function (e) {
+        try { window.SPCosmos.abort(); } catch (e2) {}
+        recStatus(e && e.message ? e.message : "The recording could not be saved.");
+        $("cer-save").disabled = false;
+      });
+    }, 450);
   }
   /* A chart cast on this machine gives the ceremony something worth winding
      back to. Same record the Motion page reads; absent, the button is not
@@ -6194,6 +6689,7 @@ function moOwn(src){
   function boot() {
     setNow();
     $("cer-go").addEventListener("click", run);
+    $("cer-save").addEventListener("click", save);
     $("cer-now").addEventListener("click", function () { setNow(); run(); });
     var b = birthMoment();
     if (b) {

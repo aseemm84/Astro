@@ -9,6 +9,18 @@
   <span class="k-status" id="cer-status"></span>
 </div>
 
+<div class="cerbar" id="cer-recbar">
+  <label class="swchk"><input type="checkbox" id="cer-rec" checked> Record it while it runs</label>
+  <div class="cerfield"><label for="cer-shape">Shape</label>
+    <select id="cer-shape">
+      <option value="1080x1920" selected>9:16 — story / reel</option>
+      <option value="1080x1350">4:5 — feed</option>
+      <option value="1080x1080">1:1 — square</option>
+    </select></div>
+  <button type="button" class="k-btn sec" id="cer-save" disabled>Save the recording</button>
+  <span class="k-status" id="cer-recstatus"></span>
+</div>
+
 <p class="lead">Everywhere else on this site the ceremony is a <b>veil</b>: it covers the second or
 two while a chart is computed, and lifts when the chart is ready. That makes it something you see
 and cannot look at. This page is the same ceremony with nothing behind it — no chart waiting, no
@@ -30,11 +42,28 @@ here is a chart, and nothing here is read for meaning; it is the arithmetic of a
 <h2 id="how">Turning it<span class="kdeva">परिभ्रमण</span></h2>
 <ul>
   <li><b>Drag</b> the ring to spin it. It keeps the spin when you let go.</li>
-  <li><b>Reveal</b>, <b>Escape</b> or a click on the backdrop ends it.</li>
-  <li>It also ends itself after a while, so a window left open does not keep animating.</li>
+  <li><b>End the ceremony</b>, <b>Escape</b> or a click on the backdrop closes it.</li>
+  <li>On this page it does <b>not</b> close itself. Everywhere else the ceremony is a veil over
+      a chart being computed, and a veil that outlives the thing it veils would seal you out of
+      your own report — so there it lifts on three separate timers. Here there is nothing behind
+      it, so nothing is being withheld, and it stays up until you close it.</li>
   <li>If this machine is set to <b>reduced motion</b>, the drift stops and the wind-back is brief.
       That is the system preference being honoured, not a fault.</li>
 </ul>
+
+<h2 id="record">Recording it<span class="kdeva">अभिलेखन</span></h2>
+<p>Tick <b>Record it while it runs</b> before starting, turn the ring however you like, then close
+the ceremony and press <b>Save the recording</b>. You get a video file sized for a feed.</p>
+<div class="mine"><b>It is not a screen recording.</b> Nothing is filmed and no permission is
+asked for — your screen, your cursor and your browser are not in the file. What is kept while you
+watch is the <i>motion</i>: the wind-back and the angle you turned the ring to, as numbers. The
+ceremony is then re-run from those numbers one frame at a time, each frame drawn and encoded
+before the next is asked for. So the result is the same on a slow machine as a fast one, only
+produced later, and a busy moment cannot drop a frame or make the spin stutter — which is exactly
+what a screen recording would have done. The wheel in the file is the real one, photographed
+each frame rather than redrawn by a second copy of the projection.</p>
+<p>The file is encoded by your browser, which means MP4 in Safari and WebM nearly everywhere
+else. Both upload. Nothing is sent anywhere at any point.</p>
 
 <h2 id="limits">Accuracy &amp; limits<span class="kdeva">सीमा</span></h2>
 <p>The longitudes are computed here, by the engine this site carries, and nothing is fetched to
@@ -84,7 +113,16 @@ a prediction, and nothing about a person can be read from it.</div>
     var m = moment();
     if (!m) { $("cer-status").textContent = "Pick a date first."; return; }
     $("cer-status").textContent = "";
-    window.SPCosmos.ceremony(m);
+    /* hold: nothing is being computed behind this one, so none of the three
+       timers that protect a reader's access to their report are protecting
+       anything here. The wording goes with it — there is no birth moment on
+       this page, only the one in the field above, and no kundli to reveal. */
+    window.SPCosmos.ceremony(m, {
+      hold: true,
+      line: "चुने हुए क्षण की ओर लौट रहा है आकाश…",
+      sub: "Winding the sky back to the chosen moment",
+      cta: "End the ceremony"
+    });
     /* Nothing is being computed behind this one, so nothing will lift it.
        Hand it the cue the chart would have given, once the wind-back has had
        time to run — the overlay's own floor holds it until then, so this
@@ -92,6 +130,96 @@ a prediction, and nothing about a person can be read from it.</div>
     setTimeout(function () {
       try { window.SPCosmos.end(); } catch (e) {}
     }, 400);
+    startRecording(m);
+  }
+
+  /* ---- recording ------------------------------------------------------
+     The trace runs for as long as the ceremony is on screen. It is stopped
+     by the overlay going away rather than by a button, because "stop
+     recording" and "close the ceremony" are the same intention and asking
+     for both would only create the state where one was done and not the
+     other. */
+  var TAKE = null;
+  function startRecording(m) {
+    TAKE = null;
+    $("cer-save").disabled = true;
+    if (!$("cer-rec").checked || !window.CerRec) { recStatus(""); return; }
+    recStatus("Recording…");
+    var tries = 0;
+    (function arm() {
+      if (window.CerRec.start()) { watchForClose(m); return; }
+      if (++tries < 40) { setTimeout(arm, 50); return; }
+      recStatus("Could not start the recording.");
+    })();
+  }
+  function watchForClose(m) {
+    /* The overlay owns its own lifetime — Escape, the backdrop and the
+       button all close it — so this watches for it to go rather than
+       intercepting every way out and inevitably missing one. */
+    var iv = setInterval(function () {
+      var live = window.SPCosmos.frame && window.SPCosmos.frame();
+      if (live) return;
+      clearInterval(iv);
+      TAKE = { trace: window.CerRec.stop(), moment: m };
+      if (!TAKE.trace) { TAKE = null; recStatus(""); return; }
+      var secs = (window.CerRec.length(TAKE.trace) / 1000).toFixed(1);
+      $("cer-save").disabled = false;
+      recStatus(secs + "s recorded — ready to save.");
+    }, 120);
+  }
+  function recStatus(t) { $("cer-recstatus").textContent = t; }
+
+  function save() {
+    if (!TAKE) return;
+    /* The ceremony has to be on screen to be photographed, because the frame
+       seam drives the real wheel rather than a copy of it. It is raised
+       again, silently, stepped through the trace, and closed. */
+    var sh = ($("cer-shape").value || "1080x1920").split("x");
+    $("cer-save").disabled = true;
+    recStatus("Re-running the ceremony, frame by frame…");
+    window.SPCosmos.ceremony(TAKE.moment, {
+      hold: true,
+      line: "चुने हुए क्षण की ओर लौट रहा है आकाश…",
+      sub: "Winding the sky back to the chosen moment",
+      cta: "End the ceremony"
+    });
+    setTimeout(function () {
+      try { window.SPCosmos.end(); } catch (e) {}
+      var d = TAKE.moment;
+      window.CerRec.render(TAKE.trace, {
+        width: +sh[0], height: +sh[1], fps: 30,
+        meta: {
+          line: "आकाश लौट रहा है",
+          sub: "The sky, wound back to",
+          date: d.toLocaleDateString(undefined,
+            { year: "numeric", month: "long", day: "numeric" }) + " · " +
+            String(d.getHours()).padStart(2, "0") + ":" +
+            String(d.getMinutes()).padStart(2, "0"),
+          foot: "Computed in the browser · sidereal · nakṣatra ring",
+          handle: "@Nirayana.Soft"
+        },
+        onProgress: function (f) {
+          recStatus("Rendering… " + Math.round(f * 100) + "%");
+        }
+      }).then(function (r) {
+        try { window.SPCosmos.abort(); } catch (e) {}
+        var url = URL.createObjectURL(r.blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = "nirayana-ceremony." + r.ext;
+        document.body.appendChild(a); a.click();
+        setTimeout(function () {
+          URL.revokeObjectURL(url);
+          a.parentNode && a.parentNode.removeChild(a);
+        }, 2000);
+        recStatus(r.frames + " frames · " + r.seconds.toFixed(1) + "s saved.");
+        $("cer-save").disabled = false;
+      }).catch(function (e) {
+        try { window.SPCosmos.abort(); } catch (e2) {}
+        recStatus(e && e.message ? e.message : "The recording could not be saved.");
+        $("cer-save").disabled = false;
+      });
+    }, 450);
   }
   /* A chart cast on this machine gives the ceremony something worth winding
      back to. Same record the Motion page reads; absent, the button is not
@@ -109,6 +237,7 @@ a prediction, and nothing about a person can be read from it.</div>
   function boot() {
     setNow();
     $("cer-go").addEventListener("click", run);
+    $("cer-save").addEventListener("click", save);
     $("cer-now").addEventListener("click", function () { setNow(); run(); });
     var b = birthMoment();
     if (b) {

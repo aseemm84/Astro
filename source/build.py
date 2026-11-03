@@ -314,8 +314,12 @@ def build_ceremony():
              # 54-motion-bodies supplies the graha discs the ring is drawn
              # with; without it sp-cosmos falls back to plain dots, which is a
              # working ceremony but not this one.
+             # ceremony-record.js turns the ceremony into a file. It is last
+             # because it drives sp-cosmos through the seam that file
+             # publishes, and does nothing at all until a reader asks.
              ("<!--JS2-->", jsread(SRC, "js", "report", "motion", "54-motion-bodies.js") +
-                            "\n" + jsread(SRC, "js", "sp-cosmos.js"), "script")]
+                            "\n" + jsread(SRC, "js", "sp-cosmos.js") +
+                            "\n" + jsread(SRC, "js", "ceremony-record.js"), "script")]
     stamp = build_stamp([shell] + [b for _, b, _ in parts])
     shell = shell.replace("</head>",
         '<script>window.__kBuild=%s;</script></head>' % json.dumps(stamp))

@@ -2473,7 +2473,7 @@ html[data-theme="emerald"] .wsnext.lead{
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-11-02.3330339";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself — of forty-four in all. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html" class="active">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
+</script><script>window.__kBuild="2026-11-03.2046847";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself — of forty-four in all. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html" class="active">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
 
 <p class="mochartbar" id="mo-chart"></p>
 <div id="mo-host" class="kreport"><p class="k-status" id="mo-status">Loading the scenes…</p></div>
@@ -25099,6 +25099,11 @@ window.buildKundliReport=function(J){
   }
 
   var OVER = null, OVRAF = null, OVDONE = null;
+  var CER_FRAME = null;        /* the stepping seam while a ceremony is up */
+  /* the headline, subtitle and button label are caller-supplied now, and go
+     into an innerHTML string, so they are escaped rather than trusted */
+  function cesc(x){ return String(x==null?"":x).replace(/[&<>"]/g,function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
 
   var SUPPRESS = 0;
   function ceremony(birthDate, opts) {
@@ -25116,6 +25121,26 @@ window.buildKundliReport=function(J){
     });
     if (!anyKnown) return;               /* no engine, no ceremony */
 
+    /* WORDING IS AN OPTION, because this overlay is raised from two places
+       that mean different things by it. Over a kundli it really is winding
+       back to a birth moment and the way out really is the chart, so those
+       stay the defaults and that caller passes nothing. The ceremony page
+       winds back to a moment somebody typed into a date field, where "the
+       birth moment" is simply false and "Reveal Kundli" points at a kundli
+       that does not exist. */
+    var LINE = opts.line || "जन्म-क्षण की ओर लौट रहा है आकाश…";
+    var SUBLINE = opts.sub || "Winding the sky back to the birth moment";
+    var CTA = opts.cta || "Reveal Kundli";
+    /* HOLD: keep the overlay up until the reader closes it.
+       The three timers below exist for one reason — a veil that can outlive
+       the thing it is veiling is a trap, and over a kundli the reader would
+       be sealed out of their own report. On the ceremony page there is no
+       report behind it: the overlay IS the page's content, and nothing is
+       waiting. A bound that protects nothing is just a thing that snatches
+       the view away mid-drag, so this caller turns them off. Escape, the
+       backdrop and the button still close it, so there is always a way out —
+       which is the part of the original rule that was never about timers. */
+    var HOLD = !!opts.hold;
     var reduced = calm();
     OVER = document.createElement("div");
     OVER.className = "castover";
@@ -25136,14 +25161,14 @@ window.buildKundliReport=function(J){
       '<circle class="castring2" r="60"/>' +
       '<g class="castlagna"></g><g class="casttrails"></g><g class="castbodies"></g>' +
       '</g></svg></div>' +
-      '<p class="castline" id="cast-line">जन्म-क्षण की ओर लौट रहा है आकाश…</p>' +
-      '<p class="castsub">Winding the sky back to the birth moment</p>' +
+      '<p class="castline" id="cast-line">'+cesc(LINE)+'</p>' +
+      '<p class="castsub">'+cesc(SUBLINE)+'</p>' +
       '<p class="castdate" id="cast-date"></p>' +
       '<p class="casthint">Every position below is computed, not animated — ' +
       'each graha is moving along its own real longitude. ' +
       '<b>Drag to turn the ring.</b></p>' +
       '<div class="castacts"><button type="button" class="k-btn castreveal" id="cast-reveal">' +
-      'Reveal Kundli</button></div>' +
+      cesc(CTA)+'</button></div>' +
       '</div>';
     document.body.appendChild(OVER);
     document.body.classList.add("casting");
@@ -25404,6 +25429,29 @@ window.buildKundliReport=function(J){
     /* The ring keeps turning after the grahas land, slowly, so the settled
        sky is something to watch rather than a frozen diagram. Dragging takes
        it over; letting go hands it back. */
+    /* THE STEPPING SEAM, for the recorder.
+       place(p) is the single entry that draws everything, and SPIN is the
+       ring's rotation; both live in this closure, which is why nothing
+       outside could drive the ceremony before. CER_FRAME publishes exactly
+       those two so an exporter can set a frame deterministically — no clock,
+       no rAF — and read them back while the reader is playing. It is the
+       alternative to a second copy of this projection living in the
+       recorder, which would drift from this one the first time either was
+       touched. Live playback does not consult it. */
+    CER_FRAME = {
+      read: function () { return { p: LASTP, spin: SPIN }; },
+      set: function (st) {
+        if (!OVER) return false;
+        if (st && typeof st.spin === "number") SPIN = st.spin;
+        place(st && typeof st.p === "number" ? st.p : LASTP);
+        return true;
+      },
+      svg: function () { return OVER ? OVER.querySelector(".castwheel") : null; },
+      pause: function () {
+        if (OVRAF) { cancelAnimationFrame(OVRAF); OVRAF = null; }
+        if (SPINRAF) { cancelAnimationFrame(SPINRAF); SPINRAF = null; }
+      }
+    };
     var DRAG = null;
     var LASTTS = 0;
     function spinLoop(ts) {
@@ -25455,7 +25503,9 @@ window.buildKundliReport=function(J){
        the wind-back finishes, plus a beat to let the settled sky be seen.
        The ceiling is still there in case the chart never arrives. */
     var floorAt = Date.now() + DUR + (reduced ? 0 : 420);
-    var ceiling = setTimeout(close, reduced ? 1200 : 9000);
+    /* HOLD removes all three bounds. Each is a timeout, so "no bound" is a
+       null handle and the clears below are written to tolerate one. */
+    var ceiling = HOLD ? null : setTimeout(close, reduced ? 1200 : 9000);
 
     /* ---- how it lifts ----------------------------------------------------
        The ring is now something to play with, so the veil has to be allowed
@@ -25468,8 +25518,9 @@ window.buildKundliReport=function(J){
        their own report. */
     var LINGER = reduced ? 300 : 9000, HARD = reduced ? 1500 : 45000;
     var lingerT = null;
-    var hardT = setTimeout(close, HARD);
+    var hardT = HOLD ? null : setTimeout(close, HARD);
     function linger() {
+      if (HOLD) return;                   /* it stays until it is closed */
       if (!OVER || !OVER.classList.contains("ready")) return;
       if (lingerT) clearTimeout(lingerT);
       lingerT = setTimeout(close, LINGER);
@@ -25478,7 +25529,7 @@ window.buildKundliReport=function(J){
       var wait = Math.max(0, floorAt - Date.now());
       setTimeout(function () {
         if (!OVER) return;
-        clearTimeout(ceiling);
+        if (ceiling) clearTimeout(ceiling);
         OVER.classList.add("ready");        /* the report is behind the veil now */
         linger();
       }, wait);
@@ -25500,11 +25551,12 @@ window.buildKundliReport=function(J){
       if (OVRAF) { cancelAnimationFrame(OVRAF); OVRAF = null; }
       if (SPINRAF) { cancelAnimationFrame(SPINRAF); SPINRAF = null; }
       if (lingerT) { clearTimeout(lingerT); lingerT = null; }
-      clearTimeout(hardT); clearTimeout(ceiling);
+      if (hardT) clearTimeout(hardT);
+      if (ceiling) clearTimeout(ceiling);
       document.removeEventListener("keydown", onKey);
       OVER.classList.add("gone");
       var node = OVER;
-      OVER = null; OVDONE = null;
+      OVER = null; OVDONE = null; CER_FRAME = null;
       document.body.classList.remove("casting");
       setTimeout(function () {
         node.parentNode && node.parentNode.removeChild(node);
@@ -25656,6 +25708,8 @@ window.buildKundliReport=function(J){
   function view(o) { if (VIEW) VIEW(o || {}); }
   window.SPCosmos = { view: view, ceremony: ceremony, end: endCeremony,
                       abort: abortCeremony,
+                      /* null unless a ceremony is on screen */
+                      frame: function () { return CER_FRAME; },
                       sky: syncSky, mount: mountSky, unmount: unmountSky };
 })();
 ;
