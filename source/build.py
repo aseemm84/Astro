@@ -319,6 +319,7 @@ def build_ceremony():
              # publishes, and does nothing at all until a reader asks.
              ("<!--JS2-->", jsread(SRC, "js", "report", "motion", "54-motion-bodies.js") +
                             "\n" + jsread(SRC, "js", "sp-cosmos.js") +
+                            "\n" + jsread(SRC, "js", "svg-film.js") +
                             "\n" + jsread(SRC, "js", "ceremony-record.js"), "script")]
     stamp = build_stamp([shell] + [b for _, b, _ in parts])
     shell = shell.replace("</head>",
@@ -631,6 +632,11 @@ def build_shared():
             jsread(SRC, "js", "report", "motion", "54-motion-bodies.js") + "\n" +
             jsread(SRC, "js", "sp-bodies.js") + "\n" +
             jsread(SRC, "js", "graha-sprite.js")),
+        # The ayanāṃśa page. svg-film.js travels with it because the page
+        # films its own rings, through the same module the ceremony uses.
+        "ayanamsa.js": brandify(
+            jsread(SRC, "js", "svg-film.js") + "\n" +
+            jsread(SRC, "js", "ayanamsa-ui.js")),
         # The animated ecliptic wheel, same bargain as the star wheel: the page
         # gets report/sky/37-ecliptic-wheel.js itself rather than a copy, so it
         # and the report's Sky tab animate through one renderer. 02-varga-lagna
@@ -835,7 +841,15 @@ def build_pages():
             secs = re.findall(r'<h2 id="([^"]+)">(.*?)</h2>', body, re.S)
             if len(secs) > 1:
                 aside = ('<aside class="onpage"><b>On this page</b>' +
-                         "".join('<a href="#%s">%s</a>' % (i, re.sub(r"<[^>]+>", "", t))
+                         # The Devanagari gloss is dropped rather than
+                         # flattened: stripping tags alone concatenated the
+                         # two texts, so the contents list read "Watch the gap
+                         # openअन्तरं वर्धते". The heading keeps its gloss;
+                         # the contents list is a list of links.
+                         "".join('<a href="#%s">%s</a>'
+                                 % (i, re.sub(r"<[^>]+>", "",
+                                      re.sub(r'<span class="kdeva">.*?</span>', "", t,
+                                             flags=re.S)).strip())
                                  for i, t in secs) + "</aside>")
         out[href] = brandify(
                      shell.replace("{{CSS}}", css).replace("{{THEMEJS}}", themejs)

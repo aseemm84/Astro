@@ -1,0 +1,84 @@
+<p class="lede">Two zodiacs are in use in the world, and they no longer line up. The gap between them is the <b>ayan&amacr;&#7745;&#347;a</b>. Everything on this page is computed in your browser while you read it &mdash; there is no number here that was typed into the prose &mdash; and the whole argument can be followed without any mathematics at all. The equations are here too, drawn rather than stated, for anyone who wants them.</p>
+
+<h2 id="start">Start here: two different zeros<span class="kdeva">द्वौ आरम्भौ</span></h2>
+<p>A zodiac is a circle divided into twelve. To divide a circle you must first say <b>where it starts</b>. There are two reasonable answers, and the whole subject follows from the fact that they are different answers.</p>
+<div class="aygrid">
+  <div class="aycard">
+    <h3>Start at the seasons</h3>
+    <p>Put zero where the Sun stands at the <b>spring equinox</b> &mdash; the moment day and night are equal. This is the <b>tropical</b> zodiac. Its zero is tied to the Earth&rsquo;s seasons, so the first degree of its first sign always means &ldquo;spring begins&rdquo;.</p>
+  </div>
+  <div class="aycard">
+    <h3>Start at the stars</h3>
+    <p>Put zero at a fixed point among the <b>stars</b>. This is the <b>sidereal</b> zodiac, and it is the one Jyoti&#7779;a uses. Its zero is tied to the actual constellations, so a graha said to be in Me&#7779;a is somewhere near the stars of Me&#7779;a.</p>
+  </div>
+</div>
+<p>If the Earth never wobbled, those two zeros would be the same point forever and nobody would ever have needed the word. The Earth does wobble. <b>The ayan&amacr;&#7745;&#347;a is simply how far apart the two zeros have drifted</b> &mdash; one number, in degrees, that converts a position measured from the equinox into a position measured from the stars.</p>
+<div class="note"><b>In one line.</b> Sidereal longitude = tropical longitude &minus; ayan&amacr;&#7745;&#347;a. That subtraction is the entire job. Everything else on this page is about <i>which</i> number to subtract, and what happens when you change it.</div>
+
+<h2 id="drift">Watch the gap open<span class="kdeva">अन्तरं वर्धते</span></h2>
+<p>Drag the year. The outer ring is the sky &mdash; fixed to the stars, so it never turns. The inner ring is the seasons, which creep backwards against the stars by about one degree every seventy-two years. The shaded wedge between the two zero marks is the ayan&amacr;&#7745;&#347;a at that year.</p>
+<div class="aywrap"><div id="ay-rings"></div></div>
+<div class="aybar">
+  <label>Year <input type="range" id="ay-year" min="-3000" max="5000" step="10" value="2026"></label>
+  <span class="ayread" id="ay-yearlab"></span>
+  <span class="swsp"></span>
+  <label>Definition <select id="ay-ringmode" class="swin"></select></label>
+  <button type="button" class="swbtn" data-ay="today">Today</button>
+  <button type="button" class="swbtn" data-ay="zero">The year they agreed</button>
+</div>
+<p class="k-note" id="ay-ringnote"></p>
+
+<h2 id="why">Why the equinox moves at all<span class="kdeva">अयन-चलनम्</span></h2>
+<p>Spin a top and it does not simply stand up: its axis leans, and that lean slowly circles around. The Earth does exactly this. It is tilted about 23&frac12;&deg;, and the Sun and Moon pull on its equatorial bulge, so the axis swings round a cone and takes roughly <b>25,800 years</b> to come back to where it began.</p>
+<div class="aywrap"><div id="ay-cone"></div></div>
+<p>The equinox is defined by where the Earth&rsquo;s equator cuts the Sun&rsquo;s path. Move the axis and you move the equator with it, so the <b>equinox point slides backwards along the zodiac</b> &mdash; about 50 arcseconds a year, which is one degree in roughly seventy-two years and a whole sign in about 2,150. The stars stay where they are. The seasons do not. The ayan&amacr;&#7745;&#347;a is the running total of that slide.</p>
+<div class="mine"><b>Nothing is going wrong.</b> This is not an error in anybody&rsquo;s astronomy and not a correction for one. It is a real motion of the Earth, known to Hipparchus in the second century BCE and discussed in the siddh&amacr;ntas as <i>ayana-calana</i>. Both zodiacs are internally consistent; they are answers to two different questions.</p>
+
+<h2 id="equation">The equation, drawn<span class="kdeva">समीकरणम्</span></h2>
+<p>Almost every ayan&amacr;&#7745;&#347;a in use is one short formula. You do not need to read it to use this page, but it is three ideas and no more:</p>
+<div class="ayeq" id="ay-eq"></div>
+<p>Read left to right: <b>where the gap stood at the year 2000</b>, plus <b>how fast it is opening</b>, plus a small term for the fact that the rate itself changes very slowly. <i>T</i> is just &ldquo;how many centuries since 2000&rdquo; &mdash; so for 2026, <i>T</i> is 0.26, and for 1800 it is &minus;2.00. Drag the year above and watch each piece contribute.</p>
+<div class="aywrap"><div id="ay-terms"></div></div>
+<p>The middle term does nearly all the work: it is the one degree per seventy-two years. The last term is tiny over any human span and matters only when you reach centuries away &mdash; which is exactly why different definitions agree about <i>rate</i> and disagree about <i>starting value</i>.</p>
+<div class="note"><b>The other kind of definition.</b> A few ayan&amacr;&#7745;&#347;as are not a formula at all. They name a star and insist it sit at a stated longitude &mdash; Citr&amacr; (Spica) at exactly 180&deg;, or Revat&iacute; (&zeta; Piscium) at 359&deg;50&prime;. The ayan&amacr;&#7745;&#347;a is then whatever number makes that true today, recomputed from the star&rsquo;s real position. These move slightly differently from any polynomial, because a star has a motion of its own.</div>
+
+<h2 id="impact">What it changes &mdash; and what it cannot<span class="kdeva">फल-भेदः</span></h2>
+<p>This is the part most worth knowing, and it is not what most people expect. Changing the ayan&amacr;&#7745;&#347;a does <b>not</b> change the sky. Every graha is exactly where it was; only the <i>label</i> you give its position changes. So some things move, and some things are mathematically incapable of moving.</p>
+<div id="ay-impact"></div>
+<p>The table is computed live from the engine at the moment and place below, not written out here.</p>
+<div class="aybar">
+  <label>Moment <input type="datetime-local" id="ay-when" class="swin"></label>
+  <label>Place <span id="ay-place" class="swpick"></span></label>
+  <button type="button" class="swbtn" data-ay="now">This moment</button>
+</div>
+<div class="note"><b>Why tithi cannot move.</b> A tithi is the <i>gap</i> between the Moon and the Sun. Subtract the same ayan&amacr;&#7745;&#347;a from both and the gap is unchanged &mdash; it cancels, exactly, for every definition that exists or could ever be invented. The same goes for kara&#7751;a, which is half a tithi, and for v&amacr;ra, which is just the day of the week. <b>A yoga, however, is the <i>sum</i> of the two</b>, so the ayan&amacr;&#7745;&#347;a does not cancel there &mdash; it doubles. Change the ayan&amacr;&#7745;&#347;a by one degree and the yoga quantity moves by two. The figures above are measured, so you can watch that happen.</div>
+
+<h2 id="spread">Seventeen answers to one question<span class="kdeva">मत-भेदः</span></h2>
+<p>This site offers seventeen definitions. They disagree with each other by more than five degrees &mdash; and the engine&rsquo;s own uncertainty about where a graha is sits near one arcsecond. <b>The choice of convention matters about a thousand times more than the quality of the arithmetic.</b> If this site and another disagree about a chart, this is almost always why.</p>
+<div class="aywrap"><div id="ay-spread"></div></div>
+<div id="ay-modetable"></div>
+
+<h2 id="sandbox">Make your own<span class="kdeva">स्व-रचना</span></h2>
+<p>Invent one. Set where the gap stood in 2000 and how fast it opens, or pin a star at a longitude of your choosing and let the engine work out the rest. Your definition is then registered with the engine exactly like the seventeen above, so the whole site &mdash; the wheels, the pa&ntilde;c&amacr;&#7745;ga, a cast chart &mdash; will use it until you leave the page.</p>
+<div class="aysand" id="ay-sandbox"></div>
+<div class="caution"><b>It is temporary, and it is yours.</b> Nothing is saved and nothing is sent anywhere; reload and it is gone. An invented ayan&amacr;&#7745;&#347;a is a teaching instrument, not a discovery &mdash; the published definitions each rest on a reasoning you can read in the table above, and &ldquo;I liked this number&rdquo; is not one of them.</div>
+
+<h2 id="share">Take it with you<span class="kdeva">साझा</span></h2>
+<p>A card for a feed, or a short film of the gap opening across four thousand years. Both are drawn in your browser from the figures on this page; nothing is uploaded and no image is fetched.</p>
+<div class="aybar" id="ay-sharebar">
+  <label>Shape <select id="ay-ratio" class="swin"></select></label>
+  <label>Card <select id="ay-cardkind" class="swin">
+    <option value="gap">What the ayan&amacr;&#7745;&#347;a is</option>
+    <option value="spread">The seventeen disagree</option>
+    <option value="cancel">What it cannot change</option>
+  </select></label>
+  <span class="swsp"></span>
+  <button type="button" class="swbtn swprimary" data-ay="png">Download the card</button>
+  <button type="button" class="swbtn" data-ay="film">Render the film</button>
+  <span class="swmsg" id="ay-msg"></span>
+</div>
+<div class="swcardwrap"><canvas id="ay-canvas" class="swcanvas"></canvas></div>
+
+<p class="src"><span>Source</span> Precession follows the IAU 2006 expression for the general precession in longitude; the seventeen definitions are those the engine carries, each with its own note in the table above. The S&umacr;rya Siddh&amacr;nta readings are discussed on the <a href="siddhanta.html">S&umacr;rya Siddh&amacr;nta</a> page, the measured spread against this engine&rsquo;s accuracy on the <a href="accuracy.html">Accuracy</a> page, and a chart may be cast under any of them from <a href="kundli.html">Kundli 2.0</a>.</p>
+
+<script src="ayanamsa.js" defer></script>

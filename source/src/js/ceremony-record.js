@@ -101,67 +101,11 @@
 
   /* ---- rasterising the live SVG ---------------------------------------- */
 
-  /* Only the properties that actually draw. Copying the whole computed style
-     makes a document several megabytes per frame, which is slower to
-     serialise than the drawing is to make. */
-  var PROPS = ["fill", "fill-opacity", "stroke", "stroke-width", "stroke-opacity",
-               "stroke-dasharray", "stroke-linecap", "stroke-linejoin", "opacity",
-               "font-family", "font-size", "font-weight", "font-style",
-               "text-anchor", "letter-spacing", "paint-order", "display",
-               "dominant-baseline"];
-
-  function inlineStyles(src, dst) {
-    var a = src.querySelectorAll("*"), b = dst.querySelectorAll("*"), i, j;
-    /* the root carries its own styling too */
-    bake(src, dst);
-    for (i = 0; i < a.length && i < b.length; i++) bake(a[i], b[i]);
-    function bake(from, to) {
-      var cs = window.getComputedStyle(from);
-      if (!cs) return;
-      for (j = 0; j < PROPS.length; j++) {
-        var v = cs.getPropertyValue(PROPS[j]);
-        if (v) to.setAttribute(PROPS[j], v);
-      }
-      to.removeAttribute("class");
-    }
-  }
-
-  /* A promise for one <img> holding the SVG as it stands right now. */
-  function snapshot(svg) {
-    return new Promise(function (res, rej) {
-      var copy = svg.cloneNode(true);
-      inlineStyles(svg, copy);
-      /* CROPPED TO THE DRAWING, not to the viewBox. The overlay's viewBox
-         (-205 -165 410 330) is sized for a page where the wheel sits in the
-         middle of a dialog with room around it; fitting that box to a feed
-         frame spent a third of the width on empty margin and left the ring
-         looking like a postage stamp in the first export. getBBox gives the
-         union of what is actually drawn, so the crop follows the ring and
-         its labels however the perspective has swung them. */
-      var vb = svg.getAttribute("viewBox") || "0 0 410 330";
-      var box = vb.split(/\s+/).map(Number);
-      try {
-        var bb = svg.getBBox();
-        if (bb && bb.width > 1 && bb.height > 1) {
-          var m = Math.max(bb.width, bb.height) * 0.03;    /* a hair of air */
-          box = [bb.x - m, bb.y - m, bb.width + m * 2, bb.height + m * 2];
-        }
-      } catch (e) {}
-      copy.setAttribute("xmlns", NS);
-      copy.setAttribute("viewBox", box.join(" "));
-      copy.setAttribute("width", box[2]);
-      copy.setAttribute("height", box[3]);
-      var txt = new XMLSerializer().serializeToString(copy);
-      /* a data: URI rather than a blob: URL — a blob URL is same-origin and
-         fine in a browser, but under file:// the origin is "null" and some
-         engines refuse it, and this site has to work opened from Finder */
-      var url = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(txt);
-      var im = new Image();
-      im.onload = function () { res({ img: im, w: +box[2], h: +box[3] }); };
-      im.onerror = function () { rej(new Error("the wheel could not be rasterised")); };
-      im.src = url;
-    });
-  }
+  /* Rasterising, mime-picking and the encoder loop live in svg-film.js:
+     they are not about the ceremony, and the ayanāṃśa page films a quite
+     different drawing through exactly the same machinery. This file keeps
+     what IS about the ceremony — the trace of what the reader did, and the
+     frame it is composed into. */
 
   /* ---- the frame --------------------------------------------------------
      Composed for a feed rather than cropped from a page: a tall canvas, the
@@ -208,104 +152,33 @@
     }
   }
 
-  /* ---- the encoder ------------------------------------------------------
-     captureStream(0) means "this stream produces no frames on its own"; every
-     frame is pushed deliberately with requestFrame() once its draw has
-     finished. That is what makes the rate constant rather than a measurement
-     of how busy the machine was. */
-  function pickMime() {
-    var want = ["video/mp4;codecs=avc1.42E01E", "video/mp4;codecs=h264",
-                "video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm"];
-    if (typeof MediaRecorder === "undefined") return null;
-    for (var i = 0; i < want.length; i++) {
-      try { if (MediaRecorder.isTypeSupported(want[i])) return want[i]; } catch (e) {}
-    }
-    return null;
-  }
-
-  /* Record `trace` into a file. Returns a promise for {blob, ext, frames}. */
+  /* ---- the take, rendered ----------------------------------------------
+     The trace is replayed through svg-film: at(ms) puts the real overlay into
+     the state it held at ms, and the film photographs it. Pacing, encoding
+     and the wall-clock timestamp problem are all that module's business. */
   function render(trace, opt) {
     opt = opt || {};
-    var fps = opt.fps || 30;
-    var W = opt.width || 1080, H = opt.height || 1920;
     var hold = opt.holdMs == null ? 1200 : opt.holdMs;   /* a beat on the settled sky */
     var f = window.SPCosmos && window.SPCosmos.frame && window.SPCosmos.frame();
     if (!f) return Promise.reject(new Error("the ceremony is not on screen"));
-    var svg = f.svg();
-    if (!svg) return Promise.reject(new Error("the wheel is not on screen"));
-    var mime = pickMime();
-    if (!mime) return Promise.reject(new Error("this browser cannot encode video"));
-
+    if (!f.svg()) return Promise.reject(new Error("the wheel is not on screen"));
+    if (!window.SvgFilm) return Promise.reject(new Error("the film layer is missing"));
     /* the live loops would fight the stepping, so they stop for the duration */
     f.pause();
-
-    var cv = document.createElement("canvas");
-    cv.width = W; cv.height = H;
-    var c = cv.getContext("2d");
-    if (!cv.captureStream) return Promise.reject(new Error("this browser cannot capture a canvas"));
-    var stream = cv.captureStream(0);
-    var track = stream.getVideoTracks()[0];
-    var rec = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 10000000 });
-    var chunks = [];
-    rec.ondataavailable = function (e) { if (e.data && e.data.size) chunks.push(e.data); };
-
-    /* HOW THE TIMELINE IS PACED, and why not by frame number.
-       captureStream(0) + requestFrame() stamps each frame with the moment it
-       was pushed, so the file's duration is the wall time the render took,
-       not frames ÷ fps. Stepping the content by 1/fps therefore produced a
-       correct-looking 203-frame take that played for 15.5s instead of 6.8s —
-       the whole ceremony at half speed, because rasterising a frame costs
-       about 76ms and the encoder believed every one of them.
-
-       So the content is paced by ELAPSED TIME instead. Frame i shows the
-       ceremony as it stood at the wall-clock moment i is being pushed, which
-       makes the file's speed and length match what the reader actually did.
-       What varies with the machine is the number of frames inside that
-       duration — smoothness — rather than the speed of the motion. That is
-       the right thing to trade: a choppier video of the right ceremony beats
-       a smooth video of a slower one.
-
-       `total` is now only an estimate, used to report progress. */
-    var runMs = length(trace) + hold;
-    var total = Math.max(1, Math.round(runMs / 1000 * fps));
     var meta = opt.meta || {};
-    var done, fail;
-    var out = new Promise(function (a, b) { done = a; fail = b; });
-
-    rec.onstop = function () {
-      var ext = mime.indexOf("mp4") >= 0 ? "mp4" : "webm";
-      done({ blob: new Blob(chunks, { type: mime }), ext: ext, frames: i,
-             seconds: runMs / 1000 });
-    };
-    rec.start();
-
-    var i = 0, t0 = now();
-    function next() {
-      var elapsed = now() - t0;
-      if (elapsed >= runMs) {
-        try { rec.stop(); } catch (e) { fail(e); }
-        return;
-      }
-      var st = at(trace, Math.min(length(trace), elapsed));
-      f.set({ p: st.p, spin: st.spin });
-      snapshot(svg).then(function (shot) {
-        compose(c, W, H, shot, meta);
-        try { track.requestFrame(); } catch (e) {}
-        i++;
-        if (opt.onProgress) opt.onProgress(Math.min(1, (now() - t0) / runMs));
-        /* yield to the event loop so the page can paint its progress and a
-           long export does not read as a hang */
-        setTimeout(next, 0);
-      }).catch(function (e) {
-        try { rec.stop(); } catch (e2) {}
-        fail(e);
-      });
-    }
-    next();
-    return out;
+    return window.SvgFilm.record({
+      width: opt.width || 1080, height: opt.height || 1920,
+      runMs: length(trace) + hold,
+      svg: function () { return f.svg(); },
+      at: function (ms) {
+        var st = at(trace, Math.min(length(trace), ms));
+        f.set({ p: st.p, spin: st.spin });
+      },
+      compose: function (c, W, H, shot) { compose(c, W, H, shot, meta); },
+      onProgress: opt.onProgress
+    });
   }
 
   window.CerRec = { start: start, stop: stop, sampling: sampling,
-                    length: length, at: at, render: render,
-                    snapshot: snapshot, pickMime: pickMime };
+                    length: length, at: at, render: render };
 })();

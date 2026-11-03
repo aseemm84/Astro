@@ -199,6 +199,14 @@
   "has_aside": true,
   "desc": "The animated sidereal ecliptic wheel for any moment and place: the twelve rāśis and twenty-seven nakṣatras with each graha at its true longitude, played through a span from six hours to thirty years, with trails that make a retrograde loop visible, graha dṛṣṭi as chords, a settable tilt, and any of the sixteen vargas."
  },
+ "ayanamsa": {
+  "title": "Ayan\u0101\u1e43\u015ba \u2014 the gap between two zodiacs &mdash; {{BRAND}}",
+  "h1": "Ayan\u0101\u1e43\u015ba",
+  "sub": "Two zodiacs, two different zeros, and the angle between them \u2014 explained from scratch, measured live, and open to one you invent yourself.",
+  "layout": "",
+  "has_aside": true,
+  "desc": "What the ayan\u0101\u1e43\u015ba is and why it exists, with the gap between the sidereal and tropical zeros drawn for any year, the formula shown term by term, a measured account of what it changes and what it mathematically cannot, all seventeen definitions compared, and a sandbox for building your own."
+ },
  "starwheel": {
   "title": "Star wheel &mdash; the whole sky for any day &mdash; {{BRAND}}",
   "h1": "Star wheel",

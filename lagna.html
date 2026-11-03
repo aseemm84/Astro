@@ -1969,6 +1969,186 @@ svg.skysvg .sk-artlab{font-size:9.5px;font-weight:600;fill:#2a2f4a;text-anchor:m
 .swhost[data-wtheme="mono"] .swhsvg .swh-artlab{fill:#f4f4f6;stroke:rgba(10,10,12,.85)}
 .swhost[data-wtheme="mono"] .swhsvg .swh-arthalo{stroke:rgba(210,210,218,.42)}
 
+/* ===== ayanamsa.html ========================================================
+   The page has to work for somebody who has never met a degree sign, so the
+   drawings carry the argument and the prose follows them. Colour does one job
+   throughout and only one: GOLD is the stars and the sidereal frame, BLUE is
+   the equinox and the tropical frame, and the wedge between them — the
+   ayanāṃśa itself — is the one warm accent on the page. Nothing else is
+   allowed those three. */
+/* .kdeva — the Devanagari gloss beside a heading. It is defined in
+   cosmos.css, which the ceremony, kundli and motion SHELLS load but an
+   ordinary page bundle does not, so on this page the spans rendered
+   unstyled and ran straight into the heading: "Watch the gap openअन्तरं".
+   Copied here verbatim apart from that. This is the third class this
+   session found to be defined only in a stylesheet the page in hand did not
+   load — .sk-*, .swh-* and now this — so it is worth saying plainly: a class
+   working somewhere else is not evidence it will work here. */
+.kdeva{font-family:var(--deva);font-weight:600;opacity:.95;
+  margin-left:.45em;font-size:.82em;color:var(--src-key)}
+
+.aysvg{width:100%;height:auto;display:block}
+.aywrap{margin:1.1rem 0;max-width:760px}
+.aybar{display:flex;flex-wrap:wrap;gap:.75rem 1.1rem;align-items:center;
+  margin:.8rem 0 1.1rem;padding:.7rem .85rem;border:1px solid var(--border-2,#d8d8e6);
+  border-radius:10px;background:var(--surface-2,#f4f4fb)}
+.aybar label{display:inline-flex;align-items:center;gap:.45rem;font-size:.92rem}
+.aybar input[type=range]{width:14rem;vertical-align:middle}
+.ayread{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text,#20233a)}
+
+/* the two-zero cards */
+.aygrid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));
+  margin:1.1rem 0}
+.aycard{border:1px solid var(--border-2,#d8d8e6);border-radius:10px;padding:.9rem 1rem;
+  background:var(--surface-2,#f4f4fb)}
+.aycard h3{margin:.1rem 0 .4rem;font-size:1.02rem}
+.aycard p{margin:0}
+
+/* the rings */
+.aysvg .ay-sid{fill:#c9a24b;fill-opacity:.20}
+.aysvg .ay-sid.alt{fill-opacity:.10}
+.aysvg .ay-trop{fill:#5f74b8;fill-opacity:.22}
+.aysvg .ay-trop.alt{fill-opacity:.11}
+.aysvg .ay-sidlab{font-size:13px;font-weight:600;fill:#7a5f1c;text-anchor:middle}
+.aysvg .ay-troplab{font-size:12px;font-weight:600;fill:#3a4a86;text-anchor:middle}
+.aysvg .ay-zsid{stroke:#b08a2a;stroke-width:3}
+.aysvg .ay-ztrop{stroke:#44579e;stroke-width:3;stroke-dasharray:7 5}
+.aysvg .ay-gap{fill:#c2492f;fill-opacity:.16}
+.aysvg .ay-zlab{font-size:12px;font-weight:700;text-anchor:middle}
+.aysvg .ay-zlab.sid{fill:#8a6a1e}
+.aysvg .ay-zlab.trop{fill:#3a4a86}
+.aysvg .ay-gapval{font-size:30px;font-weight:700;fill:var(--sem-bad,#a1493a);text-anchor:middle}
+.aysvg .ay-gapsub{font-size:13px;fill:var(--muted-2,#5a5e78);text-anchor:middle}
+
+/* precession */
+.aysvg .ay-cone{fill:#5f74b8;fill-opacity:.10;stroke:#5f74b8;stroke-width:1;
+  stroke-dasharray:5 4}
+.aysvg .ay-conetop{fill:none;stroke:#5f74b8;stroke-width:1.6;stroke-dasharray:5 4}
+.aysvg .ay-earth{fill:#1f2a44;fill-opacity:.85;stroke:#4a5a86;stroke-width:1.5}
+.aysvg .ay-axis{stroke:#c9a24b;stroke-width:2.5}
+.aysvg .ay-equator{stroke:#9aa6c8;stroke-width:1.2;stroke-dasharray:4 3}
+.aysvg .ay-conelab{font-size:12px;fill:#4a5a86;text-anchor:middle}
+.aysvg .ay-conetilt{font-size:12px;fill:#8a6a1e}
+.aysvg .ay-ratehead{font-size:13px;font-weight:700;fill:var(--text,#20233a)}
+.aysvg .ay-rate{font-size:28px;font-weight:700;fill:var(--sem-bad,#a1493a)}
+.aysvg .ay-ratesub{font-size:12px;fill:var(--muted-2,#5a5e78)}
+
+/* the equation, as three labelled pieces rather than a line of symbols */
+.ayeq{margin:1rem 0;padding:.9rem 1rem;border:1px solid var(--border-2,#d8d8e6);
+  border-radius:10px;background:var(--surface-2,#f4f4fb)}
+.ayeqrow{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .6rem}
+.ayeqlhs{font-weight:700;font-size:1.05rem}
+.ayeqop{color:var(--muted-2,#5a5e78);font-size:1.15rem}
+.ayeqterm{display:inline-flex;flex-direction:column;gap:.15rem;padding:.4rem .6rem;
+  border-radius:8px;border:1px solid var(--border-2,#d8d8e6);background:var(--surface-3,#fff)}
+.ayeqterm b{font-variant-numeric:tabular-nums;font-size:1rem}
+.ayeqterm i{font-style:normal;font-size:.78rem;color:var(--muted-2,#5a5e78)}
+.ayeqterm.t0{border-color:#b08a2a}
+.ayeqterm.t1{border-color:#44579e}
+.ayeqterm.t2{border-color:#7a7f99}
+.ayeqnote{margin:.6rem 0 0;font-size:.92rem;color:var(--muted-2,#5a5e78)}
+.ayeqbad{font-weight:600;color:var(--sem-bad,#a1493a)}
+.aysvg .ay-axis0{stroke:var(--border-2,#d8d8e6);stroke-width:1}
+.aysvg .ay-bar.t0{fill:#b08a2a}
+.aysvg .ay-bar.t1{fill:#44579e}
+.aysvg .ay-bar.t2{fill:#7a7f99}
+.aysvg .ay-barval{font-size:12px;font-variant-numeric:tabular-nums;fill:var(--text,#20233a);
+  dominant-baseline:middle}
+.aysvg .ay-barlab{font-size:12px;fill:var(--muted-2,#5a5e78)}
+.aysvg .ay-bartot{font-size:12.5px;font-weight:700;fill:var(--text,#20233a)}
+
+/* the spread */
+.aysvg .ay-sprrail{stroke:var(--border-2,#d8d8e6);stroke-width:1}
+.aysvg .ay-sprdot{fill:#5f74b8}
+.aysvg .ay-sprdot.on{fill:var(--sem-bad,#a1493a);r:6}
+.aysvg .ay-sprdot.mine{fill:var(--sem-good,#1c6b46)}
+.aysvg .ay-sprname{font-size:11.5px;fill:var(--muted-2,#5a5e78);text-anchor:end}
+.aysvg .ay-sprname.on{fill:var(--sem-bad,#a1493a);font-weight:700}
+.aysvg .ay-sprval{font-size:11.5px;font-variant-numeric:tabular-nums;fill:var(--muted-2,#5a5e78)}
+.aysvg .ay-sprhead{font-size:13px;font-weight:700;fill:var(--text,#20233a)}
+
+/* tables */
+.aytabwrap{overflow-x:auto;margin:.9rem 0}
+.aytab{border-collapse:collapse;width:100%;font-size:.9rem}
+.aytab th,.aytab td{border-bottom:1px solid var(--border-2,#d8d8e6);padding:.42rem .6rem;
+  text-align:left;vertical-align:top}
+.aytab th{font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--muted-2,#5a5e78);font-weight:600}
+.aytab td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.aytab td.note{font-size:.84rem;color:var(--muted-2,#5a5e78)}
+.aytab tr.mine{background:rgba(47,125,85,.08)}
+
+/* the measured checks under the impact table */
+.aycheck{list-style:none;padding:0;margin:.9rem 0}
+.aycheck li{padding:.35rem 0 .35rem 1.7rem;position:relative;font-size:.95rem}
+.aycheck li::before{position:absolute;left:0;top:.35rem;font-weight:700}
+.aycheck li.yes::before{content:"✓";color:#2f7d55}
+.aycheck li.no::before{content:"✗";color:var(--sem-bad,#a1493a)}
+.aycheck li.obs::before{content:"·";color:#6b665e;font-size:1.3rem;top:.1rem}
+
+/* the sandbox */
+.aysand{margin:1rem 0}
+.aysandcols{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))}
+.aysandcol{border:1px solid var(--border-2,#d8d8e6);border-radius:10px;padding:.9rem 1rem;
+  background:var(--surface-2,#f4f4fb)}
+.aysandcol h3{margin:.1rem 0 .6rem;font-size:1rem}
+.aysandcol label{display:flex;flex-direction:column;gap:.25rem;margin:.6rem 0;
+  font-size:.9rem}
+.aysandcol input[type=range]{width:100%}
+.aysandnote{font-size:.86rem;color:var(--muted-2,#5a5e78);margin:.2rem 0 .6rem}
+.aysandout{margin:.9rem 0;padding:.7rem .85rem;border-radius:10px;
+  border:1px solid var(--border-2,#d8d8e6);font-size:.95rem}
+
+/* The capture palette. The card and the film paint a dark frame and then
+   photograph the page's own drawing, which is coloured for a cream page —
+   so the first card came out with near-unreadable labels on black. The host
+   carries data-film="dark" for the instant it is photographed and wears
+   these instead. It is the same drawing; only the ink changes. */
+.aywrap [data-film="dark"] .ay-sidlab,[data-film="dark"] .ay-sidlab{fill:#e8c874}
+[data-film="dark"] .ay-troplab{fill:#9fb0e8}
+[data-film="dark"] .ay-sid{fill:#e8c874;fill-opacity:.22}
+[data-film="dark"] .ay-sid.alt{fill-opacity:.11}
+[data-film="dark"] .ay-trop{fill:#7f93e0;fill-opacity:.24}
+[data-film="dark"] .ay-trop.alt{fill-opacity:.12}
+[data-film="dark"] .ay-zsid{stroke:#f0cf7a}
+[data-film="dark"] .ay-ztrop{stroke:#9fb0e8}
+[data-film="dark"] .ay-zlab.sid{fill:#f0cf7a}
+[data-film="dark"] .ay-zlab.trop{fill:#9fb0e8}
+[data-film="dark"] .ay-gap{fill:#e8705a;fill-opacity:.26}
+[data-film="dark"] .ay-gapval{fill:#ff9c80}
+[data-film="dark"] .ay-gapsub{fill:#9fa8c6}
+
+/* The drawings under a dark theme. The ayanāṃśa figures are coloured for the
+   paper ground; on midnight, peetambari and emerald the page goes dark around
+   them and the same ink becomes unreadable — theme-verify measured 1.02:1,
+   which is text you cannot see at all. These are the capture palette's
+   colours, which already exist for exactly this reason on the card. */
+html[data-theme="midnight"] .aysvg .ay-sidlab,
+html[data-theme="peetambari"] .aysvg .ay-sidlab,
+html[data-theme="emerald"] .aysvg .ay-sidlab{fill:#e8c874}
+html[data-theme="midnight"] .aysvg .ay-troplab,
+html[data-theme="peetambari"] .aysvg .ay-troplab,
+html[data-theme="emerald"] .aysvg .ay-troplab{fill:#9fb0e8}
+html[data-theme="midnight"] .aysvg .ay-zlab.sid,
+html[data-theme="peetambari"] .aysvg .ay-zlab.sid,
+html[data-theme="emerald"] .aysvg .ay-zlab.sid{fill:#f0cf7a}
+html[data-theme="midnight"] .aysvg .ay-zlab.trop,
+html[data-theme="peetambari"] .aysvg .ay-zlab.trop,
+html[data-theme="emerald"] .aysvg .ay-zlab.trop{fill:#9fb0e8}
+html[data-theme="midnight"] .aysvg .ay-gapval,
+html[data-theme="peetambari"] .aysvg .ay-gapval,
+html[data-theme="emerald"] .aysvg .ay-gapval{fill:#ff9c80}
+html[data-theme="midnight"] .aysvg .ay-conetilt,
+html[data-theme="peetambari"] .aysvg .ay-conetilt,
+html[data-theme="emerald"] .aysvg .ay-conetilt{fill:#e8c874}
+html[data-theme="midnight"] .aysvg .ay-conelab,
+html[data-theme="peetambari"] .aysvg .ay-conelab,
+html[data-theme="emerald"] .aysvg .ay-conelab{fill:#9fb0e8}
+html[data-theme="midnight"] .aysvg .ay-rate,
+html[data-theme="peetambari"] .aysvg .ay-rate,
+html[data-theme="emerald"] .aysvg .ay-rate{fill:#ff9c80}
+
+
 /* ===== Generated theme overrides =====================================
    Written by source/tools/gen-theme-overrides.py from the literal
    colours in app.css and pages.css. Do not edit by hand: regenerate.
@@ -2759,4 +2939,4 @@ html[data-theme] nav.site .themepick select option{
     return true;
   }, list: THEMES };
 })();
-</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Lagna & Special Ascendants</h1><p class="sub">The rising point that anchors the chart, the twelve ascendant temperaments, and the computed Bhava, Hora, Ghatika, Arudha, Sree and Prana ascendants.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html" class="active">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#asc">The twelve rising signs at a glance</a><a href="#special">Special ascendants</a></aside><main><p class="lead">The <b>Lagna</b> (ascendant) is the degree of the zodiac rising on the eastern horizon at the moment of birth. It anchors the whole chart: every house is counted from it, and it signifies the body, the self, and the overall shape of life.</p><p class="term"><b>Lagna</b> — ascendant — the rising sign & degree. Its lord (<b>Lagnesha</b>) and any planet in or aspecting it are primary to vitality, temperament, and how life unfolds.</p><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 3–4 (the rising sign as Lagna; roughly two hours per sign, varying by latitude — about 1° every four minutes of clock time).</p><h2 id="asc">The twelve rising signs at a glance</h2><p>The Lagna sign sets the baseline temperament and the whole house-lord scheme (which planet owns which house). These are broad keynotes; the Lagna lord's condition refines them heavily.</p><div class="tw"><table class="tbl"><thead><tr><th>Rising sign</th><th>Keynote temperament</th></tr></thead><tbody><tr><td>Aries</td><td>bold, pioneering, quick, competitive; Mars-driven vitality</td></tr><tr><td>Taurus</td><td>steady, sensual, patient, value-seeking; Venus comfort</td></tr><tr><td>Gemini</td><td>curious, verbal, versatile, restless; Mercury wit</td></tr><tr><td>Cancer</td><td>caring, moody, protective, home-centred; lunar sensitivity</td></tr><tr><td>Leo</td><td>confident, dignified, expressive, proud; solar authority</td></tr><tr><td>Virgo</td><td>analytical, precise, service-minded, self-critical; Mercury detail</td></tr><tr><td>Libra</td><td>relational, fair, aesthetic, diplomatic; Venus balance</td></tr><tr><td>Scorpio</td><td>intense, secretive, penetrating, resilient; Mars depth</td></tr><tr><td>Sagittarius</td><td>optimistic, philosophical, forthright, restless; Jupiter faith</td></tr><tr><td>Capricorn</td><td>disciplined, ambitious, dutiful, cautious; Saturn structure</td></tr><tr><td>Aquarius</td><td>independent, humane, unconventional, detached; Saturn vision</td></tr><tr><td>Pisces</td><td>compassionate, imaginative, devotional, impressionable; Jupiter flow</td></tr></tbody></table></div><div class="mine"><b>Study note.</b> The single most useful step in any chart: identify the Lagna lord and see where it sits, how dignified it is, and what aspects it. A strong, well-placed Lagnesha is a foundation the rest of the chart builds on.</div><h2 id="special">Special ascendants</h2><p>Beyond the rasi Lagna, BPHS uses several <b>computed</b> ascendants as alternative reference points, each advancing from sunrise at its own rate.</p><div class="tw"><table class="tbl"><thead><tr><th>Special lagna</th><th>Advances one sign per…</th><th>Chiefly used for</th></tr></thead><tbody><tr><td>Bhava Lagna</td><td>5 ghatis (2 hours) from sunrise</td><td>a secondary self / body reference in yogas & strength</td></tr><tr><td>Hora Lagna</td><td>2½ ghatis (1 hour) from sunrise</td><td>wealth and financial standing</td></tr><tr><td>Ghatika (Ghati) Lagna</td><td>1 ghati (24 min) from sunrise</td><td>power, status and authority</td></tr><tr><td>Arudha Lagna (Pada)</td><td>(computed from the Lagna lord — see Special Points)</td><td>public image, how the self is perceived</td></tr><tr><td>Sree Lagna</td><td>(from the Moon's nakshatra position and the ascendant)</td><td>prosperity and the goddess of fortune</td></tr><tr><td>Pranapada</td><td>(from the Sun's longitude in ghatis)</td><td>vitality and birth-time rectification</td></tr></tbody></table></div><p class="src"><span>Source</span> BPHS, Vol. 1 — the special-lagna material; Bhava / Hora / Ghatika Lagna are invoked together in the Raja Yoga chapter (Ch. 39, v. 24), and Arudha Lagna is computed in Ch. 29.</p><div class="note"><b>Translator / commentary.</b> Editions differ in how many special ascendants they detail and in the exact ghati rates. Verify the figures against the PDF before using them in calculation.</div><div class="caution"><b>Handle with care.</b> All special ascendants are time-sensitive — only as reliable as the recorded birth time. They are refinements layered on the rasi Lagna, never replacements for it. When the birth time is uncertain, rectify (using Pranapada, major life events, and the Navamsa lagna) before leaning on them.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p><b>How the numbers are worked out:</b> <a href="kundli-technical-report.html">the chart engine, in detail</a> &mdash; the ephemeris, the ayanāṃśa modes, the sunrise convention and what each divisional chart is computed from.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>
+</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Lagna & Special Ascendants</h1><p class="sub">The rising point that anchors the chart, the twelve ascendant temperaments, and the computed Bhava, Hora, Ghatika, Arudha, Sree and Prana ascendants.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html" class="active">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#asc">The twelve rising signs at a glance</a><a href="#special">Special ascendants</a></aside><main><p class="lead">The <b>Lagna</b> (ascendant) is the degree of the zodiac rising on the eastern horizon at the moment of birth. It anchors the whole chart: every house is counted from it, and it signifies the body, the self, and the overall shape of life.</p><p class="term"><b>Lagna</b> — ascendant — the rising sign & degree. Its lord (<b>Lagnesha</b>) and any planet in or aspecting it are primary to vitality, temperament, and how life unfolds.</p><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 3–4 (the rising sign as Lagna; roughly two hours per sign, varying by latitude — about 1° every four minutes of clock time).</p><h2 id="asc">The twelve rising signs at a glance</h2><p>The Lagna sign sets the baseline temperament and the whole house-lord scheme (which planet owns which house). These are broad keynotes; the Lagna lord's condition refines them heavily.</p><div class="tw"><table class="tbl"><thead><tr><th>Rising sign</th><th>Keynote temperament</th></tr></thead><tbody><tr><td>Aries</td><td>bold, pioneering, quick, competitive; Mars-driven vitality</td></tr><tr><td>Taurus</td><td>steady, sensual, patient, value-seeking; Venus comfort</td></tr><tr><td>Gemini</td><td>curious, verbal, versatile, restless; Mercury wit</td></tr><tr><td>Cancer</td><td>caring, moody, protective, home-centred; lunar sensitivity</td></tr><tr><td>Leo</td><td>confident, dignified, expressive, proud; solar authority</td></tr><tr><td>Virgo</td><td>analytical, precise, service-minded, self-critical; Mercury detail</td></tr><tr><td>Libra</td><td>relational, fair, aesthetic, diplomatic; Venus balance</td></tr><tr><td>Scorpio</td><td>intense, secretive, penetrating, resilient; Mars depth</td></tr><tr><td>Sagittarius</td><td>optimistic, philosophical, forthright, restless; Jupiter faith</td></tr><tr><td>Capricorn</td><td>disciplined, ambitious, dutiful, cautious; Saturn structure</td></tr><tr><td>Aquarius</td><td>independent, humane, unconventional, detached; Saturn vision</td></tr><tr><td>Pisces</td><td>compassionate, imaginative, devotional, impressionable; Jupiter flow</td></tr></tbody></table></div><div class="mine"><b>Study note.</b> The single most useful step in any chart: identify the Lagna lord and see where it sits, how dignified it is, and what aspects it. A strong, well-placed Lagnesha is a foundation the rest of the chart builds on.</div><h2 id="special">Special ascendants</h2><p>Beyond the rasi Lagna, BPHS uses several <b>computed</b> ascendants as alternative reference points, each advancing from sunrise at its own rate.</p><div class="tw"><table class="tbl"><thead><tr><th>Special lagna</th><th>Advances one sign per…</th><th>Chiefly used for</th></tr></thead><tbody><tr><td>Bhava Lagna</td><td>5 ghatis (2 hours) from sunrise</td><td>a secondary self / body reference in yogas & strength</td></tr><tr><td>Hora Lagna</td><td>2½ ghatis (1 hour) from sunrise</td><td>wealth and financial standing</td></tr><tr><td>Ghatika (Ghati) Lagna</td><td>1 ghati (24 min) from sunrise</td><td>power, status and authority</td></tr><tr><td>Arudha Lagna (Pada)</td><td>(computed from the Lagna lord — see Special Points)</td><td>public image, how the self is perceived</td></tr><tr><td>Sree Lagna</td><td>(from the Moon's nakshatra position and the ascendant)</td><td>prosperity and the goddess of fortune</td></tr><tr><td>Pranapada</td><td>(from the Sun's longitude in ghatis)</td><td>vitality and birth-time rectification</td></tr></tbody></table></div><p class="src"><span>Source</span> BPHS, Vol. 1 — the special-lagna material; Bhava / Hora / Ghatika Lagna are invoked together in the Raja Yoga chapter (Ch. 39, v. 24), and Arudha Lagna is computed in Ch. 29.</p><div class="note"><b>Translator / commentary.</b> Editions differ in how many special ascendants they detail and in the exact ghati rates. Verify the figures against the PDF before using them in calculation.</div><div class="caution"><b>Handle with care.</b> All special ascendants are time-sensitive — only as reliable as the recorded birth time. They are refinements layered on the rasi Lagna, never replacements for it. When the birth time is uncertain, rectify (using Pranapada, major life events, and the Navamsa lagna) before leaning on them.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p><b>How the numbers are worked out:</b> <a href="kundli-technical-report.html">the chart engine, in detail</a> &mdash; the ephemeris, the ayanāṃśa modes, the sunrise convention and what each divisional chart is computed from.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>

@@ -1969,6 +1969,186 @@ svg.skysvg .sk-artlab{font-size:9.5px;font-weight:600;fill:#2a2f4a;text-anchor:m
 .swhost[data-wtheme="mono"] .swhsvg .swh-artlab{fill:#f4f4f6;stroke:rgba(10,10,12,.85)}
 .swhost[data-wtheme="mono"] .swhsvg .swh-arthalo{stroke:rgba(210,210,218,.42)}
 
+/* ===== ayanamsa.html ========================================================
+   The page has to work for somebody who has never met a degree sign, so the
+   drawings carry the argument and the prose follows them. Colour does one job
+   throughout and only one: GOLD is the stars and the sidereal frame, BLUE is
+   the equinox and the tropical frame, and the wedge between them — the
+   ayanāṃśa itself — is the one warm accent on the page. Nothing else is
+   allowed those three. */
+/* .kdeva — the Devanagari gloss beside a heading. It is defined in
+   cosmos.css, which the ceremony, kundli and motion SHELLS load but an
+   ordinary page bundle does not, so on this page the spans rendered
+   unstyled and ran straight into the heading: "Watch the gap openअन्तरं".
+   Copied here verbatim apart from that. This is the third class this
+   session found to be defined only in a stylesheet the page in hand did not
+   load — .sk-*, .swh-* and now this — so it is worth saying plainly: a class
+   working somewhere else is not evidence it will work here. */
+.kdeva{font-family:var(--deva);font-weight:600;opacity:.95;
+  margin-left:.45em;font-size:.82em;color:var(--src-key)}
+
+.aysvg{width:100%;height:auto;display:block}
+.aywrap{margin:1.1rem 0;max-width:760px}
+.aybar{display:flex;flex-wrap:wrap;gap:.75rem 1.1rem;align-items:center;
+  margin:.8rem 0 1.1rem;padding:.7rem .85rem;border:1px solid var(--border-2,#d8d8e6);
+  border-radius:10px;background:var(--surface-2,#f4f4fb)}
+.aybar label{display:inline-flex;align-items:center;gap:.45rem;font-size:.92rem}
+.aybar input[type=range]{width:14rem;vertical-align:middle}
+.ayread{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text,#20233a)}
+
+/* the two-zero cards */
+.aygrid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));
+  margin:1.1rem 0}
+.aycard{border:1px solid var(--border-2,#d8d8e6);border-radius:10px;padding:.9rem 1rem;
+  background:var(--surface-2,#f4f4fb)}
+.aycard h3{margin:.1rem 0 .4rem;font-size:1.02rem}
+.aycard p{margin:0}
+
+/* the rings */
+.aysvg .ay-sid{fill:#c9a24b;fill-opacity:.20}
+.aysvg .ay-sid.alt{fill-opacity:.10}
+.aysvg .ay-trop{fill:#5f74b8;fill-opacity:.22}
+.aysvg .ay-trop.alt{fill-opacity:.11}
+.aysvg .ay-sidlab{font-size:13px;font-weight:600;fill:#7a5f1c;text-anchor:middle}
+.aysvg .ay-troplab{font-size:12px;font-weight:600;fill:#3a4a86;text-anchor:middle}
+.aysvg .ay-zsid{stroke:#b08a2a;stroke-width:3}
+.aysvg .ay-ztrop{stroke:#44579e;stroke-width:3;stroke-dasharray:7 5}
+.aysvg .ay-gap{fill:#c2492f;fill-opacity:.16}
+.aysvg .ay-zlab{font-size:12px;font-weight:700;text-anchor:middle}
+.aysvg .ay-zlab.sid{fill:#8a6a1e}
+.aysvg .ay-zlab.trop{fill:#3a4a86}
+.aysvg .ay-gapval{font-size:30px;font-weight:700;fill:var(--sem-bad,#a1493a);text-anchor:middle}
+.aysvg .ay-gapsub{font-size:13px;fill:var(--muted-2,#5a5e78);text-anchor:middle}
+
+/* precession */
+.aysvg .ay-cone{fill:#5f74b8;fill-opacity:.10;stroke:#5f74b8;stroke-width:1;
+  stroke-dasharray:5 4}
+.aysvg .ay-conetop{fill:none;stroke:#5f74b8;stroke-width:1.6;stroke-dasharray:5 4}
+.aysvg .ay-earth{fill:#1f2a44;fill-opacity:.85;stroke:#4a5a86;stroke-width:1.5}
+.aysvg .ay-axis{stroke:#c9a24b;stroke-width:2.5}
+.aysvg .ay-equator{stroke:#9aa6c8;stroke-width:1.2;stroke-dasharray:4 3}
+.aysvg .ay-conelab{font-size:12px;fill:#4a5a86;text-anchor:middle}
+.aysvg .ay-conetilt{font-size:12px;fill:#8a6a1e}
+.aysvg .ay-ratehead{font-size:13px;font-weight:700;fill:var(--text,#20233a)}
+.aysvg .ay-rate{font-size:28px;font-weight:700;fill:var(--sem-bad,#a1493a)}
+.aysvg .ay-ratesub{font-size:12px;fill:var(--muted-2,#5a5e78)}
+
+/* the equation, as three labelled pieces rather than a line of symbols */
+.ayeq{margin:1rem 0;padding:.9rem 1rem;border:1px solid var(--border-2,#d8d8e6);
+  border-radius:10px;background:var(--surface-2,#f4f4fb)}
+.ayeqrow{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .6rem}
+.ayeqlhs{font-weight:700;font-size:1.05rem}
+.ayeqop{color:var(--muted-2,#5a5e78);font-size:1.15rem}
+.ayeqterm{display:inline-flex;flex-direction:column;gap:.15rem;padding:.4rem .6rem;
+  border-radius:8px;border:1px solid var(--border-2,#d8d8e6);background:var(--surface-3,#fff)}
+.ayeqterm b{font-variant-numeric:tabular-nums;font-size:1rem}
+.ayeqterm i{font-style:normal;font-size:.78rem;color:var(--muted-2,#5a5e78)}
+.ayeqterm.t0{border-color:#b08a2a}
+.ayeqterm.t1{border-color:#44579e}
+.ayeqterm.t2{border-color:#7a7f99}
+.ayeqnote{margin:.6rem 0 0;font-size:.92rem;color:var(--muted-2,#5a5e78)}
+.ayeqbad{font-weight:600;color:var(--sem-bad,#a1493a)}
+.aysvg .ay-axis0{stroke:var(--border-2,#d8d8e6);stroke-width:1}
+.aysvg .ay-bar.t0{fill:#b08a2a}
+.aysvg .ay-bar.t1{fill:#44579e}
+.aysvg .ay-bar.t2{fill:#7a7f99}
+.aysvg .ay-barval{font-size:12px;font-variant-numeric:tabular-nums;fill:var(--text,#20233a);
+  dominant-baseline:middle}
+.aysvg .ay-barlab{font-size:12px;fill:var(--muted-2,#5a5e78)}
+.aysvg .ay-bartot{font-size:12.5px;font-weight:700;fill:var(--text,#20233a)}
+
+/* the spread */
+.aysvg .ay-sprrail{stroke:var(--border-2,#d8d8e6);stroke-width:1}
+.aysvg .ay-sprdot{fill:#5f74b8}
+.aysvg .ay-sprdot.on{fill:var(--sem-bad,#a1493a);r:6}
+.aysvg .ay-sprdot.mine{fill:var(--sem-good,#1c6b46)}
+.aysvg .ay-sprname{font-size:11.5px;fill:var(--muted-2,#5a5e78);text-anchor:end}
+.aysvg .ay-sprname.on{fill:var(--sem-bad,#a1493a);font-weight:700}
+.aysvg .ay-sprval{font-size:11.5px;font-variant-numeric:tabular-nums;fill:var(--muted-2,#5a5e78)}
+.aysvg .ay-sprhead{font-size:13px;font-weight:700;fill:var(--text,#20233a)}
+
+/* tables */
+.aytabwrap{overflow-x:auto;margin:.9rem 0}
+.aytab{border-collapse:collapse;width:100%;font-size:.9rem}
+.aytab th,.aytab td{border-bottom:1px solid var(--border-2,#d8d8e6);padding:.42rem .6rem;
+  text-align:left;vertical-align:top}
+.aytab th{font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--muted-2,#5a5e78);font-weight:600}
+.aytab td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.aytab td.note{font-size:.84rem;color:var(--muted-2,#5a5e78)}
+.aytab tr.mine{background:rgba(47,125,85,.08)}
+
+/* the measured checks under the impact table */
+.aycheck{list-style:none;padding:0;margin:.9rem 0}
+.aycheck li{padding:.35rem 0 .35rem 1.7rem;position:relative;font-size:.95rem}
+.aycheck li::before{position:absolute;left:0;top:.35rem;font-weight:700}
+.aycheck li.yes::before{content:"✓";color:#2f7d55}
+.aycheck li.no::before{content:"✗";color:var(--sem-bad,#a1493a)}
+.aycheck li.obs::before{content:"·";color:#6b665e;font-size:1.3rem;top:.1rem}
+
+/* the sandbox */
+.aysand{margin:1rem 0}
+.aysandcols{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))}
+.aysandcol{border:1px solid var(--border-2,#d8d8e6);border-radius:10px;padding:.9rem 1rem;
+  background:var(--surface-2,#f4f4fb)}
+.aysandcol h3{margin:.1rem 0 .6rem;font-size:1rem}
+.aysandcol label{display:flex;flex-direction:column;gap:.25rem;margin:.6rem 0;
+  font-size:.9rem}
+.aysandcol input[type=range]{width:100%}
+.aysandnote{font-size:.86rem;color:var(--muted-2,#5a5e78);margin:.2rem 0 .6rem}
+.aysandout{margin:.9rem 0;padding:.7rem .85rem;border-radius:10px;
+  border:1px solid var(--border-2,#d8d8e6);font-size:.95rem}
+
+/* The capture palette. The card and the film paint a dark frame and then
+   photograph the page's own drawing, which is coloured for a cream page —
+   so the first card came out with near-unreadable labels on black. The host
+   carries data-film="dark" for the instant it is photographed and wears
+   these instead. It is the same drawing; only the ink changes. */
+.aywrap [data-film="dark"] .ay-sidlab,[data-film="dark"] .ay-sidlab{fill:#e8c874}
+[data-film="dark"] .ay-troplab{fill:#9fb0e8}
+[data-film="dark"] .ay-sid{fill:#e8c874;fill-opacity:.22}
+[data-film="dark"] .ay-sid.alt{fill-opacity:.11}
+[data-film="dark"] .ay-trop{fill:#7f93e0;fill-opacity:.24}
+[data-film="dark"] .ay-trop.alt{fill-opacity:.12}
+[data-film="dark"] .ay-zsid{stroke:#f0cf7a}
+[data-film="dark"] .ay-ztrop{stroke:#9fb0e8}
+[data-film="dark"] .ay-zlab.sid{fill:#f0cf7a}
+[data-film="dark"] .ay-zlab.trop{fill:#9fb0e8}
+[data-film="dark"] .ay-gap{fill:#e8705a;fill-opacity:.26}
+[data-film="dark"] .ay-gapval{fill:#ff9c80}
+[data-film="dark"] .ay-gapsub{fill:#9fa8c6}
+
+/* The drawings under a dark theme. The ayanāṃśa figures are coloured for the
+   paper ground; on midnight, peetambari and emerald the page goes dark around
+   them and the same ink becomes unreadable — theme-verify measured 1.02:1,
+   which is text you cannot see at all. These are the capture palette's
+   colours, which already exist for exactly this reason on the card. */
+html[data-theme="midnight"] .aysvg .ay-sidlab,
+html[data-theme="peetambari"] .aysvg .ay-sidlab,
+html[data-theme="emerald"] .aysvg .ay-sidlab{fill:#e8c874}
+html[data-theme="midnight"] .aysvg .ay-troplab,
+html[data-theme="peetambari"] .aysvg .ay-troplab,
+html[data-theme="emerald"] .aysvg .ay-troplab{fill:#9fb0e8}
+html[data-theme="midnight"] .aysvg .ay-zlab.sid,
+html[data-theme="peetambari"] .aysvg .ay-zlab.sid,
+html[data-theme="emerald"] .aysvg .ay-zlab.sid{fill:#f0cf7a}
+html[data-theme="midnight"] .aysvg .ay-zlab.trop,
+html[data-theme="peetambari"] .aysvg .ay-zlab.trop,
+html[data-theme="emerald"] .aysvg .ay-zlab.trop{fill:#9fb0e8}
+html[data-theme="midnight"] .aysvg .ay-gapval,
+html[data-theme="peetambari"] .aysvg .ay-gapval,
+html[data-theme="emerald"] .aysvg .ay-gapval{fill:#ff9c80}
+html[data-theme="midnight"] .aysvg .ay-conetilt,
+html[data-theme="peetambari"] .aysvg .ay-conetilt,
+html[data-theme="emerald"] .aysvg .ay-conetilt{fill:#e8c874}
+html[data-theme="midnight"] .aysvg .ay-conelab,
+html[data-theme="peetambari"] .aysvg .ay-conelab,
+html[data-theme="emerald"] .aysvg .ay-conelab{fill:#9fb0e8}
+html[data-theme="midnight"] .aysvg .ay-rate,
+html[data-theme="peetambari"] .aysvg .ay-rate,
+html[data-theme="emerald"] .aysvg .ay-rate{fill:#ff9c80}
+
+
 /* ===== Generated theme overrides =====================================
    Written by source/tools/gen-theme-overrides.py from the literal
    colours in app.css and pages.css. Do not edit by hand: regenerate.
@@ -2759,4 +2939,4 @@ html[data-theme] nav.site .themepick select option{
     return true;
   }, list: THEMES };
 })();
-</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Strength — Shadbala, Bhava Bala & Ishta/Kashta</h1><p class="sub">Every Shadbala component and its sub-parts and minimums, house strength, benefic vs difficult potency, and Vimsopaka divisional strength.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html" class="active">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#shad">Shadbala — the sixfold strength</a><a href="#bhavabala">Bhava Bala — the strength of a house</a><a href="#ishta">Ishta and Kashta Bala — benefic vs difficult potency</a><a href="#vim">Vimsopaka Bala — divisional strength</a></aside><main><p class="lead">Dignity tells you a placement's <b>quality</b>; <b>bala</b> (strength) tells you how much of it can actually manifest. BPHS scores strength in <b>Virupas</b> (Shashtiamsas) — 60 Virupas make 1 <b>Rupa</b>. Only the seven planets from the Sun to Saturn are scored; the nodes are not.</p><h2 id="shad">Shadbala — the sixfold strength</h2><p>Six sources of strength are computed for each planet and summed. Each also has a <b>required minimum</b>; a planet meeting or exceeding its requirement is 'strong' and reliably delivers its promise.</p><h3>1 · Sthana Bala — positional strength</h3><p>The largest and most-used component, built from five sub-parts:</p><ul><li><b>Uchcha Bala</b> (exaltation): distance from the debilitation point ÷ 3, max 60 Virupas — full at exaltation, zero at debilitation.</li><li><b>Saptavargaja Bala</b>: dignity summed across seven vargas (Rasi, Hora, Drekkana, Saptamsa, Navamsa, Dvadasamsa, Trimsamsa), by the fivefold relationship —</li><li><b>Ojhayugmarasi-amsa Bala</b>: strength by placement in odd/even signs and navamsas (male planets favour odd, female even).</li><li><b>Kendradi Bala</b>: 60 Virupas in a kendra, 30 in a panapara, 15 in an apoklima.</li><li><b>Drekkana Bala</b>: 15 Virupas for the appropriate planet-sex in the 1st/2nd/3rd drekkana.</li></ul><div class="tw"><table class="tbl"><thead><tr><th>Saptavargaja dignity (per varga)</th><th>Virupas</th></tr></thead><tbody><tr><td>Exaltation / Moolatrikona</td><td>45</td></tr><tr><td>Own sign</td><td>30</td></tr><tr><td>Great friend</td><td>20</td></tr><tr><td>Friend</td><td>15</td></tr><tr><td>Neutral</td><td>10</td></tr><tr><td>Enemy</td><td>4</td></tr><tr><td>Great enemy</td><td>2</td></tr></tbody></table></div><h3>2 · Dig Bala — directional strength</h3><p>Each planet is strongest in a particular angle (max 60 Virupas), weakening to zero in the opposite angle:</p><div class="tw"><table class="tbl"><thead><tr><th>Strong in the…</th><th>Planets</th></tr></thead><tbody><tr><td>10th (mid-heaven, south)</td><td>Sun, Mars</td></tr><tr><td>4th (nadir, north)</td><td>Moon, Venus</td></tr><tr><td>1st (ascendant, east)</td><td>Mercury, Jupiter</td></tr><tr><td>7th (descendant, west)</td><td>Saturn</td></tr></tbody></table></div><h3>3 · Kala Bala — temporal strength</h3><ul><li><b>Nathonnatha</b> (day/night): benefics gain by day, malefics by night (Mercury always).</li><li><b>Paksha Bala</b>: benefics strong in the bright fortnight, malefics in the dark.</li><li><b>Tribhaga Bala</b>: strength by the third of day/night ruled by the planet.</li><li><b>Varsha / Masa / Dina / Hora lords</b>: the lords of the year, month, weekday and hour gain strength.</li><li><b>Ayana Bala</b>: strength by declension (north/south of the equator).</li><li><b>Yuddha Bala</b>: the outcome of a planetary war adjusts the combatants.</li></ul><h3>4 · Cheshta Bala — motional strength</h3><p>Strength from motion: a <b>retrograde</b> planet scores near-maximum; a combust or fast-accelerating planet scores low. (The Sun and Moon take Ayana and Paksha respectively in its place.)</p><h3>5 · Naisargika Bala — natural strength</h3><p>A fixed innate ranking, the same in every chart:</p><div class="tw"><table class="tbl"><thead><tr><th>Planet</th><th>Naisargika Bala (Virupas)</th></tr></thead><tbody><tr><td>Sun</td><td>60.0</td></tr><tr><td>Moon</td><td>51.4</td></tr><tr><td>Venus</td><td>42.9</td></tr><tr><td>Jupiter</td><td>34.3</td></tr><tr><td>Mercury</td><td>25.7</td></tr><tr><td>Mars</td><td>17.1</td></tr><tr><td>Saturn</td><td>8.6</td></tr></tbody></table></div><h3>6 · Drik Bala — aspectual strength</h3><p>The net of benefic minus malefic aspects received, using the Virupa aspect values from Ch. 26 (see Aspects).</p><h3>Totals and required minimums</h3><div class="tw"><table class="tbl"><thead><tr><th>Planet</th><th>Required Shadbala (Rupas)</th></tr></thead><tbody><tr><td>Sun</td><td>6.5</td></tr><tr><td>Moon</td><td>6.0</td></tr><tr><td>Mars</td><td>5.0</td></tr><tr><td>Mercury</td><td>7.0</td></tr><tr><td>Jupiter</td><td>6.5</td></tr><tr><td>Venus</td><td>5.5</td></tr><tr><td>Saturn</td><td>5.0</td></tr></tbody></table></div><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 27 (Shadbala — the Uchcha-bala formula, the Saptavargaja values 45/30/20/15/10/4/2, Kendradi 60/30/15, and the six components). Required-Rupa minimums are as commonly cited; verify the exact figures in the PDF.</p><h2 id="bhavabala">Bhava Bala — the strength of a house</h2><p>Houses are scored too, from: the strength of the <b>house-lord</b> (Bhavadhipati Bala), the house's <b>directional</b> strength (Bhava Dig Bala), and the net <b>aspects</b> on the house (Bhava Drik Bala). A strong house delivers its significations; a weak one under-delivers even under a capable lord.</p><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 27 (Bhava Bala components).</p><h2 id="ishta">Ishta and Kashta Bala — benefic vs difficult potency</h2><p>From a planet's exaltation-ray (Uchcha Rasmi) and motion-ray (Cheshta Rasmi), BPHS derives two opposed potencies that predict the <i>flavour</i> of its results:</p><p class="term"><b>Ishta Phala</b> — benefic potency — the capacity to give agreeable results. Roughly derived from the mean of the two rays; a high-Ishta planet blesses the matters it touches.</p><p class="term"><b>Kashta Phala</b> — difficult potency — its complement (Ishta and Kashta relate to a fixed total). A high-Kashta planet stresses the matters it touches.</p><p>A parallel Subhanka (benefic-point) scale grades a planet by dignity: 60 exalted, 45 Moolatrikona, 30 own, 22 great-friend, 15 friend, 8 neutral, 4 enemy, 2 great-enemy, 0 debilitated (halved in other vargas). Directional and temporal strengths likewise translate into good vs difficult tendencies.</p><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 28 (Ishta & Kashta phala from the Uchcha and Cheshta rays; the Subhanka scale).</p><h2 id="vim">Vimsopaka Bala — divisional strength</h2><p>A planet's dignity is tallied across a group of vargas (6, 7, 10 or all 16) on a 20-point scale and graded — used to weight how fully a planet delivers during its dasha:</p><div class="tw"><table class="tbl"><thead><tr><th>Grade (best → least)</th><th>Vimsopaka points (of 20)</th><th>≈ beneficial effect</th></tr></thead><tbody><tr><td>Atipoorna</td><td>17.5–20</td><td>~87–100%</td></tr><tr><td>Poorna</td><td>15.0–17.5</td><td>~75–87%</td></tr><tr><td>Atimadhya / Madhya</td><td>10.0–15.0</td><td>~50–75%</td></tr><tr><td>Swalpa / Atiswalpa</td><td>5.0–10.0</td><td>~25–50%</td></tr><tr><td>Heena / Atiheena</td><td>0–5.0</td><td>~0–25%</td></tr></tbody></table></div><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 7, vv. 30–32 (Vimsopaka grades) and Ch. 6 (varga groupings).</p><div class="mine"><b>Study note.</b> Full Shadbala needs exact longitudes and software. Without them, reason qualitatively and you'll capture most of it: is the planet dignified (Uchcha/Saptavargaja), angular (Dig/Kendradi), in helpful motion (retrograde vs combust — Cheshta), and benefically aspected (Drik)? Those four questions echo four of the six components.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p><b>How the numbers are worked out:</b> <a href="kundli-technical-report.html">the chart engine, in detail</a> &mdash; the ephemeris, the ayanāṃśa modes, the sunrise convention and what each divisional chart is computed from.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>
+</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Strength — Shadbala, Bhava Bala & Ishta/Kashta</h1><p class="sub">Every Shadbala component and its sub-parts and minimums, house strength, benefic vs difficult potency, and Vimsopaka divisional strength.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html" class="active">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#shad">Shadbala — the sixfold strength</a><a href="#bhavabala">Bhava Bala — the strength of a house</a><a href="#ishta">Ishta and Kashta Bala — benefic vs difficult potency</a><a href="#vim">Vimsopaka Bala — divisional strength</a></aside><main><p class="lead">Dignity tells you a placement's <b>quality</b>; <b>bala</b> (strength) tells you how much of it can actually manifest. BPHS scores strength in <b>Virupas</b> (Shashtiamsas) — 60 Virupas make 1 <b>Rupa</b>. Only the seven planets from the Sun to Saturn are scored; the nodes are not.</p><h2 id="shad">Shadbala — the sixfold strength</h2><p>Six sources of strength are computed for each planet and summed. Each also has a <b>required minimum</b>; a planet meeting or exceeding its requirement is 'strong' and reliably delivers its promise.</p><h3>1 · Sthana Bala — positional strength</h3><p>The largest and most-used component, built from five sub-parts:</p><ul><li><b>Uchcha Bala</b> (exaltation): distance from the debilitation point ÷ 3, max 60 Virupas — full at exaltation, zero at debilitation.</li><li><b>Saptavargaja Bala</b>: dignity summed across seven vargas (Rasi, Hora, Drekkana, Saptamsa, Navamsa, Dvadasamsa, Trimsamsa), by the fivefold relationship —</li><li><b>Ojhayugmarasi-amsa Bala</b>: strength by placement in odd/even signs and navamsas (male planets favour odd, female even).</li><li><b>Kendradi Bala</b>: 60 Virupas in a kendra, 30 in a panapara, 15 in an apoklima.</li><li><b>Drekkana Bala</b>: 15 Virupas for the appropriate planet-sex in the 1st/2nd/3rd drekkana.</li></ul><div class="tw"><table class="tbl"><thead><tr><th>Saptavargaja dignity (per varga)</th><th>Virupas</th></tr></thead><tbody><tr><td>Exaltation / Moolatrikona</td><td>45</td></tr><tr><td>Own sign</td><td>30</td></tr><tr><td>Great friend</td><td>20</td></tr><tr><td>Friend</td><td>15</td></tr><tr><td>Neutral</td><td>10</td></tr><tr><td>Enemy</td><td>4</td></tr><tr><td>Great enemy</td><td>2</td></tr></tbody></table></div><h3>2 · Dig Bala — directional strength</h3><p>Each planet is strongest in a particular angle (max 60 Virupas), weakening to zero in the opposite angle:</p><div class="tw"><table class="tbl"><thead><tr><th>Strong in the…</th><th>Planets</th></tr></thead><tbody><tr><td>10th (mid-heaven, south)</td><td>Sun, Mars</td></tr><tr><td>4th (nadir, north)</td><td>Moon, Venus</td></tr><tr><td>1st (ascendant, east)</td><td>Mercury, Jupiter</td></tr><tr><td>7th (descendant, west)</td><td>Saturn</td></tr></tbody></table></div><h3>3 · Kala Bala — temporal strength</h3><ul><li><b>Nathonnatha</b> (day/night): benefics gain by day, malefics by night (Mercury always).</li><li><b>Paksha Bala</b>: benefics strong in the bright fortnight, malefics in the dark.</li><li><b>Tribhaga Bala</b>: strength by the third of day/night ruled by the planet.</li><li><b>Varsha / Masa / Dina / Hora lords</b>: the lords of the year, month, weekday and hour gain strength.</li><li><b>Ayana Bala</b>: strength by declension (north/south of the equator).</li><li><b>Yuddha Bala</b>: the outcome of a planetary war adjusts the combatants.</li></ul><h3>4 · Cheshta Bala — motional strength</h3><p>Strength from motion: a <b>retrograde</b> planet scores near-maximum; a combust or fast-accelerating planet scores low. (The Sun and Moon take Ayana and Paksha respectively in its place.)</p><h3>5 · Naisargika Bala — natural strength</h3><p>A fixed innate ranking, the same in every chart:</p><div class="tw"><table class="tbl"><thead><tr><th>Planet</th><th>Naisargika Bala (Virupas)</th></tr></thead><tbody><tr><td>Sun</td><td>60.0</td></tr><tr><td>Moon</td><td>51.4</td></tr><tr><td>Venus</td><td>42.9</td></tr><tr><td>Jupiter</td><td>34.3</td></tr><tr><td>Mercury</td><td>25.7</td></tr><tr><td>Mars</td><td>17.1</td></tr><tr><td>Saturn</td><td>8.6</td></tr></tbody></table></div><h3>6 · Drik Bala — aspectual strength</h3><p>The net of benefic minus malefic aspects received, using the Virupa aspect values from Ch. 26 (see Aspects).</p><h3>Totals and required minimums</h3><div class="tw"><table class="tbl"><thead><tr><th>Planet</th><th>Required Shadbala (Rupas)</th></tr></thead><tbody><tr><td>Sun</td><td>6.5</td></tr><tr><td>Moon</td><td>6.0</td></tr><tr><td>Mars</td><td>5.0</td></tr><tr><td>Mercury</td><td>7.0</td></tr><tr><td>Jupiter</td><td>6.5</td></tr><tr><td>Venus</td><td>5.5</td></tr><tr><td>Saturn</td><td>5.0</td></tr></tbody></table></div><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 27 (Shadbala — the Uchcha-bala formula, the Saptavargaja values 45/30/20/15/10/4/2, Kendradi 60/30/15, and the six components). Required-Rupa minimums are as commonly cited; verify the exact figures in the PDF.</p><h2 id="bhavabala">Bhava Bala — the strength of a house</h2><p>Houses are scored too, from: the strength of the <b>house-lord</b> (Bhavadhipati Bala), the house's <b>directional</b> strength (Bhava Dig Bala), and the net <b>aspects</b> on the house (Bhava Drik Bala). A strong house delivers its significations; a weak one under-delivers even under a capable lord.</p><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 27 (Bhava Bala components).</p><h2 id="ishta">Ishta and Kashta Bala — benefic vs difficult potency</h2><p>From a planet's exaltation-ray (Uchcha Rasmi) and motion-ray (Cheshta Rasmi), BPHS derives two opposed potencies that predict the <i>flavour</i> of its results:</p><p class="term"><b>Ishta Phala</b> — benefic potency — the capacity to give agreeable results. Roughly derived from the mean of the two rays; a high-Ishta planet blesses the matters it touches.</p><p class="term"><b>Kashta Phala</b> — difficult potency — its complement (Ishta and Kashta relate to a fixed total). A high-Kashta planet stresses the matters it touches.</p><p>A parallel Subhanka (benefic-point) scale grades a planet by dignity: 60 exalted, 45 Moolatrikona, 30 own, 22 great-friend, 15 friend, 8 neutral, 4 enemy, 2 great-enemy, 0 debilitated (halved in other vargas). Directional and temporal strengths likewise translate into good vs difficult tendencies.</p><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 28 (Ishta & Kashta phala from the Uchcha and Cheshta rays; the Subhanka scale).</p><h2 id="vim">Vimsopaka Bala — divisional strength</h2><p>A planet's dignity is tallied across a group of vargas (6, 7, 10 or all 16) on a 20-point scale and graded — used to weight how fully a planet delivers during its dasha:</p><div class="tw"><table class="tbl"><thead><tr><th>Grade (best → least)</th><th>Vimsopaka points (of 20)</th><th>≈ beneficial effect</th></tr></thead><tbody><tr><td>Atipoorna</td><td>17.5–20</td><td>~87–100%</td></tr><tr><td>Poorna</td><td>15.0–17.5</td><td>~75–87%</td></tr><tr><td>Atimadhya / Madhya</td><td>10.0–15.0</td><td>~50–75%</td></tr><tr><td>Swalpa / Atiswalpa</td><td>5.0–10.0</td><td>~25–50%</td></tr><tr><td>Heena / Atiheena</td><td>0–5.0</td><td>~0–25%</td></tr></tbody></table></div><p class="src"><span>Source</span> BPHS, Vol. 1, Ch. 7, vv. 30–32 (Vimsopaka grades) and Ch. 6 (varga groupings).</p><div class="mine"><b>Study note.</b> Full Shadbala needs exact longitudes and software. Without them, reason qualitatively and you'll capture most of it: is the planet dignified (Uchcha/Saptavargaja), angular (Dig/Kendradi), in helpful motion (retrograde vs combust — Cheshta), and benefically aspected (Drik)? Those four questions echo four of the six components.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p><b>How the numbers are worked out:</b> <a href="kundli-technical-report.html">the chart engine, in detail</a> &mdash; the ephemeris, the ayanāṃśa modes, the sunrise convention and what each divisional chart is computed from.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>

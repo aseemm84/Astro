@@ -1969,6 +1969,186 @@ svg.skysvg .sk-artlab{font-size:9.5px;font-weight:600;fill:#2a2f4a;text-anchor:m
 .swhost[data-wtheme="mono"] .swhsvg .swh-artlab{fill:#f4f4f6;stroke:rgba(10,10,12,.85)}
 .swhost[data-wtheme="mono"] .swhsvg .swh-arthalo{stroke:rgba(210,210,218,.42)}
 
+/* ===== ayanamsa.html ========================================================
+   The page has to work for somebody who has never met a degree sign, so the
+   drawings carry the argument and the prose follows them. Colour does one job
+   throughout and only one: GOLD is the stars and the sidereal frame, BLUE is
+   the equinox and the tropical frame, and the wedge between them — the
+   ayanāṃśa itself — is the one warm accent on the page. Nothing else is
+   allowed those three. */
+/* .kdeva — the Devanagari gloss beside a heading. It is defined in
+   cosmos.css, which the ceremony, kundli and motion SHELLS load but an
+   ordinary page bundle does not, so on this page the spans rendered
+   unstyled and ran straight into the heading: "Watch the gap openअन्तरं".
+   Copied here verbatim apart from that. This is the third class this
+   session found to be defined only in a stylesheet the page in hand did not
+   load — .sk-*, .swh-* and now this — so it is worth saying plainly: a class
+   working somewhere else is not evidence it will work here. */
+.kdeva{font-family:var(--deva);font-weight:600;opacity:.95;
+  margin-left:.45em;font-size:.82em;color:var(--src-key)}
+
+.aysvg{width:100%;height:auto;display:block}
+.aywrap{margin:1.1rem 0;max-width:760px}
+.aybar{display:flex;flex-wrap:wrap;gap:.75rem 1.1rem;align-items:center;
+  margin:.8rem 0 1.1rem;padding:.7rem .85rem;border:1px solid var(--border-2,#d8d8e6);
+  border-radius:10px;background:var(--surface-2,#f4f4fb)}
+.aybar label{display:inline-flex;align-items:center;gap:.45rem;font-size:.92rem}
+.aybar input[type=range]{width:14rem;vertical-align:middle}
+.ayread{font-variant-numeric:tabular-nums;font-weight:600;color:var(--text,#20233a)}
+
+/* the two-zero cards */
+.aygrid{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));
+  margin:1.1rem 0}
+.aycard{border:1px solid var(--border-2,#d8d8e6);border-radius:10px;padding:.9rem 1rem;
+  background:var(--surface-2,#f4f4fb)}
+.aycard h3{margin:.1rem 0 .4rem;font-size:1.02rem}
+.aycard p{margin:0}
+
+/* the rings */
+.aysvg .ay-sid{fill:#c9a24b;fill-opacity:.20}
+.aysvg .ay-sid.alt{fill-opacity:.10}
+.aysvg .ay-trop{fill:#5f74b8;fill-opacity:.22}
+.aysvg .ay-trop.alt{fill-opacity:.11}
+.aysvg .ay-sidlab{font-size:13px;font-weight:600;fill:#7a5f1c;text-anchor:middle}
+.aysvg .ay-troplab{font-size:12px;font-weight:600;fill:#3a4a86;text-anchor:middle}
+.aysvg .ay-zsid{stroke:#b08a2a;stroke-width:3}
+.aysvg .ay-ztrop{stroke:#44579e;stroke-width:3;stroke-dasharray:7 5}
+.aysvg .ay-gap{fill:#c2492f;fill-opacity:.16}
+.aysvg .ay-zlab{font-size:12px;font-weight:700;text-anchor:middle}
+.aysvg .ay-zlab.sid{fill:#8a6a1e}
+.aysvg .ay-zlab.trop{fill:#3a4a86}
+.aysvg .ay-gapval{font-size:30px;font-weight:700;fill:var(--sem-bad,#a1493a);text-anchor:middle}
+.aysvg .ay-gapsub{font-size:13px;fill:var(--muted-2,#5a5e78);text-anchor:middle}
+
+/* precession */
+.aysvg .ay-cone{fill:#5f74b8;fill-opacity:.10;stroke:#5f74b8;stroke-width:1;
+  stroke-dasharray:5 4}
+.aysvg .ay-conetop{fill:none;stroke:#5f74b8;stroke-width:1.6;stroke-dasharray:5 4}
+.aysvg .ay-earth{fill:#1f2a44;fill-opacity:.85;stroke:#4a5a86;stroke-width:1.5}
+.aysvg .ay-axis{stroke:#c9a24b;stroke-width:2.5}
+.aysvg .ay-equator{stroke:#9aa6c8;stroke-width:1.2;stroke-dasharray:4 3}
+.aysvg .ay-conelab{font-size:12px;fill:#4a5a86;text-anchor:middle}
+.aysvg .ay-conetilt{font-size:12px;fill:#8a6a1e}
+.aysvg .ay-ratehead{font-size:13px;font-weight:700;fill:var(--text,#20233a)}
+.aysvg .ay-rate{font-size:28px;font-weight:700;fill:var(--sem-bad,#a1493a)}
+.aysvg .ay-ratesub{font-size:12px;fill:var(--muted-2,#5a5e78)}
+
+/* the equation, as three labelled pieces rather than a line of symbols */
+.ayeq{margin:1rem 0;padding:.9rem 1rem;border:1px solid var(--border-2,#d8d8e6);
+  border-radius:10px;background:var(--surface-2,#f4f4fb)}
+.ayeqrow{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .6rem}
+.ayeqlhs{font-weight:700;font-size:1.05rem}
+.ayeqop{color:var(--muted-2,#5a5e78);font-size:1.15rem}
+.ayeqterm{display:inline-flex;flex-direction:column;gap:.15rem;padding:.4rem .6rem;
+  border-radius:8px;border:1px solid var(--border-2,#d8d8e6);background:var(--surface-3,#fff)}
+.ayeqterm b{font-variant-numeric:tabular-nums;font-size:1rem}
+.ayeqterm i{font-style:normal;font-size:.78rem;color:var(--muted-2,#5a5e78)}
+.ayeqterm.t0{border-color:#b08a2a}
+.ayeqterm.t1{border-color:#44579e}
+.ayeqterm.t2{border-color:#7a7f99}
+.ayeqnote{margin:.6rem 0 0;font-size:.92rem;color:var(--muted-2,#5a5e78)}
+.ayeqbad{font-weight:600;color:var(--sem-bad,#a1493a)}
+.aysvg .ay-axis0{stroke:var(--border-2,#d8d8e6);stroke-width:1}
+.aysvg .ay-bar.t0{fill:#b08a2a}
+.aysvg .ay-bar.t1{fill:#44579e}
+.aysvg .ay-bar.t2{fill:#7a7f99}
+.aysvg .ay-barval{font-size:12px;font-variant-numeric:tabular-nums;fill:var(--text,#20233a);
+  dominant-baseline:middle}
+.aysvg .ay-barlab{font-size:12px;fill:var(--muted-2,#5a5e78)}
+.aysvg .ay-bartot{font-size:12.5px;font-weight:700;fill:var(--text,#20233a)}
+
+/* the spread */
+.aysvg .ay-sprrail{stroke:var(--border-2,#d8d8e6);stroke-width:1}
+.aysvg .ay-sprdot{fill:#5f74b8}
+.aysvg .ay-sprdot.on{fill:var(--sem-bad,#a1493a);r:6}
+.aysvg .ay-sprdot.mine{fill:var(--sem-good,#1c6b46)}
+.aysvg .ay-sprname{font-size:11.5px;fill:var(--muted-2,#5a5e78);text-anchor:end}
+.aysvg .ay-sprname.on{fill:var(--sem-bad,#a1493a);font-weight:700}
+.aysvg .ay-sprval{font-size:11.5px;font-variant-numeric:tabular-nums;fill:var(--muted-2,#5a5e78)}
+.aysvg .ay-sprhead{font-size:13px;font-weight:700;fill:var(--text,#20233a)}
+
+/* tables */
+.aytabwrap{overflow-x:auto;margin:.9rem 0}
+.aytab{border-collapse:collapse;width:100%;font-size:.9rem}
+.aytab th,.aytab td{border-bottom:1px solid var(--border-2,#d8d8e6);padding:.42rem .6rem;
+  text-align:left;vertical-align:top}
+.aytab th{font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--muted-2,#5a5e78);font-weight:600}
+.aytab td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.aytab td.note{font-size:.84rem;color:var(--muted-2,#5a5e78)}
+.aytab tr.mine{background:rgba(47,125,85,.08)}
+
+/* the measured checks under the impact table */
+.aycheck{list-style:none;padding:0;margin:.9rem 0}
+.aycheck li{padding:.35rem 0 .35rem 1.7rem;position:relative;font-size:.95rem}
+.aycheck li::before{position:absolute;left:0;top:.35rem;font-weight:700}
+.aycheck li.yes::before{content:"✓";color:#2f7d55}
+.aycheck li.no::before{content:"✗";color:var(--sem-bad,#a1493a)}
+.aycheck li.obs::before{content:"·";color:#6b665e;font-size:1.3rem;top:.1rem}
+
+/* the sandbox */
+.aysand{margin:1rem 0}
+.aysandcols{display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))}
+.aysandcol{border:1px solid var(--border-2,#d8d8e6);border-radius:10px;padding:.9rem 1rem;
+  background:var(--surface-2,#f4f4fb)}
+.aysandcol h3{margin:.1rem 0 .6rem;font-size:1rem}
+.aysandcol label{display:flex;flex-direction:column;gap:.25rem;margin:.6rem 0;
+  font-size:.9rem}
+.aysandcol input[type=range]{width:100%}
+.aysandnote{font-size:.86rem;color:var(--muted-2,#5a5e78);margin:.2rem 0 .6rem}
+.aysandout{margin:.9rem 0;padding:.7rem .85rem;border-radius:10px;
+  border:1px solid var(--border-2,#d8d8e6);font-size:.95rem}
+
+/* The capture palette. The card and the film paint a dark frame and then
+   photograph the page's own drawing, which is coloured for a cream page —
+   so the first card came out with near-unreadable labels on black. The host
+   carries data-film="dark" for the instant it is photographed and wears
+   these instead. It is the same drawing; only the ink changes. */
+.aywrap [data-film="dark"] .ay-sidlab,[data-film="dark"] .ay-sidlab{fill:#e8c874}
+[data-film="dark"] .ay-troplab{fill:#9fb0e8}
+[data-film="dark"] .ay-sid{fill:#e8c874;fill-opacity:.22}
+[data-film="dark"] .ay-sid.alt{fill-opacity:.11}
+[data-film="dark"] .ay-trop{fill:#7f93e0;fill-opacity:.24}
+[data-film="dark"] .ay-trop.alt{fill-opacity:.12}
+[data-film="dark"] .ay-zsid{stroke:#f0cf7a}
+[data-film="dark"] .ay-ztrop{stroke:#9fb0e8}
+[data-film="dark"] .ay-zlab.sid{fill:#f0cf7a}
+[data-film="dark"] .ay-zlab.trop{fill:#9fb0e8}
+[data-film="dark"] .ay-gap{fill:#e8705a;fill-opacity:.26}
+[data-film="dark"] .ay-gapval{fill:#ff9c80}
+[data-film="dark"] .ay-gapsub{fill:#9fa8c6}
+
+/* The drawings under a dark theme. The ayanāṃśa figures are coloured for the
+   paper ground; on midnight, peetambari and emerald the page goes dark around
+   them and the same ink becomes unreadable — theme-verify measured 1.02:1,
+   which is text you cannot see at all. These are the capture palette's
+   colours, which already exist for exactly this reason on the card. */
+html[data-theme="midnight"] .aysvg .ay-sidlab,
+html[data-theme="peetambari"] .aysvg .ay-sidlab,
+html[data-theme="emerald"] .aysvg .ay-sidlab{fill:#e8c874}
+html[data-theme="midnight"] .aysvg .ay-troplab,
+html[data-theme="peetambari"] .aysvg .ay-troplab,
+html[data-theme="emerald"] .aysvg .ay-troplab{fill:#9fb0e8}
+html[data-theme="midnight"] .aysvg .ay-zlab.sid,
+html[data-theme="peetambari"] .aysvg .ay-zlab.sid,
+html[data-theme="emerald"] .aysvg .ay-zlab.sid{fill:#f0cf7a}
+html[data-theme="midnight"] .aysvg .ay-zlab.trop,
+html[data-theme="peetambari"] .aysvg .ay-zlab.trop,
+html[data-theme="emerald"] .aysvg .ay-zlab.trop{fill:#9fb0e8}
+html[data-theme="midnight"] .aysvg .ay-gapval,
+html[data-theme="peetambari"] .aysvg .ay-gapval,
+html[data-theme="emerald"] .aysvg .ay-gapval{fill:#ff9c80}
+html[data-theme="midnight"] .aysvg .ay-conetilt,
+html[data-theme="peetambari"] .aysvg .ay-conetilt,
+html[data-theme="emerald"] .aysvg .ay-conetilt{fill:#e8c874}
+html[data-theme="midnight"] .aysvg .ay-conelab,
+html[data-theme="peetambari"] .aysvg .ay-conelab,
+html[data-theme="emerald"] .aysvg .ay-conelab{fill:#9fb0e8}
+html[data-theme="midnight"] .aysvg .ay-rate,
+html[data-theme="peetambari"] .aysvg .ay-rate,
+html[data-theme="emerald"] .aysvg .ay-rate{fill:#ff9c80}
+
+
 /* ===== Generated theme overrides =====================================
    Written by source/tools/gen-theme-overrides.py from the literal
    colours in app.css and pages.css. Do not edit by hand: regenerate.
@@ -2759,4 +2939,4 @@ html[data-theme] nav.site .themepick select option{
     return true;
   }, list: THEMES };
 })();
-</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Ashtakavarga</h1><p class="sub">Benefic-point rules, Bhinna- and Sarvashtakavarga with reading thresholds, kakshas, the three shodhanas, and transit interpretation.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html" class="active">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#bindu">Bindus and rekhas</a><a href="#bav">Bhinnashtakavarga & Sarvashtakavarga</a><a href="#kaksha">Kakshas — the fine grid</a><a href="#shodhana">The three shodhanas (reductions)</a><a href="#practice">Using Ashtakavarga in practice</a></aside><main><p class="lead"><b>Ashtakavarga</b> ('eight-fold division') is a points system that grades every sign for support. Eight contributors — the seven planets <b>plus the Lagna</b> — each award a benefic point (a <b>rekha</b>) to certain signs, counted from themselves and from every other contributor by fixed tables. The totals guide transit timing and confirm strength.</p><h2 id="bindu">Bindus and rekhas</h2><p>In a planet's Ashtakavarga an auspicious point is a <b>rekha</b> (a line — a favourable 'sthana') and an unfavourable mark is a <b>bindu</b> (a dot — an inauspicious 'karana'). The rekhas a sign collects measure how supportive that sign is for the matters of that planet.</p><p class="src"><span>Source</span> BPHS, Vol. 2, Ch. 66 (the eight contributors; rekha = auspicious sthana, bindu = inauspicious karana; the benefic-place tables for each planet reckoned from itself and from the other seven and the Lagna).</p><h2 id="bav">Bhinnashtakavarga & Sarvashtakavarga</h2><p class="term"><b>Bhinnashtakavarga (BAV)</b> — the individual eight-fold chart of one planet — its rekhas across the twelve signs, each sign scoring 0–8. Read a planet's BAV to see which signs (and thus houses) support it.</p><p class="term"><b>Sarvashtakavarga (SAV)</b> — the sum of all seven planets' BAVs in each sign — the chart's overall support map (total ≈ 337 across the zodiac). Used heavily for transits and for ranking the houses.</p><div class="tw"><table class="tbl"><thead><tr><th>SAV in a sign</th><th>Broad reading</th></tr></thead><tbody><tr><td>30 and above</td><td>well-supported — transits here and the houses held tend to go smoothly</td></tr><tr><td>about 25–29</td><td>average / mixed support</td></tr><tr><td>25 and below</td><td>under-supported — extra care with transits and the matters of that house</td></tr></tbody></table></div><div class="note"><b>Translator / commentary.</b> The SAV thresholds are a widely-used rule of thumb, not a rigid law — a sign's score weights likelihoods that still depend on the whole chart and the dasha in force.</div><h2 id="kaksha">Kakshas — the fine grid</h2><p>Each sign is further divided into <b>eight kakshas</b> (sub-portions), each ruled by one of the eight contributors in a fixed order (Saturn, Jupiter, Mars, Sun, Venus, Mercury, Moon, Lagna). A transiting planet gives results according to whether the kaksha it is passing through holds a rekha or a bindu — the basis of fine <b>Kaksha transit</b> prediction.</p><h2 id="shodhana">The three shodhanas (reductions)</h2><p>Before the figures are used for finer, timing-level prediction, BPHS 'purifies' them in a set order:</p><ol><li><b>Trikona Shodhana</b> — within each trine of signs (Aries-Leo-Sagittarius, etc.) subtract the smallest of the three from all three; if any of the three is zero, no reduction is done. (Ch. 67)</li><li><b>Ekadhipatya Shodhana</b> — reconcile the two signs owned by one planet, by rules that depend on whether each sign is occupied and which holds the larger figure. (Ch. 68)</li><li><b>Pinda Sadhana</b> — multiply each rectified figure by the sign-measure (Rasimana) and, where a planet sits there, the planet-measure (Grahamana), and sum — giving the <b>Pinda</b> used to time when a house's matters prosper or suffer under transit. (Ch. 69)</li></ol><p class="src"><span>Source</span> BPHS, Vol. 2, Ch. 67 (Trikona), Ch. 68 (Ekadhipatya), Ch. 69 (Pinda Sadhana), Ch. 70 (applying the Pinda to time a house's results under Saturn's transit), Ch. 71 (a longevity estimate from the Ashtakavarga).</p><h2 id="practice">Using Ashtakavarga in practice</h2><ul><li><b>Transit strength:</b> a slow planet (Saturn, Jupiter) transiting a sign with high SAV — and, finely, a kaksha holding a rekha — tends to give results; over a low-SAV sign, more strain.</li><li><b>Confirming a house:</b> compare the SAV of a house's sign and the BAV of its lord — high figures reinforce a promise the rasi chart already makes.</li><li><b>Timing:</b> the Pinda (after the shodhanas) is used to pinpoint <i>when</i> a house's matters flourish or are stressed as Saturn transits particular nakshatras/rasis.</li></ul><div class="caution"><b>Handle with care.</b> Ashtakavarga grades <b>support</b>, not fate. A high score does not promise a good event, nor a low one a bad event — it weights probabilities that remain conditional on the full chart and the dasha in force.</div><div class="mine"><b>Study note.</b> Start with the <b>Sarvashtakavarga</b>: note which signs (and the houses they hold) score high or low, and watch the slow-planet transits accordingly. Add the BAVs, kakshas, shodhanas and Pinda as you move from gauging general support to timing specific results.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p><b>How the numbers are worked out:</b> <a href="kundli-technical-report.html">the chart engine, in detail</a> &mdash; the ephemeris, the ayanāṃśa modes, the sunrise convention and what each divisional chart is computed from.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>
+</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Ashtakavarga</h1><p class="sub">Benefic-point rules, Bhinna- and Sarvashtakavarga with reading thresholds, kakshas, the three shodhanas, and transit interpretation.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html" class="active">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#bindu">Bindus and rekhas</a><a href="#bav">Bhinnashtakavarga & Sarvashtakavarga</a><a href="#kaksha">Kakshas — the fine grid</a><a href="#shodhana">The three shodhanas (reductions)</a><a href="#practice">Using Ashtakavarga in practice</a></aside><main><p class="lead"><b>Ashtakavarga</b> ('eight-fold division') is a points system that grades every sign for support. Eight contributors — the seven planets <b>plus the Lagna</b> — each award a benefic point (a <b>rekha</b>) to certain signs, counted from themselves and from every other contributor by fixed tables. The totals guide transit timing and confirm strength.</p><h2 id="bindu">Bindus and rekhas</h2><p>In a planet's Ashtakavarga an auspicious point is a <b>rekha</b> (a line — a favourable 'sthana') and an unfavourable mark is a <b>bindu</b> (a dot — an inauspicious 'karana'). The rekhas a sign collects measure how supportive that sign is for the matters of that planet.</p><p class="src"><span>Source</span> BPHS, Vol. 2, Ch. 66 (the eight contributors; rekha = auspicious sthana, bindu = inauspicious karana; the benefic-place tables for each planet reckoned from itself and from the other seven and the Lagna).</p><h2 id="bav">Bhinnashtakavarga & Sarvashtakavarga</h2><p class="term"><b>Bhinnashtakavarga (BAV)</b> — the individual eight-fold chart of one planet — its rekhas across the twelve signs, each sign scoring 0–8. Read a planet's BAV to see which signs (and thus houses) support it.</p><p class="term"><b>Sarvashtakavarga (SAV)</b> — the sum of all seven planets' BAVs in each sign — the chart's overall support map (total ≈ 337 across the zodiac). Used heavily for transits and for ranking the houses.</p><div class="tw"><table class="tbl"><thead><tr><th>SAV in a sign</th><th>Broad reading</th></tr></thead><tbody><tr><td>30 and above</td><td>well-supported — transits here and the houses held tend to go smoothly</td></tr><tr><td>about 25–29</td><td>average / mixed support</td></tr><tr><td>25 and below</td><td>under-supported — extra care with transits and the matters of that house</td></tr></tbody></table></div><div class="note"><b>Translator / commentary.</b> The SAV thresholds are a widely-used rule of thumb, not a rigid law — a sign's score weights likelihoods that still depend on the whole chart and the dasha in force.</div><h2 id="kaksha">Kakshas — the fine grid</h2><p>Each sign is further divided into <b>eight kakshas</b> (sub-portions), each ruled by one of the eight contributors in a fixed order (Saturn, Jupiter, Mars, Sun, Venus, Mercury, Moon, Lagna). A transiting planet gives results according to whether the kaksha it is passing through holds a rekha or a bindu — the basis of fine <b>Kaksha transit</b> prediction.</p><h2 id="shodhana">The three shodhanas (reductions)</h2><p>Before the figures are used for finer, timing-level prediction, BPHS 'purifies' them in a set order:</p><ol><li><b>Trikona Shodhana</b> — within each trine of signs (Aries-Leo-Sagittarius, etc.) subtract the smallest of the three from all three; if any of the three is zero, no reduction is done. (Ch. 67)</li><li><b>Ekadhipatya Shodhana</b> — reconcile the two signs owned by one planet, by rules that depend on whether each sign is occupied and which holds the larger figure. (Ch. 68)</li><li><b>Pinda Sadhana</b> — multiply each rectified figure by the sign-measure (Rasimana) and, where a planet sits there, the planet-measure (Grahamana), and sum — giving the <b>Pinda</b> used to time when a house's matters prosper or suffer under transit. (Ch. 69)</li></ol><p class="src"><span>Source</span> BPHS, Vol. 2, Ch. 67 (Trikona), Ch. 68 (Ekadhipatya), Ch. 69 (Pinda Sadhana), Ch. 70 (applying the Pinda to time a house's results under Saturn's transit), Ch. 71 (a longevity estimate from the Ashtakavarga).</p><h2 id="practice">Using Ashtakavarga in practice</h2><ul><li><b>Transit strength:</b> a slow planet (Saturn, Jupiter) transiting a sign with high SAV — and, finely, a kaksha holding a rekha — tends to give results; over a low-SAV sign, more strain.</li><li><b>Confirming a house:</b> compare the SAV of a house's sign and the BAV of its lord — high figures reinforce a promise the rasi chart already makes.</li><li><b>Timing:</b> the Pinda (after the shodhanas) is used to pinpoint <i>when</i> a house's matters flourish or are stressed as Saturn transits particular nakshatras/rasis.</li></ul><div class="caution"><b>Handle with care.</b> Ashtakavarga grades <b>support</b>, not fate. A high score does not promise a good event, nor a low one a bad event — it weights probabilities that remain conditional on the full chart and the dasha in force.</div><div class="mine"><b>Study note.</b> Start with the <b>Sarvashtakavarga</b>: note which signs (and the houses they hold) score high or low, and watch the slow-planet transits accordingly. Add the BAVs, kakshas, shodhanas and Pinda as you move from gauging general support to timing specific results.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p><b>How the numbers are worked out:</b> <a href="kundli-technical-report.html">the chart engine, in detail</a> &mdash; the ephemeris, the ayanāṃśa modes, the sunrise convention and what each divisional chart is computed from.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>
