@@ -430,6 +430,72 @@ head("the figures are geometrically what they claim to be");
      r.coneHalf.toFixed(2) + "°");
 }
 
+/* ───── the polynomial, driving the chart ───────────────────────────────── */
+head("the equation itself can drive the chart, term by term");
+{
+  const { p, errs } = await open();
+  const r = await p.evaluate(async () => {
+    const w = ms => new Promise(x => setTimeout(x, ms));
+    const set = async (id, v, ev) => {
+      const e = document.getElementById(id);
+      e.value = String(v); e.dispatchEvent(new Event(ev, { bubbles: true })); await w(420);
+    };
+    const signs = () => [...document.querySelectorAll("#ay-chartedge tbody tr")]
+      .map(t => t.querySelectorAll("td")[1].textContent);
+    const ayRead = () => document.getElementById("ay-chartread").textContent;
+    await set("ay-chartmode", "eq", "change");
+    const shown = !document.getElementById("ay-charteqout").hidden;
+    const worked = document.getElementById("ay-charteqout").textContent;
+
+    /* the number driving the chart must BE the polynomial, recomputed here */
+    const c0 = +document.getElementById("ay-ec0").value;
+    const c1 = +document.getElementById("ay-ec1").value / 3600 * 100;
+    const c2 = +document.getElementById("ay-ec2").value;
+    const flat = worked.replace(/\s+/g, "");
+    const m = /driveSthechartwith/.test(flat) ? null
+            : /driveschartwith([\d.]+)°/.exec(flat) ||
+              /drivesthechartwith([\d.]+)°/.exec(flat);
+    const T = Number((/T=(-?[\d.]+)/.exec(flat) || [0, 0])[1]);
+    const mine = c0 + c1 * T + c2 * T * T;
+
+    /* at a present-day date the T² term is far too small to move anything —
+       the page says so, so it is checked rather than taken on trust */
+    const base = signs();
+    await set("ay-ec2", 0.004, "input");
+    const movedByC2 = base.filter((v, i) => v !== signs()[i]).length;
+    const nowRead = ayRead();
+    await set("ay-ec2", 0.000307, "input");
+
+    /* and at a distant date it is not. The page claims this too. */
+    await set("ay-when", "1200-06-15T12:00", "change");
+    await w(300);
+    const worked2 = document.getElementById("ay-charteqout").textContent.replace(/\s+/g, "");
+    const T2 = Number((/T=(-?[\d.]+)/.exec(worked2) || [0, 0])[1]);
+    const far = /c₂×T²([+−][\d.]+)°/.exec(worked2);
+    return { shown, total: m ? +m[1] : null, mine, T, movedByC2, nowRead,
+             T2, farC2: far ? Math.abs(+far[1].replace("−", "-")) : null,
+             saysTiny: /far too small to move anything/.test(worked) };
+  });
+  await p.close();
+  is(errs.filter(quiet).length === 0, "no page errors");
+  is(r.shown, "choosing 'from the equation' shows the arithmetic driving the chart");
+  /* T is read back off a four-decimal display, so recomputing from it carries
+     about 7×10⁻⁵° of rounding — the tolerance is that, not slack. A wrong
+     coefficient or a wrong power would miss by orders of magnitude more. */
+  is(r.total != null && Math.abs(r.total - r.mine) < 5e-4,
+     "and the number it drives the chart with IS c₀ + c₁T + c₂T² (" +
+     (r.total || 0).toFixed(6) + " vs " + r.mine.toFixed(6) + ")");
+  /* the page's own claim about the quadratic term, tested both ways */
+  is(r.saysTiny, "at a present-day date it reports the T² term as too small to matter");
+  is(r.movedByC2 === 0,
+     "and swinging that term across its whole range moves no graha at all");
+  is(Math.abs(r.T2) > 7,
+     "setting the moment to 1200 CE gives T = " + r.T2 + ", eight centuries out");
+  is(r.farC2 != null && r.farC2 > 0.01,
+     "where the same term now contributes " + (r.farC2 || 0).toFixed(4) +
+     "° — so the page's 'it starts to matter' is true, not a figure of speech");
+}
+
 await browser.close();
 console.log("\n" + (fail ? "FAIL" : "PASS") + " ayanamsa-verify — " + pass
             + " passed, " + fail + " failed");

@@ -3103,12 +3103,28 @@ html[data-theme] nav.site .themepick select option{
 <h2 id="chart">What it does to an actual chart<span class="kdeva">कुण्डली-भेदः</span></h2>
 <p>All of the above becomes concrete here. The chart below is cast for the moment and place above, and the only thing changing is the number being subtracted. Drag it and watch grahas cross from one r&amacr;&#347;i into the next.</p>
 <div class="aybar">
-  <label>Ayan&amacr;&#7745;&#347;a <input type="range" id="ay-chartay" min="0" max="30" step="0.01"></label>
-  <span class="ayread" id="ay-chartread"></span>
+  <label>Drive it <select id="ay-chartmode" class="swin">
+    <option value="direct" selected>by the ayan&amacr;&#7745;&#347;a itself</option>
+    <option value="eq">from the equation</option>
+  </select></label>
   <span class="swsp"></span>
   <label>Jump to <select id="ay-chartjump" class="swin"></select></label>
 </div>
+<div class="aybar" id="ay-chartdirect">
+  <label>Ayan&amacr;&#7745;&#347;a <input type="range" id="ay-chartay" min="0" max="30" step="0.01"></label>
+  <span class="ayread" id="ay-chartread"></span>
+</div>
+<div class="aybar" id="ay-charteq" hidden>
+  <label>c&#8320; &mdash; where it stood in 2000
+    <input type="range" id="ay-ec0" min="0" max="30" step="0.001" value="23.857"></label>
+  <label>c&#8321; &mdash; rate, arcsec a year
+    <input type="range" id="ay-ec1" min="0" max="80" step="0.1" value="50.288"></label>
+  <label>c&#8322; &mdash; curvature
+    <input type="range" id="ay-ec2" min="-0.004" max="0.004" step="0.00002" value="0.000307"></label>
+</div>
+<div class="ayworked" id="ay-charteqout" hidden></div>
 <div class="aychartwrap"><div id="ay-chartsvg"></div><div id="ay-chartedge"></div></div>
+<p><b>From the equation</b> hands the three coefficients to you instead. The chart is then driven by the formula evaluated at the chart&rsquo;s own date &mdash; which is how a real convention works, since the ayan&amacr;&#7745;&#347;a a chart is cast with is the polynomial evaluated at the birth moment. Watch which term is doing the work: at a present-day date the <i>T</i>&sup2; term contributes a few thousandths of an arcsecond and you can swing it from one end of its range to the other without a single graha moving. Set the moment above to a date some centuries away and it starts to matter.</p>
 <p>The column on the right is the part worth studying: for each graha it gives <b>how far the ayan&amacr;&#7745;&#347;a would have to move</b> before that graha changes r&amacr;&#347;i, and before it changes nak&#7779;atra. A graha sitting a few arcminutes from a boundary is one that the seventeen published definitions do not agree about &mdash; and the span of those definitions is marked on each bar, so you can see at a glance which disagreements are real and which are academic.</p>
 
 <h2 id="spread">Seventeen answers to one question<span class="kdeva">मत-भेदः</span></h2>

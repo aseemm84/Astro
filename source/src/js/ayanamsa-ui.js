@@ -978,6 +978,65 @@
      WHAT IT DOES TO A CHART
      ====================================================================== */
   var CHART_AY = null;          /* null means "follow the selected definition" */
+  var CHART_MODE = "direct";    /* or "eq": the polynomial drives the chart */
+
+  /* The chart's own date in centuries from 2000 — the T a real convention is
+     evaluated at, because the ayanāṃśa a chart is cast with is the formula
+     evaluated at the birth moment and not at today. */
+  function chartT() {
+    var d = new Date((S.when == null ? Date.now() : S.when) +
+                     (S.place ? S.place.tz : 0) * 3600000);
+    return (d.getUTCFullYear() + (d.getUTCMonth() + 0.5) / 12 - 2000) / 100;
+  }
+  function eqCoeffs() {
+    return {
+      c0: +($("ay-ec0") || {}).value || 0,
+      c1: (+($("ay-ec1") || {}).value || 0) / 3600 * 100,   /* ″/yr → °/century */
+      c2: +($("ay-ec2") || {}).value || 0
+    };
+  }
+  /* the ayanāṃśa the chart is actually drawn with, whichever way it is driven */
+  function chartAyan() {
+    if (CHART_MODE === "eq") {
+      var c = eqCoeffs(), T = chartT();
+      return c.c0 + c.c1 * T + c.c2 * T * T;
+    }
+    return CHART_AY == null ? (ayanAt(S.ringMode, S.year) || 0) : CHART_AY;
+  }
+
+  /* The arithmetic that produced the chart, shown feeding it — and with each
+     term's share, because the point of driving a chart from the equation is
+     to see WHICH part of the equation moved a graha. */
+  function drawChartEq() {
+    var box = $("ay-charteqout");
+    if (!box) return;
+    if (CHART_MODE !== "eq") { box.hidden = true; return; }
+    box.hidden = false;
+    var c = eqCoeffs(), T = chartT();
+    var t0 = c.c0, t1 = c.c1 * T, t2 = c.c2 * T * T;
+    var tot = t0 + t1 + t2;
+    /* how far each term alone could move a graha, in arcminutes — the T²
+       term is a few thousandths of an arcsecond at a present-day date and
+       this says so rather than leaving a reader to wonder why the slider
+       appears dead */
+    box.innerHTML = '<table class="ayworktab"><tbody>' +
+      '<tr><td>the chart&rsquo;s date</td><td><b>' +
+        esc(new Date((S.when == null ? Date.now() : S.when) +
+            (S.place ? S.place.tz : 0) * 3600000).getUTCFullYear()) +
+        '</b> &nbsp;→&nbsp; <i>T</i> = <b>' + T.toFixed(4) + '</b></td></tr>' +
+      '<tr><td>c₀</td><td>' + t0.toFixed(6) + '°</td></tr>' +
+      '<tr><td>c₁ × T</td><td>' + (t1 >= 0 ? "+" : "−") + Math.abs(t1).toFixed(6) +
+        '°</td></tr>' +
+      '<tr><td>c₂ × T²</td><td>' + (t2 >= 0 ? "+" : "−") + Math.abs(t2).toFixed(6) +
+        '° &nbsp;<span class="ayminival">' +
+        (Math.abs(t2) * 3600 < 1
+          ? "— " + (Math.abs(t2) * 3600).toFixed(3) + "″, far too small to move anything"
+          : "— " + (Math.abs(t2) * 60).toFixed(1) + "′, now large enough to matter") +
+        '</span></td></tr>' +
+      '<tr class="tot"><td>drives the chart with</td><td><b>' + tot.toFixed(6) +
+        '°</b> = <b>' + esc(dm(tot)) + '</b></td></tr>' +
+      '</tbody></table>';
+  }
 
   function chartSky() {
     /* The engine is asked for TROPICAL longitudes once, by taking a sidereal
@@ -1001,7 +1060,7 @@
     if (!h || typeof northChart !== "function") return;
     var sky = chartSky();
     if (!sky) { h.innerHTML = ""; return; }
-    var ay = CHART_AY == null ? (ayanAt(S.ringMode, S.year) || 0) : CHART_AY;
+    var ay = chartAyan();
     var sid = function (trop) { return ((trop - ay) % 360 + 360) % 360; };
     var lag = Math.floor(sid(sky.lagnaTrop) / 30);
     var occ = {};
@@ -1078,9 +1137,15 @@
     }
     var rd = $("ay-chartread");
     if (rd) {
-      var cur = CHART_AY == null ? (ayanAt(S.ringMode, S.year) || 0) : CHART_AY;
-      rd.textContent = dm(cur) + (CHART_AY == null ? "  (following the selection)" : "");
+      var cur = chartAyan();
+      rd.textContent = dm(cur) +
+        (CHART_MODE === "eq" ? "  (from the equation)"
+                             : (CHART_AY == null ? "  (following the selection)" : ""));
     }
+    var dEl = $("ay-chartdirect"), eEl = $("ay-charteq");
+    if (dEl) dEl.hidden = (CHART_MODE === "eq");
+    if (eEl) eEl.hidden = (CHART_MODE !== "eq");
+    drawChartEq();
   }
 
   function fillAnchorSelect() {
@@ -1253,12 +1318,24 @@
         fillChartControls(); drawChart(); syncSand(); drawCard();
       }
       else if (t.id === "ay-chartay") { CHART_AY = +t.value; fillChartControls(); drawChart(); }
+      else if (/^ay-ec[012]$/.test(t.id)) { fillChartControls(); drawChart(); }
       else if (/^ay-c[012]$/.test(t.id)) syncSand();
     });
     document.addEventListener("change", function (e) {
       var t = e.target;
       if (t.id === "ay-ringmode") { S.ringMode = t.value; CHART_AY = null; redraw(); }
       else if (t.id === "ay-anchor") { drawStarWheel(); }
+      else if (t.id === "ay-chartmode") {
+        CHART_MODE = t.value;
+        /* carry the current number across, so switching modes does not jump
+           the chart — the reader is comparing, not restarting */
+        if (CHART_MODE === "eq") {
+          var cur = CHART_AY == null ? (ayanAt(S.ringMode, S.year) || 0) : CHART_AY;
+          var T = chartT(), cc = eqCoeffs();
+          $("ay-ec0").value = (cur - cc.c1 * T - cc.c2 * T * T).toFixed(3);
+        }
+        fillChartControls(); drawChart();
+      }
       else if (t.id === "ay-chartjump") {
         CHART_AY = t.value ? ayanAt(t.value, S.year) : null;
         fillChartControls(); drawChart();
@@ -1267,7 +1344,14 @@
       else if (t.id === "ay-cardkind") { S.cardKind = t.value; drawCard(); }
       else if (t.id === "ay-when") {
         var v = Date.parse(t.value);
-        if (!isNaN(v)) { S.when = v - (S.place ? S.place.tz : 0) * 3600000; drawImpact(); }
+        if (!isNaN(v)) {
+          S.when = v - (S.place ? S.place.tz : 0) * 3600000;
+          /* The CHART is cast for this moment too, and its T comes from it —
+             the first version redrew only the impact table, so changing the
+             moment left a chart underneath it that was still drawn for the
+             old one, and the equation's T never moved off the present day. */
+          drawImpact(); fillChartControls(); drawChart();
+        }
       }
     });
     document.addEventListener("click", function (e) {
@@ -1286,7 +1370,8 @@
         S.year = Math.round((lo + hi) / 2); syncYear(); redraw();
       }
       else if (k === "now") {
-        S.when = Date.now(); syncWhen(); drawImpact();
+        S.when = Date.now(); syncWhen();
+        drawImpact(); fillChartControls(); drawChart();
       }
       else if (k === "pin") applyPin();
       else if (k === "apply") applyCustom();
@@ -1329,7 +1414,10 @@
         quick: [S.place].concat((window.NP && window.NP.PLACES) || []),
         label: "Place",
         refMs: function () { return S.when || Date.now(); },
-        onPick: function (p) { S.place = p; syncWhen(); drawImpact(); }
+        onPick: function (p) {
+          S.place = p; syncWhen();
+          drawImpact(); fillChartControls(); drawChart();
+        }
       });
     }
     var r = $("ay-ratio");
