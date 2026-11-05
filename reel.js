@@ -3531,8 +3531,40 @@ function moOwn(src){
 
      With the node put where it belongs the SS node sits within two or three
      degrees of the true one after two hundred and seventy-five circuits,
-     which is what a draconitic month right to two seconds should give. */
-  var EPOCH_LON = { "Rāhu": 180 };
+     which is what a draconitic month right to two seconds should give.
+
+     THE MOON'S APOGEE WAS THE SAME OMISSION, AND IT COST MORE.
+     The paragraph above says "almost every one of them starts from zero" and
+     then names only the node. That was wrong by one. The Moon's apsidal line
+     stood at 90° at the Kali epoch, not at 0°, and leaving it out put the
+     Moon's whole manda equation — amplitude about 5° — a quarter turn out of
+     phase for every date this engine computes.
+
+     Source: T. S. Kuppanna Sastry, tr., Pañcasiddhāntikā of Varāhamihira,
+     ed. K. V. Sarma (PPST Foundation, Madras, 1993), notes to Ch. XVI: in the
+     Āryabhaṭīya, the Ardharātrika-pakṣa, Varāhamihira's Saura, Bhaṭṭotpala's
+     Pauliśa AND the Later Sūrya Siddhānta alike, the mean planets stand at
+     zero at the beginning of Kali, the Moon's apogee at 90° and its node at
+     180°. The node was already here; the apogee is this. NOT a Parāśara
+     statement and not from the uploaded BPHS volumes — siddhāntic
+     literature, cited as such.
+
+     And it is confirmed without reference to the text. Scoring the bare
+     engine's Moon against a modern sky and searching the whole circle for the
+     epoch value that fits best lands on 86°, four degrees from the text's
+     90°, while 0° — what this shipped — is close to the worst of the range:
+
+         0° (as shipped) 420′      60°  240′      120° 244′
+         30°             318′      90°  217′      180° 376′
+
+     So this was halving the accuracy of the bare tier. And because the fitted
+     tier carries epoch.candraUcca among its own parameters, the optimiser had
+     quietly absorbed the error — it chose 125.6°, trading epoch against bīja
+     across the fitted window — which is how a fault in the thing being
+     compared against can hide inside the thing doing the comparing.
+     ss-verify asserts the value now, both against the text and against that
+     independent fit. */
+  var EPOCH_LON = { "Rāhu": 180, "candraUcca": 90 };
   function meanOf(key, ahar) {
     var r = revOf(key);
     if (r == null) return null;
@@ -3571,12 +3603,46 @@ function moOwn(src){
     var q = trueLongitude("Sūrya", ahar);
     return sdiff(sunMean, q.lon) / 360;
   }
-  function udayantaraDays(trueSun) {
-    return sdiff(trueSun, raOfLongitude(trueSun)) / 360;
+  /* THE UDAYĀNTARA TAKES THE SĀYANA SUN, and took the sidereal one.
+
+     A right ascension is measured from the equinox, so λ − α is a quantity in
+     the equinoctial frame and nothing else. Handing it a sidereal longitude
+     shifts the argument of a semi-annual term by the whole ayanāṃśa, which is
+     26° on the text's own libration reading — the curve keeps its amplitude
+     (10.34 against 10.36 minutes, measured) and moves its phase, which is why
+     nothing looked obviously broken.
+
+     It is the blind spot this engine's own structure creates. Sidereal is
+     primary here and the frame is converted only where it is needed; but the
+     text cannot say where it is needed, because at its epoch of 499 CE the
+     ayanāṃśa is zero by construction and the two readings coincide. Every
+     omission of the conversion is therefore invisible in the text's own
+     century and grows at about 50″ a year. The declination two functions down
+     already had the conversion and carried a comment explaining it; this did
+     not, which is an inconsistency rather than fidelity.
+
+     Measured against the site's modern almanac, Ujjain, 122 samples over a
+     year — sunrise, in minutes:
+
+                       mean   |mean|    rms   worst
+         as it was      3.68    5.86    6.90   11.88
+         in frame       3.70    3.70    3.84    5.78
+
+     The mean is untouched at 3.7 minutes, and that is the point: 3.7 is the
+     sunrise CONVENTION — centre of the disc without refraction against an
+     almanac's upper limb with it. Before the fix there was a bias of 3.7 with
+     scatter on top; after it the scatter is essentially gone and the bias is
+     all that is left. A chunk of what the accuracy figures filed under
+     "convention" was this. */
+  function udayantaraDays(sayanaSun) {
+    return sdiff(sayanaSun, raOfLongitude(sayanaSun)) / 360;
   }
   function equationOfTime(ahar) {
     var q = trueLongitude("Sūrya", ahar);
-    return bhujantaraDays(ahar) + udayantaraDays(q.lon);
+    /* the ayanāṃśa is a function of the moment, and an ahargaṇa is a moment:
+       jd = ahar + the epoch it was reckoned from */
+    var ms = msOf(ahar + EPOCH.sunrise);
+    return bhujantaraDays(ahar) + udayantaraDays(tropical(q.lon, ms));
   }
 
   /* =======================================================================
@@ -3876,7 +3942,10 @@ function moOwn(src){
       cara: c,
       equationOfTimeMinutes: E * 60,
       bhujantaraMinutes: bhujantaraDays(a) * 24 * 60,
-      udayantaraMinutes: udayantaraDays(q.lon) * 24 * 60,
+      /* the sāyana Sun, matching what equationOfTime actually used — this
+         reported the sidereal reading while E was computed from it too, so
+         the panel agreed with the bug rather than exposing it */
+      udayantaraMinutes: udayantaraDays(tropical(q.lon, ms)) * 24 * 60,
       circumpolar: Math.abs(c) >= 90
     };
   }

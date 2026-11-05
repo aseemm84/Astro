@@ -21,7 +21,8 @@
   23.857092356
  ],
  "baseEpochLon": {
-  "Rāhu": 180
+  "Rāhu": 180,
+  "candraUcca": 90
  },
  "params": {
   "epoch.Sūrya": -11.495656022938753,
@@ -29,12 +30,12 @@
   "mandaOdd.Sūrya": 0.862936607436593,
   "mandaEven.Sūrya": 0.8804439098023978,
   "mandocca.Sūrya": 1.755074276346737,
-  "epoch.Candra": -6.798197188983609,
-  "bija.Candra": 23.98271263424615,
-  "epoch.candraUcca": 125.59505261617409,
-  "bija.candraUcca": -97.51306928542868,
-  "mandaOdd.Candra": 1.2355961885637685,
-  "mandaEven.Candra": 1.2326491683056089,
+  "epoch.Candra": -6.7980821427740175,
+  "bija.Candra": 23.982437625563826,
+  "epoch.candraUcca": 35.5872285432703,
+  "bija.candraUcca": -97.49451467831776,
+  "mandaOdd.Candra": 1.2355752904452355,
+  "mandaEven.Candra": 1.232652528030754,
   "epoch.Maṅgala": -24.175960729163435,
   "bija.Maṅgala": 61.22466644131986,
   "mandaOdd.Maṅgala": 1.0448289321212183,
@@ -97,27 +98,27 @@
   },
   "Candra": {
    "params": {
-    "epoch.Candra": -6.798197188983609,
-    "bija.Candra": 23.98271263424615,
-    "epoch.candraUcca": 125.59505261617409,
-    "bija.candraUcca": -97.51306928542868,
-    "mandaOdd.Candra": 1.2355961885637685,
-    "mandaEven.Candra": 1.2326491683056089
+    "epoch.Candra": -6.7980821427740175,
+    "bija.Candra": 23.982437625563826,
+    "epoch.candraUcca": 35.5872285432703,
+    "bija.candraUcca": -97.49451467831776,
+    "mandaOdd.Candra": 1.2355752904452355,
+    "mandaEven.Candra": 1.232652528030754
    },
    "bare": {
-    "rms": 378.052,
-    "worst": 708.83
+    "rms": 220.635,
+    "worst": 444.618
    },
    "fit": {
     "rms": 62.1609,
     "worst": 141.2825
    },
    "holdout": {
-    "rms": 61.6159,
-    "worst": 147.9552,
-    "mean": -2.6671
+    "rms": 61.6158,
+    "worst": 147.9572,
+    "mean": -2.6672
    },
-   "gain": 6.1
+   "gain": 3.6
   },
   "Maṅgala": {
    "params": {

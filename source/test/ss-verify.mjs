@@ -231,6 +231,48 @@ const A = await pg.evaluate(() => {
   }
   out.panch={n, nak:nakHit/n, tithi:tithiExact/n, tithiNear:tithiNear/n, vara:varaHit/n};
 
+  /* ---- 10b. the two epoch constants, and the frame of the udayāntara ----
+     Both were missing, both were found by consequence rather than by reading
+     a longitude, and both are now pinned here so neither can drift back. */
+  out.epoch = JSON.parse(JSON.stringify(S.EPOCH_LON));
+  /* The Moon's apogee, searched for independently of the text: score the bare
+     Moon against a modern sky across the whole circle of candidate epoch
+     values and report where it is happiest. The text says 90; if this comes
+     back somewhere else, one of the two is wrong and the harness should say
+     so rather than trusting the citation. */
+  (function(){
+    const samples = [];
+    for (let i = 0; i < 48; i++) {
+      const y = 1800 + (2200-1800)*i/47;
+      const days = ((i*0.6180339887498949)%1)*365.2425;
+      samples.push(Date.UTC(Math.floor(y),0,1,6) +
+        Math.round((y-Math.floor(y))*365.2425*DAY) + Math.round(days*DAY));
+    }
+    const ref = samples.map(ms => {
+      try { return window.__kEclip("Moon", ms).lon; } catch(e){ return null; }
+    });
+    const score = () => {
+      let t = 0, k = 0;
+      for (let i = 0; i < samples.length; i++) {
+        if (ref[i] == null) continue;
+        const q = S.trueLongitude("Candra", S.ahargana(samples[i]));
+        const d = sd(q.lon, ref[i]) * 60;
+        t += d*d; k++;
+      }
+      return Math.sqrt(t/k);
+    };
+    const had = S.EPOCH_LON.candraUcca;
+    let best = null; const curve = {};
+    for (let v = 0; v < 360; v += 2) {
+      S.EPOCH_LON.candraUcca = v;
+      const r = score();
+      if (v % 30 === 0) curve[v] = +r.toFixed(1);
+      if (!best || r < best.rms) best = { ucca: v, rms: +r.toFixed(2) };
+    }
+    S.EPOCH_LON.candraUcca = had;
+    out.uccaFit = { best, curve, atShipped: +score().toFixed(2) };
+  })();
+
   /* ---- 11. sizes ---- */
   const a0=S.ahargana(Date.UTC(2026,0,1));
   let dmin=99,dmax=0;
@@ -540,8 +582,59 @@ const C = [
   ["and is near the Sun at sunrise", A.lagnaAtSunrise.gap < 20],
 
   ["the vāra is always right", A.panch.vara === 1],
-  ["the nakṣatra agrees with a modern pañcāṅga most days", A.panch.nak > 0.6],
-  ["and the tithi is within one of it almost always", A.panch.tithiNear > 0.9],
+  /* These two bars were 0.6 and 0.9 when the Moon's apogee epoch constant was
+     missing and the udayāntara was taken in the wrong frame. With both fixed
+     the nakṣatra went 62% → 90% and the exact tithi 64% → 91%, so the bars
+     are raised to where they will catch a regression instead of sleeping
+     through one. */
+  ["the nakṣatra agrees with a modern pañcāṅga most days", A.panch.nak > 0.85],
+  ["and the tithi agrees exactly most days too", A.panch.tithi > 0.85],
+  ["and the tithi is within one of it almost always", A.panch.tithiNear > 0.99],
+
+  /* THE TWO EPOCH CONSTANTS. Kuppanna Sastry's notes to Pañcasiddhāntikā
+     Ch. XVI (PPST, Madras, 1993) state that in the Āryabhaṭīya, the
+     Ardharātrika-pakṣa, Varāhamihira's Saura, Bhaṭṭotpala's Pauliśa and the
+     Later Sūrya Siddhānta alike, the mean planets stand at zero at Kali, the
+     Moon's apogee at 90° and the node at 180°. Not BPHS; siddhāntic
+     literature, cited as such. */
+  ["the node stands at 180° at the Kali epoch", A.epoch["Rāhu"] === 180],
+  ["and the Moon's apogee at 90°", A.epoch["candraUcca"] === 90],
+  /* And the same value reached WITHOUT the text, by fitting the bare Moon
+     against a modern sky over the whole circle. The tolerance is ±15° and
+     that is a principled bar, not a loosened one: the Moon's apsidal equation
+     has an amplitude of about 5°, while the residual it is being fitted
+     against is dominated by the evection (76′) and the variation (40′),
+     neither of which is in phase with the apsidal line. So the minimum is
+     shallow and moves with the sample — 80° on this harness's 48 samples,
+     86° on the siddhānta page's 64. Demanding better than that of a shallow
+     optimum would be fitting the sample.
+
+     The robust statement is the one below it: whatever the exact optimum,
+     zero is nowhere near it. That ratio is what confirms the constant. */
+  ["which is where fitting the bare Moon independently puts it, ±15°",
+   Math.abs(A.uccaFit.best.ucca - 90) <= 15],
+  ["and leaving it at zero is far worse — the ratio, not the optimum, is the proof",
+   A.uccaFit.curve[0] > A.uccaFit.best.rms * 1.6],
+  ["the shipped engine scores within a whisker of that optimum",
+   A.uccaFit.atShipped < A.uccaFit.best.rms * 1.03],
+
+  /* THE UDAYĀNTARA'S FRAME. λ − α is an equinoctial quantity, so it takes the
+     sāyana Sun; it was taking the sidereal one, which left the right
+     amplitude with the wrong phase. Fixing it collapsed the sunrise scatter
+     and left only the convention offset, so the test is that the mean and the
+     worst case are now close together — scatter on top of the bias is the
+     signature of the bug returning.
+
+     Measured at Delhi: 3.9/6.3 min mean/worst with the frame right, 5.9/12.4
+     with it wrong. A ratio test does not separate those cleanly (2.10 against
+     1.62, too close to bet a bar on), so the check is on the worst case
+     itself, which is also the figure the accuracy doc quotes. Under 9 minutes
+     passes the fixed engine with room and fails the bug by a margin. */
+  ["sunrise's worst case stays under 9 minutes, so only the convention is left",
+   A.sunrise.libration.worst < 9],
+  ["and its mean is most of its worst case — scatter on the bias means the " +
+   "frame has slipped again",
+   A.sunrise.libration.mean > A.sunrise.libration.worst * 0.5],
 
   ["the Moon's apparent diameter spans about the right range",
    A.sizes.moonRange[0] > 27 && A.sizes.moonRange[0] < 31 &&
@@ -632,6 +725,9 @@ console.log("  sunrise error at Delhi: libration " + A.sunrise.libration.mean +
   "/" + A.sunrise.libration.worst + " min mean/worst, linear " +
   A.sunrise.linear.mean + "/" + A.sunrise.linear.worst +
   ", no ayanāṃśa at all " + A.sunrise.none.mean + "/" + A.sunrise.none.worst);
+console.log("  Moon's apogee at epoch: text 90°, independent fit " +
+  A.uccaFit.best.ucca + "° (rms " + A.uccaFit.best.rms + "′; at 0° it is " +
+  A.uccaFit.curve[0] + "′)");
 console.log("  pañcāṅga against the site's own: vāra " +
   (A.panch.vara*100).toFixed(0) + "%, nakṣatra " + (A.panch.nak*100).toFixed(0) +
   "%, tithi exactly " + (A.panch.tithi*100).toFixed(0) + "%, within one " +

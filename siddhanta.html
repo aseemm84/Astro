@@ -3423,13 +3423,32 @@ deferent&rsquo;s own circumference. The displacement that epicycle produces,
 measured as an angle back at the centre, <i>is</i> the equation.</p>
 
 <p>Two things are worth watching as you drag the anomaly. The epicycle
-<b>breathes</b>: the text gives two circumferences, one for the ends of the odd
-quadrants and one for the even, and the value between them is interpolated by
-the sine of the anomaly &mdash; so the dashed rings are the two stated sizes and
-the solid one is what is being used at this instant. And for the
-&#347;&imacr;ghra step the <b>karna</b> &mdash; the hypotenuse from the centre
-to the graha &mdash; is not the radius, which is why that equation divides by
-it and the manda equation does not.</p>
+<b>breathes</b>: this recension gives two circumferences, one for the ends of
+the odd quadrants and one for the even, and the value between them is
+interpolated by the sine of the anomaly &mdash; so the dashed rings are the two
+stated sizes and the solid one is what is being used at this instant. And for
+the &#347;&imacr;ghra step the <b>karna</b> &mdash; the hypotenuse from the
+centre to the graha &mdash; is not the radius, which is why that equation
+divides by it and the manda equation does not.</p>
+
+<div class="note"><b>The breathing is a later refinement, and this page should
+not imply otherwise.</b> The engine here implements the <i>later</i> S&umacr;rya
+Siddh&amacr;nta, the recension Burgess translated. The <i>older</i> Saura
+&mdash; the one Var&amacr;hamihira condensed in the
+Pa&ntilde;casiddh&amacr;ntik&amacr;, c. 505 CE &mdash; gives a <b>single</b>
+circumference per graha per epicycle and no interpolation at all: manda 70&deg;
+for Ma&#7749;gala, 28&deg; Budha, 32&deg; Guru, 14&deg; &Sacute;ukra, 60&deg;
+&Sacute;ani; &#347;&imacr;ghra 234&deg;, 132&deg;, 72&deg;, 260&deg;, 40&deg;.
+Set those against the pairs this engine uses and something striking appears
+&mdash; in six of the ten cases the older single value is exactly the
+<i>even-quadrant</i> member of the later pair, which reads as the later text
+having added a second circumference beside an inherited one. The apogee
+positions are identical in both. So what you are dragging below is a sixth- or
+seventh-century elaboration of a scheme that began simpler.
+<span class="k-note">Source: T. S. Kuppanna Sastry, tr.,
+<i>Pa&ntilde;casiddh&amacr;ntik&amacr; of Var&amacr;hamihira</i>, ed. K. V.
+Sarma (PPST Foundation, Madras, 1993), Ch. XVII.1&ndash;3. Siddh&amacr;ntic
+literature, not BPHS.</span></div>
 
 <div class="ssrow">
   <label class="ssfield"><span>Graha</span><select id="ss-epibody"></select></label>
@@ -3551,6 +3570,26 @@ to about a tenth of a second, which is remarkable — but a second a month for
 five thousand years is most of a day, and most of a day of the Moon is eleven
 degrees.</p>
 
+<div class="note"><b>A correction, recorded rather than quietly folded in.</b>
+Until November 2026 the Moon&rsquo;s line on this chart was about twice as far
+from zero as it should have been, and the cause was not the text. This
+engine&rsquo;s table of epoch longitudes carried the Moon&rsquo;s <i>node</i> at
+180&deg; and omitted the Moon&rsquo;s <i>apsidal line</i> altogether, leaving it
+at zero where the tradition puts it at 90&deg; &mdash; which threw the
+Moon&rsquo;s whole manda equation, some five degrees in amplitude, a quarter
+turn out of phase for every date computed. Supplying the constant drops the bare
+text&rsquo;s lunar error from about 378&prime; to 221&prime;, and lifts the
+agreement of a S&umacr;rya Siddh&amacr;nta pa&ntilde;c&amacr;&#7749;ga with a
+modern one from 62% to 90% on the nak&#7779;atra and from 64% to 91% on the
+exact tithi. What is left is the real limitation: two lunar terms this astronomy
+does not contain, identified further down this page.
+<span class="k-note">The value is from Kuppanna Sastry&rsquo;s notes to
+Pa&ntilde;casiddh&amacr;ntik&amacr; Ch. XVI, which give it for the later
+S&umacr;rya Siddh&amacr;nta as well as for Var&amacr;hamihira&rsquo;s Saura; and
+it is confirmed without the text, by fitting the bare Moon against a modern sky
+across the whole circle, which lands between 80&deg; and 86&deg; depending on
+the sample.</span></div>
+
 <h2 id="sandbox">Close the gap yourself<span class="kdeva">बीज-संस्कारः</span></h2>
 
 <p>The drift above is a few degrees. The tradition has a name for what you do
@@ -3664,7 +3703,8 @@ fifth-century theory and a modern one.</p>
   23.857092356
  ],
  "baseEpochLon": {
-  "Rāhu": 180
+  "Rāhu": 180,
+  "candraUcca": 90
  },
  "params": {
   "epoch.Sūrya": -11.495656022938753,
@@ -3672,12 +3712,12 @@ fifth-century theory and a modern one.</p>
   "mandaOdd.Sūrya": 0.862936607436593,
   "mandaEven.Sūrya": 0.8804439098023978,
   "mandocca.Sūrya": 1.755074276346737,
-  "epoch.Candra": -6.798197188983609,
-  "bija.Candra": 23.98271263424615,
-  "epoch.candraUcca": 125.59505261617409,
-  "bija.candraUcca": -97.51306928542868,
-  "mandaOdd.Candra": 1.2355961885637685,
-  "mandaEven.Candra": 1.2326491683056089,
+  "epoch.Candra": -6.7980821427740175,
+  "bija.Candra": 23.982437625563826,
+  "epoch.candraUcca": 35.5872285432703,
+  "bija.candraUcca": -97.49451467831776,
+  "mandaOdd.Candra": 1.2355752904452355,
+  "mandaEven.Candra": 1.232652528030754,
   "epoch.Maṅgala": -24.175960729163435,
   "bija.Maṅgala": 61.22466644131986,
   "mandaOdd.Maṅgala": 1.0448289321212183,
@@ -3740,27 +3780,27 @@ fifth-century theory and a modern one.</p>
   },
   "Candra": {
    "params": {
-    "epoch.Candra": -6.798197188983609,
-    "bija.Candra": 23.98271263424615,
-    "epoch.candraUcca": 125.59505261617409,
-    "bija.candraUcca": -97.51306928542868,
-    "mandaOdd.Candra": 1.2355961885637685,
-    "mandaEven.Candra": 1.2326491683056089
+    "epoch.Candra": -6.7980821427740175,
+    "bija.Candra": 23.982437625563826,
+    "epoch.candraUcca": 35.5872285432703,
+    "bija.candraUcca": -97.49451467831776,
+    "mandaOdd.Candra": 1.2355752904452355,
+    "mandaEven.Candra": 1.232652528030754
    },
    "bare": {
-    "rms": 378.052,
-    "worst": 708.83
+    "rms": 220.635,
+    "worst": 444.618
    },
    "fit": {
     "rms": 62.1609,
     "worst": 141.2825
    },
    "holdout": {
-    "rms": 61.6159,
-    "worst": 147.9552,
-    "mean": -2.6671
+    "rms": 61.6158,
+    "worst": 147.9572,
+    "mean": -2.6672
    },
-   "gain": 6.1
+   "gain": 3.6
   },
   "Maṅgala": {
    "params": {

@@ -222,6 +222,20 @@ head("the chart answers 'what actually changes' by changing");
   const { p, errs } = await open();
   const r = await p.evaluate(async () => {
     const wait = ms => new Promise(r2 => setTimeout(r2, ms));
+    /* Pin the page's moment, and publish it so the expectation below is
+       computed for the same instant. Without this the page draws "now" and
+       the check compares it against some other day. */
+    window.__ayVerifyWhen = { y: 2026, mo: 11, d: 3, h: 12, tz: 5.5,
+                              lat: 23.17, lon: 75.78 };
+    {
+      const w = document.getElementById("ay-when");
+      if (w) {
+        w.value = "2026-11-03T12:00";
+        w.dispatchEvent(new Event("input", { bubbles: true }));
+        w.dispatchEvent(new Event("change", { bubbles: true }));
+        await wait(450);
+      }
+    }
     const signs = () => [...document.querySelectorAll("#ay-chartedge tbody tr")]
       .map(tr => tr.querySelectorAll("td")[1].textContent);
     const set = async v => {
@@ -248,8 +262,19 @@ head("the chart answers 'what actually changes' by changing");
        version of both compared the distance-to-boundary against the span,
        which is an approximation that is wrong on either side of a cusp. */
     const lo = Math.min(...vals), hi = Math.max(...vals);
-    const sky = window.quickSky({ year: 2026, month: 11, day: 3, hour: 12, minute: 0,
-      second: 0, tzHours: 5.5, lat: 23.17, lon: 75.78, ayanamsa: "lahiri" });
+    /* THE SAME INSTANT ON BOTH SIDES, which is the whole difficulty here.
+       This expectation was first written against a hardcoded 3 November 2026
+       while the page drew the live sky, so the two agreed on the day it was
+       written and disagreed two days later, when one graha near a cusp moved
+       across. Fixing the approximation inside the comparison (span-to-
+       boundary → asking the extreme definitions) left that half of the fault
+       in place. The caller now sets the page's own moment input to a fixed
+       instant before reading the flags, and the same instant is used here, so
+       neither side can wander. */
+    const W = window.__ayVerifyWhen;
+    const sky = window.quickSky({ year: W.y, month: W.mo, day: W.d, hour: W.h,
+      minute: 0, second: 0, tzHours: W.tz, lat: W.lat, lon: W.lon,
+      ayanamsa: "lahiri" });
     const base = sky.ayanamsa;
     const expected = sky.planets.filter(pl => {
       const trop = ((pl.sid + base) % 360 + 360) % 360;
