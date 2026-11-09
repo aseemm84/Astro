@@ -274,6 +274,57 @@ await pg.evaluate(() => {
   localStorage.removeItem("nirayana.settings");
 });
 
+/* ---- 6. the toggle must change the REPORT ON SCREEN -------------------
+   This is the assertion that was missing, and its absence is why a shipped
+   toggle appeared to do nothing. Every earlier check drove the engine
+   directly — buildLocalChart then buildKundliReport — which bypasses the UI
+   entirely. The auto-re-cast lived only in ui.js, so with it absent the
+   engine checks all passed while a reader flipping the switch watched a
+   report that never recomputed. A setting is not wired until the page a
+   person is looking at changes. */
+head("Changing a reckoning setting re-casts the chart a reader is looking at");
+await pg.evaluate(() => {
+  try { localStorage.clear(); } catch (e) {}
+  /* clearing storage does NOT reset settings.js's in-memory cache, so an
+     earlier section leaving the frame on sripati made the set() below a
+     no-op that broadcast nothing and re-cast nothing. Set the baseline
+     through the API, which is the only thing that updates the cache. */
+  window.NSettings.set({ house: "whole" });
+  document.getElementById("k-dob").value = "1975-01-09";
+  document.getElementById("k-tob").value = "03:20";
+  document.getElementById("k-lat").value = "59.9139";
+  document.getElementById("k-lon").value = "10.7522";
+  document.getElementById("k-tz").value = "1";
+  document.getElementById("k-go").click();
+});
+await pg.waitForTimeout(4500);
+const shot = () => pg.evaluate(() => {
+  const f = [...document.querySelectorAll(".kchartfig")]
+    .filter((x) => /North Indian/.test(x.textContent))[0];
+  const vg = [...document.querySelectorAll(".kchartfig")]
+    .filter((x) => /^D9 ·/.test((x.querySelector("figcaption") || {}).textContent || ""))[0];
+  return {
+    cap: f ? f.querySelector("figcaption").textContent : null,
+    d1: f ? [...f.querySelectorAll("text")].map((t) => t.textContent).join(",") : null,
+    d9: vg ? [...vg.querySelectorAll("text")].map((t) => t.textContent).join(",") : null,
+    body: document.getElementById("k-out").innerText.length
+  };
+});
+const preT = await shot();
+await pg.evaluate(() => window.NSettings.set({ house: "sripati" }));
+await pg.waitForTimeout(5500);
+const postT = await shot();
+is(preT.d1 && postT.d1 && preT.d1 !== postT.d1,
+  "flipping the bhāva frame in the panel re-draws the D1 chart with no other action");
+is(/Rāśi \(D1\)/.test(preT.cap || "") && /Bhāva Chalita/.test(postT.cap || ""),
+  `and retitles it (“${(preT.cap||"").slice(0,22)}” → “${(postT.cap||"").slice(0,24)}”)`);
+is(preT.d9 && postT.d9 && preT.d9 !== postT.d9,
+  "the divisional charts change too — D1 to D60 carry the rāśi chart's bhāva");
+await pg.evaluate(() => { window.NSettings.set({ house: "whole" }); });
+await pg.waitForTimeout(4000);
+const backT = await shot();
+is(backT.d1 === preT.d1, "switching back restores the whole-sign chart exactly");
+
 is(errs.length === 0, "no page errors on any page" + (errs.length ? ": " + errs.join(" | ") : ""));
 await br.close();
 console.log(`\n${pass} passed, ${fail} failed`);

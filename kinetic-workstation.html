@@ -2546,7 +2546,7 @@ html[data-theme="emerald"] .wsnext.lead{
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-11-09.3623255";</script></head><body class="wsbody"><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Kinetic Workstation</h1><p class="sub">One surface for the whole chart: Śrīpati chalita beside whole-sign, a year of real transits, twelve rāśi readings, all sixteen divisions, and the strength and daśā panels — computed in this browser, nothing sent anywhere.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html" class="active">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav>
+</script><script>window.__kBuild="2026-11-09.99ae262";</script></head><body class="wsbody"><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Kinetic Workstation</h1><p class="sub">One surface for the whole chart: Śrīpati chalita beside whole-sign, a year of real transits, twelve rāśi readings, all sixteen divisions, and the strength and daśā panels — computed in this browser, nothing sent anywhere.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html" class="active">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav>
 <div class="layout onecol wide"><main>
 
 <section class="wsintake">
@@ -5531,13 +5531,38 @@ function sectionIndex(){
 
 function vargaCharts(D){
   var g='<div class="kvgrid">';
+  /* THE DIVISIONAL CHARTS AND THE BHĀVA FRAME.
+     D1 has cusps, so under Śrīpati it is drawn exactly like the main chart —
+     grahas by bhāva. It used to ignore the frame entirely, which put a
+     whole-sign D1 in this grid directly beneath a chalita D1 above it.
+     D2–D60 have NO cusps: vargaSign returns a rāśi integer and the meridian
+     does not map through a division, so their own houses stay whole-sign from
+     the varga lagna. What follows the frame there is the rāśi chart's bhāva,
+     CARRIED and labelled on each graha, which is the only thing about a varga
+     that the house system legitimately touches. A graha reads "Su·9" — its
+     varga placement, and the bhāva it occupies in the rāśi chart. */
+  var chalita=(D.houseSystem&&D.houseSystem.mode==="sripati");
   D.vargas.forEach(function(v){
     if(v.lagna==null)return;
-    var vl=v.lagna;
-    var occ={};Object.keys(v.pos).forEach(function(k){(occ[v.pos[k]]=occ[v.pos[k]]||[]).push(GL[k]);});
+    var vl=v.lagna, isD1=(v.code==="D1");
+    var occ={};
+    Object.keys(v.pos).forEach(function(k){
+      var tag=GL[k];
+      if(chalita&&!isD1&&D.P&&D.P[k]&&D.P[k].house!=null) tag+="·"+D.P[k].house;
+      (occ[v.pos[k]]=occ[v.pos[k]]||[]).push(tag);
+    });
+    if(chalita&&isD1){
+      /* D1 by bhāva, so this grid agrees with the chart above it */
+      g+=northChart(function(h){return D.bhavaSign(h);},
+        function(h){var a=[];D.planets.forEach(function(pl){
+          if(pl.house===h)a.push(GL[pl.en]);});if(h===1)a.unshift("Lg");return a;},
+        v.code+" · "+(v.en||""), "bhāvas by Śrīpati");
+      return;
+    }
     g+=northChart(function(h){return (vl+h-1)%12;},
       function(h){var sg=(vl+h-1)%12,a=(occ[sg]||[]).slice();if(h===1)a.unshift("Lg");return a;},
-      v.code+" · "+(v.en||""), "lagna "+SA[vl]);
+      v.code+" · "+(v.en||""),
+      "lagna "+SA[vl]+(chalita?" · ·n = rāśi-chart bhāva":""));
   });
   g+='</div>';
   var rows=D.vargas.map(function(v){
@@ -25862,8 +25887,16 @@ window.buildKundliReport=function(J){
     var nm=($("k-name")&&$("k-name").value||"").trim();
     window.__kname=nm;
     var ayan=($("k-ayan")&&$("k-ayan").value)||"lahiri";
+    /* houseSystem belongs HERE, in the one body that is actually cast. It was
+       missing: an earlier pass added it beside every literal
+       `ayanamsa:($("k-ayan")...)` in this file, and this site - the real cast
+       path - reads the `ayan` VARIABLE instead, so the pattern did not match
+       and the bhava frame never reached a chart built from the form. Every
+       test passed because they all called buildLocalChart directly with the
+       frame, which is the one caller that was never broken. */
     var body={year:+dp[0],month:+dp[1],day:+dp[2],hour:+tp[0],minute:+tp[1],lat:lat,lon:lon,tzHours:tz,
-              ayanamsa:ayan, node:(($("k-node")&&$("k-node").value)||"mean")};
+              ayanamsa:ayan, houseSystem:(($("k-house")&&$("k-house").value)||"whole"),
+              node:(($("k-node")&&$("k-node").value)||"mean")};
     if(nm) body.name=nm;
     /* There is one chart source, and it is this machine. The remote
        cross-check that used to sit here — an opt-in POST to a Cloudflare
@@ -25983,6 +26016,19 @@ window.buildKundliReport=function(J){
       if($("k-node")&&S.node) $("k-node").value=S.node;
       var st=$("k-recast"); if(st) st.remove();
       convStrip();
+      /* AND RE-CAST, if a chart is on screen. Without this the panel moved the
+         form and nothing else: the report a reader was looking at stayed the
+         one computed under the previous frame, so the toggle appeared to do
+         nothing at all while quietly disagreeing with the settings panel
+         above it. Only the settings that actually enter the computation
+         trigger it — theme and degrees do not change a longitude. */
+      var ch=(ev.detail&&ev.detail.changed)||[];
+      var needs=ch.some(function(k){
+        return k==="ayan"||k==="house"||k==="node"||k==="riseconv"; });
+      var out=$("k-out");
+      if(needs && out && out.innerHTML && out.innerHTML.length>200){
+        var g=$("k-go"); if(g) g.click();
+      }
     });
   }catch(e){}
   /* and on first load the master decides the form, since nothing has been

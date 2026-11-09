@@ -355,8 +355,16 @@
     var nm=($("k-name")&&$("k-name").value||"").trim();
     window.__kname=nm;
     var ayan=($("k-ayan")&&$("k-ayan").value)||"lahiri";
+    /* houseSystem belongs HERE, in the one body that is actually cast. It was
+       missing: an earlier pass added it beside every literal
+       `ayanamsa:($("k-ayan")...)` in this file, and this site - the real cast
+       path - reads the `ayan` VARIABLE instead, so the pattern did not match
+       and the bhava frame never reached a chart built from the form. Every
+       test passed because they all called buildLocalChart directly with the
+       frame, which is the one caller that was never broken. */
     var body={year:+dp[0],month:+dp[1],day:+dp[2],hour:+tp[0],minute:+tp[1],lat:lat,lon:lon,tzHours:tz,
-              ayanamsa:ayan, node:(($("k-node")&&$("k-node").value)||"mean")};
+              ayanamsa:ayan, houseSystem:(($("k-house")&&$("k-house").value)||"whole"),
+              node:(($("k-node")&&$("k-node").value)||"mean")};
     if(nm) body.name=nm;
     /* There is one chart source, and it is this machine. The remote
        cross-check that used to sit here — an opt-in POST to a Cloudflare
@@ -476,6 +484,19 @@
       if($("k-node")&&S.node) $("k-node").value=S.node;
       var st=$("k-recast"); if(st) st.remove();
       convStrip();
+      /* AND RE-CAST, if a chart is on screen. Without this the panel moved the
+         form and nothing else: the report a reader was looking at stayed the
+         one computed under the previous frame, so the toggle appeared to do
+         nothing at all while quietly disagreeing with the settings panel
+         above it. Only the settings that actually enter the computation
+         trigger it — theme and degrees do not change a longitude. */
+      var ch=(ev.detail&&ev.detail.changed)||[];
+      var needs=ch.some(function(k){
+        return k==="ayan"||k==="house"||k==="node"||k==="riseconv"; });
+      var out=$("k-out");
+      if(needs && out && out.innerHTML && out.innerHTML.length>200){
+        var g=$("k-go"); if(g) g.click();
+      }
     });
   }catch(e){}
   /* and on first load the master decides the form, since nothing has been

@@ -297,13 +297,38 @@ function sectionIndex(){
 
 function vargaCharts(D){
   var g='<div class="kvgrid">';
+  /* THE DIVISIONAL CHARTS AND THE BHĀVA FRAME.
+     D1 has cusps, so under Śrīpati it is drawn exactly like the main chart —
+     grahas by bhāva. It used to ignore the frame entirely, which put a
+     whole-sign D1 in this grid directly beneath a chalita D1 above it.
+     D2–D60 have NO cusps: vargaSign returns a rāśi integer and the meridian
+     does not map through a division, so their own houses stay whole-sign from
+     the varga lagna. What follows the frame there is the rāśi chart's bhāva,
+     CARRIED and labelled on each graha, which is the only thing about a varga
+     that the house system legitimately touches. A graha reads "Su·9" — its
+     varga placement, and the bhāva it occupies in the rāśi chart. */
+  var chalita=(D.houseSystem&&D.houseSystem.mode==="sripati");
   D.vargas.forEach(function(v){
     if(v.lagna==null)return;
-    var vl=v.lagna;
-    var occ={};Object.keys(v.pos).forEach(function(k){(occ[v.pos[k]]=occ[v.pos[k]]||[]).push(GL[k]);});
+    var vl=v.lagna, isD1=(v.code==="D1");
+    var occ={};
+    Object.keys(v.pos).forEach(function(k){
+      var tag=GL[k];
+      if(chalita&&!isD1&&D.P&&D.P[k]&&D.P[k].house!=null) tag+="·"+D.P[k].house;
+      (occ[v.pos[k]]=occ[v.pos[k]]||[]).push(tag);
+    });
+    if(chalita&&isD1){
+      /* D1 by bhāva, so this grid agrees with the chart above it */
+      g+=northChart(function(h){return D.bhavaSign(h);},
+        function(h){var a=[];D.planets.forEach(function(pl){
+          if(pl.house===h)a.push(GL[pl.en]);});if(h===1)a.unshift("Lg");return a;},
+        v.code+" · "+(v.en||""), "bhāvas by Śrīpati");
+      return;
+    }
     g+=northChart(function(h){return (vl+h-1)%12;},
       function(h){var sg=(vl+h-1)%12,a=(occ[sg]||[]).slice();if(h===1)a.unshift("Lg");return a;},
-      v.code+" · "+(v.en||""), "lagna "+SA[vl]);
+      v.code+" · "+(v.en||""),
+      "lagna "+SA[vl]+(chalita?" · ·n = rāśi-chart bhāva":""));
   });
   g+='</div>';
   var rows=D.vargas.map(function(v){
