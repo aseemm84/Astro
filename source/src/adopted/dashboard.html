@@ -444,6 +444,21 @@ const NOWJD=()=>Date.now()/864e5+2440587.5;
    "dms" and "dec" are new. Read rather than cached, so a re-render picks up a
    change with no further wiring. */
 const degFmtNow=()=>{try{const S=window.NSettings&&window.NSettings.get();return (S&&S.degfmt)||"dm"}catch(e){return "dm"}};
+/* The house system, for the header line.
+ *
+ * THIS USED TO READ `D.conventions?.house_system || "whole sign"`, and
+ * D.conventions DOES NOT EXIST on this payload — so the header printed
+ * "whole sign" on every chart ever shown here, including Śrīpati ones. The
+ * optional chain made a missing field look like a handled case. The frame is
+ * a TOP-LEVEL key and an object; .name is the readable form and .mode the
+ * short one. */
+const houseName=(d,i)=>{
+  const hs=d&&d.house_system;
+  if(hs) return typeof hs==="string" ? hs : (hs.name||hs.mode||"");
+  const cv=d&&d.derived&&d.derived.conventions;
+  if(cv&&cv.house_system) return cv.house_system;
+  return (i&&i.houseSystem) || "";
+};
 const dms=x=>{if(!isNum(x))return"";const f=degFmtNow();
   if(f==="dec")return (Math.round(x*1e4)/1e4).toFixed(4)+"°";
   if(f==="dms"){let d=Math.floor(x),mf=(x-d)*60,m=Math.floor(mf),s=Math.round((mf-m)*60);
@@ -592,7 +607,7 @@ function renderHeader(N){
   const lat=isNum(i.lat)?`${Math.abs(i.lat).toFixed(4)}°${i.lat>=0?"N":"S"}`:"",lon=isNum(i.lon)?`${Math.abs(i.lon).toFixed(4)}°${i.lon>=0?"E":"W"}`:"";
   const top=h("header",{class:"top wrap"});
   top.innerHTML=`<h1>${esc(N.name)}</h1>
-   <p class="meta">Born ${esc(born)} at ${pad(i.hour??0)}:${pad(i.minute??0)} local time (${tz}), ${lat} ${lon}. ${esc(d.ayanamsa_name||i.ayanamsa||"")} ayanāṃśa of ${dms(d.ayanamsha_deg)}, ${esc(d.node_mode||i.node||"")} nodes, ${esc(D.conventions?.house_system||"whole sign")} houses.</p>`;
+   <p class="meta">Born ${esc(born)} at ${pad(i.hour??0)}:${pad(i.minute??0)} local time (${tz}), ${lat} ${lon}. ${esc(d.ayanamsa_name||i.ayanamsa||"")} ayanāṃśa of ${dms(d.ayanamsha_deg)}, ${esc(d.node_mode||i.node||"")} nodes, ${esc(houseName(d,i))} houses.</p>`;
   const act=h("div",{class:"actions"});
   const b1=h("button",{class:"btn",type:"button"},"Load another chart");b1.onclick=()=>$("#filepick").click();
   const bP=h("button",{class:"btn",type:"button"},"Save as PDF");
@@ -1589,26 +1604,123 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>retheme
     showLoader();return}
   try{render(JSON.parse(raw))}catch(e){showLoader("The embedded data could not be read: "+e.message)}})();
 
-/* RE-RENDER WHEN A PRESENTATION SETTING CHANGES. Without this the Degrees
-   picker in the master panel would store a value and leave every figure on
-   the page as it was until a reload — and a reload has nothing to reload
-   from, because the payload is cleared from localStorage once read. A control
-   that visibly does nothing is the thing this project refuses to ship, so the
-   setting either acts here or should not be offered here.
-   Only the settings this page can actually honour trigger a redraw: the
-   casting rows are frozen in the panel on this page, and render() is
-   idempotent by construction — it disposes the ECharts instances, resets
-   CHARTS and SECTIONS and empties #app before rebuilding. */
+/* FOLLOW THE MASTER SETTINGS — by RE-CASTING, not merely re-rendering.
+ *
+ * This page began as a pure renderer, and the ayanāṃśa and bhāva-frame
+ * settings could not act on it: a chart that is already computed cannot be
+ * re-framed by relabelling it. The panel froze those rows for that reason.
+ * It now carries the engine, so it can rebuild the chart from the birth data
+ * the payload already holds, and the settings act for real.
+ *
+ * Two different responses, because the two kinds of setting are different:
+ *
+ *   ayanāṃśa / bhāva frame / node  →  RE-CAST. Every longitude moves.
+ *   degree format                  →  re-render only. The numbers are the
+ *                                     same, printed differently.
+ *
+ * The frame and the ayanāṃśa are part of the chart's INPUT in this engine, by
+ * deliberate design — "so that any page that builds a chart gets the frame the
+ * chart was defined with instead of whatever the last caller happened to leave
+ * set". So a re-cast means building a fresh input from the stored one with the
+ * current settings overlaid, never mutating a global and hoping. */
+/* WHAT THIS PAGE CAN ACTUALLY ACT ON. The settings panel reads this and
+   renders anything outside it frozen, with a note, instead of as a picker.
+   Sunrise is deliberately absent: buildLocalChart() does not read riseconv at
+   all — the convention re-dates the pañcāṅga, not a natal chart — so a live
+   Sunrise picker here would change a stored key and nothing on the page.
+   Palette is absent for its own reason: these pages carry their own styling
+   and load neither theme.js nor theme.css. */
+window.__nsHonours = ["ayan","house","node","degfmt"];
+
 (function(){
-  let seen=null;
-  try{ const S=window.NSettings&&window.NSettings.get(); seen=S?S.degfmt:null; }catch(e){}
-  window.addEventListener("nirayana:settings",function(){
-    let now=null;
-    try{ const S=window.NSettings&&window.NSettings.get(); now=S?S.degfmt:null; }catch(e){}
-    if(now===seen) return;            /* theme and the rest need no redraw */
-    seen=now;
-    if(LAST_DATA) { try{ render(LAST_DATA); }catch(e){} }
+  const castKeys = ["ayan","house","node"];
+  const readS = () => { try { return window.NSettings && window.NSettings.get(); }
+                        catch(e){ return null; } };
+  const sig = (S) => S ? castKeys.map(k=>String(S[k])).join("|") : "";
+
+  /* What the chart in hand was actually cast with, for comparison against the
+     settings. The payload records the ayanāṃśa mode and the node mode at top
+     level and the frame inside house_system. */
+  function castWith(d){
+    const hs = d && d.house_system;
+    return {
+      ayan: (d && (d.ayanamsa_mode || (d.input&&d.input.ayanamsa))) || null,
+      house: hs ? (typeof hs==="string" ? hs : (hs.mode||null))
+                : ((d&&d.input&&d.input.houseSystem) || null),
+      node: (d && (d.node_mode || (d.input&&d.input.node))) || null
+    };
+  }
+  function recast(){
+    if(!LAST_DATA || !LAST_DATA.input || !window.buildLocalChart) return false;
+    const S = readS(); if(!S) return false;
+    /* Overlay the settings on the ORIGINAL birth data. D.input round-trips
+       into buildLocalChart unchanged, which is what makes this safe. */
+    const inp = Object.assign({}, LAST_DATA.input, {
+      ayanamsa: S.ayan, houseSystem: S.house, node: S.node });
+    let D;
+    try { D = window.buildLocalChart(inp); } catch(e){ return false; }
+    if(!D) return false;
+    try { render(D); } catch(e){ return false; }
+    return true;
+  }
+  window.__dashRecast = recast;          /* for the harness */
+  window.__dashLast = function(){ return LAST_DATA; };
+
+  /* On load, bring the chart into line with the settings if it was cast under
+     something else — that is what "follows the universal settings" has to mean
+     for a page you arrive at with a chart already in hand. Announced rather
+     than silent: a reader who cast under Śrīpati and sees whole-sign deserves
+     to be told which happened, not left to spot it. */
+  function alignOnLoad(){
+    if(!LAST_DATA) return;
+    const S = readS(); if(!S) return;
+    const was = castWith(LAST_DATA);
+    const diff = [];
+    if(was.ayan && was.house){
+      if(String(S.house) !== String(was.house)) diff.push("bhāva frame");
+      if(S.node && was.node && String(S.node) !== String(was.node)) diff.push("nodes");
+    }
+    /* The ayanāṃśa is compared by MODE KEY, which is what the setting holds;
+       the payload's ayanamsa_mode is the same vocabulary. */
+    if(was.ayan && String(S.ayan) !== String(was.ayan)) diff.unshift("ayanāṃśa");
+    if(!diff.length) return;
+    const before = was;
+    if(recast()){
+      const app=$("#app");
+      if(app){
+        const n=h("p",{class:"note"});
+        n.innerHTML = "<b>Re-cast to match your settings.</b> The chart handed "+
+          "to this page was cast with a different "+esc(diff.join(" and "))+
+          " ("+esc([before.ayan,before.house,before.node].filter(Boolean).join(", "))+
+          "). It has been recomputed from the same birth data under the "+
+          "settings now in force, so every figure below is consistent with them. "+
+          "Change them in Settings and this page recomputes again.";
+        app.insertBefore(n, app.firstChild ? app.firstChild.nextSibling : null);
+      }
+    }
+  }
+
+  let seen = sig(readS());
+  let seenFmt = (readS()||{}).degfmt;
+  window.addEventListener("nirayana:settings", function(){
+    const S = readS();
+    const nowSig = sig(S), nowFmt = S ? S.degfmt : null;
+    if(nowSig !== seen){
+      seen = nowSig; seenFmt = nowFmt;
+      recast();                  /* every longitude moves: rebuild the chart */
+      return;
+    }
+    if(nowFmt !== seenFmt){
+      seenFmt = nowFmt;
+      if(LAST_DATA){ try{ render(LAST_DATA); }catch(e){} }
+    }
+    /* theme and anything else needs neither */
   });
+
+  /* after the first render has put LAST_DATA in place */
+  if(document.readyState === "loading")
+    document.addEventListener("DOMContentLoaded", alignOnLoad);
+  else setTimeout(alignOnLoad, 0);
 })();
 
 </script>

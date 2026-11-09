@@ -421,6 +421,27 @@
      store a value but cannot recast anything with it. */
   function hasEngine() { return !!window.__ayanModes; }
 
+  /* CAN THIS PAGE ACT ON THIS PARTICULAR SETTING?
+   *
+     Having the engine is not the same as honouring every setting, and the
+     Sunrise row is the case that proves it: buildLocalChart() does not read
+     riseconv AT ALL — the convention re-dates the pañcāṅga, not a natal
+     chart. So the dashboard, which now carries the engine and recasts on
+     ayanāṃśa, bhāva frame and node, still cannot act on Sunrise, and a live
+     picker for it there would be the dead control this file refuses
+     everywhere else.
+   *
+     A page may therefore declare window.__nsHonours, the keys it can really
+     act on; anything outside that list renders frozen. Pages that declare
+     nothing keep exactly the previous behaviour — engine present means the
+     casting rows are live — so this adds a way to be more honest without
+     changing any page that has not opted in. */
+  function canHonour(key) {
+    var L = window.__nsHonours;
+    if (L && L.indexOf) return L.indexOf(key) >= 0;
+    return hasEngine();
+  }
+
   /* A setting shown but not offered, for pages that cannot act on it.
    *
      WHY NOT JUST SHOW THE PICKER. A <select> that stores a value this page
@@ -451,7 +472,7 @@
 
   function ayanRow() {
     var M = window.__ayanModes, s = get();
-    if (!M) {
+    if (!M || !canHonour("ayan")) {
       /* the engine is not on this page, so the list cannot be built from it.
          Offering a hand-written list here would be a second list to keep in
          step with AYAN_MODES — the exact bug the Kundli picker's comment
@@ -495,7 +516,7 @@
 
           '<h3>Reckoning</h3>' +
           ayanRow() +
-          (hasEngine() ? row("house", "Bhāva frame (house system)",
+          (canHonour("house") ? row("house", "Bhāva frame (house system)",
             'Decides how every bhāva is reckoned — which bhāva each graha occupies, which ' +
             'rāśi gives each bhāva its lord, and the strengths that follow. Whole-sign is ' +
             'what BPHS uses. Under Śrīpati a bhāva can span two rāśis and its lord is taken ' +
@@ -503,11 +524,11 @@
             'their own, so they keep whole-sign houses and carry the rāśi chart’s bhāva ' +
             'alongside, labelled.')
             : frozenRow("Bhāva frame (house system)", get().house, "house")) +
-          (hasEngine() ? row("node", "Lunar nodes",
+          (canHonour("node") ? row("node", "Lunar nodes",
             'BPHS reckons Rāhu and Ketu as the mean node. The true node can sit up to about ' +
             '1½° away.')
             : frozenRow("Lunar nodes", get().node, "node")) +
-          (hasEngine() ? row("riseconv", "Sunrise",
+          (canHonour("riseconv") ? row("riseconv", "Sunrise",
             'Re-dates everything downstream: the vāra, the ghaṭī count, which tithi is ' +
             'today’s, and therefore which day a festival lands on.')
             : frozenRow("Sunrise", get().riseconv, "riseconv")) +

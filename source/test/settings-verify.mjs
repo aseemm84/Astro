@@ -398,11 +398,25 @@ head("The dashboard, which renders a chart it did not compute");
       note: ((x.querySelector(".nsnote") || {}).textContent || "").replace(/\s+/g, " "),
     })));
   const byLabel = (t) => rows.filter((r) => r.label.indexOf(t) === 0)[0];
-  ["Ayanāṃśa", "Bhāva frame", "Lunar nodes", "Sunrise"].forEach((lab) => {
+  /* THE DASHBOARD NOW RE-CASTS. It used to be a pure renderer and these rows
+     were frozen, which is what this block asserted. It carries the engine and
+     72-sripati.js now, so it rebuilds the chart from the birth data the
+     payload holds and the casting settings act for real. */
+  ["Ayanāṃśa", "Bhāva frame", "Lunar nodes"].forEach((lab) => {
     const r = byLabel(lab);
-    is(!!r && r.select === false, lab + " is FROZEN here, not a picker");
-    is(!!r && /did not compute/.test(r.note), lab + " says why it is frozen");
+    is(!!r && r.select === true, lab + " IS a live picker here — the page recasts");
   });
+  /* Sunrise is the one that must STAY frozen, and it is the case that proves
+     carrying an engine is not the same as honouring every setting:
+     buildLocalChart() does not read riseconv at all — the convention re-dates
+     the pañcāṅga, not a natal chart. The page declares window.__nsHonours and
+     leaves it out. */
+  is(!!byLabel("Sunrise") && byLabel("Sunrise").select === false,
+    "Sunrise stays FROZEN even with the engine present — buildLocalChart " +
+    "ignores riseconv, so a picker would change nothing here");
+  is(await dp.evaluate(() => JSON.stringify(window.__nsHonours)) ===
+     JSON.stringify(["ayan", "house", "node", "degfmt"]),
+    "and the page declares exactly what it honours");
   is(!!byLabel("Degrees") && byLabel("Degrees").select === true,
     "Degrees IS offered here, because this page honours it");
   /* The palette row must be frozen too, and this is the one that bit back.
@@ -420,12 +434,58 @@ head("The dashboard, which renders a chart it did not compute");
     "no theme picker is mounted on an adopted page at all");
   is(await dp.evaluate(() => typeof window.NTheme) === "undefined",
     "theme.js is NOT inlined here, which is what keeps the two systems apart");
-  /* the frozen note must name what the chart was really cast with, which is
-     the fact a reader on a renderer actually needs */
-  is(/cast with sripati/.test((byLabel("Bhāva frame") || {}).note || ""),
-    "and the bhāva row names the chart's own frame (sripati) beside the stored one");
   is(await dp.evaluate(() => !/\[object Object\]/.test(document.body.innerText)),
     "no [object Object] anywhere — house_system is an object, and .mode is shown");
+
+  /* ---- the casting settings must MOVE THE CHART, not just the labels ----
+     The payload above was cast under SRIPATI while the stored setting is
+     whole, so the page should have re-cast itself on load and said so. */
+  is(/Re-cast to match your settings/.test(await dp.evaluate(() => document.body.innerText)),
+    "a chart cast under other settings is re-cast on arrival, and the page says so");
+  const chartState = () => dp.evaluate(() => {
+    const D = window.__dashLast && window.__dashLast();
+    if (!D) return null;
+    const bh = {}; (D.grahas || []).forEach((g) => { bh[g.key] = g.bhava; });
+    const sb = {}; ((D.shadbala && D.shadbala.planets) || [])
+      .forEach((x) => { sb[x.graha] = Math.round(x.total_virupa * 100); });
+    return { mode: D.house_system && D.house_system.mode,
+             fellBack: D.house_system && D.house_system.fell_back,
+             ayan: D.ayanamsa_mode, ayDeg: Math.round(D.ayanamsha_deg * 1e4),
+             bh: bh, sb: sb };
+  });
+  await dp.evaluate(() => window.NSettings.set({ house: "whole", ayan: "lahiri", node: "mean" }));
+  await dp.waitForTimeout(4500);
+  const W = await chartState();
+  is(!!W && W.mode === "whole", "the chart is whole-sign when the setting is");
+  await dp.evaluate(() => window.NSettings.set({ house: "sripati" }));
+  await dp.waitForTimeout(4500);
+  const SP = await chartState();
+  is(!!SP && SP.mode === "sripati" && SP.fellBack === false,
+    "setting Śrīpati re-casts the chart into the Śrīpati frame WITHOUT falling back");
+  /* The fallback check above is the important half. engine.js does not
+     implement Śrīpati itself — it asks for window.SPSripati and, absent,
+     returns whole-sign with fell_back_reason "the Śrīpati module is not
+     loaded on this page". With the engine but not 72-sripati.js the reader
+     would have got a whole-sign chart labelled Śrīpati. */
+  const movedBh = Object.keys(W.bh).filter((k) => W.bh[k] !== SP.bh[k]);
+  is(movedBh.length >= 2,
+    "and grahas actually change bhāva (" + movedBh.length + ": " +
+    movedBh.join(", ") + ") — not a relabelling");
+  const movedSb = Object.keys(W.sb).filter((k) => W.sb[k] !== SP.sb[k]);
+  is(movedSb.length >= 4,
+    "and the Ṣaḍbala totals move with the frame (" + movedSb.length + " of 7)");
+  await dp.evaluate(() => window.NSettings.set({ ayan: "raman" }));
+  await dp.waitForTimeout(4500);
+  const R = await chartState();
+  is(!!R && R.ayan === "raman" && R.ayDeg !== SP.ayDeg,
+    "changing the ayanāṃśa re-casts too (" + (SP.ayDeg / 1e4) + "° → " +
+    (R.ayDeg / 1e4) + "°)");
+  await dp.evaluate(() => window.NSettings.set({ house: "whole", ayan: "lahiri", node: "mean" }));
+  await dp.waitForTimeout(4500);
+  const back = await chartState();
+  is(JSON.stringify(back.bh) === JSON.stringify(W.bh) &&
+     JSON.stringify(back.sb) === JSON.stringify(W.sb) && back.ayDeg === W.ayDeg,
+    "and returning to the original settings reproduces the original chart exactly");
 
   /* Degrees must actually redraw the page, not just store a value. */
   const fig = () => dp.evaluate(() => {

@@ -542,7 +542,37 @@ def build_adopted():
         # So the panel renders its Presentation row frozen on these pages, the
         # same way it freezes the casting rows. settings.js does that by
         # checking for window.NTheme.
+        # THE ENGINE, for dashboard.html ONLY. The dashboard used to be a pure
+        # renderer: it displayed a chart cast elsewhere and recomputed nothing,
+        # so the ayanamsa and bhava-frame settings could not act on it and the
+        # panel froze those rows rather than offer pickers that would store a
+        # value and move nothing. Giving it the engine makes them act, because
+        # it can now RE-CAST from the birth data the payload already carries.
+        #
+        # 252 KB on a page that already inlines a megabyte of ECharts. Still
+        # inlined, so the page keeps working as a single file off the
+        # filesystem. settings.js needs no change: it decides frozen-or-live
+        # by looking for window.__ayanModes, which engine.js publishes, so the
+        # rows come alive here and stay frozen on the other three adopted
+        # pages, which have no engine and no use for one.
+        #
+        # 72-sripati.js COMES TOO, and leaving it out is a trap worth naming.
+        # engine.js does not implement the Śrīpati construction itself: it
+        # asks for window.SPSripati and, not finding it, falls back to
+        # whole-sign and RECORDS WHY — house_system.fell_back_reason reads
+        # "the Śrīpati module is not loaded on this page". With the engine but
+        # not this module, a reader could select Śrīpati here and get a
+        # whole-sign chart that claimed to be one. The engine's own honesty is
+        # what caught it; the fix is to ship the module.
+        engine = ""
+        if name == "dashboard.html":
+            engine = ("<script>\n" + read(VEND, "astronomy.browser.min.js") +
+                      "\n</script>\n<script>\n" + jsread(SRC, "js", "engine.js") +
+                      "\n</script>\n<script>\n" +
+                      jsread(SRC, "js", "report", "sections", "72-sripati.js") +
+                      "\n</script>\n")
         panel = ("<style>\n" + read(SRC, "css", "settings.css") + "\n</style>\n"
+                 + engine +
                  "<script>\n" + read(SRC, "js", "settings.js") + "\n</script>\n")
         out[name] = brandify(text[:i] + "\n" + strip + panel + text[i:])
     return out
