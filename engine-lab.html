@@ -2077,6 +2077,15 @@ svg.skysvg .sk-artlab{font-size:9.5px;font-weight:600;fill:#2a2f4a;text-anchor:m
 .aytab td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
 .aytab td.note{font-size:.84rem;color:var(--muted-2,#5a5e78)}
 .aytab tr.mine{background:rgba(47,125,85,.08)}
+/* band panel: a cell saying whether a chart quantity moves across the
+   admissible ayanamsa band. Hue lives in the background and the left border;
+   the ink stays var(--text), because a hardcoded ink over a translucent tint
+   measures 1.4:1 on the emerald palette. Low-alpha rgba rather than a token
+   background so it reads on both light and dark, matching tr.mine above. */
+.aytab td.aymv{border-left:3px solid var(--border-2,#d8d8e6);color:var(--text,#1c1c22)}
+.aytab td.aymv-y{background:rgba(161,73,58,.13);border-left-color:var(--sem-bad,#a1493a)}
+.aytab td.aymv-m{background:rgba(154,123,47,.13);border-left-color:var(--sem-mid,#9a7b2f)}
+.aytab td.aymv-n{background:rgba(47,125,85,.10);border-left-color:var(--sem-good,#2f7d55)}
 
 /* the measured checks under the impact table */
 .aycheck{list-style:none;padding:0;margin:.9rem 0}
@@ -4876,7 +4885,7 @@ instead of a thing you are told.</div>
    {
     "key": "samanvaya_ecliptic",
     "name": "Samanvaya–Ecliptic (क्रान्तिवृत्त-समन्वय)",
-    "tag": "Samanvaya (Ecliptic)",
+    "tag": "Sam. Ecliptic",
     "deg": 21.257,
     "exactToSwiss": false,
     "wobbleArcsec": null
@@ -4884,7 +4893,7 @@ instead of a thing you are told.</div>
    {
     "key": "samanvaya_polar",
     "name": "Samanvaya–Polar (ध्रुवक-समन्वय)",
-    "tag": "Samanvaya (Polar)",
+    "tag": "Sam. Polar",
     "deg": 22.564,
     "exactToSwiss": false,
     "wobbleArcsec": null

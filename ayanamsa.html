@@ -1,10 +1,10 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Ayanāṃśa — the gap between two zodiacs &mdash; Nirayana</title><meta name="description" content="What the ayanāṃśa is and why it exists, with the gap between the sidereal and tropical zeros drawn for any year, the formula shown term by term, a measured account of what it changes and what it mathematically cannot, all seventeen definitions compared, and a sandbox for building your own.">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Ayanāṃśa — the gap between two zodiacs &mdash; Nirayana</title><meta name="description" content="What the ayanāṃśa is and why it exists, with the gap between the sidereal and tropical zeros drawn for any year, the formula shown term by term, a measured account of what it changes and what it mathematically cannot, all nineteen definitions compared, the band the evidence actually allows, and a sandbox for building your own.">
 <link rel="canonical" href="https://aseemm84.github.io/Astro/ayanamsa.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Nirayana">
 <meta property="og:locale" content="en_GB">
 <meta property="og:title" content="Ayanāṃśa — the gap between two zodiacs &amp;mdash; Nirayana">
-<meta property="og:description" content="What the ayanāṃśa is and why it exists, with the gap between the sidereal and tropical zeros drawn for any year, the formula shown term by term, a measured account of what it changes and what it mathematically cannot, all seventeen definitions compared, and a sandbox for building your own.">
+<meta property="og:description" content="What the ayanāṃśa is and why it exists, with the gap between the sidereal and tropical zeros drawn for any year, the formula shown term by term, a measured account of what it changes and what it mathematically cannot, all nineteen definitions compared, the band the evidence actually allows, and a sandbox for building your own.">
 <meta property="og:url" content="https://aseemm84.github.io/Astro/ayanamsa.html">
 <meta property="og:image" content="https://aseemm84.github.io/Astro/assets/og-nirayana.png">
 <meta property="og:image:width" content="1200">
@@ -12,7 +12,7 @@
 <meta property="og:image:alt" content="Nirayana — a Vedic astrology reference and chart engine">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Ayanāṃśa — the gap between two zodiacs &amp;mdash; Nirayana">
-<meta name="twitter:description" content="What the ayanāṃśa is and why it exists, with the gap between the sidereal and tropical zeros drawn for any year, the formula shown term by term, a measured account of what it changes and what it mathematically cannot, all seventeen definitions compared, and a sandbox for building your own.">
+<meta name="twitter:description" content="What the ayanāṃśa is and why it exists, with the gap between the sidereal and tropical zeros drawn for any year, the formula shown term by term, a measured account of what it changes and what it mathematically cannot, all nineteen definitions compared, the band the evidence actually allows, and a sandbox for building your own.">
 <meta name="twitter:image" content="https://aseemm84.github.io/Astro/assets/og-nirayana.png">
 <meta name="theme-color" content="#1d2340">
 <meta name="color-scheme" content="light">
@@ -2077,6 +2077,15 @@ svg.skysvg .sk-artlab{font-size:9.5px;font-weight:600;fill:#2a2f4a;text-anchor:m
 .aytab td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
 .aytab td.note{font-size:.84rem;color:var(--muted-2,#5a5e78)}
 .aytab tr.mine{background:rgba(47,125,85,.08)}
+/* band panel: a cell saying whether a chart quantity moves across the
+   admissible ayanamsa band. Hue lives in the background and the left border;
+   the ink stays var(--text), because a hardcoded ink over a translucent tint
+   measures 1.4:1 on the emerald palette. Low-alpha rgba rather than a token
+   background so it reads on both light and dark, matching tr.mine above. */
+.aytab td.aymv{border-left:3px solid var(--border-2,#d8d8e6);color:var(--text,#1c1c22)}
+.aytab td.aymv-y{background:rgba(161,73,58,.13);border-left-color:var(--sem-bad,#a1493a)}
+.aytab td.aymv-m{background:rgba(154,123,47,.13);border-left-color:var(--sem-mid,#9a7b2f)}
+.aytab td.aymv-n{background:rgba(47,125,85,.10);border-left-color:var(--sem-good,#2f7d55)}
 
 /* the measured checks under the impact table */
 .aycheck{list-style:none;padding:0;margin:.9rem 0}
@@ -3344,7 +3353,7 @@ html[data-theme] nav.site .themepick select option{
     return true;
   }, list: THEMES };
 })();
-</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Ayanāṃśa</h1><p class="sub">Two zodiacs, two different zeros, and the angle between them — explained from scratch, measured live, and open to one you invent yourself.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html" class="active">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#start">Start here: two different zeros</a><a href="#drift">Watch the gap open</a><a href="#why">Why the equinox moves at all</a><a href="#derive">How it is actually obtained</a><a href="#equation">The equation, drawn</a><a href="#stars">The ones pinned to a star</a><a href="#impact">What it changes &mdash; and what it cannot</a><a href="#chart">What it does to an actual chart</a><a href="#spread">Nineteen answers to one question</a><a href="#sandbox">Make your own</a><a href="#share">Take it with you</a></aside><main><p class="lede">Two zodiacs are in use in the world, and they no longer line up. The gap between them is the <b>ayan&amacr;&#7745;&#347;a</b>. Everything on this page is computed in your browser while you read it &mdash; there is no number here that was typed into the prose &mdash; and the whole argument can be followed without any mathematics at all. The equations are here too, drawn rather than stated, for anyone who wants them.</p>
+</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Ayanāṃśa</h1><p class="sub">Two zodiacs, two different zeros, and the angle between them — explained from scratch, measured live, and open to one you invent yourself.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html" class="active">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#start">Start here: two different zeros</a><a href="#drift">Watch the gap open</a><a href="#why">Why the equinox moves at all</a><a href="#derive">How it is actually obtained</a><a href="#equation">The equation, drawn</a><a href="#stars">The ones pinned to a star</a><a href="#impact">What it changes &mdash; and what it cannot</a><a href="#chart">What it does to an actual chart</a><a href="#spread">Nineteen answers to one question</a><a href="#band">Which of them the evidence actually allows</a><a href="#sandbox">Make your own</a><a href="#share">Take it with you</a></aside><main><p class="lede">Two zodiacs are in use in the world, and they no longer line up. The gap between them is the <b>ayan&amacr;&#7745;&#347;a</b>. Everything on this page is computed in your browser while you read it &mdash; there is no number here that was typed into the prose &mdash; and the whole argument can be followed without any mathematics at all. The equations are here too, drawn rather than stated, for anyone who wants them.</p>
 
 <h2 id="start">Start here: two different zeros<span class="kdeva">द्वौ आरम्भौ</span></h2>
 <p>A zodiac is a circle divided into twelve. To divide a circle you must first say <b>where it starts</b>. There are two reasonable answers, and the whole subject follows from the fact that they are different answers.</p>
@@ -3451,6 +3460,37 @@ html[data-theme] nav.site .themepick select option{
 <p>This site offers nineteen definitions. They disagree with each other by more than five degrees &mdash; and the engine&rsquo;s own uncertainty about where a graha is sits near one arcsecond. <b>The choice of convention matters about a thousand times more than the quality of the arithmetic.</b> If this site and another disagree about a chart, this is almost always why.</p>
 <div class="aywrap"><div id="ay-spread"></div></div>
 <div id="ay-modetable"></div>
+
+<h2 id="band">Which of them the evidence actually allows<span class="kdeva">प्रमाण-सीमा</span></h2>
+<p>Nineteen definitions exist, but they are not nineteen equally supported
+answers. Two of the sidereal zero&rsquo;s constraints can be checked against the
+sky independently of each other &mdash; the twenty-seven yogat&amacr;r&amacr;
+dhruvak&amacr;s recorded in the S&umacr;rya Siddh&amacr;nta, and the solar
+apogee as three separate texts state it &mdash; and combined they place the
+zero at <b>493.6 &plusmn; 23 CE</b>. That is a <i>band</i>, not a point, and
+the definitions that fall inside it are listed below.</p>
+<div class="note"><b>Two different mistakes are worth avoiding here.</b> The
+first is treating the band as a ranking, and picking the convention nearest its
+centre: the conventions inside it agree with one another to a fraction of an
+arcsecond, so there is nothing to pick between, and the panel below measures
+that rather than asserting it. The second is forgetting that the band has a
+<i>width</i>. An uncertainty of &plusmn;23 years of epoch is about twenty
+arcminutes of ayan&amacr;&#7745;&#347;a, and twenty arcminutes is not nothing
+&mdash; it is what the rest of this section is about.</div>
+<div id="ay-band"></div>
+<div class="caution"><b>This is a band on a historical question, not a verdict
+on which ayan&amacr;&#7745;&#347;a to read charts with.</b> What is measured
+above is fidelity to the S&umacr;rya Siddh&amacr;nta&rsquo;s own recorded star
+positions and solar apogee &mdash; where the fifth-century sky was, by the
+text&rsquo;s own numbers. That is the right test for a convention claiming to
+reconstruct the siddh&amacr;ntic zero. It is <i>not</i> the test for Lahiri,
+which is a stipulation &mdash; Citr&amacr; held at 180&deg; &mdash; and is the
+civil standard the published Indian pa&ntilde;c&amacr;&#7745;gas use. Against
+that standard Lahiri is correct by definition and no measurement can touch it.
+This site&rsquo;s default is Lahiri for exactly that reason, and the gap is not
+academic: it is close to three degrees, or nine-tenths of a p&amacr;da. The two
+questions have different right answers, and the whole point of drawing the band
+is to keep them apart.</div>
 
 <h2 id="sandbox">Make your own<span class="kdeva">स्व-रचना</span></h2>
 <p>Invent one. Set where the gap stood in 2000 and how fast it opens, or pin a star at a longitude of your choosing and let the engine work out the rest. Your definition is then registered with the engine exactly like the nineteen above, so the whole site &mdash; the wheels, the pa&ntilde;c&amacr;&#7745;ga, a cast chart &mdash; will use it until you leave the page.</p>

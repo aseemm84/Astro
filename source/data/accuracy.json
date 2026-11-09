@@ -1401,7 +1401,7 @@
    {
     "key": "samanvaya_ecliptic",
     "name": "Samanvaya–Ecliptic (क्रान्तिवृत्त-समन्वय)",
-    "tag": "Samanvaya (Ecliptic)",
+    "tag": "Sam. Ecliptic",
     "deg": 21.257,
     "exactToSwiss": false,
     "wobbleArcsec": null
@@ -1409,7 +1409,7 @@
    {
     "key": "samanvaya_polar",
     "name": "Samanvaya–Polar (ध्रुवक-समन्वय)",
-    "tag": "Samanvaya (Polar)",
+    "tag": "Sam. Polar",
     "deg": 22.564,
     "exactToSwiss": false,
     "wobbleArcsec": null

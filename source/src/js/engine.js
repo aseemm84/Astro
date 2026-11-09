@@ -1572,6 +1572,14 @@ window.__kVims={
             balance:full*(1-frac)};
   }
 };
+/* The sixteen divisional signs, as the one function that computes them plus the
+   table that names them. Published for the same reason as the dignity and
+   Viṃśottarī tables above: the report has this and so do several pages, each
+   from its own copy. A page that asks here cannot drift from the report.
+   Additive; nothing in the engine changes. Note D30 is NOT a uniform 30/n
+   division — its five spans are unequal, as vargaSign shows — so a page that
+   wants the width of a division must measure it rather than divide 30 by n. */
+window.__kVarga={ sign:vargaSign, codes:VCODES };
 window.calculateSripatiHouses=function(ascSid,mcSid){
   if(window.SPSripati&&window.SPSripati.build) return window.SPSripati.build(ascSid,mcSid);
   return null;

@@ -732,6 +732,280 @@ function vargaCharts(D){
     function liNote(text) { return '<li class="obs">' + text + "</li>"; }
   }
 
+  /* ---- 4b. the admissible band, and what its WIDTH costs a chart ---------
+     The band comes from combining two independent siddhāntic constraints —
+     the 27-star dhruvakā ensemble and the solar apogee as three texts state
+     it — which agree on a sidereal zero of 493.6 ± 23 CE. See the project
+     note samanvaya-ayanamsa-research.md for the derivation; the numbers below
+     are the two that derivation produced, and everything else on this panel is
+     measured live from the engine rather than restated.
+
+     The point of the panel is NOT to let a reader choose among the in-band
+     conventions. It is to show that there is nothing to choose: they agree to
+     a fraction of an arcsecond, and the thing that actually moves a chart is
+     the band's own width. So the panel perturbs the ayanāṃśa by ±1σ directly
+     instead of switching modes, because no registered mode sits at the edge of
+     the band and inventing one to stand there would misrepresent it. */
+  var BAND = { centre: 493.6, sigma: 23.0 };
+  /* arcsec/yr of precession, taken from the engine's own linear coefficient
+     rather than from a round 50.29, so the two cannot disagree */
+  function bandHalfWidthDeg() { return BAND.sigma * 1.39688795339 / 100; }
+  /* the year at which a mode reads zero, by bisection on the engine itself */
+  function zeroEpochOf(key) {
+    var lo = -2000, hi = 3000, f = function (y) { return ayanAt(key, y); };
+    var a = f(lo), b = f(hi);
+    if (a == null || b == null || a * b > 0) return null;
+    for (var i = 0; i < 60; i++) {
+      var m = (lo + hi) / 2, v = f(m);
+      if (v == null) return null;
+      if (v * a > 0) { lo = m; a = v; } else { hi = m; }
+    }
+    return (lo + hi) / 2;
+  }
+  function inBandModes() {
+    var out = [], M = modes();
+    Object.keys(M).forEach(function (k) {
+      var z = zeroEpochOf(k);
+      if (z != null && z >= BAND.centre - BAND.sigma && z <= BAND.centre + BAND.sigma) {
+        out.push({ key: k, name: M[k].name || k, zero: z });
+      }
+    });
+    out.sort(function (p, q) { return p.zero - q.zero; });
+    return out;
+  }
+  /* widest disagreement among a set of modes across a long span — the claim
+     being tested is that the in-band modes are one convention, and a single
+     present-day instant could hide a divergence that only opens elsewhere */
+  function worstSpread(keys) {
+    var worst = 0, at = null;
+    for (var y = 1000; y <= 3000; y += 10) {
+      var v = [], ok = true;
+      for (var i = 0; i < keys.length; i++) {
+        var a = ayanAt(keys[i], y);
+        if (a == null) { ok = false; break; }
+        v.push(a);
+      }
+      if (!ok) continue;
+      var d = Math.max.apply(null, v) - Math.min.apply(null, v);
+      if (d > worst) { worst = d; at = y; }
+    }
+    return { deg: worst, year: at };
+  }
+
+  function drawBand() {
+    var h = $("ay-band");
+    if (!h) return;
+    var IB = inBandModes();
+    if (!IB.length || !window.__kVarga || !window.__kVims) { h.innerHTML = ""; return; }
+
+    var d = bandHalfWidthDeg();
+    var sp = worstSpread(IB.map(function (r) { return r.key; }));
+
+    var o = '<div class="aytabwrap"><table class="aytab"><thead><tr>' +
+      '<th>Inside the band</th><th>reads zero at</th><th>ayanāṃśa now</th>' +
+      '</tr></thead><tbody>';
+    IB.forEach(function (r) {
+      var now = ayanAt(r.key, new Date().getUTCFullYear());
+      o += '<tr><td>' + esc(r.name) + '</td><td class="num">' +
+        r.zero.toFixed(2) + ' CE</td><td class="num">' +
+        (now == null ? "—" : esc(dm(now))) + '</td></tr>';
+    });
+    o += '</tbody></table></div>';
+
+    /* Sharing the band is a statement about the EPOCH only. Two conventions can
+       read zero in the same decade and still part company by degrees away from
+       it — the Sūrya Siddhānta's librating and steady readings do exactly that.
+       So the agreement claim is tested on the tight cluster, and the rest are
+       reported as what they are rather than folded in. An earlier draft of this
+       panel asserted "one convention" over all in-band modes; the live figure
+       contradicted it by fifteen degrees, which is why this is split. */
+    /* The cluster must be the LARGEST mutually-agreeing group, not whichever
+       mode happens to sort first — seeding from IB[0] put the librating SS
+       reading alone in the cluster and the three that really are one
+       convention in "rest", which is the opposite of the truth. */
+    var agree = IB.map(function (r) {
+      return IB.filter(function (q) {
+        return worstSpread([r.key, q.key]).deg * 3600 < 1;
+      });
+    });
+    var best = 0;
+    agree.forEach(function (g, i) { if (g.length > agree[best].length) best = i; });
+    var tight = agree[best],
+        inTight = {};
+    tight.forEach(function (r) { inTight[r.key] = 1; });
+    var rest = IB.filter(function (r) { return !inTight[r.key]; });
+    var spT = worstSpread(tight.map(function (r) { return r.key; }));
+    /* the chart below is cast under a member of the agreeing cluster, since any
+       member gives the same answer and a merely-epoch-sharing mode would not */
+    var sky = skyUnder(tight[0].key);
+
+    o += '<ul class="aycheck">' +
+      bli(spT.deg * 3600 < 1,
+        "<b>" + tight.length + " of the " + IB.length + "</b> agree with one another to " +
+        "at most <b>" + (spT.deg * 3600).toFixed(3) + "&Prime;</b> anywhere between " +
+        "1000 and 3000 CE — they are <b>one convention</b> reached by different routes, " +
+        "and switching among them cannot move any quantity in a chart.") +
+      (rest.length ? bli(false,
+        "But <b>" + rest.length + "</b> of them (" +
+        rest.map(function (r) { return esc(r.name); }).join(", ") +
+        ") only share the <i>epoch</i>. Across 1000&ndash;3000 CE the in-band set " +
+        "spreads by <b>" + (sp.deg).toFixed(2) + "&deg;</b>" +
+        (sp.year ? ", worst at " + sp.year : "") +
+        " — so reading zero in the same decade does <b>not</b> make two conventions " +
+        "the same. They coincide at the epoch and diverge away from it, which is the " +
+        "<i>held</i>-versus-<i>set down once</i> distinction measured further up this " +
+        "page. The band constrains where the zero <i>was</i>; it says nothing about the " +
+        "rate a convention then uses to carry the frame forward.") : "") +
+      bli(true,
+        "So the figure that matters is the band's own width: <b>&plusmn;" +
+        (d * 60).toFixed(1) + "&prime;</b> of ayanāṃśa, which is &plusmn;" +
+        BAND.sigma.toFixed(0) + " years of epoch. Everything below is that " +
+        "uncertainty applied to the chart cast above, not a difference between " +
+        "two published definitions.") +
+      '</ul>';
+
+    if (!sky) {
+      h.innerHTML = o + '<p class="k-note">Set a moment and place above to see what ' +
+        'the band costs an actual chart.</p>';
+      return;
+    }
+
+    /* --- per-graha and lagna: what ±1σ moves --------------------------- */
+    var seg = 360 / 27, pad = seg / 4;
+    function cell(sid) {
+      return { rasi: Math.floor(norm360(sid) / 30) % 12,
+               nak: Math.floor(norm360(sid) / seg),
+               pad: Math.floor(norm360(sid) / pad) };
+    }
+    function band3(sid) { return [cell(sid - d), cell(sid), cell(sid + d)]; }
+    function moved(t, f) { return f(t[0]) !== f(t[2]); }
+
+    var items = [{ en: "Lagna", sid: sky.lagna }];
+    sky.planets.forEach(function (p) { items.push({ en: p.en, sid: p.sid }); });
+
+    o += '<h3>Lagna, grahas, nakṣatra and pāda</h3>' +
+      '<div class="aytabwrap"><table class="aytab"><thead><tr>' +
+      '<th>Body</th><th>sidereal</th><th>rāśi</th><th>nakṣatra</th>' +
+      '<th>rāśi moves?</th><th>nakṣatra moves?</th><th>pāda moves?</th>' +
+      '</tr></thead><tbody>';
+    var nMoveR = 0, nMoveN = 0, nMoveP = 0;
+    items.forEach(function (it) {
+      var t = band3(it.sid), c = t[1];
+      var mr = moved(t, function (x) { return x.rasi; }),
+          mn = moved(t, function (x) { return x.nak; }),
+          mp = moved(t, function (x) { return x.pad; });
+      if (mr) nMoveR++; if (mn) nMoveN++; if (mp) nMoveP++;
+      o += '<tr><td>' + esc(it.en) + '</td>' +
+        '<td class="num">' + esc(dm(norm360(it.sid))) + '</td>' +
+        '<td>' + esc(SA[c.rasi]) + '</td>' +
+        '<td>' + esc(NAK[c.nak]) + '</td>' +
+        mv(mr) + mv(mn) + mv(mp) + '</tr>';
+    });
+    o += '</tbody></table></div>' +
+      '<p class="k-note">At this moment the band moves the rāśi of ' + nMoveR +
+      ' of ' + items.length + ', the nakṣatra of ' + nMoveN + ', and the pāda of ' +
+      nMoveP + '. Those counts are a property of <i>this</i> instant — they say how ' +
+      'near a boundary things happen to sit, not how large the uncertainty is.</p>';
+
+    /* --- the vargas: measured, because D30's spans are unequal ---------- */
+    var V = window.__kVarga, codes = V.codes;
+    o += '<h3>The sixteen divisional charts</h3>' +
+      '<div class="aytabwrap"><table class="aytab"><thead><tr>' +
+      '<th>Varga</th><th>signification</th>' +
+      '<th>grahas whose varga sign moves across the band</th>' +
+      '</tr></thead><tbody>';
+    var vrows = [];
+    codes.forEach(function (c) {
+      var code = c[0], n = 0;
+      sky.planets.forEach(function (p) {
+        if (V.sign(code, norm360(p.sid - d)) !== V.sign(code, norm360(p.sid + d))) n++;
+      });
+      vrows.push({ code: code, dev: c[1], mean: c[2], n: n });
+    });
+    vrows.forEach(function (r) {
+      var frac = r.n / 9,
+          k = frac >= 0.5 ? "aymv-y" : frac > 0 ? "aymv-m" : "aymv-n";
+      o += '<tr><td><b>' + esc(r.code) + '</b> ' + esc(r.dev) +
+        '</td><td>' + esc(r.mean) + '</td>' +
+        '<td class="num aymv ' + k + '">' + r.n + ' of 9</td></tr>';
+    });
+    o += '</tbody></table></div>';
+
+    var d1 = vrows[0].n, d60 = vrows[vrows.length - 1].n;
+    o += '<div class="note"><b>This is the real cost, and it is not in the rāśi chart.</b> ' +
+      'A varga divides each sign into <i>n</i> parts, so a division is roughly ' +
+      '30&deg;/<i>n</i> wide and the same ayanāṃśa uncertainty crosses <i>n</i> times ' +
+      'as many of them. At the band\'s &plusmn;' + (d * 60).toFixed(1) + '&prime; that ' +
+      'leaves D1 moving for <b>' + d1 + ' of 9</b> grahas and D60 for <b>' + d60 +
+      ' of 9</b> — a ṣaṣṭyāṃśa is only 30&prime; wide, so an uncertainty of this size ' +
+      'very nearly randomises it. <b>D60 is not determined at the precision the ' +
+      'evidence supports</b>, independently of how exact the birth time is. The counts ' +
+      'above are measured by evaluating the engine\'s own varga function at both edges ' +
+      'of the band, not by dividing 30 by <i>n</i> — D30\'s five spans are unequal, so ' +
+      'the arithmetic shortcut would be wrong for it.</div>';
+
+    /* --- Viṃśottarī ----------------------------------------------------- */
+    var moon = sky.planets.filter(function (p) { return p.en === "Moon"; })[0];
+    if (moon) {
+      var vLo = window.__kVims.atMoon(norm360(moon.sid - d)),
+          vMid = window.__kVims.atMoon(norm360(moon.sid)),
+          vHi = window.__kVims.atMoon(norm360(moon.sid + d));
+      var dDays = Math.abs(vHi.balance - vLo.balance) * 365.2425;
+      var lordMoves = !(vLo.lord === vMid.lord && vMid.lord === vHi.lord);
+      o += '<h3>Viṃśottarī daśā</h3>' +
+        '<div class="aytabwrap"><table class="aytab"><thead><tr>' +
+        '<th>Edge of the band</th><th>Moon</th><th>nakṣatra</th>' +
+        '<th>mahādaśā at birth</th><th>balance, years</th></tr></thead><tbody>';
+      [["−1σ", norm360(moon.sid - d), vLo], ["centre", norm360(moon.sid), vMid],
+       ["+1σ", norm360(moon.sid + d), vHi]].forEach(function (r) {
+        o += '<tr><td>' + esc(r[0]) + '</td><td class="num">' + esc(dm(r[1])) +
+          '</td><td>' + esc(NAK[r[2].nak]) + '</td><td>' + esc(r[2].lord) +
+          '</td><td class="num">' + r[2].balance.toFixed(3) + '</td></tr>';
+      });
+      o += '</tbody></table></div>' +
+        '<ul class="aycheck">' +
+        bli(!lordMoves,
+          lordMoves
+            ? "At this moment the band changes <b>which mahādaśā the birth falls in</b> — " +
+              "the Moon is near a nakṣatra boundary, and no amount of birth-time accuracy " +
+              "can settle that, because the disagreement is about the frame, not the clock."
+            : "At this moment the opening mahādaśā lord is the same at both edges of the band.") +
+        bli(true,
+          "But the <b>boundary moves by about " + Math.round(dDays) + " days</b> across the " +
+          "band — an uncertainty far too small to move a graha out of its pāda still moves " +
+          "a mahādaśā boundary by months, and every later daśā in the sequence shifts with " +
+          "it. The figure is measured rather than quoted, because the often-repeated rate " +
+          "of <i>0.913 days of daśā per arcsecond</i> is the wrong one to use here: that " +
+          "maps the full 120 years onto a nakṣatra, whereas the balance of the running " +
+          "mahādaśā scales by <i>its own lord's</i> share. Here the lord is " +
+          esc(vMid.lord) + " at " + vMid.full + " years, so the rate is " +
+          (vMid.full / 120).toFixed(3) + " of the quoted one. Using 0.913 would overstate " +
+          "this by " + (120 / vMid.full).toFixed(1) + "&times;.") +
+        '</ul>';
+    }
+
+    o += '<div class="note"><b>And three things the band cannot touch at all.</b> ' +
+      'Tithi, karaṇa and vāra are unchanged at every point in the band, exactly, for the ' +
+      'reason given further up: a tithi is the Moon&ndash;Sun <i>gap</i>, and the same ' +
+      'ayanāṃśa subtracted from both cancels. So a pañcāṅga date is not at stake here. ' +
+      'What is at stake is a cusp, a pāda, a varga sign, and a daśā boundary.</div>';
+
+    h.innerHTML = o;
+
+    function bli(ok, text) {
+      return '<li class="' + (ok ? "yes" : "no") + '">' + text + "</li>";
+    }
+    /* a cell saying whether a quantity moves. The tint goes in the background
+       and the left border; the ink is left to var(--text), because a
+       hardcoded ink over a translucent tint measures 1.4:1 on the emerald
+       palette. Same pattern as .aytab tr.mine, which is proven on this page. */
+    function mv(yes) {
+      return '<td class="aymv ' + (yes ? "aymv-y" : "aymv-n") + '">' +
+        (yes ? "yes" : "no") + '</td>';
+    }
+  }
+  function norm360(x) { return ((x % 360) + 360) % 360; }
+
   /* ---- 5. the spread ----------------------------------------------------- */
   function drawSpread() {
     var h = $("ay-spread");
@@ -1634,6 +1908,7 @@ function vargaCharts(D){
     drawStarWheel();
     drawSpread();
     drawImpact();
+    drawBand();
     fillChartControls();
     drawChart();
     syncSand();
@@ -1681,7 +1956,7 @@ function vargaCharts(D){
              the first version redrew only the impact table, so changing the
              moment left a chart underneath it that was still drawn for the
              old one, and the equation's T never moved off the present day. */
-          drawImpact(); fillChartControls(); drawChart();
+          drawImpact(); drawBand(); fillChartControls(); drawChart();
         }
       }
     });
@@ -1702,7 +1977,7 @@ function vargaCharts(D){
       }
       else if (k === "now") {
         S.when = Date.now(); syncWhen();
-        drawImpact(); fillChartControls(); drawChart();
+        drawImpact(); drawBand(); fillChartControls(); drawChart();
       }
       else if (k === "pin") applyPin();
       else if (k === "apply") applyCustom();
@@ -1747,7 +2022,7 @@ function vargaCharts(D){
         refMs: function () { return S.when || Date.now(); },
         onPick: function (p) {
           S.place = p; syncWhen();
-          drawImpact(); fillChartControls(); drawChart();
+          drawImpact(); drawBand(); fillChartControls(); drawChart();
         }
       });
     }
