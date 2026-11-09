@@ -2577,6 +2577,12 @@ span.gldig.node{background:#5a5e7812;border-left-color:#8a8ea6}
   border:1px solid var(--border,#d8d8e6);border-radius:6px;padding:4px 10px}
 .nsopen:hover{background:var(--surface-3,#eaeaf2)}
 .nsover[hidden]{display:none}
+/* The panel is a CONTROL, never part of the document. Fixed-position at
+   z-index 9999, so printing with it open laid it across the whole page. Kept
+   beside the panel's own styles rather than in a distant print block, because
+   splitting them is how a rule gets lost. This stanza is duplicated in
+   app.css — change both. */
+@media print{.nsover,.nsopen{display:none!important}}
 .nsover{position:fixed;inset:0;z-index:9999;display:flex;align-items:flex-start;
   justify-content:center;padding:24px 16px;overflow:auto}
 .nsback{position:fixed;inset:0;background:rgba(10,10,16,.55)}

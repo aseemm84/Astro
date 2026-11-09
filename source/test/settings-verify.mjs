@@ -325,6 +325,48 @@ await pg.waitForTimeout(4000);
 const backT = await shot();
 is(backT.d1 === preT.d1, "switching back restores the whole-sign chart exactly");
 
+/* ---- the panel must not print ------------------------------------------
+   It is fixed-position furniture at z-index 9999, so with it open the print
+   output carried the whole overlay across the report and the PDF went from
+   1.5 MB to 7.1 MB on the backdrop alone.
+
+   Measured by RENDERING, not by computed display: an element inside a
+   display:none ancestor still reports its own computed display, which is what
+   made the first version of this investigation report a false positive
+   elsewhere on the page. */
+head("The panel is a control, so it must not print");
+await pg.evaluate(() => { window.NSettings.open(); });
+await pg.waitForTimeout(400);
+const renders = (sel) => pg.evaluate((s) => {
+  const e = document.querySelector(s);
+  if (!e) return null;                       /* absent counts as not printing */
+  const boxed = e.getClientRects().length > 0;
+  const vis = e.checkVisibility
+    ? e.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true }) : boxed;
+  return boxed && vis;
+}, sel);
+await pg.emulateMedia({ media: "screen" });
+is(await renders(".nsover") === true,
+  "the panel renders on screen when open, so the print check below means something");
+await pg.emulateMedia({ media: "print" });
+for (const sel of [".nsover", ".nsback", ".nspanel", ".nsx"]) {
+  const r = await renders(sel);
+  is(r === false || r === null, sel + " does not render in print media");
+}
+/* The clinching one, which no per-selector check establishes on its own: the
+   print output must not change at all when the panel is open. */
+const pdfOpen = await pg.pdf({ format: "A4", printBackground: true });
+await pg.emulateMedia({ media: "screen" });
+await pg.evaluate(() => { window.NSettings.close(); });
+await pg.waitForTimeout(300);
+await pg.emulateMedia({ media: "print" });
+const pdfShut = await pg.pdf({ format: "A4", printBackground: true });
+is(Math.abs(pdfOpen.length - pdfShut.length) < 4096,
+  "print output is the same size with the panel open or shut (" +
+  (pdfOpen.length / 1024).toFixed(0) + " KB vs " +
+  (pdfShut.length / 1024).toFixed(0) + " KB)");
+await pg.emulateMedia({ media: "screen" });
+
 is(errs.length === 0, "no page errors on any page" + (errs.length ? ": " + errs.join(" | ") : ""));
 await br.close();
 console.log(`\n${pass} passed, ${fail} failed`);

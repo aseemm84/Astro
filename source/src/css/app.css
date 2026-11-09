@@ -1224,6 +1224,15 @@ html[data-theme] .kreport .kaysw{box-shadow:0 0 0 1px rgba(255,255,255,.28)}
   border:1px solid var(--border,#d8d8e6);border-radius:6px;padding:4px 10px}
 .nsopen:hover{background:var(--surface-3,#eaeaf2)}
 .nsover[hidden]{display:none}
+/* The panel is a CONTROL, never part of the document. It is fixed-position at
+   z-index 9999, so printing with it open laid it across the whole report and
+   took the PDF from 1.5 MB to 7.1 MB on the backdrop alone. The other
+   furniture is hidden in the print block near the top of this file; this rule
+   sits here instead, beside the panel's own styles, because splitting them is
+   how a rule gets lost. .nsopen mounts inside nav.site, which that print
+   block already hides, but it is named here too in case the mount falls back
+   to the floating position, which is outside nav. */
+@media print{.nsover,.nsopen{display:none!important}}
 .nsover{position:fixed;inset:0;z-index:9999;display:flex;align-items:flex-start;
   justify-content:center;padding:24px 16px;overflow:auto}
 .nsback{position:fixed;inset:0;background:rgba(10,10,16,.55)}
