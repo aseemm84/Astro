@@ -212,6 +212,42 @@ const SAT_W = Math.max(...modern.Saturn.lon);
 const MOON_RATE = 0.549, ELONG_RATE = 0.449;     /* ″/s, measured in span work */
 const NAK = (40 / 3) * 3600;                      /* a nakṣatra, arcseconds */
 
+/* Viṃśottarī mahādaśā years, in the order BPHS gives the lords. One circuit of
+   the nine is 120 years and covers NINE nakṣatras — 120° — not one. */
+const VIMS_YEARS = { Ketu: 7, Venus: 20, Sun: 6, Moon: 10, Mars: 7,
+                     Rahu: 18, Jupiter: 16, Saturn: 19, Mercury: 17 };
+const YEAR_DAYS = 365.2425;
+
+/* THE DAŚĀ COST OF AN ARCSECOND OF MOON IS LORD-SPECIFIC. Read this before
+   changing anything here, because the quantity has been got wrong twice, in
+   two different directions.
+ *
+ * Mistake 1 — too small by ~500x: dividing by the Moon's DAILY MOTION, as
+ * though an arcsecond of Moon cost its own travel time. It does not. The
+ * Moon's position at birth fixes how far into a daśā the birth falls.
+ *
+ * Mistake 2 — too big by 120/lord-years: mapping the whole 120-year cycle
+ * onto ONE nakṣatra of 13°20', giving 120*365.2425/48000 = 0.913 d/arcsec.
+ * This is what shipped, and the old comment here warned against mistake 1
+ * while committing mistake 2. The cycle spans nine nakṣatras, so traversing
+ * one nakṣatra traverses THAT nakṣatra lord's years, not all 120.
+ *
+ * Correct: days = arcsec * years(lord) * 365.2425 / 48000, ranging from
+ * 0.046 (Sun, 6 years) to 0.152 (Venus, 20 years). For prose that cannot
+ * name a lord, the cycle average is 120 years over 120 degrees =
+ * 365.2425/3600 = 0.101 d/arcsec — nine times smaller than what shipped.
+ *
+ * Verified independently of every constant here: the ayanāṃśa band panel
+ * measures the Viṃśottarī balance at both edges of a +/-19.3' band through
+ * __kVims.atMoon, with no rate constant involved, and reports 282 days
+ * across the full 38.6' for a Jupiter mahādaśā. By hand,
+ * 0.6433 * 16 * 365.2425 / 13.3333 = 282. The shipped rate predicted 2114. */
+const dashaRateByLord = Object.fromEntries(
+  Object.entries(VIMS_YEARS).map(([k, y]) => [k, r3(y * YEAR_DAYS / NAK)]));
+const DASHA_RATE_AVG = YEAR_DAYS / 3600;          /* 120 years over 120° */
+const RATE_MIN = Math.min(...Object.values(dashaRateByLord));
+const RATE_MAX = Math.max(...Object.values(dashaRateByLord));
+
 const divisions = [
   { name: "Rāśi (D1)", deg: 30 },
   { name: "Nakṣatra", deg: 40 / 3 },
@@ -227,15 +263,27 @@ const divisions = [
 const cost = {
   nakshatraBoundarySeconds: Math.round(MOON_W / MOON_RATE),
   tithiEndSeconds: Math.round(Math.hypot(MOON_W, SUN_W) / ELONG_RATE),
-  /* A 120-year Viṃśottarī cycle maps onto ONE nakṣatra, so the conversion is
-     120 years per 13°20′ — 0.913 days of daśā per arcsecond of Moon. Computing
-     it from the Moon's daily motion instead gives an answer about five hundred
-     times too small, which is a mistake worth leaving a note about. */
-  dashaDaysPerArcsec: r3(120 * 365.2425 / NAK),
-  mahadashaDays: r3(MOON_W * 120 * 365.2425 / NAK),
-  antardashaDays: r3(MOON_W * 20 * 365.2425 / NAK),
+  /* See the long note above dashaRateByLord. This scalar is the CYCLE
+     AVERAGE, not a universal rate: every consumer that prints it must say
+     so, because the real figure depends on which lord owns the nakṣatra. */
+  dashaDaysPerArcsec: r3(DASHA_RATE_AVG),
+  dashaDaysPerArcsecByLord: dashaRateByLord,
+  dashaDaysPerArcsecMin: r3(RATE_MIN),
+  dashaDaysPerArcsecMax: r3(RATE_MAX),
+  dashaRateLordMin: Object.keys(dashaRateByLord)
+    .reduce((a, b) => (dashaRateByLord[b] < dashaRateByLord[a] ? b : a)),
+  dashaRateLordMax: Object.keys(dashaRateByLord)
+    .reduce((a, b) => (dashaRateByLord[b] > dashaRateByLord[a] ? b : a)),
+  mahadashaDays: r3(MOON_W * DASHA_RATE_AVG),
+  mahadashaDaysMin: r3(MOON_W * RATE_MIN),
+  mahadashaDaysMax: r3(MOON_W * RATE_MAX),
+  /* An antardaśā is MD x AD/120, so within a 20-year Venus period the cost
+     of an arcsecond is the mahādaśā cost scaled by 20/120. */
+  antardashaDays: r3(MOON_W * DASHA_RATE_AVG * 20 / 120),
   birthMinuteArcsec: r3(60 * MOON_RATE),
-  birthMinuteDashaDays: r3(60 * MOON_RATE * 120 * 365.2425 / NAK),
+  birthMinuteDashaDays: r3(60 * MOON_RATE * DASHA_RATE_AVG),
+  birthMinuteDashaDaysMin: r3(60 * MOON_RATE * RATE_MIN),
+  birthMinuteDashaDaysMax: r3(60 * MOON_RATE * RATE_MAX),
   engineEquivalentBirthSeconds: Math.round(MOON_W / MOON_RATE),
 };
 
@@ -378,6 +426,9 @@ console.log("wrote " + OUT);
 console.log("  modern: Sun " + perBody[0].lonWorst + "″, Moon " + perBody[1].lonWorst
   + "″, Saturn " + perBody[6].lonWorst + "″");
 console.log("  ayanāṃśa spread: " + ayanSpread + "° across " + ayan.length + " modes");
-console.log("  daśā: " + cost.dashaDaysPerArcsec + " days per arcsecond of Moon → "
-  + cost.mahadashaDays + " days");
+console.log("  daśā: " + cost.dashaDaysPerArcsec + " d/arcsec of Moon on the cycle"
+  + " average (" + cost.dashaDaysPerArcsecMin + "–" + cost.dashaDaysPerArcsecMax
+  + " by lord, " + cost.dashaRateLordMin + "–" + cost.dashaRateLordMax + ") → "
+  + cost.mahadashaDays + " days (" + cost.mahadashaDaysMin + "–"
+  + cost.mahadashaDaysMax + ")");
 console.log("  size: " + (JSON.stringify(doc).length / 1024).toFixed(1) + " KB");

@@ -86,6 +86,8 @@
     ayanSpread: D.ayanamsa.spreadDeg + "°",
     moonWorst: moon.lonWorst + "″",
     dashaPerArcsec: D.cost.dashaDaysPerArcsec,
+    dashaPerArcsecMin: D.cost.dashaDaysPerArcsecMin,
+    dashaPerArcsecMax: D.cost.dashaDaysPerArcsecMax,
     birthMinuteArcsec: D.cost.birthMinuteArcsec + "″",
     birthMinuteDashaDays: Math.round(D.cost.birthMinuteDashaDays),
     engineBirthSeconds: D.cost.engineEquivalentBirthSeconds + " seconds",
@@ -356,8 +358,10 @@
       card("Tithi, yoga, karaṇa end", c.tithiEndSeconds + " s",
            "the elongation closes at 0.449″ per second") +
       card("Viṃśottarī mahādaśā",
-           Math.round(c.mahadashaDays) + " days",
-           c.dashaDaysPerArcsec + " days per arcsecond of Moon") +
+           c.mahadashaDaysMin.toFixed(1) + "–" + c.mahadashaDaysMax.toFixed(1) + " days",
+           c.dashaDaysPerArcsecMin + "–" + c.dashaDaysPerArcsecMax +
+           " days per arcsecond of Moon by nakṣatra lord, " +
+           c.dashaDaysPerArcsec + " on the cycle average") +
       card("Antardaśā in a 20-year period",
            c.antardashaDays.toFixed(1) + " days", "scaled by 20/120") +
       card("Equivalent birth-time error",

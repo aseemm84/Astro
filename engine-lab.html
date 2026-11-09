@@ -3499,15 +3499,24 @@ and each body actually sits, measured.</p>
 <div id="el-marks"></div>
 <div id="el-cost"></div>
 
-<div class="note"><b>The one that surprises people.</b> One hundred and twenty
-years of Vi&#7747;&#347;ottar&imacr; are mapped onto a single nak&#7779;atra of
-13&deg;20&prime;. Dividing one by the other gives a fixed exchange rate between
-the Moon&rsquo;s position and da&#347;&amacr; time &mdash; shown above, computed
-rather than quoted &mdash; and it is steep enough that an error far too small to
-move the Moon out of its p&amacr;da still moves a mah&amacr;da&#347;&amacr;
-boundary by about a fortnight. It is also why one minute of birth-time
-uncertainty is worth about a month of da&#347;&amacr;, which is a larger
-correction than any engine on this page contributes.</div>
+<div class="note"><b>The one that surprises people.</b> Traversing one
+nak&#7779;atra of 13&deg;20&prime; traverses that nak&#7779;atra lord&rsquo;s
+whole mah&amacr;da&#347;&amacr; &mdash; six years for the Sun, twenty for Venus
+&mdash; so the exchange rate between the Moon&rsquo;s position and
+da&#347;&amacr; time is <b>lord-specific</b>, not one fixed number. A full
+circuit of the nine lords is one hundred and twenty years and spans
+<i>nine</i> nak&#7779;atras, which is one hundred and twenty degrees, giving a
+cycle average of exactly one year of da&#347;&amacr; per degree of Moon. The
+rate is shown above, computed rather than quoted. It is still steep enough that
+an error far too small to move the Moon out of its p&amacr;da shifts a
+mah&amacr;da&#347;&amacr; boundary by a day or two, and one minute of
+birth-time uncertainty is worth several days of da&#347;&amacr; &mdash; a
+larger correction than any engine on this page contributes.
+<br><br><b>Correction.</b> This note previously said the cycle mapped onto a
+single nak&#7779;atra, and gave a fortnight per mah&amacr;da&#347;&amacr;
+boundary and a month per minute of birth time. Those figures were too large by
+a factor of between six and twenty &mdash; the factor being 120 divided by the
+lord&rsquo;s years.</div>
 
 <h2 id="scale">The engines are not the problem<span class="kdeva">सम्प्रदाय-भेदः</span></h2>
 
@@ -5257,11 +5266,30 @@ instead of a thing you are told.</div>
  "cost": {
   "nakshatraBoundarySeconds": 27,
   "tithiEndSeconds": 33,
-  "dashaDaysPerArcsec": 0.913,
-  "mahadashaDays": 13.502,
-  "antardashaDays": 2.25,
+  "dashaDaysPerArcsec": 0.101,
+  "dashaDaysPerArcsecByLord": {
+   "Ketu": 0.053,
+   "Venus": 0.152,
+   "Sun": 0.046,
+   "Moon": 0.076,
+   "Mars": 0.053,
+   "Rahu": 0.137,
+   "Jupiter": 0.122,
+   "Saturn": 0.145,
+   "Mercury": 0.129
+  },
+  "dashaDaysPerArcsecMin": 0.046,
+  "dashaDaysPerArcsecMax": 0.152,
+  "dashaRateLordMin": "Sun",
+  "dashaRateLordMax": "Venus",
+  "mahadashaDays": 1.5,
+  "mahadashaDaysMin": 0.68,
+  "mahadashaDaysMax": 2.248,
+  "antardashaDays": 0.25,
   "birthMinuteArcsec": 32.94,
-  "birthMinuteDashaDays": 30.078,
+  "birthMinuteDashaDays": 3.342,
+  "birthMinuteDashaDaysMin": 1.515,
+  "birthMinuteDashaDaysMax": 5.007,
   "engineEquivalentBirthSeconds": 27
  },
  "capabilities": {

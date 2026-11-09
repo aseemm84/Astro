@@ -6,9 +6,14 @@
  *
  * NOTHING IS QUOTED. The arithmetic that makes this page worth having — that
  * 27 × 4 = 108 and 108 ÷ 12 = 9, so a pāda IS a navāṃśa; that a nakṣatra is
- * 120 years of Viṃśottarī and a pāda 30 — is computed here, from the widths
- * themselves, rather than written into the prose. If the tables ever change
- * the page changes with them.
+ * its own lord's mahādaśā and a pāda a quarter of it — is computed here, from
+ * the widths themselves, rather than written into the prose. If the tables
+ * ever change the page changes with them.
+ *
+ * That claim was once false in the one place it mattered: the daśā rate was
+ * computed as the whole 120-year cycle across a single nakṣatra. See the note
+ * at the dv-perarc block. A page that computes the wrong model is not more
+ * trustworthy than one that quotes the right number.
  */
 (function () {
   "use strict";
@@ -253,14 +258,28 @@
     o += "</svg>";
     h.innerHTML = o;
 
-    /* what a minute of Moon is worth in daśā, computed from the widths */
+    /* What a minute of Moon is worth in daśā, computed from the widths.
+     *
+     * THE RATE IS LORD-SPECIFIC, and this used to get it wrong. It read
+     * perDeg = total / NAKW — the whole 120-year cycle across ONE nakṣatra —
+     * giving 9 years per degree and 54.8 days per arcminute. But the cycle
+     * spans NINE nakṣatras, 120°, so traversing one nakṣatra traverses only
+     * THAT nakṣatra lord's years. The cycle average is therefore exactly one
+     * year per degree, and the per-lord span runs from Sun's 6 years to
+     * Venus's 20, i.e. 2.7 to 9.1 days per arcminute. Computing a wrong
+     * model faithfully is still quoting, which is what this page claims not
+     * to do. */
     var total = VL.reduce(function (a, k) { return a + VY[k]; }, 0);   /* 120 */
-    var perDeg = total / NAKW;                /* years of daśā per degree of Moon */
-    var perArcmin = perDeg / 60;
+    var dayPerArcmin = function (years) { return years / NAKW / 60 * 365.2425; };
+    var all = VL.map(function (k) { return dayPerArcmin(VY[k]); });
+    var lo = Math.min.apply(null, all), hi = Math.max.apply(null, all);
+    var avg = 365.2425 / 60;                   /* 120 years over 120 degrees */
     var e = $("dv-perarc");
     if (e) {
-      e.innerHTML = "<b>" + (perArcmin * 365.2425).toFixed(1) + " days</b> of daśā" +
-        " (" + total + " years across " + dm(NAKW) + ")";
+      e.innerHTML = "<b>" + lo.toFixed(1) + "–" + hi.toFixed(1) + " days</b> of daśā, " +
+        "depending on which lord owns the nakṣatra — " + avg.toFixed(1) +
+        " days on the cycle average, since " + total + " years span nine " +
+        "nakṣatras and not one";
     }
   }
 

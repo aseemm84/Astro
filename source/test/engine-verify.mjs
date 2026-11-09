@@ -417,12 +417,38 @@ head("the converter is arithmetic, not a table of remembered numbers");
   const num = s => Number(String(s).replace(/[^\d.]/g, ""));
   const dasha = rows => rows.filter(x => /mahādaśā/.test(x.k))[0];
   const d1 = dasha(r.at1), d10 = dasha(r.at10);
-  is(!!d1 && Math.abs(num(d1.v) - ACC.cost.dashaDaysPerArcsec) < 0.01,
-     "one arcsecond is " + (d1 ? d1.v : "?") + " of daśā — the committed " +
-     ACC.cost.dashaDaysPerArcsec + " days per arcsecond");
-  is(!!d10 && Math.abs(num(d10.v) - 10 * ACC.cost.dashaDaysPerArcsec) < 0.05,
+  /* The cell now reads a RANGE — "0.0 days – 0.2 days" — because the daśā
+     cost of an arcsecond is lord-specific. The scalar it used to print was
+     the whole 120-year cycle over ONE nakṣatra, overstating by 120 over the
+     lord's years. Parse both ends rather than the first number. */
+  const ends = s => { const n = (String(s).match(/[\d.]+/g) || []).map(Number);
+                      return [n[0], n[n.length - 1]]; };
+  const [lo1, hi1] = d1 ? ends(d1.v) : [NaN, NaN];
+  const [lo10, hi10] = d10 ? ends(d10.v) : [NaN, NaN];
+  /* DERIVE THE EXPECTATION FROM FIRST PRINCIPLES, not from accuracy.json.
+     Checking the page against the data file it was built from is pure
+     self-consistency: when the old 0.913 was planted here as a test, both
+     moved together and this block passed. The Viṃśottarī years are the
+     independent ground truth, so compute from them. */
+  const NAKSEC = (40 / 3) * 3600;
+  const wantLo1 = 6 * 365.2425 / NAKSEC;        /* Sun, the fastest lord */
+  const wantHi1 = 20 * 365.2425 / NAKSEC;       /* Venus, the slowest */
+  is(!!d1 && Math.abs(lo1 - wantLo1) < 0.02 && Math.abs(hi1 - wantHi1) < 0.02,
+     "one arcsecond is " + (d1 ? d1.v : "?") + " of daśā — independently " +
+     wantLo1.toFixed(3) + "–" + wantHi1.toFixed(3) +
+     " days, the Sun's 6 years to Venus's 20 over one nakṣatra");
+  is(!!d10 && Math.abs(lo10 - 10 * wantLo1) < 0.06 &&
+              Math.abs(hi10 - 10 * wantHi1) < 0.06,
      "and it scales linearly, so ten arcseconds is ten times that (" +
      (d10 ? d10.v : "?") + ")");
+  /* The shipped bug was 0.913. Guard it structurally rather than with a
+     "< 0.913" comparison, which the page's 2-dp rounding to 0.91 defeats. */
+  is(!!d1 && hi1 < 0.5,
+     "and nowhere near the 0.913 d/arcsec that shipped — the whole 120-year " +
+     "cycle over a single nakṣatra (printed " + (d1 ? d1.v : "?") + ")");
+  is(Math.abs(ACC.cost.dashaDaysPerArcsecMax - wantHi1) < 1e-3 &&
+     Math.abs(ACC.cost.dashaDaysPerArcsecMin - wantLo1) < 1e-3,
+     "and the committed data file agrees with that independent derivation");
   /* the division fractions must be the width divided by the error, which is
      checkable against the data file's own pre-computed Moon fractions */
   const r2 = await EL.evaluate(async () => {
@@ -448,8 +474,8 @@ head("the converter is arithmetic, not a table of remembered numbers");
   is(Math.abs(ACC.cost.mahadashaDays -
       ACC.modern.perBody.filter(b => b.en === "Moon")[0].lonWorst *
       ACC.cost.dashaDaysPerArcsec) < 0.05,
-     "the committed mahādaśā figure is the Moon's error times the rate (" +
-     ACC.cost.mahadashaDays + " days)");
+     "the committed mahādaśā figure is the Moon's error times the cycle-average " +
+     "rate (" + ACC.cost.mahadashaDays + " days)");
 }
 
 head("the bench's answers come from three engines and not from one");

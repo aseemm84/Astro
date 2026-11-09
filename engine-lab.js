@@ -1658,12 +1658,19 @@
                 "on a nakṣatra or pāda boundary, at the Moon's rate"]);
     cells.push([plural(tithiSec, "second", "seconds"),
                 "on a tithi, yoga or karaṇa ending"]);
-    /* and as daśā, which is the steep one */
-    var days = as * C.dashaDaysPerArcsec;
-    cells.push([days >= 730 ? (days / 365.2425).toFixed(1) + " years"
-                            : plural(days, "day", "days"),
-                "of Viṃśottarī mahādaśā, at " + C.dashaDaysPerArcsec +
-                " days per arcsecond"]);
+    /* And as daśā, which is the steep one. THE RATE IS LORD-SPECIFIC:
+       C.dashaDaysPerArcsec is the CYCLE AVERAGE and must be labelled as such,
+       because traversing one nakṣatra traverses that nakṣatra lord's own
+       mahādaśā — the Sun's six years up to Venus's twenty — not all 120. */
+    var fmtD = function (d) {
+      return d >= 730 ? (d / 365.2425).toFixed(1) + " years"
+                      : plural(d, "day", "days");
+    };
+    cells.push([fmtD(as * C.dashaDaysPerArcsecMin) + " – " +
+                fmtD(as * C.dashaDaysPerArcsecMax),
+                "of Viṃśottarī mahādaśā, at " + C.dashaDaysPerArcsecMin + "–" +
+                C.dashaDaysPerArcsecMax + " days per arcsecond depending on the " +
+                "nakṣatra lord (" + C.dashaDaysPerArcsec + " on the cycle average)"]);
     cells.push([plural(as / C.birthMinuteArcsec * 60, "second", "seconds"),
                 "of birth time — the error this is equivalent to"]);
 
@@ -1879,7 +1886,11 @@
       var qname = { lon: "the grahas' longitudes", nak: "the Moon's nakṣatra",
                     tithi: "the tithi", dasha: "the opening daśā",
                     vara: "the vāra" }[ST.q];
+      /* Cycle average; the per-lord span is given alongside, since one
+         nakṣatra is one lord's mahādaśā and not the whole 120 years. */
       var dd = here.moon * AC.cost.dashaDaysPerArcsec;
+      var ddLo = here.moon * AC.cost.dashaDaysPerArcsecMin;
+      var ddHi = here.moon * AC.cost.dashaDaysPerArcsecMax;
       note.innerHTML = "<b>" + here.from + "–" + here.to + "</b> — " +
         (here.certified
           ? "the certified window. The Moon is within <b>" + here.moon +
@@ -1894,8 +1905,10 @@
         (ST.q === "vara" ? "<b>nothing at all</b>: a weekday is a day count."
          : ST.q === "dasha"
            ? "about <b>" + (dd >= 365 ? (dd / 365.2425).toFixed(1) + " years"
-                                      : dd.toFixed(0) + " days") +
-             "</b> on a mahādaśā boundary."
+                                      : dd.toFixed(1) + " days") +
+             "</b> on a mahādaśā boundary on the cycle average, or <b>" +
+             ddLo.toFixed(1) + "–" + ddHi.toFixed(1) + " days</b> depending on " +
+             "which lord owns the Moon's nakṣatra."
          : ST.q === "tithi"
            ? "about <b>" + here.tithi + " seconds</b> on a tithi ending."
          : ST.q === "nak"

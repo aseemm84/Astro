@@ -10,8 +10,15 @@
  *     classical rule (movable signs count from themselves, fixed from the
  *     ninth, dual from the fifth) for all twelve signs.
  *   - one arcminute of Moon is worth so many days of daśā. The same quantity
- *     is stated on the accuracy page as 0.913 days per ARCSECOND, so the two
- *     pages must agree to a factor of sixty or one of them is wrong.
+ *     is stated on the accuracy page per ARCSECOND, so the two pages must
+ *     agree to a factor of sixty or one of them is wrong.
+ *
+ *     THEY ONCE AGREED AND WERE BOTH WRONG. Each mapped the whole 120-year
+ *     Viṃśottarī cycle onto a SINGLE nakṣatra, giving 54.8 days per arcminute
+ *     and 0.913 per arcsecond; the cross-check passed because both encoded the
+ *     same wrong model by different routes. Agreement between two derivations
+ *     of one mistake is not corroboration. One nakṣatra is its own lord's
+ *     mahādaśā, so the quantity is a range, not a scalar.
  */
 import { createRequire } from "node:module";
 
@@ -123,17 +130,36 @@ head("the arithmetic the page derives rather than quotes");
   is(!!pada && !!nav && pada[1] === nav[1] && pada[2] === nav[2],
      "the page measures a pāda and a navāṃśa at the same width (" +
      (pada ? pada[1] + "°" + pada[2] + "′" : "?") + ")");
-  /* and the daśā conversion must agree with the accuracy page, which states
-     the same quantity per ARCSECOND */
-  const days = Number((/([\d.]+) days/.exec(r.perarc) || [0, 0])[1]);
-  const want = 120 / (360 / 27) / 60 * 365.2425;      /* years/° → per arcmin → days */
-  is(Math.abs(days - want) < 0.2,
-     "one arcminute of Moon is " + days + " days of daśā, independently " +
-     want.toFixed(1));
-  /* 0.913 days per arcsecond × 60 is the accuracy page's figure */
-  is(Math.abs(days / 60 - 0.913) < 0.005,
-     "which is " + (days / 60).toFixed(3) +
-     " days per arcsecond — the accuracy page's 0.913, from a different route");
+  /* THIS BLOCK USED TO ASSERT THE BUG, TWICE. It recomputed the rate as
+     120 / (360/27), the whole 120-year cycle across ONE nakṣatra, and then
+     cross-checked it against the accuracy page's 0.913 — which was the same
+     error reached by a different route. Two pages agreeing is not evidence
+     when both encode the same wrong model, and the comment at the top of
+     this file said exactly that about shortcuts.
+   *
+     Correct: one nakṣatra is its own lord's mahādaśā, so the page now prints
+     a RANGE, from the Sun's 6 years to Venus's 20. */
+  const nums = (/([\d.]+)\s*–\s*([\d.]+) days/.exec(r.perarc) || []).slice(1).map(Number);
+  const NAKW = 360 / 27;
+  const perArcmin = y => y / NAKW / 60 * 365.2425;
+  const wantLo = perArcmin(6), wantHi = perArcmin(20);
+  is(nums.length === 2 && Math.abs(nums[0] - wantLo) < 0.1 &&
+                          Math.abs(nums[1] - wantHi) < 0.1,
+     "one arcminute of Moon is " + (nums.join("–") || r.perarc.slice(0, 40)) +
+     " days of daśā, independently " + wantLo.toFixed(1) + "–" + wantHi.toFixed(1) +
+     " (the Sun's 6 years to Venus's 20)");
+  /* Cross-check against the accuracy page, now that both are right: the
+     per-arcsecond span there must be this per-arcminute span over sixty. */
+  const ACCJ = require("../data/accuracy.json");
+  is(Math.abs(nums[0] / 60 - ACCJ.cost.dashaDaysPerArcsecMin) < 0.002 &&
+     Math.abs(nums[1] / 60 - ACCJ.cost.dashaDaysPerArcsecMax) < 0.002,
+     "which is " + (nums[0] / 60).toFixed(3) + "–" + (nums[1] / 60).toFixed(3) +
+     " days per arcsecond — the accuracy page's " +
+     ACCJ.cost.dashaDaysPerArcsecMin + "–" + ACCJ.cost.dashaDaysPerArcsecMax +
+     ", reached by a different route");
+  /* and neither page may drift back to the figure that shipped */
+  is(nums[1] / 60 < 0.913 && ACCJ.cost.dashaDaysPerArcsecMax < 0.913,
+     "neither page is back at 0.913 d/arcsec, the whole cycle over one nakṣatra");
 }
 
 head("the nakṣatra lords are the nine, three times round");

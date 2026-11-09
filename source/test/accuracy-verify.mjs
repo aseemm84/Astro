@@ -161,19 +161,43 @@ head("the derived costs are arithmetic on the measured residual");
 {
   const moon = D.modern.perBody.find(b => b.en === "Moon").lonWorst;
   const NAK = (40 / 3) * 3600;
-  is(Math.abs(D.cost.dashaDaysPerArcsec - 120 * 365.2425 / NAK) < 1e-3,
-     "daśā days per arcsecond is 120 years over one nakṣatra ("
+  /* THIS BLOCK USED TO ASSERT THE BUG. It checked dashaDaysPerArcsec against
+     120 * 365.2425 / NAK — the whole 120-year cycle across ONE nakṣatra — so
+     the harness was defending the error rather than catching it, and guarded
+     only against the opposite mistake. Both wrong answers are now guarded. */
+  const VIMS = { Ketu: 7, Venus: 20, Sun: 6, Moon: 10, Mars: 7,
+                 Rahu: 18, Jupiter: 16, Saturn: 19, Mercury: 17 };
+  Object.keys(VIMS).forEach((k) => {
+    is(Math.abs(D.cost.dashaDaysPerArcsecByLord[k] -
+                Math.round(VIMS[k] * 365.2425 / NAK * 1000) / 1000) < 1e-9,
+       k + "'s rate is its own " + VIMS[k] + " years over one nakṣatra ("
+       + D.cost.dashaDaysPerArcsecByLord[k] + " d/arcsec)");
+  });
+  is(Math.abs(D.cost.dashaDaysPerArcsec - 365.2425 / 3600) < 1e-3,
+     "the scalar is the CYCLE AVERAGE — 120 years over 120°, not over 13°20′ ("
      + D.cost.dashaDaysPerArcsec + ")");
   is(Math.abs(D.cost.mahadashaDays - moon * D.cost.dashaDaysPerArcsec) < 0.02,
      "the mahādaśā figure is that times the Moon's residual ("
      + D.cost.mahadashaDays.toFixed(2) + " days)");
-  /* The error this guards against, which I made in prose earlier: dividing by
-     the Moon's own daily motion instead of mapping the nakṣatra onto the
-     120-year cycle gives an answer about 500× too small. */
-  const wrong = moon / (13.176 * 3600 / 86400) / 86400;
-  is(D.cost.mahadashaDays / wrong > 100,
-     "and is not the Moon's daily motion by mistake, which would give "
-     + wrong.toFixed(3) + " days instead of " + D.cost.mahadashaDays.toFixed(1));
+  is(Math.abs(D.cost.mahadashaDaysMin - moon * D.cost.dashaDaysPerArcsecMin) < 0.02 &&
+     Math.abs(D.cost.mahadashaDaysMax - moon * D.cost.dashaDaysPerArcsecMax) < 0.02,
+     "and the per-lord span likewise (" + D.cost.mahadashaDaysMin.toFixed(2)
+     + "–" + D.cost.mahadashaDaysMax.toFixed(2) + " days)");
+
+  /* Mistake 1 — too small by ~500x: dividing by the Moon's daily motion. */
+  const tooSmall = moon / (13.176 * 3600 / 86400) / 86400;
+  is(D.cost.mahadashaDays / tooSmall > 100,
+     "not the Moon's daily motion, which would give "
+     + tooSmall.toFixed(3) + " days instead of " + D.cost.mahadashaDays.toFixed(1));
+  /* Mistake 2 — too big by 120/lord-years: the whole cycle over one nakṣatra.
+     This is the figure that actually shipped, so it is the one to guard. */
+  const tooBig = 120 * 365.2425 / NAK;
+  is(Math.abs(D.cost.dashaDaysPerArcsec - tooBig) > 0.5,
+     "and not the whole cycle over a single nakṣatra, which would give "
+     + tooBig.toFixed(3) + " d/arcsec — the value this project shipped");
+  is(D.cost.dashaDaysPerArcsecMax < tooBig,
+     "even the slowest lord, Venus, stays below that figure ("
+     + D.cost.dashaDaysPerArcsecMax + " < " + tooBig.toFixed(3) + ")");
   is(D.divisions.every(d => d.moonFraction === Math.round(d.arcsec / moon)),
      "every division fraction is its width over the Moon's residual");
   is(D.ayanamsa.spreadDeg
