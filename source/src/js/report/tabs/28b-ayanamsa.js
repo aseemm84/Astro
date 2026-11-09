@@ -66,7 +66,14 @@ function ayanQuickPick(J){
    one in three, and a colour tuned for either would disappear into the
    other. Colour is never the only channel — the legend names every line, the
    hover title carries the full name and the figure, and the table above
-   lists all sixteen in order. */
+   lists every one in order.
+
+   The two Samanvaya entries take the gold and blue their specification asked
+   for. Both sit near a hue already in use — the gold near the Sūrya Siddhānta
+   family's, the blue near the fixed-epoch family's — which is why they get a
+   family group of their own rather than being folded into "This site's own"
+   beside the two red star-anchored readings. The legend names every line, so
+   hue proximity costs a glance and not a misreading. */
 var AYAN_FAM=[
   ["Fixed-epoch standards","a zero point fixed once, then carried forward at the precession rate",
    ["lahiri","raman","kp","yukteshwar","bhasin","fagan"]],
@@ -75,7 +82,9 @@ var AYAN_FAM=[
   ["Sūrya Siddhānta and classical","from the text, and from the readings later editors took of it",
    ["ss_text","ss_rate","ss_swiss","ss_revati","ss_citra","aryabhata"]],
   ["This site's own","the two classical anchors, derived by one method so the 3.8° between them is the texts disagreeing and nothing else",
-   ["nirayana_citra","nirayana_revati"]]
+   ["nirayana_citra","nirayana_revati"]],
+  ["Samanvaya","a multi-constraint synthesis over the polar dhruvakās and the solar apogee; the ecliptic reading lands on Āryabhaṭa's to under an arcsecond",
+   ["samanvaya_polar","samanvaya_ecliptic"]]
 ];
 var AYAN_COL={
   lahiri:"#2f6fb5", raman:"#6f93d4", kp:"#1f8a8a", yukteshwar:"#5bb0ae",
@@ -83,7 +92,8 @@ var AYAN_COL={
   truechitra:"#2f8f52", truerevati:"#63b36a", truepushya:"#93b03f",
   ss_text:"#c9922a", ss_rate:"#e0a94a", ss_swiss:"#b5742a",
   ss_revati:"#d9893f", ss_citra:"#a35f2a", aryabhata:"#8d7149",
-  nirayana_citra:"#d4635c", nirayana_revati:"#9e2a3a"
+  nirayana_citra:"#d4635c", nirayana_revati:"#9e2a3a",
+  samanvaya_polar:"#c9a24b", samanvaya_ecliptic:"#3f6fa6"
 };
 function ayanColour(k){ return AYAN_COL[k]||"#8b8676"; }
 /* exposed so the suite can assert every declared mode has a colour and a
@@ -91,7 +101,7 @@ function ayanColour(k){ return AYAN_COL[k]||"#8b8676"; }
 try{ window.__ayanColours=AYAN_COL; window.__ayanFamilies=AYAN_FAM; }catch(e){}
 
 
-/* ---- the key to the sixteen lines ----
+/* ---- the key to the lines ----
    Grouped by family rather than listed flat, because the colours are grouped
    the same way: four short lists are read at a glance and sixteen rows are
    not. Each entry carries the exact value, which is the thing the strip

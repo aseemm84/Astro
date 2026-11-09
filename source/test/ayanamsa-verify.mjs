@@ -13,10 +13,19 @@
  */
 import { createRequire } from "node:module";
 import { readFileSync, existsSync, mkdirSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { dirname, join } from "node:path";
 
 let pass = 0, fail = 0;
 const require = createRequire(import.meta.url);
 const ROOT = process.cwd();
+/* SOURCE FILES RESOLVE FROM THIS FILE, not from the working directory.
+   The page under test is served from wherever the harness is run — the site
+   root for the web build, app/ for the desktop one — but the SOURCE markup and
+   the data files this harness reads live in one place. Using cwd for both made
+   this suite throw ENOENT when run from app/, which is how it was found; the
+   same fault was fixed in engine-verify for the same reason. */
+const SRC = join(dirname(fileURLToPath(import.meta.url)), "..");
 const head = t => console.log("\n" + t);
 const is = (c, t) => { if (c) { pass++; console.log("  ok   " + t); }
                        else { fail++; console.log("  FAIL " + t); } };
@@ -24,7 +33,7 @@ const is = (c, t) => { if (c) { pass++; console.log("  ok   " + t); }
 /* ───── nothing is typed into the prose ──────────────────────────────────── */
 head("no figure is written into the page by hand");
 {
-  const src = readFileSync(ROOT + "/source/src/pages/ayanamsa.html", "utf8");
+  const src = readFileSync(join(SRC, "src/pages/ayanamsa.html"), "utf8");
   /* a degree-and-minute figure in the prose would be a measurement frozen at
      the moment somebody typed it, and this page's whole stance is that its
      numbers are live. The written-out constants that ARE allowed are the ones
@@ -34,7 +43,54 @@ head("no figure is written into the page by hand");
   is(bad.length === 0, "no degree-and-minute figures in the markup (" +
      (bad.slice(0, 3).join(", ") || "none") + ")");
   is(!/\b2[0-9]\.\d{2}°/.test(src), "and no decimal ayanāṃśa value either");
-  is(/seventeen/i.test(src), "the count of definitions is stated in words, not as a stale number");
+  /* THE COUNT IN WORDS, CHECKED AGAINST THE ENGINE RATHER THAN AGAINST A WORD.
+     This used to assert that the string "seventeen" appeared, which is a test
+     that holds a number steady rather than keeping it true: adding a mode left
+     six places on this page, two on the accuracy page, the ruler's legend, the
+     report pane's family comment, two builder shells and this line all saying
+     "seventeen" while the engine carried nineteen, and every one of them
+     passed. The expected word is now derived from the engine's own table, so
+     the next mode added fails this until the prose is corrected. */
+  const WORDS = ["zero","one","two","three","four","five","six","seven","eight",
+    "nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen",
+    "seventeen","eighteen","nineteen","twenty","twenty-one","twenty-two",
+    "twenty-three","twenty-four","twenty-five"];
+  const nModes = Object.keys(
+    JSON.parse(readFileSync(join(SRC, "data/accuracy.json"), "utf8"))
+      .ayanamsa.modes).length;
+  const want = WORDS[nModes];
+  is(!!want, "the engine carries a mode count this check can spell (" + nModes + ")");
+  is(new RegExp("\\b" + want + "\\b", "i").test(src),
+     "the count of definitions is stated in words, and the word matches the " +
+     "engine's own table (" + nModes + " = \"" + want + "\")");
+  /* And no OTHER number-word is left standing where it counts MODES. Scoped to
+     that, because the page says "twelve divisions" and "fifty arcseconds" for
+     good reasons and a blanket sweep flags those too — which it did on the
+     first attempt here. The patterns below are the shapes the count actually
+     appears in on this page. */
+  /* Longest first, and refuse a match that is only the head of a longer
+     compound: "\\btwenty\\b" fires inside "twenty-seven", so the sentence
+     "three of the twenty-seven are used this way" — about the nakṣatras, not
+     the modes — was reported as a stale mode count. */
+  const alt = WORDS.slice(4).slice().sort((a, b) => b.length - a.length).join("|");
+  const NOT_COMPOUND = "(?!-)";
+  const SHAPES = [
+    new RegExp("\\b(" + alt + ")" + NOT_COMPOUND + "\\s+(?:published\\s+)?(?:definitions|modes|answers|conventions)\\b", "gi"),
+    new RegExp("\\b(?:of|like|than)\\s+the\\s+(" + alt + ")" + NOT_COMPOUND + "\\b", "gi"),
+    new RegExp("\\bthe\\s+(" + alt + ")" + NOT_COMPOUND + "\\s+(?:disagree|above|here|span)", "gi"),
+    new RegExp("^\\s*<h2[^>]*>\\s*(" + alt + ")" + NOT_COMPOUND + "\\s+answers", "gim")
+  ];
+  const found = [];
+  for (const re of SHAPES) {
+    let m;
+    while ((m = re.exec(src))) found.push(m[1].toLowerCase());
+  }
+  const wrong = [...new Set(found.filter(w => w !== want))];
+  is(found.length > 0, "the count is written out somewhere a reader will see it");
+  is(wrong.length === 0,
+     "and every place the markup counts the modes says \"" + want + "\"" +
+     (wrong.length ? " — stale: " + wrong.join(", ") : " (" + found.length +
+      " occurrences)"));
 }
 
 const { chromium } = require("playwright");
@@ -76,7 +132,7 @@ head("the page is chart-independent and fully drawn");
   is(errs.filter(quiet).length === 0, "no page errors (" + errs.filter(quiet)[0] + ")");
   is(!r.hasChart, "no chart is stored");
   is(r.rings && r.cone && r.terms, "the rings, the precession figure and the term bars all draw");
-  is(r.dots === r.engineModes && r.dots >= 17,
+  is(r.dots === r.engineModes && r.dots >= 19,
      "every definition the engine carries is on the spread (" + r.dots + ")");
   is(r.modeRows === r.engineModes, "and in the table (" + r.modeRows + ")");
   /* the notes come from the engine's own table, so the page cannot describe a
@@ -295,7 +351,7 @@ head("the chart answers 'what actually changes' by changing");
      " of them into a different rāśi — which is the whole point of the section");
   is(r.contested === r.expected,
      "the contested flag marks exactly the grahas within the " + r.span +
-     "° span of the seventeen (" + r.contested + " flagged, " + r.expected +
+     "° span of the family (" + r.contested + " flagged, " + r.expected +
      " qualify)");
 }
 
@@ -519,6 +575,102 @@ head("the equation itself can drive the chart, term by term");
   is(r.farC2 != null && r.farC2 > 0.01,
      "where the same term now contributes " + (r.farC2 || 0).toFixed(4) +
      "° — so the page's 'it starts to matter' is true, not a figure of speech");
+}
+
+head("the two Samanvaya readings — and what is and is not new about them");
+{
+  const { p, errs } = await open();
+  const r = await p.evaluate(() => {
+    const jd = y => 2451545.0 + (y - 2000) * 365.2425;
+    const M = window.__ayanModes;
+    const out = { keys: Object.keys(M), n: Object.keys(M).length };
+    out.polar = M.samanvaya_polar ? {
+      s: M.samanvaya_polar.s, name: M.samanvaya_polar.name,
+      note: M.samanvaya_polar.note,
+      atOwnJd: window.__ayanFor("samanvaya_polar", 1868970.25) * 3600,
+      at2026: window.__ayanFor("samanvaya_polar", jd(2026)) } : null;
+    out.ecl = M.samanvaya_ecliptic ? {
+      s: M.samanvaya_ecliptic.s, name: M.samanvaya_ecliptic.name,
+      note: M.samanvaya_ecliptic.note,
+      atOwnJd: window.__ayanFor("samanvaya_ecliptic", 1903396.75) * 3600,
+      at2026: window.__ayanFor("samanvaya_ecliptic", jd(2026)) } : null;
+    /* the worst disagreement of each new mode with every other, across the
+       band this engine is certified over and well beyond it */
+    const near = k => {
+      let best = null;
+      for (const o of Object.keys(M)) {
+        if (o === k) continue;
+        let worst = 0;
+        for (let y = 1000; y <= 3000; y += 10) {
+          const d = Math.abs(window.__ayanFor(k, jd(y)) - window.__ayanFor(o, jd(y)));
+          if (d > worst) worst = d;
+        }
+        if (!best || worst < best.worst) best = { o, worst };
+      }
+      return best;
+    };
+    out.nearPolar = near("samanvaya_polar");
+    out.nearEcl = near("samanvaya_ecliptic");
+    const vals = Object.keys(M).map(k => window.__ayanFor(k, jd(2026)));
+    out.span = Math.max(...vals) - Math.min(...vals);
+    return out;
+  });
+  await p.close();
+  is(errs.filter(quiet).length === 0, "no page errors");
+  is(!!r.polar && !!r.ecl, "both Samanvaya modes are registered with the engine");
+  /* The ruler caps a tag at fourteen characters, so the specification's
+     "Samanvaya (Polar)" / "Samanvaya (Ecliptic)" (seventeen and twenty) are
+     carried as the full names and abbreviated for the tag, in the style
+     "Nir. Citrā" already uses. self-test asserts the cap; this asserts the
+     abbreviation is the one intended and not something arbitrary. */
+  is(r.polar.s === "Sam. Polar" && r.ecl.s === "Sam. Ecliptic",
+     "with short tags inside the ruler's fourteen-character cap (" +
+     r.polar.s + ", " + r.ecl.s + ")");
+  is(/Samanvaya–Polar/.test(r.polar.name) && /Samanvaya–Ecliptic/.test(r.ecl.name),
+     "while the full names are the ones the specification asked for");
+
+  /* 1. EACH VANISHES AT ITS OWN STATED EPOCH. An ayanāṃśa definition is a
+     claim about when sidereal zero met the equinox, so the one thing it must
+     do is read zero there. */
+  is(Math.abs(r.polar.atOwnJd) < 3,
+     "Samanvaya–Polar reads zero at its own JD 1868970.25 (" +
+     r.polar.atOwnJd.toFixed(2) + "″)");
+  is(Math.abs(r.ecl.atOwnJd) < 3,
+     "Samanvaya–Ecliptic reads zero at its own JD 1903396.75 (" +
+     r.ecl.atOwnJd.toFixed(2) + "″)");
+
+  /* 2. THE POLAR NOTE MUST NOT REPEAT THE SPECIFICATION'S DATE SLIP.
+     JD 1868970.25 is 17 December 404 CE in the Julian calendar — decimal year
+     404.96, which is the stated "405.0 CE". The specification also called it
+     "March 20" and "the vernal equinox"; 20 March 405 is JD 1869062.75, where
+     this polynomial reads +14.4″ and not zero. The note states the epoch the
+     arithmetic uses and says nothing about a month, and this check is what
+     keeps it that way. */
+  is(/405\.0 CE/.test(r.polar.note) && /1868970\.25/.test(r.polar.note),
+     "the polar note gives the epoch the coefficients actually use");
+  is(!/March|equinox/i.test(r.polar.note),
+     "and does not claim a March date or an equinox for it");
+
+  /* 3. THE ECLIPTIC READING IS THE ARYABHATA MODE ALREADY HERE, and the note
+     has to say so. Two entries presented as independent answers, when one is
+     the other to under an arcsecond, would make this page's own argument
+     false. */
+  is(r.nearEcl.o === "aryabhata" && r.nearEcl.worst * 3600 < 1,
+     "Samanvaya–Ecliptic agrees with " + r.nearEcl.o + " to " +
+     (r.nearEcl.worst * 3600).toFixed(2) + "″ across 1000–3000 CE");
+  is(/0\.28″|Āryabhaṭa/.test(r.ecl.note) && /one convention/.test(r.ecl.note),
+     "and its note says so, rather than offering it as a separate answer");
+
+  /* 4. THE POLAR READING IS GENUINELY NEW — otherwise there was no point. */
+  is(r.nearPolar.worst * 60 > 10,
+     "Samanvaya–Polar is a real addition: " + (r.nearPolar.worst * 60).toFixed(1) +
+     "′ from its nearest neighbour (" + r.nearPolar.o + ")");
+
+  /* 5. AND THE FAMILY'S SPREAD IS UNCHANGED, because both fall inside the
+     existing endpoints. Every page that quotes 5.83° stays true. */
+  is(Math.abs(r.span - 5.8289) < 0.002,
+     "the spread across the family is still " + r.span.toFixed(4) +
+     "° — neither new mode widens it");
 }
 
 await browser.close();

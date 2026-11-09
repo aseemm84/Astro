@@ -136,7 +136,7 @@
  "citations": [
   {
    "file": "src/js/engine.js",
-   "line": 621,
+   "line": 687,
    "text": "Ch. 37",
    "vol": null,
    "chapter": 37,
@@ -145,7 +145,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 633,
+   "line": 699,
    "text": "Ch. 37, vv. 7–10",
    "vol": null,
    "chapter": 37,
@@ -157,7 +157,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 637,
+   "line": 703,
    "text": "Ch. 37, vv. 7–10",
    "vol": null,
    "chapter": 37,
@@ -169,7 +169,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 641,
+   "line": 707,
    "text": "Ch. 37, vv. 7–10",
    "vol": null,
    "chapter": 37,
@@ -181,7 +181,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 655,
+   "line": 721,
    "text": "Ch. 37, vv. 11–13",
    "vol": null,
    "chapter": 37,
@@ -193,7 +193,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 663,
+   "line": 729,
    "text": "Ch. 37, v. 5",
    "vol": null,
    "chapter": 37,
@@ -205,7 +205,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 665,
+   "line": 731,
    "text": "Ch. 38",
    "vol": null,
    "chapter": 38,
@@ -214,7 +214,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 672,
+   "line": 738,
    "text": "Ch. 38, v. 1",
    "vol": null,
    "chapter": 38,
@@ -226,7 +226,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 675,
+   "line": 741,
    "text": "Ch. 38, v. 1",
    "vol": null,
    "chapter": 38,
@@ -238,7 +238,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 679,
+   "line": 745,
    "text": "Ch. 38, v. 1",
    "vol": null,
    "chapter": 38,
@@ -250,7 +250,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 681,
+   "line": 747,
    "text": "Ch. 36",
    "vol": null,
    "chapter": 36,
@@ -259,7 +259,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 691,
+   "line": 757,
    "text": "Ch. 36, vv. 5–6",
    "vol": null,
    "chapter": 36,
@@ -271,7 +271,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 701,
+   "line": 767,
    "text": "Ch. 36, vv. 7–8",
    "vol": null,
    "chapter": 36,
@@ -283,7 +283,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 715,
+   "line": 781,
    "text": "Ch. 36, vv. 9–10",
    "vol": null,
    "chapter": 36,
@@ -295,7 +295,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 720,
+   "line": 786,
    "text": "Ch. 35",
    "vol": null,
    "chapter": 35,
@@ -304,7 +304,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 740,
+   "line": 806,
    "text": "Ch. 35",
    "vol": null,
    "chapter": 35,
@@ -313,7 +313,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 744,
+   "line": 810,
    "text": "Ch. 35, v. 7",
    "vol": null,
    "chapter": 35,
@@ -325,7 +325,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 746,
+   "line": 812,
    "text": "Ch. 35, v. 7",
    "vol": null,
    "chapter": 35,
@@ -337,7 +337,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 748,
+   "line": 814,
    "text": "Ch. 35, v. 7",
    "vol": null,
    "chapter": 35,
@@ -349,7 +349,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 758,
+   "line": 824,
    "text": "Ch. 35, v. 8",
    "vol": null,
    "chapter": 35,
@@ -361,7 +361,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 760,
+   "line": 826,
    "text": "Ch. 35, v. 8",
    "vol": null,
    "chapter": 35,
@@ -373,7 +373,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 764,
+   "line": 830,
    "text": "Ch. 35, vv. 9–11",
    "vol": null,
    "chapter": 35,
@@ -385,7 +385,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 766,
+   "line": 832,
    "text": "Ch. 35, vv. 9–11",
    "vol": null,
    "chapter": 35,
@@ -397,7 +397,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 768,
+   "line": 834,
    "text": "Ch. 35, vv. 9–11",
    "vol": null,
    "chapter": 35,
@@ -409,7 +409,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 770,
+   "line": 836,
    "text": "Ch. 35, vv. 9–11",
    "vol": null,
    "chapter": 35,
@@ -421,7 +421,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 773,
+   "line": 839,
    "text": "Ch. 35, vv. 9–11",
    "vol": null,
    "chapter": 35,
@@ -433,7 +433,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 780,
+   "line": 846,
    "text": "Ch. 35, vv. 9–11",
    "vol": null,
    "chapter": 35,
@@ -445,7 +445,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 784,
+   "line": 850,
    "text": "Ch. 35, vv. 9–11",
    "vol": null,
    "chapter": 35,
@@ -457,7 +457,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 786,
+   "line": 852,
    "text": "Ch. 35, v. 12",
    "vol": null,
    "chapter": 35,
@@ -469,7 +469,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 790,
+   "line": 856,
    "text": "Ch. 35, v. 12",
    "vol": null,
    "chapter": 35,
@@ -481,7 +481,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 796,
+   "line": 862,
    "text": "Ch. 35, v. 13",
    "vol": null,
    "chapter": 35,
@@ -493,7 +493,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 802,
+   "line": 868,
    "text": "Ch. 35, v. 14",
    "vol": null,
    "chapter": 35,
@@ -505,7 +505,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 805,
+   "line": 871,
    "text": "Ch. 35, v. 15",
    "vol": null,
    "chapter": 35,
@@ -517,7 +517,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 807,
+   "line": 873,
    "text": "Ch. 35, v. 15",
    "vol": null,
    "chapter": 35,
@@ -529,7 +529,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 819,
+   "line": 885,
    "text": "Ch. 35",
    "vol": null,
    "chapter": 35,
@@ -538,7 +538,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 834,
+   "line": 900,
    "text": "Ch. 35, vv. 16–17",
    "vol": null,
    "chapter": 35,
@@ -550,7 +550,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 837,
+   "line": 903,
    "text": "Ch. 36",
    "vol": null,
    "chapter": 36,
@@ -559,7 +559,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 858,
+   "line": 924,
    "text": "Ch. 36, vv. 11–12",
    "vol": null,
    "chapter": 36,
@@ -571,7 +571,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 865,
+   "line": 931,
    "text": "Ch. 36, vv. 13–14",
    "vol": null,
    "chapter": 36,
@@ -583,7 +583,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 871,
+   "line": 937,
    "text": "Ch. 36, vv. 15–16",
    "vol": null,
    "chapter": 36,
@@ -595,7 +595,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 877,
+   "line": 943,
    "text": "Ch. 36, v. 17",
    "vol": null,
    "chapter": 36,
@@ -607,7 +607,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 882,
+   "line": 948,
    "text": "Ch. 36, v. 18",
    "vol": null,
    "chapter": 36,
@@ -619,7 +619,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 890,
+   "line": 956,
    "text": "Ch. 36, vv. 19–20",
    "vol": null,
    "chapter": 36,
@@ -631,7 +631,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 895,
+   "line": 961,
    "text": "Ch. 36, vv. 21–22",
    "vol": null,
    "chapter": 36,
@@ -643,7 +643,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 902,
+   "line": 968,
    "text": "Ch. 36, vv. 23–24",
    "vol": null,
    "chapter": 36,
@@ -655,7 +655,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 908,
+   "line": 974,
    "text": "Ch. 36, vv. 25–26",
    "vol": null,
    "chapter": 36,
@@ -667,7 +667,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 915,
+   "line": 981,
    "text": "Ch. 36, vv. 29–30",
    "vol": null,
    "chapter": 36,
@@ -679,7 +679,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 922,
+   "line": 988,
    "text": "Ch. 36, vv. 31–32",
    "vol": null,
    "chapter": 36,
@@ -691,7 +691,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 933,
+   "line": 999,
    "text": "Ch. 36, vv. 33–34",
    "vol": null,
    "chapter": 36,
@@ -703,7 +703,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 939,
+   "line": 1005,
    "text": "Ch. 36, vv. 35–36",
    "vol": null,
    "chapter": 36,
@@ -715,7 +715,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 941,
+   "line": 1007,
    "text": "Ch. 36, vv. 35–36",
    "vol": null,
    "chapter": 36,
@@ -727,7 +727,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 943,
+   "line": 1009,
    "text": "Ch. 36, vv. 35–36",
    "vol": null,
    "chapter": 36,
@@ -739,7 +739,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 950,
+   "line": 1016,
    "text": "Ch. 36, v. 37",
    "vol": null,
    "chapter": 36,
@@ -751,7 +751,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1002,
+   "line": 1068,
    "text": "Ch. 35",
    "vol": null,
    "chapter": 35,
@@ -760,7 +760,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1045,
+   "line": 1111,
    "text": "Ch. 35",
    "vol": null,
    "chapter": 35,
@@ -769,7 +769,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1118,
+   "line": 1184,
    "text": "Ch. 26, vv. 1–12",
    "vol": null,
    "chapter": 26,
@@ -781,7 +781,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1457,
+   "line": 1523,
    "text": "Vol. 2, Ch. 79",
    "vol": 2,
    "chapter": 79,

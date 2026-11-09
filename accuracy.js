@@ -309,7 +309,7 @@
     var nrows = rows.length;
     T = 26 + nrows * ROWH;
     var H = T + 92;
-    var s2 = svg(W, H, "Seventeen ayanamsa conventions spanning nearly six degrees, with the engine's own Moon error drawn to the same scale.");
+    var s2 = svg(W, H, "Nineteen ayanamsa conventions spanning nearly six degrees, with the engine's own Moon error drawn to the same scale.");
 
     add(s2, "line", { x1: L, y1: T, x2: W - R, y2: T, stroke: C.line, "stroke-width": 1.5 });
     for (var d = Math.ceil(lo); d <= Math.floor(hi); d++) {

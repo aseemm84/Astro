@@ -244,7 +244,80 @@ var AYAN_MODES={
                note:"this site's own: sidereal zero 10′ east of Revatī, from the Sūrya Siddhānta's own dhruvaka " +
                     "of 359°50′, with the star moved by its real space motion and measured by polar longitude. " +
                     "Independent of, and within 1.7′ of, Swiss Ephemeris's Sūrya Siddhānta–Revatī",
-               c:[0.00027145885336,1.39822212898,20.132107536527]}
+               c:[0.00027145885336,1.39822212898,20.132107536527]},
+  /* ---- the two Samanvaya readings ------------------------------------------
+     Supplied by this site's author from his own multi-constraint synthesis: an
+     inverse-variance weighted least-squares centroid over the Sūrya Siddhānta's
+     polar dhruvakās and the Pauliśa solar apogee, with the stars propagated by
+     Gaia DR3 / Hipparcos space motion and IAU 2006 (P03) precession. That
+     derivation is not reproduced on this site, so these two are carried as the
+     author's own definitions and the figures describing them are attributed
+     rather than asserted — which is why neither note quotes the thesis's RMS
+     residual as though this project had measured it. (The thesis gives that
+     residual twice and inconsistently: 0.887° over six stars, 0.64° over a set
+     that drops Maghā, its single worst residual at −99′.)
+
+     Three things were checked before these were added, and all three are
+     asserted in ayanamsa-verify:
+
+     1. BOTH POLYNOMIALS VANISH AT THEIR STATED EPOCH. At the given Julian Days
+        they come out at +1.8″ (polar, JD 1868970.25) and +1.4″ (ecliptic, JD
+        1903396.75) — zero to well inside the precision either can claim.
+
+     2. THE PROSE AROUND THE POLAR EPOCH CONTRADICTS ITS OWN JULIAN DAY, so the
+        note states the epoch the arithmetic actually uses. JD 1868970.25 is 17
+        December 404 CE in the Julian calendar, i.e. decimal year 404.96 —
+        which agrees with the stated "405.0 CE" and not with the stated
+        "March 20" or "vernal equinox". 20 March 405 is JD 1869062.75, ninety-
+        two days later, where this polynomial gives +14.4″ rather than zero. The
+        decimal year, the JD and the coefficients agree with each other; only
+        the month does not, so the month is left out. (The ecliptic epoch's
+        words and JD do agree — JD 1903396.75 is 21 March 499 CE. The slip there
+        is its separately quoted T₀ of −15.0061122519: the JD gives
+        −15.0074811773, fifty days apart. Nothing reads T₀, so it is not
+        carried here at all.)
+
+     3. SAMANVAYA–ECLIPTIC IS THE ARYABHATA MODE ALREADY PRESENT. Measured
+        against every other mode across 1000–3000 CE, its worst disagreement
+        with `aryabhata` is 0.28 ARCSECONDS. That is not a loose near-agreement
+        to wave at; it is the same convention reached from different premises,
+        and at fifty times finer than this engine's own measured Moon it is not
+        a distinguishable alternative. The note says so, because presenting it
+        as an independent nineteenth answer without that sentence would make the
+        ayanāṃśa page's own argument — that these are genuinely different
+        readings — quietly false.
+
+        Samanvaya–Polar is a real addition: nearest neighbour `raman`, 12.5′
+        away, and the gap holds across the whole span.
+
+     Neither widens the family's spread — both fall inside the existing
+     endpoints (True Revatī 20.41°, SS libration 26.24°) — so the 5.83° figure
+     quoted across the site is unaffected. NOT BPHS quantities: BPHS prescribes
+     no ayanāṃśa. Lahiri remains the default and the value everything here is
+     validated against. */
+  /* The short labels are "Sam. Polar" and "Sam. Ecliptic" rather than the
+     specification's "Samanvaya (Polar)" and "Samanvaya (Ecliptic)". The ruler
+     caps a tag at fourteen characters and self-test asserts it; the requested
+     labels are seventeen and twenty, and the suite caught both. The form used
+     here follows the house style already set by "Nir. Citrā" and
+     "Nir. Revatī" — the full names below are untouched and are what the
+     picker, the legend and the comparison table show. */
+  samanvaya_polar: {name:"Samanvaya–Polar (ध्रुवक-समन्वय)", s:"Sam. Polar",
+               note:"this site's own: the armillary-sphere polar reading, sidereal zero at 405.0 CE " +
+                    "(JD 1868970.25). An inverse-variance least-squares centroid over the Sūrya Siddhānta's " +
+                    "polar dhruvakās — Aśvinī 8°, Rohiṇī 49°30′, Puṣya 106°, Citrā 180°, Uttarāṣāḍhā 260° — " +
+                    "with the 76° Pauliśa solar apogee, propagated by Gaia DR3 space motion and IAU 2006 " +
+                    "precession. 1°39′ west of Lahiri at 2026; nearest neighbour in this family is Raman, " +
+                    "12.5′ away. The synthesis is the author's own and is not derived on this site",
+               c:[0.00030701309467,1.39688795339,22.202788470]},
+  samanvaya_ecliptic: {name:"Samanvaya–Ecliptic (क्रान्तिवृत्त-समन्वय)", s:"Sam. Ecliptic",
+               note:"this site's own: the orthogonal ecliptic reading, sidereal zero at Āryabhaṭa's Kaliyuga " +
+                    "3600 elapsed — 21 March 499 CE, JD 1903396.75 — advanced by IAU 2006 precession. " +
+                    "Reached from the equinoctial conjunction, the gnomon solstice records and the 78° solar " +
+                    "apogee rather than from a star. It agrees with this site's Āryabhaṭa mode to 0.28″ " +
+                    "across 1000–3000 CE, so read the two as one convention independently derived, not as a " +
+                    "choice between them",
+               c:[0.00030701309468,1.39688795339,20.895012118]}
 };
 var AYAN_MODE="lahiri";
 function setAyanamsaMode(m){ if(AYAN_MODES[m]) AYAN_MODE=m; return AYAN_MODE; }

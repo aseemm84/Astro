@@ -14,7 +14,7 @@
    1800,
    2200
   ],
-  "generated": "2026-11-05"
+  "generated": "2026-11-09"
  },
  "modern": {
   "library": "astronomy-engine v2 (MIT), ±1′ claimed against NOVAS",
@@ -1399,6 +1399,22 @@
     "wobbleArcsec": null
    },
    {
+    "key": "samanvaya_ecliptic",
+    "name": "Samanvaya–Ecliptic (क्रान्तिवृत्त-समन्वय)",
+    "tag": "Samanvaya (Ecliptic)",
+    "deg": 21.257,
+    "exactToSwiss": false,
+    "wobbleArcsec": null
+   },
+   {
+    "key": "samanvaya_polar",
+    "name": "Samanvaya–Polar (ध्रुवक-समन्वय)",
+    "tag": "Samanvaya (Polar)",
+    "deg": 22.564,
+    "exactToSwiss": false,
+    "wobbleArcsec": null
+   },
+   {
     "key": "raman",
     "name": "Raman",
     "tag": "Raman",
@@ -1710,7 +1726,7 @@
    "Full report"
   ],
   "vargas": 16,
-  "ayanamsaModes": 17,
+  "ayanamsaModes": 19,
   "motionScenes": 52,
   "referencePages": 24,
   "yogaRules": 29,
@@ -1842,7 +1858,7 @@
    },
    {
     "step": "A sidereal frame",
-    "detail": "17 ayanāṃśa conventions, switchable after casting"
+    "detail": "19 ayanāṃśa conventions, switchable after casting"
    },
    {
     "step": "The chart",

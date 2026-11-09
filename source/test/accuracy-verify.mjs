@@ -182,7 +182,7 @@ head("the derived costs are arithmetic on the measured residual");
      "the ayanāṃśa spread is the range of the modes themselves ("
      + D.ayanamsa.spreadDeg + "°)");
   is(D.ayanamsa.exactToSwiss === 9,
-     "nine of the seventeen modes claim an exact Swiss match ("
+     "nine of the nineteen modes claim an exact Swiss match ("
      + D.ayanamsa.exactToSwiss + ")");
 }
 
