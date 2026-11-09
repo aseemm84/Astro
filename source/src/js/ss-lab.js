@@ -141,6 +141,21 @@
   }
   function apply() {
     if (MODE === "bare") { S.bare(); S.setMeasured(FIT); return; }
+    /* The Pañcasiddhāntikā tier is a CONSTANTS tier, not a fitted one: it
+       carries an older recension's own numbers and takes no bīja, so it goes
+       through bare() first and never touches setMeasured(). Four of its
+       quantities are the Later SS's because the OCR never reached them, and
+       the page prints that list from panchaSauraInfo().borrowed — a tier that
+       is partly someone else's numbers under Varāhamihira's name would be a
+       worse object than no tier at all. */
+    if (MODE === "ps") { S.bare(); S.panchaSaura(); S.setMeasured(FIT); return; }
+    /* bare() FIRST, always. Before the Pañcasiddhāntikā tier existed, every
+       mode here was a set of offsets over one fixed set of constants, so
+       nothing had to be cleared. Now a mode can REPLACE the constants, and
+       dragging a slider from that tier would have layered a bīja on top of
+       Varāhamihira's revolutions and called the result "your own constants".
+       One line, and the modes cannot compound. */
+    S.bare();
     var P = MODE === "fitted" ? FIT.params : CUSTOM;
     S.setMeasured({ params: P });
     S.measured();
@@ -183,7 +198,13 @@
     var host = $("ss-sliders");
     if (!host) return;
     var ks = keysFor(SBODY);
-    var cur = MODE === "bare" ? neutral() : (MODE === "fitted" ? FIT.params : CUSTOM);
+    /* "ps" takes neutral() with "bare", not CUSTOM. The sliders carry
+       OFFSETS — a bīja on revolutions, degrees on an apsis, a scale on a
+       paridhi — and the Pañcasiddhāntikā tier applies none of them: it
+       replaces the constants outright. Falling through to CUSTOM here left it
+       null and threw on the first slider read. */
+    var cur = (MODE === "bare" || MODE === "ps") ? neutral()
+            : (MODE === "fitted" ? FIT.params : CUSTOM);
     host.innerHTML = ks.map(function (k) {
       var R = RANGE[kindOf(k)] || [-1, 1, 0.01, ""];
       var v = cur[k] != null ? cur[k] : neutralFor(k);
@@ -239,6 +260,9 @@
         (MODE === "bare" ? "the text as written"
           : MODE === "fitted" ? "the fitted tier — the text's method carrying " +
             "measured numbers, not the text's answer"
+          : MODE === "ps" ? "Varāhamihira's Saura — the same equations carrying " +
+            "an older recension's own constants, four of which are the Later " +
+            "Sūrya Siddhānta's because the text could not be read for them"
           : "your own constants — the text's method carrying your numbers") +
         "</b>. Summed across the seven: <b>" + tot.toFixed(1) +
         "′</b> against the bare text's " + bareTot.toFixed(1) +
@@ -701,6 +725,7 @@
       var k = b.getAttribute("data-ss");
       if (k === "bare") { MODE = "bare"; CUSTOM = null; apply(); redrawLab(); }
       else if (k === "fitted") { MODE = "fitted"; apply(); redrawLab(); }
+      else if (k === "ps") { MODE = "ps"; CUSTOM = null; apply(); redrawLab(); }
       else if (k === "auto") {
         b.disabled = true;
         var was = b.textContent;

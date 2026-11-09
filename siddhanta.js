@@ -1176,12 +1176,23 @@
   var MEASURED = null;      /* set by setMeasured(), from the fitted data file */
   var BASE_CONST = {
     rev: JSON.parse(JSON.stringify(YUGA.rev)),
+    civilDays: YUGA.civilDays,
     epi: JSON.parse(JSON.stringify(EPI)),
     mandocca: JSON.parse(JSON.stringify(MANDOCCA)),
     epoch: JSON.parse(JSON.stringify(EPOCH_LON))
   };
   function restoreConstants(){
     OPT.bija = null;
+    PS_ON = false;
+    /* YUGA.rev and civilDays go back too. The measured tier never needed that
+       — it corrects revolutions through OPT.bija, a multiplicative factor
+       applied at use, and leaves YUGA.rev alone — so this function restored
+       everything EXCEPT the revolutions it had been snapshotting all along.
+       The Pañcasiddhāntikā tier below is a CONSTANTS tier and must mutate
+       them, so bare() has to put them back, or the next caller silently gets
+       Varāhamihira's numbers under the Later Sūrya Siddhānta's name. */
+    for (var r in BASE_CONST.rev) YUGA.rev[r] = BASE_CONST.rev[r];
+    YUGA.civilDays = BASE_CONST.civilDays;
     for (var b in BASE_CONST.epi) {
       EPI[b].manda = BASE_CONST.epi[b].manda.slice();
       EPI[b].sighra = BASE_CONST.epi[b].sighra ? BASE_CONST.epi[b].sighra.slice() : null;
@@ -1189,6 +1200,121 @@
     for (var m in BASE_CONST.mandocca) MANDOCCA[m] = BASE_CONST.mandocca[m];
     for (var e in EPOCH_LON) delete EPOCH_LON[e];
     for (var e2 in BASE_CONST.epoch) EPOCH_LON[e2] = BASE_CONST.epoch[e2];
+  }
+  /* ===== THE PAÑCASIDDHĀNTIKĀ SAURA TIER ====================================
+
+     Varāhamihira's Saura, as condensed in the Pañcasiddhāntikā (Kuppanna
+     Sastry tr., Sarma ed., PPST Madras 1993), Ch. XVI–XVII. Of the five
+     siddhāntas he abridges, THE SAURA ALONE USES EPICYCLES (Sastry's note to
+     Ch. XVI), so it is the only one with a counterpart in this engine — the
+     Pauliśa, Romaka, Vāsiṣṭha and Paitāmaha have none, and a Romaka tier in
+     particular could compute the Sun, the Moon, the pañcāṅga and eclipses and
+     nothing else, because that chapter supplies no star-planets at all.
+
+     Like measured(), this tier keeps EVERY EQUATION as it is and swaps only
+     constants. Unlike measured(), the constants are not fitted to anything:
+     they are an older recension's own numbers, and the tier exists to show
+     what the method gives with them.
+
+     WHAT IS THE TEXT'S, AND WHAT IS BORROWED. The body of that PDF is page
+     images; only pages 408–419 carry a text layer, so every figure below was
+     OCR'd at 300–400 dpi and checked, and the ones the extraction never
+     reached are NOT invented — they are taken from the Later Sūrya Siddhānta
+     constants above and NAMED, individually, in panchaSauraInfo().borrowed.
+     Any page showing this tier must print that list. A tier that is four
+     twentieths someone else's numbers while wearing Varāhamihira's name would
+     be a worse object than no tier at all.
+
+     Known differences from the Later SS, all text-verified:
+
+       yuga civil days   1,577,917,800 against 1,577,917,828 — the 28-day
+                         Ardharātrika gap (Āryabhaṭa's Audayika is
+                         1,577,917,500; +300 the Ardharātrika, +328 the Later
+                         SS). Implied year 365.258750 d against 365.258756 d,
+                         which is half a second.
+       revolutions       Guru identical; Śani −4, Maṅgala −8, Budha −60,
+                         Śukra +12 on figures in the millions.
+       epicycles         THE OLDER TEXT HAS ONE VALUE, NOT TWO. Six of its ten
+                         star-planet figures are exactly this engine's
+                         even-quadrant member, which reads as the later
+                         recension having added a second circumference beside
+                         an inherited one. So the "breathing" epicycle is a
+                         later-recension feature, and on this tier it does not
+                         breathe: both quadrant entries are set equal.
+       mandocca          agrees EXACTLY on all five star-planets, so nothing
+                         changes there and the agreement is itself a result.
+
+     NOT IMPLEMENTED, and the tier says so rather than pretending: the PS
+     computes on R = 120, not 3438, with its own jyā table. That is a
+     different trigonometric base, and this tier runs the engine's sine table.
+     It is therefore the PS's PARAMETERS under this engine's trigonometry, not
+     a reimplementation of the PS's arithmetic. */
+  var PS_ON = false;
+  var PS_CONST = {
+    /* PS I.14, the Saura minor yuga of 180,000 years, ×24 to the Mahāyuga.
+       The ×24 civil-day figure reproduces the Ch. XVI value exactly, which is
+       an independent confirmation that the scaling is right. */
+    civilDays: 1577917800,
+    rev: {
+      "Sūrya":   4320000,       /* PS I.14 */
+      "Candra":  57753336,      /* PS I.14: 2,406,389 lunar revolutions × 24 */
+      "Maṅgala": 2296824,       /* Ch. XVI.2–9, days ÷ 687 */
+      "Budha":   17937000,      /* śīghrocca; days × 100 ÷ 8797 */
+      "Guru":    364220,        /* days × 100 ÷ 433,232 */
+      "Śukra":   7022388,       /* śīghrocca; days × 10 ÷ 2247 */
+      "Śani":    146564         /* days × 1000 ÷ 10,766,066 */
+    },
+    /* One circumference per body, not a pair. Where the text gives one value
+       both quadrant entries take it, so the interpolation that makes the
+       later recension's epicycle "breathe" collapses to a constant. */
+    epi: {
+      "Sūrya":   { manda: 14,  sighra: null },   /* the text notes Śukra's
+                                                    manda 14° IS the Sun's */
+      "Maṅgala": { manda: 70,  sighra: 234 },
+      "Budha":   { manda: 28,  sighra: 132 },
+      "Guru":    { manda: 32,  sighra: 72 },
+      "Śukra":   { manda: 14,  sighra: 260 },
+      "Śani":    { manda: 60,  sighra: 40 }
+    },
+    /* Named individually, because an undisclosed borrow is the whole risk
+       here. Each entry says what was wanted and why it is not the text's. */
+    borrowed: [
+      ["YUGA.rev.candraUcca", "the Moon's apogee revolutions",
+       "PS I.14 gives the Moon but neither the apogee nor the node. Ch. XVI " +
+       "was not reached by the OCR for them. Only their EPOCH LONGITUDES are " +
+       "text-verified (apogee 90°, node 180°), and those are already what " +
+       "this engine ships."],
+      /* "as above" was the first draft of this, and the harness refused it:
+         each entry is rendered on its own in a list, where a back-reference
+         explains nothing. */
+      ["YUGA.rev.Rāhu", "the node's revolutions",
+       "PS I.14 gives the lunar revolutions but not the node's. Ch. XVI was " +
+       "not reached by the OCR for it. Its EPOCH LONGITUDE of 180° is " +
+       "text-verified — Sastry's notes to Ch. XVI put the node there at Kali " +
+       "in the Āryabhaṭīya, the Ardharātrika-pakṣa, Varāhamihira's Saura, " +
+       "Bhaṭṭotpala's Pauliśa and the Later Sūrya Siddhānta alike — and that " +
+       "is already what this engine ships."],
+      ["EPI.Candra", "the Moon's epicycle",
+       "the extraction recorded the five star-planets and the Sun's value " +
+       "(via Śukra's), not the Moon's. The later recension's pair is kept " +
+       "rather than guessing a single value from the one-value pattern."],
+      ["MANDOCCA.Sūrya", "the Sun's apogee",
+       "the five star-planets' mandocca are text-verified and agree exactly; " +
+       "the Sun's was not among them."]
+    ]
+  };
+  function applyPanchaSaura(){
+    for (var r in PS_CONST.rev) YUGA.rev[r] = PS_CONST.rev[r];
+    YUGA.civilDays = PS_CONST.civilDays;
+    for (var b in PS_CONST.epi) {
+      var v = PS_CONST.epi[b];
+      /* both entries equal: one circumference, so no interpolation */
+      EPI[b].manda = [v.manda, v.manda];
+      EPI[b].sighra = (v.sighra == null) ? null : [v.sighra, v.sighra];
+    }
+    OPT.bija = null;          /* a constants tier, never a fitted one */
+    PS_ON = true;
+    return true;
   }
   /* Hand it the parsed source/data/siddhanta-measured.json. Kept as an
      argument rather than fetched or inlined: this file must stay loadable with
@@ -1227,6 +1353,32 @@
     measured: applyMeasured,
     bare: restoreConstants,
     isMeasured: function(){ return !!(MEASURED && OPT.bija); },
+    /* the Pañcasiddhāntikā Saura tier — see the long note above it.
+       panchaSauraInfo().borrowed is NOT optional reading for a page that
+       displays this tier: four quantities in it are the Later Sūrya
+       Siddhānta's because the OCR never reached them, and each is named. */
+    panchaSaura: applyPanchaSaura,
+    isPanchaSaura: function(){ return PS_ON; },
+    panchaSauraInfo: function(){
+      return {
+        source: "Pañcasiddhāntikā of Varāhamihira, Ch. XVI–XVII; Kuppanna " +
+                "Sastry tr., K. V. Sarma ed., PPST Foundation, Madras, 1993",
+        civilDays: PS_CONST.civilDays,
+        laterSSCivilDays: BASE_CONST.civilDays,
+        civilDayGap: BASE_CONST.civilDays - PS_CONST.civilDays,
+        impliedYear: PS_CONST.civilDays / YUGA.years,
+        rev: JSON.parse(JSON.stringify(PS_CONST.rev)),
+        epi: JSON.parse(JSON.stringify(PS_CONST.epi)),
+        oneEpicycleNotTwo: true,
+        borrowed: PS_CONST.borrowed.map(function (b) {
+          return { path: b[0], what: b[1], why: b[2] };
+        }),
+        notImplemented: "The PS computes on R = 120 with its own jyā table, " +
+          "not on 3438. This tier runs the engine's trigonometry, so it is " +
+          "the PS's PARAMETERS under this engine's arithmetic, not a " +
+          "reimplementation of the PS's own."
+      };
+    },
     measuredInfo: function(){
       return MEASURED ? { residuals: MEASURED.residuals,
                           lunarDiagnostic: MEASURED.lunarDiagnostic,
@@ -1992,6 +2144,21 @@
   }
   function apply() {
     if (MODE === "bare") { S.bare(); S.setMeasured(FIT); return; }
+    /* The Pañcasiddhāntikā tier is a CONSTANTS tier, not a fitted one: it
+       carries an older recension's own numbers and takes no bīja, so it goes
+       through bare() first and never touches setMeasured(). Four of its
+       quantities are the Later SS's because the OCR never reached them, and
+       the page prints that list from panchaSauraInfo().borrowed — a tier that
+       is partly someone else's numbers under Varāhamihira's name would be a
+       worse object than no tier at all. */
+    if (MODE === "ps") { S.bare(); S.panchaSaura(); S.setMeasured(FIT); return; }
+    /* bare() FIRST, always. Before the Pañcasiddhāntikā tier existed, every
+       mode here was a set of offsets over one fixed set of constants, so
+       nothing had to be cleared. Now a mode can REPLACE the constants, and
+       dragging a slider from that tier would have layered a bīja on top of
+       Varāhamihira's revolutions and called the result "your own constants".
+       One line, and the modes cannot compound. */
+    S.bare();
     var P = MODE === "fitted" ? FIT.params : CUSTOM;
     S.setMeasured({ params: P });
     S.measured();
@@ -2034,7 +2201,13 @@
     var host = $("ss-sliders");
     if (!host) return;
     var ks = keysFor(SBODY);
-    var cur = MODE === "bare" ? neutral() : (MODE === "fitted" ? FIT.params : CUSTOM);
+    /* "ps" takes neutral() with "bare", not CUSTOM. The sliders carry
+       OFFSETS — a bīja on revolutions, degrees on an apsis, a scale on a
+       paridhi — and the Pañcasiddhāntikā tier applies none of them: it
+       replaces the constants outright. Falling through to CUSTOM here left it
+       null and threw on the first slider read. */
+    var cur = (MODE === "bare" || MODE === "ps") ? neutral()
+            : (MODE === "fitted" ? FIT.params : CUSTOM);
     host.innerHTML = ks.map(function (k) {
       var R = RANGE[kindOf(k)] || [-1, 1, 0.01, ""];
       var v = cur[k] != null ? cur[k] : neutralFor(k);
@@ -2090,6 +2263,9 @@
         (MODE === "bare" ? "the text as written"
           : MODE === "fitted" ? "the fitted tier — the text's method carrying " +
             "measured numbers, not the text's answer"
+          : MODE === "ps" ? "Varāhamihira's Saura — the same equations carrying " +
+            "an older recension's own constants, four of which are the Later " +
+            "Sūrya Siddhānta's because the text could not be read for them"
           : "your own constants — the text's method carrying your numbers") +
         "</b>. Summed across the seven: <b>" + tot.toFixed(1) +
         "′</b> against the bare text's " + bareTot.toFixed(1) +
@@ -2552,6 +2728,7 @@
       var k = b.getAttribute("data-ss");
       if (k === "bare") { MODE = "bare"; CUSTOM = null; apply(); redrawLab(); }
       else if (k === "fitted") { MODE = "fitted"; apply(); redrawLab(); }
+      else if (k === "ps") { MODE = "ps"; CUSTOM = null; apply(); redrawLab(); }
       else if (k === "auto") {
         b.disabled = true;
         var was = b.textContent;
