@@ -74,6 +74,10 @@ a{color:#2b5fa5}a:hover{color:var(--gold)}
 .k-btn:hover{background:#2b3358}.k-btn.sec{background:#fff;color:var(--ink);border:1px solid var(--line)}
 .k-btn:disabled{opacity:.55;cursor:default}
 .k-status{font-size:13px;margin:6px 0;min-height:1.1em;color:var(--muted)}
+/* a requested house system that could not be computed. Ink from var(--text)
+   over a low-alpha tint, the pattern the band panel settled on, so it stays
+   readable on all five palettes. */
+.k-fellback{background:rgba(161,73,58,.13);border-left:3px solid var(--sem-bad,#a1493a);color:var(--text,#1c1c22);padding:1px 6px;border-radius:3px}
 .k-err{background:#fbeeee;border:1px solid #ecc1c1;border-left:3px solid #b45252;border-radius:0 8px 8px 0;padding:10px 13px;font-size:13.5px;margin:8px 0;max-width:84ch}
 .k-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin:12px 0}
 .k-card{background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px 14px}
@@ -3704,7 +3708,7 @@ fifth-century theory and a modern one.</p>
   "checkedBy": "source/test/siddhanta-measured-verify.mjs",
   "fitSamples": 187,
   "holdoutSamples": 213,
-  "iterations": 1500
+  "iterations": 1200
  },
  "lahiri": [
   0.000307083556492,

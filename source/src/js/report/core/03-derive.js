@@ -2,6 +2,19 @@
 function derive(J){
   var D={},LS=ridx(J.lagna&&J.lagna.rashi);
   D.LS=LS; D.lagna=J.lagna||{};
+  /* the house system this chart was cast in, and the rāśi each bhāva actually
+     sits in. Sections that wrote SA[(D.LS+h-1)%12] to label a house were
+     assuming whole-sign; D.bhavaSign is that under whole-sign and the madhya's
+     rāśi under Śrīpati. */
+  D.houseSystem=J.house_system||{mode:"whole",fell_back:false};
+  D.bhavaSign=function(h){
+    var b=(J.bhavas||[])[h-1];
+    return (b&&b.rashi&&b.rashi.idx!=null)?b.rashi.idx:((LS+h-1)%12);
+  };
+  D.bhavaCusps=(J.bhavas||[]).map(function(b){
+    return (b.madhya_deg==null)?null:{madhya:b.madhya_deg,start:b.sandhi_start_deg,
+      end:b.sandhi_end_deg,width:b.width_deg};
+  });
   D.lagDeg=(J.lagna&&J.lagna.rashi&&J.lagna.rashi.degInSign!=null)?J.lagna.rashi.degInSign:(J.lagna?J.lagna.sidereal_deg%30:0);
   D.lagNak=nakOf(J.lagna?J.lagna.sidereal_deg:0);
   var sunDeg=0;(J.grahas||[]).forEach(function(g){if(EN[g.key]==="Sun")sunDeg=g.sidereal_deg;});
@@ -9,7 +22,16 @@ function derive(J){
   D.planets=(J.grahas||[]).map(function(g){
     var en=EN[g.key]||g.key,s=ridx(g.rashi),deg=(g.rashi&&g.rashi.degInSign!=null)?g.rashi.degInSign:g.sidereal_deg%30;
     var nk=nakOf(g.sidereal_deg),sep=Math.abs(((g.sidereal_deg-sunDeg+180)%360+360)%360-180);
-    return {en:en,iast:g.iast||en,sign:s,deg:deg,sid:g.sidereal_deg,house:((s-LS)%12+12)%12+1,
+    /* The bhāva comes from the engine, which computed it under whichever
+       house system the chart was cast with. This line used to recompute it as
+       ((s − LS) mod 12) + 1 — a THIRD independent whole-sign house
+       calculation, after the two in engine.js, and the one feeding every
+       section of this pane. With a selectable frame that meant the report
+       could show whole-sign bhāvas while the chart's own JSON said Śrīpati.
+       The fallback keeps charts saved before `bhava` existed working, and is
+       the same arithmetic those files were written with. */
+    return {en:en,iast:g.iast||en,sign:s,deg:deg,sid:g.sidereal_deg,
+      house:(g.bhava!=null?g.bhava:((s-LS)%12+12)%12+1),
       nak:nk.name,pada:nk.pada,naklord:nk.lord,dig:dignity(en,s,deg),retro:!!g.retrograde,
       combust:(COMB[en]!=null&&sep<=COMB[en]&&en!=="Sun"),sep:sep,
       speed:(g.speed_deg_per_day!=null?g.speed_deg_per_day:null),

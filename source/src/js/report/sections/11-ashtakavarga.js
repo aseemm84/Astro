@@ -1,14 +1,20 @@
+/* The bindus are RĀŚI quantities and are not recomputed by the house
+   system — Ashtakavarga counts into rāśis. What follows the bhāva frame
+   here is only which rāśi each house cell shows, so that the 10th cell is
+   the 10th bhāva's rāśi under whichever frame the chart was cast in. Under
+   Śrīpati a rāśi may appear in two cells or none, which is a property of
+   unequal houses and not a drawing error. */
 /* --- Ashtakavarga as charts + Vimsopaka-style divisional index --- */
 function avCharts(D){
   if(!D.av||!D.av.bhinna)return "";
   var g='<div class="kvgrid">';
   D.av.bhinna.forEach(function(b){
-    g+=northChart(function(h){return (D.LS+h-1)%12;},
-      function(h){return [String(b.bindus[(D.LS+h-1)%12])];},
+    g+=northChart(function(h){return D.bhavaSign(h);},
+      function(h){return [String(b.bindus[D.bhavaSign(h)])];},
       b.graha+" — BAV", "total "+b.total);
   });
-  g+=northChart(function(h){return (D.LS+h-1)%12;},
-    function(h){return [String(D.av.sarva[(D.LS+h-1)%12])];},"Sarvāṣṭakavarga","total "+D.av.sarva_total);
+  g+=northChart(function(h){return D.bhavaSign(h);},
+    function(h){return [String(D.av.sarva[D.bhavaSign(h)])];},"Sarvāṣṭakavarga","total "+D.av.sarva_total);
   g+='</div>';
   return '<p class="knote">Each planet\'s bindus placed house by house, and the combined SAV. In a Bhinnāṣṭakavarga '+
     'chart, 4 or more bindus in a house is the usual threshold for that planet to do well there — especially under '+

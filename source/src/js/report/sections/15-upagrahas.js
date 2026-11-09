@@ -18,8 +18,8 @@ function dhumadiSection(D){
   });
   var occ={};
   list.forEach(function(x){ var sg=Math.floor(x[2]/30)%12; (occ[sg]=occ[sg]||[]).push(x[0].slice(0,2)); });
-  var chart=northChart(function(h){return (D.LS+h-1)%12;},
-    function(h){var sg=(D.LS+h-1)%12,a=(occ[sg]||[]).slice(); if(h===1)a.unshift("Lg"); return a;},
+  var chart=northChart(function(h){return D.bhavaSign(h);},
+    function(h){var sg=D.bhavaSign(h),a=(occ[sg]||[]).slice(); if(h===1)a.unshift("Lg"); return a;},
     "Dhūmādi upagrahas","the five Sun-derived points");
   return '<p class="knote">The <b>Dhūmādi</b> group is derived from the Sun by fixed offsets, so each is a '+
     'calculable point rather than a body. They are read as sensitive spots: a planet or house they fall on takes '+

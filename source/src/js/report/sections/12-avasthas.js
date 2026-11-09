@@ -32,7 +32,7 @@ function shodhanaSection(D){
   var signOf={}; D.planets.forEach(function(p){ signOf[p.en]=p.sign; });
   var rows=shodhanaAll(D.av,signOf);
   var hdr='<th>Graha</th>';
-  for(var h=1;h<=12;h++) hdr+='<th>'+SA[(D.LS+h-1)%12].slice(0,4)+'<br><span class="kthin">H'+h+'</span></th>';
+  for(var h=1;h<=12;h++) hdr+='<th>'+SA[D.bhavaSign(h)].slice(0,4)+'<br><span class="kthin">H'+h+'</span></th>';
   hdr+='<th>Total</th><th>Piṇḍa</th>';
   var body=rows.map(function(r){
     var c='';
@@ -268,7 +268,7 @@ function argalaSection(D){
       parts.push('<span style="color:'+(blocked?"var(--sem-bad,#a1493a)":"var(--sem-good,#1c6b46)")+'">'+pair[0]+'th: '+a.join(",")+
         (blocked?' <span class="kmut">(obstructed by '+o.join(",")+' in the '+pair[1]+'th)</span>':' <b>active</b>')+'</span>');
     });
-    rows.push('<tr><td><b>'+h+'</b> '+SA[(D.LS+h-1)%12]+'</td><td>'+(parts.join("<br>")||'<span class="kmut">no argala</span>')+'</td></tr>');
+    rows.push('<tr><td><b>'+h+'</b> '+SA[D.bhavaSign(h)]+'</td><td>'+(parts.join("<br>")||'<span class="kmut">no argala</span>')+'</td></tr>');
   }
   return '<p class="knote"><b>Argala</b> is intervention: planets in the 2nd, 4th, 11th and 5th from a house '+
     'influence its matters, and planets in the 12th, 10th, 3rd and 9th respectively obstruct that intervention '+

@@ -273,7 +273,25 @@ function skpConventions(J,D){
     ayanamsa_mode:J.ayanamsa_mode||null,
     ayanamsa_deg:J.ayanamsha_deg,
     node_reckoning:(J.node_mode==="true"||J.node_mode==="mean")?J.node_mode:(J.node_mode||"mean"),
-    house_system:"Whole Sign (primary); Śrīpati cusps also given under derived.sripati",
+    /* This was the flat string "Whole Sign (primary); Śrīpati cusps also given
+       under derived.sripati". That was true while whole-sign was the only
+       frame and becomes a FALSE STATEMENT the moment the house system is
+       selectable — and it sits in the one block the payload tells its reader
+       to read first. It now reports the frame the chart was actually cast in,
+       from the engine's own declaration. */
+    house_system:(function(){
+      var H=J.house_system;
+      if(!H) return "Whole Sign (rāśi = bhāva from the lagna); Śrīpati cusps "+
+                    "also given under derived.sripati";
+      return H.name+(H.mode==="sripati"
+        ? " — bhāva occupancy, bhāva lords and everything derived from them are "+
+          "computed in this frame, NOT whole-sign"
+        : " — Śrīpati cusps also given under derived.sripati")+
+        (H.fell_back?" [REQUESTED "+H.requested+" AND FELL BACK: "+H.fell_back_reason+"]":"");
+    })(),
+    house_system_detail:J.house_system||null,
+    house_lord_rule:(J.house_system&&J.house_system.lord_rule)||
+      "the lord of the rāśi, counted from the lagna's rāśi",
     alternatives:c.alternatives||null,
     note:c.note||null};
 }
@@ -483,6 +501,10 @@ function skpGrahaDrishti(J,prior){
       "and 9th, Śani +45 across the 3rd and 10th, as the sage specifies.",
     cast:matrix, received:received,
     whole_sign_view:prior||null,
+    /* prior is a house-count view, and under Śrīpati those houses are Śrīpati
+       houses — so the key name stops describing its contents. Rather than
+       rename a field consumers already read, the frame is stated beside it. */
+    house_count_view_frame:(J.house_system&&J.house_system.mode)||"whole",
     note:"cast[a][b] is the virupas a throws on b, by exact longitude rather than by "+
       "whole sign, so a graha near a sign boundary reads differently here than in the "+
       "house-count view kept under whole_sign_view. This is the same formula that feeds "+
@@ -502,7 +524,8 @@ function skpGuide(D){
   for(var k in g) out[k]=g[k];
   out.reading_order_prose=g.reading_order||null;
   out.reading_order=[
-    "derived.conventions","derived.sensitivity","meta","grahas",
+    "derived.conventions","derived.sensitivity",
+    "derived.conventions.house_system_detail","meta","grahas",
     "derived.houses","derived.chalit","derived.status","derived.sripati",
     "vargas.D1","vargas.D9","vargas.D10","shadbala.planets",
     "derived.vimsopaka","derived.bhava_bala","derived.ishta_kashta",
@@ -571,7 +594,12 @@ function buildJyotishaPayload(J){
   if(!derived.houses) derived.houses=skpHouses(J);
   if(!derived.chalit && D.sripati) derived.chalit={
     source:"derived.sripati.houses",
-    note:"Bhāva chalita placements are the Śrīpati house assignments; compare "+
+    note:((J.house_system&&J.house_system.mode==="sripati")
+      ?"NOTE: this chart was itself cast in the Śrīpati frame, so these are the "+
+       "chart's own bhāvas and the comparison below is against whole-sign as the "+
+       "alternative, not as the primary. "
+      :"")+
+      "Bhāva chalita placements are the Śrīpati house assignments; compare "+
          "them with the whole-sign houses to see which grahas shift.",
     houses:D.sripati.houses||null};
   if(!derived.combust) derived.combust=skpCombust(J);

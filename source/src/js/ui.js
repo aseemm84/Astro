@@ -272,6 +272,20 @@
   function nakInfo(deg,padaFallback){ if(deg==null) return {name:null,pada:padaFallback}; var seg=40/3, x=(((deg%360)+360)%360), i=Math.floor(x/seg); if(i>26)i=26; var pada=Math.floor((x-i*seg)/(seg/4))+1; return {name:NAKS[i], pada:padaFallback||pada}; }
   function scalars(o){var out=[]; if(o&&typeof o==="object"){for(var k in o){var v=o[k]; if(v==null||typeof v==="object")continue; out.push("<b>"+esc(k)+":</b> "+esc(v));}} return out.join(" &middot; ");}
   function render(d){
+    /* A fallback must be impossible to miss. Śrīpati needs a meridian and
+       there is not always one; if the frame declined, the chart in front of
+       the reader is whole-sign while the picker still says Śrīpati, and
+       saying nothing would be the quiet failure the engine comment warns
+       about. Shown before the report, not after it. */
+    try{
+      var H=d&&d.house_system, cv=$("k-conv");
+      if(cv&&H){
+        cv.innerHTML=cv.innerHTML.replace(/ · <b class="k-fellback">[\s\S]*$/,"");
+        if(H.fell_back) cv.innerHTML+=' · <b class="k-fellback">'+
+          esc(H.requested)+" was requested and could not be computed: "+
+          esc(H.fell_back_reason||"no reason given")+" — this chart is whole-sign</b>";
+      }
+    }catch(e){}
     var html="";
     try{ html=window.buildKundliReport(d); }
     catch(err){ html='<div class="k-err">The chart came back, but the report could not be rendered: '+esc(err.message)+'. The full data is in the raw response below.</div>'; }
@@ -306,6 +320,7 @@
       hour:+($("k-tob").value||"").slice(0,2), minute:+($("k-tob").value||"").slice(3,5),
       lat:+$("k-lat").value, lon:+$("k-lon").value, tzHours:+$("k-tz").value,
       ayanamsa:($("k-ayan")&&$("k-ayan").value)||"lahiri",
+      houseSystem:($("k-house")&&$("k-house").value)||"whole",
       node:($("k-node")&&$("k-node").value)||"mean",
       name:($("k-name")&&$("k-name").value||"").trim()||null,
       /* The place name is the one field the reference pages never needed and
@@ -367,8 +382,12 @@
     var el=$("k-conv"); if(!el) return;
     var sel=($("k-ayan")&&$("k-ayan").value)||"lahiri";
     var M=(window.__ayanModes||{})[sel];
-    el.innerHTML="Sidereal · "+esc((M&&M.name)||sel)+
-                 " ayanāṃśa · whole-sign houses";
+    /* This line used to end with a flat "whole-sign houses", which was true
+       when there was no choice and becomes a false statement the moment the
+       frame is selectable. It now reports what is actually set. */
+    var hs=($("k-house")&&$("k-house").value)||"whole";
+    el.innerHTML="Sidereal · "+esc((M&&M.name)||sel)+" ayanāṃśa · "+
+                 (hs==="sripati"?"Śrīpati bhāva-chalita":"whole-sign houses");
   }
   /* ---- the ayanāṃśa picker, built from the engine's own table ----
      This was sixteen hand-written <option> rows in the builder's shell and
@@ -407,8 +426,21 @@
     sel.innerHTML=html;
     sel.value=M[want]?want:"lahiri";
   }
+  /* The bhāva frame picker. Whole-sign is first and is the default, because
+     it is what BPHS uses and what every figure on this site is validated
+     against; Śrīpati is offered so the choice is visible rather than hidden,
+     exactly as with the ayanāṃśa. */
+  function fillHousePicker(){
+    var sel=$("k-house"); if(!sel) return;
+    var want=sel.value||"whole";
+    sel.innerHTML='<option value="whole">Whole-sign — rāśi is bhāva, counted from the lagna (BPHS)</option>'+
+                  '<option value="sripati">Śrīpati bhāva-chalita — trisected quadrants (later tradition)</option>';
+    sel.value=(want==="sripati")?"sripati":"whole";
+  }
+  try{ fillHousePicker(); }catch(e){}
   try{ fillAyanPicker(); }catch(e){}
   if($("k-ayan")) $("k-ayan").addEventListener("change",convStrip);
+  if($("k-house")) $("k-house").addEventListener("change",convStrip);
   convStrip();
 
   /* ------------------------------------------------------------------ here & now ---
@@ -741,6 +773,7 @@
         var q=$("k-search"); return (q&&q.value||"").trim()||null;
       })(),
       ayanamsa:($("k-ayan")&&$("k-ayan").value)||"lahiri",
+      houseSystem:($("k-house")&&$("k-house").value)||"whole",
       node:($("k-node")&&$("k-node").value)||"mean"};
     var blob=new Blob([JSON.stringify(mini,null,1)],{type:"application/json"});
     var u=URL.createObjectURL(blob), a=document.createElement("a");
@@ -759,6 +792,7 @@
     $("k-tob").value=String(i.hour).padStart(2,"0")+":"+String(i.minute).padStart(2,"0");
     $("k-lat").value=i.lat; $("k-lon").value=i.lon; $("k-tz").value=i.tzHours;
     if($("k-ayan")&&i.ayanamsa) $("k-ayan").value=i.ayanamsa;
+    if($("k-house")&&i.houseSystem) $("k-house").value=i.houseSystem;
     if($("k-node")&&i.node) $("k-node").value=i.node;
     /* Setting .value fires no change event, so the strip has to be told. A
        saved chart or a shared link carries its own ayanāṃśa, and that is
@@ -870,7 +904,8 @@
   var lastHash="", hashReady=false;
   function chartKey(){
     return [$("k-dob").value,$("k-tob").value,$("k-lat").value,$("k-lon").value,$("k-tz").value,
-      ($("k-ayan")&&$("k-ayan").value)||"",($("k-node")&&$("k-node").value)||""].join("|");
+      ($("k-ayan")&&$("k-ayan").value)||"",($("k-node")&&$("k-node").value)||"",
+      ($("k-house")&&$("k-house").value)||""].join("|");
   }
   function buildHash(tab){
     var d=($("k-dob").value||"").split("-"), t=($("k-tob").value||"").split(":");
@@ -878,6 +913,7 @@
     var p=["d="+d[0]+d[1]+d[2], "t="+t[0]+t[1],
            "p="+[$("k-lat").value,$("k-lon").value,$("k-tz").value].join(",")];
     var a=($("k-ayan")&&$("k-ayan").value)||"lahiri"; if(a!=="lahiri") p.push("a="+a);
+    var hsv=($("k-house")&&$("k-house").value)||"whole"; if(hsv!=="whole") p.push("hs="+hsv);
     var nd=($("k-node")&&$("k-node").value)||"mean";  if(nd!=="mean")  p.push("nd="+nd);
     var nm=($("k-name")&&$("k-name").value||"").trim();
     if(nm) p.push("n="+encodeURIComponent(nm.slice(0,48)));
@@ -898,6 +934,7 @@
     return {dob:o.d.slice(0,4)+"-"+o.d.slice(4,6)+"-"+o.d.slice(6,8),
             tob:o.t.slice(0,2)+":"+o.t.slice(2,4),
             lat:p[0], lon:p[1], tz:p[2], ayan:o.a||"lahiri", node:o.nd||"mean",
+            houseSystem:o.hs||"whole",
             name:o.n||"", place:o.pl||"", tab:o.v||"overview"};
   }
   /* A cast is a new place in history; changing tab is not — otherwise Back would walk
@@ -914,6 +951,7 @@
     $("k-dob").value=o.dob; $("k-tob").value=o.tob;
     $("k-lat").value=o.lat; $("k-lon").value=o.lon; $("k-tz").value=o.tz;
     if($("k-ayan")) $("k-ayan").value=o.ayan;
+    if($("k-house")) $("k-house").value=o.houseSystem||"whole";
     if($("k-node")) $("k-node").value=o.node;
     if(o.place) window.__kplace=o.place;
   }

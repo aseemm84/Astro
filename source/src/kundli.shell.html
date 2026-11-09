@@ -29,7 +29,24 @@
   <span class="k-note" id="k-conv">Sidereal &middot; Lahiri ayanāṃśa &middot; whole-sign houses</span>
 </div>
 <p class="k-note">The city search sets the UTC offset that applied on the birth date, including historical daylight saving. If you type coordinates by hand, set the offset yourself.</p>
-<details class="k-raw" id="k-settings"><summary>Settings &middot; ayanāṃśa and lunar nodes</summary><div class="k-form" style="margin-top:8px"><div class="k-full"><label for="k-ayan">Ayanāṃśa</label>
+<details class="k-raw" id="k-settings"><summary>Settings &middot; ayanāṃśa, bhāva frame and lunar nodes</summary><div class="k-form" style="margin-top:8px"><div class="k-full"><label for="k-house">Bhāva frame (house system)</label>
+    <select id="k-house"><!-- populated by ui.js, for the same reason k-ayan is:
+      two shells carry this control and a hand-written list in each is one list
+      too many. --></select>
+    <p class="k-note">Decides how <b>every</b> bhāva in the report is reckoned &mdash; which
+    bhāva each graha occupies, which rāśi supplies each bhāva&rsquo;s lord, and the bhāva
+    strengths that follow. <b>Whole-sign is the default</b> and is what BPHS uses: the rāśi
+    <i>is</i> the bhāva, counted from the lagna. &Sacute;rīpati trisects the quadrants between
+    the lagna and the meridian, so the twelve bhāvas are unequal and one can span two
+    rāśis &mdash; where that happens the lord is taken from the rāśi holding the bhāva
+    <i>madhya</i>, its midpoint. &Sacute;rīpati is <b>later tradition, not BPHS</b>, and it needs the
+    meridian: high latitudes do not make it fail &mdash; the quadrants simply become very
+    unequal, so two bhāvas can be half the width of two others &mdash; but if the meridian
+    cannot be computed the report falls back to whole-sign and says so rather than
+    inventing one. A varga has no cusps of its own, so divisional charts keep their
+    own whole-sign houses and carry the rāśi chart&rsquo;s bhāva alongside, labelled.</p>
+  </div>
+  <div class="k-full"><label for="k-ayan">Ayanāṃśa</label>
     <select id="k-ayan"><!-- populated by ui.js from the engine's own mode table.
       It used to be sixteen hand-written <option> rows here AND sixteen more in
       the Workstation's shell, which meant a seventeenth mode added to the

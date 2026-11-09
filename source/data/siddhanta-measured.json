@@ -13,7 +13,7 @@
   "checkedBy": "source/test/siddhanta-measured-verify.mjs",
   "fitSamples": 187,
   "holdoutSamples": 213,
-  "iterations": 1500
+  "iterations": 1200
  },
  "lahiri": [
   0.000307083556492,
