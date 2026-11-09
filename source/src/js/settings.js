@@ -154,6 +154,39 @@
       (note ? '<p class="nsnote">' + note + "</p>" : "") + "</div>";
   }
 
+  /* Does this page hold the engine that would act on a casting setting?
+     __ayanModes is published by engine.js, so its absence means the page can
+     store a value but cannot recast anything with it. */
+  function hasEngine() { return !!window.__ayanModes; }
+
+  /* A setting shown but not offered, for pages that cannot act on it.
+   *
+     WHY NOT JUST SHOW THE PICKER. A <select> that stores a value this page
+     will never apply is "a switch that visibly does nothing", which the note
+     by the degfmt row below already refuses on this project's behalf. The
+     dashboard is the case that forced this: it renders a chart cast
+     elsewhere and recomputes nothing, so a bhāva-frame picker there would
+     change a stored key and not one pixel of the chart in front of you.
+   *
+     Where the page knows what the chart it is SHOWING was actually cast with,
+     it publishes window.__nsCastWith and that is named too — on a renderer
+     the useful fact is the convention in force for this chart, which need not
+     be the one in the store. */
+  function frozenRow(label, value, key) {
+    var cast = window.__nsCastWith || null;
+    var shown = cast && cast[key] != null ? String(cast[key]) : null;
+    return '<div class="nsrow"><label>' + esc(label) + '</label>' +
+      '<p class="nsnote">' +
+      (shown
+        ? 'The chart on this page was cast with <b>' + esc(shown) + '</b>. '
+        : '') +
+      'Your stored setting is <b>' + esc(value) + '</b>. This page renders a ' +
+      'chart it did not compute, so changing this here would alter the setting ' +
+      'and not the chart — open this panel from the Kundli builder, the ' +
+      'Workstation or the Ayanāṃśa page to change it and recast.' +
+      '</p></div>';
+  }
+
   function ayanRow() {
     var M = window.__ayanModes, s = get();
     if (!M) {
@@ -161,10 +194,7 @@
          Offering a hand-written list here would be a second list to keep in
          step with AYAN_MODES — the exact bug the Kundli picker's comment
          records. The stored value is shown and left alone instead. */
-      return '<div class="nsrow"><label>Ayanāṃśa</label>' +
-        '<p class="nsnote">Currently <b>' + esc(s.ayan) + '</b>. The picker needs the ' +
-        'engine, which this page does not load — open this panel from the Kundli ' +
-        'builder, the Workstation or the Ayanāṃśa page to change it.</p></div>';
+      return frozenRow("Ayanāṃśa", s.ayan, "ayan");
     }
     var fams = window.__ayanFamilies, done = {}, o = "";
     function opt(k) {
@@ -203,31 +233,54 @@
 
           '<h3>Reckoning</h3>' +
           ayanRow() +
-          row("house", "Bhāva frame (house system)",
+          (hasEngine() ? row("house", "Bhāva frame (house system)",
             'Decides how every bhāva is reckoned — which bhāva each graha occupies, which ' +
             'rāśi gives each bhāva its lord, and the strengths that follow. Whole-sign is ' +
             'what BPHS uses. Under Śrīpati a bhāva can span two rāśis and its lord is taken ' +
             'from the rāśi holding the <i>madhya</i>. Divisional charts have no cusps of ' +
             'their own, so they keep whole-sign houses and carry the rāśi chart’s bhāva ' +
-            'alongside, labelled.') +
-          row("node", "Lunar nodes",
+            'alongside, labelled.')
+            : frozenRow("Bhāva frame (house system)", get().house, "house")) +
+          (hasEngine() ? row("node", "Lunar nodes",
             'BPHS reckons Rāhu and Ketu as the mean node. The true node can sit up to about ' +
-            '1½° away.') +
-          row("riseconv", "Sunrise",
+            '1½° away.')
+            : frozenRow("Lunar nodes", get().node, "node")) +
+          (hasEngine() ? row("riseconv", "Sunrise",
             'Re-dates everything downstream: the vāra, the ghaṭī count, which tithi is ' +
-            'today’s, and therefore which day a festival lands on.') +
+            'today’s, and therefore which day a festival lands on.')
+            : frozenRow("Sunrise", get().riseconv, "riseconv")) +
 
           '<h3>Presentation</h3>' +
           /* no <label> here: theme.js brings its own (.themepickl), and two
-             would read as two settings */
-          '<div class="nsrow" id="nset-theme-slot">' +
-            '<p class="nsnote">Palette for the whole site. The desktop app follows ' +
-            'the system appearance until a choice is made here.</p></div>' +
+             would read as two settings.
+           *
+             On a page without theme.js the slot would stay empty and the row
+             would be a heading and a note with no control. That happens on the
+             four adopted pages, which carry their own styling and load neither
+             theme.js nor theme.css. Inlining theme.js there was tried and
+             rejected: the picker set the attribute but nothing moved, because
+             the token overrides are in theme.css — and dashboard.html has its
+             own light/dark system on the same data-theme attribute, which a
+             stored site palette would have fought. So the row says what
+             governs the palette there instead of offering a dead picker. */
+          (window.NTheme
+            ? '<div class="nsrow" id="nset-theme-slot">' +
+                '<p class="nsnote">Palette for the whole site. The desktop app follows ' +
+                'the system appearance until a choice is made here.</p></div>'
+            : '<div class="nsrow"><label>Palette</label>' +
+                '<p class="nsnote">This page carries its own styling rather than the ' +
+                'site stylesheet, so the site palette does not reach it and is not ' +
+                'offered here. Any theme control on the page itself governs how it ' +
+                'looks. Choose a site palette from any other page and it applies ' +
+                'everywhere that does use the site stylesheet.</p></div>') +
           row("degfmt", "Degrees",
-            'Applies to the chart report. The standalone visualisation pages (Ayanāṃśa, ' +
+            'Applies to the chart report and to the visual dashboard, which redraws ' +
+            'itself when you change it. The standalone visualisation pages (Ayanāṃśa, ' +
             'the labs, Divisions) each format their own figures to suit their own scale ' +
             'and are <b>not</b> changed by this — thirteen different formatters exist ' +
-            'across the site and they round differently on purpose.') +
+            'across the site and they round differently on purpose. Where a page does ' +
+            'follow it, its own rounding is kept, so the default setting prints exactly ' +
+            'the figures that page has always printed.') +
           /* NO "rectification cautions" ROW, deliberately, though the store and
              the data-caution attribute below support one. The site's birth-time
              caveats are not standalone notes: they are clauses inside

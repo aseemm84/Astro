@@ -2567,21 +2567,48 @@ span.gldig.node{background:#5a5e7812;border-left-color:#8a8ea6}
 .elwho b{color:var(--text,#20233a)}
 .elwhy,.elharness{font-size:.8rem;color:var(--muted-2,#5a5e78)}
 
-/* ===== the master settings overlay =======================================
+/* The master settings overlay's styles live in css/settings.css, which
+   build.py concatenates into this bundle. They were duplicated here and
+   in app.css, and the adopted pages that load neither had no panel at all
+   as a result. One copy now, reaching every page. */
+
+/* a rectification caution, hidden when the reader has said the birth time is
+   approximate and they do not need telling again. Only notes carrying .krect
+   are affected; the setting claims no more than that. */
+html[data-caution="off"] .krect{display:none}
+
+/* ===== the master settings overlay ======================================
+   THE ONE COPY. This used to be duplicated verbatim in app.css and pages.css,
+   and the dashboard — an adopted standalone page that loads neither — had no
+   panel at all because of it. build.py now concatenates this file into both
+   bundles and inlines it into the adopted pages, so the panel has one set of
+   styles reaching every page that carries it.
+
    Tokens with literal fallbacks, and ink always from var(--text): a hardcoded
    ink over a tinted surface measures 1.4:1 on the emerald palette, which is
    the trap this project has hit six times. No class here is defined anywhere
-   else. */
+   else.
+
+   The print rule lives in this stanza rather than in each bundle's distant
+   print block: the panel is a CONTROL, never part of the document, and it is
+   fixed-position at z-index 9999, so printing with it open laid the whole
+   overlay across the report and took the PDF from 1.5 MB to 7.1 MB on the
+   backdrop alone. Splitting a selector's rules across two stanzas is how one
+   gets lost. .nsopen is named too, for the floating mount that sits outside
+   nav and so escapes the bundles' own print blocks. */
 .nsopen{margin-left:auto;font:inherit;font-size:13px;cursor:pointer;
   background:var(--surface-2,#f4f4f7);color:var(--text,#1c1c22);
   border:1px solid var(--border,#d8d8e6);border-radius:6px;padding:4px 10px}
 .nsopen:hover{background:var(--surface-3,#eaeaf2)}
 .nsover[hidden]{display:none}
-/* The panel is a CONTROL, never part of the document. Fixed-position at
-   z-index 9999, so printing with it open laid it across the whole page. Kept
-   beside the panel's own styles rather than in a distant print block, because
-   splitting them is how a rule gets lost. This stanza is duplicated in
-   app.css — change both. */
+/* The panel is a CONTROL, never part of the document. It is fixed-position at
+   z-index 9999, so printing with it open laid it across the whole report and
+   took the PDF from 1.5 MB to 7.1 MB on the backdrop alone. The other
+   furniture is hidden in the print block near the top of this file; this rule
+   sits here instead, beside the panel's own styles, because splitting them is
+   how a rule gets lost. .nsopen mounts inside nav.site, which that print
+   block already hides, but it is named here too in case the mount falls back
+   to the floating position, which is outside nav. */
 @media print{.nsover,.nsopen{display:none!important}}
 .nsover{position:fixed;inset:0;z-index:9999;display:flex;align-items:flex-start;
   justify-content:center;padding:24px 16px;overflow:auto}
@@ -2618,11 +2645,6 @@ span.gldig.node{background:#5a5e7812;border-left-color:#8a8ea6}
 .nsfootnote{flex:1 1 22ch;margin:0}
 @media (max-width:520px){.nspanel{max-width:none}.nsover{padding:0}
   .nspanel{border-radius:0;min-height:100%}}
-
-/* a rectification caution, hidden when the reader has said the birth time is
-   approximate and they do not need telling again. Only notes carrying .krect
-   are affected; the setting claims no more than that. */
-html[data-caution="off"] .krect{display:none}
 
 /* ===== Generated theme overrides =====================================
    Written by source/tools/gen-theme-overrides.py from the literal

@@ -58,17 +58,34 @@ for (const f of PAGES) {
   await pg.close();
 }
 
-/* the one documented exclusion, stated as a fact about that page */
+/* THE EXCLUSION IS GONE. This block used to assert the opposite — that
+   dashboard.html had no panel, "documented exclusion" — because the page is a
+   standalone document that loads no site.js and no CSS bundle. That was a
+   limitation recorded as an expectation, and when the limitation was fixed
+   this assertion is what noticed. build.py now inlines css/settings.css and
+   js/settings.js into the adopted pages, so the panel reaches them while they
+   keep working as single files.
+
+   What must still hold is the standalone property itself: ZERO external
+   scripts. If the panel ever arrives as <script src=>, these pages stop
+   working when opened straight off the filesystem, which is the whole reason
+   they exist as single files. The dashboard's behaviour with the panel is
+   checked further down, after the engine-page checks. */
 {
   const pg2 = await br.newPage();
   await pg2.goto("file://" + CWD + "/dashboard.html");
   await pg2.waitForTimeout(800);
   const d = await pg2.evaluate(() => ({
     scripts: document.querySelectorAll("script[src]").length,
+    links: document.querySelectorAll('link[rel="stylesheet"]').length,
     ns: !!window.NSettings
   }));
-  is(d.scripts === 0 && !d.ns,
-    "dashboard.html is standalone — no external scripts, so no panel (documented exclusion)");
+  is(d.scripts === 0,
+    "dashboard.html still loads NO external scripts — it must work from file://");
+  is(d.links === 0,
+    "and no external stylesheets either, for the same reason");
+  is(d.ns === true,
+    "and it now has the settings panel anyway, inlined at build time");
   await pg2.close();
 }
 
@@ -324,6 +341,118 @@ await pg.evaluate(() => { window.NSettings.set({ house: "whole" }); });
 await pg.waitForTimeout(4000);
 const backT = await shot();
 is(backT.d1 === preT.d1, "switching back restores the whole-sign chart exactly");
+
+/* ---- the adopted pages: the dashboard ----------------------------------
+   dashboard.html is a standalone document that loads no site.js and no CSS
+   bundle, so for a while it was the ONE page with no settings panel at all —
+   the settings reached every page built from a shell and stopped at the four
+   adopted ones. build.py now inlines css/settings.css and js/settings.js into
+   them.
+
+   It is also a pure RENDERER: it displays a chart cast elsewhere and
+   recomputes nothing. So the casting rows must be frozen there rather than
+   offered, because a bhāva-frame picker that changed a stored key and not one
+   pixel of the chart in front of you is "a switch that visibly does nothing" —
+   which the degfmt note in settings.js refuses on this project's behalf. */
+head("The dashboard, which renders a chart it did not compute");
+{
+  const dk = await br.newPage();
+  await dk.goto("file://" + CWD + "/kundli.html");
+  await dk.waitForFunction(() => window.buildLocalChart, null, { timeout: 40000 });
+  /* cast under SRIPATI so the frozen note has something to disagree with */
+  const payload = await dk.evaluate(() => JSON.stringify(window.buildLocalChart({
+    year: 1990, month: 3, day: 15, hour: 10, minute: 30,
+    lat: 28.6139, lon: 77.2090, tzHours: 5.5, houseSystem: "sripati" })));
+  await dk.close();
+
+  const dp = await br.newPage();
+  dp.on("pageerror", (e) => errs.push("dashboard: " + e));
+  await dp.addInitScript((p) => {
+    try { localStorage.setItem("learnhoro.chart", p); } catch (e) {}
+  }, payload);
+  await dp.goto("file://" + CWD + "/dashboard.html");
+  await dp.waitForTimeout(5000);
+
+  const base = await dp.evaluate(() => ({
+    cards: document.querySelectorAll(".card").length,
+    btn: !!document.querySelector(".nsopen"),
+    mount: (() => { const b = document.querySelector(".nsopen");
+      return b && b.parentElement ? b.parentElement.className : ""; })(),
+    api: typeof window.NSettings,
+    echarts: typeof window.echarts,
+  }));
+  is(base.cards > 20, "the dashboard still renders its chart (" + base.cards + " cards)");
+  is(base.echarts === "object", "ECharts is intact — the inlined panel did not displace it");
+  is(base.api === "object", "NSettings reached the page");
+  is(base.btn === true, "the panel's button is mounted");
+  is(/adchrome-links/.test(base.mount),
+    "and it mounted into the adopted nav strip, not the floating fallback (" +
+    base.mount + ")");
+
+  await dp.evaluate(() => window.NSettings.open());
+  await dp.waitForTimeout(400);
+  const rows = await dp.evaluate(() =>
+    [...document.querySelectorAll(".nsover .nsrow")].map((x) => ({
+      label: (x.querySelector("label") || {}).textContent || "",
+      select: !!x.querySelector("select"),
+      note: ((x.querySelector(".nsnote") || {}).textContent || "").replace(/\s+/g, " "),
+    })));
+  const byLabel = (t) => rows.filter((r) => r.label.indexOf(t) === 0)[0];
+  ["Ayanāṃśa", "Bhāva frame", "Lunar nodes", "Sunrise"].forEach((lab) => {
+    const r = byLabel(lab);
+    is(!!r && r.select === false, lab + " is FROZEN here, not a picker");
+    is(!!r && /did not compute/.test(r.note), lab + " says why it is frozen");
+  });
+  is(!!byLabel("Degrees") && byLabel("Degrees").select === true,
+    "Degrees IS offered here, because this page honours it");
+  /* The palette row must be frozen too, and this is the one that bit back.
+     theme.js was inlined here at one point so the Presentation slot would
+     fill; the picker appeared, set data-theme, and changed nothing, because
+     the token overrides are in theme.css which these pages do not load. Worse,
+     dashboard.html runs its OWN light/dark system on the same attribute, with
+     its own button that restyles the ECharts instances, so a stored site
+     palette would have fought it. */
+  is(!!byLabel("Palette") && byLabel("Palette").select === false,
+    "Palette is frozen here — no dead picker");
+  is(/carries its own styling/.test((byLabel("Palette") || {}).note || ""),
+    "and says the page carries its own styling");
+  is(await dp.evaluate(() => document.querySelectorAll(".themepick").length) === 0,
+    "no theme picker is mounted on an adopted page at all");
+  is(await dp.evaluate(() => typeof window.NTheme) === "undefined",
+    "theme.js is NOT inlined here, which is what keeps the two systems apart");
+  /* the frozen note must name what the chart was really cast with, which is
+     the fact a reader on a renderer actually needs */
+  is(/cast with sripati/.test((byLabel("Bhāva frame") || {}).note || ""),
+    "and the bhāva row names the chart's own frame (sripati) beside the stored one");
+  is(await dp.evaluate(() => !/\[object Object\]/.test(document.body.innerText)),
+    "no [object Object] anywhere — house_system is an object, and .mode is shown");
+
+  /* Degrees must actually redraw the page, not just store a value. */
+  const fig = () => dp.evaluate(() => {
+    const t = document.body.innerText;
+    return { sec: (t.match(/\d+°\d{2}′\d{2}″/g) || []).length,
+             dec: (t.match(/\d+\.\d{4}°/g) || []).length };
+  });
+  const f0 = await fig();
+  await dp.evaluate(() => window.NSettings.set({ degfmt: "dms" }));
+  await dp.waitForTimeout(2500);
+  const f1 = await fig();
+  is(f1.sec > f0.sec + 5,
+    "setting Degrees to d/m/s redraws the dashboard with seconds (" +
+    f0.sec + " → " + f1.sec + ")");
+  await dp.evaluate(() => window.NSettings.set({ degfmt: "dec" }));
+  await dp.waitForTimeout(2500);
+  const f2 = await fig();
+  is(f2.dec > f0.dec + 5,
+    "and to decimal degrees likewise (" + f0.dec + " → " + f2.dec + ")");
+  await dp.evaluate(() => window.NSettings.set({ degfmt: "dm" }));
+  await dp.waitForTimeout(2500);
+  const f3 = await fig();
+  is(f3.sec === f0.sec && f3.dec === f0.dec,
+    "and switching back restores the original figures exactly — this page's own " +
+    "rounding is preserved on the default setting");
+  await dp.close();
+}
 
 /* ---- the panel must not print ------------------------------------------
    It is fixed-position furniture at z-index 9999, so with it open the print

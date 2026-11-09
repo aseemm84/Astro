@@ -435,7 +435,21 @@ const fmtD=j=>isNum(j)?jd2date(j).toLocaleDateString("en-GB",{day:"numeric",mont
 const fmtMY=j=>isNum(j)?jd2date(j).toLocaleDateString("en-GB",{month:"short",year:"numeric",timeZone:"UTC"}):"";
 const fmtDT=j=>isNum(j)?jd2date(j).toLocaleString("en-GB",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",timeZone:"UTC"})+" UTC":"";
 const NOWJD=()=>Date.now()/864e5+2440587.5;
-const dms=x=>{if(!isNum(x))return"";let d=Math.floor(x),m=Math.round((x-d)*60);if(m===60){d++;m=0}return `${d}°${String(m).padStart(2,"0")}′`};
+/* Degrees follow the master Degrees setting, and THE DEFAULT BRANCH IS THE
+   ORIGINAL EXPRESSION, character for character — including its Math.round on
+   the minutes, where the report's own dm() uses Math.floor. Thirteen degree
+   formatters exist across this site and they round differently on purpose, so
+   this one keeps its own rounding and merely gains the finer forms. Every
+   figure this page has ever printed is unchanged on the default setting; only
+   "dms" and "dec" are new. Read rather than cached, so a re-render picks up a
+   change with no further wiring. */
+const degFmtNow=()=>{try{const S=window.NSettings&&window.NSettings.get();return (S&&S.degfmt)||"dm"}catch(e){return "dm"}};
+const dms=x=>{if(!isNum(x))return"";const f=degFmtNow();
+  if(f==="dec")return (Math.round(x*1e4)/1e4).toFixed(4)+"°";
+  if(f==="dms"){let d=Math.floor(x),mf=(x-d)*60,m=Math.floor(mf),s=Math.round((mf-m)*60);
+    if(s===60){s=0;m++}if(m===60){m=0;d++}
+    return `${d}°${String(m).padStart(2,"0")}′${String(s).padStart(2,"0")}″`}
+  let d=Math.floor(x),m=Math.round((x-d)*60);if(m===60){d++;m=0}return `${d}°${String(m).padStart(2,"0")}′`};
 const lonTxt=l=>isNum(l)?`${SIGNS[Math.floor(((l%360)+360)%360/30)]} ${dms(((l%30)+30)%30)}`:"";
 const hrs=x=>{if(!isNum(x))return"";const H=Math.floor(x),M=Math.round((x-H)*60);return `${String(H+(M===60?1:0)).padStart(2,"0")}:${String(M%60).padStart(2,"0")}`};
 const ord=n=>isNum(n)?n+(["th","st","nd","rd"][(n%100>10&&n%100<14)?0:(n%10<4?n%10:0)]||"th"):"";
@@ -1503,10 +1517,36 @@ function printDashboard(){
     },900);
   },1200);
 }
+/* The payload is kept so the page can re-render itself. It arrives through
+   localStorage, which the reader below CLEARS as soon as it has it (so a
+   reload does not resurrect a chart the reader has moved on from), and that
+   left nothing to re-render from when a presentation setting changed. */
+let LAST_DATA=null;
 function render(data){
+  LAST_DATA=data;
   CHARTS.forEach(r=>r.c.dispose());CHARTS.length=0;SECTIONS.length=0;
   const app=$("#app");app.innerHTML="";
   const N=normalise(data);N_=N;
+  /* Tell the settings panel what THIS chart was cast with. The panel freezes
+     the casting rows on a page with no engine, and on a renderer the useful
+     fact is the convention in force for the chart in front of you, which need
+     not be the one sitting in the store. */
+  try{
+    const d=data||{},i=d.input||{},cv=d.derived&&d.derived.conventions;
+    window.__nsCastWith={
+      ayan:d.ayanamsa_name||d.ayanamsa_mode||i.ayanamsa||null,
+      node:d.node_mode||i.node||null,
+      /* house_system is a TOP-LEVEL key of the payload and an OBJECT, not a
+         string — taking it whole printed "[object Object]" in the panel. Its
+         .mode ("whole" / "sripati") is the field to show, because the panel
+         sets it beside the stored setting, which uses those same words. */
+      house:(function(){
+        var hs=d.house_system||(cv&&cv.house_system)||(d.conventions&&d.conventions.house_system);
+        if(!hs) return null;
+        return typeof hs==="string"? hs : (hs.mode||hs.name||null);
+      })(),
+      riseconv:i.riseconv||null};
+  }catch(e){}
   document.title=`${N.name}: Janma Kundali`;
   app.append(renderHeader(N));
   const nav=h("nav",{class:"nav","aria-label":"Sections"});nav.append(h("div",{class:"wrap"}));app.append(nav);
@@ -1548,6 +1588,28 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>retheme
     }catch(e){ /* fall through to the drop target */ }
     showLoader();return}
   try{render(JSON.parse(raw))}catch(e){showLoader("The embedded data could not be read: "+e.message)}})();
+
+/* RE-RENDER WHEN A PRESENTATION SETTING CHANGES. Without this the Degrees
+   picker in the master panel would store a value and leave every figure on
+   the page as it was until a reload — and a reload has nothing to reload
+   from, because the payload is cleared from localStorage once read. A control
+   that visibly does nothing is the thing this project refuses to ship, so the
+   setting either acts here or should not be offered here.
+   Only the settings this page can actually honour trigger a redraw: the
+   casting rows are frozen in the panel on this page, and render() is
+   idempotent by construction — it disposes the ECharts instances, resets
+   CHARTS and SECTIONS and empties #app before rebuilding. */
+(function(){
+  let seen=null;
+  try{ const S=window.NSettings&&window.NSettings.get(); seen=S?S.degfmt:null; }catch(e){}
+  window.addEventListener("nirayana:settings",function(){
+    let now=null;
+    try{ const S=window.NSettings&&window.NSettings.get(); now=S?S.degfmt:null; }catch(e){}
+    if(now===seen) return;            /* theme and the rest need no redraw */
+    seen=now;
+    if(LAST_DATA) { try{ render(LAST_DATA); }catch(e){} }
+  });
+})();
 
 </script>
 </body>

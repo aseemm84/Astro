@@ -1234,11 +1234,35 @@ html[data-theme] .kreport .kappnote{color:var(--text-soft)}
 html[data-theme] .kreport .kaycur{color:var(--accent)}
 html[data-theme] .kreport .kaysw{box-shadow:0 0 0 1px rgba(255,255,255,.28)}
 
-/* ===== the master settings overlay =======================================
+/* The master settings overlay's styles live in css/settings.css, which
+   build.py concatenates into this bundle. They were duplicated here and
+   in the other bundle, and the adopted pages that load neither had no
+   panel at all as a result. One copy now, reaching every page. */
+
+/* a rectification caution, hidden when the reader has said the birth time is
+   approximate and they do not need telling again. Only notes carrying .krect
+   are affected; the setting claims no more than that. */
+html[data-caution="off"] .krect{display:none}
+
+/* ===== the master settings overlay ======================================
+   THE ONE COPY. This used to be duplicated verbatim in app.css and pages.css,
+   and the dashboard — an adopted standalone page that loads neither — had no
+   panel at all because of it. build.py now concatenates this file into both
+   bundles and inlines it into the adopted pages, so the panel has one set of
+   styles reaching every page that carries it.
+
    Tokens with literal fallbacks, and ink always from var(--text): a hardcoded
    ink over a tinted surface measures 1.4:1 on the emerald palette, which is
    the trap this project has hit six times. No class here is defined anywhere
-   else. */
+   else.
+
+   The print rule lives in this stanza rather than in each bundle's distant
+   print block: the panel is a CONTROL, never part of the document, and it is
+   fixed-position at z-index 9999, so printing with it open laid the whole
+   overlay across the report and took the PDF from 1.5 MB to 7.1 MB on the
+   backdrop alone. Splitting a selector's rules across two stanzas is how one
+   gets lost. .nsopen is named too, for the floating mount that sits outside
+   nav and so escapes the bundles' own print blocks. */
 .nsopen{margin-left:auto;font:inherit;font-size:13px;cursor:pointer;
   background:var(--surface-2,#f4f4f7);color:var(--text,#1c1c22);
   border:1px solid var(--border,#d8d8e6);border-radius:6px;padding:4px 10px}
@@ -1288,11 +1312,6 @@ html[data-theme] .kreport .kaysw{box-shadow:0 0 0 1px rgba(255,255,255,.28)}
 .nsfootnote{flex:1 1 22ch;margin:0}
 @media (max-width:520px){.nspanel{max-width:none}.nsover{padding:0}
   .nspanel{border-radius:0;min-height:100%}}
-
-/* a rectification caution, hidden when the reader has said the birth time is
-   approximate and they do not need telling again. Only notes carrying .krect
-   are affected; the setting claims no more than that. */
-html[data-caution="off"] .krect{display:none}
 
 /* ===== Generated theme overrides =====================================
    Written by source/tools/gen-theme-overrides.py from the literal
@@ -2555,7 +2574,7 @@ html[data-theme="emerald"] .wsnext.lead{
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-11-09.734a205";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself — of forty-four in all. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html" class="active">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
+</script><script>window.__kBuild="2026-11-09.2ed38f9";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself — of forty-four in all. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html" class="active">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
 
 <p class="mochartbar" id="mo-chart"></p>
 <div id="mo-host" class="kreport"><p class="k-status" id="mo-status">Loading the scenes…</p></div>

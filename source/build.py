@@ -197,6 +197,7 @@ def build_kundli():
     shell = shell.replace("{{NAV}}", nav_html("kundli.html"))
     shell = brandify(shell).replace("<!--LOGO-->", logo_mark())
     parts = [("<!--CSS-->", read(SRC, "css", "app.css") + "\n" +
+                            read(SRC, "css", "settings.css") + "\n" +
                             read(SRC, "css", "theme-auto.css") + "\n" +
                             read(SRC, "css", "theme.css") + "\n" +
                             read(SRC, "css", "cosmos.css"), "style"),
@@ -258,6 +259,7 @@ def build_motion():
     shell = shell.replace("{{FOOTER}}", read(SRC, "pages", "_footer.html"))
     shell = brandify(shell).replace("<!--LOGO-->", logo_mark())
     parts = [("<!--CSS-->", read(SRC, "css", "app.css") + "\n" +
+                            read(SRC, "css", "settings.css") + "\n" +
                             read(SRC, "css", "theme-auto.css") + "\n" +
                             read(SRC, "css", "theme.css") + "\n" +
                             read(SRC, "css", "cosmos.css"), "style"),
@@ -305,6 +307,7 @@ def build_ceremony():
     shell = shell.replace("{{FOOTER}}", read(SRC, "pages", "_footer.html"))
     shell = brandify(shell).replace("<!--LOGO-->", logo_mark())
     parts = [("<!--CSS-->", read(SRC, "css", "app.css") + "\n" +
+                            read(SRC, "css", "settings.css") + "\n" +
                             read(SRC, "css", "theme-auto.css") + "\n" +
                             read(SRC, "css", "theme.css") + "\n" +
                             read(SRC, "css", "cosmos.css"), "style"),
@@ -355,6 +358,7 @@ def build_workstation():
     shell = shell.replace("{{FOOTER}}", read(SRC, "pages", "_footer.html"))
     shell = brandify(shell).replace("<!--LOGO-->", logo_mark())
     parts = [("<!--CSS-->", read(SRC, "css", "app.css") + "\n" +
+                            read(SRC, "css", "settings.css") + "\n" +
                             read(SRC, "css", "theme-auto.css") + "\n" +
                             read(SRC, "css", "theme.css") + "\n" +
                             read(SRC, "css", "cosmos.css"), "style"),
@@ -502,7 +506,45 @@ def build_adopted():
             raise SystemExit("adopted page %s: <body> is %d chars after </head>, "
                              "which is too far to trust" % (name, m.start() - h - 7))
         i = m.end()
-        out[name] = brandify(text[:i] + "\n" + strip + text[i:])
+        # THE MASTER SETTINGS PANEL, inlined rather than linked. These pages
+        # load no site.js and no CSS bundle, which is why the dashboard was for
+        # a while the one page with no panel at all: the settings reached every
+        # page built from a shell and stopped at the four adopted ones.
+        #
+        # Inlined, not <script src=>, for the same reason the nav strip above is
+        # self-contained — these pages must keep working as single files opened
+        # straight off the filesystem. css/settings.css is the ONE copy of the
+        # panel's styles (both bundles concatenate the same file), so inlining
+        # it here adds no third copy to drift.
+        #
+        # settings.js needs no change to work here: its mount falls back from
+        # nav.site to "nav.adchrome .adchrome-links", which the strip provides.
+        # window.__ayanModes is absent on these pages, so the casting rows
+        # render FROZEN with a note rather than as pickers that would store a
+        # value the page can never apply — see frozenRow() in settings.js.
+        # theme.js is DELIBERATELY NOT INLINED HERE, and the reason is worth
+        # keeping. It was tried: the panel's Presentation row is a slot that
+        # NTheme.mountInto fills, so without theme.js the row shows a note and
+        # no control, which looks like an omission. Inlining it produced a
+        # working-looking picker that changed nothing, because the
+        # html[data-theme="..."] token overrides live in theme.css, which these
+        # pages do not load — they carry their own styling, which is why they
+        # are adopted rather than built from a shell.
+        #
+        # Worse, it would have COLLIDED. dashboard.html has its own theme
+        # system on the very same attribute — data-theme="light"/"dark", with
+        # its own "Switch theme" button that also calls rethemeCharts() to
+        # restyle the ECharts instances. The site's values are a different set
+        # entirely (midnight, peetambari, paper, emerald). A stored site theme
+        # applied on load would leave the page's own light/dark switch fighting
+        # an attribute it did not set.
+        #
+        # So the panel renders its Presentation row frozen on these pages, the
+        # same way it freezes the casting rows. settings.js does that by
+        # checking for window.NTheme.
+        panel = ("<style>\n" + read(SRC, "css", "settings.css") + "\n</style>\n"
+                 "<script>\n" + read(SRC, "js", "settings.js") + "\n</script>\n")
+        out[name] = brandify(text[:i] + "\n" + strip + panel + text[i:])
     return out
 
 
@@ -860,6 +902,7 @@ def build_pages():
     # ones in theme.css, which have the same specificity, win where the two
     # name the same selector.
     css    = (read(SRC, "css", "pages.css") + "\n" +
+              read(SRC, "css", "settings.css") + "\n" +
               read(SRC, "css", "theme-auto.css") + "\n" +
               read(SRC, "css", "theme.css"))
     themejs = read(SRC, "js", "theme.js")
