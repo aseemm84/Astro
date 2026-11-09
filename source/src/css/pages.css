@@ -2546,3 +2546,54 @@ span.gldig.node{background:#5a5e7812;border-left-color:#8a8ea6}
   font-size:.8rem;color:var(--muted-2,#5a5e78)}
 .elwho b{color:var(--text,#20233a)}
 .elwhy,.elharness{font-size:.8rem;color:var(--muted-2,#5a5e78)}
+
+/* ===== the master settings overlay =======================================
+   Tokens with literal fallbacks, and ink always from var(--text): a hardcoded
+   ink over a tinted surface measures 1.4:1 on the emerald palette, which is
+   the trap this project has hit six times. No class here is defined anywhere
+   else. */
+.nsopen{margin-left:auto;font:inherit;font-size:13px;cursor:pointer;
+  background:var(--surface-2,#f4f4f7);color:var(--text,#1c1c22);
+  border:1px solid var(--border,#d8d8e6);border-radius:6px;padding:4px 10px}
+.nsopen:hover{background:var(--surface-3,#eaeaf2)}
+.nsover[hidden]{display:none}
+.nsover{position:fixed;inset:0;z-index:9999;display:flex;align-items:flex-start;
+  justify-content:center;padding:24px 16px;overflow:auto}
+.nsback{position:fixed;inset:0;background:rgba(10,10,16,.55)}
+.nspanel{position:relative;width:100%;max-width:62ch;
+  background:var(--surface,#fff);color:var(--text,#1c1c22);
+  border:1px solid var(--border,#d8d8e6);border-radius:12px;
+  box-shadow:0 18px 50px rgba(0,0,0,.28)}
+.nshead{display:flex;align-items:center;gap:12px;padding:14px 18px;
+  border-bottom:1px solid var(--border,#d8d8e6)}
+.nshead h2{margin:0;font-size:17px;color:var(--text-strong,#111)}
+.nsx{margin-left:auto;font-size:22px;line-height:1;cursor:pointer;
+  background:none;border:0;color:var(--text-soft,#555);padding:0 4px}
+.nsx:hover{color:var(--text,#1c1c22)}
+.nsbody{padding:14px 18px 18px}
+.nsbody h3{margin:18px 0 6px;font-size:13px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--text-soft,#555)}
+.nsbody h3:first-of-type{margin-top:6px}
+.nslede{margin:0 0 4px}
+.nsrow{margin:0 0 14px}
+.nsrow label,.nsrow .themepickl{display:block;font-weight:600;font-size:13.5px;
+  margin-bottom:4px;color:var(--text,#1c1c22)}
+.nsrow select{width:100%;font:inherit;font-size:13.5px;padding:5px 7px;
+  background:var(--surface,#fff);color:var(--text,#1c1c22);
+  border:1px solid var(--border,#d8d8e6);border-radius:6px}
+.nsnote{margin:4px 0 0;font-size:12.5px;line-height:1.5;color:var(--text-soft,#555)}
+.nsrow .themepick{display:block}
+.nsfoot{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  margin-top:18px;padding-top:14px;border-top:1px solid var(--border,#d8d8e6)}
+.nsbtn{font:inherit;font-size:13px;cursor:pointer;padding:5px 11px;
+  background:var(--surface-2,#f4f4f7);color:var(--text,#1c1c22);
+  border:1px solid var(--border,#d8d8e6);border-radius:6px}
+.nsbtn:hover{background:var(--surface-3,#eaeaf2)}
+.nsfootnote{flex:1 1 22ch;margin:0}
+@media (max-width:520px){.nspanel{max-width:none}.nsover{padding:0}
+  .nspanel{border-radius:0;min-height:100%}}
+
+/* a rectification caution, hidden when the reader has said the birth time is
+   approximate and they do not need telling again. Only notes carrying .krect
+   are affected; the setting claims no more than that. */
+html[data-caution="off"] .krect{display:none}

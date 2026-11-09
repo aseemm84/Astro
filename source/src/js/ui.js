@@ -378,6 +378,32 @@
      Siddhānta readings arrived, because those differ by degrees and the strip
      would have been naming the wrong convention for the chart on screen.
      The name comes from the engine's own table, so it cannot drift from it. */
+  /* The re-cast offer. Rendered into #k-recast, created on demand just under
+     the conventions strip, and removed as soon as there is nothing to say —
+     a stale offer is worse than none, because it describes a chart that is no
+     longer on screen. */
+  function kRecastOffer(diff,orig){
+    var host=$("k-recast");
+    if(!diff||!diff.length){ if(host) host.remove(); return; }
+    if(!host){
+      host=document.createElement("div");
+      host.id="k-recast"; host.className="k-err";
+      var anchor=$("k-conv");
+      if(anchor&&anchor.parentNode) anchor.parentNode.insertBefore(host,anchor.nextSibling);
+      else { var o=$("k-out"); if(o&&o.parentNode) o.parentNode.insertBefore(host,o); else return; }
+    }
+    host.innerHTML="<b>This chart was cast with different settings.</b> "+
+      "Your site settings have been applied instead: "+
+      diff.map(function(d){ return esc(d.label)+" <b>"+esc(d.was)+"</b> → <b>"+esc(d.now)+"</b>"; })
+          .join("; ")+". "+
+      '<button type="button" class="nsbtn" id="k-recast-keep">Use the settings it was cast with</button>';
+    var btn=$("k-recast-keep");
+    if(btn) btn.addEventListener("click",function(){
+      Object.keys(orig).forEach(function(id){ var el=$(id); if(el) el.value=orig[id]; });
+      host.remove(); convStrip();
+      var go=$("k-go"); if(go) go.click();
+    });
+  }
   function convStrip(){
     var el=$("k-conv"); if(!el) return;
     var sel=($("k-ayan")&&$("k-ayan").value)||"lahiri";
@@ -441,6 +467,27 @@
   try{ fillAyanPicker(); }catch(e){}
   if($("k-ayan")) $("k-ayan").addEventListener("change",convStrip);
   if($("k-house")) $("k-house").addEventListener("change",convStrip);
+  /* the master panel is the other way in: when it changes, the form follows */
+  try{
+    window.addEventListener("nirayana:settings",function(ev){
+      var S=(ev&&ev.detail&&ev.detail.settings)||null; if(!S) return;
+      if($("k-ayan")&&S.ayan) $("k-ayan").value=S.ayan;
+      if($("k-house")&&S.house) $("k-house").value=S.house;
+      if($("k-node")&&S.node) $("k-node").value=S.node;
+      var st=$("k-recast"); if(st) st.remove();
+      convStrip();
+    });
+  }catch(e){}
+  /* and on first load the master decides the form, since nothing has been
+     cast yet and the panel must not be describing a state the form denies */
+  try{
+    var M0=(window.NSettings&&window.NSettings.get)?window.NSettings.get():null;
+    if(M0){
+      if($("k-ayan")&&M0.ayan) $("k-ayan").value=M0.ayan;
+      if($("k-house")&&M0.house) $("k-house").value=M0.house;
+      if($("k-node")&&M0.node) $("k-node").value=M0.node;
+    }
+  }catch(e){}
   convStrip();
 
   /* ------------------------------------------------------------------ here & now ---
@@ -763,7 +810,13 @@
     /* `learnhoro` is the file-format marker, not branding. It stays spelled this
        way through any rename: change it and every chart already saved to disk
        stops opening. applyChart() below reads the same key. */
+    /* houseSystem goes in the file. Without it a saved chart reopens under
+       whatever frame the site happens to be set to and the re-cast offer has
+       nothing to compare against — the chart would quietly change meaning
+       with no way to get the original back, which is the exact failure the
+       offer exists to prevent. */
     var mini={learnhoro:1, name:($("k-name").value||"").trim()||null,
+      houseSystem:($("k-house")&&$("k-house").value)||"whole",
       year:+d[0], month:+d[1], day:+d[2], hour:+tp[0], minute:+tp[1],
       lat:+$("k-lat").value, lon:+$("k-lon").value, tzHours:+$("k-tz").value,
       place:(function(){   /* the searched city if there was one, else the dropdown choice */
@@ -791,9 +844,30 @@
     $("k-dob").value=i.year+"-"+String(i.month).padStart(2,"0")+"-"+String(i.day).padStart(2,"0");
     $("k-tob").value=String(i.hour).padStart(2,"0")+":"+String(i.minute).padStart(2,"0");
     $("k-lat").value=i.lat; $("k-lon").value=i.lon; $("k-tz").value=i.tzHours;
-    if($("k-ayan")&&i.ayanamsa) $("k-ayan").value=i.ayanamsa;
-    if($("k-house")&&i.houseSystem) $("k-house").value=i.houseSystem;
-    if($("k-node")&&i.node) $("k-node").value=i.node;
+    /* The master settings win, and a chart cast differently is OFFERED a
+       re-cast rather than silently recomputed or silently left alone. Both
+       silences are wrong in their own direction: honouring the file means the
+       panel is lying about what the site is set to, and overriding it without
+       a word means the same saved chart quietly means something different
+       today than it did yesterday. So: the master applies, and the difference
+       is put on screen with a button that restores what the file was cast
+       with. */
+    (function(){
+      var M=(window.NSettings&&window.NSettings.get)?window.NSettings.get():null;
+      var FIELDS=[["k-ayan","ayanamsa","ayan","ayanāṃśa"],
+                  ["k-house","houseSystem","house","bhāva frame"],
+                  ["k-node","node","node","lunar node"]];
+      var diff=[], orig={};
+      FIELDS.forEach(function(f){
+        var el=$(f[0]); if(!el) return;
+        var was=i[f[1]], want=M?M[f[2]]:was;
+        if(was!=null) orig[f[0]]=was;
+        if(want!=null) el.value=want;
+        if(was!=null&&want!=null&&String(was)!==String(want))
+          diff.push({label:f[3],was:String(was),now:String(want)});
+      });
+      kRecastOffer(diff,orig);
+    })();
     /* Setting .value fires no change event, so the strip has to be told. A
        saved chart or a shared link carries its own ayanāṃśa, and that is
        exactly the case where a stale strip would be most misleading. */
@@ -1074,6 +1148,7 @@
     if(!i||i.year==null||i.lat==null||isNaN(+i.lat)) return false;
     if(!applyChart({learnhoro:1,year:i.year,month:i.month,day:i.day,hour:i.hour,
       minute:i.minute,lat:i.lat,lon:i.lon,tzHours:i.tzHours,ayanamsa:i.ayanamsa,
+      houseSystem:i.houseSystem,
       node:i.node,name:i.name})) return false;
     if(i.place) window.__kplace=i.place;
     if(i.tab) pendingTab=i.tab;
@@ -1082,11 +1157,29 @@
     g.click();
     return true;
   }
-  setTimeout(function(){
+  /* The restore has to run AFTER settings.js, because it asks the master
+     settings which frame and ayanāṃśa to apply. settings.js is concatenated
+     into site.js, which the shell loads with `defer` at the end of <body>,
+     while this file's script sits in <main> — so this ran first, and a
+     setTimeout(0) queued here is NOT guaranteed to come after the remaining
+     deferred scripts. It did not: window.NSettings was undefined, the master
+     silently lost to the file, and the re-cast notice never appeared.
+
+     DOMContentLoaded is guaranteed by the spec to fire after every deferred
+     script has executed, so it is the one ordering that cannot be wrong.
+     (The cleaner long-term shape is theme.js's: a tiny store-only half
+     inlined in <head> and the panel built later. That is a bigger change than
+     this one needs.) */
+  function kAfterScripts(fn){
+    if(document.readyState==="loading")
+      document.addEventListener("DOMContentLoaded",function(){ setTimeout(fn,0); });
+    else setTimeout(fn,0);
+  }
+  kAfterScripts(function(){
     try{
       if(!castFromHash() && !restoreLastChart()) hashReady=true;
     }catch(e){ hashReady=true; }
-  },0);
+  });
 
   /* On a narrow screen the eleven tabs are a sheet behind one trigger rather than a
      strip you have to swipe. Close it on Escape or on a click outside. */

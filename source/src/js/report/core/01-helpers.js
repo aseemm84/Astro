@@ -59,7 +59,36 @@ function chogRun(wd,night){
 try{ window.__chogRun=chogRun; window.__chogGood=CHOG_GOOD; }catch(e){}
 
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
-function dm(x){var d=Math.floor(x),m=Math.floor((x-d)*60);return d+"°"+(m<10?"0":"")+m+"′";}
+/* The report's degree formatter, and the only one the Degrees setting
+   reaches. Thirteen formatters exist across the site; the others belong to
+   standalone visualisation pages, round differently on purpose, and are left
+   alone rather than forced into one shape that would change their output.
+   The panel says so in as many words. Reading the setting here rather than
+   caching it means a re-rendered report picks up a change with no wiring. */
+function dmFmt(){
+  try{ var S=window.NSettings&&window.NSettings.get(); return (S&&S.degfmt)||"dm"; }
+  catch(e){ return "dm"; }
+}
+function dm(x){
+  var f=dmFmt();
+  if(f==="dec") return (Math.round(x*1e4)/1e4).toFixed(4)+"°";
+  /* The default branch is the ORIGINAL expression, character for character,
+     including its treatment of negatives: Math.floor(-5.5) is -6, so a
+     latitude of -5.5 prints -6°30′. An earlier version of this "improved"
+     that by taking the absolute value and prefixing a sign, which prints
+     -5°30′ instead — a different number. ecliptic-verify and starwheel-verify
+     both caught it, because ecliptic latitudes are negative. Whatever this
+     convention is, it is the one every published figure was computed with,
+     and a formatting setting is not licence to change it. */
+  var d=Math.floor(x),m=Math.floor((x-d)*60);
+  if(f==="dms"){
+    var sec=Math.round(((x-d)*60-m)*60);
+    if(sec===60){sec=0;m++;}
+    if(m===60){m=0;d++;}
+    return d+"°"+(m<10?"0":"")+m+"′"+(sec<10?"0":"")+sec+"″";
+  }
+  return d+"°"+(m<10?"0":"")+m+"′";
+}
 function nakOf(deg){var seg=40/3,x=((deg%360)+360)%360,i=Math.min(Math.floor(x/seg),26);
   return {name:NAKS[i],pada:Math.floor((x-i*seg)/(seg/4))+1,lord:NL9[i%9],idx:i};}
 function dignity(pl,sign,deg){

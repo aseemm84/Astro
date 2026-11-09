@@ -74,9 +74,15 @@
   apply(read());
 
   /* ---- the control ------------------------------------------------------ */
-  function mount() {
-    var nav = document.querySelector("nav.site");
-    if (!nav || nav.querySelector(".themepick")) return;
+  /* The theme control now lives inside the master settings panel. It still
+     mounts into nav.site when there is no panel — a page built before the
+     panel existed, or one where settings.js failed to run — so the control
+     cannot disappear. Either way there is exactly ONE .themepick on the page,
+     which is what theme-verify asserts and what keeps two pickers from
+     disagreeing. */
+  function mount(host) {
+    var nav = host || document.querySelector("nav.site");
+    if (!nav || document.querySelector(".themepick")) return;
     var cur = read();
     var wrap = document.createElement("div");
     wrap.className = "themepick";
@@ -113,14 +119,26 @@
     });
   } catch (e) {}
 
+  /* Wrapped, NOT passed directly: mount now takes an optional host element,
+     and addEventListener hands its listener the Event — which arrived as
+     `host`, so nav became the event object and nav.appendChild threw on every
+     page whose theme control had not already been mounted. app-shell-verify
+     caught it on ceremony.html and motion.html. */
   if (document.readyState === "loading")
-    document.addEventListener("DOMContentLoaded", mount);
+    document.addEventListener("DOMContentLoaded", function () { mount(); });
   else mount();
 
   /* `apply` is exported for the desktop app, which follows the OS appearance.
      `set` persists, and a persisted choice stops following; the app needs to
      change the palette without recording a preference the user never made. */
-  window.NTheme = { get: read, apply: apply, set: function (t) {
+  window.NTheme = { get: read, apply: apply, mountInto: function (id) {
+    var h = document.getElementById(id);
+    if (!h) return false;
+    /* move an already-mounted control rather than building a second one */
+    var ex = document.querySelector(".themepick");
+    if (ex) { h.appendChild(ex); return true; }
+    mount(h); return !!h.querySelector(".themepick");
+  }, set: function (t) {
     if (!known(t)) return false; write(t); apply(t);
     var s = document.getElementById("theme-pick"); if (s) s.value = t;
     return true;

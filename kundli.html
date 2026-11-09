@@ -1234,6 +1234,57 @@ html[data-theme] .kreport .kappnote{color:var(--text-soft)}
 html[data-theme] .kreport .kaycur{color:var(--accent)}
 html[data-theme] .kreport .kaysw{box-shadow:0 0 0 1px rgba(255,255,255,.28)}
 
+/* ===== the master settings overlay =======================================
+   Tokens with literal fallbacks, and ink always from var(--text): a hardcoded
+   ink over a tinted surface measures 1.4:1 on the emerald palette, which is
+   the trap this project has hit six times. No class here is defined anywhere
+   else. */
+.nsopen{margin-left:auto;font:inherit;font-size:13px;cursor:pointer;
+  background:var(--surface-2,#f4f4f7);color:var(--text,#1c1c22);
+  border:1px solid var(--border,#d8d8e6);border-radius:6px;padding:4px 10px}
+.nsopen:hover{background:var(--surface-3,#eaeaf2)}
+.nsover[hidden]{display:none}
+.nsover{position:fixed;inset:0;z-index:9999;display:flex;align-items:flex-start;
+  justify-content:center;padding:24px 16px;overflow:auto}
+.nsback{position:fixed;inset:0;background:rgba(10,10,16,.55)}
+.nspanel{position:relative;width:100%;max-width:62ch;
+  background:var(--surface,#fff);color:var(--text,#1c1c22);
+  border:1px solid var(--border,#d8d8e6);border-radius:12px;
+  box-shadow:0 18px 50px rgba(0,0,0,.28)}
+.nshead{display:flex;align-items:center;gap:12px;padding:14px 18px;
+  border-bottom:1px solid var(--border,#d8d8e6)}
+.nshead h2{margin:0;font-size:17px;color:var(--text-strong,#111)}
+.nsx{margin-left:auto;font-size:22px;line-height:1;cursor:pointer;
+  background:none;border:0;color:var(--text-soft,#555);padding:0 4px}
+.nsx:hover{color:var(--text,#1c1c22)}
+.nsbody{padding:14px 18px 18px}
+.nsbody h3{margin:18px 0 6px;font-size:13px;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--text-soft,#555)}
+.nsbody h3:first-of-type{margin-top:6px}
+.nslede{margin:0 0 4px}
+.nsrow{margin:0 0 14px}
+.nsrow label,.nsrow .themepickl{display:block;font-weight:600;font-size:13.5px;
+  margin-bottom:4px;color:var(--text,#1c1c22)}
+.nsrow select{width:100%;font:inherit;font-size:13.5px;padding:5px 7px;
+  background:var(--surface,#fff);color:var(--text,#1c1c22);
+  border:1px solid var(--border,#d8d8e6);border-radius:6px}
+.nsnote{margin:4px 0 0;font-size:12.5px;line-height:1.5;color:var(--text-soft,#555)}
+.nsrow .themepick{display:block}
+.nsfoot{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  margin-top:18px;padding-top:14px;border-top:1px solid var(--border,#d8d8e6)}
+.nsbtn{font:inherit;font-size:13px;cursor:pointer;padding:5px 11px;
+  background:var(--surface-2,#f4f4f7);color:var(--text,#1c1c22);
+  border:1px solid var(--border,#d8d8e6);border-radius:6px}
+.nsbtn:hover{background:var(--surface-3,#eaeaf2)}
+.nsfootnote{flex:1 1 22ch;margin:0}
+@media (max-width:520px){.nspanel{max-width:none}.nsover{padding:0}
+  .nspanel{border-radius:0;min-height:100%}}
+
+/* a rectification caution, hidden when the reader has said the birth time is
+   approximate and they do not need telling again. Only notes carrying .krect
+   are affected; the setting claims no more than that. */
+html[data-caution="off"] .krect{display:none}
+
 /* ===== Generated theme overrides =====================================
    Written by source/tools/gen-theme-overrides.py from the literal
    colours in app.css and pages.css. Do not edit by hand: regenerate.
@@ -2425,9 +2476,15 @@ html[data-theme="emerald"] .wsnext.lead{
   apply(read());
 
   /* ---- the control ------------------------------------------------------ */
-  function mount() {
-    var nav = document.querySelector("nav.site");
-    if (!nav || nav.querySelector(".themepick")) return;
+  /* The theme control now lives inside the master settings panel. It still
+     mounts into nav.site when there is no panel — a page built before the
+     panel existed, or one where settings.js failed to run — so the control
+     cannot disappear. Either way there is exactly ONE .themepick on the page,
+     which is what theme-verify asserts and what keeps two pickers from
+     disagreeing. */
+  function mount(host) {
+    var nav = host || document.querySelector("nav.site");
+    if (!nav || document.querySelector(".themepick")) return;
     var cur = read();
     var wrap = document.createElement("div");
     wrap.className = "themepick";
@@ -2464,20 +2521,32 @@ html[data-theme="emerald"] .wsnext.lead{
     });
   } catch (e) {}
 
+  /* Wrapped, NOT passed directly: mount now takes an optional host element,
+     and addEventListener hands its listener the Event — which arrived as
+     `host`, so nav became the event object and nav.appendChild threw on every
+     page whose theme control had not already been mounted. app-shell-verify
+     caught it on ceremony.html and motion.html. */
   if (document.readyState === "loading")
-    document.addEventListener("DOMContentLoaded", mount);
+    document.addEventListener("DOMContentLoaded", function () { mount(); });
   else mount();
 
   /* `apply` is exported for the desktop app, which follows the OS appearance.
      `set` persists, and a persisted choice stops following; the app needs to
      change the palette without recording a preference the user never made. */
-  window.NTheme = { get: read, apply: apply, set: function (t) {
+  window.NTheme = { get: read, apply: apply, mountInto: function (id) {
+    var h = document.getElementById(id);
+    if (!h) return false;
+    /* move an already-mounted control rather than building a second one */
+    var ex = document.querySelector(".themepick");
+    if (ex) { h.appendChild(ex); return true; }
+    mount(h); return !!h.querySelector(".themepick");
+  }, set: function (t) {
     if (!known(t)) return false; write(t); apply(t);
     var s = document.getElementById("theme-pick"); if (s) s.value = t;
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-11-09.002830d";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Nirayana Kundli 2.0</h1><p class="sub">A full sidereal chart computed in your browser, now with Śrīpati bhāva-chalita as a house system of its own, a year of real transits for any year, and twelve Candra-rāśi readings that need no chart at all.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html" class="active">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#cast">Cast a chart now</a><a href="#gochara">Vārṣika Gochara</a><a href="#rashiphal">Twelve rāśi readings</a><a href="#what">What a kundli is</a><a href="#need">What you need</a><a href="#how">How a chart is cast</a><a href="#read">How to read what comes back</a><a href="#limits">Accuracy, attribution & limits</a></aside><main><p class="lead">A <b>kundli</b> (janma-kundali) is a birth chart: a map of the sky at the exact moment and place of birth, projected onto the twelve bhavas counted from the Lagna. Enter the birth details and the whole chart is computed below, in this browser. Everything after it explains what a chart is and how it is cast.</p><h2 id="cast">Cast a chart now<span class="kdeva">जन्म-कुण्डली</span></h2><p>Everything is computed <b>in your browser</b> — nothing is sent anywhere, and the page works offline.</p>
+</script><script>window.__kBuild="2026-11-09.398c3d3";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Nirayana Kundli 2.0</h1><p class="sub">A full sidereal chart computed in your browser, now with Śrīpati bhāva-chalita as a house system of its own, a year of real transits for any year, and twelve Candra-rāśi readings that need no chart at all.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html" class="active">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#cast">Cast a chart now</a><a href="#gochara">Vārṣika Gochara</a><a href="#rashiphal">Twelve rāśi readings</a><a href="#what">What a kundli is</a><a href="#need">What you need</a><a href="#how">How a chart is cast</a><a href="#read">How to read what comes back</a><a href="#limits">Accuracy, attribution & limits</a></aside><main><p class="lead">A <b>kundli</b> (janma-kundali) is a birth chart: a map of the sky at the exact moment and place of birth, projected onto the twelve bhavas counted from the Lagna. Enter the birth details and the whole chart is computed below, in this browser. Everything after it explains what a chart is and how it is cast.</p><h2 id="cast">Cast a chart now<span class="kdeva">जन्म-कुण्डली</span></h2><p>Everything is computed <b>in your browser</b> — nothing is sent anywhere, and the page works offline.</p>
 <div id="k-inputs">
 <div class="k-form">
   <div class="k-full"><label for="k-name">Name (optional — appears on the report)</label><input type="text" id="k-name" placeholder="e.g. Aseem Mehrotra" autocomplete="off"></div>
@@ -5051,7 +5120,36 @@ function chogRun(wd,night){
 try{ window.__chogRun=chogRun; window.__chogGood=CHOG_GOOD; }catch(e){}
 
 function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
-function dm(x){var d=Math.floor(x),m=Math.floor((x-d)*60);return d+"°"+(m<10?"0":"")+m+"′";}
+/* The report's degree formatter, and the only one the Degrees setting
+   reaches. Thirteen formatters exist across the site; the others belong to
+   standalone visualisation pages, round differently on purpose, and are left
+   alone rather than forced into one shape that would change their output.
+   The panel says so in as many words. Reading the setting here rather than
+   caching it means a re-rendered report picks up a change with no wiring. */
+function dmFmt(){
+  try{ var S=window.NSettings&&window.NSettings.get(); return (S&&S.degfmt)||"dm"; }
+  catch(e){ return "dm"; }
+}
+function dm(x){
+  var f=dmFmt();
+  if(f==="dec") return (Math.round(x*1e4)/1e4).toFixed(4)+"°";
+  /* The default branch is the ORIGINAL expression, character for character,
+     including its treatment of negatives: Math.floor(-5.5) is -6, so a
+     latitude of -5.5 prints -6°30′. An earlier version of this "improved"
+     that by taking the absolute value and prefixing a sign, which prints
+     -5°30′ instead — a different number. ecliptic-verify and starwheel-verify
+     both caught it, because ecliptic latitudes are negative. Whatever this
+     convention is, it is the one every published figure was computed with,
+     and a formatting setting is not licence to change it. */
+  var d=Math.floor(x),m=Math.floor((x-d)*60);
+  if(f==="dms"){
+    var sec=Math.round(((x-d)*60-m)*60);
+    if(sec===60){sec=0;m++;}
+    if(m===60){m=0;d++;}
+    return d+"°"+(m<10?"0":"")+m+"′"+(sec<10?"0":"")+sec+"″";
+  }
+  return d+"°"+(m<10?"0":"")+m+"′";
+}
 function nakOf(deg){var seg=40/3,x=((deg%360)+360)%360,i=Math.min(Math.floor(x/seg),26);
   return {name:NAKS[i],pada:Math.floor((x-i*seg)/(seg/4))+1,lord:NL9[i%9],idx:i};}
 function dignity(pl,sign,deg){
@@ -25736,6 +25834,32 @@ window.buildKundliReport=function(J){
      Siddhānta readings arrived, because those differ by degrees and the strip
      would have been naming the wrong convention for the chart on screen.
      The name comes from the engine's own table, so it cannot drift from it. */
+  /* The re-cast offer. Rendered into #k-recast, created on demand just under
+     the conventions strip, and removed as soon as there is nothing to say —
+     a stale offer is worse than none, because it describes a chart that is no
+     longer on screen. */
+  function kRecastOffer(diff,orig){
+    var host=$("k-recast");
+    if(!diff||!diff.length){ if(host) host.remove(); return; }
+    if(!host){
+      host=document.createElement("div");
+      host.id="k-recast"; host.className="k-err";
+      var anchor=$("k-conv");
+      if(anchor&&anchor.parentNode) anchor.parentNode.insertBefore(host,anchor.nextSibling);
+      else { var o=$("k-out"); if(o&&o.parentNode) o.parentNode.insertBefore(host,o); else return; }
+    }
+    host.innerHTML="<b>This chart was cast with different settings.</b> "+
+      "Your site settings have been applied instead: "+
+      diff.map(function(d){ return esc(d.label)+" <b>"+esc(d.was)+"</b> → <b>"+esc(d.now)+"</b>"; })
+          .join("; ")+". "+
+      '<button type="button" class="nsbtn" id="k-recast-keep">Use the settings it was cast with</button>';
+    var btn=$("k-recast-keep");
+    if(btn) btn.addEventListener("click",function(){
+      Object.keys(orig).forEach(function(id){ var el=$(id); if(el) el.value=orig[id]; });
+      host.remove(); convStrip();
+      var go=$("k-go"); if(go) go.click();
+    });
+  }
   function convStrip(){
     var el=$("k-conv"); if(!el) return;
     var sel=($("k-ayan")&&$("k-ayan").value)||"lahiri";
@@ -25799,6 +25923,27 @@ window.buildKundliReport=function(J){
   try{ fillAyanPicker(); }catch(e){}
   if($("k-ayan")) $("k-ayan").addEventListener("change",convStrip);
   if($("k-house")) $("k-house").addEventListener("change",convStrip);
+  /* the master panel is the other way in: when it changes, the form follows */
+  try{
+    window.addEventListener("nirayana:settings",function(ev){
+      var S=(ev&&ev.detail&&ev.detail.settings)||null; if(!S) return;
+      if($("k-ayan")&&S.ayan) $("k-ayan").value=S.ayan;
+      if($("k-house")&&S.house) $("k-house").value=S.house;
+      if($("k-node")&&S.node) $("k-node").value=S.node;
+      var st=$("k-recast"); if(st) st.remove();
+      convStrip();
+    });
+  }catch(e){}
+  /* and on first load the master decides the form, since nothing has been
+     cast yet and the panel must not be describing a state the form denies */
+  try{
+    var M0=(window.NSettings&&window.NSettings.get)?window.NSettings.get():null;
+    if(M0){
+      if($("k-ayan")&&M0.ayan) $("k-ayan").value=M0.ayan;
+      if($("k-house")&&M0.house) $("k-house").value=M0.house;
+      if($("k-node")&&M0.node) $("k-node").value=M0.node;
+    }
+  }catch(e){}
   convStrip();
 
   /* ------------------------------------------------------------------ here & now ---
@@ -26121,7 +26266,13 @@ window.buildKundliReport=function(J){
     /* `learnhoro` is the file-format marker, not branding. It stays spelled this
        way through any rename: change it and every chart already saved to disk
        stops opening. applyChart() below reads the same key. */
+    /* houseSystem goes in the file. Without it a saved chart reopens under
+       whatever frame the site happens to be set to and the re-cast offer has
+       nothing to compare against — the chart would quietly change meaning
+       with no way to get the original back, which is the exact failure the
+       offer exists to prevent. */
     var mini={learnhoro:1, name:($("k-name").value||"").trim()||null,
+      houseSystem:($("k-house")&&$("k-house").value)||"whole",
       year:+d[0], month:+d[1], day:+d[2], hour:+tp[0], minute:+tp[1],
       lat:+$("k-lat").value, lon:+$("k-lon").value, tzHours:+$("k-tz").value,
       place:(function(){   /* the searched city if there was one, else the dropdown choice */
@@ -26149,9 +26300,30 @@ window.buildKundliReport=function(J){
     $("k-dob").value=i.year+"-"+String(i.month).padStart(2,"0")+"-"+String(i.day).padStart(2,"0");
     $("k-tob").value=String(i.hour).padStart(2,"0")+":"+String(i.minute).padStart(2,"0");
     $("k-lat").value=i.lat; $("k-lon").value=i.lon; $("k-tz").value=i.tzHours;
-    if($("k-ayan")&&i.ayanamsa) $("k-ayan").value=i.ayanamsa;
-    if($("k-house")&&i.houseSystem) $("k-house").value=i.houseSystem;
-    if($("k-node")&&i.node) $("k-node").value=i.node;
+    /* The master settings win, and a chart cast differently is OFFERED a
+       re-cast rather than silently recomputed or silently left alone. Both
+       silences are wrong in their own direction: honouring the file means the
+       panel is lying about what the site is set to, and overriding it without
+       a word means the same saved chart quietly means something different
+       today than it did yesterday. So: the master applies, and the difference
+       is put on screen with a button that restores what the file was cast
+       with. */
+    (function(){
+      var M=(window.NSettings&&window.NSettings.get)?window.NSettings.get():null;
+      var FIELDS=[["k-ayan","ayanamsa","ayan","ayanāṃśa"],
+                  ["k-house","houseSystem","house","bhāva frame"],
+                  ["k-node","node","node","lunar node"]];
+      var diff=[], orig={};
+      FIELDS.forEach(function(f){
+        var el=$(f[0]); if(!el) return;
+        var was=i[f[1]], want=M?M[f[2]]:was;
+        if(was!=null) orig[f[0]]=was;
+        if(want!=null) el.value=want;
+        if(was!=null&&want!=null&&String(was)!==String(want))
+          diff.push({label:f[3],was:String(was),now:String(want)});
+      });
+      kRecastOffer(diff,orig);
+    })();
     /* Setting .value fires no change event, so the strip has to be told. A
        saved chart or a shared link carries its own ayanāṃśa, and that is
        exactly the case where a stale strip would be most misleading. */
@@ -26432,6 +26604,7 @@ window.buildKundliReport=function(J){
     if(!i||i.year==null||i.lat==null||isNaN(+i.lat)) return false;
     if(!applyChart({learnhoro:1,year:i.year,month:i.month,day:i.day,hour:i.hour,
       minute:i.minute,lat:i.lat,lon:i.lon,tzHours:i.tzHours,ayanamsa:i.ayanamsa,
+      houseSystem:i.houseSystem,
       node:i.node,name:i.name})) return false;
     if(i.place) window.__kplace=i.place;
     if(i.tab) pendingTab=i.tab;
@@ -26440,11 +26613,29 @@ window.buildKundliReport=function(J){
     g.click();
     return true;
   }
-  setTimeout(function(){
+  /* The restore has to run AFTER settings.js, because it asks the master
+     settings which frame and ayanāṃśa to apply. settings.js is concatenated
+     into site.js, which the shell loads with `defer` at the end of <body>,
+     while this file's script sits in <main> — so this ran first, and a
+     setTimeout(0) queued here is NOT guaranteed to come after the remaining
+     deferred scripts. It did not: window.NSettings was undefined, the master
+     silently lost to the file, and the re-cast notice never appeared.
+
+     DOMContentLoaded is guaranteed by the spec to fire after every deferred
+     script has executed, so it is the one ordering that cannot be wrong.
+     (The cleaner long-term shape is theme.js's: a tiny store-only half
+     inlined in <head> and the panel built later. That is a bigger change than
+     this one needs.) */
+  function kAfterScripts(fn){
+    if(document.readyState==="loading")
+      document.addEventListener("DOMContentLoaded",function(){ setTimeout(fn,0); });
+    else setTimeout(fn,0);
+  }
+  kAfterScripts(function(){
     try{
       if(!castFromHash() && !restoreLastChart()) hashReady=true;
     }catch(e){ hashReady=true; }
-  },0);
+  });
 
   /* On a narrow screen the eleven tabs are a sheet behind one trigger rather than a
      strip you have to swipe. Close it on Escape or on a click outside. */
@@ -27813,4 +28004,4 @@ window.buildKundliReport=function(J){
 })();
 ;
 </script>
-<h2 id="read">How to read what comes back<span class="kdeva">फल-विवेचन</span></h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits<span class="kdeva">प्रामाणिकता एवं सीमा</span></h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-11-09.002830d</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. There is no second source and no remote option: the engine on this page is the only one, so nothing about a chart leaves the machine it is cast on.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>
+<h2 id="read">How to read what comes back<span class="kdeva">फल-विवेचन</span></h2><ul><li><b>Lagna</b> &rarr; its sign and lord set the whole chart &mdash; take it to <a href="lagna.html">Lagna</a>.</li><li><b>Each graha&rsquo;s dignity</b> (exalted / own / friend / neutral / enemy / debilitated) &rarr; <a href="dignity.html">Dignity</a>.</li><li><b>Each graha&rsquo;s nakshatra &middot; pada</b> &rarr; click it to open the <a href="108-nakshatra-padas.html">108 Padas</a> tool at that pada.</li><li><b>Running period</b> &rarr; the Vimshottari maha/antar in force &mdash; <a href="dashas.html">Dashas</a>.</li><li><b>Vargas, ashtakavarga, yogas, arudhas, karakas, avasthas, ṣaḍbala</b> &rarr; each has its own section in the report, and a matching reference page on this site.</li></ul><div class="mine"><b>Study note.</b> Treat the computed chart as the <i>structure</i> to reason about, and let this site&rsquo;s pages carry the <i>interpretation</i>. That keeps the three-layer discipline intact: the engine gives positions, BPHS gives the method, and any synthesis is labelled as such.</div><h2 id="limits">Accuracy, attribution &amp; limits<span class="kdeva">प्रामाणिकता एवं सीमा</span></h2><p>Positions come from <a href="https://github.com/cosinekitty/astronomy" target="_blank" rel="noopener">astronomy-engine</a> (MIT licence), with the Lahiri ayanāṃśa fitted to Swiss Ephemeris — it reproduces Swiss Ephemeris ayanāṃśa to a hundredth of an arcsecond and planetary longitudes to well under an arcminute, which is far finer than a nakshatra pāda (3°20&prime;) or a D60 amsa (30&prime;). The lagna is computed from sidereal time and lands within about a quarter of an arcminute. Ashtakavarga, the yoga catalogue, ārūḍhas, kārakas, avasthās, Bhayāta/Bhabhoga, ṣaḍbala and the daśā tree are all derived here from those positions using the classical rules this site documents.</p><p>One place is deliberately simplified and labelled where it appears: Nathonnatha is measured from clock noon rather than local apparent noon. Sunrise/sunset uses the Jyotiṣa convention (the Sun&rsquo;s disc centre at the geometric horizon, unrefracted), which reproduces classical pañcāṅga timings and is what Iṣṭakāla, the upagrahas and the special lagnas are measured from. Ārūḍha exception cases follow the rule given on the <a href="special-points.html">Special Points</a> page. Figures with a dotted underline in the report open their own derivation — the inputs, the rule, the arithmetic and the BPHS chapter it comes from — and each panel recomputes the number to confirm it matches. The engine is checked against a fixed suite of reference charts before each release, and the accuracy figures quoted above are the measured results of that checking rather than estimates. This page is build <code class="k-inline">2026-11-09.398c3d3</code> — the build id changes whenever the page&rsquo;s contents change, so you can tell at a glance which version you are looking at. There is no second source and no remote option: the engine on this page is the only one, so nothing about a chart leaves the machine it is cast on.</p><div class="caution"><b>Handle with care.</b> Astrological output is a reflective framework, not a determinant of events. Nothing here predicts health, death, wealth, marriage or misfortune; for any real-life decision, consult a qualified professional in the relevant field.</div></main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script></body></html>

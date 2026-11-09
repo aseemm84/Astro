@@ -597,7 +597,14 @@ def build_shared():
     return {
         "engine.js": (read(VEND, "astronomy.browser.min.js") + "\n" +
                       brandify(jsread(SRC, "js", "engine.js"))),
-        "site.js":   brandify(app_sitejs(jsread(SRC, "js", "site.js"))),
+        # settings.js rides along inside site.js. It is wanted on every page,
+        # and site.js is already referenced by the shell, listed in the app's
+        # file table and precached by the service worker. A separate shared
+        # file would have had to be added to all three by hand, and the one
+        # that gets forgotten is the service worker - which then serves a
+        # previous build's pages against a new build's script.
+        "site.js":   brandify(app_sitejs(jsread(SRC, "js", "site.js") + "\n" +
+                                         jsread(SRC, "js", "settings.js"))),
         # now.html's own script. Referenced rather than inlined for the same reason
         # site.js is: it is wanted on one page and the rest should not carry it.
         "now.js":    brandify(jsread(SRC, "js", "now.js")),
