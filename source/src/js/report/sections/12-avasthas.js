@@ -554,7 +554,10 @@ function bhavaBalaSection(D,J){
     var h=((q.house-1+o)%12)+1; (aspBy[h]=aspBy[h]||[]).push(q.en); }); });
   var BEN=["Jupiter","Venus","Mercury","Moon"];
   for(var h=1;h<=12;h++){
-    var sg=(D.LS+h-1)%12, lord=LORD[sg], lp=byP[lord];
+    /* the bhāva's rāśi, and so its lord and its directional strength, must
+       follow the frame — this was hardcoded whole-sign while the Ṣaḍbala it
+       sums already followed it */
+    var sg=D.bhavaSign(h), lord=LORD[sg], lp=byP[lord];
     var adhip=lp?lp.total_virupa:0;
     var dig= (HUMAN.indexOf(sg)>=0 && [1,2,3,4].indexOf(h)>=0) ? 60 :
              (QUAD.indexOf(sg)>=0 && [10].indexOf(h)>=0) ? 60 :

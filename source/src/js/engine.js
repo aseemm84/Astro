@@ -1262,6 +1262,11 @@ function bhavaFrame(lagSid, mcSid){
       },
       lordOfHouse: function(h){ return LORD[(LS + h - 1) % 12]; },
       signOfHouse: function(h){ return (LS + h - 1) % 12; },
+      /* the bhāva's midpoint in longitude. Under whole-sign a house "begins"
+         at its rāśi, so the point Dig Bala measures from is the lagna carried
+         round in 30° steps — which is what the Dig Bala code computed inline
+         before the frame existed. */
+      madhyaOf: function(h){ return norm(lagSid + (h - 1) * 30); },
       /* the rāśi a house's madhya falls in — the same thing as signOfHouse
          under whole-sign, which is why lordOfHouse agrees with the old
          arithmetic exactly */
@@ -1279,6 +1284,7 @@ function bhavaFrame(lagSid, mcSid){
     houseOfLon: function(sid){ return S.houseOf(norm(sid)); },
     madhyaSignOfHouse: function(h){ return Math.floor(norm(S.madhya[h]) / 30) % 12; },
     lordOfHouse: function(h){ return LORD[Math.floor(norm(S.madhya[h]) / 30) % 12]; },
+    madhyaOf: function(h){ return norm(S.madhya[h]); },
     /* the rāśi a house is "in" for display: the madhya's, for the same
        reason lordship uses it */
     signOfHouse: function(h){ return Math.floor(norm(S.madhya[h]) / 30) % 12; }
@@ -1341,7 +1347,16 @@ function shadbala(ctx){
       var vs=vargaSign(v,sid), d=digOf(p,vs,null);
       if(d==="exalted"||d==="moolatrikona"||d==="own") sapta+=SB_VAL[d==="own"?"own":"exalted"];
       else { var lord=LORD[vs];
-        sapta += (lord===p)?SB_VAL.own:SB_VAL[sbCompound(p,lord,h,houseOf[lord]||h,natFriend)]; }
+        /* The tātkālika half of the pañcadhā relation is reckoned by RĀŚI
+           distance, not by bhāva — a graha in the 2nd, 3rd, 4th, 10th, 11th
+           or 12th rāśi from another is its temporary friend. This passed the
+           HOUSE indices, which was the same number while house was the rāśi
+           offset and became wrong the moment the frame could be Śrīpati: it
+           moved Saptavargaja Bala, and so Sthāna and the Ṣaḍbala total, for
+           grahas whose rāśi had not changed at all. sbCompound only uses the
+           difference, so rāśi indices give exactly the classical reckoning. */
+        sapta += (lord===p)?SB_VAL.own
+          :SB_VAL[sbCompound(p,lord,sg,(signOf[lord]==null?sg:signOf[lord]),natFriend)]; }
     });
     var oddSign=(sg%2===0), navSign=vargaSign("D9",sid), oddNav=(navSign%2===0);
     var wantOdd=(SB_FEM.indexOf(p)<0);
@@ -1352,7 +1367,13 @@ function shadbala(ctx){
                   (drek===2&&SB_NEU.indexOf(p)>=0))?15:0;
     var sthana=uchcha+sapta+ojha+kendradi+drekBala;
     // --- Dig ---
-    var strongCusp=(SB_DIG[p]-1)*30+lagSid, weak=(strongCusp+180)%360;
+    /* Dig Bala is measured from the cusp of the bhāva a graha is strongest
+       in — the 1st, 4th, 7th or 10th. That was written inline as
+       lagna + (n−1)×30, which IS the bhāva midpoint under whole-sign and is
+       not under Śrīpati, where the quadrants are unequal and the 10th sits at
+       the meridian rather than 270° from the lagna. Asking the frame keeps
+       the default identical and makes the Śrīpati reading honest. */
+    var strongCusp=FR.madhyaOf(SB_DIG[p]), weak=(strongCusp+180)%360;
     var dd=Math.abs(((sid-weak)%360+360)%360); if(dd>180)dd=360-dd;
     var dig=dd/3;
     // --- Kala ---
@@ -1365,7 +1386,20 @@ function shadbala(ctx){
     if(p===varshaLord)lordBala+=15; if(p===masaLord)lordBala+=30;
     if(p===DAYLORD[weekday])lordBala+=45; if(p===horaLord)lordBala+=60;
     var dsign=(p==="Moon"||p==="Saturn")?-1:1;
-    var ayana=60*(24+dsign*(decl[p]||0))/48; if(p==="Sun")ayana*=2;
+    /* Ayana Bala — BPHS Vol. 1, Ch. 27, vv. 15–17. The sage's Khanda method
+       (45/33/12) is summarised in the translator's note as the closed form
+       (23°27' ± Kranti) × 1.2793, where 1.2793 = 60 / (2 × 23°27'): the half
+       range is the obliquity, so the value is 30 virupas at zero declination,
+       a full rupa at maximum favourable declination and nil at maximum
+       adverse declination. This used to read 60*(24+decl)/48, whose half
+       range of 24° is not the obliquity — it returned 59.3 instead of a full
+       rupa at one extreme and 0.7 instead of nil at the other. We use the
+       obliquity OF DATE rather than the note's fixed 23°27' because ctx.decl
+       is itself computed with the true obliquity, so the two now agree
+       exactly at the extremes. Max |difference| from the old constant is
+       0.70 virupa (1.40 for the Sun, whose Ayana Bala is doubled). */
+    var Tay=Tof(jd), OBL=23.439291111-0.0130041667*Tay-1.638e-7*Tay*Tay;
+    var ayana=60*(OBL+dsign*(decl[p]||0))/(2*OBL); if(p==="Sun")ayana*=2;
     ayana=Math.max(0,Math.min(p==="Sun"?120:60,ayana));
     var kala=nath+paksha+tribhaga+lordBala+ayana;
     // --- Cheshta ---
