@@ -196,8 +196,28 @@ function shadbalaSection(D,J){
     'classical definitions directly. Cheṣṭā is measured from each planet\'s arc to its śīghrocca, which needs the '+
     'daily speeds. <b>Dṛk Bala</b> uses the exact Sphuṭa Dṛṣṭi formula of BPHS Ch.&nbsp;26 — the six angular '+
     'rules with the extra allowances for Mars, Jupiter and Saturn — not a whole-sign approximation. The '+
-    'required-rupa minimums are BPHS Ch.&nbsp;27, vv.&nbsp;32–33 verbatim. One part remains simplified: '+
-    '<b>Nathonnatha</b> is measured from clock noon rather than local apparent noon.</div>';
+    'required-rupa minimums are BPHS Ch.&nbsp;27, vv.&nbsp;32–33 verbatim. <b>Ayana Bala</b> is scaled by the '+
+    'obliquity of date, so it reaches a full rupa at maximum favourable declination and nil at maximum adverse '+
+    'declination, as Ch.&nbsp;27, vv.&nbsp;15–17 require. One part remains simplified: '+
+    '<b>Nathonnatha</b> is measured from clock noon rather than local apparent noon.</div>'+
+    '<div class="kbox"><b>One clause of Dṛk Bala is deliberately not applied</b>'+
+    'BPHS Ch.&nbsp;27, v.&nbsp;19 reads: <i>“Reduce one fourth of the Drishti Pinda if a planet has malefic '+
+    'aspects on it and add a fourth if it is aspected by a benefic. Super add the entire aspect of Mercury and '+
+    'Jupiter to get the net strength of a planet.”</i> The quarter rule is applied here in full. The final '+
+    'sentence is not, and that is a judgement rather than an oversight. Its scope is terse, and on both readings '+
+    'we tested — adding Mercury’s and Jupiter’s entire Dṛṣṭi Piṇḍa on top of the quarter, or in place of it — '+
+    'Dṛk Bala turns positive for every planet in every chart we checked, which empties the verse’s own first '+
+    'clause of effect, and nearly every planet then clears its required minimum, leaving the thresholds of '+
+    'vv.&nbsp;32–33 with nothing to measure. Since those thresholds are themselves part of the text, we keep the '+
+    'unambiguous quarter rule and disclose the omission rather than choose a reading for you. Read the Dṛk '+
+    'column as the quarter rule alone.'+
+    '<br><br><b>Our note on the one-rupa ceiling.</b> The aspectual value is capped at 60 virupas. Ch.&nbsp;26 '+
+    'supports this: the speculum of aspectual values peaks at 45.00 at a 90° aspect and reaches 60 only at the '+
+    'full opposition, and Saturn’s own verses (vv.&nbsp;9–10) compute the 60°–90° range as <i>“the degrees etc. '+
+    '(in excess of 2 signs) be halved and deducted from 60”</i> — descending from 60 to 45, never above one '+
+    'rupa. The <i>translator’s note</i> offers a shortcut, “add 45 virupas to the speculum value” for Saturn, '+
+    'which in that range would yield up to 90. Where the shortcut and the verse disagree, we follow the '+
+    'verse.</div>';
 }
 
 function padaLink(nakName,pada){

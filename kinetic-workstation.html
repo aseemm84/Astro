@@ -2546,7 +2546,7 @@ html[data-theme="emerald"] .wsnext.lead{
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-11-09.e315b75";</script></head><body class="wsbody"><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Kinetic Workstation</h1><p class="sub">One surface for the whole chart: Śrīpati chalita beside whole-sign, a year of real transits, twelve rāśi readings, all sixteen divisions, and the strength and daśā panels — computed in this browser, nothing sent anywhere.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html" class="active">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav>
+</script><script>window.__kBuild="2026-11-09.5eddb0e";</script></head><body class="wsbody"><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Kinetic Workstation</h1><p class="sub">One surface for the whole chart: Śrīpati chalita beside whole-sign, a year of real transits, twelve rāśi readings, all sixteen divisions, and the strength and daśā panels — computed in this browser, nothing sent anywhere.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html" class="active">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav>
 <div class="layout onecol wide"><main>
 
 <section class="wsintake">
@@ -4162,6 +4162,17 @@ function sphutaDrishti(aspector,lonFrom,lonTo){
   if(aspector==="Mars"    && ((d>=90&&d<=120)||(d>=210&&d<=240))) v+=15;
   if(aspector==="Jupiter" && ((d>=120&&d<=150)||(d>=240&&d<=270))) v+=30;
   if(aspector==="Saturn"  && ((d>=60&&d<=90)  ||(d>=270&&d<=300))) v+=45;
+  /* The 60-virupa ceiling is deliberate and the text supports it. Ch. 26's
+     Speculum of Aspectual Values peaks at 45.00 at a 90-degree aspect and
+     reaches 60 only at the full opposition, and Saturn's own verses (Ch. 26,
+     vv. 9-10) compute the 60-90 range as "the degrees etc. (in excess of 2
+     signs) be halved and deducted from 60" — descending from 60 to 45, never
+     above one rupa. The three special allowances above come from the
+     TRANSLATOR'S NOTE, which offers "add 45 virupas to the speculum value"
+     for Saturn as a shortcut; in that range the shortcut would yield up to
+     90, contradicting the verse it summarises. Where the two disagree we
+     follow the verse, so the clamp is what keeps the shortcut inside the
+     one-rupa ceiling rather than an arbitrary guard. */
   return Math.max(0,Math.min(60,v));
 }
 /* ===== THE BHĀVA FRAME ====================================================
@@ -4361,6 +4372,27 @@ function shadbala(ctx){
     else cheshta=Math.max(0,Math.min(60,(cheshtaK[p]||0)/3));
     // --- Naisargika & Drik ---
     var nais=SB_NAIS[p];
+    /* Drik Bala — BPHS Vol. 1, Ch. 27, v. 19: "Reduce one fourth of the
+       Drishti Pinda if a planet has malefic aspects on it and add a fourth if
+       it is aspected by a benefic. Super add the entire aspect of Mercury and
+       Jupiter to get the net strength of a planet."
+     *
+     * THE QUARTER RULE IS APPLIED. THE SUPER-ADD CLAUSE IS DELIBERATELY NOT,
+     * and this is a decision on record, not an oversight — please do not
+     * "fix" it without reading claude/bala-and-virupa-audit.md first.
+     *
+     * Both readings were implemented and measured on the reference charts:
+     * adding Mercury's and Jupiter's entire Drishti Pinda ON TOP of the
+     * quarter, and adding it IN PLACE of the quarter. Under either, Drik Bala
+     * came out positive for every graha in every chart tested (Sun -11.9 ->
+     * +36.6, Moon -13.2 -> +79.0 on the 1990 reference), which empties the
+     * verse's own first clause of any effect, and nearly every graha then
+     * cleared its required minimum, which would leave the thresholds of
+     * vv. 32-33 with nothing to measure. Those thresholds are themselves
+     * source data, so a reading that voids them is in tension with the text.
+     * The clause is terse and its scope is genuinely unclear, so rather than
+     * pick a reading silently we keep the unambiguous part and DISCLOSE the
+     * omission in the report's Shadbala section. */
     var drik=0;
     names.concat(["Rahu","Ketu"]).forEach(function(q){ if(q===p||!P[q])return;
       var v=sphutaDrishti(q,P[q].sid,P[p].sid);
@@ -6363,8 +6395,28 @@ function shadbalaSection(D,J){
     'classical definitions directly. Cheṣṭā is measured from each planet\'s arc to its śīghrocca, which needs the '+
     'daily speeds. <b>Dṛk Bala</b> uses the exact Sphuṭa Dṛṣṭi formula of BPHS Ch.&nbsp;26 — the six angular '+
     'rules with the extra allowances for Mars, Jupiter and Saturn — not a whole-sign approximation. The '+
-    'required-rupa minimums are BPHS Ch.&nbsp;27, vv.&nbsp;32–33 verbatim. One part remains simplified: '+
-    '<b>Nathonnatha</b> is measured from clock noon rather than local apparent noon.</div>';
+    'required-rupa minimums are BPHS Ch.&nbsp;27, vv.&nbsp;32–33 verbatim. <b>Ayana Bala</b> is scaled by the '+
+    'obliquity of date, so it reaches a full rupa at maximum favourable declination and nil at maximum adverse '+
+    'declination, as Ch.&nbsp;27, vv.&nbsp;15–17 require. One part remains simplified: '+
+    '<b>Nathonnatha</b> is measured from clock noon rather than local apparent noon.</div>'+
+    '<div class="kbox"><b>One clause of Dṛk Bala is deliberately not applied</b>'+
+    'BPHS Ch.&nbsp;27, v.&nbsp;19 reads: <i>“Reduce one fourth of the Drishti Pinda if a planet has malefic '+
+    'aspects on it and add a fourth if it is aspected by a benefic. Super add the entire aspect of Mercury and '+
+    'Jupiter to get the net strength of a planet.”</i> The quarter rule is applied here in full. The final '+
+    'sentence is not, and that is a judgement rather than an oversight. Its scope is terse, and on both readings '+
+    'we tested — adding Mercury’s and Jupiter’s entire Dṛṣṭi Piṇḍa on top of the quarter, or in place of it — '+
+    'Dṛk Bala turns positive for every planet in every chart we checked, which empties the verse’s own first '+
+    'clause of effect, and nearly every planet then clears its required minimum, leaving the thresholds of '+
+    'vv.&nbsp;32–33 with nothing to measure. Since those thresholds are themselves part of the text, we keep the '+
+    'unambiguous quarter rule and disclose the omission rather than choose a reading for you. Read the Dṛk '+
+    'column as the quarter rule alone.'+
+    '<br><br><b>Our note on the one-rupa ceiling.</b> The aspectual value is capped at 60 virupas. Ch.&nbsp;26 '+
+    'supports this: the speculum of aspectual values peaks at 45.00 at a 90° aspect and reaches 60 only at the '+
+    'full opposition, and Saturn’s own verses (vv.&nbsp;9–10) compute the 60°–90° range as <i>“the degrees etc. '+
+    '(in excess of 2 signs) be halved and deducted from 60”</i> — descending from 60 to 45, never above one '+
+    'rupa. The <i>translator’s note</i> offers a shortcut, “add 45 virupas to the speculum value” for Saturn, '+
+    'which in that range would yield up to 90. Where the shortcut and the verse disagree, we follow the '+
+    'verse.</div>';
 }
 
 function padaLink(nakName,pada){

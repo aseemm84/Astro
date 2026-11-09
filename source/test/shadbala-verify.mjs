@@ -178,6 +178,72 @@ is(G.some((p) => Math.abs(S[p].dig - W[p].dig) > 1e-6),
 G.forEach((p) => is(S[p].dig >= 0 && S[p].dig <= 60,
   p + " sripati dig still within [0,60]"));
 
+/* ---- the two Drik Bala decisions, pinned ------------------------------ */
+head("Drik Bala keeps the quarter rule only — Ch. 27, v. 19 (decision on record)");
+const DK = await pg.evaluate(() => {
+  const D = window.buildLocalChart({ year: 1990, month: 3, day: 15, hour: 10, minute: 30,
+    lat: 28.6139, lon: 77.2090, tzHours: 5.5, houseSystem: "whole" });
+  const sid = {}; (D.grahas || []).forEach((g) => { sid[g.key] = g.sidereal_deg; });
+  const K = { Sun: "Sūrya", Moon: "Candra", Mars: "Maṅgala", Mercury: "Budha",
+              Jupiter: "Guru", Venus: "Śukra", Saturn: "Śani",
+              Rahu: "Rāhu", Ketu: "Ketu" };
+  const sph = (asp, a, b) => { const d = ((b - a) % 360 + 360) % 360; let v = 0;
+    if (d > 30 && d <= 60) v = (d - 30) / 2; else if (d > 60 && d <= 90) v = (d - 60) + 15;
+    else if (d > 90 && d <= 120) v = (120 - d) / 2 + 30; else if (d > 120 && d <= 150) v = 150 - d;
+    else if (d > 150 && d <= 180) v = (d - 150) * 2; else if (d > 180 && d < 300) v = (300 - d) / 2;
+    if (asp === "Mars" && ((d >= 90 && d <= 120) || (d >= 210 && d <= 240))) v += 15;
+    if (asp === "Jupiter" && ((d >= 120 && d <= 150) || (d >= 240 && d <= 270))) v += 30;
+    if (asp === "Saturn" && ((d >= 60 && d <= 90) || (d >= 270 && d <= 300))) v += 45;
+    return Math.max(0, Math.min(60, v)); };
+  const BEN = ["Jupiter", "Venus", "Mercury", "Moon"];
+  const G = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn"];
+  const sb = {}; ((D.shadbala && D.shadbala.planets) || []).forEach((x) => { sb[x.graha] = x.drik; });
+  const o = {};
+  G.forEach((p) => {
+    let q = 0, mj = 0;
+    G.concat(["Rahu", "Ketu"]).forEach((x) => {
+      if (x === p || sid[K[x]] == null) return;
+      const v = sph(x, sid[K[x]], sid[K[p]]); if (!v) return;
+      q += (BEN.indexOf(x) >= 0 ? v : -v) / 4;
+      if (x === "Mercury" || x === "Jupiter") mj += v;
+    });
+    o[p] = { engine: sb[p], quarter: q, superAdd: q + mj, inPlace: q + mj * 0.75 };
+  });
+  return o;
+});
+G.forEach((p) => near(DK[p].engine, DK[p].quarter, 1e-6,
+  p + " drik is the quarter rule exactly"));
+G.forEach((p) => {
+  if (Math.abs(DK[p].superAdd - DK[p].quarter) < 0.05) return;  // no Me/Ju aspect to speak of
+  is(Math.abs(DK[p].engine - DK[p].superAdd) > 0.05,
+    p + " drik is NOT quarter + entire Mercury/Jupiter (" + DK[p].superAdd.toFixed(2) + ")");
+  is(Math.abs(DK[p].engine - DK[p].inPlace) > 0.05,
+    p + " drik is NOT entire-in-place-of-quarter (" + DK[p].inPlace.toFixed(2) + ")");
+});
+is(G.some((p) => DK[p].engine < 0),
+  "at least one graha has NEGATIVE drik — malefic aspects still reduce strength, " +
+  "which is the property both super-add readings destroyed");
+
+head("aspectual value ceiling — Ch. 26 speculum peaks at 45 at 90deg, 60 at opposition");
+const SP = await pg.evaluate(() => {
+  const sph = (asp, d) => { let v = 0;
+    if (d > 30 && d <= 60) v = (d - 30) / 2; else if (d > 60 && d <= 90) v = (d - 60) + 15;
+    else if (d > 90 && d <= 120) v = (120 - d) / 2 + 30; else if (d > 120 && d <= 150) v = 150 - d;
+    else if (d > 150 && d <= 180) v = (d - 150) * 2; else if (d > 180 && d < 300) v = (300 - d) / 2;
+    if (asp === "Saturn" && ((d >= 60 && d <= 90) || (d >= 270 && d <= 300))) v += 45;
+    return Math.max(0, Math.min(60, v)); };
+  return { at90: sph("Venus", 90), at180: sph("Venus", 180), at150: sph("Venus", 150),
+           at120: sph("Venus", 120), at60: sph("Venus", 60),
+           sat90: sph("Saturn", 90), sat60: sph("Saturn", 60) };
+});
+near(SP.at60, 15, 1e-9, "speculum gives 15.00 at 60deg");
+near(SP.at90, 45, 1e-9, "speculum peaks at 45.00 at 90deg");
+near(SP.at120, 30, 1e-9, "speculum gives 30.00 at 120deg");
+near(SP.at150, 0, 1e-9, "speculum gives nil at 150deg");
+near(SP.at180, 60, 1e-9, "speculum gives a full rupa at the opposition");
+is(SP.sat90 === 60, "Saturn's allowance is held at one rupa at 90deg, not the shortcut's 90");
+is(SP.sat60 === 60, "Saturn at 60deg reaches one rupa, matching vv. 9-10's descent from 60");
+
 head("kendradi follows the frame — Ch. 27, v. 5 (angle / succedent / cadent)");
 is(G.some((p) => Math.abs(S[p].kendradi - W[p].kendradi) > 1e-6),
   "at least one graha's kendradi moves under Sripati");

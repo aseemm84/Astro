@@ -1209,6 +1209,17 @@ function sphutaDrishti(aspector,lonFrom,lonTo){
   if(aspector==="Mars"    && ((d>=90&&d<=120)||(d>=210&&d<=240))) v+=15;
   if(aspector==="Jupiter" && ((d>=120&&d<=150)||(d>=240&&d<=270))) v+=30;
   if(aspector==="Saturn"  && ((d>=60&&d<=90)  ||(d>=270&&d<=300))) v+=45;
+  /* The 60-virupa ceiling is deliberate and the text supports it. Ch. 26's
+     Speculum of Aspectual Values peaks at 45.00 at a 90-degree aspect and
+     reaches 60 only at the full opposition, and Saturn's own verses (Ch. 26,
+     vv. 9-10) compute the 60-90 range as "the degrees etc. (in excess of 2
+     signs) be halved and deducted from 60" — descending from 60 to 45, never
+     above one rupa. The three special allowances above come from the
+     TRANSLATOR'S NOTE, which offers "add 45 virupas to the speculum value"
+     for Saturn as a shortcut; in that range the shortcut would yield up to
+     90, contradicting the verse it summarises. Where the two disagree we
+     follow the verse, so the clamp is what keeps the shortcut inside the
+     one-rupa ceiling rather than an arbitrary guard. */
   return Math.max(0,Math.min(60,v));
 }
 /* ===== THE BHĀVA FRAME ====================================================
@@ -1408,6 +1419,27 @@ function shadbala(ctx){
     else cheshta=Math.max(0,Math.min(60,(cheshtaK[p]||0)/3));
     // --- Naisargika & Drik ---
     var nais=SB_NAIS[p];
+    /* Drik Bala — BPHS Vol. 1, Ch. 27, v. 19: "Reduce one fourth of the
+       Drishti Pinda if a planet has malefic aspects on it and add a fourth if
+       it is aspected by a benefic. Super add the entire aspect of Mercury and
+       Jupiter to get the net strength of a planet."
+     *
+     * THE QUARTER RULE IS APPLIED. THE SUPER-ADD CLAUSE IS DELIBERATELY NOT,
+     * and this is a decision on record, not an oversight — please do not
+     * "fix" it without reading claude/bala-and-virupa-audit.md first.
+     *
+     * Both readings were implemented and measured on the reference charts:
+     * adding Mercury's and Jupiter's entire Drishti Pinda ON TOP of the
+     * quarter, and adding it IN PLACE of the quarter. Under either, Drik Bala
+     * came out positive for every graha in every chart tested (Sun -11.9 ->
+     * +36.6, Moon -13.2 -> +79.0 on the 1990 reference), which empties the
+     * verse's own first clause of any effect, and nearly every graha then
+     * cleared its required minimum, which would leave the thresholds of
+     * vv. 32-33 with nothing to measure. Those thresholds are themselves
+     * source data, so a reading that voids them is in tension with the text.
+     * The clause is terse and its scope is genuinely unclear, so rather than
+     * pick a reading silently we keep the unambiguous part and DISCLOSE the
+     * omission in the report's Shadbala section. */
     var drik=0;
     names.concat(["Rahu","Ketu"]).forEach(function(q){ if(q===p||!P[q])return;
       var v=sphutaDrishti(q,P[q].sid,P[p].sid);
