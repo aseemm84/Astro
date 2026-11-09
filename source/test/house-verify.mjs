@@ -227,6 +227,39 @@ const st = await pg.evaluate(() => {
 is(st.a === "sripati" && st.b === "sripati", "setting sripati sticks and reads back");
 is(st.c === "whole" && st.d === "whole", "an unknown mode falls to whole-sign rather than throwing");
 
+/* ---- 7. the Śrīpati comparison pane must not follow the toggle ---------
+   This pane exists to contrast the two frames, so its whole-sign column has
+   to stay whole-sign whatever frame the chart was cast in. It read p.house,
+   which WAS whole-sign until the frame became selectable — after which
+   choosing Śrīpati made `whole` equal `sripati`, so nothing ever "moved", the
+   chart captioned Whole-sign drew Śrīpati placements, and the shift report
+   announced perfect agreement between the two systems it compares. Shipped in
+   3ac961f and found only by looking at the rendered page. */
+head("The Śrīpati comparison pane is frame-independent");
+const pane = await pg.evaluate(() => {
+  const inp = { year: 1975, month: 1, day: 9, hour: 3, minute: 20,
+                lat: 59.9139, lon: 10.7522, tzHours: 1 };
+  const grab = (hs) => {
+    const J = window.buildLocalChart(Object.assign({}, inp, { houseSystem: hs }));
+    const d = document.createElement("div");
+    d.innerHTML = window.buildKundliReport(J);
+    const figs = [...d.querySelectorAll(".kchartfig")];
+    const byCap = (re) => {
+      const f = figs.filter((x) => re.test((x.querySelector("figcaption") || {}).textContent || ""))[0];
+      return f ? [...f.querySelectorAll("text")].map((t) => t.textContent).join(",") : null;
+    };
+    return { whole: byCap(/^Whole-sign/), srip: byCap(/^Śrīpati bhāva-chalita/) };
+  };
+  return { w: grab("whole"), s: grab("sripati") };
+});
+is(pane.w.whole && pane.s.whole && pane.w.whole === pane.s.whole,
+  "the pane's Whole-sign chart is identical whichever frame the chart was cast in");
+is(pane.w.srip && pane.s.srip && pane.w.srip === pane.s.srip,
+  "and so is its Śrīpati chart");
+is(pane.w.whole !== pane.w.srip,
+  "and the two charts differ from each other — if they agree, the pane is " +
+  "comparing a frame with itself and has nothing to report");
+
 is(errs.length === 0, "no page errors" + (errs.length ? ": " + errs.join(" | ") : ""));
 await br.close();
 

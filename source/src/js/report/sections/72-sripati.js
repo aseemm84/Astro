@@ -140,7 +140,16 @@
     (D.planets || []).forEach(function (p) {
       var pl = S.place(p.sid);
       var cs = S.cuspStrength(p.sid);
-      var whole = p.house;
+      /* Computed from the RĀŚI, never from p.house. This pane's whole job is
+         to contrast the two frames, so its whole-sign column has to be
+         whole-sign whatever frame the chart was cast in. It used to read
+         p.house, which was whole-sign back when that was the only option —
+         and the moment the frame became selectable that made `whole` equal
+         `sripati` whenever Śrīpati was chosen: nothing ever "moved", the
+         chart captioned Whole-sign drew Śrīpati placements, and the shift
+         report announced perfect agreement between two systems it was
+         supposed to be comparing. */
+      var whole = ((p.sign - LS) % 12 + 12) % 12 + 1;
       var row = { body: p.en, lon: p.sid, sign: p.sign, retro: !!p.retro,
                   sripati: pl.house, whole: whole,
                   moved: pl.house !== whole,

@@ -33,10 +33,37 @@ window.buildKundliReport=function(J){
   H.push(sec("Dhūmādi upagrahas","the five Sun-derived points",dhumadiSection(D)));
 
   // charts
-  var d1s=function(h){return (LS+h-1)%12;},
-      d1o=function(h){var a=[];D.planets.forEach(function(p){if(p.house===h)a.push(GL[p.en]+(p.retro?"℞":""));});if(h===1)a.unshift("Lg");return a;};
+  /* The house LABELS have to follow the frame too. d1o below places each
+     graha by p.house, which already follows it — so with a hardcoded
+     (LS+h-1)%12 here the chart drew Budha into its Śrīpati house while
+     labelling that box with the rāśi whole-sign says is third. The diagram
+     contradicted itself, and the prose beside it was right. This is why the
+     toggle looked as though it were not working: the numbers moved, the
+     picture did not. */
+  var d1s=function(h){return D.bhavaSign(h);},
+      d1o=function(h){var a=[],bs=D.bhavaSign(h);
+        D.planets.forEach(function(p){ if(p.house!==h) return;
+          /* under an unequal frame a graha in bhāva h need not be in bhāva h's
+             rāśi; say which rāśi it is in rather than let the box imply it */
+          a.push(GL[p.en]+(p.retro?"℞":"")+(p.sign!==bs?" "+SA[p.sign].slice(0,3):"")); });
+        if(h===1)a.unshift("Lg");return a;};
   var smap={};D.planets.forEach(function(p){(smap[p.sign]=smap[p.sign]||[]).push(GL[p.en]+(p.retro?"℞":""));});
-  var chartsHtml='<div class="kcharts">'+northChart(d1s,d1o,"Rāśi (D1) — North Indian","houses fixed")+
+  /* THE NORTH CHART IS NOT A RĀŚI CHART UNDER ŚRĪPATI, and calling it one is
+     what made the toggle look broken. d1o places each graha by p.house; with
+     whole-sign that is the same thing as placing it by rāśi, so the chart was
+     a rāśi chart and the title was true. Under Śrīpati it becomes a bhāva
+     chalita chart — a graha sits in the bhāva it occupies, which may not be
+     the rāśi the box is labelled with. Drawing that and titling it "Rāśi
+     (D1)" blends two readings into one picture and invites the reader to
+     think Budha is in Dhanus when it is in Makara.
+     So the title follows the frame, and each graha carries its own rāśi when
+     that differs from the bhāva's. The South chart is keyed on p.sign, so it
+     is a rāśi chart under either frame and its title stays true. */
+  var chalita=(D.houseSystem&&D.houseSystem.mode==="sripati");
+  var d1Title=chalita?"Bhāva Chalita (Śrīpati) — North Indian":"Rāśi (D1) — North Indian";
+  var d1Sub=chalita?"grahas by bhāva; a graha's own rāśi is shown where it differs"
+                   :"houses fixed";
+  var chartsHtml='<div class="kcharts">'+northChart(d1s,d1o,d1Title,d1Sub)+
      southChart(smap,LS,"Rāśi (D1) — South Indian","signs fixed");
   if(D.d9){var nlag=Math.floor(((D.lagna.sidereal_deg%360)+360)%360/(30/9))%12;
     chartsHtml+=northChart(function(h){return (nlag+h-1)%12;},
@@ -79,10 +106,10 @@ window.buildKundliReport=function(J){
   // ashtakavarga
   if(D.av&&D.av.bhinna){
     var body='<p class="knote">Sarvāṣṭakavarga per house. Above 30 is well-supported, 25–29 average, below 25 under-supported.</p>'+savChart(D);
-    var hd='<th>Graha</th>';for(var h=1;h<=12;h++)hd+='<th>'+SA[(LS+h-1)%12].slice(0,4)+'<br><span class="kthin">H'+h+'</span></th>';
+    var hd='<th>Graha</th>';for(var h=1;h<=12;h++)hd+='<th>'+SA[D.bhavaSign(h)].slice(0,4)+'<br><span class="kthin">H'+h+'</span></th>';
     hd+='<th>Total</th>';
     var brows=D.av.bhinna.map(function(b){
-      var c='';for(var h=1;h<=12;h++){var sg=(LS+h-1)%12,v=b.bindus[sg],a=(v-1)/6;
+      var c='';for(var h=1;h<=12;h++){var sg=D.bhavaSign(h),v=b.bindus[sg],a=(v-1)/6;
         var bg=v>=4?"rgba(28,107,70,"+(0.06+a*0.42).toFixed(2)+")":"rgba(161,73,58,"+(0.06+(4-v)/3*0.3).toFixed(2)+")";
         c+='<td class="kb" style="background:'+bg+'">'+v+'</td>';}
       return '<tr><td><b>'+esc(b.graha)+'</b></td>'+c+'<td class="knum"><b>'+b.total+'</b></td></tr>';});
