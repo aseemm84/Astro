@@ -588,9 +588,15 @@ function bhavaBalaSection(D,J){
 }
 function ishtaKashtaSection(D,J){
   var sb=J&&J.shadbala&&J.shadbala.planets; if(!sb) return "";
+  /* These are now taken from the engine, which computes them per paddhati and
+     says which verse each follows. This section used to derive them here as
+     √(u×c) and √((60−u)(60−c)) — Śrīpati's geometric rule — while the prose
+     below credited BPHS for it. See engine.js for the two texts side by side. */
   var rows=sb.slice().sort(function(a,b){return b.uchcha-a.uchcha;}).map(function(p){
-    var ishta=Math.sqrt(Math.max(0,p.uchcha)*Math.max(0,p.cheshta));
-    var kashta=Math.sqrt(Math.max(0,60-p.uchcha)*Math.max(0,60-p.cheshta));
+    var ishta=(p.ishta!=null)?p.ishta
+      :Math.sqrt(Math.max(0,p.uchcha)*Math.max(0,p.cheshta));
+    var kashta=(p.kashta!=null)?p.kashta
+      :Math.sqrt(Math.max(0,60-p.uchcha)*Math.max(0,60-p.cheshta));
     var net=ishta-kashta;
     return '<tr><td><b>'+esc(p.graha)+'</b></td><td class="knum">'+p.uchcha.toFixed(1)+'</td>'+
       '<td class="knum">'+p.cheshta.toFixed(1)+'</td>'+
@@ -598,10 +604,11 @@ function ishtaKashtaSection(D,J){
       '<td class="knum" style="color:var(--sem-bad,#a1493a);font-weight:600">'+kashta.toFixed(1)+'</td>'+
       '<td class="knum" style="color:'+(net>=0?"var(--sem-good,#1c6b46)":"var(--sem-bad,#a1493a)")+'"><b>'+(net>=0?"+":"")+net.toFixed(1)+'</b></td></tr>';
   });
-  return '<p class="knote">From a planet\'s exaltation ray (Uchcha) and motional ray (Cheṣṭā), BPHS derives two '+
+  var ikNote=(J&&J.shadbala&&J.shadbala.ishta_kashta_note)||"";
+  var ikSrc=(sb[0]&&sb[0].ishta_kashta_source)||"BPHS, Vol. 1, Ch. 28, v. 6";
+  return '<p class="knote">From a planet\'s exaltation ray (Uchcha) and motional ray (Cheṣṭā) are derived two '+
     'opposed potencies: <b>Iṣṭa phala</b>, the capacity to give agreeable results, and <b>Kaṣṭa phala</b>, the '+
-    'capacity to give difficult ones. Each is the geometric mean of the two rays — Iṣṭa of the rays themselves, '+
-    'Kaṣṭa of their complements.</p>'+
+    'capacity to give difficult ones. '+esc(ikNote)+' <span class="kmut">Source: '+esc(ikSrc)+'.</span></p>'+
     tbl(["Graha","Uchcha ray","Cheṣṭā ray","Iṣṭa","Kaṣṭa","Net"],rows)+
     '<div class="kbox">A high-Iṣṭa planet tends to bless the matters it touches; a high-Kaṣṭa one tends to '+
     'stress them. Read alongside dignity and Ṣaḍbala, never alone.</div>';

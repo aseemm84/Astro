@@ -1990,7 +1990,17 @@ var SB_NAIS={Sun:60,Moon:51.43,Venus:42.86,Jupiter:34.29,Mercury:25.71,Mars:17.1
 var SB_REQ={Sun:6.5,Moon:6.0,Mars:5.0,Mercury:7.0,Jupiter:6.5,Venus:5.5,Saturn:5.0};
 var SB_DIG={Sun:10,Mars:10,Moon:4,Venus:4,Mercury:1,Jupiter:1,Saturn:7};   // house of maximum dig bala
 var SB_SEVEN=["D1","D2","D3","D7","D9","D12","D30"];
+/* Saptavargaja ladders. THE TWO TRADITIONS GENUINELY DIFFER HERE and the
+ * difference is not a rounding of one into the other.
+ *   BPHS  Ch. 26, vv. 2–4 : 45 / 30 / 20 / 15 / 10 / 4 / 2   (quoted verbatim)
+ *   Śrīpati Adh. 3, śl. 2–3: ¾ ½ ⅜ ¼ ⅛ 1/16 1/32 of a rūpa
+ *                       = 45 / 30 / 22.5 / 15 / 7.5 / 3.75 / 1.875
+ * They agree only at moolatrikona, svakṣetra and mitra. Subrahmanya Sastri
+ * quotes the Parāśara ladder at p.28 and says plainly it is NOT the one he
+ * adopts, so this is a deliberate divergence in the sources, not an error in
+ * either. Neither is "corrected" into the other. */
 var SB_VAL={exalted:45,moolatrikona:45,own:30,greatfriend:20,friend:15,neutral:10,enemy:4,greatenemy:2};
+var SB_VAL_SP={exalted:45,moolatrikona:45,own:30,greatfriend:22.5,friend:15,neutral:7.5,enemy:3.75,greatenemy:1.875};
 var SB_MALE=["Sun","Mars","Jupiter"], SB_FEM=["Moon","Venus"], SB_NEU=["Mercury","Saturn"];
 var SB_NIGHT=["Moon","Mars","Saturn"], SB_DAY=["Sun","Jupiter","Venus"];
 var SB_BEN=["Jupiter","Venus","Mercury","Moon"];
@@ -2185,8 +2195,10 @@ function shadbala(ctx){
            moved Saptavargaja Bala, and so Sthāna and the Ṣaḍbala total, for
            grahas whose rāśi had not changed at all. sbCompound only uses the
            difference, so rāśi indices give exactly the classical reckoning. */
-        sapta += (lord===p)?SB_VAL.own
-          :SB_VAL[sbCompound(p,lord,sg,(signOf[lord]==null?sg:signOf[lord]),natFriend)]; }
+        /* the ladder follows the paddhati, not the house frame — see SB_VAL */
+        var LAD=(FR.mode==="sripati")?SB_VAL_SP:SB_VAL;
+        sapta += (lord===p)?LAD.own
+          :LAD[sbCompound(p,lord,sg,(signOf[lord]==null?sg:signOf[lord]),natFriend)]; }
     });
     var oddSign=(sg%2===0), navSign=vargaSign("D9",sid), oddNav=(navSign%2===0);
     var wantOdd=(SB_FEM.indexOf(p)<0);
@@ -2228,8 +2240,22 @@ function shadbala(ctx){
        is itself computed with the true obliquity, so the two now agree
        exactly at the extremes. Max |difference| from the old constant is
        0.70 virupa (1.40 for the Sun, whose Ayana Bala is doubled). */
+    /* ŚRĪPATI USES A DIFFERENT HALF RANGE, AND IT IS NOT A ROUNDING OF THIS.
+       Śrīpatipaddhati Adh. 3, śl. 15–15½ (Subrahmanya Sastri 1937, p.44) divides
+       by "the maximum declination, i.e. 24°" and fixes the scale with "the
+       Ayanabala of a planet at the Equator is ½ a Rupa", which reduces to
+       (24 + signed declination)/48 rūpa. His worked example gives the Sun
+       ·8099 from a declination of 14°52.6'N and his table prints ·810.
+       24° is the classical parama-krānti, a stated constant of that system,
+       not an approximation to the true obliquity — so under his paddhati the
+       value deliberately does NOT reach exactly 60 or exactly 0 at the real
+       extremes, and forcing it to would be modernising his text.
+       This is the constant the engine carried before the BPHS correction
+       above: it was Śrīpati's number sitting in a BPHS computation. It now
+       sits where it belongs. */
     var Tay=Tof(jd), OBL=23.439291111-0.0130041667*Tay-1.638e-7*Tay*Tay;
-    var ayana=60*(OBL+dsign*(decl[p]||0))/(2*OBL); if(p==="Sun")ayana*=2;
+    var ayHalf=(FR.mode==="sripati")?24:OBL;
+    var ayana=60*(ayHalf+dsign*(decl[p]||0))/(2*ayHalf); if(p==="Sun")ayana*=2;
     ayana=Math.max(0,Math.min(p==="Sun"?120:60,ayana));
     var kala=nath+paksha+tribhaga+lordBala+ayana;
     // --- Cheshta ---
@@ -2271,8 +2297,67 @@ function shadbala(ctx){
       lord_bala:lordBala,ayana:ayana,cheshta:cheshta,naisargika:nais,drik:drik,
       total_virupa:total,total_rupa:total/60,required_rupa:SB_REQ[p],ratio:(total/60)/SB_REQ[p]});
   });
+  /* IṢṬA AND KAṢṬA PHALA — and the misattribution this replaces.
+   *
+   * The report computed these itself as √(uchcha × cheṣṭa) and
+   * √((60−uchcha) × (60−cheṣṭa)), and told the reader "BPHS derives two
+   * opposed potencies … each is the geometric mean of the two rays."
+   * The geometric mean is NOT BPHS. It is Śrīpati's, reaching us through
+   * Keśava Daivajña's compression of Adh. 4, śl. 6 (Sastri 1937, p.60):
+   *     iṣṭa = √(uchchabala × cheṣṭabala),  kaṣṭa = √((1−u) × (1−c)).
+   *
+   * BPHS Ch. 28, v. 6 states something else entirely, in plain words:
+   *     "Reduce 1 from each of Cheshta Rasmi and Uchcha Rasmi. Then multiply
+   *      the products by 10 and add together. Half of the sum will represent
+   *      the Ishta phala. Reduce Ishta Phala from 60 to obtain the Kashta."
+   * With raśmi = 6 × bala_rūpa + 1 (v.2 and vv.3–4), that collapses to the
+   * ARITHMETIC mean in virūpas: iṣṭa = (uchcha + cheṣṭa)/2, kaṣṭa = 60 − iṣṭa.
+   * Arithmetic, not geometric, and the complement is taken once on the total
+   * rather than on each factor — so the two give genuinely different
+   * orderings, not a rescaling of one another.
+   *
+   * Presenting later tradition as an explicit BPHS verse is the one thing
+   * this project's source rules forbid outright, so each paddhati now gets
+   * its own formula and its own citation, and the report prints what it was
+   * given instead of deriving a third thing.
+   *
+   * One subtlety worth recording: the shortcut raśmi = 6 × bala + 1 does NOT
+   * hold for the Sun. Its cheṣṭabala is DEFINED as its ayanabala (Ch. 27, v. 18),
+   * while its cheṣṭa RAŚMI comes from a real cheṣṭākendra of sāyana Sun + 3
+   * rāśis (Ch.28 vv.3–4). Śrīpati's own worked example shows the gap: ·810
+   * would imply a raśmi of 5·86, and his table prints 5·317. Both formulas
+   * below are therefore expressed in BALA, which is what this engine has and
+   * what both texts' closed forms consume. */
+  var sripatiMode=(FR.mode==="sripati");
+  out.forEach(function(r){
+    var u=Math.max(0,Math.min(60,r.uchcha)), c=Math.max(0,Math.min(60,r.cheshta));
+    if(sripatiMode){
+      r.ishta=Math.sqrt(u*c);
+      r.kashta=Math.sqrt((60-u)*(60-c));
+      r.ishta_kashta_rule="geometric";
+      r.ishta_kashta_source="Śrīpatipaddhati, Adh. 4, śl. 6 (Keśava Daivajña's form)";
+    }else{
+      r.ishta=(u+c)/2;
+      r.kashta=60-r.ishta;
+      r.ishta_kashta_rule="arithmetic";
+      r.ishta_kashta_source="BPHS, Vol. 1, Ch. 28, v. 6";
+    }
+    /* Ch. 28, v. 7 / Adh. 4, śl. 7: both texts then weight the Ṣaḍbala by these. */
+    r.ishta_shadbala=r.total_virupa*(r.ishta/60);
+    r.kashta_shadbala=r.total_virupa*(r.kashta/60);
+  });
   out.sort(function(a,b){return b.ratio-a.ratio;});
-  return {planets:out,context:{day_birth:isDay,hora_lord:horaLord,tribhaga_lord:tribhagaLord,
+  return {planets:out,
+    ishta_kashta_note:sripatiMode
+      ? "Iṣṭa is the geometric mean of the exaltation and motional strengths and "+
+        "Kaṣṭa the geometric mean of their complements — Śrīpati's rule "+
+        "(Adh. 4, śl. 6), not BPHS's. BPHS Ch. 28 v. 6 gives an arithmetic rule "+
+        "instead, and the two rank the grahas differently."
+      : "Iṣṭa is half the sum of the exaltation and motional rays less one, "+
+        "times ten, and Kaṣṭa is its complement from 60 — BPHS Ch. 28 v. 6, "+
+        "which in bala terms is the arithmetic mean. Śrīpati (Adh. 4, śl. 6) "+
+        "uses a geometric mean instead; that is later tradition, not this verse.",
+    context:{day_birth:isDay,hora_lord:horaLord,tribhaga_lord:tribhagaLord,
     weekday_lord:DAYLORD[weekday],varsha_lord:varshaLord,masa_lord:masaLord,
     sunrise:sunrise,sunset:sunset,paksha_arc:pakshaArc}};
 }
@@ -2672,6 +2757,10 @@ window.buildLocalChart=function(inp){
          thing an analyst needs most. It follows the frame, so it is the house
          under whichever system is selected. */
       bhava:FRAME.houseOfLon(p.sid),
+      /* how much of that bhāva's effect it actually carries — null outside
+         Śrīpati, where unequal bhāvas are what make the question meaningful
+         (bhavaPhala is a hoisted declaration defined below) */
+      bhava_phala:bhavaPhala(p.sid),
       nakshatra_pada:nk.pada,dignity:null,retrograde:p.speed<0,
       sidereal_deg:p.sid, speed_deg_per_day:p.speed,
       ecliptic_latitude_deg:p.lat,
@@ -2680,6 +2769,70 @@ window.buildLocalChart=function(inp){
         var sp=Math.abs(norm(p.sid-sunSid)); return sp>180?360-sp:sp; })(),
       combustion_orb_deg:cmb?cmb.orb_deg:null});
   });
+  /* BHĀVA-PHALA — Śrīpati, Adh. 1, ślokas 8–10.
+   *
+   * Occupancy alone says a graha is "in the 8th" and stops there. Śrīpati does
+   * not stop there: the effect of a bhāva BEGINS at its ārambha-sandhi, reaches
+   * FULL at the madhya (the bhāvāṃśa, the half-bhāva point), and falls away to
+   * nil at the virāma-sandhi — śl. 10. Between those, śl. 9 says the amount is
+   * found "by a rule-of-three process": the graha's distance from its nearest
+   * sandhi, over the distance from that same sandhi to the madhya.
+   *
+   *   before the madhya → ĀROHA   (rising),  measured from the ārambha-sandhi
+   *   after  the madhya → AVAROHA (falling), measured from the virāma-sandhi
+   *
+   * The denominator is HALF OF THIS BHĀVA'S OWN WIDTH ON THAT SIDE, and the two
+   * sides differ: a quadrant bhāva is not symmetric about its madhya, because
+   * each sandhi is the midpoint to a neighbour of a different width. Using one
+   * fixed half-width — or the often-quoted flat 15° — is the whole-sign
+   * degenerate case, not the general rule.
+   *
+   * Śloka 8 adds the boundary case: a graha standing IN a sandhi "produces no
+   * effect"; short of the sandhi it gives the preceding bhāva's effect, past it
+   * the coming bhāva's. Occupancy already resolves which side of the sandhi the
+   * graha is on, so what remains is to report that it is there at all — hence
+   * in_sandhi, flagged on the small orb below rather than silently rounded to
+   * a near-zero weight.
+   *
+   * VERIFIED against Śrīpati's own worked horoscope (Subrahmanya Sastri 1937,
+   * table p. 14): Sun ·7694, Moon ·5791, Mars ·0313, Mercury ·2579, Jupiter
+   * ·3823, Saturn ·0334 — all six reproduced to four decimals, with the correct
+   * Āroha/Avaroha on each. Venus is the one disagreement: this rule gives
+   * ·9702 where the book prints ·9653. The discrepancy is in the BOOK's
+   * arithmetic, not the rule — reproducing ·9653 from its own tabulated bhāva
+   * sphuṭas and its own Venus longitude would require the 12|1 sandhi to sit
+   * near 0°06′ instead of the 358°23′30″ its own table gives. Six exact matches
+   * are not bent to fit one outlier. See the harness, which asserts all seven
+   * including Venus's known divergence. */
+  function bhavaPhala(lon){
+    if(FRAME.mode!=="sripati"||!FRAME.sripati) return null;
+    var hn=FRAME.houseOfLon(lon); if(!hn) return null;
+    var ar=norm(FRAME.sripati.sandhi[hn===1?12:hn-1]),
+        vi=norm(FRAME.sripati.sandhi[hn]),
+        md=norm(FRAME.sripati.madhya[hn]);
+    var fwd=function(a,b){return ((b-a)%360+360)%360;};
+    var toMadhya=fwd(ar,md), ofGraha=fwd(ar,lon);
+    var rising=ofGraha<toMadhya, num, den;
+    if(rising){ num=ofGraha; den=toMadhya; }
+    else      { num=fwd(lon,vi); den=fwd(md,vi); }
+    var w=den>0?num/den:0;
+    if(w>1) w=1; if(w<0) w=0;
+    /* śl. 8: standing in a sandhi, the graha gives no result. An exact hit is
+       measure-zero, so this reports the practical neighbourhood of one and
+       leaves the judgement to the reader rather than pretending to a knife
+       edge the birth time cannot support. */
+    var nearest=Math.min(fwd(ar,lon)>180?360-fwd(ar,lon):fwd(ar,lon),
+                         fwd(lon,vi)>180?360-fwd(lon,vi):fwd(lon,vi));
+    return {bhava:hn, weight:+w.toFixed(6),
+            direction:rising?"aroha":"avaroha",
+            direction_sa:rising?"ārohā":"avarohā",
+            deg_from_sandhi:+num.toFixed(6), bhavamsa_deg:+den.toFixed(6),
+            in_sandhi:nearest<0.25,
+            note:"Śrīpati, Adh. 1, śl. 8–10: effect begins at the ārambha-sandhi, "+
+                 "is full at the madhya and ceases at the virāma-sandhi; the amount "+
+                 "between is a rule-of-three on the half-bhāva for that side. "+
+                 "Śrīpati's own rule, not BPHS — the bhāva itself is judged by BPHS."};
+  }
   var posBySign={}; order.forEach(function(n){posBySign[n]=Math.floor(pos[n].sid/30)%12;});
   var bhavas=[];
   for(var h=0;h<12;h++){
@@ -2810,6 +2963,63 @@ window.buildLocalChart=function(inp){
   try{ risingT=risingTimes(inp.lat,ay); }catch(e){}
   var lagRashi=Math.floor(lagSid/30)%12;
   return {input:inp, jd_utc:jd, ayanamsha_deg:ay,
+    /* WHICH TRADITION PRODUCED THESE NUMBERS.
+     *
+     * The house toggle is not only a house toggle: selecting Śrīpati selects
+     * his paddhati, and several quantities below are computed from his text
+     * rather than from BPHS. Without this block a reader cannot tell which,
+     * and a chart that does not say which system produced its figures cannot
+     * be checked by whoever receives it — the same argument that put
+     * house_system in this payload.
+     *
+     * It also records the opposite case honestly: Śrīpati is simply silent on
+     * much of what this engine computes, and where he is silent BPHS is used
+     * and said to be used, rather than letting the toggle imply an authority
+     * his text does not claim. */
+    paddhati:(function(){
+      var sp=(FRAME.mode==="sripati");
+      return {
+        mode: sp?"sripati":"bphs",
+        name: sp?"Śrīpatipaddhati":"Bṛhat Parāśara Horā Śāstra",
+        edition: sp
+          ? "Śrīpatipaddhati, tr. V. Subrahmanya Sastri, 1937"
+          : "BPHS, tr. R. Santhanam (Ranjan), Vols. 1–2",
+        follows_this_paddhati: sp
+          ? ["bhāva division and sandhis (Adh. 1, śl. 6–8)",
+             "bhāva-phala, the graded effect within a bhāva (Adh. 1, śl. 9–10)",
+             "Ayana Bala, on a 24° parama-krānti half range (Adh. 3, śl. 15)",
+             "Saptavargaja Bala, on the halving ladder (Adh. 3, śl. 2–3)",
+             "Iṣṭa and Kaṣṭa phala, geometric (Adh. 4, śl. 6)"]
+          : ["bhāva division (whole sign)",
+             "Ayana Bala, on the obliquity of date (Ch. 27, vv. 15–17)",
+             "Saptavargaja Bala, 45/30/20/15/10/4/2 (Ch. 26, vv. 2–4)",
+             "Iṣṭa and Kaṣṭa phala, arithmetic (Ch. 28, v. 6)"],
+        bphs_by_default: sp
+          ? ["Ashtakavarga and its bindus — Śrīpati does not treat it",
+             "the ṣoḍaśa vargas beyond his seven (rāśi, horā, drekkāṇa, "+
+               "saptāṃśa, navāṃśa, dvādaśāṃśa, triṃśāṃśa)",
+             "pañcāṅga, nakṣatras and all daśā computation",
+             "yogas, ārūḍhas, kārakas and avasthās"]
+          : [],
+        excluded: sp
+          ? [{what:"Śrīpati's own daśā system (Adh. 7)",
+              why:"its period lengths are each graha's contribution to the "+
+                  "āyurdāya, so computing them means computing a lifespan. "+
+                  "This project presents longevity as doctrine to study and "+
+                  "never as a figure about a person, so the system is "+
+                  "described and deliberately not calculated. Viṃśottarī is "+
+                  "used for timing and is BPHS's, not his."}]
+          : [],
+        note: sp
+          ? "Śrīpati is an independent 11th-century author, not a commentator "+
+            "on BPHS. Where the two differ, neither is corrected into the "+
+            "other; this chart follows Śrīpati for the quantities listed and "+
+            "BPHS for the rest, and says which is which."
+          : "Figures follow BPHS throughout. Selecting Śrīpati houses switches "+
+            "several of them to Śrīpati's own rules, which differ from BPHS "+
+            "by more than the house division."
+      };
+    })(),
     birth_panchanga:{
       tithi_sa:natalPan.tithi_sa, paksha_sa:natalPan.paksha_sa,
       tithi_of_30:Math.floor(elong/12)+1,

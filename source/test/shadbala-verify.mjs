@@ -157,20 +157,77 @@ head("Sun's cheshta follows his ayana — Ch. 27, v. 18");
 near(W.Sun.cheshta, Math.min(60, W.Sun.ayana), 1e-9, "Sun cheshta = min(60, ayana)");
 near(W.Moon.cheshta, Math.min(60, W.Moon.paksha), 1e-9, "Moon cheshta = min(60, paksha)");
 
-/* ---- what the bhava frame may and may not move ------------------------ */
-head("FRAME-INDEPENDENT: rasi-derived components must not move with the frame");
-G.forEach((p) => near(S[p].saptavargaja, W[p].saptavargaja, 1e-9,
-  p + " saptavargaja identical across frames (tatkalika is rasi-based, Ch. 27, vv. 2-4)"));
+/* ---- what the toggle may and may not move ------------------------------
+ *
+ * THESE SIX USED TO BE ASSERTED AS FRAME-INDEPENDENT, AND TWO NO LONGER ARE.
+ * That is a change of design, not a regression, and it is worth stating
+ * plainly because an unexplained loosening of a test is exactly how a real
+ * fault gets waved through.
+ *
+ * The toggle stopped being a house-division switch and became a PADDHATI
+ * selector: whole-sign means BPHS throughout, Śrīpati means Śrīpati's own
+ * rules throughout. Two of these quantities are given DIFFERENTLY by the two
+ * texts, so they must move with it:
+ *
+ *   ayana        BPHS Ch.27 vv.15-17 scales by the obliquity; Śrīpati Adh.3
+ *                śl.15 scales by a 24° parama-krānti and fixes ½ rūpa at the
+ *                equator. Neither is a rounding of the other.
+ *   saptavargaja BPHS Ch.26 vv.2-4 is 45/30/20/15/10/4/2; Śrīpati Adh.3
+ *                śl.2-3 is the halving ladder 45/30/22.5/15/7.5/3.75/1.875.
+ *                Sastri quotes the BPHS ladder and says he is not using it.
+ *
+ * So the old equality is replaced by something STRONGER rather than weaker:
+ * each is reconstructed from its own text's closed form, and the ladder
+ * membership is checked arithmetically. The remaining four must still be
+ * identical, because both texts give them identically, and those assertions
+ * are untouched — they are what would catch the branch leaking.
+ */
+head("PADDHATI-INDEPENDENT: quantities both texts give identically");
 G.forEach((p) => near(S[p].naisargika, W[p].naisargika, 1e-9,
-  p + " naisargika identical across frames (constant for all nativities)"));
+  p + " naisargika identical (constant for all nativities; BPHS Ch.27 v.14 = Śrīpati Adh.3 śl.19)"));
 G.forEach((p) => near(S[p].uchcha, W[p].uchcha, 1e-9,
-  p + " uchcha identical across frames (longitude vs debilitation point)"));
-G.forEach((p) => near(S[p].ayana, W[p].ayana, 1e-9,
-  p + " ayana identical across frames (declination-based)"));
+  p + " uchcha identical (arc from the debilitation point in both)"));
 G.forEach((p) => near(S[p].drik, W[p].drik, 1e-9,
-  p + " drik identical across frames (longitude-based sphuta drishti)"));
+  p + " drik identical (longitude-based sphuta drishti)"));
 G.forEach((p) => near(S[p].ojha, W[p].ojha, 1e-9,
-  p + " ojha identical across frames (odd/even rasi and navamsa)"));
+  p + " ojha identical (odd/even rasi and navamsa)"));
+
+head("PADDHATI-DEPENDENT: ayana, on each text's own half range");
+G.forEach((p) => {
+  /* Use the SAME independently reconstructed declination the BPHS check above
+     uses — not the BPHS ayana value. Recovering decl by inverting that value
+     breaks wherever it is clamped: Jupiter's BPHS ayana saturates at 60, so
+     the inversion returned the clamp rather than the true declination and the
+     Śrīpati expectation came out 0.054 virupa wrong. The clamp is correct
+     behaviour; reading a constant back through it is not. */
+  const d = AY.decl[KEY[p]];
+  if (d == null) { no(p + " declination not recoverable from published fields"); return; }
+  const dsign = (p === "Moon" || p === "Saturn") ? -1 : 1;
+  let want = 60 * (24 + dsign * d) / 48;
+  if (p === "Sun") want *= 2;
+  want = Math.max(0, Math.min(p === "Sun" ? 120 : 60, want));
+  near(S[p].ayana, want, p === "Moon" ? 0.4 : 0.01,
+    p + " Śrīpati ayana = 60·(24 ± decl)/48, his stated parama-krānti");
+});
+is(G.some((p) => Math.abs(S[p].ayana - W[p].ayana) > 0.05),
+  "and the two paddhatis genuinely differ on it (max " +
+  Math.max(...G.map((p) => Math.abs(S[p].ayana - W[p].ayana))).toFixed(3) +
+  " virupa) — so neither constant is silently standing in for the other");
+
+head("PADDHATI-DEPENDENT: saptavargaja, on each text's own ladder");
+/* Every total is a sum of seven ladder entries. BPHS's entries are whole
+   numbers, so its totals must be integers. Śrīpati's smallest entry is
+   1.875 = 15/8, so his totals must be integers after multiplying by 8 — and
+   must NOT all be integers themselves, or the halving ladder is not in use. */
+G.forEach((p) => is(Math.abs(W[p].saptavargaja - Math.round(W[p].saptavargaja)) < 1e-9,
+  p + " BPHS saptavargaja " + W[p].saptavargaja + " is a sum of 45/30/20/15/10/4/2"));
+G.forEach((p) => is(Math.abs(S[p].saptavargaja * 8 - Math.round(S[p].saptavargaja * 8)) < 1e-9,
+  p + " Śrīpati saptavargaja " + S[p].saptavargaja + " is a sum of the halving ladder (×8 integral)"));
+is(G.some((p) => Math.abs(S[p].saptavargaja - Math.round(S[p].saptavargaja)) > 1e-9),
+  "at least one Śrīpati total is fractional — proof the halving ladder is " +
+  "actually in use and not the BPHS one rounded");
+is(G.every((p) => S[p].saptavargaja <= 7 * 45 + 1e-9 && W[p].saptavargaja <= 7 * 45 + 1e-9),
+  "and neither exceeds seven moolatrikona placements");
 
 head("FRAME-DEPENDENT: dig bala is measured from the bhava madhya (Ch. 27, vv. 7-11)");
 is(G.some((p) => Math.abs(S[p].dig - W[p].dig) > 1e-6),

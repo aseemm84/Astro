@@ -10,9 +10,9 @@
   "volumeSplit": 45,
   "volumeSplitSource": "BPHS-Santhanam Vol. 1, preface: \"The present volume—first volume—contains 45 chapters while the remaining 52 chapters have been put in the second volume.\" Vol. 2 opens at Chapter 46, \"Dasas (Periods) of planets\".",
   "maxChapter": 97,
-  "citations": 200,
-  "distinctLoci": 84,
-  "files": 37
+  "citations": 206,
+  "distinctLoci": 86,
+  "files": 38
  },
  "chaptersCited": [
   3,
@@ -769,7 +769,19 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1216,
+   "line": 1194,
+   "text": "Ch. 26, vv. 2–4",
+   "vol": null,
+   "chapter": 26,
+   "verses": [
+    2,
+    4
+   ],
+   "claim": "* BPHS Ch. 26, vv. 2–4 : 45 / 30 / 20 / 15 / 10 / 4 / 2 (quoted verbatim)"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 1226,
    "text": "Ch. 26, vv. 1–12",
    "vol": null,
    "chapter": 26,
@@ -781,7 +793,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1418,
+   "line": 1430,
    "text": "Vol. 1, Ch. 27, vv. 15–17",
    "vol": 1,
    "chapter": 27,
@@ -793,7 +805,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1440,
+   "line": 1466,
    "text": "Vol. 1, Ch. 27, v. 19",
    "vol": 1,
    "chapter": 27,
@@ -805,7 +817,55 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1712,
+   "line": 1508,
+   "text": "Ch. 28, v. 6",
+   "vol": null,
+   "chapter": 28,
+   "verses": [
+    6,
+    6
+   ],
+   "claim": "* BPHS Ch. 28, v. 6 states something else entirely, in plain words:"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 1542,
+   "text": "Vol. 1, Ch. 28, v. 6",
+   "vol": 1,
+   "chapter": 28,
+   "verses": [
+    6,
+    6
+   ],
+   "claim": "r.ishta_kashta_source=\"BPHS, Vol. 1, Ch. 28, v. 6\";"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 1553,
+   "text": "Ch. 28 v. 6",
+   "vol": null,
+   "chapter": 28,
+   "verses": [
+    6,
+    6
+   ],
+   "claim": "\"(Adh. 4, śl. 6), not BPHS's. BPHS Ch. 28 v. 6 gives an arithmetic rule \"+"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 1556,
+   "text": "Ch. 28 v. 6",
+   "vol": null,
+   "chapter": 28,
+   "verses": [
+    6,
+    6
+   ],
+   "claim": "\"times ten, and Kaṣṭa is its complement from 60 — BPHS Ch. 28 v. 6, \"+"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 1797,
    "text": "Vol. 2, Ch. 79",
    "vol": 2,
    "chapter": 79,
@@ -1246,6 +1306,18 @@
     25
    ],
    "claim": "/* Varga Viśva, BPHS Ch.7 v.25: own 20, great friend 18, friend 15, neutral 10,"
+  },
+  {
+   "file": "src/js/report/sections/12-avasthas.js",
+   "line": 608,
+   "text": "Vol. 1, Ch. 28, v. 6",
+   "vol": 1,
+   "chapter": 28,
+   "verses": [
+    6,
+    6
+   ],
+   "claim": "var ikSrc=(sb[0]&&sb[0].ishta_kashta_source)||\"BPHS, Vol. 1, Ch. 28, v. 6\";"
   },
   {
    "file": "src/js/report/sections/18b-shodashavarga.js",
