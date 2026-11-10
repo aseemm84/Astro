@@ -10,7 +10,7 @@
   "volumeSplit": 45,
   "volumeSplitSource": "BPHS-Santhanam Vol. 1, preface: \"The present volume—first volume—contains 45 chapters while the remaining 52 chapters have been put in the second volume.\" Vol. 2 opens at Chapter 46, \"Dasas (Periods) of planets\".",
   "maxChapter": 97,
-  "citations": 212,
+  "citations": 213,
   "distinctLoci": 88,
   "files": 38
  },
@@ -940,7 +940,7 @@
   },
   {
    "file": "src/js/report/export/42-json-export.js",
-   "line": 307,
+   "line": 330,
    "text": "Ch. 46, vv. 195",
    "vol": null,
    "chapter": 46,
@@ -952,7 +952,7 @@
   },
   {
    "file": "src/js/report/export/42-json-export.js",
-   "line": 440,
+   "line": 463,
    "text": "Ch. 7, vv. 21–25",
    "vol": null,
    "chapter": 7,
@@ -964,7 +964,7 @@
   },
   {
    "file": "src/js/report/export/42-json-export.js",
-   "line": 446,
+   "line": 469,
    "text": "Ch. 26",
    "vol": null,
    "chapter": 26,
@@ -985,7 +985,19 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 313,
+   "line": 157,
+   "text": "Ch. 27 vv. 34–36",
+   "vol": null,
+   "chapter": 27,
+   "verses": [
+    34,
+    36
+   ],
+   "claim": "BPHS Ch. 27 vv. 34–36 and Śrīpati p.56 both give a minimum under"
+  },
+  {
+   "file": "src/js/report/export/46-skill-payload.js",
+   "line": 346,
    "text": "Vol. 1 Ch. 7, vv. 17–25",
    "vol": 1,
    "chapter": 7,
@@ -997,7 +1009,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 335,
+   "line": 368,
    "text": "Vol. 1, Ch. 7, vv. 17–19",
    "vol": 1,
    "chapter": 7,
@@ -1009,7 +1021,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 337,
+   "line": 370,
    "text": "Vol. 1, Ch. 7, vv. 17–19",
    "vol": 1,
    "chapter": 7,
@@ -1021,7 +1033,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 339,
+   "line": 372,
    "text": "Ch. 7",
    "vol": null,
    "chapter": 7,
@@ -1030,7 +1042,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 341,
+   "line": 374,
    "text": "Vol. 1, Ch. 7, v. 20",
    "vol": 1,
    "chapter": 7,
@@ -1042,7 +1054,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 344,
+   "line": 377,
    "text": "Vol. 1, Ch. 7, vv. 21–25",
    "vol": 1,
    "chapter": 7,
@@ -1054,7 +1066,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 432,
+   "line": 465,
    "text": "Ch. 7 vv. 26–27",
    "vol": null,
    "chapter": 7,
@@ -1066,7 +1078,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 517,
+   "line": 550,
    "text": "Vol. 1, Ch. 26, vv. 1–12",
    "vol": 1,
    "chapter": 26,
@@ -1078,7 +1090,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 529,
+   "line": 562,
    "text": "Vol. 1, Ch. 26",
    "vol": 1,
    "chapter": 26,

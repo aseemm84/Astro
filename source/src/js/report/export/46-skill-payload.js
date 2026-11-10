@@ -79,7 +79,19 @@ function skpGrahas(J){
       dignity_bphs:g.dignity,
       ecliptic_latitude_deg:g.ecliptic_latitude_deg,
       combust:skpBool(g.combust),
-      sun_separation_deg:g.sun_separation_deg
+      sun_separation_deg:g.sun_separation_deg,
+      /* BHĀVA AND ITS GRADED EFFECT.
+         The payload named no bhāva on the graha at all, and carried none of
+         Śrīpati's bhāva-phala — while its own conventions block listed
+         "bhāva-phala, the graded effect within a bhāva" among the things this
+         chart follows. A file that promises a quantity and does not contain
+         it is the same fault as a card promising three house systems and
+         printing three empty columns.
+         bhava_phala is null outside Śrīpati, where equal bhāvas make the
+         question empty; under him it carries the weight 0..1, the
+         āroha/avaroha direction and the sandhi flag of Adh. 1, śl. 8–10. */
+      bhava:(g.bhava!=null)?g.bhava:null,
+      bhava_phala:g.bhava_phala||null
     };
     out[name]=rec;
   });
@@ -140,13 +152,34 @@ function skpShadbala(J){
         drekkana_virupas:p.drekkana, nathonnatha_virupas:p.nathonnatha,
         paksha_virupas:p.paksha, tribhaga_virupas:p.tribhaga,
         varsha_masa_dina_hora_virupas:p.lord_bala, ayana_virupas:p.ayana
-      }
+      },
+      /* Clearing the Ṣaḍbala piṇḍa is not the only test either text sets.
+         BPHS Ch. 27 vv. 34–36 and Śrīpati p.56 both give a minimum under
+         each of five heads, so a graha can clear its total on one swollen
+         component while failing every other head. Only the total was here,
+         so nothing in the file could say that had happened. */
+      required_components_virupas:p.required_components||null,
+      components_met:p.components_met||null,
+      components_met_count:(p.components_met_count!=null)?p.components_met_count:null,
+      /* iṣṭa and kaṣṭa beside the strength they weight (Ch. 28 v. 7 /
+         Adh. 4 śl. 7), with the rule and verse that produced them */
+      ishta_virupas:(p.ishta!=null)?p.ishta:null,
+      kashta_virupas:(p.kashta!=null)?p.kashta:null,
+      ishta_shadbala_virupas:(p.ishta_shadbala!=null)?p.ishta_shadbala:null,
+      kashta_shadbala_virupas:(p.kashta_shadbala!=null)?p.kashta_shadbala:null,
+      ishta_kashta_rule:p.ishta_kashta_rule||null,
+      ishta_kashta_source:p.ishta_kashta_source||null
     };
   });
   return {planets:out, context:(J.shadbala&&J.shadbala.context)||null,
+    /* which six heads, and where Ayana sits — the two texts differ on the
+       arrangement though not on the total; see the engine for why */
+    composition:(J.shadbala&&J.shadbala.composition)||null,
+    required_components_note:(J.shadbala&&J.shadbala.required_components_note)||null,
+    ishta_kashta_note:(J.shadbala&&J.shadbala.ishta_kashta_note)||null,
     note:"Sthāna Bala is the sum of its five components; Kāla Bala of its six. Both "+
          "sums and parts are given. 60 virūpas = 1 rūpa. strength_ratio is "+
-         "total_rupas ÷ required_rupas, so 1.0 is the BPHS minimum."};
+         "total_rupas ÷ required_rupas, so 1.0 is the minimum this paddhati sets."};
 }
 
 /* ---- ashtakavarga under the names the schema uses ---- */

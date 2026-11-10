@@ -192,6 +192,29 @@ function jxVimsopaka(D){
 }
 function jxBhavaBala(D,J){
   var sb=J&&J.shadbala&&J.shadbala.planets; if(!sb) return null;
+  /* THE ENGINE'S EXACT FORM WHEN IT HAS ONE.
+     Under Śrīpati the engine computes bhāva bala by Adh. 3, śl. 20–23 — the
+     lord pro-rated across the rāśis the bhāva spans, a quarter of the net
+     dṛṣṭi on the madhya, the whole dṛṣṭi of Jupiter and Mercury, and dig bala
+     by the class of the madhya's rāśi. The simplified version below was still
+     being exported over the top of it, so the file carried an approximation
+     while its own paddhati block promised the exact rule. It also took each
+     bhāva's sign as (LS + h − 1) % 12 — whole-sign — which under Śrīpati
+     contradicts derived.bhavas[h].rashi.idx a few lines away in the same file.
+     Both faults go away by forwarding what the engine already computed. */
+  if(Array.isArray(J.bhava_bala)&&J.bhava_bala.length===12){
+    return J.bhava_bala.map(function(b){
+      return {house:b.bhava,
+        sign:(b.spans&&b.spans.length?b.spans[b.spans.length-1].rashi_idx:null),
+        spans:b.spans,
+        lord_shadbala_rupa:jxRound(b.svami_rupa,3),
+        drik_bala_virupa:jxRound(b.drg_virupa,3),
+        guru_budha_drishti_virupa:jxRound(b.guru_budha_virupa,3),
+        dig_bala_virupa:jxRound(b.dig_virupa,3), dig_class:b.dig_class,
+        total_rupa:jxRound(b.total_rupa,3),
+        total_virupa:jxRound(b.total_rupa*60,2)};
+    });
+  }
   var byP={}; sb.forEach(function(p){ byP[p.graha]=p; });
   var HUMAN=[2,5,6,10], QUAD=[0,1,4,8,9], WATER=[3,7,11], BEN=["Jupiter","Venus","Mercury","Moon"];
   var aspBy={};

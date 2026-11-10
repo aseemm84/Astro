@@ -2574,7 +2574,7 @@ html[data-theme="emerald"] .wsnext.lead{
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-11-10.7b9b7f2";</script></head><body class="wsbody"><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Kinetic Workstation</h1><p class="sub">One surface for the whole chart: Śrīpati chalita beside whole-sign, a year of real transits, twelve rāśi readings, all sixteen divisions, and the strength and daśā panels — computed in this browser, nothing sent anywhere.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html" class="active">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav>
+</script><script>window.__kBuild="2026-11-10.f3b4e6d";</script></head><body class="wsbody"><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Kinetic Workstation</h1><p class="sub">One surface for the whole chart: Śrīpati chalita beside whole-sign, a year of real transits, twelve rāśi readings, all sixteen divisions, and the strength and daśā panels — computed in this browser, nothing sent anywhere.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html" class="active">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav>
 <div class="layout onecol wide"><main>
 
 <section class="wsintake">
@@ -24108,6 +24108,29 @@ function jxVimsopaka(D){
 }
 function jxBhavaBala(D,J){
   var sb=J&&J.shadbala&&J.shadbala.planets; if(!sb) return null;
+  /* THE ENGINE'S EXACT FORM WHEN IT HAS ONE.
+     Under Śrīpati the engine computes bhāva bala by Adh. 3, śl. 20–23 — the
+     lord pro-rated across the rāśis the bhāva spans, a quarter of the net
+     dṛṣṭi on the madhya, the whole dṛṣṭi of Jupiter and Mercury, and dig bala
+     by the class of the madhya's rāśi. The simplified version below was still
+     being exported over the top of it, so the file carried an approximation
+     while its own paddhati block promised the exact rule. It also took each
+     bhāva's sign as (LS + h − 1) % 12 — whole-sign — which under Śrīpati
+     contradicts derived.bhavas[h].rashi.idx a few lines away in the same file.
+     Both faults go away by forwarding what the engine already computed. */
+  if(Array.isArray(J.bhava_bala)&&J.bhava_bala.length===12){
+    return J.bhava_bala.map(function(b){
+      return {house:b.bhava,
+        sign:(b.spans&&b.spans.length?b.spans[b.spans.length-1].rashi_idx:null),
+        spans:b.spans,
+        lord_shadbala_rupa:jxRound(b.svami_rupa,3),
+        drik_bala_virupa:jxRound(b.drg_virupa,3),
+        guru_budha_drishti_virupa:jxRound(b.guru_budha_virupa,3),
+        dig_bala_virupa:jxRound(b.dig_virupa,3), dig_class:b.dig_class,
+        total_rupa:jxRound(b.total_rupa,3),
+        total_virupa:jxRound(b.total_rupa*60,2)};
+    });
+  }
   var byP={}; sb.forEach(function(p){ byP[p.graha]=p; });
   var HUMAN=[2,5,6,10], QUAD=[0,1,4,8,9], WATER=[3,7,11], BEN=["Jupiter","Venus","Mercury","Moon"];
   var aspBy={};
@@ -25076,7 +25099,19 @@ function skpGrahas(J){
       dignity_bphs:g.dignity,
       ecliptic_latitude_deg:g.ecliptic_latitude_deg,
       combust:skpBool(g.combust),
-      sun_separation_deg:g.sun_separation_deg
+      sun_separation_deg:g.sun_separation_deg,
+      /* BHĀVA AND ITS GRADED EFFECT.
+         The payload named no bhāva on the graha at all, and carried none of
+         Śrīpati's bhāva-phala — while its own conventions block listed
+         "bhāva-phala, the graded effect within a bhāva" among the things this
+         chart follows. A file that promises a quantity and does not contain
+         it is the same fault as a card promising three house systems and
+         printing three empty columns.
+         bhava_phala is null outside Śrīpati, where equal bhāvas make the
+         question empty; under him it carries the weight 0..1, the
+         āroha/avaroha direction and the sandhi flag of Adh. 1, śl. 8–10. */
+      bhava:(g.bhava!=null)?g.bhava:null,
+      bhava_phala:g.bhava_phala||null
     };
     out[name]=rec;
   });
@@ -25137,13 +25172,34 @@ function skpShadbala(J){
         drekkana_virupas:p.drekkana, nathonnatha_virupas:p.nathonnatha,
         paksha_virupas:p.paksha, tribhaga_virupas:p.tribhaga,
         varsha_masa_dina_hora_virupas:p.lord_bala, ayana_virupas:p.ayana
-      }
+      },
+      /* Clearing the Ṣaḍbala piṇḍa is not the only test either text sets.
+         BPHS Ch. 27 vv. 34–36 and Śrīpati p.56 both give a minimum under
+         each of five heads, so a graha can clear its total on one swollen
+         component while failing every other head. Only the total was here,
+         so nothing in the file could say that had happened. */
+      required_components_virupas:p.required_components||null,
+      components_met:p.components_met||null,
+      components_met_count:(p.components_met_count!=null)?p.components_met_count:null,
+      /* iṣṭa and kaṣṭa beside the strength they weight (Ch. 28 v. 7 /
+         Adh. 4 śl. 7), with the rule and verse that produced them */
+      ishta_virupas:(p.ishta!=null)?p.ishta:null,
+      kashta_virupas:(p.kashta!=null)?p.kashta:null,
+      ishta_shadbala_virupas:(p.ishta_shadbala!=null)?p.ishta_shadbala:null,
+      kashta_shadbala_virupas:(p.kashta_shadbala!=null)?p.kashta_shadbala:null,
+      ishta_kashta_rule:p.ishta_kashta_rule||null,
+      ishta_kashta_source:p.ishta_kashta_source||null
     };
   });
   return {planets:out, context:(J.shadbala&&J.shadbala.context)||null,
+    /* which six heads, and where Ayana sits — the two texts differ on the
+       arrangement though not on the total; see the engine for why */
+    composition:(J.shadbala&&J.shadbala.composition)||null,
+    required_components_note:(J.shadbala&&J.shadbala.required_components_note)||null,
+    ishta_kashta_note:(J.shadbala&&J.shadbala.ishta_kashta_note)||null,
     note:"Sthāna Bala is the sum of its five components; Kāla Bala of its six. Both "+
          "sums and parts are given. 60 virūpas = 1 rūpa. strength_ratio is "+
-         "total_rupas ÷ required_rupas, so 1.0 is the BPHS minimum."};
+         "total_rupas ÷ required_rupas, so 1.0 is the minimum this paddhati sets."};
 }
 
 /* ---- ashtakavarga under the names the schema uses ---- */

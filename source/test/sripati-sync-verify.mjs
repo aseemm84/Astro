@@ -355,7 +355,20 @@ async function analystPayload(mode) {
       ikFirst: ik && ik[0] && { g: ik[0].graha, i: ik[0].ishta, k: ik[0].kashta },
       engineIK: Object.fromEntries((J.shadbala.planets || []).map(
         (x) => [x.graha, [x.ishta, x.kashta, x.ishta_kashta_rule]])),
-      engineMode: J.house_system.mode
+      engineMode: J.house_system.mode,
+      /* what the file PROMISES about itself, and what it actually holds */
+      promises: (conv.paddhati && conv.paddhati.follows_this_paddhati) || [],
+      hasGrahaPhala: !!(P.grahas && P.grahas.Sun && P.grahas.Sun.bhava_phala),
+      hasGrahaBhava: !!(P.grahas && P.grahas.Sun && P.grahas.Sun.bhava != null),
+      bbKeys: (P.derived && P.derived.bhava_bala && P.derived.bhava_bala[0])
+                ? Object.keys(P.derived.bhava_bala[0]) : [],
+      hasReqComponents: !!(P.shadbala && P.shadbala.planets &&
+                           P.shadbala.planets.Sun &&
+                           P.shadbala.planets.Sun.required_components_virupas),
+      hasComposition: !!(P.shadbala && P.shadbala.composition),
+      sbAyana: !!(P.shadbala && P.shadbala.planets && P.shadbala.planets.Sun &&
+                  P.shadbala.planets.Sun.components &&
+                  P.shadbala.planets.Sun.components.ayana_virupas != null)
     };
   }, [BIRTH, mode]);
   await pg.close();
@@ -395,6 +408,35 @@ for (const mode of ["whole", "sripati"]) {
   is(mode === "sripati" ? /Adh\. 4/.test(A.ikSource || "")
                         : /Ch\. 28/.test(A.ikSource || ""),
     "and its citation (" + A.ikSource + ")");
+  /* THE FILE MUST CONTAIN WHAT IT PROMISES ABOUT ITSELF.
+     conventions.paddhati.follows_this_paddhati is a list of the quantities
+     this chart is said to compute Śrīpati's way. Those sentences shipped
+     before the quantities did: six real exports declared they followed
+     "bhāva-phala, the graded effect within a bhāva" and "bhāva bala in its
+     exact form" while carrying neither — the graha records had no
+     bhava_phala at all, and derived.bhava_bala was still the quantised
+     approximation (dig bala only ever 30 or 60, dṛk only multiples of 15).
+     A promise with nothing behind it is the same fault as a card offering
+     three house systems and printing three empty columns, and it is harder
+     to see here because a JSON gives its reader nothing to compare against.
+     So each promise is now tied to a field that must exist. */
+  if (mode === "sripati") {
+    const P = A.promises.join(" | ");
+    is(/bhāva-phala/.test(P) === A.hasGrahaPhala,
+      "the bhāva-phala it promises is actually on the grahas" +
+      (A.hasGrahaPhala ? "" : " — PROMISED BUT ABSENT"));
+    is(A.hasGrahaBhava, "and each graha names its bhāva");
+    const exact = A.bbKeys.indexOf("dig_class") >= 0 && A.bbKeys.indexOf("spans") >= 0;
+    is(/bhāva bala in its exact form/.test(P) === exact,
+      "the bhāva bala it promises is the exact four-component form, not the " +
+      "quantised approximation" + (exact ? "" : " — PROMISED BUT APPROXIMATE"));
+    is(/per-head minimum/.test(P) === A.hasReqComponents,
+      "the per-head minima it promises are present");
+    is(/dṛṣṭi on his quarters table/.test(P) && /Adh\. 2/.test(A.drishtiFormula || ""),
+      "and the dṛṣṭi it promises is the one it labels");
+  }
+  is(A.hasComposition, "the Ṣaḍbala composition names which six heads these are");
+  is(A.sbAyana, "and Ayana Bala is reported separately, as both texts require");
   const ei = A.engineIK[A.ikFirst.g];
   is(ei && Math.abs(ei[0] - A.ikFirst.i) < 0.001 && Math.abs(ei[1] - A.ikFirst.k) < 0.001,
     "and its VALUES equal the engine's, rather than being recomputed here " +
