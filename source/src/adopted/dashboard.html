@@ -549,19 +549,29 @@ function placeItems(svg,items,cx,cy,shape,fs=17){
     svg.append(t);
   });
 }
-function northChart(lagnaSign,itemsBySign){
+/* slotSign is OPTIONAL and exists for the bhāva-chalita chart. The North
+   Indian layout fixes the houses and rotates the signs, and it derived each
+   slot's rāśi as (lagna + house − 1) — which is whole-sign by construction. A
+   Śrīpati chart needs the rāśi that actually contains each bhāva's madhya,
+   and those can repeat or skip. Passing nothing keeps the old behaviour
+   exactly, so every chart drawn before this still draws the same. */
+function northChart(lagnaSign,itemsBySign,slotSign){
   const svg=s("svg",{viewBox:"-4 -4 408 408",role:"img"});
   svg.append(s("polygon",{points:"200,0 100,100 200,200 300,100",class:"lagfill"}));
   svg.append(s("rect",{x:0,y:0,width:400,height:400,class:"frame"}));
   svg.append(s("line",{x1:0,y1:0,x2:400,y2:400,class:"frame"}));svg.append(s("line",{x1:400,y1:0,x2:0,y2:400,class:"frame"}));
   svg.append(s("polygon",{points:"200,0 400,200 200,400 0,200",class:"frame"}));
   for(let hh=1;hh<=12;hh++){
-    const sign=(lagnaSign+hh-1)%12;
-    svg.append(s("text",{x:N_SN[hh][0],y:N_SN[hh][1],class:"sn","text-anchor":"middle","dominant-baseline":"middle"},sign+1));
-    const items=[...(itemsBySign[sign]||[])];if(hh===1)items.unshift({t:"Asc",cls:"asc"});
+    /* the key items are filed under for this house slot */
+    const slot=(lagnaSign+hh-1)%12;
+    /* the rāśi printed in it, which under Śrīpati is not the same thing */
+    const label=slotSign?slotSign(hh):slot;
+    svg.append(s("text",{x:N_SN[hh][0],y:N_SN[hh][1],class:"sn","text-anchor":"middle","dominant-baseline":"middle"},label+1));
+    const items=[...(itemsBySign[slot]||[])];if(hh===1)items.unshift({t:"Asc",cls:"asc"});
     placeItems(svg,items,...N_CEN[hh],N_SHAPE[hh],items.length>4?14:17);
   }
-  svg.setAttribute("aria-label",`North Indian chart, ascendant ${SIGNS[lagnaSign]}`);
+  svg.setAttribute("aria-label",(slotSign?"Bhāva chalita chart":"North Indian chart")
+    +`, ascendant ${SIGNS[lagnaSign]}`);
   return svg;
 }
 // South Indian: sign-fixed grid
@@ -586,7 +596,12 @@ function southChart(lagnaSign,itemsBySign,centerLabel){
 function normalise(d){
   const D=d.derived||{};
   const G={};
-  (d.grahas||[]).forEach(g=>{const n=en(g.key||g.en||g.sa);G[n]={n,sign:g.rashi?.idx,deg:g.rashi?.degInSign,lon:g.sidereal_deg,pada:g.nakshatra_pada,dig:g.dignity,r:!!g.retrograde,speed:g.speed_deg_per_day,raw:g}});
+  /* bhava is carried through now. The engine resolves each graha's house
+     under whichever frame the chart was cast with and publishes it as
+     g.bhava; this map dropped the field, so every house on the page was
+     recomputed from the rāśi as (sign − lagna) and the Śrīpati frame could
+     not reach the drawing however the setting was set. */
+  (d.grahas||[]).forEach(g=>{const n=en(g.key||g.en||g.sa);G[n]={n,sign:g.rashi?.idx,deg:g.rashi?.degInSign,lon:g.sidereal_deg,bhava:g.bhava,pada:g.nakshatra_pada,dig:g.dignity,r:!!g.retrograde,speed:g.speed_deg_per_day,raw:g}});
   const planets=PL.filter(p=>G[p]);
   const lagSign=d.lagna?.rashi?.idx??D.lagna_sign??0;
   const now=NOWJD();
@@ -596,7 +611,56 @@ function normalise(d){
   if(!transits.length&&D.as_of?.transits)D.as_of.transits.forEach(t=>transits.push({n:en(t.graha),lon:t.longitude,sign:t.sign,deg:isNum(t.longitude)?t.longitude%30:null,nak:t.nakshatra,pada:t.pada,r:t.retrograde}));
   return{d,D,G,planets,lagSign,md,curMD,transits,name:d.input?.name||"Unnamed chart"};
 }
+/* THE WHOLE-SIGN PRIMITIVE. Correct for anything genuinely rāśi-based —
+   gochara is reckoned from the natal Moon's sign and must keep using this —
+   and wrong for a graha's bhāva the moment the frame is Śrīpati, where rāśi
+   and bhāva come apart for four of nine grahas on the reference chart. */
 const housesFrom=(lag,sign)=>((sign-lag+12)%12)+1;
+
+/* Is this chart cast in the Śrīpati frame? house_system is a top-level key
+   and an OBJECT; .mode is the short form. */
+const isSripati=d=>{const hs=d&&d.house_system;
+  return !!hs&&(typeof hs==="string"?hs==="sripati":hs.mode==="sripati")};
+
+/* The bhāva a graha is ACTUALLY in. Prefer the engine's own answer, which it
+   computes under the frame in force; fall back to whole-sign only when the
+   payload predates the field. */
+const bhavaOf=(N,p)=>{const g=N.G[p];if(!g)return null;
+  if(isNum(g.bhava))return g.bhava;
+  return isNum(g.sign)?housesFrom(N.lagSign,g.sign):null};
+
+/* THE CUSPS COME FROM TOP-LEVEL d.bhavas, not from derived.sripati.
+ *
+ * derived.sripati is built by the report assembly on the main site, NOT by
+ * buildLocalChart — so on this page's re-cast path it does not exist. The
+ * first version of this code read it, found nothing, and fell back to
+ * whole-sign without a word: the slot labels came out identical to whole-sign
+ * and looked right. It was caught only because bhāva 4's madhya is 118.68°,
+ * which is Cancer where whole-sign says Leo. A silent fallback that produces
+ * plausible output is the worst kind, so both helpers below take their cusps
+ * from the bhāva objects the engine publishes on every chart.
+ *
+ * Each bhāva carries madhya_deg, sandhi_start_deg, sandhi_end_deg and
+ * rashi.idx — the rāśi holding its own midpoint, already computed. Use that
+ * rather than recomputing floor(madhya/30). */
+const bhavaList=N=>(N.d&&N.d.bhavas)||[];
+/* the rāśi to print in house hh's slot */
+const madhyaRashi=(N,hh,lag)=>{const b=bhavaList(N)[hh-1];
+  return b&&b.rashi&&isNum(b.rashi.idx)?b.rashi.idx:(lag+hh-1)%12};
+/* And for a bare longitude — the special ascendants, which are points rather
+   than grahas and so carry no bhāva of their own. Under Śrīpati they belong
+   to whichever pair of cusps they fall between, not to their rāśi. */
+const bhavaOfLon=(N,lon)=>{
+  if(!isNum(lon))return null;
+  const L=((lon%360)+360)%360;
+  const B=bhavaList(N);
+  if(!isSripati(N.d)||!B.length||!isNum(B[0].sandhi_start_deg))
+    return housesFrom(N.lagSign,Math.floor(L/30));
+  for(let i=0;i<B.length;i++){
+    const a=((B[i].sandhi_start_deg%360)+360)%360;
+    const w=((B[i].sandhi_end_deg-B[i].sandhi_start_deg)+360)%360;
+    if(((L-a)+360)%360<w)return i+1}
+  return housesFrom(N.lagSign,Math.floor(L/30))};
 
 /* ================= header ================= */
 function renderHeader(N){
@@ -622,7 +686,7 @@ function renderHeader(N){
   const kp=[
     ["Ascendant",`${SIGNS[N.lagSign]} ${dms(d.lagna?.rashi?.degInSign)}`,`${nakOf(d.lagna?.sidereal_deg??0)} pada ${d.lagna?.nakshatra_pada??""}, lord ${SIGN_LORD[N.lagSign]}`],
     ["Moon",moon?`${SIGNS[moon.sign]} ${dms(moon.deg)}`:"",D.birth_nakshatra?`${D.birth_nakshatra.nak}, lord ${D.birth_nakshatra.lord}`:""],
-    ["Sun",sun?`${SIGNS[sun.sign]} ${dms(sun.deg)}`:"",sun?`${ord(housesFrom(N.lagSign,sun.sign))} house`:""],
+    ["Sun",sun?`${SIGNS[sun.sign]} ${dms(sun.deg)}`:"",sun?`${ord(bhavaOf(N,"Sun"))} house`:""],
     ["Ātmakāraka",ak?en(ak.graha):"",D.karakamsha?`Kārakāṃśa ${SIGNS[D.karakamsha.navamsa_sign]}`:""],
     ["Running daśā",run[0]?`${run[0].lord}${run[1]?` / ${run[1].lord}`:""}`:"",run[1]?`until ${fmtD(run[1].end_jd)}`:""],
     ["Strongest planet",sb?sb.graha:"",sb?`Ṣaḍbala ${r2(sb.total_rupa)} rupa, ${r2(sb.ratio)}× required`:""],
@@ -666,14 +730,54 @@ function secCharts(N){
   const leg=h("div",{class:"legend"},`<span><i style="background:var(--teal)"></i>Exalted or mūlatrikoṇa</span><span><i style="background:var(--gold)"></i>Own sign</span><span><i style="background:var(--sindoor)"></i>Debilitated</span><span>R retrograde, c combust</span>`);c.append(leg);
   const cap_=h("p",{class:"note"});c.append(cap_);
   function draw(){
-    const v=vargas.find(x=>x.varga===cur);const pos=v?.positions||Object.fromEntries(N.planets.map(p=>[p,G[p].sign]));
-    const lag=vLag[cur];const items=itemsFromPositions(pos,G,cur==="D1");
-    box.innerHTML="";
+    const v=vargas.find(x=>x.varga===cur);
+    const lag=vLag[cur];
     const useNorth=style==="north"&&lag!=null;
-    box.append(useNorth?northChart(lag,items):southChart(lag??null,items,`${cur}\n${v?.en||""}`));
+    /* BHĀVA CHALITA. The rāśi chart under a Śrīpati frame is a chalita chart:
+       the houses are the quadrant-trisected bhāvas, not the signs, so a graha
+       goes in the slot of the bhāva it occupies. This page placed every graha
+       by its rāśi, so selecting Śrīpati moved the payload — four of nine
+       grahas change bhāva on the reference chart — and left the picture
+       untouched. North layout only, and D1 only:
+         - the South Indian layout is sign-indexed by construction, so it IS a
+           rāśi chart and stays one;
+         - the vargas have no cusps at all (vargaSign returns a rāśi integer;
+           an MC does not map through a D9), so D2–D60 are rāśi charts in
+           every frame. */
+    const chalita = cur==="D1" && useNorth && isSripati(d);
+    let pos, slotSign=null;
+    if (chalita) {
+      /* northChart files items under (lag + hh − 1), so keying a graha by
+         that value for its own bhāva drops it into that house's slot. */
+      pos=Object.fromEntries(N.planets.map(p=>{
+        const b=bhavaOf(N,p);
+        return [p, isNum(b)?((lag+b-1)%12):G[p].sign]}));
+      /* the rāśi holding each bhāva's madhya, from the engine's own
+         bhāva objects — see the note at madhyaRashi */
+      slotSign=hh=>madhyaRashi(N,hh,lag);
+    } else {
+      pos=v?.positions||Object.fromEntries(N.planets.map(p=>[p,G[p].sign]));
+    }
+    const items=itemsFromPositions(pos,G,cur==="D1");
+    box.innerHTML="";
+    box.append(useNorth?northChart(lag,items,slotSign):southChart(lag??null,items,`${cur}\n${v?.en||""}`));
     cap_.textContent=lag==null?`The file gives no ascendant recorded for ${cur} in this file, so it is shown in the sign-fixed South Indian layout.`:(function(){
       const vh=((D.varga_analysis&&D.varga_analysis.houses)||[]).find(x=>x.code===cur);
-      return `${cur} ascendant: ${SIGNS[lag]}${vh&&vh.lagna_lord?", lord "+esc(vh.lagna_lord):""}.`;
+      let t=`${cur} ascendant: ${SIGNS[lag]}${vh&&vh.lagna_lord?", lord "+esc(vh.lagna_lord):""}.`;
+      /* Say which frame is on the screen. A chalita chart and a rāśi chart
+         look alike at a glance and mean different things, so the one thing
+         the caption must never do is stay silent about which it is. */
+      if(chalita) t+=" Drawn as bhāva chalita: the houses are the Śrīpati"
+        +" quadrant-trisected bhāvas, and each is labelled with the rāśi"
+        +" holding its midpoint, so a graha sits in its bhāva rather than"
+        +" its sign.";
+      else if(cur==="D1"&&isSripati(d)) t+=" Your bhāva frame is Śrīpati;"
+        +" this is the rāśi chart. The South Indian layout is sign-indexed by"
+        +" construction — switch to North for the chalita chart.";
+      else if(isSripati(d)&&cur!=="D1") t+=" Divisional charts have no house"
+        +" cusps, so they are rāśi charts in every frame; the Śrīpati frame"
+        +" shows in D1 and in the house cards.";
+      return t;
     })();
   }
   sel.onchange=()=>{cur=sel.value;draw()};draw();
@@ -1059,7 +1163,7 @@ function secBirth(N){
   if(D.avakhada){const c=card(g,{title:"Avakahaḍā chakra",sub:"Used in compatibility matching and naming.",span:"s6"});const a={...D.avakhada};if(isNum(a.rashi))a.rashi=SIGNS[a.rashi];dl(c,a)}
   const c2=card(g,{title:"Day and time",span:"s6"});
   dl(c2,{"Julian Day (UTC)":r2(d.jd_utc,6),"Sunrise (local)":hrs(D.sunrise_local),"Sunset (local)":hrs(D.sunset_local),"Day birth":d.shadbala?.context?.day_birth,"Weekday lord":d.shadbala?.context?.weekday_lord,"Horā lord":d.shadbala?.context?.hora_lord,"Midheaven (MC)":lonTxt(D.mc_sidereal)});
-  if(D.special_lagnas?.length){const c3=card(g,{title:"Special ascendants",span:"s6"});table(c3,[{h:"Name",f:r=>`${esc(r.name)} <span class="muted">${esc(r.abbr)}</span>`},{h:"Position",f:r=>lonTxt(r.lon)},{h:"Longitude",f:r=>r2(r.lon,3)+"°",num:1},{h:"House",f:r=>housesFrom(N.lagSign,r.sign),num:1}],D.special_lagnas)}
+  if(D.special_lagnas?.length){const c3=card(g,{title:"Special ascendants",span:"s6"});table(c3,[{h:"Name",f:r=>`${esc(r.name)} <span class="muted">${esc(r.abbr)}</span>`},{h:"Position",f:r=>lonTxt(r.lon)},{h:"Longitude",f:r=>r2(r.lon,3)+"°",num:1},{h:"House",f:r=>bhavaOfLon(N,r.lon),num:1}],D.special_lagnas)}
   const U=D.upagrahas;
   if(U?.dhumadi?.length){const c4=card(g,{title:"Dhūmādi upagrahas",sub:"Sensitive points derived from the Sun's longitude.",span:"s6"});table(c4,[{h:"Upagraha",f:r=>esc(r.name)},{h:"Position",f:r=>lonTxt(r.longitude)},{h:"Nakṣatra",f:r=>`${esc(r.nakshatra)} ${r.pada??""}`},{h:"House",f:r=>r.house,num:1}],U.dhumadi)}
   if(U?.gulikadi?.length){const c5=card(g,{title:"Gulikādi periods",sub:esc(U.gulikadi_note||""),span:"s6"});
@@ -1082,7 +1186,10 @@ function secTransits(N){
   const wc=card(g,{});wc.append(h("div",{class:"warn"},esc(AO.WARNING||"These positions describe the moment the file was written and go stale as the planets move.")));
   const GO=Object.fromEntries((AO.gochara?.grahas||[]).map(x=>[en(x.graha),x]));
   const c=card(g,{title:"Planets in transit",sub:esc(AO.gochara?.note||"")});
-  table(c,[{h:"Graha",f:r=>pname(r.n)+(r.r?" <span class='muted'>R</span>":"")},{h:"Sign",f:r=>SIGNS[r.sign]},{h:"Degree",f:r=>dms(r.deg),num:1},{h:"Nakṣatra",f:r=>`${esc(r.nak||"")} ${r.pada??""}`},{h:"House from ascendant",f:r=>isNum(r.sign)?ord(housesFrom(N.lagSign,r.sign)):"",num:1},{h:"House from Moon",f:r=>GO[r.n]?ord(GO[r.n].house_from_moon):"",num:1},{h:"Favourable houses",f:r=>(GO[r.n]?.favourable_houses||[]).join(", ")},{h:"Gochara",f:r=>GO[r.n]?(GO[r.n].favourable?tag("favourable","t-good"):tag("not favourable","")):""},{h:"Vedha",f:r=>GO[r.n]?.obstructed_by?`${ord(GO[r.n].vedha_house)} by ${pname(GO[r.n].obstructed_by)}`:""}],N.transits);
+  table(c,[{h:"Graha",f:r=>pname(r.n)+(r.r?" <span class='muted'>R</span>":"")},{h:"Sign",f:r=>SIGNS[r.sign]},{h:"Degree",f:r=>dms(r.deg),num:1},{h:"Nakṣatra",f:r=>`${esc(r.nak||"")} ${r.pada??""}`},/* DELIBERATELY WHOLE-SIGN. Gochara is reckoned by rāśi from the natal
+     Moon, and the Bala audit established it as correctly frame-independent,
+     so this column must NOT follow the bhāva frame. */
+    {h:"House from ascendant",f:r=>isNum(r.sign)?ord(housesFrom(N.lagSign,r.sign)):"",num:1},{h:"House from Moon",f:r=>GO[r.n]?ord(GO[r.n].house_from_moon):"",num:1},{h:"Favourable houses",f:r=>(GO[r.n]?.favourable_houses||[]).join(", ")},{h:"Gochara",f:r=>GO[r.n]?(GO[r.n].favourable?tag("favourable","t-good"):tag("not favourable","")):""},{h:"Vedha",f:r=>GO[r.n]?.obstructed_by?`${ord(GO[r.n].vedha_house)} by ${pname(GO[r.n].obstructed_by)}`:""}],N.transits);
   const TR=(CP.transitRelations||AO.transit_aspects_to_natal||[]).map(x=>({tg:en(x.transit_graha),ng:en(x.natal_graha),aspect:x.aspect,orb:x.orb_deg,sig:x.significance}));
   if(TR.length){const c2=card(g,{title:"Transit aspects to natal planets",sub:"Rows are transiting planets, columns natal planets. Darker cells are tighter orbs; symbols show the aspect.",span:"s7"});
     const tg=PL.filter(p=>TR.some(x=>x.tg===p)),ng=PL.filter(p=>TR.some(x=>x.ng===p));const mxo=Math.max(...TR.map(x=>x.orb),1);

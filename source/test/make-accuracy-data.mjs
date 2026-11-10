@@ -178,6 +178,51 @@ const ayanSpread = r3(ayan[ayan.length - 1].deg - ayan[0].deg);
 const tc = ayan.find(a => a.key === "truechitra"), tr = ayan.find(a => a.key === "truerevati");
 const anchorGapDeg = (tc && tr) ? r3(tc.deg - tr.deg) : null;
 
+/* THE MEASURED SIDEREAL ZERO, with its band.
+ *
+ * The spread above is a CONVENTION spread: nineteen admissible choices, no
+ * correct value among them. This is a different kind of statement — the one
+ * epoch the measurable evidence actually supports — and the page needs both or
+ * it reads as though the whole 5.83° were open.
+ *
+ * Two independent measurements, inverse-variance combined: the 27-star
+ * dhruvakā ensemble (490.8 ± 31 CE) and the solar apogee of three texts
+ * (497.0 ± 34 CE), giving 493.6 ± 23 CE, χ² = 0.02 on 1 d.o.f. The
+ * single-star anchors are EXCLUDED: "Spica at 180°" stipulates an epoch
+ * rather than discovering one, so feeding it in would be circular. The two
+ * textual epochs are withheld and scored afterwards, where they land at 0.2σ
+ * and 0.5σ — the check that was not available to the fit.
+ *
+ * A stated uncertainty is more use to a reader than another decimal place, so
+ * the ±19.3′ band ships beside the epoch. Derivation:
+ * claude/samanvaya-ayanamsa-research.md. These are research results rather
+ * than something this generator recomputes, which is why they are named here
+ * with their source rather than quietly inlined. */
+const measuredZero = {
+  epochCE: 493.6, sigmaYears: 23, bandArcmin: 19.3,
+  constraints: [
+    { what: "dhruvakā ensemble, 27 stars", epochCE: 490.8, sigmaYears: 31 },
+    { what: "solar apogee, 3 texts", epochCE: 497.0, sigmaYears: 34 }
+  ],
+  chiSquare: 0.02, dof: 1,
+  excluded: "the single-star anchors (Citrā 351.7 CE, Revatī 553.8 CE) are " +
+            "definitions and not measurements, and the solstice benchmark is " +
+            "a tautology of the tropical zodiac",
+  withheldAsCheck: [
+    { what: "Sūrya Siddhānta epoch", epochCE: 499.2, sigma: 0.2 },
+    { what: "Varāhamihira, Śaka 427", epochCE: 505.0, sigma: 0.5 }
+  ],
+  scored: [
+    { mode: "samanvaya_ecliptic / aryabhata / ss_swiss", epochCE: 499.2, sigma: 0.2 },
+    { mode: "varahamihira", epochCE: 505.0, sigma: 0.5 },
+    { mode: "nirayana_revati", epochCE: 556.1, sigma: 2.7 },
+    { mode: "samanvaya_polar", epochCE: 405.0, sigma: 3.9 },
+    { mode: "nirayana_citra", epochCE: 346.6, sigma: 6.4 },
+    { mode: "lahiri", epochCE: 285.7, sigma: 9.1 }
+  ],
+  source: "claude/samanvaya-ayanamsa-research.md"
+};
+
 /* ---- 4 · the siddhāntic engines ---------------------------------------- */
 
 const SSB = ["Sūrya", "Candra", "Maṅgala", "Budha", "Guru", "Śukra", "Śani"];
@@ -400,7 +445,8 @@ const doc = {
     })),
   },
   bands, moonCurve,
-  ayanamsa: { atJd: JD_NOW, spreadDeg: ayanSpread, anchorGapDeg: anchorGapDeg, modes: ayan,
+  ayanamsa: { atJd: JD_NOW, spreadDeg: ayanSpread, anchorGapDeg: anchorGapDeg,
+              measuredZero: measuredZero, modes: ayan,
               exactToSwiss: ayan.filter(a => a.exactToSwiss).length },
   siddhanta: {
     measured: siddhanta,
@@ -426,6 +472,8 @@ console.log("wrote " + OUT);
 console.log("  modern: Sun " + perBody[0].lonWorst + "″, Moon " + perBody[1].lonWorst
   + "″, Saturn " + perBody[6].lonWorst + "″");
 console.log("  ayanāṃśa spread: " + ayanSpread + "° across " + ayan.length + " modes");
+console.log("  measured sidereal zero: " + measuredZero.epochCE + " ± "
+  + measuredZero.sigmaYears + " CE (±" + measuredZero.bandArcmin + "′)");
 console.log("  daśā: " + cost.dashaDaysPerArcsec + " d/arcsec of Moon on the cycle"
   + " average (" + cost.dashaDaysPerArcsecMin + "–" + cost.dashaDaysPerArcsecMax
   + " by lord, " + cost.dashaRateLordMin + "–" + cost.dashaRateLordMax + ") → "

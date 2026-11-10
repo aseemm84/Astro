@@ -474,6 +474,56 @@ head("The dashboard, which renders a chart it did not compute");
   const movedSb = Object.keys(W.sb).filter((k) => W.sb[k] !== SP.sb[k]);
   is(movedSb.length >= 4,
     "and the Ṣaḍbala totals move with the frame (" + movedSb.length + " of 7)");
+
+  /* ---- AND THE DRAWN CHART MUST MOVE WITH IT ------------------------------
+   * This is the check whose absence shipped a bug. Everything above asserts
+   * the PAYLOAD changes frame, and it did — but the chart placed each graha
+   * by G[p].sign and derived its house slots from the lagna sign, so the
+   * picture stayed whole-sign no matter what the payload said. A chart is
+   * what a reader actually looks at; asserting the data moved is not
+   * asserting the chart did. */
+  const chart = () => dp.evaluate(() => {
+    const svg = document.querySelector(".kund svg");
+    if (!svg) return null;
+    return {
+      aria: svg.getAttribute("aria-label") || "",
+      /* the rāśi number printed in each house slot, in order */
+      signs: [...svg.querySelectorAll("text.sn")].map((t) => t.textContent).join(" "),
+      /* each non-label glyph with where it was drawn, so a graha changing
+         house shows up as a changed position */
+      items: [...svg.querySelectorAll("text")].filter((t) => !t.classList.contains("sn"))
+        .map((t) => t.textContent.slice(0, 2) + "@" + Math.round(+t.getAttribute("x")) +
+             "," + Math.round(+t.getAttribute("y"))).sort().join(" ")
+    };
+  });
+  await dp.evaluate(() => window.NSettings.set({ house: "whole" }));
+  await dp.waitForTimeout(4500);
+  const cW = await chart();
+  await dp.evaluate(() => window.NSettings.set({ house: "sripati" }));
+  await dp.waitForTimeout(4500);
+  const cS = await chart();
+  is(!!cW && !!cS, "the kuṇḍalī is drawn in both frames");
+  is(/North Indian/.test(cW.aria) && /[Bb]hāva chalita/.test(cS.aria),
+    "it is a rāśi chart under whole-sign and a bhāva chalita chart under Śrīpati");
+  is(cW.items !== cS.items,
+    "grahas are drawn in different house slots — the picture follows, not just the data");
+  /* The slot LABELS must change too, and this half was wrong first: the cusps
+     were read from derived.sripati, which the report assembly builds and
+     buildLocalChart does not, so it fell back to whole-sign silently and the
+     labels came out identical. Under Śrīpati a rāśi can hold two bhāva
+     madhyas while its neighbour holds none, so the sequence repeats and
+     skips — which a whole-sign sequence never does. */
+  is(cW.signs !== cS.signs,
+    "and each slot is labelled with the rāśi holding its madhya, not the " +
+    "whole-sign sequence (" + cW.signs + "  →  " + cS.signs + ")");
+  const nums = cS.signs.split(" ").map(Number);
+  is(new Set(nums).size < nums.length,
+    "a rāśi repeats across two slots, which only a chalita chart does");
+  await dp.evaluate(() => window.NSettings.set({ house: "whole" }));
+  await dp.waitForTimeout(4500);
+  const cBack = await chart();
+  is(cBack.items === cW.items && cBack.signs === cW.signs,
+    "and going back to whole-sign redraws the original chart exactly");
   await dp.evaluate(() => window.NSettings.set({ ayan: "raman" }));
   await dp.waitForTimeout(4500);
   const R = await chartState();

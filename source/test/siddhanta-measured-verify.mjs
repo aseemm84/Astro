@@ -218,6 +218,43 @@ head("the Moon's limit is the absence of terms, re-measured not quoted");
      "no parameter is a function of the elongation, so no choice of them could supply one");
 }
 
+/* 5. THE GENERATOR MUST NOT WRITE UNLESS ASKED.
+ *
+ * fit-siddhanta.mjs sits in source/test/ beside the verify harnesses but it is
+ * a GENERATOR, and it used to overwrite source/data/siddhanta-measured.json on
+ * every run, unconditionally — which made "run everything in source/test/" a
+ * destructive command. A glob over *.mjs picks it up, the committed fit is
+ * replaced by a fresh one from a different seed, and nothing says so: the new
+ * file is valid and every check above still passes against whatever is on
+ * disk. A SHORT accidental run is the bad case, not a long one — at --iters 1
+ * the holdout reaches 184.6′ against the committed fit's 61.6′.
+ *
+ * Asserted behaviourally rather than by reading the source for a flag: run it
+ * with the cheapest possible fit and no --write, and demand the data file is
+ * byte-identical afterwards. */
+{
+  const { execFileSync } = await import("node:child_process");
+  const { createHash } = await import("node:crypto");
+  const DATA = ROOT + "/source/data/siddhanta-measured.json";
+  const sum = () => createHash("sha256").update(readFileSync(DATA)).digest("hex");
+  const before = sum();
+  let ran = false, out = "";
+  try {
+    out = execFileSync(process.execPath,
+      [ROOT + "/source/test/fit-siddhanta.mjs", "--iters", "1"],
+      { encoding: "utf8", timeout: 600000, stdio: ["ignore", "pipe", "pipe"] });
+    ran = true;
+  } catch (e) { out = String((e && e.stdout) || e); }
+  is(ran, "the generator runs without --write" + (ran ? "" : ": " + out.slice(0, 160)));
+  is(sum() === before,
+     "and leaves source/data/siddhanta-measured.json BYTE-IDENTICAL — writing is " +
+     "opt-in, so running the test directory cannot replace production data");
+  is(/NOT WRITTEN/.test(out),
+     "and says so, rather than finishing silently and leaving the reader to guess");
+  is(/--write/.test(out),
+     "naming the flag that would write, so the refit path stays discoverable");
+}
+
 console.log("\n" + (fail ? "FAIL" : "PASS") + " siddhanta-measured-verify — "
             + pass + " passed, " + fail + " failed");
 process.exit(fail ? 1 : 0);

@@ -244,6 +244,20 @@ if (hasBtn) {
      also the check that the panel did not throw. */
   is(await pg.evaluate(() => window.SSEngine.isPanchaSaura()) === true,
     "and the engine is really in the tier, not just labelled");
+  /* THE PAGE'S DISCLOSURE MUST BE THE ENGINE'S LIST, not prose about it.
+     It was hardcoded prose naming four quantities — a claim about the engine
+     written where the engine cannot correct it, so closing one borrow would
+     leave the page still asserting four. It renders from
+     panchaSauraInfo().borrowed now, and this check is what keeps the two
+     tied: when Ch. XVI is finally OCR'd and a borrow is closed, the page
+     follows and the suite confirms it followed. */
+  const shown = await pg.evaluate(() =>
+    [...document.querySelectorAll("#ss-psborrow li")].map((li) => li.textContent));
+  is(shown.length === info.borrowed.length,
+    "the page lists exactly as many borrowed quantities as the engine declares (" +
+    shown.length + " of " + info.borrowed.length + ")");
+  is(info.borrowed.every((b) => shown.some((t) => t.indexOf(b.path) >= 0)),
+    "and every declared path appears in it, so the disclosure cannot drift");
   const bareBtn = await pg.$('[data-ss="bare"]');
   await bareBtn.click();
   await pg.waitForTimeout(2000);

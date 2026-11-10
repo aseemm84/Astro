@@ -651,6 +651,30 @@ head("the two Samanvaya readings — and what is and is not new about them");
   is(!/March|equinox/i.test(r.polar.note),
      "and does not claim a March date or an equinox for it");
 
+  /* 2b. THE POLAR READING MUST NOT CALL ITSELF A SYNTHESIS.
+   *
+   * It was labelled one — "an inverse-variance least-squares centroid over the
+   * Sūrya Siddhānta's polar dhruvakās … the synthesis is the author's own". It
+   * is a FIVE-dhruvakā subset minimum. Combining the full 27-star ensemble
+   * with the solar apogee of three texts puts the measured sidereal zero at
+   * 493.6 ± 23 CE, which excludes this mode's 405.0 CE at 3.9σ — the very
+   * constraint set the label claimed to synthesise. See
+   * claude/samanvaya-ayanamsa-research.md §5–6.
+   *
+   * The mode is KEPT rather than retired, so a reader who stored it still gets
+   * the figures they chose; what is corrected is the claim. These checks exist
+   * because a note is the easiest thing in this project to quietly revert. */
+  is(/NOT AS A SYNTHESIS/.test(r.polar.note),
+     "the polar note tells the reader to take it as a subset minimum, not a synthesis");
+  is(/\bFIVE\b/.test(r.polar.note),
+     "and says how many dhruvakās it actually uses");
+  is(/3\.9σ/.test(r.polar.note) && /493\.6/.test(r.polar.note),
+     "and states the exclusion — 3.9σ from the measured 493.6 CE zero");
+  is(!/synthesis is the author's own/.test(r.polar.note),
+     "and the old claim that it IS a synthesis is gone");
+  is(/Samanvaya–Ecliptic is/.test(r.polar.note),
+     "and it points at the better-supported reading rather than leaving them as peers");
+
   /* 3. THE ECLIPTIC READING IS THE ARYABHATA MODE ALREADY HERE, and the note
      has to say so. Two entries presented as independent answers, when one is
      the other to under an arcsecond, would make this page's own argument
@@ -660,6 +684,17 @@ head("the two Samanvaya readings — and what is and is not new about them");
      (r.nearEcl.worst * 3600).toFixed(2) + "″ across 1000–3000 CE");
   is(/0\.28″|Āryabhaṭa/.test(r.ecl.note) && /one convention/.test(r.ecl.note),
      "and its note says so, rather than offering it as a separate answer");
+  /* And it must carry what the measurement actually supports: 0.2σ from the
+     27-star-plus-apogee zero of 493.6 ± 23 CE, stated as corroboration by
+     independent derivation rather than as a new epoch — with the reason the
+     single-star anchors are excluded from that fit, since they are
+     definitions and not measurements. */
+  is(/493\.6/.test(r.ecl.note) && /0\.2σ/.test(r.ecl.note),
+     "the ecliptic note gives the measured zero it agrees with, and by how much");
+  is(/±19\.3′|19\.3′/.test(r.ecl.note),
+     "and the band on it, which is more use than another decimal place");
+  is(/definitions and not measurements/.test(r.ecl.note),
+     "and why the single-star anchors are excluded from that measurement");
 
   /* 4. THE POLAR READING IS GENUINELY NEW — otherwise there was no point. */
   is(r.nearPolar.worst * 60 > 10,

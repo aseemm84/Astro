@@ -48,6 +48,20 @@
 
   var S = { lon: 0, when: null, place: null, marks: null };
 
+  /* The instant and place this page actually asked the engine about.
+     Published for the harness. graha-verify used to re-ask quickSky with a
+     FRESH new Date(), seconds to minutes after the page had asked, and then
+     demand the same answer back. That is a time-dependent comparison and it
+     flaked — worst near a station, where a graha's speed changes fastest and
+     the slowest-graha ratio in the speed note moves quickest. A test of "does
+     the page draw what the engine said" has to ask the engine the same
+     question the page asked, which means the same moment. */
+  window.__glMoment = function () {
+    return S.when == null ? null
+      : { when: S.when, tz: S.place ? S.place.tz : 0,
+          lat: S.place ? S.place.lat : null, lon: S.place ? S.place.lon : null };
+  };
+
   function esc2(s) {
     return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) {
       return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
@@ -279,6 +293,15 @@
     h.innerHTML = o;
 
     var fast = rows[0], slow = rows[rows.length - 1];
+    /* The rows as drawn, UNROUNDED, for the harness. The chart prints each
+       speed to three decimals but the note below divides the full values, and
+       with a near-stationary graha as the denominator those two disagree
+       visibly — 238 against 236 on the day this was written. A harness
+       checking the note against the printed numbers would be checking the
+       wrong quantity, so it gets the real ones. */
+    window.__glSpeedRows = rows.map(function (r) {
+      return { en: r.en, v: r.v, retro: !!r.retro };
+    });
     var n = $("gl-speednote");
     if (n) {
       n.innerHTML = "At this moment <b>" + esc2(SKT[fast.en]) + "</b> is moving <b>" +

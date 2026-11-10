@@ -240,12 +240,27 @@ head("the live half agrees with the engine, not with itself");
   const r = await p.evaluate(() => {
     const names = ["Sun", "Moon", "Mars", "Mercury", "Jupiter", "Venus", "Saturn",
                    "Rahu", "Ketu"];
-    /* ask the engine the same question the page asked it */
-    const d = new Date();
+    /* Ask the engine the same question the page asked it — AT THE SAME
+       MOMENT. This used to build a fresh new Date() here, seconds to minutes
+       after the page had computed, and then demand identical speeds back.
+       Near a station a graha's speed changes fast enough to break that, and
+       the headline ratio (fastest over slowest) moves fastest of all, so the
+       check flaked on timing rather than on anything being wrong.
+       window.__glMoment() reports the instant and place the page used. */
+    const M = window.__glMoment && window.__glMoment();
+    const tz = M ? M.tz : 0;
+    const d = new Date((M ? M.when : Date.now()) + tz * 3600000);
+    /* MIRROR THE PAGE'S CALL EXACTLY, tzHours included. The page shifts the
+       instant by tz and then ALSO passes tzHours: tz; this test passed
+       tzHours: 0 with the shifted date, which is a different instant by tz
+       hours — 5.5 of them for Ujjain. That, not timing, was most of the
+       disagreement. Asking the same question means the same arguments. */
     const sk = window.quickSky({
       year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate(),
       hour: d.getUTCHours(), minute: d.getUTCMinutes(), second: d.getUTCSeconds(),
-      tzHours: 0, lat: 23.1765, lon: 75.7885 });
+      tzHours: tz,
+      lat: M && M.lat != null ? M.lat : 23.1765,
+      lon: M && M.lon != null ? M.lon : 75.7885 });
     const sp = {}; sk.planets.forEach(x => { sp[x.en] = x; });
     const drawn = [...document.querySelectorAll("#gl-speed text.gl-sval")]
       .map(t => parseFloat(t.textContent));
@@ -258,6 +273,8 @@ head("the live half agrees with the engine, not with itself");
         ? Math.abs(((sp.Rahu.sid - sp.Ketu.sid) % 360 + 360) % 360 - 180) : 999,
       nodeRetro: sp.Rahu && sp.Rahu.speed < 0 && sp.Ketu && sp.Ketu.speed < 0,
       note: (document.getElementById("gl-speednote") || {}).textContent || "",
+      /* the unrounded speeds the note was built from */
+      srows: (window.__glSpeedRows || []).map(x => x.v),
       dign: [...document.querySelectorAll("#gl-cards .glcard")].map(c => {
         const n = c.querySelector(".glhead b"), g = c.querySelector(".gldig");
         return [n ? n.textContent.trim() : "?", g ? g.textContent.trim() : null];
@@ -276,9 +293,20 @@ head("the live half agrees with the engine, not with itself");
   is(r.rows.length > 1 && r.drawn.length === r.rows.length &&
      r.drawn.every((v, i) => i === 0 || v <= r.drawn[i - 1] + 1e-9),
      "and they are drawn in descending order, fastest first");
-  /* the headline ratio is arithmetic the page claims; check it */
+  /* The headline ratio is arithmetic the page claims, so check it against the
+     page's OWN plotted numbers rather than against a fresh engine call. The
+     note is built as rows[0].v / rows[last].v from exactly those values, so
+     this tests the claim it actually makes and cannot drift with the clock.
+     Deriving `want` from a separate quickSky was the other half of the flake:
+     with the slowest graha near a station the quotient is large and moving,
+     and a ±1 tolerance on it is not a meaningful bound.
+     It must come from the UNROUNDED rows, not the printed ones: the chart
+     prints toFixed(3) and the note divides the full values, which differ by
+     two whole units in the quotient when the denominator is near zero. */
   const ratio = /moving ([\d,]+) times/.exec(r.note);
-  const want = Math.max(...eng) / Math.min(...eng);
+  is(r.srows.length === drawn.length,
+     "the page published the unrounded speeds the note was built from");
+  const want = Math.max(...r.srows) / Math.min(...r.srows);
   is(!!ratio && Math.abs(Number(ratio[1].replace(/,/g, "")) - Math.round(want)) <= 1,
      "the headline ratio is the measured one (" + (ratio ? ratio[1] : "?") +
      " vs " + want.toFixed(0) + ")");

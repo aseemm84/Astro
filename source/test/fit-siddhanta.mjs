@@ -43,7 +43,9 @@
  * and comparable against the modern engine on the same chart. The text's own
  * ayanāṃśa remains on the unfitted path.
  *
- * Run: node source/test/fit-siddhanta.mjs [--iters N]
+ * Run: node source/test/fit-siddhanta.mjs [--iters N] [--write]
+ *      Without --write it fits, reports, and changes nothing. --write
+ *      replaces the committed source/data/siddhanta-measured.json.
  */
 
 import { readFileSync, writeFileSync } from "node:fs";
@@ -435,9 +437,52 @@ const doc = {
   lunarDiagnostic: lunar,
 };
 
-writeFileSync(ROOT + "/source/data/siddhanta-measured.json",
-              JSON.stringify(doc, null, 1) + "\n");
-
+/* WRITING IS OPT-IN. This file lives in source/test/ beside the verify
+ * harnesses but it is not one: it is a GENERATOR, and it used to overwrite
+ * source/data/siddhanta-measured.json — committed production data that
+ * ss-engine.js's measured tier is built from — on every run, unconditionally.
+ *
+ * That made "run everything in source/test/" a destructive command. A glob
+ * over *.mjs picks this up, four minutes later the committed fit is replaced
+ * by a fresh one from a different random seed, and nothing says so: the new
+ * file is valid, siddhanta-measured-verify still passes against whatever is
+ * on disk, and the diff is 46 fitted parameters that all moved slightly. The
+ * damage would pass review and be recoverable only from git.
+ *
+ * So the fit prints and exits unless --write is given. The refit commands in
+ * README-dev.md and claude/engine-accuracy.md carry the flag. */
+const WRITE = process.argv.includes("--write");
+const OUT = ROOT + "/source/data/siddhanta-measured.json";
 const hold = Object.values(report).map(r => r.holdout.rms);
 console.log("\n  worst body on the holdout: " + Math.max(...hold).toFixed(3) + "′");
-console.log("  wrote source/data/siddhanta-measured.json");
+
+if (WRITE) {
+  writeFileSync(OUT, JSON.stringify(doc, null, 1) + "\n");
+  console.log("  wrote source/data/siddhanta-measured.json");
+} else {
+  /* Say what WOULD change, so a dry run is still worth something. */
+  let was = null;
+  try { was = JSON.parse(readFileSync(OUT, "utf8")); } catch (e) { /* absent */ }
+  let moved = 0, worst = 0, worstKey = "";
+  if (was && was.params) {
+    for (const k of Object.keys(P)) {
+      const a = was.params[k], b = P[k];
+      if (typeof a !== "number" || typeof b !== "number") continue;
+      const d = Math.abs(b - a);
+      if (d > 1e-12) moved++;
+      const rel = Math.abs(a) > 1e-9 ? d / Math.abs(a) : d;
+      if (rel > worst) { worst = rel; worstKey = k; }
+    }
+  }
+  console.log("\n  NOT WRITTEN. This is a generator, not a check: pass --write to");
+  console.log("  replace source/data/siddhanta-measured.json, which is committed");
+  console.log("  production data the measured tier is built from.");
+  if (was && was.params) {
+    console.log("  Against the committed fit: " + moved + " of " +
+                Object.keys(P).length + " parameters would move" +
+                (worstKey ? ", most of all " + worstKey +
+                 " by " + (worst * 100).toFixed(3) + "%" : "") + ".");
+  } else {
+    console.log("  No committed fit found to compare against.");
+  }
+}

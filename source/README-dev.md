@@ -396,7 +396,7 @@ and the frame being fitted to *and* the drift, with one number for two jobs.
 Adding it is not a liberty: a correction to where a graha stood at the epoch is
 precisely what a saṃskāra is. The Sun went to 1.04′.
 
-Refit with `node test/fit-siddhanta.mjs --iters 1500` (about four minutes).
+Refit with `node test/fit-siddhanta.mjs --iters 1500 --write` (about four minutes; without `--write` it reports and changes nothing).
 
 ## The report modules
 

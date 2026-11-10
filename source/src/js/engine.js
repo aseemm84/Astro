@@ -303,12 +303,24 @@ var AYAN_MODES={
      "Nir. Revatī" — the full names below are untouched and are what the
      picker, the legend and the comparison table show. */
   samanvaya_polar: {name:"Samanvaya–Polar (ध्रुवक-समन्वय)", s:"Sam. Polar",
+               /* RELABELLED, deliberately, and the mode is kept rather than
+                  retired so that a reader who has this stored still gets the
+                  figures they chose. What changed is the claim: this was
+                  presented as a synthesis and it is a five-dhruvakā SUBSET
+                  minimum. See claude/samanvaya-ayanamsa-research.md §5–6. */
                note:"this site's own: the armillary-sphere polar reading, sidereal zero at 405.0 CE " +
-                    "(JD 1868970.25). An inverse-variance least-squares centroid over the Sūrya Siddhānta's " +
-                    "polar dhruvakās — Aśvinī 8°, Rohiṇī 49°30′, Puṣya 106°, Citrā 180°, Uttarāṣāḍhā 260° — " +
-                    "with the 76° Pauliśa solar apogee, propagated by Gaia DR3 space motion and IAU 2006 " +
-                    "precession. 1°39′ west of Lahiri at 2026; nearest neighbour in this family is Raman, " +
-                    "12.5′ away. The synthesis is the author's own and is not derived on this site",
+                    "(JD 1868970.25). An inverse-variance least-squares centroid over FIVE of the Sūrya " +
+                    "Siddhānta's polar dhruvakās — Aśvinī 8°, Rohiṇī 49°30′, Puṣya 106°, Citrā 180°, " +
+                    "Uttarāṣāḍhā 260° — with the 76° Pauliśa solar apogee, propagated by Gaia DR3 space " +
+                    "motion and IAU 2006 precession. 1°39′ west of Lahiri at 2026; nearest neighbour in " +
+                    "this family is Raman, 12.5′ away. " +
+                    "READ IT AS THAT SUBSET'S MINIMUM, NOT AS A SYNTHESIS. Combining the full 27-star " +
+                    "dhruvakā ensemble with the solar apogee of three texts puts the measured sidereal " +
+                    "zero at 493.6 ± 23 CE, which excludes this mode's 405.0 CE at 3.9σ — the very " +
+                    "constraint set it was said to synthesise. The two textual epochs withheld from that " +
+                    "fit, the Sūrya Siddhānta's 499.2 CE and Varāhamihira's 505.0 CE, land at 0.2σ and " +
+                    "0.5σ of it. So this reading is a defensible convention over the stars it uses and " +
+                    "is not the best-supported one on the available evidence; Samanvaya–Ecliptic is",
                c:[0.00030701309467,1.39688795339,22.202788470]},
   samanvaya_ecliptic: {name:"Samanvaya–Ecliptic (क्रान्तिवृत्त-समन्वय)", s:"Sam. Ecliptic",
                note:"this site's own: the orthogonal ecliptic reading, sidereal zero at Āryabhaṭa's Kaliyuga " +
@@ -316,7 +328,13 @@ var AYAN_MODES={
                     "Reached from the equinoctial conjunction, the gnomon solstice records and the 78° solar " +
                     "apogee rather than from a star. It agrees with this site's Āryabhaṭa mode to 0.28″ " +
                     "across 1000–3000 CE, so read the two as one convention independently derived, not as a " +
-                    "choice between them",
+                    "choice between them. " +
+                    "IT IS ALSO THE BEST-SUPPORTED SIDEREAL ZERO ON THE MEASURABLE EVIDENCE. Combining the " +
+                    "27-star dhruvakā ensemble with the solar apogee of three texts gives a measured zero " +
+                    "of 493.6 ± 23 CE — a ±19.3′ band — and this mode's epoch sits 0.2σ from it. That is " +
+                    "corroboration by independent derivation rather than a new epoch: the single-star " +
+                    "anchors are definitions and not measurements, so they are excluded from that fit, and " +
+                    "the textual epochs are withheld from it and scored afterwards",
                c:[0.00030701309468,1.39688795339,20.895012118]}
 };
 var AYAN_MODE="lahiri";

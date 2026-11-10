@@ -76,7 +76,19 @@
     card("Lagna", D.modern.lagna[0].constructionWorst.toFixed(3) + "″",
          "the construction itself, on identical inputs") +
     card("Ayanāṃśa spread", D.ayanamsa.spreadDeg + "°",
-         "across " + D.ayanamsa.modes.length + " modes — convention, not error");
+         "across " + D.ayanamsa.modes.length + " modes — convention, not error") +
+    /* The spread above is a CONVENTION spread — admissible choices, no correct
+       value among them. This card is a different kind of statement: the one
+       epoch the measurable evidence supports. Without it the page reads as
+       though the whole 5.83° were equally open, which is not what the evidence
+       says. */
+    (D.ayanamsa.measuredZero
+      ? card("Measured sidereal zero",
+             D.ayanamsa.measuredZero.epochCE + " ± " +
+               D.ayanamsa.measuredZero.sigmaYears + " CE",
+             "a ±" + D.ayanamsa.measuredZero.bandArcmin + "′ band — the 27-star " +
+             "dhruvakā ensemble and the solar apogee of three texts, combined")
+      : "");
 
   /* ---- inline spans ---------------------------------------------------- */
 
@@ -310,8 +322,13 @@
     });
     var nrows = rows.length;
     T = 26 + nrows * ROWH;
-    var H = T + 92;
-    var s2 = svg(W, H, "Nineteen ayanamsa conventions spanning nearly six degrees, with the engine's own Moon error drawn to the same scale.");
+    /* Room for the caption lines below the axis. The measured-zero line added
+       a fourth and overflowed the viewBox at 92 — accuracy-verify's "no chart
+       spills outside its own viewBox" check caught it, which is exactly what
+       that check is for. Conditional, so a build without the data keeps the
+       old height rather than a band of empty space. */
+    var H = T + (D.ayanamsa.measuredZero ? 112 : 92);
+    var s2 = svg(W, H, "Nineteen ayanamsa conventions spanning nearly six degrees, with the engine's own Moon error drawn to the same scale, and the measured sidereal zero stated beneath.");
 
     add(s2, "line", { x1: L, y1: T, x2: W - R, y2: T, stroke: C.line, "stroke-width": 1.5 });
     for (var d = Math.ceil(lo); d <= Math.floor(hi); d++) {
@@ -344,6 +361,17 @@
         D.ayanamsa.exactToSwiss + " of the " + M.length
         + " reproduce Swiss Ephemeris to 0.000\u2033 (marked in the accent colour), "
         + "so none of this spread is imprecision");
+    /* "All convention" is true and incomplete: the choices are conventions,
+       but the evidence is not silent about which one the sky supports. Saying
+       only the first half invites the reading that any mode is as defensible
+       as any other. */
+    if (D.ayanamsa.measuredZero) {
+      var mz = D.ayanamsa.measuredZero;
+      add(s2, "text", { x: L, y: yb + 62, fill: C.mute, "font-size": 10.5 },
+          "convention is not the same as unconstrained: the measurable evidence "
+          + "puts the sidereal zero at " + mz.epochCE + " \u00b1 " + mz.sigmaYears
+          + " CE, a \u00b1" + mz.bandArcmin + "\u2032 band");
+    }
     host.appendChild(s2);
   })();
 

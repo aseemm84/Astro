@@ -139,6 +139,30 @@
     P["bija.candraUcca"] = 0; P["epoch.candraUcca"] = 0;
     return P;
   }
+  /* THE BORROWED-QUANTITY DISCLOSURE, rendered from the engine.
+   *
+   * The Pañcasiddhāntikā tier carries four quantities that are the Later
+   * Sūrya Siddhānta's, because the edition in the project is page images and
+   * the OCR never reached the chapter that would give them. The page used to
+   * name those four in hardcoded prose, which is a claim about the engine
+   * written somewhere the engine cannot correct — close one of them and the
+   * prose would go on asserting four. Rendered from
+   * panchaSauraInfo().borrowed instead, so the disclosure is whatever the
+   * tier actually does. */
+  function psBorrowList() {
+    var host = document.getElementById("ss-psborrow");
+    if (!host || !S.panchaSauraInfo) return;
+    var b = (S.panchaSauraInfo().borrowed || []);
+    if (!b.length) {
+      host.innerHTML = "<li>None — every constant in this tier is the text's own.</li>";
+      return;
+    }
+    host.innerHTML = b.map(function (x) {
+      return '<li><b>' + esc(x.what) + '</b> <code>' + esc(x.path) + '</code><br>' +
+             esc(x.why) + '</li>';
+    }).join("");
+  }
+
   function apply() {
     if (MODE === "bare") { S.bare(); S.setMeasured(FIT); return; }
     /* The Pañcasiddhāntikā tier is a CONSTANTS tier, not a fitted one: it
@@ -149,6 +173,9 @@
        is partly someone else's numbers under Varāhamihira's name would be a
        worse object than no tier at all. */
     if (MODE === "ps") { S.bare(); S.panchaSaura(); S.setMeasured(FIT); return; }
+    /* (psBorrowList() below renders the disclosure from the engine's own
+       list, so the page cannot claim a different set of borrows than the
+       tier actually has.) */
     /* bare() FIRST, always. Before the Pañcasiddhāntikā tier existed, every
        mode here was a set of offsets over one fixed set of constants, so
        nothing had to be cleared. Now a mode can REPLACE the constants, and
@@ -664,7 +691,7 @@
 
   /* ---- wiring ------------------------------------------------------------- */
   function redrawLab() {
-    sliders(); scoreTable(); ringPanel();
+    sliders(); scoreTable(); ringPanel(); psBorrowList();
   }
   function redrawGeom() { epiPanel(); curvePanel(); }
 
