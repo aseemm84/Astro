@@ -2574,7 +2574,7 @@ html[data-theme="emerald"] .wsnext.lead{
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-11-10.0e14503";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>The casting ceremony</h1><p class="sub">The nine grahas winding back to a moment, and settling onto the nakṣatra ring where they stood. Turn it, tilt it, and run it for any moment you like.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html" class="active">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
+</script><script>window.__kBuild="2026-11-10.7fc996a";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>The casting ceremony</h1><p class="sub">The nine grahas winding back to a moment, and settling onto the nakṣatra ring where they stood. Turn it, tilt it, and run it for any moment you like.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html" class="active">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
 
 <div class="cerbar" id="cer-bar">
   <div class="cerfield"><label for="cer-date">Date</label><input type="date" id="cer-date"></div>
@@ -4297,7 +4297,13 @@ function shadbala(ctx){
     var sapta=0;
     SB_SEVEN.forEach(function(v){
       var vs=vargaSign(v,sid), d=digOf(p,vs,null);
-      if(d==="exalted"||d==="moolatrikona"||d==="own") sapta+=SB_VAL[d==="own"?"own":"exalted"];
+      /* the ladder follows the PADDHATI, not the house frame — see SB_VAL.
+         Hoisted out of the else branch so the exalted/own values come from
+         the same ladder as the relationship values; they happen to agree at
+         45 and 30 in both texts, but reading them from different tables
+         would be waiting for the day they do not. */
+      var LAD=(FR.mode==="sripati")?SB_VAL_SP:SB_VAL;
+      if(d==="exalted"||d==="moolatrikona"||d==="own") sapta+=LAD[d==="own"?"own":"exalted"];
       else { var lord=LORD[vs];
         /* The tātkālika half of the pañcadhā relation is reckoned by RĀŚI
            distance, not by bhāva — a graha in the 2nd, 3rd, 4th, 10th, 11th
@@ -4307,10 +4313,24 @@ function shadbala(ctx){
            moved Saptavargaja Bala, and so Sthāna and the Ṣaḍbala total, for
            grahas whose rāśi had not changed at all. sbCompound only uses the
            difference, so rāśi indices give exactly the classical reckoning. */
-        /* the ladder follows the paddhati, not the house frame — see SB_VAL */
-        var LAD=(FR.mode==="sripati")?SB_VAL_SP:SB_VAL;
+        /* ...THAT IS BPHS'S RECKONING, AND ŚRĪPATI'S IS NOT THE SAME.
+           Sastri (pp. 24–26) takes the temporal relation from which of the
+           twelve BHĀVAS each graha occupies in the lagna-bhāva-kuṇḍalī, and
+           records that Śrīpati does not favour the alternative of casting a
+           fresh bhāva chakra from each graha in turn. Balabhadra agrees; it
+           is Parāśara and Keśava who count rāśis. Under unequal bhāvas the
+           two give different answers for a graha that has ingressed across a
+           sandhi, which is precisely when it matters.
+           So the comment above still describes the BPHS path exactly, and the
+           Śrīpati path deliberately passes bhāva indices instead. This feeds
+           Saptavargaja → Sthāna → the Ṣaḍbala total, so it is the widest
+           reaching of the paddhati differences. */
+        var ip=(FR.mode==="sripati")?h:sg,
+            io=(FR.mode==="sripati")
+              ?(houseOf[lord]==null?h:houseOf[lord])
+              :(signOf[lord]==null?sg:signOf[lord]);
         sapta += (lord===p)?LAD.own
-          :LAD[sbCompound(p,lord,sg,(signOf[lord]==null?sg:signOf[lord]),natFriend)]; }
+          :LAD[sbCompound(p,lord,ip,io,natFriend)]; }
     });
     var oddSign=(sg%2===0), navSign=vargaSign("D9",sid), oddNav=(navSign%2===0);
     var wantOdd=(SB_FEM.indexOf(p)<0);
@@ -5062,6 +5082,104 @@ window.buildLocalChart=function(inp){
       weekday:(Math.floor(jdFromUTC(inp.year,inp.month,inp.day,0)+1.5)%7+7)%7,
       varshaLord:DAYL[varshaW], masaLord:DAYL[masaW]});
   }catch(err){ sbOut={error:String(err&&err.message||err)}; }
+
+  /* ===== BHĀVA BALA, ŚRĪPATI'S EXACT FORM — Adh. 3, śl. 20–23 =============
+   *
+   * The report has carried a bhāva bala for a long time, and its own note
+   * conceded what it was: "the simplified forms; the exact treatment weighs
+   * each glance in Virupas by angle." Śrīpati IS that exact treatment, worked
+   * through on a real chart with every intermediate printed, so there is no
+   * longer a reason to approximate under his paddhati.
+   *
+   * Four components (Adh. 3, śl. 20–23 and the prose at p.55):
+   *
+   *   svami   Σ over the rāśis the bhāva spans of (arc in that rāśi ÷ 30°)
+   *           × the ṣaḍbala of that rāśi's lord.
+   *           DIVIDED BY 30°, NOT BY THE BHĀVA'S OWN WIDTH. His first worked
+   *           bhāva happens to be exactly 30° wide so it cannot settle the
+   *           question, but his second cannot be read any other way: ÷30
+   *           gives 6·9078 against his printed 6·908, while ÷width gives
+   *           7·476. So a bhāva narrower than a rāśi carries less than a full
+   *           lord, and a wider one carries more. All twelve reproduce exactly.
+   *   drg     ¼ × (benefic dṛṣṭi on the bhāva − malefic dṛṣṭi on it), the
+   *           same quarter rule the graha dṛk bala uses.
+   *   gurubudha  the ENTIRE dṛṣṭi of Jupiter and Mercury on the bhāva, added
+   *           again on top of their quarter — his rule, not BPHS's.
+   *   dig     by the class of the rāśi holding the MADHYA: biped signs are
+   *           strong in the 1st bhāva, quadruped in the 10th, watery in the
+   *           4th, keeta in the 7th, and strengthless in the bhāva opposite
+   *           that (śl. 22). Distance from the WEAK bhāva, folded at 180°,
+   *           ÷3 virūpas. Tulā in the 7th is the instructive case: biped, so
+   *           its weak point is the 7th bhāva, which is itself — digbala
+   *           exactly nil, and his total confirms it.
+   *
+   * Dṛṣṭi on a bhāva is measured TO ITS MADHYA (Summary, p.162), which is
+   * what makes the quantity meaningful under unequal bhāvas at all.
+   *
+   * NOT APPLIED, deliberately: the prose at p.55 also adds one rūpa when
+   * Jupiter or Mercury occupy the bhāva and subtracts one when Saturn, Mars
+   * or the Sun do. His own worked table does not apply it — the Sun and
+   * Saturn sit in his first bhāva and no rūpa is deducted — so the edition is
+   * internally inconsistent here. Following the prose would break the twelve
+   * totals that currently reconcile, so the rule is recorded and left off,
+   * and the payload says so rather than silently choosing.
+   *
+   * Śrīpati-only. Under BPHS the report's existing section is unchanged. */
+  var bhavaBalaOut=null;
+  if(FRAME.mode==="sripati" && sbOut && sbOut.planets && !sbOut.error){
+    try{
+      var SBBY={}; sbOut.planets.forEach(function(r){ SBBY[r.graha]=r.total_rupa; });
+      var BEN_SP=["Jupiter","Venus","Mercury","Moon"];
+      /* sign classes as Sastri adopts them (p.54), following Garga: Vṛścika
+         alone is keeta, Kaṭaka is watery, and the whole of Kumbha is biped
+         against the view that splits it. Dhanus and Makara ARE split. */
+      var signClass=function(sg,degIn){
+        if(sg===2||sg===6||sg===5||sg===10) return "biped";     /* Mithuna Kanyā Tulā Kumbha */
+        if(sg===8) return degIn<15?"biped":"quadruped";          /* Dhanus */
+        if(sg===9) return degIn<15?"quadruped":"watery";         /* Makara */
+        if(sg===0||sg===1||sg===4) return "quadruped";           /* Meṣa Vṛṣabha Siṃha */
+        if(sg===7) return "keeta";                               /* Vṛścika */
+        return "watery";                                         /* Kaṭaka Mīna */
+      };
+      var WEAKB={biped:7,quadruped:4,watery:10,keeta:1};
+      bhavaBalaOut=[];
+      for(var bh=1;bh<=12;bh++){
+        var lo=norm(FRAME.sripati.sandhi[bh===1?12:bh-1]),
+            hi=norm(FRAME.sripati.sandhi[bh]),
+            md=norm(FRAME.sripati.madhya[bh]),
+            wid=((hi-lo)%360+360)%360;
+        /* walk the arc rāśi by rāśi */
+        var svami=0, parts=[], cur=lo, done=0;
+        while(done<wid-1e-9){
+          var sgw=Math.floor(cur/30)%12;
+          var toEdge=((sgw+1)*30-cur); if(toEdge<=1e-12)toEdge=30;
+          var step=Math.min(toEdge,wid-done);
+          var lw=LORD[sgw], sbw=SBBY[lw];
+          if(sbw!=null){ svami+=(step/30)*sbw; }
+          parts.push({rashi_idx:sgw,arc_deg:+step.toFixed(6),lord:SK[lw]});
+          cur=norm(cur+step); done+=step;
+        }
+        /* dṛṣṭi cast on the madhya */
+        var sub=0,pap=0,gb=0;
+        ["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn"].forEach(function(q){
+          if(!pos[q])return;
+          var v=sphutaDrishti(q,pos[q].sid,md); if(!v)return;
+          if(BEN_SP.indexOf(q)>=0) sub+=v; else pap+=v;
+          if(q==="Jupiter"||q==="Mercury") gb+=v;
+        });
+        var drg=(sub-pap)/4;
+        var cl=signClass(Math.floor(md/30)%12, md%30);
+        var weakMd=norm(FRAME.sripati.madhya[WEAKB[cl]]);
+        var ddg=Math.abs(((md-weakMd)%360+360)%360); if(ddg>180)ddg=360-ddg;
+        var digb=ddg/3;
+        bhavaBalaOut.push({bhava:bh,
+          svami_rupa:+(svami).toFixed(6), spans:parts,
+          drg_virupa:+drg.toFixed(6), guru_budha_virupa:+gb.toFixed(6),
+          dig_virupa:+digb.toFixed(6), dig_class:cl,
+          total_rupa:+(svami+(drg+gb+digb)/60).toFixed(6)});
+      }
+    }catch(e){ bhavaBalaOut={error:String(e&&e.message||e)}; }
+  }
   /* The pañcāṅga OF THE BIRTH, which the report has always shown and the JSON has
      never carried — only the pañcāṅga of the moment the file was made, under
      current_phase. The two are different facts and a reader of the file alone
@@ -5101,6 +5219,11 @@ window.buildLocalChart=function(inp){
              "bhāva-phala, the graded effect within a bhāva (Adh. 1, śl. 9–10)",
              "Ayana Bala, on a 24° parama-krānti half range (Adh. 3, śl. 15)",
              "Saptavargaja Bala, on the halving ladder (Adh. 3, śl. 2–3)",
+             "tātkālika maitrī read from the bhāva chakra, not rāśi distance "+
+               "(pp. 24–26) — this feeds Saptavargaja, Sthāna and the "+
+               "Ṣaḍbala total, so it is the widest reaching difference",
+             "bhāva bala in its exact form, with the lord pro-rated across "+
+               "the rāśis the bhāva spans (Adh. 3, śl. 20–23)",
              "Iṣṭa and Kaṣṭa phala, geometric (Adh. 4, śl. 6)"]
           : ["bhāva division (whole sign)",
              "Ayana Bala, on the obliquity of date (Ch. 27, vv. 15–17)",
@@ -5156,6 +5279,20 @@ window.buildLocalChart=function(inp){
       rashis:risingT},
     ayanamsa_mode:AYAN_MODE, ayanamsa_name:AYAN_MODES[AYAN_MODE].name, node_mode:nodeMode,
     ayanamsa_note:AYAN_MODES[AYAN_MODE].note, ashtakavarga:avOut, yogas:yg, bhayat:bb, shadbala:sbOut,
+    /* Śrīpati's exact bhāva bala; null under BPHS, where the report's own
+       simplified section stands. The ±1 rūpa occupancy rule is recorded but
+       not applied — his worked table does not apply it either. */
+    bhava_bala:bhavaBalaOut,
+    bhava_bala_note:bhavaBalaOut&&!bhavaBalaOut.error
+      ? "Śrīpati, Adh. 3, śl. 20–23. Bhāva bala = the ṣaḍbala of its lord, "+
+        "pro-rated across the rāśis the bhāva spans at a thirtieth of a rūpa "+
+        "per degree, plus a quarter of the net dṛṣṭi on its madhya, plus the "+
+        "whole dṛṣṭi of Jupiter and Mercury, plus its dig bala by the class "+
+        "of the rāśi holding the madhya. The one rūpa added for Jupiter or "+
+        "Mercury occupying the bhāva, and deducted for Saturn, Mars or the "+
+        "Sun, is stated in the same passage but is NOT applied in the "+
+        "edition's own worked table, so it is not applied here either."
+      : null,
     lagna:{sidereal_deg:lagSid,rashi:rashiObj(lagSid),nakshatra_pada:nak(lagSid).pada},
     /* The frame this chart was computed in, declared on its face. A chart
        JSON that does not say which house system produced its bhāvas cannot be

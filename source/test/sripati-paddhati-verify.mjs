@@ -147,9 +147,11 @@ const [B, S] = await pg.evaluate((b) => ["whole", "sripati"].map((m) => {
   const by = {}; (J.shadbala.planets || []).forEach((p) => { by[p.graha] = p; });
   return { mode: J.house_system.mode, paddhati: J.paddhati,
            sb: by, ikNote: J.shadbala.ishta_kashta_note,
+           bhavaBala: J.bhava_bala, bhavaBalaNote: J.bhava_bala_note,
            phala: Object.fromEntries((J.grahas || []).map(
              (g) => [g.en || g.key, g.bhava_phala])) };
 }), BIRTH);
+const BB = { whole: B.bhavaBala, sri: S.bhavaBala, note: S.bhavaBalaNote };
 await pg.close();
 await browser.close();
 
@@ -210,6 +212,97 @@ is(G.every((g) => B.sb[g].required_rupa === S.sb[g].required_rupa),
    "the required-Ṣaḍbala figures are identical in both (390/360/300/420/390/330/300)");
 is(G.every((g) => Math.abs(B.sb[g].uchcha - S.sb[g].uchcha) < 1e-9),
    "Uchcha Bala is identical — both reduce to the arc from debilitation");
+
+/* ---------------------------------------------------- BHĀVA BALA, Adh. 3 ---
+   His ṣaḍbala table, p.52, in rūpa — the input his bhāva bala consumes. */
+const SB_BOOK = { Sun:9.015, Moon:8.197, Mars:7.731, Mercury:6.209,
+                  Jupiter:8.613, Venus:7.459, Saturn:3.844 };
+const LORD_OF = ["Mars","Venus","Mercury","Moon","Sun","Mercury",
+                 "Venus","Mars","Jupiter","Saturn","Saturn","Jupiter"];
+const BOOK_SVAMI = [7.781,6.908,5.900,7.789,9.530,7.043,7.392,7.130,7.845,4.822,4.136,8.648];
+const BOOK_DIG   = [0.462,0.308,0.692,1.000,0.179,0.179,null,0.846,0.308,1.000,0.641,0.358];
+const CLS = (sg, deg) =>
+  (sg===2||sg===6||sg===5||sg===10) ? "biped" :
+  sg===8 ? (deg<15?"biped":"quadruped") :
+  sg===9 ? (deg<15?"quadruped":"watery") :
+  (sg===0||sg===1||sg===4) ? "quadruped" : sg===7 ? "keeta" : "watery";
+const WEAKB = { biped:7, quadruped:4, watery:10, keeta:1 };
+
+head("=== BOOK: bhāva-svāmi bala, Adh. 3 śl. 20–23 against his table p.56 ===");
+for (let h = 1; h <= 12; h++) {
+  const lo = arambha(h), wid = fwd(lo, virama(h));
+  let sv = 0, cur = lo, done = 0, nParts = 0;
+  while (done < wid - 1e-9) {
+    const sg = Math.floor(cur / 30) % 12;
+    let toEdge = (sg + 1) * 30 - cur; if (toEdge <= 1e-12) toEdge = 30;
+    const step = Math.min(toEdge, wid - done);
+    sv += (step / 30) * SB_BOOK[LORD_OF[sg]];
+    cur = (cur + step) % 360; done += step; nParts++;
+  }
+  near(sv, BOOK_SVAMI[h - 1], 0.004,
+    "bhāva " + h + " svāmi bala (" + nParts + " rāśi span" + (nParts > 1 ? "s" : "") + ")");
+}
+head("=== BOOK: and ÷30 is the rule, not ÷the bhāva's own width ===");
+{
+  /* bhāva 2 settles it: it is 27.72° wide, so the two readings diverge */
+  const h = 2, lo = arambha(h), wid = fwd(lo, virama(h));
+  let byThirty = 0, byWidth = 0, cur = lo, done = 0;
+  while (done < wid - 1e-9) {
+    const sg = Math.floor(cur / 30) % 12;
+    let toEdge = (sg + 1) * 30 - cur; if (toEdge <= 1e-12) toEdge = 30;
+    const step = Math.min(toEdge, wid - done);
+    byThirty += (step / 30) * SB_BOOK[LORD_OF[sg]];
+    byWidth  += (step / wid) * SB_BOOK[LORD_OF[sg]];
+    cur = (cur + step) % 360; done += step;
+  }
+  is(Math.abs(wid - 30) > 2, "bhāva 2 is " + wid.toFixed(2) + "° wide, so the two readings differ");
+  near(byThirty, BOOK_SVAMI[1], 0.004, "÷30 reproduces his printed 6·908");
+  is(Math.abs(byWidth - BOOK_SVAMI[1]) > 0.4,
+     "÷width gives " + byWidth.toFixed(3) + " and does not — so the weights " +
+     "need not sum to one, and a narrow bhāva carries less than a full lord");
+}
+
+head("=== BOOK: bhāva dig bala, by the class of the madhya's rāśi ===");
+for (let h = 1; h <= 12; h++) {
+  const md = BHAVA[h - 1];
+  const cl = CLS(Math.floor(md / 30) % 12, md % 30);
+  let dd = Math.abs(fwd(BHAVA[WEAKB[cl] - 1], md)); if (dd > 180) dd = 360 - dd;
+  const dig = dd / 3 / 60;
+  if (BOOK_DIG[h - 1] == null) {
+    /* Tulā in the 7th is biped, so its weak point is the 7th bhāva — itself.
+       His table's ·830 in that column belongs to the adjacent row: with dig
+       at nil his own total reconciles exactly (7·392 − ·093 + ·830 = 8·129). */
+    near(dig, 0, 1e-9,
+      "bhāva " + h + " (" + cl + ") is strengthless at its own madhya — dig bala nil");
+  } else {
+    near(dig, BOOK_DIG[h - 1], 0.004, "bhāva " + h + " dig bala (" + cl + ")");
+  }
+}
+
+head("=== ENGINE: bhāva bala is produced, and only under Śrīpati ===");
+is(BB.whole === null, "whole-sign emits no Śrīpati bhāva bala");
+is(Array.isArray(BB.sri) && BB.sri.length === 12, "Śrīpati emits all twelve");
+is(BB.sri.every((b) => Math.abs(b.total_rupa -
+     (b.svami_rupa + (b.drg_virupa + b.guru_budha_virupa + b.dig_virupa) / 60)) < 1e-6),
+   "each total is exactly its own four components, not rounded twice");
+is(BB.sri.every((b) => b.spans.length >= 1 && b.spans.length <= 3),
+   "every bhāva spans one to three rāśis");
+is(BB.sri.some((b) => b.spans.length >= 2),
+   "and at least one spans two — otherwise the pro-rating is never exercised");
+is(BB.sri.every((b) => b.dig_virupa >= -1e-9 && b.dig_virupa <= 60 + 1e-9),
+   "dig bala stays within nil to one rūpa");
+is(new Set(BB.sri.map((b) => b.dig_class)).size >= 2,
+   "more than one sign class occurs (" +
+   [...new Set(BB.sri.map((b) => b.dig_class))].join(", ") + ")");
+is(BB.note && /NOT applied/.test(BB.note),
+   "and the payload says the ±1 rūpa occupancy rule is deliberately not applied");
+
+head("=== ENGINE: tātkālika maitrī is read from the bhāva chakra ===");
+is(/tātkālika maitrī read from the bhāva chakra/.test(
+     (S.paddhati.follows_this_paddhati || []).join(" ")),
+   "the paddhati block declares it, so the Ṣaḍbala shift is attributable");
+is(G.some((g) => Math.abs(B.sb[g].sthana - S.sb[g].sthana) > 1e-9),
+   "Sthāna Bala moves with it, as the chain Saptavargaja→Sthāna→Ṣaḍbala implies");
 
 head("Page errors");
 is(errs.length === 0, errs.length ? errs.slice(0, 3).join(" | ") : "none");
