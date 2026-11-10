@@ -308,6 +308,99 @@ for (const mode of ["whole", "sripati"]) {
     (bare.length ? " — " + bare.length + " still do" : ""));
 }
 
+/* ===== SURFACE 4: THE ANALYST JSON ======================================
+ *
+ * The exported payload is the surface with no picture to give it away. A
+ * chart drawn wrong is visible; a JSON that declares one convention above
+ * figures computed under another is not, and it is the artifact that leaves
+ * the session and gets read by someone who cannot check it against anything.
+ *
+ * Three faults lived here until now, all invisible from inside the file:
+ * conventions.house_system was the pinned literal "whole sign"; the guide
+ * block asserted whole-sign houses flatly in the very section its own
+ * reading_order tells an analyst to read first; and the dṛṣṭi matrix was
+ * cast with the BPHS speculum whatever the paddhati, under a note claiming
+ * it was the same formula that fed Drik Bala.
+ */
+async function analystPayload(mode) {
+  const pg = await browser.newPage();
+  pg.on("pageerror", (e) => errs.push("analyst(" + mode + "): " + e.message));
+  await pg.goto("file://" + CWD + "/kundli.html");
+  await pg.waitForFunction(() => window.buildLocalChart && window.SPSripati &&
+    window.buildKundliReport && window.buildJyotishaPayload &&
+    window.__deriveForExport, null, { timeout: 45000 });
+  const out = await pg.evaluate(([b, m]) => {
+    const J = window.buildLocalChart(Object.assign({}, b, { houseSystem: m }));
+    window.buildKundliReport(J);
+    /* attach the derived layer exactly as the download button does — the
+       payload reads J.derived, so building it from a bare chart would test
+       a file no user ever receives */
+    J.derived = window.__deriveForExport(J) || {};
+    const P = window.buildJyotishaPayload(J);
+    const conv = (P.derived && P.derived.conventions) || {};
+    const gd = (P.derived && P.derived.graha_drishti) || {};
+    const ik = (P.derived && P.derived.ishta_kashta) || null;
+    return {
+      convHouse: conv.house_system || null,
+      convMode: (conv.house_system_detail && conv.house_system_detail.mode) || null,
+      paddhatiMode: (conv.paddhati && conv.paddhati.mode) || null,
+      guideHouses: (P.derived && P.derived.guide && P.derived.guide.units &&
+                    P.derived.guide.units.houses) || null,
+      guideCaution: (P.derived && P.derived.guide && P.derived.guide.cautions &&
+                     P.derived.guide.cautions[0]) || null,
+      drishtiFormula: gd.drishti_formula || null,
+      drishtiFrame: gd.house_count_view_frame || null,
+      ikRule: ik && ik[0] && ik[0].rule,
+      ikSource: ik && ik[0] && ik[0].source,
+      ikFirst: ik && ik[0] && { g: ik[0].graha, i: ik[0].ishta, k: ik[0].kashta },
+      engineIK: Object.fromEntries((J.shadbala.planets || []).map(
+        (x) => [x.graha, [x.ishta, x.kashta, x.ishta_kashta_rule]])),
+      engineMode: J.house_system.mode
+    };
+  }, [BIRTH, mode]);
+  await pg.close();
+  return out;
+}
+
+for (const mode of ["whole", "sripati"]) {
+  head("=== ANALYST JSON (" + mode.toUpperCase() + ") ===");
+  const A = await analystPayload(mode);
+  is(A.convMode === mode,
+    "conventions declares the frame the chart was cast in (" + A.convMode + ")");
+  is(!/^whole sign$/.test(A.convHouse) || mode === "whole",
+    "conventions.house_system is not the pinned literal \"whole sign\" " +
+    "(it reads: " + String(A.convHouse).slice(0, 60) + "…)");
+  /* the paddhati is named for its TEXT, not for the house division — the
+     whole-sign frame is BPHS's, and conflating the two names is how the
+     toggle got mistaken for a house switch in the first place */
+  is(A.paddhatiMode === (mode === "sripati" ? "sripati" : "bphs"),
+    "and carries the paddhati block, naming the text rather than the house " +
+    "division (" + A.paddhatiMode + ")");
+  is(mode === "sripati"
+      ? /Śrīpati bhāva-chalita/.test(A.guideHouses || "")
+      : /whole sign/.test(A.guideHouses || ""),
+    "the guide's units line describes THIS chart's houses");
+  is(mode === "sripati"
+      ? /ŚRĪPATI paddhati/.test(A.guideCaution || "")
+      : /Whole-sign houses are the default/.test(A.guideCaution || ""),
+    "and its first caution does too");
+  is(mode === "sripati"
+      ? /Adh\. 2/.test(A.drishtiFormula || "")
+      : /Ch\. 26/.test(A.drishtiFormula || ""),
+    "the dṛṣṭi matrix names the formula it was cast with (" +
+    String(A.drishtiFormula).slice(0, 40) + "…)");
+  is(A.drishtiFrame === mode, "and the house-count view names its frame");
+  is(A.ikRule === (mode === "sripati" ? "geometric" : "arithmetic"),
+    "iṣṭa/kaṣṭa carries the rule actually used (" + A.ikRule + ")");
+  is(mode === "sripati" ? /Adh\. 4/.test(A.ikSource || "")
+                        : /Ch\. 28/.test(A.ikSource || ""),
+    "and its citation (" + A.ikSource + ")");
+  const ei = A.engineIK[A.ikFirst.g];
+  is(ei && Math.abs(ei[0] - A.ikFirst.i) < 0.001 && Math.abs(ei[1] - A.ikFirst.k) < 0.001,
+    "and its VALUES equal the engine's, rather than being recomputed here " +
+    "(" + A.ikFirst.g + ": " + A.ikFirst.i.toFixed(3) + " / " + A.ikFirst.k.toFixed(3) + ")");
+}
+
 head("Page errors");
 is(errs.length === 0, errs.length ? errs.slice(0, 4).join(" | ") : "none on any surface");
 

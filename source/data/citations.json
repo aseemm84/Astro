@@ -10,8 +10,8 @@
   "volumeSplit": 45,
   "volumeSplitSource": "BPHS-Santhanam Vol. 1, preface: \"The present volume—first volume—contains 45 chapters while the remaining 52 chapters have been put in the second volume.\" Vol. 2 opens at Chapter 46, \"Dasas (Periods) of planets\".",
   "maxChapter": 97,
-  "citations": 206,
-  "distinctLoci": 86,
+  "citations": 212,
+  "distinctLoci": 88,
   "files": 38
  },
  "chaptersCited": [
@@ -793,7 +793,31 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1450,
+   "line": 1251,
+   "text": "Ch. 27 v. 19",
+   "vol": null,
+   "chapter": 27,
+   "verses": [
+    19,
+    19
+   ],
+   "claim": "* This is the super-add the engine DECLINED under BPHS Ch. 27 v. 19, after"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 1488,
+   "text": "Ch.27 vv.10–11",
+   "vol": null,
+   "chapter": 27,
+   "verses": [
+    10,
+    11
+   ],
+   "claim": "BPHS Ch.27 vv.10–11: Mercury is a malefic when conjunct a malefic, the"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 1509,
    "text": "Vol. 1, Ch. 27, vv. 15–17",
    "vol": 1,
    "chapter": 27,
@@ -805,7 +829,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1486,
+   "line": 1545,
    "text": "Vol. 1, Ch. 27, v. 19",
    "vol": 1,
    "chapter": 27,
@@ -817,7 +841,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1528,
+   "line": 1592,
    "text": "Ch. 28, v. 6",
    "vol": null,
    "chapter": 28,
@@ -829,7 +853,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1562,
+   "line": 1626,
    "text": "Vol. 1, Ch. 28, v. 6",
    "vol": 1,
    "chapter": 28,
@@ -841,7 +865,40 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1573,
+   "line": 1633,
+   "text": "Ch.27 vv.34–36",
+   "vol": null,
+   "chapter": 27,
+   "verses": [
+    34,
+    36
+   ],
+   "claim": "* BPHS Ch.27 vv.34–36 and Śrīpati p.56 both group the grahas three ways and"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 1678,
+   "text": "Vol. 1, Ch. 27",
+   "vol": 1,
+   "chapter": 27,
+   "verses": null,
+   "claim": "source:\"BPHS, Vol. 1, Ch. 27\"},"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 1683,
+   "text": "Vol. 1, Ch. 27, vv. 34–36",
+   "vol": 1,
+   "chapter": 27,
+   "verses": [
+    34,
+    36
+   ],
+   "claim": ": \"Per-head minima from BPHS, Vol. 1, Ch. 27, vv. 34–36. Śrīpati p.56 \"+"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 1689,
    "text": "Ch. 28 v. 6",
    "vol": null,
    "chapter": 28,
@@ -853,7 +910,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1576,
+   "line": 1692,
    "text": "Ch. 28 v. 6",
    "vol": null,
    "chapter": 28,
@@ -865,7 +922,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1817,
+   "line": 1933,
    "text": "Vol. 2, Ch. 79",
    "vol": 2,
    "chapter": 79,
@@ -883,7 +940,7 @@
   },
   {
    "file": "src/js/report/export/42-json-export.js",
-   "line": 297,
+   "line": 307,
    "text": "Ch. 46, vv. 195",
    "vol": null,
    "chapter": 46,
@@ -895,7 +952,7 @@
   },
   {
    "file": "src/js/report/export/42-json-export.js",
-   "line": 392,
+   "line": 440,
    "text": "Ch. 7, vv. 21–25",
    "vol": null,
    "chapter": 7,
@@ -907,12 +964,12 @@
   },
   {
    "file": "src/js/report/export/42-json-export.js",
-   "line": 393,
+   "line": 446,
    "text": "Ch. 26",
    "vol": null,
    "chapter": 26,
    "verses": null,
-   "claim": "\"Drik Bala uses the exact Sphuta Drishti formula of BPHS Ch. 26.\","
+   "claim": ": \"Drik Bala uses the exact Sphuta Drishti formula of BPHS Ch. 26.\","
   },
   {
    "file": "src/js/report/export/44-readings.js",
@@ -928,7 +985,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 304,
+   "line": 313,
    "text": "Vol. 1 Ch. 7, vv. 17–25",
    "vol": 1,
    "chapter": 7,
@@ -940,7 +997,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 326,
+   "line": 335,
    "text": "Vol. 1, Ch. 7, vv. 17–19",
    "vol": 1,
    "chapter": 7,
@@ -952,7 +1009,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 328,
+   "line": 337,
    "text": "Vol. 1, Ch. 7, vv. 17–19",
    "vol": 1,
    "chapter": 7,
@@ -964,7 +1021,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 330,
+   "line": 339,
    "text": "Ch. 7",
    "vol": null,
    "chapter": 7,
@@ -973,7 +1030,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 332,
+   "line": 341,
    "text": "Vol. 1, Ch. 7, v. 20",
    "vol": 1,
    "chapter": 7,
@@ -985,7 +1042,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 335,
+   "line": 344,
    "text": "Vol. 1, Ch. 7, vv. 21–25",
    "vol": 1,
    "chapter": 7,
@@ -997,7 +1054,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 423,
+   "line": 432,
    "text": "Ch. 7 vv. 26–27",
    "vol": null,
    "chapter": 7,
@@ -1009,7 +1066,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 499,
+   "line": 517,
    "text": "Vol. 1, Ch. 26, vv. 1–12",
    "vol": 1,
    "chapter": 26,
@@ -1018,6 +1075,15 @@
     12
    ],
    "claim": "return {unit:\"virupas, 0–60\", source:\"BPHS Vol. 1, Ch. 26, vv. 1–12 (Sphuṭa Dṛṣṭi)\","
+  },
+  {
+   "file": "src/js/report/export/46-skill-payload.js",
+   "line": 529,
+   "text": "Vol. 1, Ch. 26",
+   "vol": 1,
+   "chapter": 26,
+   "verses": null,
+   "claim": ": \"BPHS, Vol. 1, Ch. 26 — the exact Sphuṭa Dṛṣṭi speculum\","
   },
   {
    "file": "src/js/report/glassbox/29-dignity.js",

@@ -2574,7 +2574,7 @@ html[data-theme="emerald"] .wsnext.lead{
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-11-10.fe8775a";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself — of forty-four in all. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html" class="active">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
+</script><script>window.__kBuild="2026-11-10.527398a";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself — of forty-four in all. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html" class="active">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
 
 <p class="mochartbar" id="mo-chart"></p>
 <div id="mo-host" class="kreport"><p class="k-status" id="mo-status">Loading the scenes…</p></div>
@@ -4076,6 +4076,50 @@ function sbCompound(p,other,houseP,houseO,natFriend){
 /* Sphuta Drishti — BPHS Ch. 26, vv. 1–12. The aspectual angle is measured from the
    aspecting planet to the aspected point; the six rules below give the value in Virupas,
    with the extra allowances the sage specifies for Mars, Jupiter and Saturn. */
+/* ===== ŚRĪPATI'S DṚṢṬI — Adh. 2, śl. 5–6 and the table at p.18 ============
+ *
+ * A different function from the BPHS speculum below, not a variant of it.
+ * Śrīpati tabulates the aspect in QUARTERS of a rūpa against the excess of
+ * the aspected point over the aspecting graha, measured in whole rāśis, and
+ * interpolates linearly across the degrees within a rāśi:
+ *
+ *   excess   1  2  3  4  5  6  7  8  9 10 11 12
+ *   quarters 0  1  3  2  0  4  3  2  1  0  0  0
+ *
+ * Zero at an excess of 1 and 11 is his "planets do not see the 2nd and 12th
+ * houses" (p.20); four at an excess of 6 is the full opposition at one rūpa.
+ *
+ * THE PER-GRAHA SUBSTITUTIONS ARE THE SUPER-ADD, not something beside it.
+ * Śloka 5 says to superadd ¾, ½ and ¼ of a rūpa to Saturn, Jupiter and Mars
+ * on their special aspects; śloka 6 and the table say to substitute 4 for
+ * Saturn at an excess of 2 and 9, for Jupiter at 4 and 8, and for Mars at 3
+ * and 7. In quarters those are +3, +2 and +1 on base values of 1, 2 and 3 —
+ * the same rule written twice. Recognising that is what makes it safe to
+ * implement the table alone and not add the superadd again on top, which
+ * would double it.
+ *
+ * This is the super-add the engine DECLINED under BPHS Ch. 27 v. 19, after
+ * deliberation recorded at sphutaDrishti below: there the translator's
+ * shortcut would have pushed the value past the one rūpa its own verse
+ * ceilings. Here it does not — the table tops out at 4 quarters by
+ * construction — and Śrīpati states it in his own text rather than in a
+ * note. So the same idea is right in one paddhati and wrong in the other,
+ * which is exactly why they are separate functions.
+ *
+ * VERIFIED: all 21 populated cells of his Grahadrigbala table (p.20) are
+ * reproduced to three decimals from his own longitudes. */
+var SP_DRG_BASE=[0,1,3,2,0,4,3,2,1,0,0,0];
+var SP_DRG_SPECIAL={Jupiter:{4:4,8:4},Saturn:{2:4,9:4},Mars:{3:4,7:4}};
+function sripatiDrishti(aspector,lonFrom,lonTo){
+  var ex=(((lonTo-lonFrom)%360+360)%360)/30;        /* excess in rāśis, 0..12 */
+  var t=SP_DRG_BASE.slice(), sp=SP_DRG_SPECIAL[aspector];
+  if(sp) for(var k in sp) if(Object.prototype.hasOwnProperty.call(sp,k)) t[(+k)-1]=sp[k];
+  var n=Math.floor(ex), frac=ex-n;
+  /* value at integer excess n, and at n+1; an excess of 0 is the 12th entry */
+  var a=t[(n===0?12:n)-1], b=t[(n+1>12?1:n+1)-1];
+  var q=a+(b-a)*frac;                                /* quarters of a rūpa */
+  return Math.max(0,Math.min(60,q*15));              /* → virūpas */
+}
 function sphutaDrishti(aspector,lonFrom,lonTo){
   var d=((lonTo-lonFrom)%360+360)%360, v=0;
   if(d>30&&d<=60)        v=(d-30)/2;
@@ -4290,8 +4334,23 @@ function shadbala(ctx){
     // --- Kala ---
     var x=Math.abs(birthH-12); var frac=1-x/12;                    // 1 at noon, 0 at midnight
     var nath=(p==="Mercury")?60:((SB_DAY.indexOf(p)>=0)?60*frac:60*(1-frac));
-    var paksha=(SB_BEN.indexOf(p)>=0)?pakshaArc/3:60-pakshaArc/3;
-    if(p==="Moon") paksha*=2;
+    /* PAKṢA BALA — and two places Śrīpati's commentator parts from BPHS.
+       BPHS Ch.27 vv.10–11: Mercury is a malefic when conjunct a malefic, the
+       Moon is a malefic in the dark half, and the Moon's pakṣa is "always
+       doubled just as the Sun's Ayana bala".
+       Sastri's Śrīpatipaddhati treats Mercury as ALWAYS benefic and the Moon
+       as benefic whether waxing or waning (p.38), and his worked table does
+       NOT double the Moon — ·518 there is the undoubled value, and his Kāla
+       Bala total of 2·050 for the Moon is built from it. His text does say to
+       double; his arithmetic does not. As with the ±1 rūpa in bhāva bala, the
+       table is followed over the prose where the table is internally
+       consistent and reproducible, and the divergence is recorded rather than
+       reconciled. */
+    var pakBen=(FR.mode==="sripati")
+      ? (["Jupiter","Venus","Mercury","Moon"].indexOf(p)>=0)
+      : (SB_BEN.indexOf(p)>=0);
+    var paksha=pakBen?pakshaArc/3:60-pakshaArc/3;
+    if(p==="Moon" && FR.mode!=="sripati") paksha*=2;
     var tribhaga=(p===tribhagaLord||p==="Jupiter")?60:0;
     var lordBala=0;
     if(p===varshaLord)lordBala+=15; if(p===masaLord)lordBala+=30;
@@ -4355,8 +4414,13 @@ function shadbala(ctx){
      * pick a reading silently we keep the unambiguous part and DISCLOSE the
      * omission in the report's Shadbala section. */
     var drik=0;
-    names.concat(["Rahu","Ketu"]).forEach(function(q){ if(q===p||!P[q])return;
-      var v=sphutaDrishti(q,P[q].sid,P[p].sid);
+    /* Śrīpati's dṛṣṭi under his paddhati — a different function, not a
+       variant; see sripatiDrishti. He also does not extend dṛṣṭi to the
+       nodes, so under his reckoning the list is the seven. */
+    var DRGF=(FR.mode==="sripati")?sripatiDrishti:sphutaDrishti;
+    var seers=(FR.mode==="sripati")?names:names.concat(["Rahu","Ketu"]);
+    seers.forEach(function(q){ if(q===p||!P[q])return;
+      var v=DRGF(q,P[q].sid,P[p].sid);
       if(!v)return;
       drik += (SB_BEN.indexOf(q)>=0? v : -v)/4;
     });
@@ -4415,8 +4479,60 @@ function shadbala(ctx){
     r.ishta_shadbala=r.total_virupa*(r.ishta/60);
     r.kashta_shadbala=r.total_virupa*(r.kashta/60);
   });
+  /* MINIMUM STRENGTH UNDER EACH HEAD, not only in the total.
+   * BPHS Ch.27 vv.34–36 and Śrīpati p.56 both group the grahas three ways and
+   * give five figures each — Sthāna, Dig, Kāla, Cheṣṭa, Ayana. The total
+   * requirement (vv.32–33 / p.56) was already here; these were not, so a
+   * graha could clear its Ṣaḍbala piṇḍa on one swollen component while
+   * failing every other head, and nothing said so.
+   * The two texts agree on fourteen of the fifteen figures. They differ on
+   * ONE: the Dig Bala required of Mars and Saturn, 30 in BPHS and 20 in
+   * Śrīpati. A single digit in two OCR'd editions is exactly the kind of
+   * difference not to adjudicate, so each paddhati carries its own and the
+   * divergence is named rather than averaged away. */
+  var SB_GROUP={Jupiter:"A",Mercury:"A",Sun:"A",Moon:"B",Venus:"B",Mars:"C",Saturn:"C"};
+  var SB_COMP_MIN={
+    bphs:   {A:{sthana:165,dig:35,kala:50,cheshta:112,ayana:30},
+             B:{sthana:133,dig:50,kala:30,cheshta:100,ayana:40},
+             C:{sthana:96, dig:30,kala:40,cheshta:67, ayana:20}},
+    sripati:{A:{sthana:165,dig:35,kala:50,cheshta:112,ayana:30},
+             B:{sthana:133,dig:50,kala:30,cheshta:100,ayana:40},
+             C:{sthana:96, dig:20,kala:40,cheshta:67, ayana:20}}};
+  out.forEach(function(r){
+    var req=SB_COMP_MIN[sripatiMode?"sripati":"bphs"][SB_GROUP[r.graha]];
+    r.required_components=req;
+    r.components_met={sthana:r.sthana>=req.sthana, dig:r.dig>=req.dig,
+      kala:r.kala>=req.kala, cheshta:r.cheshta>=req.cheshta, ayana:r.ayana>=req.ayana};
+    r.components_met_count=["sthana","dig","kala","cheshta","ayana"]
+      .filter(function(k){return r.components_met[k];}).length;
+  });
   out.sort(function(a,b){return b.ratio-a.ratio;});
   return {planets:out,
+    /* WHICH SIX, AND WHERE AYANA SITS. BPHS folds Ayana into Kāla and makes
+       Dṛk the sixth head (Ch.27, the list before v.1). Śrīpati counts Ayana
+       as its own head and treats dṛṣṭi as a ±¼ modifier on the rest rather
+       than as a member (Adh.3 śl.20, and his table p.52).
+       The TOTAL is the same number either way — this engine's kala already
+       contains ayana and its drik is already quartered — so this is a
+       presentational difference and is reported as one. Saying so is the
+       point: a reader comparing these columns against either book should not
+       have to work out why the headings differ. */
+    composition:sripatiMode
+      ? {heads:["sthana","kala","dig","ayana","cheshta","naisargika"],
+         drishti:"a quarter of the benefic aspect added and a quarter of the "+
+                 "malefic subtracted, as a modifier rather than a sixth head",
+         source:"Śrīpatipaddhati, Adh. 3, śl. 20"}
+      : {heads:["sthana","dig","kala","cheshta","naisargika","drik"],
+         drishti:"Dṛk Bala is the sixth head; Ayana Bala is included within "+
+                 "Kāla Bala and is also reported separately",
+         source:"BPHS, Vol. 1, Ch. 27"},
+    required_components_note:sripatiMode
+      ? "Per-head minima from Śrīpatipaddhati p.56. These differ from BPHS "+
+        "Ch. 27 vv. 34–36 in one figure only: the Dig Bala required of Mars "+
+        "and Saturn is 20 here and 30 there."
+      : "Per-head minima from BPHS, Vol. 1, Ch. 27, vv. 34–36. Śrīpati p.56 "+
+        "gives the same fifteen figures but requires 20 rather than 30 Dig "+
+        "Bala of Mars and Saturn.",
     ishta_kashta_note:sripatiMode
       ? "Iṣṭa is the geometric mean of the exaltation and motional strengths and "+
         "Kaṣṭa the geometric mean of their complements — Śrīpati's rule "+
@@ -4683,6 +4799,12 @@ window.__kEclip=function(name,ms){
    to publish a quantitative graha-drishti matrix. Exported rather than copied, so the
    matrix and Drik Bala can never disagree. */
 window.sphutaDrishti=sphutaDrishti;
+/* exported so the analyst payload can cast its dṛṣṭi matrix with the SAME
+   function the Ṣaḍbala used. Without this it built the matrix from the BPHS
+   speculum whatever the paddhati, so a Śrīpati export carried a dṛṣṭi table
+   that disagreed with its own Drik Bala — under a note claiming the two came
+   from one formula. */
+window.sripatiDrishti=sripatiDrishti;
 /* Dignity, published so a page can ask the engine rather than restate the
    tables. digOf is what every dignity on this site is decided by; exporting
    it means the graha page and the chart report cannot disagree about whether
@@ -5098,9 +5220,11 @@ window.buildLocalChart=function(inp){
         }
         /* dṛṣṭi cast on the madhya */
         var sub=0,pap=0,gb=0;
+        /* dṛṣṭi on a bhāva is cast at its MADHYA (Summary p.162), by his own
+           dṛṣṭi function — the one his Bhāva Drigbala table p.21 is built on */
         ["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn"].forEach(function(q){
           if(!pos[q])return;
-          var v=sphutaDrishti(q,pos[q].sid,md); if(!v)return;
+          var v=sripatiDrishti(q,pos[q].sid,md); if(!v)return;
           if(BEN_SP.indexOf(q)>=0) sub+=v; else pap+=v;
           if(q==="Jupiter"||q==="Mercury") gb+=v;
         });
@@ -5159,6 +5283,12 @@ window.buildLocalChart=function(inp){
              "tātkālika maitrī read from the bhāva chakra, not rāśi distance "+
                "(pp. 24–26) — this feeds Saptavargaja, Sthāna and the "+
                "Ṣaḍbala total, so it is the widest reaching difference",
+             "dṛṣṭi on his quarters table, which carries the ¾/½/¼ rūpa "+
+               "super-add for Saturn, Jupiter and Mars within it "+
+               "(Adh. 2, śl. 5–6) and does not extend dṛṣṭi to the nodes",
+             "pakṣa bala with Mercury always benefic, the Moon benefic in "+
+               "either half, and the Moon's pakṣa NOT doubled (p. 38)",
+             "per-head minimum strengths (p. 56)",
              "bhāva bala in its exact form, with the lord pro-rated across "+
                "the rāśis the bhāva spans (Adh. 3, śl. 20–23)",
              "Iṣṭa and Kaṣṭa phala, geometric (Adh. 4, śl. 6)"]
@@ -7911,7 +8041,10 @@ function deriveForExport(J){
   var full=buildFullExport(D,J);
   for(var k in full) out[k]=full[k];
   out.as_of=jxAsOf(D,J);
-  out.guide=jxGuide();
+  /* the guide describes this chart, so it has to be given this chart — it
+     was built with no argument and asserted whole-sign houses flatly, in the
+     very block its own reading_order tells an analyst to read first */
+  out.guide=jxGuide(J);
   out.note="Derived layer added by the Nirayana page at render time. Everything here is computed from the engine output in this same file and is reproducible from it.";
   return out;
 }
@@ -23865,11 +23998,21 @@ function jxBhavaBala(D,J){
 }
 function jxIshtaKashta(J){
   var sb=J&&J.shadbala&&J.shadbala.planets; if(!sb) return null;
+  /* ANOTHER COPY OF THE GEOMETRIC RULE, and the one that reached analysts.
+     This recomputed √(uchcha × cheṣṭa) here, so the exported file carried
+     Śrīpati's formula whatever paddhati the chart was cast in — and carried
+     it with no citation at all, which is worse than the misattributed copy
+     in the report, because a JSON gives its reader nothing to check against.
+     The engine now computes both per paddhati and labels each with its verse,
+     so this takes what it was given and says where it came from. */
   return sb.map(function(p){
-    var i=Math.sqrt(Math.max(0,p.uchcha)*Math.max(0,p.cheshta));
-    var k=Math.sqrt(Math.max(0,60-p.uchcha)*Math.max(0,60-p.cheshta));
+    var i=(p.ishta!=null)?p.ishta
+      :Math.sqrt(Math.max(0,p.uchcha)*Math.max(0,p.cheshta));
+    var k=(p.kashta!=null)?p.kashta
+      :Math.sqrt(Math.max(0,60-p.uchcha)*Math.max(0,60-p.cheshta));
     return {graha:p.graha, uchcha_ray:jxRound(p.uchcha,3), cheshta_ray:jxRound(p.cheshta,3),
-            ishta:jxRound(i,3), kashta:jxRound(k,3), net:jxRound(i-k,3)};
+            ishta:jxRound(i,3), kashta:jxRound(k,3), net:jxRound(i-k,3),
+            rule:p.ishta_kashta_rule||null, source:p.ishta_kashta_source||null};
   });
 }
 function jxDivisionalAv(D){
@@ -23966,8 +24109,23 @@ function jxSensitivity(J){
          "Anything listed here is not safe to rely on unless the birth time is exact."};
 }
 function jxConventions(J){
+  /* house_system WAS THE LITERAL STRING "whole sign", pinned.
+     The conventions block is the first thing this file tells its reader to
+     read, and it was stating the one convention the chart may not actually
+     be using. A Śrīpati chart exported a conventions block declaring
+     whole-sign houses above bhāvas that were not whole-sign — the exact
+     contradiction the cross-surface work exists to prevent, surviving in the
+     surface that has no picture to give it away.
+     It now reports the frame in force, and carries the paddhati block, so an
+     analyst can tell which tradition produced the figures below it. */
+  var HS=J.house_system||{};
   var out={ayanamsa_in_use:J.ayanamsa_name, ayanamsa_mode:J.ayanamsa_mode,
-           node_mode:J.node_mode||"mean", house_system:"whole sign",
+           node_mode:J.node_mode||"mean",
+           house_system:HS.name||(HS.mode==="sripati"?"Śrīpati bhāva-chalita":"whole sign"),
+           house_system_mode:HS.mode||"whole",
+           house_system_detail:J.house_system||null,
+           paddhati:J.paddhati||null,
+           shadbala_composition:(J.shadbala&&J.shadbala.composition)||null,
            alternatives:{}};
   try{
     /* Driven by the engine's own table rather than a copy of it. The copy used to
@@ -24027,23 +24185,51 @@ function jxAsOf(D,J){
   return out;
 }
 /* --- a short orientation for whatever reads this file --- */
-function jxGuide(){
+function jxGuide(J){
+  /* THE GUIDE DESCRIBED A CHART IT MIGHT NOT BE DESCRIBING.
+     Both the units line and the first caution asserted whole-sign flatly,
+     and this is the block the reading_order tells an analyst to read first.
+     On a Śrīpati export the file opened by telling its reader the houses
+     were whole-sign and that Śrīpati was merely "the cusp alternative"
+     given elsewhere — while every bhāva, bala and lordship below it had
+     been computed the other way. Both lines now follow the chart. */
+  var sp=!!(J&&J.house_system&&J.house_system.mode==="sripati");
   return {
     purpose:"A complete Janma Kundali export: birth data, computed positions, and every "+
       "derived layer this page displays, so an analyst can work the chart without the page.",
+    paddhati:(J&&J.paddhati&&J.paddhati.name)||"Bṛhat Parāśara Horā Śāstra",
     units:{longitudes:"degrees, sidereal, 0-360 measured from the start of Mesha",
-      signs:"0-11, 0 = Mesha (Aries)", houses:"1-12, whole sign from the lagna unless stated",
+      signs:"0-11, 0 = Mesha (Aries)",
+      houses:sp
+        ? "1-12, Śrīpati bhāva-chalita — quadrants trisected, so bhāvas are "+
+          "unequal and a bhāva may span two rasis. See bhavas[] for each "+
+          "madhya and sandhi, and derived.conventions.paddhati for what else "+
+          "follows Śrīpati rather than BPHS."
+        : "1-12, whole sign from the lagna unless stated",
       times:"Julian Day, UTC, unless a field says local", strength:"Virupas; 60 Virupas = 1 rupa",
       arcmin:"arcminutes"},
-    reading_order:["input and lagna","grahas with dignity and avastha","bhavas","vargas",
+    reading_order:["derived.conventions, for which paddhati produced these figures",
+      "input and lagna","grahas with dignity and avastha","bhavas","vargas",
       "shadbala and the strength layers","dasha","derived.sensitivity before trusting fine detail"],
     cautions:[
-      "Whole-sign houses are the default; derived.sripati gives the cusp alternative and they disagree.",
+      sp
+        ? "This chart is cast on the ŚRĪPATI paddhati, which is not BPHS with "+
+          "different houses: Ayana Bala, Saptavargaja, tatkalika maitri, "+
+          "drishti, paksha bala and ishta/kashta all follow Sripati's own "+
+          "rules here. derived.conventions.paddhati lists exactly which, and "+
+          "which quantities still follow BPHS because Sripati is silent."
+        : "Whole-sign houses are the default and every figure here follows "+
+          "BPHS; derived.sripati gives the cusp alternative and they disagree.",
       "derived.sensitivity says which figures a one-minute birth-time error would change. "+
         "Divisional lagnas and anything built on them are the first to move.",
       "Nathonnatha within shadbala is measured from clock noon rather than local apparent noon.",
       "Vimsopaka weights and Varga Visva values follow BPHS Ch. 7, vv. 21–25.",
-      "Drik Bala uses the exact Sphuta Drishti formula of BPHS Ch. 26.",
+      sp
+        ? "Drik Bala uses Sripati's quarters table (Adh. 2, sl. 5-6), which "+
+          "carries the 3/4, 1/2 and 1/4 rupa super-add for Saturn, Jupiter "+
+          "and Mars within it and does not extend drishti to the nodes. This "+
+          "is a different function from the BPHS speculum, not a variant."
+        : "Drik Bala uses the exact Sphuta Drishti formula of BPHS Ch. 26.",
       "Arudha exception cases take the 4th from the house when the pada falls in the 7th; "+
         "some software takes the 10th instead.",
       "Trimsamsa has unequal parts, so no meaningful degree within the varga sign is defined.",
@@ -24973,6 +25159,15 @@ function skpConventions(J,D){
     house_system_detail:J.house_system||null,
     house_lord_rule:(J.house_system&&J.house_system.lord_rule)||
       "the lord of the rāśi, counted from the lagna's rāśi",
+    /* The house system is one consequence of the toggle; it is not the only
+       one. Selecting Śrīpati selects his PADDHATI, and Ayana Bala,
+       Saptavargaja, tātkālika maitrī, dṛṣṭi, pakṣa bala and iṣṭa/kaṣṭa all
+       change with it. A payload that named only the house system would let a
+       reader assume the rest was BPHS. This block names what follows which
+       text, what still follows BPHS because Śrīpati is silent on it, and
+       what is deliberately not computed. */
+    paddhati:J.paddhati||null,
+    shadbala_composition:(J.shadbala&&J.shadbala.composition)||null,
     alternatives:c.alternatives||null,
     note:c.note||null};
 }
@@ -25151,7 +25346,16 @@ function skpFunctionalStatus(J,prior){
 /* --- graha dṛṣṭi as a matrix of virūpas ------------------------------------- */
 function skpGrahaDrishti(J,prior){
   if(typeof window==="undefined"||typeof window.sphutaDrishti!=="function") return prior||null;
-  var sd=window.sphutaDrishti, lon={}, BEN=["Jupiter","Venus","Mercury","Moon"];
+  /* THE SAME FUNCTION THE ṢAḌBALA USED, not whichever one is lying around.
+     This always called the BPHS speculum, so a Śrīpati chart exported a
+     dṛṣṭi matrix computed one way beside a Drik Bala computed another —
+     under the note below, which tells the reader they are the same formula.
+     Śrīpati also does not extend dṛṣṭi to the nodes, so under his paddhati
+     the matrix is cast among the seven. */
+  var spMode=!!(J&&J.house_system&&J.house_system.mode==="sripati");
+  var sd=(spMode&&typeof window.sripatiDrishti==="function")
+    ? window.sripatiDrishti : window.sphutaDrishti;
+  var lon={}, BEN=["Jupiter","Venus","Mercury","Moon"];
   (J.grahas||[]).forEach(function(g){ lon[EN[g.key]||g.key]=g.sidereal_deg; });
   if(J.lagna) lon.Lagna=J.lagna.sidereal_deg;
   var bodies=ORD.filter(function(n){ return lon[n]!=null; });
@@ -25186,10 +25390,16 @@ function skpGrahaDrishti(J,prior){
        houses — so the key name stops describing its contents. Rather than
        rename a field consumers already read, the frame is stated beside it. */
     house_count_view_frame:(J.house_system&&J.house_system.mode)||"whole",
+    drishti_formula:spMode
+      ? "Śrīpatipaddhati, Adh. 2, śl. 5–6 — the quarters table, which carries "+
+        "the ¾/½/¼ rūpa super-add for Saturn, Jupiter and Mars within it"
+      : "BPHS, Vol. 1, Ch. 26 — the exact Sphuṭa Dṛṣṭi speculum",
     note:"cast[a][b] is the virupas a throws on b, by exact longitude rather than by "+
       "whole sign, so a graha near a sign boundary reads differently here than in the "+
       "house-count view kept under whole_sign_view. This is the same formula that feeds "+
-      "Drik Bala in Ṣaḍbala, where each value is quartered and signed."};
+      "Drik Bala in Ṣaḍbala, where each value is quartered and signed"+
+      (spMode?" — and under this chart's Śrīpati paddhati that is his quarters "+
+        "table, not the BPHS speculum, with the nodes casting no dṛṣṭi.":".")};
 }
 
 /* Read first: units and conventions before the figures they describe, and the

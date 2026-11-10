@@ -112,7 +112,12 @@ const AY = await pg.evaluate(() => {
   });
   const sb = {};
   ((D.shadbala && D.shadbala.planets) || []).forEach((x) => { sb[x.graha] = x.ayana; });
-  return { OBL, decl, sb, keys: (D.grahas || []).map((g) => g.key) };
+  /* sidereal longitudes too — the Śrīpati drik reconstruction needs them,
+     and taking them from the published payload keeps that check independent
+     of anything the shadbala routine did with them. */
+  const lon = {};
+  (D.grahas || []).forEach((g) => { lon[g.key] = g.sidereal_deg; });
+  return { OBL, decl, sb, lon, keys: (D.grahas || []).map((g) => g.key) };
 });
 /* The chart publishes grahas under their IAST names, not the English ones
    the shadbala table is keyed by. */
@@ -187,8 +192,8 @@ G.forEach((p) => near(S[p].naisargika, W[p].naisargika, 1e-9,
   p + " naisargika identical (constant for all nativities; BPHS Ch.27 v.14 = Śrīpati Adh.3 śl.19)"));
 G.forEach((p) => near(S[p].uchcha, W[p].uchcha, 1e-9,
   p + " uchcha identical (arc from the debilitation point in both)"));
-G.forEach((p) => near(S[p].drik, W[p].drik, 1e-9,
-  p + " drik identical (longitude-based sphuta drishti)"));
+/* drik moved out of this group when the toggle became a paddhati selector —
+   see the block below, which reconstructs Śrīpati's from his own table. */
 G.forEach((p) => near(S[p].ojha, W[p].ojha, 1e-9,
   p + " ojha identical (odd/even rasi and navamsa)"));
 
@@ -213,6 +218,63 @@ is(G.some((p) => Math.abs(S[p].ayana - W[p].ayana) > 0.05),
   "and the two paddhatis genuinely differ on it (max " +
   Math.max(...G.map((p) => Math.abs(S[p].ayana - W[p].ayana))).toFixed(3) +
   " virupa) — so neither constant is silently standing in for the other");
+
+head("PADDHATI-DEPENDENT: dṛṣṭi, on two different functions");
+/* BPHS Ch.26's speculum is a piecewise-linear function OF THE ANGLE, peaking
+   at 45 at 90° and reaching 60 only at opposition. Śrīpati Adh.2 śl.5-6
+   tabulates QUARTERS OF A RŪPA against whole-rāśi excess and interpolates
+   across the degrees within a rāśi — a different function, not a variant.
+   His per-graha substitutions ARE the ¾/½/¼ super-add of śl.5: Saturn's base
+   1 at excess 2 becomes 4 (+3 quarters = +¾ rūpa), Jupiter's 2 at excess 4
+   becomes 4 (+½), Mars's 3 at excess 3 becomes 4 (+¼). That identity is why
+   the table may be implemented alone without adding the super-add again. */
+{
+  const BASE = [0, 1, 3, 2, 0, 4, 3, 2, 1, 0, 0, 0];
+  const SPEC = { Jupiter: { 4: 4, 8: 4 }, Saturn: { 2: 4, 9: 4 }, Mars: { 3: 4, 7: 4 } };
+  const spDrg = (asp, from, to) => {
+    const ex = ((((to - from) % 360) + 360) % 360) / 30;
+    const t = BASE.slice();
+    if (SPEC[asp]) for (const k of Object.keys(SPEC[asp])) t[+k - 1] = SPEC[asp][k];
+    const n = Math.floor(ex), f = ex - n;
+    const a = t[(n === 0 ? 12 : n) - 1], b = t[(n + 1 > 12 ? 1 : n + 1) - 1];
+    return Math.max(0, Math.min(60, (a + (b - a) * f) * 15));
+  };
+  /* the super-add identity, asserted rather than asserted-about */
+  is(SPEC.Saturn[2] - BASE[1] === 3, "Saturn's substitution is +3 quarters = +¾ rūpa (śl. 5)");
+  is(SPEC.Jupiter[4] - BASE[3] === 2, "Jupiter's is +2 quarters = +½ rūpa");
+  is(SPEC.Mars[3] - BASE[2] === 1, "Mars's is +1 quarter = +¼ rūpa");
+  is(BASE[0] === 0 && BASE[10] === 0,
+     "and the table is nil at an excess of 1 and 11 — his \"planets do not see " +
+     "the 2nd and 12th houses\" (p. 20)");
+  /* rebuild each graha's Śrīpati drik from the published longitudes */
+  const BEN = ["Jupiter", "Venus", "Mercury", "Moon"];
+  G.forEach((p) => {
+    let want = 0;
+    G.forEach((q) => {
+      if (q === p) return;
+      const v = spDrg(q, AY.lon[KEY[q]], AY.lon[KEY[p]]);
+      if (!v) return;
+      want += (BEN.indexOf(q) >= 0 ? v : -v) / 4;
+    });
+    near(S[p].drik, want, 0.02,
+      p + " Śrīpati drik rebuilt from his quarters table (nodes excluded, as he has them)");
+  });
+  is(G.some((p) => Math.abs(S[p].drik - W[p].drik) > 1),
+     "and the two functions genuinely disagree (max " +
+     Math.max(...G.map((p) => Math.abs(S[p].drik - W[p].drik))).toFixed(2) + " virupa)");
+  is(G.some((p) => S[p].drik < 0) && G.some((p) => W[p].drik < 0),
+     "both retain at least one NEGATIVE drik — the property either super-add " +
+     "reading would have destroyed");
+}
+
+head("PADDHATI-DEPENDENT: pakṣa bala, on each text's benefic list");
+is(Math.abs(W.Moon.paksha - 2 * (W.Jupiter.paksha)) < 1e-6 ||
+   W.Moon.paksha > W.Jupiter.paksha + 1e-6,
+   "BPHS doubles the Moon's pakṣa (Ch. 27 vv. 10–11)");
+near(S.Moon.paksha, S.Jupiter.paksha, 1e-6,
+  "Śrīpati does not — his table prints the Moon level with the other benefics (p. 38)");
+near(S.Mercury.paksha, S.Jupiter.paksha, 1e-6,
+  "and treats Mercury as always benefic");
 
 head("PADDHATI-DEPENDENT: saptavargaja, on each text's own ladder");
 /* Every total is a sum of seven ladder entries. BPHS's entries are whole

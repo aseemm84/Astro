@@ -292,6 +292,15 @@ function skpConventions(J,D){
     house_system_detail:J.house_system||null,
     house_lord_rule:(J.house_system&&J.house_system.lord_rule)||
       "the lord of the rāśi, counted from the lagna's rāśi",
+    /* The house system is one consequence of the toggle; it is not the only
+       one. Selecting Śrīpati selects his PADDHATI, and Ayana Bala,
+       Saptavargaja, tātkālika maitrī, dṛṣṭi, pakṣa bala and iṣṭa/kaṣṭa all
+       change with it. A payload that named only the house system would let a
+       reader assume the rest was BPHS. This block names what follows which
+       text, what still follows BPHS because Śrīpati is silent on it, and
+       what is deliberately not computed. */
+    paddhati:J.paddhati||null,
+    shadbala_composition:(J.shadbala&&J.shadbala.composition)||null,
     alternatives:c.alternatives||null,
     note:c.note||null};
 }
@@ -470,7 +479,16 @@ function skpFunctionalStatus(J,prior){
 /* --- graha dṛṣṭi as a matrix of virūpas ------------------------------------- */
 function skpGrahaDrishti(J,prior){
   if(typeof window==="undefined"||typeof window.sphutaDrishti!=="function") return prior||null;
-  var sd=window.sphutaDrishti, lon={}, BEN=["Jupiter","Venus","Mercury","Moon"];
+  /* THE SAME FUNCTION THE ṢAḌBALA USED, not whichever one is lying around.
+     This always called the BPHS speculum, so a Śrīpati chart exported a
+     dṛṣṭi matrix computed one way beside a Drik Bala computed another —
+     under the note below, which tells the reader they are the same formula.
+     Śrīpati also does not extend dṛṣṭi to the nodes, so under his paddhati
+     the matrix is cast among the seven. */
+  var spMode=!!(J&&J.house_system&&J.house_system.mode==="sripati");
+  var sd=(spMode&&typeof window.sripatiDrishti==="function")
+    ? window.sripatiDrishti : window.sphutaDrishti;
+  var lon={}, BEN=["Jupiter","Venus","Mercury","Moon"];
   (J.grahas||[]).forEach(function(g){ lon[EN[g.key]||g.key]=g.sidereal_deg; });
   if(J.lagna) lon.Lagna=J.lagna.sidereal_deg;
   var bodies=ORD.filter(function(n){ return lon[n]!=null; });
@@ -505,10 +523,16 @@ function skpGrahaDrishti(J,prior){
        houses — so the key name stops describing its contents. Rather than
        rename a field consumers already read, the frame is stated beside it. */
     house_count_view_frame:(J.house_system&&J.house_system.mode)||"whole",
+    drishti_formula:spMode
+      ? "Śrīpatipaddhati, Adh. 2, śl. 5–6 — the quarters table, which carries "+
+        "the ¾/½/¼ rūpa super-add for Saturn, Jupiter and Mars within it"
+      : "BPHS, Vol. 1, Ch. 26 — the exact Sphuṭa Dṛṣṭi speculum",
     note:"cast[a][b] is the virupas a throws on b, by exact longitude rather than by "+
       "whole sign, so a graha near a sign boundary reads differently here than in the "+
       "house-count view kept under whole_sign_view. This is the same formula that feeds "+
-      "Drik Bala in Ṣaḍbala, where each value is quartered and signed."};
+      "Drik Bala in Ṣaḍbala, where each value is quartered and signed"+
+      (spMode?" — and under this chart's Śrīpati paddhati that is his quarters "+
+        "table, not the BPHS speculum, with the nodes casting no dṛṣṭi.":".")};
 }
 
 /* Read first: units and conventions before the figures they describe, and the

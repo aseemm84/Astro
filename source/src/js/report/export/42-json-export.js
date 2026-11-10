@@ -212,11 +212,21 @@ function jxBhavaBala(D,J){
 }
 function jxIshtaKashta(J){
   var sb=J&&J.shadbala&&J.shadbala.planets; if(!sb) return null;
+  /* ANOTHER COPY OF THE GEOMETRIC RULE, and the one that reached analysts.
+     This recomputed √(uchcha × cheṣṭa) here, so the exported file carried
+     Śrīpati's formula whatever paddhati the chart was cast in — and carried
+     it with no citation at all, which is worse than the misattributed copy
+     in the report, because a JSON gives its reader nothing to check against.
+     The engine now computes both per paddhati and labels each with its verse,
+     so this takes what it was given and says where it came from. */
   return sb.map(function(p){
-    var i=Math.sqrt(Math.max(0,p.uchcha)*Math.max(0,p.cheshta));
-    var k=Math.sqrt(Math.max(0,60-p.uchcha)*Math.max(0,60-p.cheshta));
+    var i=(p.ishta!=null)?p.ishta
+      :Math.sqrt(Math.max(0,p.uchcha)*Math.max(0,p.cheshta));
+    var k=(p.kashta!=null)?p.kashta
+      :Math.sqrt(Math.max(0,60-p.uchcha)*Math.max(0,60-p.cheshta));
     return {graha:p.graha, uchcha_ray:jxRound(p.uchcha,3), cheshta_ray:jxRound(p.cheshta,3),
-            ishta:jxRound(i,3), kashta:jxRound(k,3), net:jxRound(i-k,3)};
+            ishta:jxRound(i,3), kashta:jxRound(k,3), net:jxRound(i-k,3),
+            rule:p.ishta_kashta_rule||null, source:p.ishta_kashta_source||null};
   });
 }
 function jxDivisionalAv(D){
@@ -313,8 +323,23 @@ function jxSensitivity(J){
          "Anything listed here is not safe to rely on unless the birth time is exact."};
 }
 function jxConventions(J){
+  /* house_system WAS THE LITERAL STRING "whole sign", pinned.
+     The conventions block is the first thing this file tells its reader to
+     read, and it was stating the one convention the chart may not actually
+     be using. A Śrīpati chart exported a conventions block declaring
+     whole-sign houses above bhāvas that were not whole-sign — the exact
+     contradiction the cross-surface work exists to prevent, surviving in the
+     surface that has no picture to give it away.
+     It now reports the frame in force, and carries the paddhati block, so an
+     analyst can tell which tradition produced the figures below it. */
+  var HS=J.house_system||{};
   var out={ayanamsa_in_use:J.ayanamsa_name, ayanamsa_mode:J.ayanamsa_mode,
-           node_mode:J.node_mode||"mean", house_system:"whole sign",
+           node_mode:J.node_mode||"mean",
+           house_system:HS.name||(HS.mode==="sripati"?"Śrīpati bhāva-chalita":"whole sign"),
+           house_system_mode:HS.mode||"whole",
+           house_system_detail:J.house_system||null,
+           paddhati:J.paddhati||null,
+           shadbala_composition:(J.shadbala&&J.shadbala.composition)||null,
            alternatives:{}};
   try{
     /* Driven by the engine's own table rather than a copy of it. The copy used to
@@ -374,23 +399,51 @@ function jxAsOf(D,J){
   return out;
 }
 /* --- a short orientation for whatever reads this file --- */
-function jxGuide(){
+function jxGuide(J){
+  /* THE GUIDE DESCRIBED A CHART IT MIGHT NOT BE DESCRIBING.
+     Both the units line and the first caution asserted whole-sign flatly,
+     and this is the block the reading_order tells an analyst to read first.
+     On a Śrīpati export the file opened by telling its reader the houses
+     were whole-sign and that Śrīpati was merely "the cusp alternative"
+     given elsewhere — while every bhāva, bala and lordship below it had
+     been computed the other way. Both lines now follow the chart. */
+  var sp=!!(J&&J.house_system&&J.house_system.mode==="sripati");
   return {
     purpose:"A complete Janma Kundali export: birth data, computed positions, and every "+
       "derived layer this page displays, so an analyst can work the chart without the page.",
+    paddhati:(J&&J.paddhati&&J.paddhati.name)||"Bṛhat Parāśara Horā Śāstra",
     units:{longitudes:"degrees, sidereal, 0-360 measured from the start of Mesha",
-      signs:"0-11, 0 = Mesha (Aries)", houses:"1-12, whole sign from the lagna unless stated",
+      signs:"0-11, 0 = Mesha (Aries)",
+      houses:sp
+        ? "1-12, Śrīpati bhāva-chalita — quadrants trisected, so bhāvas are "+
+          "unequal and a bhāva may span two rasis. See bhavas[] for each "+
+          "madhya and sandhi, and derived.conventions.paddhati for what else "+
+          "follows Śrīpati rather than BPHS."
+        : "1-12, whole sign from the lagna unless stated",
       times:"Julian Day, UTC, unless a field says local", strength:"Virupas; 60 Virupas = 1 rupa",
       arcmin:"arcminutes"},
-    reading_order:["input and lagna","grahas with dignity and avastha","bhavas","vargas",
+    reading_order:["derived.conventions, for which paddhati produced these figures",
+      "input and lagna","grahas with dignity and avastha","bhavas","vargas",
       "shadbala and the strength layers","dasha","derived.sensitivity before trusting fine detail"],
     cautions:[
-      "Whole-sign houses are the default; derived.sripati gives the cusp alternative and they disagree.",
+      sp
+        ? "This chart is cast on the ŚRĪPATI paddhati, which is not BPHS with "+
+          "different houses: Ayana Bala, Saptavargaja, tatkalika maitri, "+
+          "drishti, paksha bala and ishta/kashta all follow Sripati's own "+
+          "rules here. derived.conventions.paddhati lists exactly which, and "+
+          "which quantities still follow BPHS because Sripati is silent."
+        : "Whole-sign houses are the default and every figure here follows "+
+          "BPHS; derived.sripati gives the cusp alternative and they disagree.",
       "derived.sensitivity says which figures a one-minute birth-time error would change. "+
         "Divisional lagnas and anything built on them are the first to move.",
       "Nathonnatha within shadbala is measured from clock noon rather than local apparent noon.",
       "Vimsopaka weights and Varga Visva values follow BPHS Ch. 7, vv. 21–25.",
-      "Drik Bala uses the exact Sphuta Drishti formula of BPHS Ch. 26.",
+      sp
+        ? "Drik Bala uses Sripati's quarters table (Adh. 2, sl. 5-6), which "+
+          "carries the 3/4, 1/2 and 1/4 rupa super-add for Saturn, Jupiter "+
+          "and Mars within it and does not extend drishti to the nodes. This "+
+          "is a different function from the BPHS speculum, not a variant."
+        : "Drik Bala uses the exact Sphuta Drishti formula of BPHS Ch. 26.",
       "Arudha exception cases take the 4th from the house when the pada falls in the 7th; "+
         "some software takes the 10th instead.",
       "Trimsamsa has unequal parts, so no meaningful degree within the varga sign is defined.",

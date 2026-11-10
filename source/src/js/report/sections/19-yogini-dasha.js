@@ -61,7 +61,10 @@ function deriveForExport(J){
   var full=buildFullExport(D,J);
   for(var k in full) out[k]=full[k];
   out.as_of=jxAsOf(D,J);
-  out.guide=jxGuide();
+  /* the guide describes this chart, so it has to be given this chart — it
+     was built with no argument and asserted whole-sign houses flatly, in the
+     very block its own reading_order tells an analyst to read first */
+  out.guide=jxGuide(J);
   out.note="Derived layer added by the {{BRAND}} page at render time. Everything here is computed from the engine output in this same file and is reproducible from it.";
   return out;
 }
