@@ -220,7 +220,18 @@ function northChart(signOf,occOf,title,sub){
     occ.forEach(function(pl,k){o+='<text x="'+x+'" y="'+(y+8+k*13)+'" class="hp">'+pl+'</text>';});}
   return '<figure class="kchartfig"><figcaption><b>'+esc(title)+'</b><span>'+esc(sub)+'</span></figcaption>'+o+'</svg></figure>';
 }
-function southChart(map,LS,title,sub){
+/* The South Indian chart is keyed on the RĀŚI, so its cells and the grahas in
+   them are true under either frame. Its corner NUMBER is not: it printed
+   (rāśi − lagna rāśi) + 1, which is the whole-sign bhāva of that rāśi, in a
+   report whose every other house number was Śrīpati's. A reader comparing the
+   two found Siṃha labelled "4" here while the chart, the tables and the
+   analyst JSON all placed bhāva 4 in Karka.
+   Under a quadrant frame a rāśi does not have one bhāva: it may hold two
+   madhyas or none. hlabel, when given, returns the bhāva number(s) whose
+   madhya falls in that rāśi — blank where none does, which is the honest
+   answer rather than a number that is merely available. Under whole-sign it
+   returns exactly one per rāśi, so that output is unchanged. */
+function southChart(map,LS,title,sub,hlabel){
   var grid={11:[0,0],0:[0,1],1:[0,2],2:[0,3],3:[1,3],4:[2,3],5:[3,3],6:[3,2],7:[3,1],8:[3,0],9:[2,0],10:[1,0]};
   var o='<svg viewBox="0 0 400 400" class="kchartsvg" role="img" aria-label="'+esc(title)+
         (sub?', '+esc(sub):'')+'"><title>'+esc(title)+(sub?' — '+esc(sub):'')+'</title>';
@@ -228,7 +239,8 @@ function southChart(map,LS,title,sub){
   Object.keys(grid).forEach(function(k){var sg=+k,r=grid[k][0],c=grid[k][1],x=c*100,y=r*100,hl=(sg===LS);
     o+='<rect x="'+x+'" y="'+y+'" width="100" height="100" fill="'+(hl?"#f4edda":"#fbf8f0")+'" stroke="#1d2340" stroke-width="1.2"/>';
     o+='<text x="'+(x+6)+'" y="'+(y+15)+'" class="ss">'+SA[sg]+'</text>';
-    o+='<text x="'+(x+94)+'" y="'+(y+15)+'" class="sh">'+(((sg-LS)%12+12)%12+1)+'</text>';
+    o+='<text x="'+(x+94)+'" y="'+(y+15)+'" class="sh">'+
+       esc(hlabel?hlabel(sg):String(((sg-LS)%12+12)%12+1))+'</text>';
     (map[sg]||[]).forEach(function(pl,i){o+='<text x="'+(x+50)+'" y="'+(y+36+i*14)+'" class="sp">'+pl+'</text>';});
     if(hl)o+='<text x="'+(x+50)+'" y="'+(y+92)+'" class="slag">Lagna</text>';});
   return '<figure class="kchartfig"><figcaption><b>'+esc(title)+'</b><span>'+esc(sub)+'</span></figcaption>'+o+'</svg></figure>';

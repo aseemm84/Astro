@@ -151,6 +151,14 @@ function ayanSnap(D,a){
   var lag=(((D.lagna.sidereal_deg||0)+s)%360+360)%360;
   var LS=Math.floor(lag/30)%12;
   var P={};
+  /* WHOLE-SIGN ON PURPOSE, IN EVERY COLUMN. This tab answers one question —
+     how much would the chart move if the ayanāṃśa were different — so the
+     ayanāṃśa has to be the only thing that varies. A Śrīpati house here would
+     need the meridian re-derived for each shifted zodiac, which this snapshot
+     does not carry, and would mix a second cause into the comparison.
+     So the house column is a rāśi count from the shifted lagna's rāśi in all
+     rows, and the note below the tables says so rather than leaving a reader
+     to assume these agree with the report's own house numbers. */
   D.planets.forEach(function(p){
     var sid=((p.sid+s)%360+360)%360, sg=Math.floor(sid/30)%12;
     P[p.en]={sid:sid,sign:sg,deg:sid-sg*30,house:((sg-LS)%12+12)%12+1};
@@ -427,6 +435,12 @@ function ayanPane(D,J){
     tbl(["Standard","Value","Lagna","Moon nakṣ.","Opening daśā","Daśā now","D9","Differs"],[rows])+
     '<p class="klegend">Su Sun · Mo Moon · Ma Mars · Me Mercury · Ju Jupiter · Ve Venus · Sa Saturn · Ra Rāhu · Ke Ketu. '+
     '“use” recasts this chart on that standard and keeps you on this tab.</p>'+
+    '<p class="knote"><b>House numbers on this tab are rāśi counts from the lagna’s rāśi, in every row</b>, '+
+    'including the row for the ayanāṃśa this chart was actually cast on. This tab exists to isolate one '+
+    'variable, so the bhāva frame is held constant across all of it; a quadrant frame would need the meridian '+
+    're-derived for each shifted zodiac and would mix a second cause into the comparison. Where this chart is '+
+    'cast under Śrīpati these numbers will therefore differ from the house numbers everywhere else in the '+
+    'report, and those are the ones to judge the chart by.</p>'+
     '<h4 class="ksub">How much room each placement has</h4>'+
     '<p class="knote">Raising the ayanāṃśa lowers every sidereal longitude, so the two columns are the room '+
     'in either direction before this placement leaves its sign — measured in degrees of ayanāṃśa, '+

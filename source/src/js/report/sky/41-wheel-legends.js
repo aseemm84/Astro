@@ -54,7 +54,10 @@ function wheelLegend(kind){
        wlSwatch("#ffd67a","graha")+wlSwatch("#ff9d6e","natal lagna")+
        wlSwatch("#9fc0ea","special lagna")+wlSwatch("#9ad1b0","upagraha")+
        wlSwatch("#e0a9d6","ārūḍha or kārakāṃśa")+
-       '<span class="wlitem">numbers on the outer band are house compartments</span>'+
+       /* named precisely: this band is equal houses from the rising degree,
+          which is neither frame the report judges by — see 40-star-wheel.js */
+       '<span class="wlitem">numbers on the outer band are equal 30° houses '+
+       'from the rising degree, not the report&rsquo;s bhāvas</span>'+
        '</span></div>';
   }
   if(kind==="dome"){

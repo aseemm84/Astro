@@ -2574,7 +2574,7 @@ html[data-theme="emerald"] .wsnext.lead{
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-11-10.43deb38";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself — of forty-four in all. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html" class="active">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
+</script><script>window.__kBuild="2026-11-10.e0b142e";</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself — of forty-four in all. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html" class="active">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout onecol wide"><main>
 
 <p class="mochartbar" id="mo-chart"></p>
 <div id="mo-host" class="kreport"><p class="k-status" id="mo-status">Loading the scenes…</p></div>
@@ -5292,6 +5292,27 @@ function derive(J){
     return (b.madhya_deg==null)?null:{madhya:b.madhya_deg,start:b.sandhi_start_deg,
       end:b.sandhi_end_deg,width:b.width_deg};
   });
+  /* THE BHĀVA A BARE LONGITUDE FALLS IN.
+     A graha carries its own bhāva from the engine, but the special ascendants,
+     the upagrahas and the ārūḍha points are POINTS the engine does not
+     resolve — so each section that showed one counted ((sign − LS) mod 12) + 1
+     for itself. That is whole-sign, and it left the report's own special-lagna
+     table contradicting the dashboard, which resolves the same points through
+     the frame. One helper here, so there is one answer rather than a fourth
+     copy of the arithmetic.
+     The spans wrap past 360°, so membership is measured as distance travelled
+     forward from the sandhi, never by comparing start against end. */
+  D.bhavaOfLon=function(lon){
+    var L=((lon%360)+360)%360;
+    for(var bi=0;bi<D.bhavaCusps.length;bi++){
+      var c=D.bhavaCusps[bi];
+      if(!c||c.start==null||c.width==null) break;
+      if((((L-c.start)%360)+360)%360 < c.width) return bi+1;
+    }
+    /* whole-sign, where a bhāva IS a rāśi — the arithmetic the callers used
+       before, kept for that frame and for charts saved without cusps */
+    return ((Math.floor(L/30)%12-LS)%12+12)%12+1;
+  };
   D.lagDeg=(J.lagna&&J.lagna.rashi&&J.lagna.rashi.degInSign!=null)?J.lagna.rashi.degInSign:(J.lagna?J.lagna.sidereal_deg%30:0);
   D.lagNak=nakOf(J.lagna?J.lagna.sidereal_deg:0);
   var sunDeg=0;(J.grahas||[]).forEach(function(g){if(EN[g.key]==="Sun")sunDeg=g.sidereal_deg;});
@@ -5436,7 +5457,18 @@ function northChart(signOf,occOf,title,sub){
     occ.forEach(function(pl,k){o+='<text x="'+x+'" y="'+(y+8+k*13)+'" class="hp">'+pl+'</text>';});}
   return '<figure class="kchartfig"><figcaption><b>'+esc(title)+'</b><span>'+esc(sub)+'</span></figcaption>'+o+'</svg></figure>';
 }
-function southChart(map,LS,title,sub){
+/* The South Indian chart is keyed on the RĀŚI, so its cells and the grahas in
+   them are true under either frame. Its corner NUMBER is not: it printed
+   (rāśi − lagna rāśi) + 1, which is the whole-sign bhāva of that rāśi, in a
+   report whose every other house number was Śrīpati's. A reader comparing the
+   two found Siṃha labelled "4" here while the chart, the tables and the
+   analyst JSON all placed bhāva 4 in Karka.
+   Under a quadrant frame a rāśi does not have one bhāva: it may hold two
+   madhyas or none. hlabel, when given, returns the bhāva number(s) whose
+   madhya falls in that rāśi — blank where none does, which is the honest
+   answer rather than a number that is merely available. Under whole-sign it
+   returns exactly one per rāśi, so that output is unchanged. */
+function southChart(map,LS,title,sub,hlabel){
   var grid={11:[0,0],0:[0,1],1:[0,2],2:[0,3],3:[1,3],4:[2,3],5:[3,3],6:[3,2],7:[3,1],8:[3,0],9:[2,0],10:[1,0]};
   var o='<svg viewBox="0 0 400 400" class="kchartsvg" role="img" aria-label="'+esc(title)+
         (sub?', '+esc(sub):'')+'"><title>'+esc(title)+(sub?' — '+esc(sub):'')+'</title>';
@@ -5444,7 +5476,8 @@ function southChart(map,LS,title,sub){
   Object.keys(grid).forEach(function(k){var sg=+k,r=grid[k][0],c=grid[k][1],x=c*100,y=r*100,hl=(sg===LS);
     o+='<rect x="'+x+'" y="'+y+'" width="100" height="100" fill="'+(hl?"#f4edda":"#fbf8f0")+'" stroke="#1d2340" stroke-width="1.2"/>';
     o+='<text x="'+(x+6)+'" y="'+(y+15)+'" class="ss">'+SA[sg]+'</text>';
-    o+='<text x="'+(x+94)+'" y="'+(y+15)+'" class="sh">'+(((sg-LS)%12+12)%12+1)+'</text>';
+    o+='<text x="'+(x+94)+'" y="'+(y+15)+'" class="sh">'+
+       esc(hlabel?hlabel(sg):String(((sg-LS)%12+12)%12+1))+'</text>';
     (map[sg]||[]).forEach(function(pl,i){o+='<text x="'+(x+50)+'" y="'+(y+36+i*14)+'" class="sp">'+pl+'</text>';});
     if(hl)o+='<text x="'+(x+50)+'" y="'+(y+92)+'" class="slag">Lagna</text>';});
   return '<figure class="kchartfig"><figcaption><b>'+esc(title)+'</b><span>'+esc(sub)+'</span></figcaption>'+o+'</svg></figure>';
@@ -6544,15 +6577,19 @@ function specialLagnaSection(D,J){
     defs.push(["Śrī Lagna","lagna advanced by the part of the Moon's nakṣatra already travelled",
                "prosperity and the goddess of fortune",((D.lagna.sidereal_deg+frac*360)%360+360)%360]);
   }
+  /* A special lagna is a POINT, so the frame can and must resolve it — this
+     counted rāśis from the lagna instead, which disagreed with the dashboard's
+     answer for the very same points whenever the frame was Śrīpati. */
   var rows=defs.map(function(d){
-    var sg=Math.floor(d[3]/30)%12, h=((sg-D.LS)%12+12)%12+1;
+    var sg=Math.floor(d[3]/30)%12;
+    var h=D.bhavaOfLon?D.bhavaOfLon(d[3]):((sg-D.LS)%12+12)%12+1;
     return '<tr><td><b>'+esc(d[0])+'</b></td><td>'+SA[sg]+' '+dm(d[3]%30)+'</td>'+
       '<td class="knum">'+h+'</td><td class="kmut">'+esc(d[1])+'</td><td class="kmut">'+esc(d[2])+'</td></tr>';
   });
   return '<p class="knote">Besides the rāśi lagna, BPHS uses several computed ascendants, each advancing from '+
     'sunrise at its own rate. They are refinements layered on the rāśi lagna, never replacements, and all are '+
     'as reliable as the recorded birth time.</p>'+
-    tbl(["Special lagna","Position","House from lagna","Rate","Read for"],rows)+
+    tbl(["Special lagna","Position","Bhāva","Rate","Read for"],rows)+
     '<div class="kbox">Editions differ on the exact Prāṇapada and Śrī Lagna reckonings; the common forms are '+
     'used here and the rate is printed beside each so you can check the arithmetic.</div>';
 }
@@ -6724,7 +6761,10 @@ function gocharaSection(D){
     'has houses in which its transit is classically favourable. A <b>vedha</b> (obstruction) occurs when another '+
     'planet occupies the house that blocks that transit, which cancels the effect — the Sun and Saturn do not '+
     'obstruct each other, nor do the Moon and Mercury.</p>'+
-    tbl(["Graha","Transiting","House from Moon","Favourable houses","Reading","Vedha"],rows.filter(Boolean))+
+    /* gochara counts RĀŚIS from the natal Moon's rāśi, in the classical
+       method — so this column is named for what it counts, not "House",
+       which under Śrīpati would read as a bhāva and contradict the rest */
+    tbl(["Graha","Transiting","Rāśis from the Moon","Favourable rāśis","Reading","Vedha"],rows.filter(Boolean))+
     '<p class="klegend">Natal Moon in '+SA[mSign]+'. Positions are for the moment this chart was generated.</p>';
 }
 var KAKSHA_LORDS=["Saturn","Jupiter","Mars","Sun","Venus","Mercury","Moon","Lagna"];
@@ -10050,6 +10090,14 @@ function ayanSnap(D,a){
   var lag=(((D.lagna.sidereal_deg||0)+s)%360+360)%360;
   var LS=Math.floor(lag/30)%12;
   var P={};
+  /* WHOLE-SIGN ON PURPOSE, IN EVERY COLUMN. This tab answers one question —
+     how much would the chart move if the ayanāṃśa were different — so the
+     ayanāṃśa has to be the only thing that varies. A Śrīpati house here would
+     need the meridian re-derived for each shifted zodiac, which this snapshot
+     does not carry, and would mix a second cause into the comparison.
+     So the house column is a rāśi count from the shifted lagna's rāśi in all
+     rows, and the note below the tables says so rather than leaving a reader
+     to assume these agree with the report's own house numbers. */
   D.planets.forEach(function(p){
     var sid=((p.sid+s)%360+360)%360, sg=Math.floor(sid/30)%12;
     P[p.en]={sid:sid,sign:sg,deg:sid-sg*30,house:((sg-LS)%12+12)%12+1};
@@ -10326,6 +10374,12 @@ function ayanPane(D,J){
     tbl(["Standard","Value","Lagna","Moon nakṣ.","Opening daśā","Daśā now","D9","Differs"],[rows])+
     '<p class="klegend">Su Sun · Mo Moon · Ma Mars · Me Mercury · Ju Jupiter · Ve Venus · Sa Saturn · Ra Rāhu · Ke Ketu. '+
     '“use” recasts this chart on that standard and keeps you on this tab.</p>'+
+    '<p class="knote"><b>House numbers on this tab are rāśi counts from the lagna’s rāśi, in every row</b>, '+
+    'including the row for the ayanāṃśa this chart was actually cast on. This tab exists to isolate one '+
+    'variable, so the bhāva frame is held constant across all of it; a quadrant frame would need the meridian '+
+    're-derived for each shifted zodiac and would mix a second cause into the comparison. Where this chart is '+
+    'cast under Śrīpati these numbers will therefore differ from the house numbers everywhere else in the '+
+    'report, and those are the ones to judge the chart by.</p>'+
     '<h4 class="ksub">How much room each placement has</h4>'+
     '<p class="knote">Raising the ayanāṃśa lowers every sidereal longitude, so the two columns are the room '+
     'in either direction before this placement leaves its sign — measured in degrees of ayanāṃśa, '+
@@ -10824,7 +10878,10 @@ function wheelLegend(kind){
        wlSwatch("#ffd67a","graha")+wlSwatch("#ff9d6e","natal lagna")+
        wlSwatch("#9fc0ea","special lagna")+wlSwatch("#9ad1b0","upagraha")+
        wlSwatch("#e0a9d6","ārūḍha or kārakāṃśa")+
-       '<span class="wlitem">numbers on the outer band are house compartments</span>'+
+       /* named precisely: this band is equal houses from the rising degree,
+          which is neither frame the report judges by — see 40-star-wheel.js */
+       '<span class="wlitem">numbers on the outer band are equal 30° houses '+
+       'from the rising degree, not the report&rsquo;s bhāvas</span>'+
        '</span></div>';
   }
   if(kind==="dome"){
@@ -12078,7 +12135,24 @@ function swhRender(S,natal){
        '<stop offset="100%" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>';
   o+='<rect width="'+SWH_W+'" height="'+SWH_H+'" fill="url(#swhbg)"/>';
 
-  /* --- fixed house wedges: defined by how far a point has risen, so they stay put --- */
+  /* --- the horizon-anchored equal-house grid ---
+     THESE ARE NOT THE REPORT'S BHĀVAS, and the difference is deliberate.
+     Each wedge is exactly 30° measured back from the RISING DEGREE, so wedge
+     1 begins at the eastern edge and the grid stays put on screen while the
+     signs rotate through it as the animation advances. That fixity is the
+     mechanism this pane exists to show, and it is a property of the sky, not
+     of a chart: a natal bhāva frame does not stay horizon-anchored as time
+     advances, so drawing the natal frame here would destroy the very thing
+     being demonstrated.
+
+     It therefore agrees with NEITHER frame the report uses. Whole-sign bhāva 1
+     is the entire rāśi on the eastern edge, beginning at that rāśi's boundary
+     rather than at the rising degree; Śrīpati's bhāvas are unequal. So a
+     reader who counts a graha's wedge here and compares it with the house
+     column in the report will sometimes get a different number — which is why
+     the prose and the legend now say what these wedges are instead of calling
+     them "house compartments" and leaving the reader to assume. The geometry
+     is right; only the claim about it was wrong. */
   for(var h=1;h<=12;h++){
     var a0=lag-(h-1)*30, a1=lag-h*30;
     o+='<path d="'+swBandPath(a1,a0,R*0.995,R*1.055,lag,SWH_CX,SWH_CY,SW_TILT_DEG,10)+
@@ -12333,8 +12407,14 @@ function starWheelPane(D,J){
   return '<p class="knote">The ecliptic drawn as a disc tilted away from you, with the <b>horizon fixed</b> and '+
     'the <b>zodiac turning behind it</b>. Whatever is crossing the eastern edge is the lagna — not a label placed '+
     'there, but the arithmetic itself: the sign on that edge is what the engine reports as rising. The twelve '+
-    'house compartments stay put while the signs travel through them, which is the whole mechanism of a birth '+
-    'chart in one picture.</p>'+
+    'compartments on the outer band stay put while the signs travel through them, which is the whole mechanism '+
+    'of a birth chart in one picture.</p>'+
+    '<p class="knote"><b>These twelve compartments are equal 30° houses measured from the rising degree</b>, '+
+    'which is what lets them stay fixed to the horizon as the animation runs. They are a picture of the sky, '+
+    'not the bhāva frame this report judges the chart by: under whole-sign a bhāva is a whole rāśi and begins '+
+    'at that rāśi&rsquo;s boundary rather than at the rising degree, and under Śrīpati the bhāvas are unequal. '+
+    'So count a graha&rsquo;s house from the chart and its tables, not from this band — the two will sometimes '+
+    'differ, and when they do the chart is the answer.</p>'+
     swhControls()+swhChips()+
     '<p id="swhstamp" class="swhstamp"></p>'+
     '<p id="swhfacts" class="swhfacts"></p>'+
@@ -24975,8 +25055,22 @@ window.buildKundliReport=function(J){
   var d1Title=chalita?"Bhāva Chalita (Śrīpati) — North Indian":"Rāśi (D1) — North Indian";
   var d1Sub=chalita?"grahas by bhāva; a graha's own rāśi is shown where it differs"
                    :"houses fixed";
+  /* The corner number in each South Indian cell: the bhāva(s) whose MADHYA
+     falls in that rāśi, inverted out of the frame rather than counted from
+     the lagna. Under whole-sign this is one bhāva per rāśi and identical to
+     the old arithmetic; under Śrīpati a rāśi may carry two numbers or none,
+     and a blank cell is the truthful answer there. */
+  var byRashi={};
+  for(var hh2=1;hh2<=12;hh2++){
+    var rs=D.bhavaSign(hh2);
+    (byRashi[rs]=byRashi[rs]||[]).push(hh2);
+  }
+  var southLabel=function(sg){ return (byRashi[sg]||[]).join("·"); };
+  var d1sSub=chalita
+    ? "signs fixed; the corner number is the bhāva whose madhya falls in that rāśi"
+    : "signs fixed";
   var chartsHtml='<div class="kcharts">'+northChart(d1s,d1o,d1Title,d1Sub)+
-     southChart(smap,LS,"Rāśi (D1) — South Indian","signs fixed");
+     southChart(smap,LS,"Rāśi (D1) — South Indian",d1sSub,southLabel);
   if(D.d9){var nlag=Math.floor(((D.lagna.sidereal_deg%360)+360)%360/(30/9))%12;
     chartsHtml+=northChart(function(h){return (nlag+h-1)%12;},
       function(h){var sg=(nlag+h-1)%12,a=[];Object.keys(D.d9).forEach(function(k){if(D.d9[k]===sg)a.push(GL[k]);});if(h===1)a.unshift("Lg");return a;},
@@ -25095,7 +25189,14 @@ window.buildKundliReport=function(J){
   var kb='';
   if(D.ckar.length)kb+='<h4 class="ksub">Chara kārakas</h4>'+tbl(["Rank","Kāraka","Graha","Degree","Signifies"],
     D.ckar.map(function(c){return '<tr><td>'+c.rank+'</td><td><b>'+esc(c.label_short)+'</b></td><td>'+esc(EN[c.graha]||c.graha)+'</td><td class="knum">'+(c.deg_in_sign!=null?c.deg_in_sign.toFixed(4)+"°":"")+'</td><td class="kmut">'+esc(c.label_en||"")+'</td></tr>';}));
-  if(D.arudhas.length)kb+='<h4 class="ksub">Bhāva ārūḍhas</h4>'+tbl(["Pada","Rāśi","House from lagna"],
+  /* An ārūḍha IS a rāśi: the pada is found by counting rāśis from a bhāva to
+     its lord and the same distance on again. So the third column is a RĀŚI
+     COUNT from the lagna's rāśi, and was headed "House from lagna" — a bhāva
+     claim it cannot support, and one that disagreed with every Śrīpati house
+     number elsewhere in the report. The count is unchanged; the header now
+     says what it counts. (The ārūḍha itself does follow the frame: the engine
+     resolves each bhāva's lord through madhyaSignOfHouse.) */
+  if(D.arudhas.length)kb+='<h4 class="ksub">Bhāva ārūḍhas</h4>'+tbl(["Pada","Rāśi","Rāśis from the lagna's rāśi"],
     D.arudhas.map(function(a){var sg=a.arudha_rashi_idx;
       return '<tr'+((a.arudha_label==="AL"||a.arudha_label==="A12")?' class="khl"':'')+'><td><b>'+esc(a.arudha_label)+'</b></td><td>'+SA[sg]+'</td><td>'+(((sg-LS)%12+12)%12+1)+'</td></tr>';}));
   if(kb)H.push(sec("Kārakas & ārūḍhas","significators and image-points",kb));
@@ -25135,7 +25236,12 @@ window.buildKundliReport=function(J){
 
   // transits
   if(D.transits.length){
-    var tb=tbl(["Graha","Rāśi","House","Nakṣatra · pāda","Motion"],
+    /* Gochara is reckoned in RĀŚIS counted from a natal rāśi — the classical
+       method counts signs, not cusps, which is why the dashboard's gochara
+       column keeps the whole-sign primitive too. The arithmetic here was
+       always that count; the header said "House", which under Śrīpati reads
+       as a bhāva and contradicted the natal house numbers beside it. */
+    var tb=tbl(["Graha","Rāśi","Rāśis from the lagna's rāśi","Nakṣatra · pāda","Motion"],
       D.transits.map(function(t){var sg=ridx(t.rashi),d=(t.rashi&&t.rashi.degInSign!=null)?dm(t.rashi.degInSign):"";
         return '<tr><td><b>'+esc(t.iast||t.en)+'</b></td><td>'+SA[sg]+' '+d+'</td><td>'+(((sg-LS)%12+12)%12+1)+'</td>'+
         '<td>'+padaLink((t.nakshatra&&t.nakshatra.en)||"",t.nakshatra_pada)+'</td>'+

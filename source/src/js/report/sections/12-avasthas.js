@@ -151,15 +151,19 @@ function specialLagnaSection(D,J){
     defs.push(["Śrī Lagna","lagna advanced by the part of the Moon's nakṣatra already travelled",
                "prosperity and the goddess of fortune",((D.lagna.sidereal_deg+frac*360)%360+360)%360]);
   }
+  /* A special lagna is a POINT, so the frame can and must resolve it — this
+     counted rāśis from the lagna instead, which disagreed with the dashboard's
+     answer for the very same points whenever the frame was Śrīpati. */
   var rows=defs.map(function(d){
-    var sg=Math.floor(d[3]/30)%12, h=((sg-D.LS)%12+12)%12+1;
+    var sg=Math.floor(d[3]/30)%12;
+    var h=D.bhavaOfLon?D.bhavaOfLon(d[3]):((sg-D.LS)%12+12)%12+1;
     return '<tr><td><b>'+esc(d[0])+'</b></td><td>'+SA[sg]+' '+dm(d[3]%30)+'</td>'+
       '<td class="knum">'+h+'</td><td class="kmut">'+esc(d[1])+'</td><td class="kmut">'+esc(d[2])+'</td></tr>';
   });
   return '<p class="knote">Besides the rāśi lagna, BPHS uses several computed ascendants, each advancing from '+
     'sunrise at its own rate. They are refinements layered on the rāśi lagna, never replacements, and all are '+
     'as reliable as the recorded birth time.</p>'+
-    tbl(["Special lagna","Position","House from lagna","Rate","Read for"],rows)+
+    tbl(["Special lagna","Position","Bhāva","Rate","Read for"],rows)+
     '<div class="kbox">Editions differ on the exact Prāṇapada and Śrī Lagna reckonings; the common forms are '+
     'used here and the rate is printed beside each so you can check the arithmetic.</div>';
 }
@@ -331,7 +335,10 @@ function gocharaSection(D){
     'has houses in which its transit is classically favourable. A <b>vedha</b> (obstruction) occurs when another '+
     'planet occupies the house that blocks that transit, which cancels the effect — the Sun and Saturn do not '+
     'obstruct each other, nor do the Moon and Mercury.</p>'+
-    tbl(["Graha","Transiting","House from Moon","Favourable houses","Reading","Vedha"],rows.filter(Boolean))+
+    /* gochara counts RĀŚIS from the natal Moon's rāśi, in the classical
+       method — so this column is named for what it counts, not "House",
+       which under Śrīpati would read as a bhāva and contradict the rest */
+    tbl(["Graha","Transiting","Rāśis from the Moon","Favourable rāśis","Reading","Vedha"],rows.filter(Boolean))+
     '<p class="klegend">Natal Moon in '+SA[mSign]+'. Positions are for the moment this chart was generated.</p>';
 }
 var KAKSHA_LORDS=["Saturn","Jupiter","Mars","Sun","Venus","Mercury","Moon","Lagna"];

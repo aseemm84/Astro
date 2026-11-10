@@ -15,6 +15,27 @@ function derive(J){
     return (b.madhya_deg==null)?null:{madhya:b.madhya_deg,start:b.sandhi_start_deg,
       end:b.sandhi_end_deg,width:b.width_deg};
   });
+  /* THE BHĀVA A BARE LONGITUDE FALLS IN.
+     A graha carries its own bhāva from the engine, but the special ascendants,
+     the upagrahas and the ārūḍha points are POINTS the engine does not
+     resolve — so each section that showed one counted ((sign − LS) mod 12) + 1
+     for itself. That is whole-sign, and it left the report's own special-lagna
+     table contradicting the dashboard, which resolves the same points through
+     the frame. One helper here, so there is one answer rather than a fourth
+     copy of the arithmetic.
+     The spans wrap past 360°, so membership is measured as distance travelled
+     forward from the sandhi, never by comparing start against end. */
+  D.bhavaOfLon=function(lon){
+    var L=((lon%360)+360)%360;
+    for(var bi=0;bi<D.bhavaCusps.length;bi++){
+      var c=D.bhavaCusps[bi];
+      if(!c||c.start==null||c.width==null) break;
+      if((((L-c.start)%360)+360)%360 < c.width) return bi+1;
+    }
+    /* whole-sign, where a bhāva IS a rāśi — the arithmetic the callers used
+       before, kept for that frame and for charts saved without cusps */
+    return ((Math.floor(L/30)%12-LS)%12+12)%12+1;
+  };
   D.lagDeg=(J.lagna&&J.lagna.rashi&&J.lagna.rashi.degInSign!=null)?J.lagna.rashi.degInSign:(J.lagna?J.lagna.sidereal_deg%30:0);
   D.lagNak=nakOf(J.lagna?J.lagna.sidereal_deg:0);
   var sunDeg=0;(J.grahas||[]).forEach(function(g){if(EN[g.key]==="Sun")sunDeg=g.sidereal_deg;});

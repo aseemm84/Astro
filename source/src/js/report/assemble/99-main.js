@@ -63,8 +63,22 @@ window.buildKundliReport=function(J){
   var d1Title=chalita?"Bhāva Chalita (Śrīpati) — North Indian":"Rāśi (D1) — North Indian";
   var d1Sub=chalita?"grahas by bhāva; a graha's own rāśi is shown where it differs"
                    :"houses fixed";
+  /* The corner number in each South Indian cell: the bhāva(s) whose MADHYA
+     falls in that rāśi, inverted out of the frame rather than counted from
+     the lagna. Under whole-sign this is one bhāva per rāśi and identical to
+     the old arithmetic; under Śrīpati a rāśi may carry two numbers or none,
+     and a blank cell is the truthful answer there. */
+  var byRashi={};
+  for(var hh2=1;hh2<=12;hh2++){
+    var rs=D.bhavaSign(hh2);
+    (byRashi[rs]=byRashi[rs]||[]).push(hh2);
+  }
+  var southLabel=function(sg){ return (byRashi[sg]||[]).join("·"); };
+  var d1sSub=chalita
+    ? "signs fixed; the corner number is the bhāva whose madhya falls in that rāśi"
+    : "signs fixed";
   var chartsHtml='<div class="kcharts">'+northChart(d1s,d1o,d1Title,d1Sub)+
-     southChart(smap,LS,"Rāśi (D1) — South Indian","signs fixed");
+     southChart(smap,LS,"Rāśi (D1) — South Indian",d1sSub,southLabel);
   if(D.d9){var nlag=Math.floor(((D.lagna.sidereal_deg%360)+360)%360/(30/9))%12;
     chartsHtml+=northChart(function(h){return (nlag+h-1)%12;},
       function(h){var sg=(nlag+h-1)%12,a=[];Object.keys(D.d9).forEach(function(k){if(D.d9[k]===sg)a.push(GL[k]);});if(h===1)a.unshift("Lg");return a;},
@@ -183,7 +197,14 @@ window.buildKundliReport=function(J){
   var kb='';
   if(D.ckar.length)kb+='<h4 class="ksub">Chara kārakas</h4>'+tbl(["Rank","Kāraka","Graha","Degree","Signifies"],
     D.ckar.map(function(c){return '<tr><td>'+c.rank+'</td><td><b>'+esc(c.label_short)+'</b></td><td>'+esc(EN[c.graha]||c.graha)+'</td><td class="knum">'+(c.deg_in_sign!=null?c.deg_in_sign.toFixed(4)+"°":"")+'</td><td class="kmut">'+esc(c.label_en||"")+'</td></tr>';}));
-  if(D.arudhas.length)kb+='<h4 class="ksub">Bhāva ārūḍhas</h4>'+tbl(["Pada","Rāśi","House from lagna"],
+  /* An ārūḍha IS a rāśi: the pada is found by counting rāśis from a bhāva to
+     its lord and the same distance on again. So the third column is a RĀŚI
+     COUNT from the lagna's rāśi, and was headed "House from lagna" — a bhāva
+     claim it cannot support, and one that disagreed with every Śrīpati house
+     number elsewhere in the report. The count is unchanged; the header now
+     says what it counts. (The ārūḍha itself does follow the frame: the engine
+     resolves each bhāva's lord through madhyaSignOfHouse.) */
+  if(D.arudhas.length)kb+='<h4 class="ksub">Bhāva ārūḍhas</h4>'+tbl(["Pada","Rāśi","Rāśis from the lagna's rāśi"],
     D.arudhas.map(function(a){var sg=a.arudha_rashi_idx;
       return '<tr'+((a.arudha_label==="AL"||a.arudha_label==="A12")?' class="khl"':'')+'><td><b>'+esc(a.arudha_label)+'</b></td><td>'+SA[sg]+'</td><td>'+(((sg-LS)%12+12)%12+1)+'</td></tr>';}));
   if(kb)H.push(sec("Kārakas & ārūḍhas","significators and image-points",kb));
@@ -223,7 +244,12 @@ window.buildKundliReport=function(J){
 
   // transits
   if(D.transits.length){
-    var tb=tbl(["Graha","Rāśi","House","Nakṣatra · pāda","Motion"],
+    /* Gochara is reckoned in RĀŚIS counted from a natal rāśi — the classical
+       method counts signs, not cusps, which is why the dashboard's gochara
+       column keeps the whole-sign primitive too. The arithmetic here was
+       always that count; the header said "House", which under Śrīpati reads
+       as a bhāva and contradicted the natal house numbers beside it. */
+    var tb=tbl(["Graha","Rāśi","Rāśis from the lagna's rāśi","Nakṣatra · pāda","Motion"],
       D.transits.map(function(t){var sg=ridx(t.rashi),d=(t.rashi&&t.rashi.degInSign!=null)?dm(t.rashi.degInSign):"";
         return '<tr><td><b>'+esc(t.iast||t.en)+'</b></td><td>'+SA[sg]+' '+d+'</td><td>'+(((sg-LS)%12+12)%12+1)+'</td>'+
         '<td>'+padaLink((t.nakshatra&&t.nakshatra.en)||"",t.nakshatra_pada)+'</td>'+

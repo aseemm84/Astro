@@ -4032,14 +4032,37 @@ function wheelSVG(N,showT){
     const p=s("path",{d:arc(RN[0],RN[1],l,l+360/27),fill:"transparent"});p.append(s("title",{},NAKS[k]));svg.append(p)}
   [RN[0],RS[1]].forEach(r=>svg.append(s("circle",{cx:c,cy:c,r,fill:"none",stroke:"var(--line)"})));
   svg.append(s("circle",{cx:c,cy:c,r:70,fill:"var(--wash)",stroke:"var(--line)"}));
-  // sripati cusps
-  const sri=D.sripati;
-  if(sri?.bhava_sandhi){sri.bhava_sandhi.forEach(l=>{const [x1,y1]=P(70,l),[x2,y2]=P(RN[0],l);svg.append(s("line",{x1,y1,x2,y2,stroke:"var(--muted)","stroke-dasharray":"3 4","stroke-width":.8}))});
-    (sri.bhava_madhya||[]).forEach((l,i)=>{const [x,y]=P(88,l);svg.append(s("text",{x,y,"text-anchor":"middle","dominant-baseline":"middle",style:"font-size:11px;fill:var(--muted)"},i+1))})}
+  /* THE CUSPS AND THE MERIDIAN COME FROM THE ENGINE'S OWN FIELDS.
+   *
+   * This read D.sripati.bhava_sandhi, D.sripati.bhava_madhya and
+   * D.mc_sidereal — all three built by the REPORT ASSEMBLY and none of them by
+   * buildLocalChart. On this page's re-cast path derived is absent entirely,
+   * so the guard was false on every chart ever drawn here: the wheel showed no
+   * cusp lines, no bhāva numerals and no meridian, under Śrīpati exactly as
+   * under whole-sign, and nothing said so. A wheel that silently omits the one
+   * thing the frame adds is the same failure as the chart that placed by rāśi.
+   *
+   * The engine publishes the cusps on each bhāva (sandhi_start_deg,
+   * madhya_deg) and the meridian at house_system.mc_sidereal_deg. Drawn only
+   * under Śrīpati, because under whole-sign the sandhis ARE the rāśi
+   * boundaries already drawn above and the meridian is not computed — there it
+   * is an unused value, not a missing one. */
+  const bhv=(d.bhavas||[]);
+  if(isSripati(d)&&bhv.length===12){
+    bhv.forEach(b=>{const l=b.sandhi_start_deg;if(!isNum(l))return;
+      const [x1,y1]=P(70,l),[x2,y2]=P(RN[0],l);
+      svg.append(s("line",{x1,y1,x2,y2,stroke:"var(--muted)","stroke-dasharray":"3 4","stroke-width":.8}))});
+    bhv.forEach((b,i)=>{const l=b.madhya_deg;if(!isNum(l))return;
+      const [x,y]=P(88,l);
+      svg.append(s("text",{x,y,"text-anchor":"middle","dominant-baseline":"middle",style:"font-size:11px;fill:var(--muted)"},i+1))});
+  }
   // asc & mc
   const axisLine=(l,lab,col)=>{const [x1,y1]=P(70,l),[x2,y2]=P(RS[1]+4,l);svg.append(s("line",{x1,y1,x2,y2,stroke:col,"stroke-width":2}));const [x,y]=P(RS[1]+(showT?-48:16),l);const tx=s("text",{x,y,"text-anchor":"middle","dominant-baseline":"middle",style:`font-size:12px;font-weight:600;fill:${col}`},lab);svg.append(tx)};
   axisLine(asc,"Asc","var(--sindoor)");
-  const mc=D.mc_sidereal??sri?.midheaven;if(isNum(mc))axisLine(mc,"MC","var(--indigo)");
+  /* the meridian, from the frame the engine published it on */
+  const hsw=d.house_system;
+  const mc=(hsw&&isNum(hsw.mc_sidereal_deg))?hsw.mc_sidereal_deg:D.mc_sidereal;
+  if(isNum(mc))axisLine(mc,"MC","var(--indigo)");
   // spread labels
   const spread=(arr,minGap)=>{arr.sort((a,b)=>a.lon-b.lon);let lvl=[];arr.forEach((p,i)=>{let L=0;while(lvl.some(q=>q.L===L&&Math.abs(((p.lon-q.lon+540)%360)-180)<minGap))L++;p.L=L;lvl.push(p)});return arr};
   // natal
@@ -4064,13 +4087,38 @@ function secPlanets(N){
   const AF=Object.fromEntries((D.avasthas_full||[]).map(a=>[en(a.graha),a]));
   const AV=Object.fromEntries((d.avasthas||[]).map(a=>[en(a.graha),a]));
   const KR=Object.fromEntries((d.chara_karakas||[]).map(k=>[en(k.graha),k]));
-  const c=card(g,{title:"Placements",sub:"Houses are given in whole-sign, bhāva chalit and Śrīpati systems; where they differ the planet sits near a cusp."});
+  /* THREE HOUSE COLUMNS THAT WERE ALWAYS BLANK.
+   *
+   * These read D.houses, D.chalit and D.sripati.houses — the report
+   * assembly's objects, absent from every chart this page casts — so the card
+   * promised "whole-sign, bhāva chalit and Śrīpati" and printed three empty
+   * columns under that promise, in both frames. The rule this project keeps
+   * relearning: an optional chain over a field that does not exist makes a
+   * missing value look like a handled one.
+   *
+   * What this page can state truthfully from the engine's own payload is two
+   * things: the rāśi counted from the lagna, which is always computable, and
+   * the bhāva the graha actually occupies under the frame the chart was cast
+   * in, which the engine resolves and publishes as g.bhava. Under whole-sign
+   * those agree by construction; under Śrīpati they come apart, and that
+   * disagreement is the useful column. A third, chalit, is shown only when a
+   * payload actually carries it — an uploaded report export does.
+   *
+   * Promising a system this page cannot compute would be the same fabrication
+   * as a fabricated citation, so the promise now matches the columns. */
+  const sriNow=isSripati(d);
+  const c=card(g,{title:"Placements",sub:"“Rāśi from lagna” counts signs from the lagna’s own rāśi. "+
+    "“Bhāva” is the house the graha occupies under the frame this chart was cast in — "+
+    (sriNow?"Śrīpati, where the two come apart for a graha sitting across a cusp."
+           :"whole-sign, where the two agree by construction.")});
   table(c,[
     {h:"Graha",f:r=>pname(r.n)},{h:"Sign",f:r=>SIGNS[r.sign]},{h:"Degree",f:r=>dms(r.deg),num:1},{h:"Longitude",f:r=>r2(r.lon,3)+"°",num:1},
     {h:"Nakṣatra",f:r=>`${nakOf(r.lon)} ${r.pada??""}`},{h:"Dignity",f:r=>r.dig?tag(r.dig):""},{h:"Relation to sign lord",f:r=>esc(D.status?.[r.n]??"")},
     {h:"Motion",f:r=>r.r?tag("retrograde","t-gold"):"direct"},{h:"Combust",f:r=>D.combust?.[r.n]?tag("combust","t-bad"):""},
     {h:"Speed °/day",f:r=>r2(D.speed?.[r.n]??r.speed,4),num:1},
-    {h:"Whole sign",f:r=>D.houses?.[r.n]??"",num:1},{h:"Chalit",f:r=>D.chalit?.[r.n]??"",num:1},{h:"Śrīpati",f:r=>D.sripati?.houses?.[r.n]??"",num:1},
+    {h:"Rāśi from lagna",f:r=>isNum(r.sign)?housesFrom(N.lagSign,r.sign):"",num:1},
+    {h:sriNow?"Bhāva (Śrīpati)":"Bhāva (whole-sign)",f:r=>bhavaOf(N,r.n)??"",num:1},
+    ...(D.chalit?[{h:"Chalit",f:r=>D.chalit?.[r.n]??"",num:1}]:[]),
     {h:"Kāraka",f:r=>KR[r.n]?`${KR[r.n].label_short} <span class="muted">${esc(KR[r.n].label_en)}</span>`:""},
   ],N.planets.map(p=>G[p]));
 

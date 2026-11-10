@@ -114,7 +114,24 @@ function swhRender(S,natal){
        '<stop offset="100%" stop-color="#fff" stop-opacity="0"/></radialGradient></defs>';
   o+='<rect width="'+SWH_W+'" height="'+SWH_H+'" fill="url(#swhbg)"/>';
 
-  /* --- fixed house wedges: defined by how far a point has risen, so they stay put --- */
+  /* --- the horizon-anchored equal-house grid ---
+     THESE ARE NOT THE REPORT'S BHĀVAS, and the difference is deliberate.
+     Each wedge is exactly 30° measured back from the RISING DEGREE, so wedge
+     1 begins at the eastern edge and the grid stays put on screen while the
+     signs rotate through it as the animation advances. That fixity is the
+     mechanism this pane exists to show, and it is a property of the sky, not
+     of a chart: a natal bhāva frame does not stay horizon-anchored as time
+     advances, so drawing the natal frame here would destroy the very thing
+     being demonstrated.
+
+     It therefore agrees with NEITHER frame the report uses. Whole-sign bhāva 1
+     is the entire rāśi on the eastern edge, beginning at that rāśi's boundary
+     rather than at the rising degree; Śrīpati's bhāvas are unequal. So a
+     reader who counts a graha's wedge here and compares it with the house
+     column in the report will sometimes get a different number — which is why
+     the prose and the legend now say what these wedges are instead of calling
+     them "house compartments" and leaving the reader to assume. The geometry
+     is right; only the claim about it was wrong. */
   for(var h=1;h<=12;h++){
     var a0=lag-(h-1)*30, a1=lag-h*30;
     o+='<path d="'+swBandPath(a1,a0,R*0.995,R*1.055,lag,SWH_CX,SWH_CY,SW_TILT_DEG,10)+
@@ -369,8 +386,14 @@ function starWheelPane(D,J){
   return '<p class="knote">The ecliptic drawn as a disc tilted away from you, with the <b>horizon fixed</b> and '+
     'the <b>zodiac turning behind it</b>. Whatever is crossing the eastern edge is the lagna — not a label placed '+
     'there, but the arithmetic itself: the sign on that edge is what the engine reports as rising. The twelve '+
-    'house compartments stay put while the signs travel through them, which is the whole mechanism of a birth '+
-    'chart in one picture.</p>'+
+    'compartments on the outer band stay put while the signs travel through them, which is the whole mechanism '+
+    'of a birth chart in one picture.</p>'+
+    '<p class="knote"><b>These twelve compartments are equal 30° houses measured from the rising degree</b>, '+
+    'which is what lets them stay fixed to the horizon as the animation runs. They are a picture of the sky, '+
+    'not the bhāva frame this report judges the chart by: under whole-sign a bhāva is a whole rāśi and begins '+
+    'at that rāśi&rsquo;s boundary rather than at the rising degree, and under Śrīpati the bhāvas are unequal. '+
+    'So count a graha&rsquo;s house from the chart and its tables, not from this band — the two will sometimes '+
+    'differ, and when they do the chart is the answer.</p>'+
     swhControls()+swhChips()+
     '<p id="swhstamp" class="swhstamp"></p>'+
     '<p id="swhfacts" class="swhfacts"></p>'+

@@ -142,16 +142,47 @@
     return o + '</svg></figure>';
   }
 
+  /* EACH SYSTEM'S HOUSE NUMBER, NAMED RATHER THAN ASSUMED.
+   *
+   * This view exists to show where whole-sign and Śrīpati disagree, so it may
+   * never read a single "the house" field: p.house is resolved under WHICHEVER
+   * FRAME THE CHART WAS CAST IN, which means it was the Śrīpati number
+   * whenever the global toggle was set that way. The left chart, titled
+   * "Rāśi · whole-sign", then placed grahas by their Śrīpati bhāva, the two
+   * charts showed identical occupants, and the disagreement the view promises
+   * to make visible disappeared — while both titles still claimed otherwise.
+   *
+   * wholeHouse is computed from the rāśi and is therefore true in both
+   * frames; sripatiHouse comes from SPSripati's own analysis. Every consumer
+   * below takes one of them explicitly. */
+  function wholeHouse(D, p) {
+    if (p.sign == null || D.LS == null) return p.house;
+    return ((p.sign - D.LS) % 12 + 12) % 12 + 1;
+  }
+  function sripatiMap(A) {
+    var m = {};
+    if (A && A.rows) A.rows.forEach(function (r) { m[r.body] = r.sripati; });
+    return m;
+  }
+
   /* ---- dṛṣṭi beams -------------------------------------------------------
      Drawn between house centres, from each graha to the houses it aspects.
      They are off by default: nine grahas aspecting three houses each is
      twenty-odd lines and an unreadable cat's cradle. One house at a time,
-     lit on click, is the version that tells you something. */
-  function beamsFor(D, house) {
+     lit on click, is the version that tells you something.
+
+     houseOf says which system's house numbers to draw in. The same beam set
+     used to be injected into BOTH charts' beam groups, so one of the two
+     always showed beams struck from the other system's placements on its own
+     geometry — the contradiction this view is meant to expose, committed by
+     the view itself. */
+  function beamsFor(D, house, houseOf) {
     if (!D || !house) return "";
-    var out = [], LS = D.LS;
+    var out = [];
+    houseOf = houseOf || function (p) { return p.house; };
     (D.planets || []).forEach(function (p) {
-      var from = p.house;
+      var from = houseOf(p);
+      if (from == null) return;
       var offs = ASP[p.en] || [7];
       offs.forEach(function (o) {
         var to = ((from - 1 + o - 1) % 12) + 1;
@@ -166,11 +197,17 @@
     return out.join("");
   }
 
-  function aspectsOn(D, house) {
+  /* The inspector describes a ŚRĪPATI bhāva (its cusp, its sandhi span), so
+     the dṛṣṭi it lists must be counted in Śrīpati houses too, not in whatever
+     p.house happens to hold. */
+  function aspectsOn(D, house, houseOf) {
     var out = [];
+    houseOf = houseOf || function (p) { return p.house; };
     (D.planets || []).forEach(function (p) {
+      var from = houseOf(p);
+      if (from == null) return;
       (ASP[p.en] || [7]).forEach(function (o) {
-        var to = ((p.house - 1 + o - 1) % 12) + 1;
+        var to = ((from - 1 + o - 1) % 12) + 1;
         if (to === house) out.push(p.en + " (" + o + "th)");
       });
     });
@@ -182,8 +219,10 @@
     if (!D) return need("A chart is needed for this view.");
     var A = window.SPSripati && window.SPSripati.analyse(D);
     var LS = D.LS, occW = {}, occS = {};
+    /* whole-sign from the RĀŚI, not from p.house — see wholeHouse above */
     (D.planets || []).forEach(function (p) {
-      (occW[p.house] = occW[p.house] || []).push(GL[p.en] + (p.retro ? "℞" : ""));
+      var hw = wholeHouse(D, p);
+      (occW[hw] = occW[hw] || []).push(GL[p.en] + (p.retro ? "℞" : ""));
     });
     if (A) A.rows.forEach(function (r) {
       (occS[r.sripati] = occS[r.sripati] || []).push(GL[r.body] + (r.retro ? "℞" : ""));
@@ -191,7 +230,7 @@
     var html = '<div class="wsrow2">' +
       diamond("ws-d1", function (h) { return (LS + h - 1) % 12; },
         function (h) { var a = (occW[h] || []).slice(); if (h === 1) a.unshift("Lg"); return a; },
-        "Rāśi · whole-sign", { sub: "the frame the report reads from" }) +
+        "Rāśi · whole-sign", { sub: "rāśi = bhāva, counted from the lagna" }) +
       (A ? diamond("ws-ch", function (h) { return A.houses[h - 1].sign; },
         function (h) { var a = (occS[h] || []).slice(); if (h === 1) a.unshift("Lg"); return a; },
         "Śrīpati bhāva-chalita", { sub: "quadrants trisected between the angles" })
@@ -209,7 +248,10 @@
     var A = window.SPSripati && window.SPSripati.analyse(D);
     if (!A) return "";
     var H = A.houses[h - 1];
-    var asp = aspectsOn(D, h);
+    /* this panel is about the Śrīpati bhāva, so count the dṛṣṭi in Śrīpati
+       houses — not in p.house, which is the toggle's answer, not this one's */
+    var SM = sripatiMap(A);
+    var asp = aspectsOn(D, h, function (p) { return SM[p.en]; });
     var moved = A.shifts.filter(function (r) {
       return r.sripati === h || r.whole === h;
     });
@@ -920,10 +962,18 @@
         all[i].getAttribute("data-house") === h);
     var box = $("ws-inspect");
     if (box && D) box.innerHTML = inspect(D, HOUSE);
-    ["ws-d1-beams", "ws-ch-beams"].forEach(function (id) {
-      var g = $(id);
-      if (g && D) g.innerHTML = beamsFor(D, HOUSE);
-    });
+    /* ONE BEAM SET PER SYSTEM. The same HTML went into both groups, so
+       whichever chart was not the frame in force got beams struck from the
+       other system's placements, drawn on its own geometry. */
+    if (D) {
+      var A2 = window.SPSripati && window.SPSripati.analyse(D);
+      var SM2 = sripatiMap(A2);
+      var gw = $("ws-d1-beams");
+      if (gw) gw.innerHTML = beamsFor(D, HOUSE, function (p) { return wholeHouse(D, p); });
+      var gs = $("ws-ch-beams");
+      if (gs) gs.innerHTML = A2
+        ? beamsFor(D, HOUSE, function (p) { return SM2[p.en]; }) : "";
+    }
   }
 
   /* ---- the deck ----------------------------------------------------------- */
