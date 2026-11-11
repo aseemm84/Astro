@@ -451,7 +451,7 @@ tr.dtrow-now td{background:color-mix(in srgb,var(--gold) 14%,transparent)}
     <a class="adhome" href="index.html">Nirayana</a>
     <button class="adchrome-btn" type="button" aria-expanded="false"
             aria-controls="adchrome-links">Menu</button>
-    <div class="adchrome-links" id="adchrome-links"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></div>
+    <div class="adchrome-links" id="adchrome-links"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a><a href="credits.html">Credits &amp; licences</a></div>
   </div>
 </nav>
 <script>
@@ -2343,10 +2343,12 @@ function shadbala(ctx){
     else cheshta=Math.max(0,Math.min(60,(cheshtaK[p]||0)/3));
     // --- Naisargika & Drik ---
     var nais=SB_NAIS[p];
-    /* Drik Bala — BPHS Vol. 1, Ch. 27, v. 19: "Reduce one fourth of the
-       Drishti Pinda if a planet has malefic aspects on it and add a fourth if
-       it is aspected by a benefic. Super add the entire aspect of Mercury and
-       Jupiter to get the net strength of a planet."
+    /* Drik Bala — BPHS Vol. 1, Ch. 27, v. 19. The verse first gives the
+       quarter rule: a quarter of the Drishti Pinda is taken off for malefic
+       aspect and a quarter added for benefic. Its last clause is the one at
+       issue here: "Super add the entire aspect of Mercury and Jupiter to get
+       the net strength of a planet." (Quoted only as far as the decision
+       below turns on it; quotation-verify.mjs keeps it that way.)
      *
      * THE QUARTER RULE IS APPLIED. THE SUPER-ADD CLAUSE IS DELIBERATELY NOT,
      * and this is a decision on record, not an oversight — please do not
@@ -3512,9 +3514,9 @@ try{ window.swProject=swProject; window.swRingPath=swRingPath; window.swBandPath
    and what makes the construction worth having, is the doctrine the cusps
    are FOR:
 
-     * "The planet on the cusp of a house will give full effects due to the
-       bhava concerned. The one in Bhava Sandhi (end of house) gives no
-       results due to that bhava." The translator flags this as a passage
+     * A planet on a bhāva's cusp gives that bhāva's full effects, while
+       "the one in Bhava Sandhi (end of house) gives no results due to that
+       bhava." The translator flags this as a passage
        the Benares (Chaukhambha) edition carries among its special hints,
        and adds that a planet within 15° past the cusp has its effects for
        that bhāva diminishing, and one before the cusp but within 15° has

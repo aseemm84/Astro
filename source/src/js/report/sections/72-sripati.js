@@ -24,9 +24,9 @@
    and what makes the construction worth having, is the doctrine the cusps
    are FOR:
 
-     * "The planet on the cusp of a house will give full effects due to the
-       bhava concerned. The one in Bhava Sandhi (end of house) gives no
-       results due to that bhava." The translator flags this as a passage
+     * A planet on a bhāva's cusp gives that bhāva's full effects, while
+       "the one in Bhava Sandhi (end of house) gives no results due to that
+       bhava." The translator flags this as a passage
        the Benares (Chaukhambha) edition carries among its special hints,
        and adds that a planet within 15° past the cusp has its effects for
        that bhāva diminishing, and one before the cusp but within 15° has

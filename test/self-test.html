@@ -469,11 +469,18 @@ function runReportChecks(W, doc, key, J, D){
       return near(parseFloat(r[2])+parseFloat(r[3])+parseFloat(r[4]), parseFloat(r[5]), 0.6); }), bb.length+" houses");
   var ik=bodyRows(T,"Iṣṭa & Kaṣṭa phala");
   var sbp={}; (J.shadbala.planets||[]).forEach(function(p){ sbp[p.graha]=p; });
-  check("iṣṭa/kaṣṭa: √(U×C) and √((60−U)(60−C)) from full-precision rays",
+  /* The rule follows the paddhati. This check asserted the geometric form
+     unconditionally and went stale when the split landed: BPHS Ch. 28 v. 6 is
+     arithmetic, iṣṭa = (U+C)/2 and kaṣṭa = 60 − iṣṭa; Śrīpatipaddhati Adh. 4
+     śl. 6 is geometric. It now asks which one the chart was cast in. */
+  var ikSp=!!(J.house_system&&J.house_system.mode==="sripati");
+  check("iṣṭa/kaṣṭa: "+(ikSp?"√(U×C) and √((60−U)(60−C)) (Śrīpati)":"(U+C)/2 and 60 − iṣṭa (BPHS)")+" from full-precision rays",
     ik.length===7 && ik.every(function(r){
       var p=sbp[r[0]]; if(!p) return false;
-      var ei=Math.sqrt(Math.max(0,p.uchcha)*Math.max(0,p.cheshta));
-      var ek=Math.sqrt(Math.max(0,60-p.uchcha)*Math.max(0,60-p.cheshta));
+      var ei=ikSp ? Math.sqrt(Math.max(0,p.uchcha)*Math.max(0,p.cheshta))
+                  : (p.uchcha+p.cheshta)/2;
+      var ek=ikSp ? Math.sqrt(Math.max(0,60-p.uchcha)*Math.max(0,60-p.cheshta))
+                  : 60-ei;
       return near(Math.round(ei*10)/10, parseFloat(r[3]), 0.06) &&
              near(Math.round(ek*10)/10, parseFloat(r[4]), 0.06); }), ik.length+" planets");
   var sri=bodyRows(T,"Bhāva (Sripati)");

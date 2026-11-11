@@ -201,9 +201,9 @@ function shadbalaSection(D,J){
     'declination, as Ch.&nbsp;27, vv.&nbsp;15–17 require. One part remains simplified: '+
     '<b>Nathonnatha</b> is measured from clock noon rather than local apparent noon.</div>'+
     '<div class="kbox"><b>One clause of Dṛk Bala is deliberately not applied</b>'+
-    'BPHS Ch.&nbsp;27, v.&nbsp;19 reads: <i>“Reduce one fourth of the Drishti Pinda if a planet has malefic '+
-    'aspects on it and add a fourth if it is aspected by a benefic. Super add the entire aspect of Mercury and '+
-    'Jupiter to get the net strength of a planet.”</i> The quarter rule is applied here in full. The final '+
+    'BPHS Ch.&nbsp;27, v.&nbsp;19 first gives a quarter rule — a quarter of the Dṛṣṭi Piṇḍa taken off for '+
+    'malefic aspect and a quarter added for benefic — and then ends: <i>“Super add the entire aspect of Mercury '+
+    'and Jupiter to get the net strength of a planet.”</i> The quarter rule is applied here in full. The final '+
     'sentence is not, and that is a judgement rather than an oversight. Its scope is terse, and on both readings '+
     'we tested — adding Mercury’s and Jupiter’s entire Dṛṣṭi Piṇḍa on top of the quarter, or in place of it — '+
     'Dṛk Bala turns positive for every planet in every chart we checked, which empties the verse’s own first '+

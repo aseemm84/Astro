@@ -1542,10 +1542,12 @@ function shadbala(ctx){
     else cheshta=Math.max(0,Math.min(60,(cheshtaK[p]||0)/3));
     // --- Naisargika & Drik ---
     var nais=SB_NAIS[p];
-    /* Drik Bala — BPHS Vol. 1, Ch. 27, v. 19: "Reduce one fourth of the
-       Drishti Pinda if a planet has malefic aspects on it and add a fourth if
-       it is aspected by a benefic. Super add the entire aspect of Mercury and
-       Jupiter to get the net strength of a planet."
+    /* Drik Bala — BPHS Vol. 1, Ch. 27, v. 19. The verse first gives the
+       quarter rule: a quarter of the Drishti Pinda is taken off for malefic
+       aspect and a quarter added for benefic. Its last clause is the one at
+       issue here: "Super add the entire aspect of Mercury and Jupiter to get
+       the net strength of a planet." (Quoted only as far as the decision
+       below turns on it; quotation-verify.mjs keeps it that way.)
      *
      * THE QUARTER RULE IS APPLIED. THE SUPER-ADD CLAUSE IS DELIBERATELY NOT,
      * and this is a decision on record, not an oversight — please do not

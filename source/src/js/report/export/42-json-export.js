@@ -390,8 +390,8 @@ function jxAsOf(D,J){
     generated_iso:new Date().toISOString(),
     generated_jd:jxRound(D.nowJd,5),
     WARNING:"Everything under as_of describes the sky at the moment this file was written, "+
-      "NOT the birth chart. Gochara, kaksha, Sade Sati, ingresses, eclipses and the day tools "+
-      "all go stale. Re-derive them for the date you are actually judging.",
+      "NOT the birth chart. Gochara, kaksha, Sade Sati, the running year's varshaphala, "+
+      "ingresses, eclipses and the day tools all go stale. Re-derive them for the date you are actually judging.",
     transits:(cp.transits||[]).map(function(t){
       return {graha:t.en, longitude:jxRound(t.sidereal_deg), sign:ridx(t.rashi),
               nakshatra:(t.nakshatra&&t.nakshatra.en)||null, pada:t.nakshatra_pada,
@@ -419,6 +419,12 @@ function jxAsOf(D,J){
         favourable:fav, vedha_house:vh||null, obstructed_by:blocker});
     });
   }
+  /* The running year's varṣaphala. It lives here, under as_of, because WHICH
+     year it describes is chosen by the export moment — it goes stale exactly
+     as gochara does. Same computation as the report pane (varshaphalaData),
+     so the file and the page cannot disagree. Tājika, not BPHS: said inside. */
+  try{ if(typeof varshaphalaJson==="function") out.varshaphala=varshaphalaJson(D,J); }catch(e){
+    out.varshaphala={available:false, reason:"computation failed: "+(e&&e.message||e)}; }
   return out;
 }
 /* --- a short orientation for whatever reads this file --- */

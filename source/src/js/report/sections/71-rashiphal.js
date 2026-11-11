@@ -146,10 +146,10 @@
   }
 
   /* ---- tier 2: the one vedha pair the uploaded edition states in words --
-     "the Sun in the 3rd house from the Moon during transit will be
-     favourable. But his favourable disposition will remain curbed if
-     simultaneously the 9th from the Moon is transited by another planet
-     (than of course Saturn, which is an exception)." — and the vedha lifts
+     the Sun transiting the 3rd from the Moon is favourable, but that favour
+     "will remain curbed if simultaneously the 9th from the Moon is
+     transited by another planet", Saturn being the stated exception — and
+     the vedha lifts
      when a companion joins the Sun in the 3rd. Implemented exactly that
      far and no further. */
   function sunVedha(R, moonSign) {

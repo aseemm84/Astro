@@ -41,7 +41,8 @@ https://github.com/cosinekitty/astronomy
 **GeoNames place data** — Creative Commons Attribution 4.0 International
 (CC BY 4.0). `cities.json` is derived from the GeoNames `cities15000` dataset
 and the GeoNames India postal extract, reshaped and compressed for search.
-Attribution is carried inside the file and on the site.
+Attribution is carried inside the file and on the site, on the Credits &
+licences page (`credits.html`), linked from every page's footer.
 https://www.geonames.org/
 
 **HYG star database** — Creative Commons Attribution–ShareAlike 4.0
@@ -52,7 +53,14 @@ ecliptic coordinates and sidereal longitudes, and cross-checked against Swiss
 Ephemeris and the star list bundled with PyEphem.
 https://github.com/astronexus/HYG-Database
 
-Neither is covered by the MIT grant above; each keeps its own terms.
+**Apache ECharts 5.5.0** — Apache Licence 2.0, Copyright The Apache Software
+Foundation. This product includes software developed at The Apache Software
+Foundation. Inlined in `dashboard.html` with its licence header intact. It bundles
+**ZRender**, its drawing layer — BSD 3-Clause Licence, Copyright (c) 2013 Baidu Inc.
+https://echarts.apache.org/ · https://github.com/ecomfe/zrender
+
+None of these is covered by the MIT grant above; each keeps its own terms. All
+of them are listed for site visitors on the Credits & licences page.
 
 ---
 

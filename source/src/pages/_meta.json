@@ -246,5 +246,13 @@
   "layout": "",
   "has_aside": true,
   "desc": "The tilted star wheel for any day and place, with the twenty-seven yogatārās at their own longitude and latitude, the whole day’s tithi, nakṣatra, yoga and karaṇa with their end-times, kṣaya and adhika tithis named, and a customisable card to share."
+ },
+ "credits": {
+  "title": "Credits &amp; licences &mdash; {{BRAND}}",
+  "h1": "Credits &amp; licences",
+  "sub": "Whose work this site is built with, what each piece does, and the terms it comes under.",
+  "layout": "",
+  "has_aside": true,
+  "desc": "The third-party components and texts behind {{BRAND}}: astronomy-engine (MIT), GeoNames place data (CC BY 4.0), the HYG star database (CC BY-SA 4.0), Apache ECharts and ZRender, and the translations cited."
  }
 }

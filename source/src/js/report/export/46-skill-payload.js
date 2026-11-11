@@ -588,7 +588,8 @@ function skpGuide(D){
     "derived.vimsopaka","derived.bhava_bala","derived.ishta_kashta",
     "derived.graha_drishti","derived.rashi_drishti","derived.argala",
     "ashtakavarga","derived.ashtakavarga_shodhana","yogas",
-    "derived.running_dasha","derived.vimshottari_tree","derived.as_of"
+    "derived.running_dasha","derived.vimshottari_tree","derived.as_of",
+    "derived.as_of.varshaphala"
   ];
   out.caution="Read derived.conventions and derived.sensitivity before anything else. "+
     "Vargas and anything built on them are the first figures a birth-time error moves, "+

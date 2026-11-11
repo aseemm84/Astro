@@ -102,10 +102,15 @@ function muddaDasha(moonSid, startJd, yearDays) {
   return { list: out, nak: NAKS[ni], lord: lord, balance: 1 - frac };
 }
 
-function varshaphalaSection(D, J) {
-  if (!D.P || !D.P.Sun || !J || !J.input) return "";
-  if (!window.__kSidAt || !window.buildLocalChart)
-    return '<p class="kmut">Needs the built-in engine.</p>';
+/* ONE COMPUTATION, TWO SURFACES. The report pane and the analyst JSON both
+   read the year from here, so they cannot drift: the pane formats what this
+   returns and the export serialises it. Before this, the JSON carried no
+   varṣaphala at all while the pane computed one — the same "surface without
+   its export" gap closed elsewhere for bhāva-phala and bhāva bala.
+   Returns {err:"…"} when the year cannot be computed, never a guess. */
+function varshaphalaData(D, J) {
+  if (!D || !D.P || !D.P.Sun || !J || !J.input) return { err: "no-chart" };
+  if (!window.__kSidAt || !window.buildLocalChart) return { err: "no-engine" };
 
   var natalSun = D.P.Sun.sid, inp = J.input;
   var age = Math.max(0, Math.floor((D.nowJd - D.jd) / VP_YEARLEN));
@@ -113,9 +118,7 @@ function varshaphalaSection(D, J) {
   /* if this year's entry has not happened yet, the running year began at the
      previous one — which is the year anybody asking is actually in */
   if (vp && vp.jd > D.nowJd) { age = Math.max(0, age - 1); vp = varshaPravesha(D.jd, natalSun, age); }
-  if (!vp) return '<div class="kbox kwarn"><b>The solar return could not be located.</b> ' +
-    'The search for the Sun’s return to its natal longitude did not converge, so nothing ' +
-    'is shown rather than something approximate.</div>';
+  if (!vp) return { err: "no-return" };
 
   var next = varshaPravesha(D.jd, natalSun, age + 1);
   var yearDays = next ? (next.jd - vp.jd) : VP_YEARLEN;
@@ -125,34 +128,118 @@ function varshaphalaSection(D, J) {
   var vinp = { year: dt.getUTCFullYear(), month: dt.getUTCMonth() + 1, day: dt.getUTCDate(),
                hour: dt.getUTCHours(), minute: dt.getUTCMinutes(),
                lat: inp.lat, lon: inp.lon, tzHours: inp.tzHours,
-               ayanamsa: inp.ayanamsa, node: inp.node };
+               ayanamsa: inp.ayanamsa, node: inp.node,
+               /* the paddhati travels with the input, like the ayanāṃśa. This
+                  list was built field by field and left it out, so under the
+                  Śrīpati toggle the annual chart was quietly cast whole-sign
+                  while everything around it followed Śrīpati.
+                  varshaphala-verify.mjs pins it. */
+               houseSystem: inp.houseSystem };
   var VJ = null, VD = null;
   try { VJ = window.buildLocalChart(vinp); VD = window.__derive(VJ); } catch (e) { VJ = null; }
-  if (!VJ) return '<div class="kbox kwarn"><b>The annual chart could not be cast.</b></div>';
+  if (!VJ) return { err: "no-annual" };
 
   var vLag = VD.LS, muntha = (D.LS + age) % 12;
   var munthaLord = LORD[muntha];
   var munthaHouse = ((muntha - vLag) % 12 + 12) % 12 + 1;
 
-  /* the five candidates for lord of the year, named rather than ranked */
-  var triRashi = (function () {
-    /* Tri-rāśi lord: by the varṣa lagna and whether the entry is by day or
-       night. Stated as the rule rather than resolved, since the day/night
-       test needs the annual chart's own sunrise, which is computed below. */
-    return LORD[vLag];
+  /* the five candidates for lord of the year, named rather than ranked.
+     Tri-rāśi lord: by the varṣa lagna and whether the entry is by day or
+     night — stated as the rule rather than resolved. */
+  var triRashi = LORD[vLag];
+  var dinaRatri = (function () {
+    var h = (VD.input && VD.input.hour != null) ? VD.input.hour : 12;
+    var day = (VD.sunriseH != null && VD.sunsetH != null)
+            ? (h >= VD.sunriseH && h < VD.sunsetH) : (h >= 6 && h < 18);
+    return day ? "Sun" : "Moon";
   })();
   var cands = [
     ["Muntha lord", munthaLord, "lord of " + SA[muntha] + ", the Muntha sign"],
     ["Natal lagna lord", LORD[D.LS], "lord of " + SA[D.LS]],
     ["Varṣa lagna lord", LORD[vLag], "lord of " + SA[vLag] + ", rising at the entry"],
     ["Tri-rāśi lord", triRashi, "by the varṣa lagna and the day/night division"],
-    ["Dina-rātri lord", (function () {
-        var h = (VD.input && VD.input.hour != null) ? VD.input.hour : 12;
-        var day = (VD.sunriseH != null && VD.sunsetH != null)
-                ? (h >= VD.sunriseH && h < VD.sunsetH) : (h >= 6 && h < 18);
-        return day ? "Sun" : "Moon";
-      })(), "the Sun by day, the Moon by night"]
+    ["Dina-rātri lord", dinaRatri, "the Sun by day, the Moon by night"]
   ];
+
+  /* Mudda */
+  var MU = VD.P.Moon ? muddaDasha(VD.P.Moon.sid, vp.jd, yearDays) : null;
+
+  return { age: age, vp: vp, next: next, yearDays: yearDays, VJ: VJ, VD: VD,
+           vLag: vLag, muntha: muntha, munthaLord: munthaLord, munthaHouse: munthaHouse,
+           cands: cands, MU: MU, inp: inp };
+}
+
+/* The JSON view of the same computation. Field names say what each figure IS
+   and which rule produced it; the tier is stated first because Tājika is not
+   in the uploaded BPHS edition and nothing here may be read as Parāśara's. */
+function varshaphalaJson(D, J) {
+  var V = varshaphalaData(D, J);
+  if (V.err) return { available: false, reason: {
+    "no-chart": "no cast chart", "no-engine": "needs the built-in engine",
+    "no-return": "the search for the Sun's return to its natal longitude did not converge, so nothing is given rather than something approximate",
+    "no-annual": "the annual chart could not be cast" }[V.err] || V.err };
+  var r = function (x, n) { return x == null ? null : +(+x).toFixed(n == null ? 4 : n); };
+  var iso = function (jd) { return new Date((jd - 2440587.5) * 86400000).toISOString(); };
+  var hsMode = (V.VJ.house_system && V.VJ.house_system.mode) || "whole-sign";
+  var annual = {};
+  ORD.forEach(function (g) {
+    var p = V.VD.P[g]; if (!p) return;
+    annual[g] = { longitude: r(p.sid), sign: p.sign, degree_in_sign: r(p.deg),
+                  house: p.house, nakshatra: p.nak, pada: p.pada,
+                  natal_sign: D.P[g] ? D.P[g].sign : null };
+  });
+  return {
+    available: true,
+    tier: "Tājika, later tradition — NOT in the uploaded Santhanam edition of BPHS",
+    as_of_dependent: true,
+    year_selection: "the running year at export time: the varṣa whose entry is the latest one not after derived.as_of.generated_jd",
+    year_number: V.age + 1,
+    completed_years: V.age,
+    varsha_pravesha: { jd_utc: r(V.vp.jd, 6), utc: iso(V.vp.jd),
+      local_time: hmOf(V.vp.jd, V.inp.tzHours), timezone_offset: V.inp.tzHours,
+      sun_error_arcsec: r(V.vp.errArcsec, 3),
+      method: "bisection on the engine's own ephemeris for the Sun's return to its natal sidereal longitude, then checked by recomputing the Sun at the answer" },
+    next_varsha_pravesha_jd_utc: V.next ? r(V.next.jd, 6) : null,
+    year_length_days: r(V.yearDays, 4),
+    cast_for: { latitude: V.inp.lat, longitude: V.inp.lon,
+      note: "Cast for the birth place given in input. Tradition casts the annual chart for where the native IS at the entry; recast with that place if it differs." },
+    varsha_lagna: { sign: V.vLag, degree_in_sign: r(V.VD.lagDeg) },
+    annual_chart_house_system: hsMode,
+    annual_chart: annual,
+    muntha: { sign: V.muntha, lord: V.munthaLord,
+      house_from_varsha_lagna: V.munthaHouse,
+      rule: "advances one sign per completed year from the natal lagna (natal lagna sign + completed years)",
+      house_rule: "counted by rāśi from the varṣa lagna" },
+    varshesha: { asserted: false,
+      reason: "Choosing the lord of the year needs Pañcavargīya bala, which is NOT computed here and whose details vary between Tājika texts. The five office-bearers are named; none is chosen.",
+      candidates: V.cands.map(function (c) {
+        var p = V.VD.P[c[1]];
+        return { office: c[0], graha: c[1], rule: c[2],
+                 sign_in_annual_chart: p ? p.sign : null,
+                 house_in_annual_chart: p ? p.house : null };
+      }) },
+    mudda_dasha: (V.MU && V.MU.list) ? {
+      rule: "Viṃśottarī's nine lords and proportions scaled to fill one year, starting from the nakṣatra lord of the Moon in the ANNUAL chart with that nakṣatra's balance",
+      starting_nakshatra: V.MU.nak, starting_lord: V.MU.lord, balance_at_entry: r(V.MU.balance, 6),
+      periods: V.MU.list.map(function (m) {
+        return { lord: m.lord, start_jd: r(m.start, 6), end_jd: r(m.end, 6),
+                 days: r(m.days, 3), partial: !!m.partial }; }) } : null,
+    not_computed: ["Pañcavargīya bala", "Sahamas", "Tājika yogas (Itthaśāla, Īśarāpha and the rest)"],
+    note: "A varṣaphala is read against the natal chart, not instead of it, and describes one year. It is not a forecast and not a basis for any decision that matters."
+  };
+}
+
+function varshaphalaSection(D, J) {
+  if (!D.P || !D.P.Sun || !J || !J.input) return "";
+  var V = varshaphalaData(D, J);
+  if (V.err === "no-engine") return '<p class="kmut">Needs the built-in engine.</p>';
+  if (V.err === "no-return") return '<div class="kbox kwarn"><b>The solar return could not be located.</b> ' +
+    'The search for the Sun’s return to its natal longitude did not converge, so nothing ' +
+    'is shown rather than something approximate.</div>';
+  if (V.err === "no-annual") return '<div class="kbox kwarn"><b>The annual chart could not be cast.</b></div>';
+  if (V.err) return "";
+  var age = V.age, vp = V.vp, yearDays = V.yearDays, VD = V.VD, vLag = V.vLag,
+      muntha = V.muntha, munthaHouse = V.munthaHouse, cands = V.cands, MU = V.MU, inp = V.inp;
   var cr = cands.map(function (c) {
     var p = VD.P[c[1]];
     return '<tr><td><b>' + esc(c[0]) + '</b></td><td>' + esc(c[1]) + '</td>' +
@@ -160,8 +247,6 @@ function varshaphalaSection(D, J) {
       '<td class="kmut">' + esc(c[2]) + '</td></tr>';
   }).join("");
 
-  /* Mudda */
-  var MU = VD.P.Moon ? muddaDasha(VD.P.Moon.sid, vp.jd, yearDays) : null;
   var mrows = "";
   if (MU && MU.list) mrows = MU.list.map(function (m) {
     var on = (D.nowJd >= m.start && D.nowJd < m.end);
@@ -226,4 +311,5 @@ function hmOf(jd, tz) {
   var ms = (jd - 2440587.5) * 86400000 + (tz || 0) * 3600000, d = new Date(ms);
   return String(d.getUTCHours()).padStart(2, "0") + ":" + String(d.getUTCMinutes()).padStart(2, "0");
 }
-try { window.__varshaPravesha = varshaPravesha; window.__muddaDasha = muddaDasha; } catch (e) {}
+try { window.__varshaPravesha = varshaPravesha; window.__muddaDasha = muddaDasha;
+      window.__varshaphalaJson = varshaphalaJson; } catch (e) {}

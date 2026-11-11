@@ -1,0 +1,30 @@
+{
+ "_provenance": {
+  "what": "A Bloom filter over every run of 8 consecutive normalised words in the Santhanam translation of BPHS. It recognises a verbatim quotation and cannot be read back into text.",
+  "why": "LICENSE.md promises quotation from the translation is kept brief. quotation-verify.mjs checks that promise against every shipped page.",
+  "source": "BPHS-Santhanam-Vol-1.pdf and BPHS-Santhanam-Vol-2.pdf, the project's own uploads, read out as text. Neither the PDFs nor their text are in this repository.",
+  "generator": "source/test/make-translation-fingerprint.py",
+  "checkedBy": "source/test/quotation-verify.mjs"
+ },
+ "shingle_words": 8,
+ "m_bits": 2097152,
+ "k": 7,
+ "normalisation": "NFKD, combining marks removed, lower-cased, tokens [a-z0-9]+",
+ "hash": "h1 = fmix32(FNV-1a(shingle, seed 0x811C9DC5)); h2 = fmix32(FNV-1a(shingle, seed 0x050C5D1F)) | 1; index_i = (h1 + i*h2) mod 2^32 mod m",
+ "source_words": 284498,
+ "distinct_shingles": 281435,
+ "fill_ratio": 0.6094,
+ "per_shingle_false_positive": 0.031229,
+ "self_check": {
+  "string": "the lord of the lagna is placed in",
+  "indices": [
+   154602,
+   636443,
+   1118284,
+   1600125,
+   2081966,
+   466655,
+   948496
+  ]
+ }
+}

@@ -30,6 +30,12 @@ source/
   test/span-verify.mjs            the certified window, its band and tolerances
   test/citation-verify.mjs        every BPHS citation, checked as a citation
   test/make-citation-registry.py  writes data/citations.json from the source
+  test/quotation-verify.mjs       quotation from the translation kept brief
+  test/make-translation-fingerprint.py  writes data/santhanam-fingerprint.*
+                                  (a Bloom filter: recognises a verbatim run of
+                                  the translation, cannot be read back into it)
+  test/varshaphala-verify.mjs     analyst JSON's varṣaphala vs the pane and an
+                                  independent recomputation, both paddhatis
   data/citations.json             196 citations, 82 loci, 36 files
   test/make-bphs-witness.py       writes data/bphs-witness.json from the PDFs
   data/bphs-witness.json          what the uploaded edition attests
