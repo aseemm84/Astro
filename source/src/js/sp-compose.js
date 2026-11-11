@@ -1444,7 +1444,8 @@
       if (!node) { missing.push({ id: id, why: "no such node" }); return; }
       var v = window.SPNodes.resolve(node, C);
       if (!v) { missing.push({ id: id, label: node.label,
-                               why: "not available for this chart or moment" }); return; }
+                               why: (node.whyMissing && node.whyMissing(C)) ||
+                                    "not available for this chart or moment" }); return; }
       (bag[v.kind] = bag[v.kind] || []).push({ node: node, v: v });
     });
     return { bag: bag, missing: missing };

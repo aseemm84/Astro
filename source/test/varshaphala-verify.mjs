@@ -103,7 +103,10 @@ async function run(mode) {
         birthJd: J.jd_utc
       };
     }
-    return { V, pane, indep, mode: J.house_system && J.house_system.mode,
+    const rdSame = JSON.stringify(asof.running_dasha || null) === JSON.stringify(P.derived.running_dasha || null)
+                   && !!P.derived.running_dasha;
+    const cautionRd = /derived\.running_dasha/.test((P.derived.guide && P.derived.guide.caution) || "");
+    return { V, pane, indep, rdSame, cautionRd, mode: J.house_system && J.house_system.mode,
              reading: (P.derived.guide && P.derived.guide.reading_order) || [],
              warning: asof.WARNING || "" };
   }, [BIRTH, mode, PLANT]);
@@ -117,6 +120,9 @@ for (const mode of ["whole-sign", "sripati"]) {
   if (!V || !V.available) continue;
   is(r.reading.includes("derived.as_of.varshaphala"), "guide.reading_order names it");
   is(/varshaphala/.test(r.warning), "as_of WARNING says the varṣaphala goes stale");
+  is(r.rdSame, "the running daśā is also inside as_of, identical to derived.running_dasha");
+  is(/running daśā/.test(r.warning) && r.cautionRd,
+     "and both the as_of WARNING and the guide say it goes stale");
 
   head(`[${mode}] honesty — tier, Varṣeśa, what is not computed`);
   is(/Tājika/.test(V.tier) && /NOT in the uploaded Santhanam edition/.test(V.tier),

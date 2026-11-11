@@ -130,6 +130,10 @@ const R = await pg.evaluate(() => {
       meanAdv:+meanAdv.toFixed(3), turns:+((F.lons.length-1)*meanAdv/360).toFixed(2),
       arms:F.arms?{n:F.arms.n,err:+F.arms.err.toFixed(2)}:null,
       tight:F.tight?{n:F.tight.n,err:+F.tight.err.toFixed(3),years:+F.tight.years.toFixed(2)}:null,
+      /* the tenth event's return, measured directly: for Śukra that is the
+         fifth conjunction OF THE SAME KIND, since they alternate */
+      ten:F.lons.length>10?{err:+Math.abs(sd(F.lons[10],F.lons[0])).toFixed(3),
+                             years:+((F.ts[10]-F.ts[0])/31556952000).toFixed(3)}:null,
       agreeArms, agreeTight
     };
   }
@@ -162,8 +166,21 @@ const checks=[
   [`235 syzygies is the Metonic cycle, 19 years (got ${P.tight?P.tight.n+" = "+P.tight.years+"y":"none"})`,
    !!P.tight && P.tight.n===235 && Math.abs(P.tight.years-19)<0.05 && P.tight.err<1],
   [`syzygies show 12 arms (got ${P.arms?P.arms.n:"none"})`, !!P.arms && P.arms.n===12],
-  [`Śukra closes a pentagram in 8 years (got ${V.tight?V.tight.n+" ev = "+V.tight.years+"y":"none"})`,
-   !!V.tight && Math.abs(V.tight.years-8)<0.1 && V.tight.err<4],
+  /* The pentagram is a fact about conjunctions of ONE kind: five synodic
+     periods are eight years, and the sixth inferior conjunction lands within a
+     few degrees of the first. The scene lists BOTH kinds, alternating, so that
+     is its tenth event. This used to assert that the TIGHTEST return was eight
+     years — true on the day it was written, and not a law: inferior and
+     superior conjunctions are unevenly spaced, so how close the fifth event
+     (an alternating pair) comes back depends on which kind the span opens on.
+     On some dates five events (four years) is tighter than ten, and the test
+     began failing as the clock moved, with nothing wrong in the scene. The
+     physics is now asserted directly, and the tightest is required to be one
+     of the two genuine returns rather than a particular one. */
+  [`Śukra: the fifth conjunction of the same kind returns in 8 years — the pentagram (got ${V.ten?V.ten.years+"y @ "+V.ten.err+"°":"none"})`,
+   !!V.ten && Math.abs(V.ten.years-8)<0.1 && V.ten.err<4],
+  [`Śukra's tightest return is one of the two real ones, 4 or 8 years (got ${V.tight?V.tight.n+" ev = "+V.tight.years+"y":"none"})`,
+   !!V.tight && ((V.tight.n===5 && Math.abs(V.tight.years-4)<0.1) || (V.tight.n===10 && Math.abs(V.tight.years-8)<0.1))],
   [`Śukra shows 5 arms (got ${V.arms?V.arms.n:"none"})`, !!V.arms && V.arms.n===5],
   ["Maṅgala reports NO closure, as it must", MA.arms===null]
 ];

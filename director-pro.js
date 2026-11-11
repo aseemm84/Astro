@@ -4664,7 +4664,8 @@
       if (!node) { missing.push({ id: id, why: "no such node" }); return; }
       var v = window.SPNodes.resolve(node, C);
       if (!v) { missing.push({ id: id, label: node.label,
-                               why: "not available for this chart or moment" }); return; }
+                               why: (node.whyMissing && node.whyMissing(C)) ||
+                                    "not available for this chart or moment" }); return; }
       (bag[v.kind] = bag[v.kind] || []).push({ node: node, v: v });
     });
     return { bag: bag, missing: missing };
@@ -5202,9 +5203,21 @@
      cycle node takes it as given: a reader who asks for a century and gets
      a decade has been quietly overruled. The cap on event count is the only
      limit, and it is reported when it bites. */
-  function spanOf(C) {
-    var days = Math.max(30, C.spanDays || 365);
-    return { t0: C.when, t1: C.when + days * DAY, days: days };
+  /* AN ASKED-FOR SPAN IS KEPT; AN UNASKED ONE HAS TO HOLD THE CYCLE.
+     With no span given, every node used to get one year from now. For a pair
+     that meets every few days that is plenty; for Sūrya and Śukra, who meet
+     every ~292 days, one year holds two meetings on some dates and ONE on
+     others — and with one the node returned nothing, so "Sūrya with Śukra"
+     was offered on some days and silently unavailable on the rest, depending
+     only on today's date. A default is the page's choice, not the reader's, so
+     it is now long enough to hold at least four of THIS cycle (still at least
+     a year). A span the reader asked for is untouched. cycles-verify.mjs
+     pins it. */
+  function spanOf(C, guessDays) {
+    var asked = C.spanDays != null && C.spanDays > 0;
+    var days = asked ? Math.max(30, C.spanDays)
+                     : Math.max(365, Math.ceil((guessDays || 0) * 4));
+    return { t0: C.when, t1: C.when + days * DAY, days: days, asked: asked };
   }
 
   /* arms: how many directions the eye counts. Longitudes are binned at a
@@ -5276,7 +5289,7 @@
   }
 
   function build(C, f, lonOf, guessDays, label, what, cap, filter) {
-    var S = spanOf(C);
+    var S = spanOf(C, guessDays);
     /* The cap counts what the finder FINDS, not what survives the filter. A
        combustion node keeps only the entries and discards the exits, so a cap
        of three hundred leaves a hundred and fifty — and the span the reader
@@ -5299,7 +5312,16 @@
   /* ---- publishing the nodes ---------------------------------------------- */
   function reg(id, label, hint, get) {
     window.SPNodes.register({ id: id, dom: "cycles", label: label, hint: hint,
-                              roles: ["cycleset"], get: get });
+                              roles: ["cycleset"], get: get,
+      /* Said instead of "not available": a cycle node is only ever missing
+         because the span holds fewer than two of its events, and the reader
+         can fix that — so the message tells them how. */
+      whyMissing: function (C) {
+        var d = Math.round(spanOf(C || {}).days);
+        return "fewer than two in the span chosen (" +
+          (d >= 700 ? Math.round(d / 365.2564) + " years" : d + " days") +
+          ") — choose a longer span to see the pattern";
+      } });
   }
 
   function publish() {
@@ -9472,12 +9494,22 @@
 
   var JOB = null;
 
-  function pickMime(prefer) {
+  function pickMime(prefer, withAudio) {
     var types = prefer === "webm"
       ? ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm",
          "video/mp4;codecs=avc1"]
       : ["video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9",
          "video/webm;codecs=vp8", "video/webm"];
+    /* WITH A SOUND TRACK, NAME THE AUDIO CODEC. Asked for plain
+       "video/mp4;codecs=avc1", a Chromium that has H.264 but no AAC records
+       Opus INSIDE the MP4 without saying so — legal, but QuickTime and some
+       upload paths refuse it, so the file looks fine until it is shared. The
+       reel exporter makes the same choice (sp-encode.js): AAC in MP4 when the
+       browser has it, otherwise a WebM with Opus, which plays everywhere a
+       WebM does. Without audio nothing changes. */
+    if (withAudio && prefer !== "webm")
+      types = ["video/mp4;codecs=avc1,mp4a.40.2", "video/webm;codecs=vp9,opus",
+               "video/webm;codecs=vp8,opus"].concat(types);
     for (var i = 0; i < types.length; i++)
       if (window.MediaRecorder && MediaRecorder.isTypeSupported(types[i]))
         return types[i];
@@ -9534,10 +9566,11 @@
         reject(new Error("this browser cannot drive frames one at a time"));
         return;
       }
-      var mime = pickMime(opts.container);
-      if (!mime) { reject(new Error("no supported recording format")); return; }
-
       var A = opts.withAudio === false ? null : audioTrack(doc, seconds);
+      var mime = pickMime(opts.container, !!(A && A.track));
+      if (!mime) { if (A && A.ac) try { A.ac.close(); } catch (e) {}
+                   reject(new Error("no supported recording format")); return; }
+
       if (A && A.track) { try { stream.addTrack(A.track); } catch (e) {} }
 
       var rec, chunks = [];

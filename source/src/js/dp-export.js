@@ -35,12 +35,22 @@
 
   var JOB = null;
 
-  function pickMime(prefer) {
+  function pickMime(prefer, withAudio) {
     var types = prefer === "webm"
       ? ["video/webm;codecs=vp9", "video/webm;codecs=vp8", "video/webm",
          "video/mp4;codecs=avc1"]
       : ["video/mp4;codecs=avc1", "video/mp4", "video/webm;codecs=vp9",
          "video/webm;codecs=vp8", "video/webm"];
+    /* WITH A SOUND TRACK, NAME THE AUDIO CODEC. Asked for plain
+       "video/mp4;codecs=avc1", a Chromium that has H.264 but no AAC records
+       Opus INSIDE the MP4 without saying so — legal, but QuickTime and some
+       upload paths refuse it, so the file looks fine until it is shared. The
+       reel exporter makes the same choice (sp-encode.js): AAC in MP4 when the
+       browser has it, otherwise a WebM with Opus, which plays everywhere a
+       WebM does. Without audio nothing changes. */
+    if (withAudio && prefer !== "webm")
+      types = ["video/mp4;codecs=avc1,mp4a.40.2", "video/webm;codecs=vp9,opus",
+               "video/webm;codecs=vp8,opus"].concat(types);
     for (var i = 0; i < types.length; i++)
       if (window.MediaRecorder && MediaRecorder.isTypeSupported(types[i]))
         return types[i];
@@ -97,10 +107,11 @@
         reject(new Error("this browser cannot drive frames one at a time"));
         return;
       }
-      var mime = pickMime(opts.container);
-      if (!mime) { reject(new Error("no supported recording format")); return; }
-
       var A = opts.withAudio === false ? null : audioTrack(doc, seconds);
+      var mime = pickMime(opts.container, !!(A && A.track));
+      if (!mime) { if (A && A.ac) try { A.ac.close(); } catch (e) {}
+                   reject(new Error("no supported recording format")); return; }
+
       if (A && A.track) { try { stream.addTrack(A.track); } catch (e) {} }
 
       var rec, chunks = [];

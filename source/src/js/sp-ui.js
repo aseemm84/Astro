@@ -231,7 +231,8 @@
         (!has ? " off" : "") +
         (rel[n.id] ? " rel" : "");
       b.title = has ? (rel[n.id] ? rel[n.id] : (n.hint || n.label))
-                    : (n.label + " — not available for this chart or moment");
+                    : (n.label + " — " + ((n.whyMissing && n.whyMissing(C)) ||
+                                          "not available for this chart or moment"));
       if (v) b.setAttribute("data-kind", v.kind); else b.removeAttribute("data-kind");
     });
     /* hide a group whose chips are all filtered away */

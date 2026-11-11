@@ -384,12 +384,19 @@
       if (!r || r.cancelled) { note(""); return; }
       var ext = (r.mime || "").indexOf("mp4") >= 0 ? "mp4" : "webm";
       save(r.blob, REEL.key.replace(/\./g, "-") + "." + ext);
+      /* A voice that was added and is not in the file is said, not hidden:
+         a silent reel that reports success is the failure nobody notices
+         until it is posted. */
+      var lostVoice = !!voice && !r.audioCodec;
       note(r.exact
         ? "Saved — " + r.seconds + "s at " + r.fps + " fps, " + r.codec +
           " in " + ext.toUpperCase() +
-          (r.audioCodec ? " with the voice in " + r.audioCodec : "") + "."
+          (r.audioCodec ? " with the voice in " + r.audioCodec : "") + "." +
+          (r.reason ? " (" + r.reason.charAt(0).toUpperCase() + r.reason.slice(1) + ".)" : "") +
+          (lostVoice ? " The voice could NOT be encoded in this browser, so " +
+                       "this file is silent — try Chrome or Edge." : "")
         : "Saved, but this browser cannot stamp frames, so the file runs " +
-          "slower and longer than " + REEL.seconds + "s.", !r.exact);
+          "slower and longer than " + REEL.seconds + "s.", !r.exact || lostVoice);
     }
     function failed(e) {
       if (btn) btn.textContent = "Record";

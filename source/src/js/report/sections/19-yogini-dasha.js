@@ -61,6 +61,12 @@ function deriveForExport(J){
   var full=buildFullExport(D,J);
   for(var k in full) out[k]=full[k];
   out.as_of=jxAsOf(D,J);
+  /* The RUNNING daśā is chosen by the export moment exactly as gochara is —
+     its prāṇa level changes every few hours — so it belongs in the
+     quarantine too. It stays at derived.running_dasha as well, because
+     readers already look for it there; the copy under as_of is what makes
+     the file say plainly that it goes stale. */
+  if(out.running_dasha) out.as_of.running_dasha=out.running_dasha;
   /* the guide describes this chart, so it has to be given this chart — it
      was built with no argument and asserted whole-sign houses flatly, in the
      very block its own reading_order tells an analyst to read first */

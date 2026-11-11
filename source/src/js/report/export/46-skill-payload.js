@@ -595,7 +595,9 @@ function skpGuide(D){
     "Vargas and anything built on them are the first figures a birth-time error moves, "+
     "so no divisional reading is safe without the sensitivity block. derived.as_of "+
     "describes the sky at the moment the file was written and is not part of the "+
-    "nativity. Every figure in this file is computed from the engine output in the same "+
+    "nativity — and so does derived.running_dasha, the period running at that "+
+    "moment (copied under derived.as_of.running_dasha); the full timeline is "+
+    "derived.vimshottari_tree. Every figure in this file is computed from the engine output in the same "+
     "file; none is supplied by hand, and none should be.";
   return out;
 }
@@ -639,6 +641,10 @@ function buildJyotishaPayload(J){
   for(var k in D) if(derived[k]===undefined) derived[k]=D[k];
   derived.panchanga_at_birth=skpPanchanga(J,D);
   derived.running_dasha=skpRunningDasha(D)||D.running_dasha||null;
+  /* the same period, inside the export-time quarantine: a copy, so the as_of
+     block from the standard export is not mutated */
+  if(D.as_of){ var ao={}; for(var ak in D.as_of) ao[ak]=D.as_of[ak];
+    ao.running_dasha=derived.running_dasha; derived.as_of=ao; }
   derived.vimshottari_tree=skpDashaTree(D)||D.vimshottari_tree||null;
   derived.sensitivity=skpSensitivity(D)||D.sensitivity||null;
   derived.conventions=skpConventions(J,D);

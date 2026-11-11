@@ -2574,7 +2574,7 @@ html[data-theme="emerald"] .wsnext.lead{
     return true;
   }, list: THEMES };
 })();
-</script><script>window.__kBuild="2026-11-11.bec8b6e";</script></head><body class="wsbody"><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Kinetic Workstation</h1><p class="sub">One surface for the whole chart: Śrīpati chalita beside whole-sign, a year of real transits, twelve rāśi readings, all sixteen divisions, and the strength and daśā panels — computed in this browser, nothing sent anywhere.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html" class="active">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav>
+</script><script>window.__kBuild="2026-11-11.02d2641";</script></head><body class="wsbody"><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Kinetic Workstation</h1><p class="sub">One surface for the whole chart: Śrīpati chalita beside whole-sign, a year of real transits, twelve rāśi readings, all sixteen divisions, and the strength and daśā panels — computed in this browser, nothing sent anywhere.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html" class="active">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav>
 <div class="layout onecol wide"><main>
 
 <section class="wsintake">
@@ -8173,6 +8173,12 @@ function deriveForExport(J){
   var full=buildFullExport(D,J);
   for(var k in full) out[k]=full[k];
   out.as_of=jxAsOf(D,J);
+  /* The RUNNING daśā is chosen by the export moment exactly as gochara is —
+     its prāṇa level changes every few hours — so it belongs in the
+     quarantine too. It stays at derived.running_dasha as well, because
+     readers already look for it there; the copy under as_of is what makes
+     the file say plainly that it goes stale. */
+  if(out.running_dasha) out.as_of.running_dasha=out.running_dasha;
   /* the guide describes this chart, so it has to be given this chart — it
      was built with no argument and asserted whole-sign houses flatly, in the
      very block its own reading_order tells an analyst to read first */
@@ -22252,10 +22258,14 @@ try { window.__moYuddhaKeys = MO_YUD.map(function (s) { return s.key; }); } catc
 
      amāvāsyā   the same geometry half a month out of step; 235 closes to 0.52°.
 
-     śukra      conjunctions with the Sun advance 287.591°, which is 72.409°
-                backwards. Five of them close to 0.156° — in four years. This
-                is the pentagram, and it is the tightest closure of any event
-                here by a factor of three.
+     śukra      conjunctions with the Sun advance about 287.6°, which is about
+                72.4° backwards, so five of them make a five-armed figure in
+                four years. They alternate inferior and superior, and every
+                second one — the same kind — returns within a few degrees after
+                ten events and eight years: that is the pentagram. Which of the
+                two returns is TIGHTER depends on the date the span opens on,
+                because the two kinds are unevenly spaced; the frame measures
+                and prints whichever it is rather than asserting one.
 
      budha      57.034° per conjunction; nineteen close to 5.2°, just under
                 three years.
@@ -24394,8 +24404,9 @@ function jxAsOf(D,J){
     generated_iso:new Date().toISOString(),
     generated_jd:jxRound(D.nowJd,5),
     WARNING:"Everything under as_of describes the sky at the moment this file was written, "+
-      "NOT the birth chart. Gochara, kaksha, Sade Sati, the running year's varshaphala, "+
-      "ingresses, eclipses and the day tools all go stale. Re-derive them for the date you are actually judging.",
+      "NOT the birth chart. Gochara, kaksha, Sade Sati, the running daśā (also at "+
+      "derived.running_dasha), the running year's varshaphala, ingresses, eclipses and the "+
+      "day tools all go stale. Re-derive them for the date you are actually judging.",
     transits:(cp.transits||[]).map(function(t){
       return {graha:t.en, longitude:jxRound(t.sidereal_deg), sign:ridx(t.rashi),
               nakshatra:(t.nakshatra&&t.nakshatra.en)||null, pada:t.nakshatra_pada,
@@ -25709,7 +25720,9 @@ function skpGuide(D){
     "Vargas and anything built on them are the first figures a birth-time error moves, "+
     "so no divisional reading is safe without the sensitivity block. derived.as_of "+
     "describes the sky at the moment the file was written and is not part of the "+
-    "nativity. Every figure in this file is computed from the engine output in the same "+
+    "nativity — and so does derived.running_dasha, the period running at that "+
+    "moment (copied under derived.as_of.running_dasha); the full timeline is "+
+    "derived.vimshottari_tree. Every figure in this file is computed from the engine output in the same "+
     "file; none is supplied by hand, and none should be.";
   return out;
 }
@@ -25753,6 +25766,10 @@ function buildJyotishaPayload(J){
   for(var k in D) if(derived[k]===undefined) derived[k]=D[k];
   derived.panchanga_at_birth=skpPanchanga(J,D);
   derived.running_dasha=skpRunningDasha(D)||D.running_dasha||null;
+  /* the same period, inside the export-time quarantine: a copy, so the as_of
+     block from the standard export is not mutated */
+  if(D.as_of){ var ao={}; for(var ak in D.as_of) ao[ak]=D.as_of[ak];
+    ao.running_dasha=derived.running_dasha; derived.as_of=ao; }
   derived.vimshottari_tree=skpDashaTree(D)||D.vimshottari_tree||null;
   derived.sensitivity=skpSensitivity(D)||D.sensitivity||null;
   derived.conventions=skpConventions(J,D);

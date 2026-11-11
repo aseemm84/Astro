@@ -69,7 +69,7 @@
     return chain;
   }
 
-  function plan(width, height, quality) {
+  function plan(width, height, quality, wantAudio) {
     var bits = Math.round((quality || 1) * 12000000);
     var V = [
       { codec: "avc1.640028", container: "mp4", bitrate: bits, name: "H.264 High" },
@@ -88,9 +88,27 @@
          unplayable, and the caller is told which it got */
       return probeCodec(A, "audio").then(function (a) {
         if (v.container === "mp4" && a && a.codec !== "mp4a.40.2") a = null;
-        return { video: v, audio: a,
-                 container: v.container,
-                 mime: v.container === "mp4" ? "video/mp4" : "video/webm" };
+        var mp4Plan = { video: v, audio: a, container: v.container,
+                        mime: v.container === "mp4" ? "video/mp4" : "video/webm" };
+        /* A VOICE THAT WAS ADDED IS NOT DROPPED TO KEEP A CONTAINER.
+           MP4 without AAC ships silent, which is the right call for a reel
+           with no voice — and the wrong one for a reel someone recorded a
+           voice for. A browser with H.264 but no AAC (Chromium on Linux, as
+           of late 2026) took the MP4 branch and wrote every voiced reel MUTE;
+           voice-verify.mjs found it, by decoding the export and finding no
+           track. So when there is audio to carry and MP4 cannot carry it
+           playably, WebM with Opus is chosen instead: a correct, voiced file
+           beats a widely playable silent one. */
+        if (!wantAudio || v.container !== "mp4" || a) return mp4Plan;
+        var W = V.filter(function (x) { return x.container === "webm"; });
+        return probeCodec(W, "video", width, height).then(function (vw) {
+          if (!vw) return mp4Plan;
+          return probeCodec([{ codec: "opus", name: "Opus" }], "audio").then(function (ao) {
+            if (!ao) return mp4Plan;
+            return { video: vw, audio: ao, container: "webm", mime: "video/webm",
+                     reason: "this browser cannot write AAC, so the voiced reel is WebM (VP9/Opus) rather than a silent MP4" };
+          });
+        });
       });
     });
   }
@@ -119,7 +137,7 @@
     var job = { cancel: false };
     JOB = job;
 
-    return plan(W, H, opts.quality).then(function (p) {
+    return plan(W, H, opts.quality, !!opts.audio).then(function (p) {
       if (!p) throw new Error("this browser cannot encode video");
       var M = muxerFor(p, fps);
       if (!M) throw new Error("no muxer for " + p.container);
@@ -200,6 +218,8 @@
           container: p.container,
           codec: p.video.name,
           audioCodec: (p.audio && opts.audio) ? p.audio.name : null,
+          /* why the container is not the preferred one, when it is not */
+          reason: p.reason || null,
           seconds: seconds, fps: fps, frames: total,
           exact: true, cancelled: false
         };

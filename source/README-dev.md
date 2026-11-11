@@ -30,6 +30,9 @@ source/
   test/span-verify.mjs            the certified window, its band and tolerances
   test/citation-verify.mjs        every BPHS citation, checked as a citation
   test/make-citation-registry.py  writes data/citations.json from the source
+  test/run-all.mjs                THE GATE: every suite; correctness suites in
+                                  parallel, wall-clock suites (cosmos,
+                                  reelstudio) afterwards and alone
   test/quotation-verify.mjs       quotation from the translation kept brief
   test/make-translation-fingerprint.py  writes data/santhanam-fingerprint.*
                                   (a Bloom filter: recognises a verbatim run of

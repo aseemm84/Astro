@@ -180,8 +180,17 @@ The desktop apps are built from the same pages by CI on every push.
 
 ### Verification
 
-The harnesses under `source/test/` are run from the repository root, e.g.
-`node source/test/varshaphala-verify.mjs`. Among them:
+The whole gate is one command, run from the repository root after a build:
+
+```bash
+python3 source/build.py && node source/test/run-all.mjs
+```
+
+It runs the correctness suites in parallel and the two suites that assert
+wall-clock budgets (a reel template builds in under 9 s; the ceremony is brief)
+afterwards, alone — timing measured on a busy machine fails for the wrong reason.
+Any single harness also runs on its own, e.g. `node source/test/varshaphala-verify.mjs`.
+Among them:
 
 - `reference-verify.mjs` — the engine against an independent sky (ERFA)
 - `citation-verify.mjs` — every BPHS citation resolved against the edition it cites

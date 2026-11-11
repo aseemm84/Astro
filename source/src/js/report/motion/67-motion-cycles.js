@@ -24,10 +24,14 @@
 
      amāvāsyā   the same geometry half a month out of step; 235 closes to 0.52°.
 
-     śukra      conjunctions with the Sun advance 287.591°, which is 72.409°
-                backwards. Five of them close to 0.156° — in four years. This
-                is the pentagram, and it is the tightest closure of any event
-                here by a factor of three.
+     śukra      conjunctions with the Sun advance about 287.6°, which is about
+                72.4° backwards, so five of them make a five-armed figure in
+                four years. They alternate inferior and superior, and every
+                second one — the same kind — returns within a few degrees after
+                ten events and eight years: that is the pentagram. Which of the
+                two returns is TIGHTER depends on the date the span opens on,
+                because the two kinds are unevenly spaced; the frame measures
+                and prints whichever it is rather than asserting one.
 
      budha      57.034° per conjunction; nineteen close to 5.2°, just under
                 three years.

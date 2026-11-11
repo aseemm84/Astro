@@ -390,8 +390,9 @@ function jxAsOf(D,J){
     generated_iso:new Date().toISOString(),
     generated_jd:jxRound(D.nowJd,5),
     WARNING:"Everything under as_of describes the sky at the moment this file was written, "+
-      "NOT the birth chart. Gochara, kaksha, Sade Sati, the running year's varshaphala, "+
-      "ingresses, eclipses and the day tools all go stale. Re-derive them for the date you are actually judging.",
+      "NOT the birth chart. Gochara, kaksha, Sade Sati, the running daśā (also at "+
+      "derived.running_dasha), the running year's varshaphala, ingresses, eclipses and the "+
+      "day tools all go stale. Re-derive them for the date you are actually judging.",
     transits:(cp.transits||[]).map(function(t){
       return {graha:t.en, longitude:jxRound(t.sidereal_deg), sign:ridx(t.rashi),
               nakshatra:(t.nakshatra&&t.nakshatra.en)||null, pada:t.nakshatra_pada,

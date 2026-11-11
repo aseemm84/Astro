@@ -14,8 +14,9 @@
  *      the Sun's known mean rate, which must agree.
  *
  *   3. both counters advance about two or three steps in two and a half days,
- *      from the two different rates: the Moon's own 13.18°/day against 13°20′,
- *      and the elongation's 12.19°/day against 12°.
+ *      from the two different rates: the Moon's own (13.18°/day on average,
+ *      11.8 to 15.4 with its distance) against 13°20′, and the elongation's
+ *      (the Moon's less the Sun's) against 12°.
  *
  *   4. the crossings do not coincide. If they did, the scene's whole point
  *      would be wrong, so the test finds each crossing instant and asserts the
@@ -156,8 +157,17 @@ const checks = [
   ["tithi boundaries exact (in elongation)", R.tiErrMax < 2],
   ["frame's slide matches the longitudes", Math.abs(R.slide - R.frameSlide) < 0.0005],
   ["slide = the Sun's mean motion", Math.abs(R.sunRate - 0.9856) < 0.03],
-  ["Moon's rate near 13.18°/day", Math.abs(R.moonRate - 13.18) < 1.2],
-  ["elongation rate near 12.19°/day", Math.abs(R.elongRate - 12.19) < 1.2],
+  /* The Moon's speed is not a constant: about 11.8°/day at apogee and 15.4°/day
+     at perigee. These two checks used to assert the MEAN, 13.18 ± 1.2, which
+     is only true near mean distance — so the suite passed or failed with the
+     Moon's anomaly on the day it ran, and failed in November 2026 with the
+     Moon near apogee at 11.97°/day, correctly measured. Asserted now: the
+     rate lies inside the Moon's real range, and the elongation's rate is the
+     Moon's less the Sun's — which holds on every date and is far tighter. */
+  [`Moon's rate inside its real range, 11.7–15.5°/day (got ${R.moonRate.toFixed(3)})`,
+   R.moonRate > 11.7 && R.moonRate < 15.5],
+  [`elongation rate = Moon's rate − Sun's rate (${R.elongRate.toFixed(3)} vs ${(R.moonRate - R.sunRate).toFixed(3)})`,
+   Math.abs(R.elongRate - (R.moonRate - R.sunRate)) < 0.01],
   ["frame's counts match the crossings", R.nakN === R.frameNak && R.tiN === R.frameTi],
   ["the crossings do not coincide", R.closestMin > 20]
 ];

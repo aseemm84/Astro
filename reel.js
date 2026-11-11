@@ -6105,9 +6105,21 @@ function moOwn(src){
      cycle node takes it as given: a reader who asks for a century and gets
      a decade has been quietly overruled. The cap on event count is the only
      limit, and it is reported when it bites. */
-  function spanOf(C) {
-    var days = Math.max(30, C.spanDays || 365);
-    return { t0: C.when, t1: C.when + days * DAY, days: days };
+  /* AN ASKED-FOR SPAN IS KEPT; AN UNASKED ONE HAS TO HOLD THE CYCLE.
+     With no span given, every node used to get one year from now. For a pair
+     that meets every few days that is plenty; for Sūrya and Śukra, who meet
+     every ~292 days, one year holds two meetings on some dates and ONE on
+     others — and with one the node returned nothing, so "Sūrya with Śukra"
+     was offered on some days and silently unavailable on the rest, depending
+     only on today's date. A default is the page's choice, not the reader's, so
+     it is now long enough to hold at least four of THIS cycle (still at least
+     a year). A span the reader asked for is untouched. cycles-verify.mjs
+     pins it. */
+  function spanOf(C, guessDays) {
+    var asked = C.spanDays != null && C.spanDays > 0;
+    var days = asked ? Math.max(30, C.spanDays)
+                     : Math.max(365, Math.ceil((guessDays || 0) * 4));
+    return { t0: C.when, t1: C.when + days * DAY, days: days, asked: asked };
   }
 
   /* arms: how many directions the eye counts. Longitudes are binned at a
@@ -6179,7 +6191,7 @@ function moOwn(src){
   }
 
   function build(C, f, lonOf, guessDays, label, what, cap, filter) {
-    var S = spanOf(C);
+    var S = spanOf(C, guessDays);
     /* The cap counts what the finder FINDS, not what survives the filter. A
        combustion node keeps only the entries and discards the exits, so a cap
        of three hundred leaves a hundred and fifty — and the span the reader
@@ -6202,7 +6214,16 @@ function moOwn(src){
   /* ---- publishing the nodes ---------------------------------------------- */
   function reg(id, label, hint, get) {
     window.SPNodes.register({ id: id, dom: "cycles", label: label, hint: hint,
-                              roles: ["cycleset"], get: get });
+                              roles: ["cycleset"], get: get,
+      /* Said instead of "not available": a cycle node is only ever missing
+         because the span holds fewer than two of its events, and the reader
+         can fix that — so the message tells them how. */
+      whyMissing: function (C) {
+        var d = Math.round(spanOf(C || {}).days);
+        return "fewer than two in the span chosen (" +
+          (d >= 700 ? Math.round(d / 365.2564) + " years" : d + " days") +
+          ") — choose a longer span to see the pattern";
+      } });
   }
 
   function publish() {
@@ -10807,10 +10828,27 @@ function moOwn(src){
     if (!rule) return null;
     var want = tithiOf(rule);
     var out = [], gaps = [], prevMs = null;
+    /* A RELATIVE RULE IS FOUND FROM ITS ANCHOR. Holī is "the day following
+       Holikā Dahana" and has no tithi of its own, so the tithi prefilter had
+       nothing to filter on and every candidate day of every year cost a full
+       pañcāṅga day — 3,402 of them for twenty-four years, seven times any
+       other festival, and twenty seconds to build the reel. The anchor has a
+       tithi and is found cheaply; the following day is then put to the
+       engine's own test (testDay), so the answer is the engine's, not an
+       assumption. If that test ever fails the old scan still runs, so this
+       can only be faster, never different. */
+    var anchorByYear = null;
+    if (rule.after) {
+      var A = datesFor(rule.after, y0, years, P);
+      if (A) { anchorByYear = {}; A.forEach(function (a) { anchorByYear[a.year] = a; }); }
+    }
     for (var y = y0; y < y0 + years; y++) {
       if (NP().inRange && !NP().inRange(y)) continue;
       var found = null;
-      if (rule.solar != null) {
+      if (anchorByYear && anchorByYear[y])
+        found = testDay(key, anchorByYear[y].t + DAY, P);
+      if (found) { /* resolved from the anchor */ }
+      else if (rule.solar != null) {
         var ing = solarDay(rule.solar, y);
         if (ing != null) {
           for (var o = -1; o <= 2 && !found; o++)
@@ -15680,7 +15718,7 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
     return chain;
   }
 
-  function plan(width, height, quality) {
+  function plan(width, height, quality, wantAudio) {
     var bits = Math.round((quality || 1) * 12000000);
     var V = [
       { codec: "avc1.640028", container: "mp4", bitrate: bits, name: "H.264 High" },
@@ -15699,9 +15737,27 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
          unplayable, and the caller is told which it got */
       return probeCodec(A, "audio").then(function (a) {
         if (v.container === "mp4" && a && a.codec !== "mp4a.40.2") a = null;
-        return { video: v, audio: a,
-                 container: v.container,
-                 mime: v.container === "mp4" ? "video/mp4" : "video/webm" };
+        var mp4Plan = { video: v, audio: a, container: v.container,
+                        mime: v.container === "mp4" ? "video/mp4" : "video/webm" };
+        /* A VOICE THAT WAS ADDED IS NOT DROPPED TO KEEP A CONTAINER.
+           MP4 without AAC ships silent, which is the right call for a reel
+           with no voice — and the wrong one for a reel someone recorded a
+           voice for. A browser with H.264 but no AAC (Chromium on Linux, as
+           of late 2026) took the MP4 branch and wrote every voiced reel MUTE;
+           voice-verify.mjs found it, by decoding the export and finding no
+           track. So when there is audio to carry and MP4 cannot carry it
+           playably, WebM with Opus is chosen instead: a correct, voiced file
+           beats a widely playable silent one. */
+        if (!wantAudio || v.container !== "mp4" || a) return mp4Plan;
+        var W = V.filter(function (x) { return x.container === "webm"; });
+        return probeCodec(W, "video", width, height).then(function (vw) {
+          if (!vw) return mp4Plan;
+          return probeCodec([{ codec: "opus", name: "Opus" }], "audio").then(function (ao) {
+            if (!ao) return mp4Plan;
+            return { video: vw, audio: ao, container: "webm", mime: "video/webm",
+                     reason: "this browser cannot write AAC, so the voiced reel is WebM (VP9/Opus) rather than a silent MP4" };
+          });
+        });
       });
     });
   }
@@ -15730,7 +15786,7 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
     var job = { cancel: false };
     JOB = job;
 
-    return plan(W, H, opts.quality).then(function (p) {
+    return plan(W, H, opts.quality, !!opts.audio).then(function (p) {
       if (!p) throw new Error("this browser cannot encode video");
       var M = muxerFor(p, fps);
       if (!M) throw new Error("no muxer for " + p.container);
@@ -15811,6 +15867,8 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
           container: p.container,
           codec: p.video.name,
           audioCodec: (p.audio && opts.audio) ? p.audio.name : null,
+          /* why the container is not the preferred one, when it is not */
+          reason: p.reason || null,
           seconds: seconds, fps: fps, frames: total,
           exact: true, cancelled: false
         };
@@ -19001,12 +19059,19 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
       if (!r || r.cancelled) { note(""); return; }
       var ext = (r.mime || "").indexOf("mp4") >= 0 ? "mp4" : "webm";
       save(r.blob, REEL.key.replace(/\./g, "-") + "." + ext);
+      /* A voice that was added and is not in the file is said, not hidden:
+         a silent reel that reports success is the failure nobody notices
+         until it is posted. */
+      var lostVoice = !!voice && !r.audioCodec;
       note(r.exact
         ? "Saved — " + r.seconds + "s at " + r.fps + " fps, " + r.codec +
           " in " + ext.toUpperCase() +
-          (r.audioCodec ? " with the voice in " + r.audioCodec : "") + "."
+          (r.audioCodec ? " with the voice in " + r.audioCodec : "") + "." +
+          (r.reason ? " (" + r.reason.charAt(0).toUpperCase() + r.reason.slice(1) + ".)" : "") +
+          (lostVoice ? " The voice could NOT be encoded in this browser, so " +
+                       "this file is silent — try Chrome or Edge." : "")
         : "Saved, but this browser cannot stamp frames, so the file runs " +
-          "slower and longer than " + REEL.seconds + "s.", !r.exact);
+          "slower and longer than " + REEL.seconds + "s.", !r.exact || lostVoice);
     }
     function failed(e) {
       if (btn) btn.textContent = "Record";

@@ -145,10 +145,27 @@
     if (!rule) return null;
     var want = tithiOf(rule);
     var out = [], gaps = [], prevMs = null;
+    /* A RELATIVE RULE IS FOUND FROM ITS ANCHOR. Holī is "the day following
+       Holikā Dahana" and has no tithi of its own, so the tithi prefilter had
+       nothing to filter on and every candidate day of every year cost a full
+       pañcāṅga day — 3,402 of them for twenty-four years, seven times any
+       other festival, and twenty seconds to build the reel. The anchor has a
+       tithi and is found cheaply; the following day is then put to the
+       engine's own test (testDay), so the answer is the engine's, not an
+       assumption. If that test ever fails the old scan still runs, so this
+       can only be faster, never different. */
+    var anchorByYear = null;
+    if (rule.after) {
+      var A = datesFor(rule.after, y0, years, P);
+      if (A) { anchorByYear = {}; A.forEach(function (a) { anchorByYear[a.year] = a; }); }
+    }
     for (var y = y0; y < y0 + years; y++) {
       if (NP().inRange && !NP().inRange(y)) continue;
       var found = null;
-      if (rule.solar != null) {
+      if (anchorByYear && anchorByYear[y])
+        found = testDay(key, anchorByYear[y].t + DAY, P);
+      if (found) { /* resolved from the anchor */ }
+      else if (rule.solar != null) {
         var ing = solarDay(rule.solar, y);
         if (ing != null) {
           for (var o = -1; o <= 2 && !found; o++)

@@ -133,9 +133,33 @@ const A = await pg.evaluate(() => {
   out.ms = performance.now() - t0;
 
   // ---- a composer actually draws it
+  /* An orbit pattern is a many-year figure, so ask for one the way a reader
+     does: a ten-year span. With the default one year, Sūrya–Śukra holds a
+     single conjunction on some dates — and then the reader must be told why
+     and what to change, not just "not available". */
   const sel = ["cyc.conj.Sūrya-Śukra"];
+  const spanEl = document.getElementById("sp-span");
+  const setSpan = (v) => { if (!spanEl) return; spanEl.value = v;
+    spanEl.dispatchEvent(new Event("change", { bubbles: true })); };
+  setSpan("365");
+  const r1 = window.__spUI.select(sel);
+  const m1 = r1 && r1.missing && r1.missing[0];
+  out.oneYear = { composer: r1 && r1.composer, why: m1 ? m1.why : null };
+  setSpan("3650");
   const r = window.__spUI.select(sel);
   out.composer = r && r.composer;
+  /* PINNED TO A DATE, so this cannot drift with the clock again. It did:
+     with no span asked for, every cycle node got one year from today, and
+     from 11 Nov 2026 the next year holds ONE Sūrya–Śukra conjunction — so
+     the node returned nothing and no composer could draw it, while the same
+     check passed on the day it was written. An unasked span must now hold
+     the cycle; an ASKED span must still be exactly what was asked. */
+  const vnode = window.SPNodes.all().find(n => n.id === "cyc.conj.Sūrya-Śukra");
+  const when = Date.UTC(2026, 10, 11);
+  const unasked = vnode.get({ when });
+  const asked = vnode.get({ when, spanDays: 365 });
+  out.pinUnaskedN = unasked ? unasked.n : 0;
+  out.pinAskedHonoured = !asked || (asked.events.every(e => e.t <= when + 365 * 86400000));
   return out;
 });
 
@@ -185,7 +209,12 @@ const C = [
   ["and is plotted at the longitude it happens at", A.lonIsPlotted === true],
   ["a combustion really is at the stated orb", A.combustAtOrb === true],
   ["the cycle nodes are published", A.nodeCount >= 55],
-  ["and a composer draws them", A.composer === "rose"],
+  ["and a composer draws them, over a span that holds the cycle", A.composer === "rose"],
+  [`over one year it either draws or says why and what to change (${A.oneYear.composer || A.oneYear.why})`,
+   A.oneYear.composer === "rose" || /longer span/.test(A.oneYear.why || "")],
+  [`an unasked span holds the cycle on any date (Sūrya–Śukra from 11 Nov 2026: ${A.pinUnaskedN} events)`,
+   A.pinUnaskedN >= 4],
+  ["and a span the reader asked for is kept exactly", A.pinAskedHonoured === true],
   ["all of that computes in a usable time", A.ms < 60000],
   ["no page errors", errs.length === 0]
 ];
