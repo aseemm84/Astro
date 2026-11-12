@@ -223,9 +223,16 @@ function dashboardStandalone(){
     if(!r.ok) throw new Error("HTTP "+r.status);
     return r.text();
   }).then(function(src){
-    var slot='<script id="kundali-data" type="application/json">';
+    /* The marker is assembled, never written whole. The dashboard now carries
+       the report bundle — this very file among it — so a literal copy of the
+       slot sat in the page's own JavaScript BEFORE the real slot, indexOf found
+       that one, and the chart was spliced into the middle of a script: the
+       saved dashboard opened to "Unexpected identifier". handoff-verify.mjs
+       caught it. A slot that is not unique is refused, never guessed. */
+    var slot='<script id="kundali-data" type="application/json"'+'>';
     var i=src.indexOf(slot);
     if(i<0) throw new Error("the dashboard's data slot was not found");
+    if(src.indexOf(slot,i+1)>=0) throw new Error("the dashboard's data slot is not unique");
     var j=src.indexOf("<\/script>",i);
     /* "</" inside a script body would close it early, so the only character
        that has to be escaped is the slash of a closing tag. */

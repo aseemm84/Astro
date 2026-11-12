@@ -21,7 +21,8 @@ source/
     js/star-catalogue.js    27 yogatārās + 22 bright stars, from HYG
     js/starwheel-geom.js    the tilted-ecliptic projection
     js/ui.js                form, city search, save/open, download
-    js/report/              46 modules, grouped below
+    js/deltat.js            ΔT: observed 1955–2025, Espenak–Meeus outside
+    js/report/              80 modules, grouped below
     pages/                  the 14 reference pages and their shell
   test/self-test.html     352 checks — development only, not linked from the site
   test/reference-verify.mjs       the engine against an INDEPENDENT sky
@@ -39,7 +40,15 @@ source/
                                   the translation, cannot be read back into it)
   test/varshaphala-verify.mjs     analyst JSON's varṣaphala vs the pane and an
                                   independent recomputation, both paddhatis
-  data/citations.json             196 citations, 82 loci, 36 files
+  test/tajika-verify.mjs          Pañcavargīya, Varṣeśa, sahams, Pātyāyinī vs
+                                  Raman's legible text and re-derivation
+  test/bphs-dasha-verify.mjs      every BPHS Ch. 46 daśā vs the book's examples
+  test/yuddha-bala-verify.mjs     planetary war by each paddhati's rule
+  test/vimsopaka-verify.mjs       Vimśopaka, report = JSON, by BPHS Ch. 7
+  test/timescale-verify.mjs       ΔT, sidereal time, obliquity vs formulas
+  test/sweep-verify.mjs           every ±15-min boundary vs full recasts
+  test/sitemap-verify.mjs         the generated sitemap lists every page
+  data/citations.json             237 citations, 95 loci, 41 files
   test/make-bphs-witness.py       writes data/bphs-witness.json from the PDFs
   data/bphs-witness.json          what the uploaded edition attests
   test/fit-siddhanta.mjs          fits the text's constants to a modern sky
@@ -135,7 +144,9 @@ between predictions of it. astronomy-engine uses an observed table through 2027
 and a prediction after; predictions diverge the further out they run; and
 nothing here measures that spread, because two sources are not enough and one of
 them is not modelling the quantity. It is printed as a magnitude and nothing is
-claimed from it.
+claimed from it. (Since then the site no longer uses astronomy-engine's own ΔT:
+`js/deltat.js` installs the observed IERS/USNO values for 1955–2025, and
+`timescale-verify.mjs` holds the published ΔT to them.)
 
 Its last section casts real charts in a browser and reads `innerText`. That
 exists because the first version of the band was pushed onto the Full report
@@ -417,7 +428,7 @@ what the build obeys.
 | Folder | What lives there |
 | --- | --- |
 | `core/` | constants, helpers, varga lagnas, the derive step, chart SVG, aspects, the rule base |
-| `sections/` | the report's own sections — dṛṣṭi, friendship, ashtakavarga, avasthās, cusps, upagrahas, ārūḍhas, Yoginī, transit scan |
+| `sections/` | the report's own sections — dṛṣṭi, friendship, ashtakavarga, avasthās, cusps, upagrahas, ārūḍhas, Yoginī, transit scan, Jaimini Chara, Varṣaphala with its Tājika reckonings, and `77-bphs-dashas.js`, the rest of BPHS Ch. 46 |
 | `tabs/` | one file per tab — Overview, Now, Life timeline, Birth-time check, Reading path, Life events, Compatibility |
 | `glassbox/` | the clickable derivations, one per figure, plus the sensitivity probe |
 | `sky/` | the ecliptic wheel, the sky pane, the star wheel, the legends |

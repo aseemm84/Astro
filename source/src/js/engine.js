@@ -1260,6 +1260,76 @@ function sbCompound(p,other,houseP,houseO,natFriend){
  * reproduced to three decimals from his own longitudes. */
 var SP_DRG_BASE=[0,1,3,2,0,4,3,2,1,0,0,0];
 var SP_DRG_SPECIAL={Jupiter:{4:4,8:4},Saturn:{2:4,9:4},Mars:{3:4,7:4}};
+/* ŚRĪPATI'S SECOND IṢṬA/KAṢṬA — through the seven vargas (Adh. 4 śl. 8–11,
+   pp. 65–68), the method his commentator credits to the Yavanas.
+
+   THE VERSE (śl. 8–9): the good influence of a graha is 1 rūpa in its
+   exaltation, ¾ in its mūlatrikoṇa, ½ in its own house, ⅜ with a very friendly
+   lord, ¼ friendly, ⅛ neutral, 1/16 inimical, 1/32 very inimical, nothing in
+   its debilitation; the evil influence is 1 less the good; and in the six
+   vargas other than the rāśi — horā, drekkāṇa, saptāṃśa, navāṃśa, dvādaśāṃśa,
+   triṃśāṃśa — only half is counted.
+   THE TABLES (śl. 10–11): each total ÷ 4 is the Gṛha row of the śubha and
+   aśubha paṅkti; each of the other six rows takes half of that.
+
+   HIS WORKED TABLE (p. 66) AND HIS VERSE DISAGREE, and the table is followed.
+   It scores the Sun in Meṣa — its exaltation sign — as ⅜, "the house of an
+   Adhimitra", and Saturn in Meṣa — its debilitation sign — as ⅛. Reconstructed
+   independently, all 49 of his cells come out only when mūlatrikoṇa is scored
+   and exaltation and debilitation are not; every reading that scores them
+   misses cells. This is the same choice already made for his pakṣa, where his
+   table does not double the Moon although his text says to. The verse's own
+   reading is computed beside it and published as verse_reading, so nothing is
+   chosen silently. sripati-paddhati-verify.mjs reproduces the table cell by
+   cell.
+
+   The relationship is the compound one, its tātkālika half from the BHĀVA
+   chart (his pp. 24–26), as everywhere else under his paddhati. Mūlatrikoṇa is
+   by degree and in the rāśi only.
+
+   Pure, so the book check can feed it his own longitudes and bhāvas. */
+var SP_IK_VAL={exalted:1,moolatrikona:0.75,own:0.5,greatfriend:0.375,friend:0.25,
+               neutral:0.125,enemy:0.0625,greatenemy:0.03125,debilitated:0};
+var SP_IK_VARGAS=["D1","D2","D3","D7","D9","D12","D30"];
+function sripatiSaptavargaIK(lon, bhavaOf, vsign){
+  var G=["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn"], out={};
+  function nat(p,l){ return FRD[p].indexOf(l)>=0?"friend":(ENM[p].indexOf(l)>=0?"enemy":"neutral"); }
+  function compound(p,l){
+    var n=nat(p,l), hp=bhavaOf(p), hl=bhavaOf(l);
+    var dist=((hl-hp)%12+12)%12+1, t=[2,3,4,10,11,12].indexOf(dist)>=0?"friend":"enemy";
+    if(n==="friend") return t==="friend"?"greatfriend":"neutral";
+    if(n==="enemy")  return t==="enemy"?"greatenemy":"neutral";
+    return t;
+  }
+  function classify(p,code,sign,verse){
+    var L=lon[p], s0=Math.floor(norm(L)/30)%12, deg=norm(L)-s0*30;
+    if(verse){ if(sign===EXALT[p]) return "exalted"; if(sign===DEBIL[p]) return "debilitated"; }
+    if(code==="D1"){ var m=MTR[p]; if(sign===m[0]&&deg>=m[1]&&deg<m[2]) return "moolatrikona"; }
+    var lord=LORD[sign];
+    if(lord===p) return "own";
+    return compound(p,lord);
+  }
+  G.forEach(function(p){
+    if(lon[p]==null) return;
+    function run(verse){
+      var good=[], evil=[], dig=[], gs=0, es=0;
+      SP_IK_VARGAS.forEach(function(code){
+        var sign=vsign(code,norm(lon[p])), d=classify(p,code,sign,verse);
+        var w=(code==="D1")?1:0.5, g=SP_IK_VAL[d]*w, e=(1-SP_IK_VAL[d])*w;
+        dig.push(d); good.push(g); evil.push(e); gs+=g; es+=e;
+      });
+      return {good:good, evil:evil, dignity:dig, good_total:gs, evil_total:es};
+    }
+    var T=run(false), V=run(true);
+    var gr=T.good_total/4, ar=T.evil_total/4;
+    out[p]={vargas:SP_IK_VARGAS, dignity:T.dignity, good:T.good, evil:T.evil,
+      good_total_rupa:T.good_total, evil_total_rupa:T.evil_total,
+      subha_panktee:[gr,gr/2,gr/2,gr/2,gr/2,gr/2,gr/2],
+      asubha_panktee:[ar,ar/2,ar/2,ar/2,ar/2,ar/2,ar/2],
+      verse_reading:{dignity:V.dignity, good_total_rupa:V.good_total, evil_total_rupa:V.evil_total}};
+  });
+  return out;
+}
 function sripatiDrishti(aspector,lonFrom,lonTo){
   var ex=(((lonTo-lonFrom)%360+360)%360)/30;        /* excess in rāśis, 0..12 */
   var t=SP_DRG_BASE.slice(), sp=SP_DRG_SPECIAL[aspector];
@@ -1582,6 +1652,82 @@ function shadbala(ctx){
       lord_bala:lordBala,ayana:ayana,cheshta:cheshta,naisargika:nais,drik:drik,
       total_virupa:total,total_rupa:total/60,required_rupa:SB_REQ[p],ratio:(total/60)/SB_REQ[p]});
   });
+  /* YUDDHA — PLANETARY WAR, applied to strength, by each paddhati's rule.
+   *
+   * Until now the engine REPORTED a war (yuddhaOf) and changed nothing: no
+   * victor, no transfer of strength, under either toggle. Both texts say what
+   * to do, and they disagree, so each paddhati gets its own:
+   *
+   * WHO IS AT WAR. Two of the five tārā grahas — Mars, Mercury, Jupiter, Venus,
+   * Saturn — less than one degree apart (BPHS Vol. 2, Ch. 79, v. 9; Śrīpati's
+   * commentator, p. 47, the same). The luminaries never fight.
+   *
+   * WHO WINS.
+   *   BPHS Ch. 79 v. 9: "Venus is the conqueror whether he is in North or South,
+   *     but amongst the other four only one, who is in the North, is the
+   *     conqueror." North = the greater ecliptic latitude.
+   *   Śrīpati śl. 15½–16½ (p. 47): the victorious planet is the one "in the
+   *     North"; no exception for Venus.
+   *
+   * HOW MUCH.
+   *   BPHS Ch. 27 v. 20: "the difference between the Shadbalas of the two should
+   *     be added to the victor's shadbala and deducted from the Shadbala of the
+   *     vanquished."
+   *   Śrīpati śl. 15½–16½: the difference in total strength "should be divided by
+   *     the difference in their latitudes; the result is to be added to the
+   *     strength of the victorious planet in the North and subtracted from that
+   *     of the vanquished planet in the South."
+   *   The verse does not name the unit of latitude, and the book works no
+   *     example. DEGREES are taken, and said to be taken: at a 1° difference in
+   *     latitude his rule then reduces exactly to Parāśara's, which his own
+   *     commentator quotes beside it as the same operation. Strength is in
+   *     virūpas, as everywhere in this file.
+   *
+   * Pairs are judged on the PRE-WAR totals, so the order in which pairs are
+   * visited cannot change the answer when three grahas fight at once.
+   * Equal latitudes leave no north and no south: no victor, no transfer, and
+   * the war is still reported. */
+  (function(){
+    /* read the frame HERE: `sripatiMode` is declared further down, and a hoisted
+       var is undefined at this point — so every Śrīpati chart got the BPHS rule
+       until yuddha-bala-verify.mjs named the victor and found it wrong */
+    var sripatiMode=(FR.mode==="sripati");
+    var TARA=["Mars","Mercury","Jupiter","Venus","Saturn"], byG={}, pre={}, wars=[];
+    out.forEach(function(r){ byG[r.graha]=r; pre[r.graha]=r.total_virupa; r.yuddha=0; });
+    for(var i=0;i<TARA.length;i++) for(var j=i+1;j<TARA.length;j++){
+      var a=TARA[i], b=TARA[j], pa=P[a], pb=P[b];
+      if(!pa||!pb||!byG[a]||!byG[b]) continue;
+      var sep=Math.abs(((pa.sid-pb.sid)%360+540)%360-180);
+      if(!(sep<1)) continue;
+      var la=pa.lat, lb=pb.lat, w={grahas:[a,b], separation_deg:sep,
+        latitude_deg:[la==null?null:la, lb==null?null:lb], victor:null, vanquished:null,
+        transfer_virupas:0};
+      if(la!=null&&lb!=null&&la!==lb){
+        var north=la>lb?a:b, south=la>lb?b:a;
+        var victor=north;
+        if(!sripatiMode&&(a==="Venus"||b==="Venus")) victor="Venus";
+        var vanq=(victor===a)?b:a;
+        var diff=Math.abs(pre[a]-pre[b]);
+        var amt=sripatiMode?diff/Math.abs(la-lb):diff;
+        w.victor=victor; w.vanquished=vanq; w.transfer_virupas=amt;
+        w.rule=sripatiMode
+          ?"Śrīpatipaddhati śl. 15½–16½ (Sastri, p. 47): the northern graha wins; "+
+           "|Δ ṣaḍbala| ÷ |Δ latitude in degrees| moves from the southern to the northern"
+          :"BPHS Vol. 2 Ch. 79 v. 9 (Venus always wins, otherwise the northern graha) "+
+           "and Vol. 1 Ch. 27 v. 20 (the full difference of ṣaḍbalas moves to the victor)";
+        if(sripatiMode) w.unit_note="The verse does not name the unit of latitude; degrees "+
+          "are used, under which a 1° latitude difference reproduces Parāśara's rule.";
+        byG[victor].yuddha+=amt; byG[vanq].yuddha-=amt;
+      } else w.rule="equal or unknown latitudes: no north or south, so no victor";
+      wars.push(w);
+    }
+    out.forEach(function(r){
+      if(!r.yuddha) return;
+      r.total_virupa+=r.yuddha; r.total_rupa=r.total_virupa/60;
+      r.ratio=r.total_rupa/r.required_rupa;
+    });
+    out.yuddha=wars;
+  })();
   /* IṢṬA AND KAṢṬA PHALA — and the misattribution this replaces.
    *
    * The report computed these itself as √(uchcha × cheṣṭa) and
@@ -1660,6 +1806,28 @@ function shadbala(ctx){
   });
   out.sort(function(a,b){return b.ratio-a.ratio;});
   return {planets:out,
+    /* the wars and what each did to strength (see YUDDHA above); kept here,
+       not as a property of the array, which JSON would silently drop */
+    yuddha:out.yuddha||[],
+    /* Śrīpati's second iṣṭa/kaṣṭa, through the seven vargas (Adh. 4 śl. 8–11).
+       His method, so computed only under his paddhati; under BPHS the field says
+       why it is absent rather than being missing. */
+    saptavarga_ishta_kashta:(FR.mode==="sripati")
+      ? (function(){
+          var lon={}; ["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn"]
+            .forEach(function(g){ if(P[g]) lon[g]=P[g].sid; });
+          var res=sripatiSaptavargaIK(lon, function(g){ return FR.houseOfLon(lon[g]); }, vargaSign);
+          return {method:"Śrīpatipaddhati, Adh. 4 śl. 8–11 (Sastri pp. 65–68), the Yavana method",
+            units:"rūpa", grahas:res,
+            note:"Good = 1 exaltation, ¾ mūlatrikoṇa, ½ own, ⅜ very friendly, ¼ friendly, ⅛ neutral, "+
+              "1/16 inimical, 1/32 very inimical, 0 debilitation; evil = 1 − good; half weight in the six "+
+              "vargas other than the rāśi. Paṅkti: Gṛha = total ÷ 4, the other six rows half of that. "+
+              "His worked table (p. 66) scores neither exaltation nor debilitation separately — the Sun in "+
+              "Meṣa is ⅜, Saturn in Meṣa ⅛ — and is followed; the verse's own reading, which does score "+
+              "them, is given as verse_reading."};
+        })()
+      : {applies:false, reason:"A Śrīpati method; this chart is cast on the BPHS paddhati, whose "+
+          "iṣṭa/kaṣṭa is Ch. 28 v. 6 (ishta/kashta above)."},
     /* WHICH SIX, AND WHERE AYANA SITS. BPHS folds Ayana into Kāla and makes
        Dṛk the sixth head (Ch.27, the list before v.1). Śrīpati counts Ayana
        as its own head and treats dṛṣṭi as a ±¼ modifier on the rest rather
@@ -1957,6 +2125,7 @@ window.sphutaDrishti=sphutaDrishti;
    that disagreed with its own Drik Bala — under a note claiming the two came
    from one formula. */
 window.sripatiDrishti=sripatiDrishti;
+window.sripatiSaptavargaIK=function(lon,bhavaOf){ return sripatiSaptavargaIK(lon,bhavaOf,vargaSign); };
 /* Dignity, published so a page can ask the engine rather than restate the
    tables. digOf is what every dignity on this site is decided by; exporting
    it means the graha page and the chart report cannot disagree about whether
@@ -2405,7 +2574,32 @@ window.buildLocalChart=function(inp){
   var risingT=null;
   try{ risingT=risingTimes(inp.lat,ay); }catch(e){}
   var lagRashi=Math.floor(lagSid/30)%12;
-  return {input:inp, jd_utc:jd, ayanamsha_deg:ay,
+  /* THE TIME SCALES AND THE FRAME, published rather than used silently.
+     A reader who wants to reproduce a figure — or an app that has to give the
+     same figure — needs ΔT, the sidereal time and the obliquity, and which
+     obliquity went where. They were computed and thrown away. */
+  var timeScales=null;
+  try{
+    var AT=Astronomy.MakeTime(date), tilt=Astronomy.e_tilt(AT);
+    var gastH=Astronomy.SiderealTime(date), lstH=((gastH+inp.lon/15)%24+24)%24;
+    var Tts=Tof(jd), oblEngine=23.439291111-0.0130041667*Tts-1.638e-7*Tts*Tts;
+    timeScales={
+      jd_ut:jd, jd_tt:jd+(AT.tt-AT.ut),
+      delta_t_sec:(AT.tt-AT.ut)*86400,
+      delta_t_model:(window.__deltaT&&window.__deltaT.model)||
+        "Espenak–Meeus polynomials (astronomy-engine default; deltat.js not loaded)",
+      gast_hours:gastH, lst_hours:lstH, lst_deg:lstH*15,
+      obliquity_mean_deg:oblEngine,
+      obliquity_true_deg:tilt.tobl,
+      nutation_longitude_arcsec:tilt.dpsi, nutation_obliquity_arcsec:tilt.deps,
+      note:"The lagna, the MC and the Ayana Bala half-range use the MEAN obliquity "+
+           "of date (obliquity_mean_deg, IAU 1976 polynomial) with the APPARENT "+
+           "sidereal time (gast_hours). Planetary longitudes, latitudes and "+
+           "declinations come from astronomy-engine in the true equinox of date, "+
+           "which carries nutation (obliquity_true_deg). jd_tt = jd_ut + ΔT."
+    };
+  }catch(e){ timeScales=null; }
+  return {input:inp, jd_utc:jd, ayanamsha_deg:ay, time_scales:timeScales,
     /* WHICH TRADITION PRODUCED THESE NUMBERS.
      *
      * The house toggle is not only a house toggle: selecting Śrīpati selects
@@ -2489,7 +2683,21 @@ window.buildLocalChart=function(inp){
       sun_moon_elongation_deg:elong,
       moon_illuminated_fraction:(1-Math.cos(elong*D2R))/2,
       sunrise_local_hours:srH, sunset_local_hours:ssH},
-    graha_yuddha:yuddhaOf(pos),
+    graha_yuddha:(function(){
+      /* the war as reported, joined to what this paddhati's rule did with it */
+      var W=yuddhaOf(pos), S=(sbOut&&sbOut.yuddha)||[];
+      W.forEach(function(w){
+        var en=w.grahas.map(function(k){ for(var e in SK) if(SK[e]===k) return e; return k; });
+        S.forEach(function(s){
+          if(s.grahas.indexOf(en[0])<0||s.grahas.indexOf(en[1])<0) return;
+          w.victor=s.victor?SK[s.victor]:null; w.vanquished=s.vanquished?SK[s.vanquished]:null;
+          w.transfer_virupas=s.transfer_virupas; w.rule=s.rule;
+          if(s.unit_note) w.unit_note=s.unit_note;
+          w.note="within one degree, so in yuddha; decided by this chart's paddhati — see rule";
+        });
+      });
+      return W;
+    })(),
     rashi_rising_times:{latitude_deg:inp.lat, obliquity_deg:23.4392911,
       note:"oblique ascension — the time each rāśi takes to cross the eastern horizon "+
            "at this latitude, which BPHS 1.8-9 calls for when finding the ascendant",

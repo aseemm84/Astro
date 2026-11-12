@@ -44,19 +44,28 @@ upagrahas · ashtakavarga charts
 **Position and strength** — grahas with degree, speed, dignity, compound status,
 nakṣatra-pāda, avasthā and state · four avasthā schemes · bhāvas with lords and
 occupants · graha dṛṣṭi · rāśi dṛṣṭi · argala · Ṣaḍbala with all six components and
-their sub-parts · Bhāva Bala · Iṣṭa and Kaṣṭa phala · ṣoḍaśavarga strength index
+their sub-parts, and planetary war (yuddha bala) by each paddhati's own rule · Bhāva Bala ·
+Iṣṭa and Kaṣṭa phala (under Śrīpati also per varga, from his saptavarga tables) ·
+Vimśopaka by BPHS Ch. 7 vv. 21–25
 
 **Ashtakavarga** — Bhinna and Sarva · the three śodhanas (Trikoṇa, Ekādhipatya,
 Piṇḍa) · kakṣā transits · ashtakavarga computed inside D9 and D10
 
 **Timing** — Vimśottarī to pratyantardaśā across the full 120 years (729 periods,
-expandable) · Aṣṭottarī · Yoginī · gochara from the Moon with vedha · Sade Sati
+expandable) · Aṣṭottarī · Yoginī · the rest of BPHS Ch. 46, each cited to its verses:
+the eight conditional nakṣatra daśās (Ṣoḍaśottarī, Dvādaśottarī, Pañcottarī, Śatābdikā,
+Caturaśīti-sama, Dvisaptati-sama, Ṣaṣṭi-hāyanī, Ṣaṭtriṃśat-sama) with each condition
+tested against the chart, Kāla, Cakra and Kālacakra (Savya/Apasavya, deha and jīva,
+gatis), and the rāśi daśās — Chara by the BPHS rule, Sthira with its Brahma Graha,
+Yogārdha, Kendrādi (rāśi and graha), Kāraka, Maṇḍūka, Trikoṇa, Dṛg, Rāśi, Sandhyā with
+Pācaka, and Tārā · gochara from the Moon with vedha · Sade Sati
 timeline past and future · ingress and retrograde calendar · eclipses placed in the
 chart · muhūrta day tools (Rāhu kālam, Yamaganda, Gulika kālam, choghaḍiyā) ·
-Jaimini Chara daśā, labelled as Jaimini rather than Parāśara · Tājika **Varṣaphala**
+Jaimini Chara daśā beside the BPHS one, with where they differ · Tājika **Varṣaphala**
 for the running year — the solar return to the natal sidereal longitude, the annual
-chart, Muntha, the five candidates for lord of the year (named, deliberately not ranked)
-and Mudda daśā — labelled as Tājika, which is not in the BPHS edition used here
+chart, Muntha, Pañcavargīya bala, the Varṣeśa chosen from the five office-bearers,
+Itthaśāla and Īśarāpha, ten sahams, Mudda and Pātyāyinī daśās — labelled as Tājika
+(B. V. Raman's statement of it), which is not in the BPHS edition used here
 
 **Context** — birth particulars with full time reductions · birth pañcāṅga ·
 Avakhaḍa chakra · Bhayāta/Bhabhoga · the three friendship chakras · kārakas ·
@@ -87,8 +96,9 @@ birth — transits, gochara, Sade Sati, and the running year's Varṣaphala — 
 | --- | --- |
 | Sun, planets | VSOP87, via [astronomy-engine](https://github.com/cosinekitty/astronomy) (MIT) |
 | Moon | Improved Lunar Ephemeris (1954), same library |
-| Lunar nodes | mean node, standard polynomial |
-| Ayanāṃśa | Lahiri, quadratic fitted to Swiss Ephemeris |
+| ΔT | observed values 1955–2025 (IERS/USNO), Espenak–Meeus outside them; published per chart with JD(TT), sidereal time and both obliquities |
+| Lunar nodes | mean node (polynomial) or true node (osculating), checked against Swiss Ephemeris |
+| Ayanāṃśa | Lahiri by default; Raman, KP, Yukteshwar, Bhasin, Fagan–Bradley, the true-star and Sūrya Siddhānta modes, and this site's Nirayana and Samanvaya definitions — each with its accuracy stated |
 | Sunrise / sunset | disc centre at the geometric horizon, unrefracted — the Jyotiṣa convention |
 | Everything else | derived here from those positions using the classical rules |
 
@@ -118,27 +128,34 @@ Labelled in the page itself, not buried here:
   but not that verse's final "super add" clause — a decision on record, explained in the
   report, because both readings of it void the verse's own first clause
 - **Nathonnatha** is measured from clock noon, not local apparent noon
-- **Vimśopaka** is a transparent weighted index, not the canonical scheme
+- **Vimśopaka** follows BPHS Ch. 7 vv. 21–25 (ṣoḍaśavarga weights, the Varga Viśva
+  values, the compound relationship with the temporal part counted by rāśi); a
+  debilitated placement is scored as a great enemy's 5, since the verse names no value for it
 - **Ārūḍha** exception cases follow the rule on the Special Points page; other software differs
 - **Śayanādi** avasthās are omitted — they need the person's name-syllable
 - **Piṇḍa** multipliers and Ekādhipatya rules are the commonly cited set; editions vary
 
 ### Not implemented, deliberately
 
-The rest of the rāśi-daśā family — Kālachakra, Narayana, Sthira, Niryāṇa Śūla, Dṛg,
-Navāṃśa, Lagna-Kendrādi — genuinely differs between lineages. Rather than present one
-variant as authoritative, they are left out and the Dashas page explains the
-disagreement. Chara daśā is the one exception, included with every point where the
-tradition divides stated where it appears. KP sub-lords are absent for the same reason: a different system, not a
-BPHS one.
+Every daśā of BPHS Ch. 46 is computed by the rule its verse states, except these, and
+the page and the JSON say why: Śūla daśā (vv. 181–182) is given for the time of death;
+Piṇḍa, Aṃśa, Naisargika and Aṣṭakavarga daśās (vv. 201–203) take their spans from the
+longevity figures; Pañcasvara (vv. 191–194) needs the native's name-syllable and its
+letter table did not survive the scan; and Ṣaṣṭi-hāyanī is given with its condition and
+lords but no dates, because its nakṣatra table is likewise lost. Where the translation is
+ambiguous, the reading taken is stated beside the result, and every worked example in the
+book is pinned in `bphs-dasha-verify.mjs` — including the one (Caturaśīti-sama) that
+contradicts its own verse. Lineage daśās outside BPHS (Nārāyaṇa, Niryāṇa Śūla) and KP
+sub-lords are absent: different systems, not BPHS ones.
 
 Longevity and Maraka timing are computable and deliberately excluded from the tool.
 The Avasthas & Longevity page teaches the method academically; the report does not
 output a lifespan, under either paddhati — Śrīpati's own daśā system is left out for
 the same reason, since it needs a computed lifespan to run.
 
-In Varṣaphala, Pañcavargīya bala, the Sahamas and the Tājika yogas are not computed,
-and the JSON lists them as not computed rather than leaving them silently absent.
+In Varṣaphala, the Tājika yogas beyond Itthaśāla and Īśarāpha and the sahams beyond
+Raman's ten are not computed — no legible source for their rules was available — and the
+JSON lists them as not computed rather than leaving them silently absent.
 
 ---
 
@@ -150,8 +167,9 @@ across India. Historical spellings resolve (Bombay, Calcutta, Madras, Bangalore,
 Benares, Trivandrum). Selecting a city sets the coordinates and the **UTC offset that
 applied on the birth date**, including historical daylight saving.
 
-`cities.json` loads lazily on the first search and is then cached. It needs `http(s)`;
-opening the folder directly from disk disables search but nothing else.
+The place list loads lazily on the first search and is then cached. Served over
+`http(s)` it is read as `cities.json`; opened straight from disk, where a browser will not
+fetch a file, the same rows load from `cities.js` instead — so search works offline either way.
 
 ---
 
@@ -200,8 +218,13 @@ Among them:
   translation is not ours to publish
 - `sripati-paddhati-verify.mjs`, `sripati-sync-verify.mjs`, `shadbala-verify.mjs` —
   Śrīpati's rules against his own worked tables, and every surface against every other
-- `varshaphala-verify.mjs` — the analyst JSON's Varṣaphala against the report pane and
-  against independent recomputation, under both paddhatis
+- `varshaphala-verify.mjs`, `tajika-verify.mjs` — the analyst JSON's Varṣaphala against
+  the report pane and against independent recomputation, and the Tājika strengths against
+  Raman's legible text, under both paddhatis
+- `bphs-dasha-verify.mjs` — every daśā of BPHS Ch. 46 against the book's own worked examples
+- `yuddha-bala-verify.mjs`, `vimsopaka-verify.mjs`, `timescale-verify.mjs`,
+  `sweep-verify.mjs` — planetary war, Vimśopaka, ΔT and sidereal time against independent
+  formulas, and every birth-time boundary within ±15 minutes against full recasts
 
 Where a harness checks for a fault, the fault has been planted to prove the check
 catches it.

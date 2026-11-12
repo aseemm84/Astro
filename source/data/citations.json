@@ -10,9 +10,9 @@
   "volumeSplit": 45,
   "volumeSplitSource": "BPHS-Santhanam Vol. 1, preface: \"The present volume—first volume—contains 45 chapters while the remaining 52 chapters have been put in the second volume.\" Vol. 2 opens at Chapter 46, \"Dasas (Periods) of planets\".",
   "maxChapter": 97,
-  "citations": 213,
-  "distinctLoci": 88,
-  "files": 38
+  "citations": 237,
+  "distinctLoci": 95,
+  "files": 41
  },
  "chaptersCited": [
   3,
@@ -805,7 +805,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1488,
+   "line": 1558,
    "text": "Ch.27 vv.10–11",
    "vol": null,
    "chapter": 27,
@@ -817,7 +817,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1509,
+   "line": 1579,
    "text": "Vol. 1, Ch. 27, vv. 15–17",
    "vol": 1,
    "chapter": 27,
@@ -829,7 +829,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1545,
+   "line": 1615,
    "text": "Vol. 1, Ch. 27, v. 19",
    "vol": 1,
    "chapter": 27,
@@ -841,7 +841,55 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1594,
+   "line": 1662,
+   "text": "Vol. 2, Ch. 79, v. 9",
+   "vol": 2,
+   "chapter": 79,
+   "verses": [
+    9,
+    9
+   ],
+   "claim": "* Saturn — less than one degree apart (BPHS Vol. 2, Ch. 79, v. 9; Śrīpati's"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 1666,
+   "text": "Ch. 79 v. 9",
+   "vol": null,
+   "chapter": 79,
+   "verses": [
+    9,
+    9
+   ],
+   "claim": "* BPHS Ch. 79 v. 9: \"Venus is the conqueror whether he is in North or South,"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 1673,
+   "text": "Ch. 27 v. 20",
+   "vol": null,
+   "chapter": 27,
+   "verses": [
+    20,
+    20
+   ],
+   "claim": "* BPHS Ch. 27 v. 20: \"the difference between the Shadbalas of the two should"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 1716,
+   "text": "Vol. 2 Ch. 79 v. 9",
+   "vol": 2,
+   "chapter": 79,
+   "verses": [
+    9,
+    9
+   ],
+   "claim": ":\"BPHS Vol. 2 Ch. 79 v. 9 (Venus always wins, otherwise the northern graha) \"+"
+  },
+  {
+   "file": "src/js/engine.js",
+   "line": 1740,
    "text": "Ch. 28, v. 6",
    "vol": null,
    "chapter": 28,
@@ -853,7 +901,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1628,
+   "line": 1774,
    "text": "Vol. 1, Ch. 28, v. 6",
    "vol": 1,
    "chapter": 28,
@@ -865,7 +913,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1635,
+   "line": 1781,
    "text": "Ch.27 vv.34–36",
    "vol": null,
    "chapter": 27,
@@ -877,7 +925,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1680,
+   "line": 1848,
    "text": "Vol. 1, Ch. 27",
    "vol": 1,
    "chapter": 27,
@@ -886,7 +934,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1685,
+   "line": 1853,
    "text": "Vol. 1, Ch. 27, vv. 34–36",
    "vol": 1,
    "chapter": 27,
@@ -898,7 +946,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1691,
+   "line": 1859,
    "text": "Ch. 28 v. 6",
    "vol": null,
    "chapter": 28,
@@ -910,7 +958,7 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1694,
+   "line": 1862,
    "text": "Ch. 28 v. 6",
    "vol": null,
    "chapter": 28,
@@ -922,12 +970,21 @@
   },
   {
    "file": "src/js/engine.js",
-   "line": 1935,
+   "line": 2103,
    "text": "Vol. 2, Ch. 79",
    "vol": 2,
    "chapter": 79,
    "verses": null,
    "claim": "yuddha scene needs the other one: BPHS Vol. 2, Ch. 79 decides the victor by"
+  },
+  {
+   "file": "src/js/report/assemble/99-main.js",
+   "line": 242,
+   "text": "Ch. 46",
+   "vol": null,
+   "chapter": 46,
+   "verses": null,
+   "claim": "H.push(sec(\"The other daśās of BPHS\",\"Ch. 46 — conditional, rāśi and Kālacakra\","
   },
   {
    "file": "src/js/report/core/05-aspects.js",
@@ -940,7 +997,16 @@
   },
   {
    "file": "src/js/report/export/42-json-export.js",
-   "line": 330,
+   "line": 179,
+   "text": "Ch. 3",
+   "vol": null,
+   "chapter": 3,
+   "verses": null,
+   "claim": "/* tātkālika from the RĀŚI chart, never the bhāva: BPHS Ch. 3 (translator's"
+  },
+  {
+   "file": "src/js/report/export/42-json-export.js",
+   "line": 334,
    "text": "Ch. 46, vv. 195",
    "vol": null,
    "chapter": 46,
@@ -952,7 +1018,7 @@
   },
   {
    "file": "src/js/report/export/42-json-export.js",
-   "line": 470,
+   "line": 477,
    "text": "Ch. 7, vv. 21–25",
    "vol": null,
    "chapter": 7,
@@ -964,12 +1030,21 @@
   },
   {
    "file": "src/js/report/export/42-json-export.js",
-   "line": 476,
+   "line": 483,
    "text": "Ch. 26",
    "vol": null,
    "chapter": 26,
    "verses": null,
    "claim": ": \"Drik Bala uses the exact Sphuta Drishti formula of BPHS Ch. 26.\","
+  },
+  {
+   "file": "src/js/report/export/42-json-export.js",
+   "line": 515,
+   "text": "Ch. 46",
+   "vol": null,
+   "chapter": 46,
+   "verses": null,
+   "claim": "/* the rest of BPHS Ch. 46 (77-bphs-dashas.js): natal period lists here,"
   },
   {
    "file": "src/js/report/export/44-readings.js",
@@ -985,7 +1060,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 157,
+   "line": 160,
    "text": "Ch. 27 vv. 34–36",
    "vol": null,
    "chapter": 27,
@@ -997,7 +1072,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 346,
+   "line": 353,
    "text": "Vol. 1 Ch. 7, vv. 17–25",
    "vol": 1,
    "chapter": 7,
@@ -1009,7 +1084,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 368,
+   "line": 375,
    "text": "Vol. 1, Ch. 7, vv. 17–19",
    "vol": 1,
    "chapter": 7,
@@ -1021,7 +1096,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 370,
+   "line": 377,
    "text": "Vol. 1, Ch. 7, vv. 17–19",
    "vol": 1,
    "chapter": 7,
@@ -1033,7 +1108,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 372,
+   "line": 379,
    "text": "Ch. 7",
    "vol": null,
    "chapter": 7,
@@ -1042,7 +1117,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 374,
+   "line": 381,
    "text": "Vol. 1, Ch. 7, v. 20",
    "vol": 1,
    "chapter": 7,
@@ -1054,7 +1129,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 377,
+   "line": 384,
    "text": "Vol. 1, Ch. 7, vv. 21–25",
    "vol": 1,
    "chapter": 7,
@@ -1066,7 +1141,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 465,
+   "line": 472,
    "text": "Ch. 7 vv. 26–27",
    "vol": null,
    "chapter": 7,
@@ -1078,7 +1153,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 550,
+   "line": 557,
    "text": "Vol. 1, Ch. 26, vv. 1–12",
    "vol": 1,
    "chapter": 26,
@@ -1090,7 +1165,7 @@
   },
   {
    "file": "src/js/report/export/46-skill-payload.js",
-   "line": 562,
+   "line": 569,
    "text": "Vol. 1, Ch. 26",
    "vol": 1,
    "chapter": 26,
@@ -1180,7 +1255,7 @@
   },
   {
    "file": "src/js/report/glassbox/33-shadbala-total.js",
-   "line": 11,
+   "line": 13,
    "text": "Ch. 27, vv. 32–33",
    "vol": null,
    "chapter": 27,
@@ -1192,7 +1267,7 @@
   },
   {
    "file": "src/js/report/glassbox/33-shadbala-total.js",
-   "line": 13,
+   "line": 15,
    "text": "Ch. 27",
    "vol": null,
    "chapter": 27,
@@ -1201,7 +1276,16 @@
   },
   {
    "file": "src/js/report/glassbox/34-vimsopaka.js",
-   "line": 25,
+   "line": 10,
+   "text": "Ch. 3",
+   "vol": null,
+   "chapter": 3,
+   "verses": null,
+   "claim": "/* tātkālika from the RĀŚI chart, never the bhāva: BPHS Ch. 3 (translator's"
+  },
+  {
+   "file": "src/js/report/glassbox/34-vimsopaka.js",
+   "line": 29,
    "text": "Ch. 7, vv. 21–25",
    "vol": null,
    "chapter": 7,
@@ -1375,7 +1459,7 @@
   },
   {
    "file": "src/js/report/sections/11-ashtakavarga.js",
-   "line": 24,
+   "line": 39,
    "text": "Ch.7 v.25",
    "vol": null,
    "chapter": 7,
@@ -1384,6 +1468,15 @@
     25
    ],
    "claim": "/* Varga Viśva, BPHS Ch.7 v.25: own 20, great friend 18, friend 15, neutral 10,"
+  },
+  {
+   "file": "src/js/report/sections/11-ashtakavarga.js",
+   "line": 54,
+   "text": "Ch. 3",
+   "vol": null,
+   "chapter": 3,
+   "verses": null,
+   "claim": "/* tātkālika from the RĀŚI chart, never the bhāva: BPHS Ch. 3 (translator's"
   },
   {
    "file": "src/js/report/sections/12-avasthas.js",
@@ -1450,6 +1543,159 @@
    "chapter": 70,
    "verses": null,
    "claim": "the Parāśara verses — BPHS Ch. 70 compares rekhās between rāśis rather"
+  },
+  {
+   "file": "src/js/report/sections/74-chara-dasha.js",
+   "line": 10,
+   "text": "Vol. 2 Ch. 46 vv. 155–167",
+   "vol": 2,
+   "chapter": 46,
+   "verses": [
+    155,
+    167
+   ],
+   "claim": "it. BPHS Vol. 2 Ch. 46 vv. 155–167 gives its own Chara daśā, and it differs"
+  },
+  {
+   "file": "src/js/report/sections/74-chara-dasha.js",
+   "line": 155,
+   "text": "Vol. 2 Ch. 46 vv. 155–167",
+   "vol": 2,
+   "chapter": 46,
+   "verses": [
+    155,
+    167
+   ],
+   "claim": "\"This pane is the Jaimini form from the later commentarial tradition. BPHS gives its own Chara daśā (Vol. 2 Ch. 46 vv. 155–167), computed in “The other daśās of BPHS”.\","
+  },
+  {
+   "file": "src/js/report/sections/77-bphs-dashas.js",
+   "line": 1,
+   "text": "Ch. 46",
+   "vol": null,
+   "chapter": 46,
+   "verses": null,
+   "claim": "/* ============ The other daśās of BPHS Ch. 46 — conditional, rāśi and Kālacakra ============"
+  },
+  {
+   "file": "src/js/report/sections/77-bphs-dashas.js",
+   "line": 3,
+   "text": "Vol. 2 Ch. 46",
+   "vol": 2,
+   "chapter": 46,
+   "verses": null,
+   "claim": "WHAT THIS IS. BPHS Vol. 2 Ch. 46 names many daśā systems besides Viṃśottarī."
+  },
+  {
+   "file": "src/js/report/sections/77-bphs-dashas.js",
+   "line": 237,
+   "text": "Vol. 2 Ch. 46",
+   "vol": 2,
+   "chapter": 46,
+   "verses": null,
+   "claim": "out.push({ key: sys.key, name: sys.name, verses: \"BPHS Vol. 2 Ch. 46 \" + sys.verses, total_years: sys.total,"
+  },
+  {
+   "file": "src/js/report/sections/77-bphs-dashas.js",
+   "line": 244,
+   "text": "Vol. 2 Ch. 46 vv. 40–41",
+   "vol": 2,
+   "chapter": 46,
+   "verses": [
+    40,
+    41
+   ],
+   "claim": "out.push({ key: \"shashtihayani\", name: \"Ṣaṣṭi-hāyanī\", verses: \"BPHS Vol. 2 Ch. 46 vv. 40–41\", total_years: 60,"
+  },
+  {
+   "file": "src/js/report/sections/77-bphs-dashas.js",
+   "line": 259,
+   "text": "Vol. 2 Ch. 46 vv. 44–49",
+   "vol": 2,
+   "chapter": 46,
+   "verses": [
+    44,
+    49
+   ],
+   "claim": "return { available: true, verses: \"BPHS Vol. 2 Ch. 46 vv. 44–49\", segment: C.seg.name, past_ghatikas: C.seg.pastGhatika,"
+  },
+  {
+   "file": "src/js/report/sections/77-bphs-dashas.js",
+   "line": 272,
+   "text": "Vol. 2 Ch. 46 vv. 50–51",
+   "vol": 2,
+   "chapter": 46,
+   "verses": [
+    50,
+    51
+   ],
+   "claim": "return { available: true, verses: \"BPHS Vol. 2 Ch. 46 vv. 50–51\", start: start, why: why,"
+  },
+  {
+   "file": "src/js/report/sections/77-bphs-dashas.js",
+   "line": 321,
+   "text": "Vol. 2 Ch. 46 vv. 52–91",
+   "vol": 2,
+   "chapter": 46,
+   "verses": [
+    52,
+    91
+   ],
+   "claim": "return { verses: \"BPHS Vol. 2 Ch. 46 vv. 52–91, 93\", nakshatra: NAKS[ni], pada: pada + 1,"
+  },
+  {
+   "file": "src/js/report/sections/77-bphs-dashas.js",
+   "line": 502,
+   "text": "Vol. 2 Ch. 46",
+   "vol": 2,
+   "chapter": 46,
+   "verses": null,
+   "claim": "var out = { source: \"BPHS Vol. 2 Ch. 46 (Santhanam translation). Signs are 0 = Meṣa … 11 = Mīna; years of 365.2564 days, as every daśā on this site.\","
+  },
+  {
+   "file": "src/js/report/sections/77-bphs-dashas.js",
+   "line": 521,
+   "text": "Vol. 2 Ch. 46",
+   "vol": 2,
+   "chapter": 46,
+   "verses": null,
+   "claim": "out.rashi[k] = { name: r.name, verses: \"BPHS Vol. 2 Ch. 46 \" + r.verses, start_sign: r.start != null ? r.start : null,"
+  },
+  {
+   "file": "src/js/report/sections/77-bphs-dashas.js",
+   "line": 554,
+   "text": "Ch. 46",
+   "vol": null,
+   "chapter": 46,
+   "verses": null,
+   "claim": "H.push('<p class=\"knote\">BPHS Ch. 46 gives many daśā systems besides Viṃśottarī. Parāśara calls Viṃśottarī the one for general use and the rest for particular charts or purposes ' +"
+  },
+  {
+   "file": "src/js/report/sections/77-bphs-dashas.js",
+   "line": 560,
+   "text": "Vol. 2 Ch. 46",
+   "vol": 2,
+   "chapter": 46,
+   "verses": null,
+   "claim": "sum.push('<tr><td><b>' + c.name + '</b></td><td class=\"kmut\">' + c.verses.replace(\"BPHS Vol. 2 Ch. 46 \", \"\") + '</td><td>' +"
+  },
+  {
+   "file": "src/js/report/sections/77-bphs-dashas.js",
+   "line": 563,
+   "text": "Vol. 2 Ch. 46",
+   "vol": 2,
+   "chapter": 46,
+   "verses": null,
+   "claim": "…tr><td><b>' + z[0] + '</b></td><td class=\"kmut\">' + (z[1].verses || \"\").replace(\"BPHS Vol. 2 Ch. 46 \", \"\") + '</td><td>general</td><td>' + (r ? esc(bdName(r)) + ' <span class=\"kmut\">to ' + fmy(r.end) + '</span>' : '—') +…"
+  },
+  {
+   "file": "src/js/report/sections/77-bphs-dashas.js",
+   "line": 580,
+   "text": "Vol. 2 Ch. 46",
+   "vol": 2,
+   "chapter": 46,
+   "verses": null,
+   "claim": "cb += det(c.name, c.verses.replace(\"BPHS Vol. 2 Ch. 46 \", \"\") + \" · \" + (a.applies === true ? \"applies\" : \"condition not met\"), body);"
   },
   {
    "file": "src/js/sp-explain.js",
@@ -1892,11 +2138,14 @@
   {
    "file": "src/pages/dashas.html",
    "line": 1,
-   "text": "Vol. 2, Ch. 46",
+   "text": "Vol. 2, Ch. 46, vv. 17–43",
    "vol": 2,
    "chapter": 46,
-   "verses": null,
-   "claim": "…Lagna (per rules)</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 2, Ch. 46–48 (the conditional nakshatra dashas and their triggers).</p><h2 id=\"rasi\">Rasi (sign) dashas</h2><p>Sign dashas mo…"
+   "verses": [
+    17,
+    43
+   ],
+   "claim": "…/td><td>vv. 42–43</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 2, Ch. 46, vv. 17–43. Verse numbers as in the uploaded translation, whose OCR is imperfect — verify in the PDF.</p><h2 id=\"ra…"
   },
   {
    "file": "src/pages/dashas.html",
@@ -1905,7 +2154,7 @@
    "vol": 2,
    "chapter": 46,
    "verses": null,
-   "claim": "…order and trigger</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 2, Ch. 46–49 (Kalachakra and the several rasi dashas — Chara, Sthira, Yogardha, Kendra, Karaka, Shoola, Drig, Trikona, Mandoo…"
+   "claim": "…d><td>vv. 207–209</td></tr></tbody></table></div><p class=\"src\"><span>Source</span> BPHS, Vol. 2, Ch. 46. The chart builder computes every one of these from its verse, and pins the book's worked examples in a test. Shool…"
   },
   {
    "file": "src/pages/dignity.html",

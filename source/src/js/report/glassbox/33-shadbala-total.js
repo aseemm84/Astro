@@ -4,9 +4,11 @@ function gbTotal(D,J,p){
   if(!sb) return "";
   var parts=[["Sthāna (positional)",sb.sthana],["Dig (directional)",sb.dig],["Kāla (temporal)",sb.kala],
              ["Cheṣṭā (motional)",sb.cheshta],["Naisargika (natural)",sb.naisargika],["Dṛk (aspectual)",sb.drik]];
+  /* a graha at war carries the transfer its paddhati's rule assigns */
+  if(sb.yuddha) parts.push(["Yuddha (planetary war)",sb.yuddha]);
   var rows="", sum=0;
   parts.forEach(function(x){ sum+=x[1]; rows+=gbRow(x[0], gbFmt(x[1],2), ""); });
-  rows+=gbRow("<b>Total</b>","<b>"+gbFmt(sum,2)+"</b> Virupas","sum of the six");
+  rows+=gbRow("<b>Total</b>","<b>"+gbFmt(sum,2)+"</b> Virupas",sb.yuddha?"the six, and the war":"sum of the six");
   rows+=gbRow("In rupas", gbFmt(sum/60,3), "60 Virupas = 1 rupa");
   rows+=gbRow("Required of "+p, gbFmt(sb.required_rupa,1)+" rupas","BPHS Ch. 27, vv. 32–33");
   rows+=gbRow("<b>Ratio</b>","<b>"+gbFmt(sb.ratio,2)+"</b>", sb.ratio>=1?"meets the requirement":"below the requirement");

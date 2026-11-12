@@ -72,7 +72,7 @@ async function run(mode) {
       return null;
     };
     const office = tables.find((t) => [...t.querySelectorAll("th")]
-      .map((x) => x.textContent.trim()).join("|") === "Office|Graha|In the annual chart|By what rule");
+      .map((x) => x.textContent.trim()).join("|") === "Office|Graha|In the annual chart|By what rule|Aspects the varṣa lagna|Pañcavargīya ÷ 4");
     const offices = office ? [...office.querySelectorAll("tr")].map((tr) =>
       [...tr.querySelectorAll("td")].map((x) => x.textContent.trim())).filter((r) => r.length) : [];
     const mudda = tables.find((t) => [...t.querySelectorAll("th")]
@@ -127,11 +127,15 @@ for (const mode of ["whole-sign", "sripati"]) {
   head(`[${mode}] honesty — tier, Varṣeśa, what is not computed`);
   is(/Tājika/.test(V.tier) && /NOT in the uploaded Santhanam edition/.test(V.tier),
      "tier says Tājika and not BPHS");
-  is(V.varshesha.asserted === false, "Varṣeśa is not asserted");
   is(V.varshesha.candidates.length === 5, "five office-bearers named");
-  is(/Pañcavargīya/.test(V.varshesha.reason), "reason names Pañcavargīya bala as uncomputed");
-  is(V.not_computed.includes("Sahamas") && V.not_computed.some((x) => /Tājika yogas/.test(x)),
-     "Sahamas and Tājika yogas listed as not computed");
+  const elig = V.varshesha.candidates.filter((c) => c.aspects_varsha_lagna);
+  const pool = elig.length ? elig : V.varshesha.candidates;
+  const top = Math.max(...pool.map((c) => c.panchavargiya_quarter));
+  is(V.varshesha.asserted === true && pool.some((c) => c.graha === V.varshesha.graha && c.panchavargiya_quarter === top),
+     `Varṣeśa ${V.varshesha.graha}: the strongest by Pañcavargīya bala among the candidates that aspect the varṣa lagna`);
+  is(/Raman/.test(V.panchavargiya_bala.source) && Object.keys(V.panchavargiya_bala.grahas).length === 7, "Pañcavargīya bala for the seven grahas, with its source");
+  is(Object.keys(V.sahams.sahams).length === 10 && Array.isArray(V.patyayini_dasha.periods), "ten sahams and the Pātyāyinī daśā are in the JSON");
+  is(V.not_computed.some((x) => /sixteen/.test(x)), "what is still not computed is named");
 
   head(`[${mode}] against independent recomputation`);
   is(X.sunAtEntryErrArcsec < 1, `Sun at the stated entry is ${X.sunAtEntryErrArcsec.toFixed(3)}″ from natal (< 1″)`);
@@ -160,7 +164,7 @@ for (const mode of ["whole-sign", "sripati"]) {
   is(Pn.lagna && Pn.lagna.startsWith(SA[V.varsha_lagna.sign]), "varṣa lagna sign on both");
   is(Pn.entry && Pn.entry.includes(V.varsha_pravesha.local_time), `entry ${V.varsha_pravesha.local_time} local on both`);
   is(Pn.offices.length === 5 && Pn.offices.every((o, i) =>
-     o[0] === V.varshesha.candidates[i].office && o[1] === V.varshesha.candidates[i].graha),
+     o[0] === V.varshesha.candidates[i].office && o[1].replace(" ← Varṣeśa", "") === V.varshesha.candidates[i].graha),
      "the five offices and their grahas on both");
   is(Pn.muddaLords.join(",") === V.mudda_dasha.periods.map((p) => p.lord).join(","),
      "Mudda lords in the same order on both");

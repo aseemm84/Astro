@@ -48,18 +48,24 @@ function sensForksSection(D,J){
   // 3. house system
   var lag=D.lagna.sidereal_deg, start=((lag-15)%360+360)%360;
   var hs=D.planets.map(function(p){
-    var ws=p.house, ch=Math.floor((((p.sid-start)%360)+360)%360/30)+1;
+    var ws=((p.sign-D.LS)%12+12)%12+1, ch=Math.floor((((p.sid-start)%360)+360)%360/30)+1;
     var sri=(D.mcSid!=null)?null:null;
     return {en:p.en, ws:ws, ch:ch};
   });
   var diff=hs.filter(function(x){return x.ws!==x.ch;});
-  var houseRows='<tr class="khl"><td><b>Whole sign</b> <span class="kmut">← in use</span></td>'+
+  /* WHICH ROW IS IN USE FOLLOWS THE CHART. This table marked whole-sign
+     "← in use" unconditionally, so a Śrīpati chart was told, in the section
+     about choices, that it had made the other one. The comparison column
+     (equal cusps) is measured from the rāśi, so it is labelled by what it is. */
+  var spIn=!!(J&&J.house_system&&J.house_system.mode==="sripati"&&!J.house_system.fell_back);
+  var inUse=' <span class="kmut">← in use</span>';
+  var houseRows='<tr'+(spIn?'':' class="khl"')+'><td><b>Whole sign</b>'+(spIn?'':inUse)+'</td>'+
       '<td colspan="2">the sign is the house</td><td class="kmut">the BPHS default on this site</td></tr>'+
     '<tr><td><b>Equal cusps (chalit)</b></td><td colspan="2">'+
       (diff.length?diff.map(function(x){return x.en+" "+x.ws+"→"+x.ch;}).join(", "):"no planet moves")+'</td>'+
-      '<td class="kmut">houses centred on the lagna degree</td></tr>'+
-    '<tr><td><b>Sripati</b></td><td colspan="2">shown in its own section</td>'+
-      '<td class="kmut">unequal quadrant trisection</td></tr>';
+      '<td class="kmut">houses centred on the lagna degree, compared with whole-sign</td></tr>'+
+    '<tr'+(spIn?' class="khl"':'')+'><td><b>Śrīpati</b>'+(spIn?inUse:'')+'</td><td colspan="2">shown in its own section</td>'+
+      '<td class="kmut">unequal quadrant trisection — and his own rules for what follows from it</td></tr>';
   return '<p class="knote">Three things about this chart are <b>choices, not facts</b>. Changing any of them '+
     'changes the reading. They are laid out here so the choice is visible rather than buried in a default.</p>'+
     '<h4 class="ksub">Ayanāṃśa</h4>'+
@@ -72,6 +78,36 @@ function sensForksSection(D,J){
     'everything on this site is validated against it; the mean node is the usual Jyotiṣa choice; whole-sign is '+
     'what BPHS uses. The alternatives are offered because a reader deserves to see how much rests on the '+
     'convention rather than on the sky.</div>';
+}
+/* the ±15-minute sweep as a reader sees it: one row per boundary, in time order */
+var SENS_QNAME={lagna:"Lagna sign",D9:"D9 lagna",D10:"D10 lagna",D60:"D60 lagna",
+  moon_nakshatra:"Moon's nakṣatra",moon_pada:"Moon's pāda"};
+function sensQName(k){ return SENS_QNAME[k]||(k.indexOf("bhava_")===0?k.slice(6)+"'s bhāva (Śrīpati)":k); }
+function sensQVal(k,v){
+  if(v==null) return "—";
+  if(k==="moon_nakshatra") return NAKS[v];
+  if(k==="moon_pada") return NAKS[Math.floor(v/4)]+" "+(v%4+1);
+  if(k.indexOf("bhava_")===0) return "bhāva "+v;
+  return SA[v];
+}
+function sensFmtOff(s){ var a=Math.abs(s), m=Math.floor(a/60), r=a-m*60;
+  return (s<0?"−":"+")+m+"m "+(r<10?"0":"")+r.toFixed(1)+"s"; }
+function sensBoundaryTable(J){
+  var B=null; try{ B=sensBoundaries(J,15); }catch(e){ B=null; }
+  if(!B) return "";
+  var rows=B.events.map(function(e){
+    return '<tr><td class="knum">'+sensFmtOff(e.offset_sec)+'</td><td><b>'+esc(sensQName(e.quantity))+'</b></td>'+
+      '<td>'+esc(sensQVal(e.quantity,e.from))+' → '+esc(sensQVal(e.quantity,e.to))+'</td></tr>';
+  }).join("");
+  var stable=B.quantities.filter(function(k){ return B.stability[k].stable_for_whole_span; })
+    .map(sensQName);
+  return '<h4 class="ksub">Every boundary within a quarter-hour</h4>'+
+    '<p class="knote">The exact moment, either side of the recorded time, at which each time-sensitive '+
+    'quantity changes — found by bisection to half a second rather than read off a sample. If the true birth '+
+    'time lies beyond a row, that row\'s change applies.</p>'+
+    (rows?tbl(["From recorded time","What changes","From → to"],[rows])
+         :'<p class="kmut">Nothing listed changes within fifteen minutes either side.</p>')+
+    (stable.length?'<p class="klegend">Unchanged across the whole ±15 minutes: '+esc(stable.join(", "))+'.</p>':'');
 }
 function sensSummarySection(D,J){
   var S=SENS; if(!S) return "";
@@ -89,6 +125,7 @@ function sensSummarySection(D,J){
     'This is what a small error would actually do to <i>this</i> chart — computed, not asserted, by casting it '+
     'again a minute and four minutes either side.</p>'+
     tbl(["Shift in birth time","Lagna moves","What changes"],[line(S.m1,"± 1 minute"),line(S.m4,"± 4 minutes")])+
+    sensBoundaryTable(J)+
     '<div class="kbox">The badge on each section heading follows from this. <span class="sensb sens-lo" title="nothing this section rests on moved within four minutes">stable</span> '+
     'means nothing that section rests on moved within four minutes; <span class="sensb sens-mid" title="moved within four minutes but not within one">sensitive</span> '+
     'means it moved within four but not one; <span class="sensb sens-hi" title="already changes with a one-minute shift">very sensitive</span> means one minute '+

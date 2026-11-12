@@ -77,6 +77,22 @@ const ISHTA = { Sun:0.880, Moon:0.453, Mars:0.355, Mercury:0.201,
 const KASHTA = { Sun:0.090, Moon:0.539, Mars:0.519, Mercury:0.442,
                  Jupiter:0.408, Venus:0.300, Saturn:0.947 };
 
+/* saptavarga iṣṭa / kaṣṭa, Adh. 4 śl. 8–11 — tables p.66 (good, evil) and
+   p.68 (śubha / aśubha paṅkti), rows Rāśi, Horā, Drekkāṇa, Saptāṃśa,
+   Navāṃśa, Dvādaśāṃśa, Triṃśāṃśa; printed to three decimals */
+const SV_GOOD = { Sun:[.375,.187,.25,.25,.125,.187,.062], Moon:[.25,.25,.125,.125,.125,.187,.125],
+  Mars:[.375,.187,.25,.187,.187,.125,.25], Mercury:[.25,.187,.031,.125,.125,.125,.125],
+  Jupiter:[.75,.062,.25,.25,.187,.25,.187], Venus:[.25,.015,.015,.062,.015,.187,.031],
+  Saturn:[.125,.062,.031,.062,.031,.031,.062] };
+const SV_EVIL = { Sun:[.625,.313,.25,.25,.375,.313,.438], Moon:[.75,.25,.375,.375,.375,.313,.375],
+  Mars:[.625,.313,.25,.313,.313,.375,.25], Mercury:[.75,.313,.469,.375,.375,.375,.375],
+  Jupiter:[.25,.438,.25,.25,.313,.25,.313], Venus:[.75,.485,.485,.437,.485,.313,.468],
+  Saturn:[.875,.437,.468,.437,.468,.468,.437] };
+const SV_TOT = { Sun:[1.437,2.562], Moon:[1.187,2.813], Mars:[1.562,2.437], Mercury:[.968,3.031],
+  Jupiter:[1.937,2.063], Venus:[.578,3.422], Saturn:[.406,3.593] };
+const SV_GRIHA = { Sun:[.359,.640], Moon:[.297,.703], Mars:[.390,.609], Mercury:[.242,.758],
+  Jupiter:[.484,.516], Venus:[.144,.855], Saturn:[.101,.898] };
+
 const fwd = (a, b) => ((b - a) % 360 + 360) % 360;
 const arambha = (h) => SANDHI[(h - 2 + 12) % 12];
 const virama  = (h) => SANDHI[h - 1];
@@ -152,6 +168,22 @@ const [B, S] = await pg.evaluate((b) => ["whole", "sripati"].map((m) => {
              (g) => [g.en || g.key, g.bhava_phala])) };
 }), BIRTH);
 const BB = { whole: B.bhavaBala, sri: S.bhavaBala, note: S.bhavaBalaNote };
+/* his saptavarga tables, from HIS longitudes and HIS bhāvas (sandhis p.12) */
+const SV = await pg.evaluate(([lon, sandhi]) => {
+  const fwd = (a, b) => ((b - a) % 360 + 360) % 360;
+  const bhavaOf = (g) => { const L = lon[g];
+    for (let h = 1; h <= 12; h++) { const lo = sandhi[(h - 2 + 12) % 12], hi = sandhi[h - 1];
+      if (fwd(lo, L) < fwd(lo, hi)) return h; } return 1; };
+  return window.sripatiSaptavargaIK ? window.sripatiSaptavargaIK(lon, bhavaOf) : null;
+}, [LON, SANDHI]);
+const SVS = await pg.evaluate((b) => {
+  const J = window.buildLocalChart(Object.assign({}, b, { houseSystem: "sripati" }));
+  const K = window.buildLocalChart(Object.assign({}, b, { houseSystem: "whole" }));
+  const hs = window.buildKundliReport(J), hb = window.buildKundliReport(K);
+  return { sri: J.shadbala.saptavarga_ishta_kashta, bphs: K.shadbala.saptavarga_ishta_kashta,
+           shownSri: /second method — through the seven vargas/.test(hs),
+           shownBphs: /second method — through the seven vargas/.test(hb) };
+}, BIRTH);
 await pg.close();
 await browser.close();
 
@@ -303,6 +335,37 @@ is(/tātkālika maitrī read from the bhāva chakra/.test(
    "the paddhati block declares it, so the Ṣaḍbala shift is attributable");
 is(G.some((g) => Math.abs(B.sb[g].sthana - S.sb[g].sthana) > 1e-9),
    "Sthāna Bala moves with it, as the chain Saptavargaja→Sthāna→Ṣaḍbala implies");
+
+head("=== BOOK: saptavarga iṣṭa / kaṣṭa, Adh. 4 śl. 8–11, against his tables pp.66 and 68 ===");
+is(!!SV, "the method is exposed (window.sripatiSaptavargaIK)");
+if (SV) {
+  /* he prints three decimals and TRUNCATES as often as he rounds (·0625 is
+     printed ·062, ·03125 as ·031, ·4375 as ·437 and ·438): a cell matches if
+     it is within one unit of the third decimal */
+  let good = 0, evil = 0, cells = 0;
+  for (const g of Object.keys(SV_GOOD)) for (let i = 0; i < 7; i++) {
+    cells++;
+    if (Math.abs(SV[g].good[i] - SV_GOOD[g][i]) <= 0.0011) good++;
+    if (Math.abs(SV[g].evil[i] - SV_EVIL[g][i]) <= 0.0011) evil++;
+  }
+  is(good === cells, `every good-influence cell of his p.66 table (${good}/${cells})`);
+  is(evil === cells, `every evil-influence cell (${evil}/${cells})`);
+  is(Object.keys(SV_TOT).every((g) => Math.abs(SV[g].good_total_rupa - SV_TOT[g][0]) <= 0.003 &&
+     Math.abs(SV[g].evil_total_rupa - SV_TOT[g][1]) <= 0.003), "every printed total, good and evil");
+  is(Object.keys(SV_GRIHA).every((g) => Math.abs(SV[g].subha_panktee[0] - SV_GRIHA[g][0]) <= 0.0015 &&
+     Math.abs(SV[g].asubha_panktee[0] - SV_GRIHA[g][1]) <= 0.0015), "every Gṛha row of the śubha and aśubha paṅkti (p.68)");
+  is(Object.keys(SV_GRIHA).every((g) => SV[g].subha_panktee.slice(1).every((x) => Math.abs(x - SV[g].subha_panktee[0] / 2) < 1e-12)),
+     "and the other six rows are half the Gṛha row, as śl. 11 says");
+  /* the divergence from his own verse, asserted rather than hidden */
+  is(SV.Sun.dignity[0] === "greatfriend" && SV.Saturn.dignity[0] === "neutral",
+     "his table scores the Sun in Meṣa ⅜ and Saturn in Meṣa ⅛, not exaltation and debilitation");
+  is(SV.Sun.verse_reading.dignity[0] === "exalted" && SV.Saturn.verse_reading.dignity[0] === "debilitated" &&
+     SV.Sun.verse_reading.good_total_rupa > SV.Sun.good_total_rupa,
+     "and the verse's reading, which does score them, is carried beside it as verse_reading");
+}
+is(SVS.sri && SVS.sri.grahas && Object.keys(SVS.sri.grahas).length === 7, "a Śrīpati chart carries it for all seven grahas");
+is(SVS.bphs && SVS.bphs.applies === false && /Śrīpati method/.test(SVS.bphs.reason), "a BPHS chart says why it is absent");
+is(SVS.shownSri && !SVS.shownBphs, "the report shows the tables under Śrīpati and not under BPHS");
 
 head("Page errors");
 is(errs.length === 0, errs.length ? errs.slice(0, 3).join(" | ") : "none");

@@ -176,7 +176,11 @@ function jxVimsopaka(D){
       if(dg==="friend"||dg==="enemy"||dg==="neutral"){
         var lord=LORD[v.pos[k]], pk=D.P[k], pl=D.P[lord];
         if(pk&&pl&&lord!==k){
-          var dist=((pl.house-pk.house)%12+12)%12+1;
+          /* tātkālika from the RĀŚI chart, never the bhāva: BPHS Ch. 3 (translator's
+           note) and the Vimśopaka note under Ch. 7 vv. 21–25. Counting by house
+           made the report follow the Śrīpati bhāvas while the analyst JSON did not,
+           so the two printed different Vimśopaka for the same chart. */
+        var dist=((pl.sign-pk.sign)%12+12)%12+1;
           var temp=([2,3,4,10,11,12].indexOf(dist)>=0)?"friend":"enemy";
           if(dg==="friend"&&temp==="friend") dg="greatfriend";
           else if(dg==="enemy"&&temp==="enemy") dg="greatenemy";
@@ -341,7 +345,9 @@ function jxSensitivity(J){
     padas_changing:m.padas.map(function(k){return EN[k]||k;}),
     houses_changing:m.houses.map(function(k){return EN[k]||k;}),
     varga_lagnas_changing:m.vargas}; }
+  var B=null; try{ B=sensBoundaries(J,15); }catch(e){ B=null; }
   return {plus_minus_1_minute:pack(S.m1), plus_minus_4_minutes:pack(S.m4),
+    plus_minus_15_minutes:B,
     note:"Computed by casting the chart again either side of the recorded time. "+
          "Anything listed here is not safe to rely on unless the birth time is exact."};
 }
@@ -424,6 +430,7 @@ function jxAsOf(D,J){
      year it describes is chosen by the export moment — it goes stale exactly
      as gochara does. Same computation as the report pane (varshaphalaData),
      so the file and the page cannot disagree. Tājika, not BPHS: said inside. */
+  try{ if(typeof bphsDashaRunningJson==="function") out.bphs_dashas_running=bphsDashaRunningJson(D,J); }catch(e){}
   try{ if(typeof varshaphalaJson==="function") out.varshaphala=varshaphalaJson(D,J); }catch(e){
     out.varshaphala={available:false, reason:"computation failed: "+(e&&e.message||e)}; }
   return out;
@@ -505,6 +512,10 @@ function buildFullExport(D,J){
   try{ x.vimshottari_tree=jxDashaTree(D); }catch(e){}
   try{ x.ashtottari=jxAshtottari(D); }catch(e){}
   try{ x.yogini=jxYogini(D); x.yogini_meta=jxYoginiMeta(); }catch(e){}
+  /* the rest of BPHS Ch. 46 (77-bphs-dashas.js): natal period lists here,
+     the period running at export time under as_of */
+  try{ if(typeof bphsDashaJson==="function") x.bphs_dashas=bphsDashaJson(D,J); }catch(e){
+    x.bphs_dashas={available:false, reason:"computation failed: "+(e&&e.message||e)}; }
   try{ x.sensitivity=jxSensitivity(J); }catch(e){}
   try{ x.conventions=jxConventions(J); }catch(e){}
   try{ x.varga_analysis=buildVargaAnalysis(D); }catch(e){}

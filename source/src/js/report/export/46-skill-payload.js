@@ -142,6 +142,9 @@ function skpShadbala(J){
       cheshta_bala_virupas:p.cheshta,
       naisargika_bala_virupas:p.naisargika,
       drik_bala_virupas:p.drik,
+      /* planetary war (engine YUDDHA): positive for a victor, negative for the
+         vanquished, 0 when not at war; already inside total_virupas */
+      yuddha_bala_virupas:p.yuddha||0,
       total_virupas:p.total_virupa,
       total_rupas:p.total_rupa,
       required_rupas:p.required_rupa,
@@ -172,6 +175,8 @@ function skpShadbala(J){
     };
   });
   return {planets:out, context:(J.shadbala&&J.shadbala.context)||null,
+    yuddha:(J.shadbala&&J.shadbala.yuddha)||[],
+    saptavarga_ishta_kashta:(J.shadbala&&J.shadbala.saptavarga_ishta_kashta)||null,
     /* which six heads, and where Ayana sits — the two texts differ on the
        arrangement though not on the total; see the engine for why */
     composition:(J.shadbala&&J.shadbala.composition)||null,
@@ -295,6 +300,8 @@ function skpSensitivity(D){
     d9_lagna_shift_4min:vshift(m4,"D9"),
     d10_lagna_shift_4min:vshift(m4,"D10"),
     plus_minus_1_minute:m1, plus_minus_4_minutes:m4,
+    /* exact boundary times within ±15 minutes (sensBoundaries) */
+    plus_minus_15_minutes:s.plus_minus_15_minutes||null,
     note:s.note||null
   };
 }
@@ -588,7 +595,7 @@ function skpGuide(D){
     "derived.vimsopaka","derived.bhava_bala","derived.ishta_kashta",
     "derived.graha_drishti","derived.rashi_drishti","derived.argala",
     "ashtakavarga","derived.ashtakavarga_shodhana","yogas",
-    "derived.running_dasha","derived.vimshottari_tree","derived.as_of",
+    "derived.running_dasha","derived.vimshottari_tree","derived.bphs_dashas","derived.as_of",
     "derived.as_of.varshaphala"
   ];
   out.caution="Read derived.conventions and derived.sensitivity before anything else. "+
@@ -613,6 +620,15 @@ function buildJyotishaPayload(J){
     datetime_local:[i.year,("0"+i.month).slice(-2),("0"+i.day).slice(-2)].join("-")+
       "T"+("0"+i.hour).slice(-2)+":"+("0"+i.minute).slice(-2)+":00",
     julian_day:J.jd_utc,
+    /* the time scales and the frame (engine.js, time_scales): what anyone
+       reproducing a figure needs and the file did not say */
+    jd_ut:(J.time_scales&&J.time_scales.jd_ut)||J.jd_utc,
+    jd_tt:J.time_scales?J.time_scales.jd_tt:null,
+    delta_t_sec:J.time_scales?J.time_scales.delta_t_sec:null,
+    lst_deg:J.time_scales?J.time_scales.lst_deg:null,
+    eps_true_deg:J.time_scales?J.time_scales.obliquity_true_deg:null,
+    eps_mean_deg:J.time_scales?J.time_scales.obliquity_mean_deg:null,
+    time_scales:J.time_scales||null,
     place:i.place||null,
     latitude:i.lat,
     longitude:i.lon,

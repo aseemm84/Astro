@@ -63,6 +63,15 @@ def jsread(*p):
     pasted in."""
     return read(*p).rstrip() + "\n;\n"
 
+def astro_lib():
+    """astronomy-engine, always followed by deltat.js.
+
+    ΔT has to be the same on every page, or two pages give two Moons for one
+    instant. So the correction is not loaded beside the library by whichever
+    page remembers to: it is part of what "the library" means here, at every
+    one of its inclusions."""
+    return read(VEND, "astronomy.browser.min.js") + "\n;\n" + read(SRC, "js", "deltat.js")
+
 def report_bundle():
     """Concatenate the report modules in manifest order. They are slices of one
     closure, not independent files, so order matters and stray files are an error."""
@@ -202,7 +211,7 @@ def build_kundli():
                             read(SRC, "css", "theme.css") + "\n" +
                             read(SRC, "css", "cosmos.css"), "style"),
              ("<!--THEMEJS-->", read(SRC, "js", "theme.js"), "script"),
-             ("<!--JS0-->", read(VEND, "astronomy.browser.min.js"), "script"),
+             ("<!--JS0-->", astro_lib(), "script"),
              ("<!--JS1-->", jsread(SRC, "js", "engine.js"), "script"),
              ("<!--JS2-->", report_bundle(), "script"),
              # places.js before ui.js: the form's city search and the motion
@@ -264,7 +273,7 @@ def build_motion():
                             read(SRC, "css", "theme.css") + "\n" +
                             read(SRC, "css", "cosmos.css"), "style"),
              ("<!--THEMEJS-->", read(SRC, "js", "theme.js"), "script"),
-             ("<!--JS0-->", read(VEND, "astronomy.browser.min.js"), "script"),
+             ("<!--JS0-->", astro_lib(), "script"),
              ("<!--JS1-->", jsread(SRC, "js", "engine.js"), "script"),
              ("<!--JS2-->", report_bundle(), "script"),
              # places.js for the pane's own place picker; sp-cosmos for the
@@ -312,7 +321,7 @@ def build_ceremony():
                             read(SRC, "css", "theme.css") + "\n" +
                             read(SRC, "css", "cosmos.css"), "style"),
              ("<!--THEMEJS-->", read(SRC, "js", "theme.js"), "script"),
-             ("<!--JS0-->", read(VEND, "astronomy.browser.min.js"), "script"),
+             ("<!--JS0-->", astro_lib(), "script"),
              ("<!--JS1-->", jsread(SRC, "js", "engine.js"), "script"),
              # 54-motion-bodies supplies the graha discs the ring is drawn
              # with; without it sp-cosmos falls back to plain dots, which is a
@@ -363,7 +372,7 @@ def build_workstation():
                             read(SRC, "css", "theme.css") + "\n" +
                             read(SRC, "css", "cosmos.css"), "style"),
              ("<!--THEMEJS-->", read(SRC, "js", "theme.js"), "script"),
-             ("<!--JS0-->", read(VEND, "astronomy.browser.min.js"), "script"),
+             ("<!--JS0-->", astro_lib(), "script"),
              ("<!--JS1-->", jsread(SRC, "js", "engine.js"), "script"),
              ("<!--JS2-->", report_bundle(), "script"),
              ("<!--JS3-->", jsread(SRC, "js", "places.js") + "\n" +
@@ -564,12 +573,19 @@ def build_adopted():
         # not this module, a reader could select Śrīpati here and get a
         # whole-sign chart that claimed to be one. The engine's own honesty is
         # what caught it; the fix is to ship the module.
+        # THE WHOLE REPORT BUNDLE, not 72-sripati.js alone. A re-cast here
+        # used to produce a bare engine chart with no derived layer, so every
+        # card drawn from it — Vimśopaka, Iṣṭa/Kaṣṭa, exact Bhāva bala, the
+        # daśā tree — vanished without a word the moment the settings moved
+        # the chart. Re-casting has to rebuild what the kundli page builds, and
+        # that is the bundle's __deriveForExport. The bundle carries
+        # 72-sripati.js itself, so it replaces the separate copy rather than
+        # adding a second one. vimsopaka-verify.mjs pins it.
         engine = ""
         if name == "dashboard.html":
-            engine = ("<script>\n" + read(VEND, "astronomy.browser.min.js") +
+            engine = ("<script>\n" + astro_lib() +
                       "\n</script>\n<script>\n" + jsread(SRC, "js", "engine.js") +
-                      "\n</script>\n<script>\n" +
-                      jsread(SRC, "js", "report", "sections", "72-sripati.js") +
+                      "\n</script>\n<script>\n" + report_bundle() +
                       "\n</script>\n")
         panel = ("<style>\n" + read(SRC, "css", "settings.css") + "\n</style>\n"
                  + engine +
@@ -667,7 +683,7 @@ def build_shared():
     Both are referenced, not inlined, which works offline: <script src> is not
     subject to the restriction that blocks fetch() on file://."""
     return {
-        "engine.js": (read(VEND, "astronomy.browser.min.js") + "\n" +
+        "engine.js": (astro_lib() + "\n" +
                       brandify(jsread(SRC, "js", "engine.js"))),
         # settings.js rides along inside site.js. It is wanted on every page,
         # and site.js is already referenced by the shell, listed in the app's
@@ -1206,6 +1222,29 @@ def copy_static(outdir):
     print("  carried %d static paths" % len(APP_STATIC))
 
 
+SITE_URL = "https://aseemm84.github.io/Astro/"
+
+def build_sitemap(built):
+    """sitemap.xml, from the pages this build actually writes.
+
+    It was a hand-kept file and had fallen to 19 of 40 pages — the credits page,
+    the dashboard's newer neighbours and most of the tools were missing, so a
+    search engine was told about less than half the site. Generating it from
+    `built` means a page added to the build is listed by the same edit, and a
+    page removed is unlisted by it.
+
+    No <lastmod>: the protocol makes it optional, and a date that moved on every
+    build would make `--check` report the sitemap as changed every day. 404.html
+    and anything under test/ are not pages a reader should land on."""
+    names = sorted(n for n in built
+                   if n.endswith(".html") and "/" not in n and n != "404.html")
+    pri = {"index.html": "1.0", "kundli.html": "0.9"}
+    rows = "".join("  <url><loc>%s%s</loc><priority>%s</priority></url>\n"
+                   % (SITE_URL, n, pri.get(n, "0.7")) for n in names)
+    return ('<?xml version="1.0" encoding="UTF-8"?>\n'
+            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+            + rows + "</urlset>\n")
+
 def main():
     global APP_MODE
     args = sys.argv[1:]
@@ -1225,6 +1264,8 @@ def main():
     built.update(build_adopted())
     # last, because its cache key is a fingerprint of everything above it
     built.update(build_pwa(built))
+    if not APP_MODE:
+        built["sitemap.xml"] = build_sitemap(built)
     if APP_MODE:
         global APP_BUILD
         # No service worker ships: see app_sitejs. The manifest stays, because

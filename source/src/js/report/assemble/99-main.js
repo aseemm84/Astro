@@ -239,6 +239,8 @@ window.buildKundliReport=function(J){
   H.push(sec("Yoginī daśā","the 36-year cycle",yoginiSection(D)));
   H.push(sec("Chara daśā","Jaimini — a sign-based clock",
     pane(function(){ return charaDashaSection(D); },"Chara daśā")));
+  H.push(sec("The other daśās of BPHS","Ch. 46 — conditional, rāśi and Kālacakra",
+    pane(function(){ return bphsDashaSection(D,J); },"BPHS daśās")));
   H.push(sec("Varṣaphala","Tājika — the year's own chart",
     pane(function(){ return varshaphalaSection(D,J); },"Varṣaphala")));
 

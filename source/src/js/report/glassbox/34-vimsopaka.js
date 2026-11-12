@@ -7,7 +7,11 @@ function gbVimsopaka(D,J,p){
     if(dg==="friend"||dg==="enemy"||dg==="neutral"){
       var lord=LORD[v.pos[p]], pk=D.P[p], pl=D.P[lord];
       if(pk&&pl&&lord!==p){
-        var dist=((pl.house-pk.house)%12+12)%12+1;
+        /* tātkālika from the RĀŚI chart, never the bhāva: BPHS Ch. 3 (translator's
+           note) and the Vimśopaka note under Ch. 7 vv. 21–25. Counting by house
+           made the report follow the Śrīpati bhāvas while the analyst JSON did not,
+           so the two printed different Vimśopaka for the same chart. */
+        var dist=((pl.sign-pk.sign)%12+12)%12+1;
         var temp=([2,3,4,10,11,12].indexOf(dist)>=0)?"friend":"enemy";
         if(dg==="friend"&&temp==="friend") dg="greatfriend";
         else if(dg==="enemy"&&temp==="enemy") dg="greatenemy";

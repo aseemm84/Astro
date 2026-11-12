@@ -980,7 +980,15 @@ function secStrength(N){
     table(c5,[{h:"Component",f:r=>r[1].startsWith("  ")?`<span class="muted" style="padding-left:12px">${esc(r[1].trim())}</span>`:`<b>${esc(r[1])}</b>`},...SB.map(x=>({h:x.graha,num:1,f:r=>{const v=x[r[0]];return r[0]==="ratio"?`<span class="tag ${v>=1?"t-good":"t-bad"}">${r2(v)}</span>`:r2(v,2)}}))],SB_ALL.filter(([k])=>SB.some(x=>x[k]!=null)));
     if(ctx){c5.append(h("h3",{style:"margin-top:16px"},"Reckoning context"));const dd={...ctx};["sunrise","sunset"].forEach(k=>{if(isNum(dd[k]))dd[k]=hrs(dd[k])});dd.paksha_arc=r2(ctx.paksha_arc,3)+"°";dl(c5,dd)}
   }
-  const VS=D.vimsopaka||[];
+  /* Both export shapes: the standard file carries an array; the analyst file
+     carries an object of four BPHS schemes (with the same Ṣoḍaśavarga array
+     alongside as vimsopaka_shodashavarga_flat). Reading only the array made
+     the card vanish, silently, for every analyst file dropped here. */
+  const VS=Array.isArray(D.vimsopaka)?D.vimsopaka
+    :Array.isArray(D.vimsopaka_shodashavarga_flat)?D.vimsopaka_shodashavarga_flat
+    :(D.vimsopaka&&D.vimsopaka.shodashavarga&&D.vimsopaka.shodashavarga.grahas)
+      ?Object.entries(D.vimsopaka.shodashavarga.grahas).map(([g,r])=>({graha:g,score_of_20:r.score_of_20,percent:r.percent,grade:r.grade}))
+    :[];
   if(VS.length){const c6=card(g,{title:"Viṃśopaka bala",sub:"Score out of 20 across the varga scheme, with its classical grade.",span:"s6"});
     const vs=[...VS].sort((a,b)=>b.score_of_20-a.score_of_20);
     chart(c6,340,t=>({grid:{left:70,right:150,top:10,bottom:24},tooltip:{trigger:"axis",axisPointer:{type:"shadow"},formatter:p=>{const x=vs[p[0].dataIndex];return `<b>${x.graha}</b><br>${x.score_of_20} of 20 (${x.percent}%)<br>${esc(x.grade)}`}},
@@ -1815,6 +1823,12 @@ window.__nsHonours = ["ayan","house","node","degfmt"];
     let D;
     try { D = window.buildLocalChart(inp); } catch(e){ return false; }
     if(!D) return false;
+    /* the derived layer, rebuilt exactly as the kundli page builds it — without
+       it every card read from derived vanished on a re-cast */
+    try {
+      if(window.buildKundliReport) window.buildKundliReport(D);
+      if(window.__deriveForExport) D.derived = window.__deriveForExport(D) || undefined;
+    } catch(e){}
     try { render(D); } catch(e){ return false; }
     return true;
   }

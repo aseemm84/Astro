@@ -610,7 +610,47 @@ function ishtaKashtaSection(D,J){
     'opposed potencies: <b>Iṣṭa phala</b>, the capacity to give agreeable results, and <b>Kaṣṭa phala</b>, the '+
     'capacity to give difficult ones. '+esc(ikNote)+' <span class="kmut">Source: '+esc(ikSrc)+'.</span></p>'+
     tbl(["Graha","Uchcha ray","Cheṣṭā ray","Iṣṭa","Kaṣṭa","Net"],rows)+
+    ikSaptavarga(J)+
     '<div class="kbox">A high-Iṣṭa planet tends to bless the matters it touches; a high-Kaṣṭa one tends to '+
     'stress them. Read alongside dignity and Ṣaḍbala, never alone.</div>';
+}
+/* Śrīpati's second method, through the seven vargas (engine:
+   sripatiSaptavargaIK). Shown only under his paddhati, because it is his. */
+function ikSaptavarga(J){
+  var S=J&&J.shadbala&&J.shadbala.saptavarga_ishta_kashta;
+  if(!S||!S.grahas) return "";
+  var VN=["Rāśi","Horā","Drekkāṇa","Saptāṃśa","Navāṃśa","Dvādaśāṃśa","Triṃśāṃśa"];
+  var G=Object.keys(S.grahas);
+  var f=function(x){ return x.toFixed(3).replace(/^0/,""); };
+  function table(key,label){
+    var rows=VN.map(function(vn,i){
+      return '<tr><td><b>'+vn+'</b></td>'+G.map(function(g){
+        return '<td class="knum">'+f(S.grahas[g][key][i])+'</td>'; }).join("")+'</tr>'; }).join("")+
+      '<tr><td><b>Total</b></td>'+G.map(function(g){
+        return '<td class="knum"><b>'+f(S.grahas[g][key==="good"?"good_total_rupa":"evil_total_rupa"])+'</b></td>'; }).join("")+'</tr>';
+    return '<h4 class="ksub">'+label+'</h4>'+tbl(["Varga"].concat(G),[rows]);
+  }
+  var pank='<tr><td><b>Gṛha (śubha)</b></td>'+G.map(function(g){
+      return '<td class="knum">'+f(S.grahas[g].subha_panktee[0])+'</td>'; }).join("")+'</tr>'+
+    '<tr><td><b>Gṛha (aśubha)</b></td>'+G.map(function(g){
+      return '<td class="knum">'+f(S.grahas[g].asubha_panktee[0])+'</td>'; }).join("")+'</tr>';
+  var verse=G.map(function(g){ var v=S.grahas[g].verse_reading;
+      return (Math.abs(v.good_total_rupa-S.grahas[g].good_total_rupa)>1e-9)?
+        esc(g)+' '+f(v.good_total_rupa)+' / '+f(v.evil_total_rupa):null; }).filter(Boolean);
+  return '<h4 class="ksub">Śrīpati\'s second method — through the seven vargas</h4>'+
+    '<p class="knote">'+esc(S.method)+'. In each varga the graha\'s dignity gives a good influence — 1 rūpa '+
+    'exalted, ¾ mūlatrikoṇa, ½ own, ⅜ very friendly, ¼ friendly, ⅛ neutral, 1/16 inimical, 1/32 very '+
+    'inimical, nothing debilitated — and 1 less that is the evil influence; the six vargas other than the '+
+    'rāśi count half. In rūpas.</p>'+
+    table("good","Good influence (iṣṭa)")+table("evil","Evil influence (kaṣṭa)")+
+    '<h4 class="ksub">Paṅkti — the Gṛha rows (śl. 10–11)</h4>'+
+    '<p class="knote">Each total divided by four; each of the other six rows of the paṅkti is half of this.</p>'+
+    tbl(["Row"].concat(G),[pank])+
+    '<div class="kbox"><b>His table and his verse disagree, and the table is followed.</b> The verse scores '+
+    'exaltation as 1 and debilitation as 0, but his worked table (p. 66) scores the Sun in Meṣa — its '+
+    'exaltation sign — as ⅜, and Saturn in Meṣa — its debilitation — as ⅛: only mūlatrikoṇa, ownership and '+
+    'friendship are scored. The figures above reproduce his table cell for cell; '+
+    (verse.length?'read as the verse states it, the good / evil totals would be: '+verse.join(", ")+'.'
+                  :'for this chart the verse\'s reading gives the same totals.')+'</div>';
 }
 

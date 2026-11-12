@@ -19,6 +19,9 @@ function gbBalance(D,J){
 }
 var GB_KINDS={dignity:gbDignity,uchcha:gbUchcha,sapta:gbSapta,drik:gbDrik,
               total:gbTotal,vimsopaka:gbVimsopaka,balance:gbBalance};
+/* for the harnesses: a derivation panel is only worth having if it agrees
+   with the figure it explains, and that needs reaching from a test */
+try{ window.__gbKinds=GB_KINDS; }catch(e){}
 function gbButton(kind,arg,inner,title){
   return '<button type="button" class="gbq" data-gb="'+kind+'" data-gbarg="'+esc(arg||"")+'" '+
     'title="'+esc(title||"Show how this was computed")+'">'+inner+'</button>';
@@ -102,6 +105,101 @@ function sensCompute(J){
   out.m1=merge(out.one); out.m4=merge(out.four);
   return out;
 }
+/* ===== THE ±15-MINUTE SWEEP: where things change, to the second =====
+
+   sensCompute answers "does anything change within one or four minutes?" by
+   casting the chart again either side. That says THAT a boundary is near, not
+   WHERE. A birth time is usually known to a few minutes, so the useful answer
+   is the exact moment, within a quarter-hour either side, at which each
+   time-sensitive quantity changes: the lagna's sign, the D9, D10 and D60
+   lagnas, the Moon's nakṣatra and pāda — and, under Śrīpati, any graha
+   changing bhāva as the cusps move under it.
+
+   A BOUNDARY IS FOUND, NOT SAMPLED. Every quantity is evaluated on a grid
+   and each change between neighbours is then bisected to half a second, so
+   no crossing between two samples is reported at a sample's time. The grid
+   (15 s) is finer than any quantity here can change twice in: D60's lagna
+   moves every 0.5° of ascendant, two minutes or more anywhere off the poles.
+
+   THE CHART'S OWN AYANĀṂŚA. __kAsc and __kSidAt read the engine's current
+   mode, which is whatever was cast last — the export casts all nineteen for
+   its alternatives table — so the mode is set to this chart's for the sweep
+   and put back after. */
+function sensBoundaries(J, spanMin){
+  if(!J||!J.input||!window.__kAsc||!window.__kSidAt) return null;
+  spanMin=spanMin||15;
+  var inp=J.input, setA=window.__setAyan||function(){return null;};
+  var prev=setA(null), mode=inp.ayanamsa||"lahiri";
+  setA(mode);
+  try{
+    var sp=!!(J.house_system&&J.house_system.mode==="sripati"&&!J.house_system.fell_back&&
+              window.SPSripati&&window.SPSripati.build&&window.__kMC);
+    var GR=["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn","Rahu","Ketu"];
+    var nodeLon={};
+    (J.grahas||[]).forEach(function(g){ var n=EN[g.key]||g.key;
+      if(n==="Rahu"||n==="Ketu") nodeLon[n]=g.sidereal_deg; });
+    function dateAt(off){
+      var ut=inp.hour+inp.minute/60+off/60-inp.tzHours;
+      return new Date(Date.UTC(inp.year,inp.month-1,inp.day,0,0,0)+ut*3600000);
+    }
+    function state(off){
+      var asc=window.__kAsc(inp,off), d=dateAt(off), moon=window.__kSidAt("Moon",d);
+      var s={lagna:Math.floor(asc/30)%12, D9:vargaLagna("D9",asc), D10:vargaLagna("D10",asc),
+             D60:vargaLagna("D60",asc),
+             moon_nakshatra:Math.floor(moon/(40/3))%27, moon_pada:Math.floor(moon/(10/3))%108};
+      if(sp){
+        var jd=d.getTime()/86400000+2440587.5, T=(jd-2451545)/36525;
+        var eps=23.439291111-0.0130041667*T;
+        var ay=(((J.ayanamsha_deg||0)));               /* ayanāṃśa moves 0.0000014°/min */
+        var mc=window.__kMC(d,inp.lon,eps,ay);
+        var F=window.SPSripati.build(asc,mc);
+        if(F&&F.houseOf) GR.forEach(function(g){
+          var lon=(g==="Rahu"||g==="Ketu")?nodeLon[g]:window.__kSidAt(g,d);
+          if(lon!=null) s["bhava_"+g]=F.houseOf(lon);
+        });
+      }
+      return s;
+    }
+    var KEYS=Object.keys(state(0));
+    var step=0.25, grid=[], off;
+    for(off=-spanMin; off<=spanMin+1e-9; off+=step) grid.push({off:off, s:state(off)});
+    var events=[];
+    KEYS.forEach(function(k){
+      for(var i=1;i<grid.length;i++){
+        var a=grid[i-1], b=grid[i];
+        if(a.s[k]===b.s[k]) continue;
+        var lo=a.off, hi=b.off, vlo=a.s[k];
+        while((hi-lo)*60>0.5){
+          var mid=(lo+hi)/2, v=state(mid)[k];
+          if(v===vlo) lo=mid; else hi=mid;
+        }
+        events.push({quantity:k, offset_sec:Math.round((lo+hi)/2*60*10)/10,
+                     from:a.s[k], to:b.s[k]});
+      }
+    });
+    events.sort(function(x,y){ return x.offset_sec-y.offset_sec; });
+    /* for each quantity, how far the time can move before it changes */
+    var base=state(0), safe={};
+    KEYS.forEach(function(k){
+      var before=null, after=null;
+      events.forEach(function(e){ if(e.quantity!==k) return;
+        if(e.offset_sec<0) before=(before==null)?e.offset_sec:Math.max(before,e.offset_sec);
+        else after=(after==null)?e.offset_sec:Math.min(after,e.offset_sec); });
+      safe[k]={value:base[k], earlier_sec:before, later_sec:after,
+               stable_for_whole_span:before==null&&after==null};
+    });
+    return {span_minutes:spanMin, step_sec:step*60, precision_sec:0.5,
+            ayanamsa_mode:mode, paddhati:sp?"sripati":"bphs",
+            quantities:KEYS, at_recorded_time:base, events:events, stability:safe,
+            note:"Each event is the moment, in seconds from the recorded birth time, at "+
+              "which the quantity changes — found by bisection to half a second, not read "+
+              "off a sample. stability gives, for each quantity, the nearest change "+
+              "before and after; null means none within the span. Values: signs 0–11 "+
+              "(0 = Meṣa), nakṣatra 0–26, pāda 0–107 counted from Aśvinī 1"+
+              (sp?", bhāva 1–12 under Śrīpati's cusps.":".")};
+  } finally { setA(prev||mode); }
+}
+try{ window.__sensBoundaries=sensBoundaries; }catch(e){}
 /* which inputs a section leans on, so its badge means something specific */
 var SENS_DEPS={
   "Birth particulars":"time","Special ascendants":"time","Upagrahas":"time","Dhūmādi upagrahas":"planets",

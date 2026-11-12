@@ -20,6 +20,21 @@ function avCharts(D){
     'chart, 4 or more bindus in a house is the usual threshold for that planet to do well there — especially under '+
     'transit.</p>'+g;
 }
+/* Planetary war, said where the strength it changed is shown. The Total
+   column above already includes it; this says by how much, who won and by
+   which text — the two paddhatis decide it differently. */
+function sbWarNote(sb){
+  var W=(sb&&sb.yuddha)||[]; if(!W.length) return "";
+  return '<div class="kbox"><b>Planetary war (graha yuddha).</b> '+W.map(function(w){
+    var sep=(w.separation_deg*60).toFixed(1)+"′";
+    if(!w.victor) return esc(w.grahas.join(" and "))+' are '+sep+' apart and at war, but their latitudes '+
+      'give no north and south, so neither prevails.';
+    return esc(w.grahas.join(" and "))+' are '+sep+' apart: <b>'+esc(w.victor)+'</b> prevails, and '+
+      w.transfer_virupas.toFixed(1)+' virūpas move from '+esc(w.vanquished)+' to '+esc(w.victor)+
+      ' (latitudes '+w.latitude_deg.map(function(x){return (x>=0?x.toFixed(2)+"°N":(-x).toFixed(2)+"°S");}).join(", ")+
+      '). '+esc(w.rule)+'.'+(w.unit_note?' '+esc(w.unit_note):'');
+  }).join(" ")+'</div>';
+}
 var VW={D1:3.5,D2:1,D3:1,D4:0.5,D7:0.5,D9:3,D10:0.5,D12:0.5,D16:2,D20:0.5,D24:0.5,D27:0.5,D30:1,D40:0.5,D45:0.5,D60:4};
 /* Varga Viśva, BPHS Ch.7 v.25: own 20, great friend 18, friend 15, neutral 10,
    enemy 7, great enemy 5 — out of 20. Exaltation and Moolatrikona count as own. */
@@ -36,7 +51,11 @@ function vimsopaka(D){
       if(dg==="friend"||dg==="enemy"||dg==="neutral"){
         var lord=LORD[v.pos[k]], pk=D.P[k], pl=D.P[lord];
         if(pk&&pl&&lord!==k){
-          var dist=((pl.house-pk.house)%12+12)%12+1;
+          /* tātkālika from the RĀŚI chart, never the bhāva: BPHS Ch. 3 (translator's
+           note) and the Vimśopaka note under Ch. 7 vv. 21–25. Counting by house
+           made the report follow the Śrīpati bhāvas while the analyst JSON did not,
+           so the two printed different Vimśopaka for the same chart. */
+        var dist=((pl.sign-pk.sign)%12+12)%12+1;
           var temp=([2,3,4,10,11,12].indexOf(dist)>=0)?"friend":"enemy";
           if(dg==="friend"&&temp==="friend") dg="greatfriend";
           else if(dg==="enemy"&&temp==="enemy") dg="greatenemy";
@@ -62,7 +81,9 @@ function vimsopaka(D){
     '10–15 mediocre, 5–10 some good effects, below 5 not capable of good.</p>'+body+
     '<div class="kbox">Both the division weights and the Varga Viśva values are taken from BPHS Ch.&nbsp;7 as '+
     'cited above, so this is the canonical Vimśopaka rather than an approximation. The sage specifies the '+
-    '<i>compound</i> (pañchadhā) relationship for the dignity; nodes are excluded, having no sign dignity.</div>';
+    '<i>compound</i> (pañchadhā) relationship for the dignity, and its temporary half is read from the '+
+    '<b>rāśi</b> chart under either bhāva toggle — Śrīpati gives no Vimśopaka of his own, so BPHS governs it, '+
+    'and BPHS takes the temporary relation from the rāśi chart. Nodes are excluded, having no sign dignity.</div>';
 }
 
 
@@ -184,6 +205,7 @@ function shadbalaSection(D,J){
     'sources, summed, and compared with the minimum rupas classically required of it — the ratio column is '+
     'total ÷ required, so 1.00 means the planet exactly meets its requirement.</p>'+
     tbl(["Graha","Sthāna","Dig","Kāla","Cheṣṭā","Naisargika","Dṛk","Total (v)","Rupa","Required","Ratio",""],rows)+
+    sbWarNote(sb)+
     '<h4 class="ksub">Sub-components</h4>'+
     '<p class="knote">Sthāna Bala breaks into five parts and Kāla Bala into five more.</p>'+
     tbl(["Graha","Uchcha","Saptavargaja","Ojha","Kendrādi","Drekkāṇa",

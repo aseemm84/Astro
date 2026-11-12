@@ -6,13 +6,13 @@
    the lagna decides, and each sign's length is read off the distance from
    that sign to its own lord. Nothing about the Moon enters it.
 
-   TIER. This is Jaimini's system, not Parāśara's. The uploaded Santhanam
-   edition of BPHS lists Chara daśā among the daśās it names, but the working
-   rules used here — the direction of counting, the length of each sign, the
-   handling of Vṛścika and Kumbha, the sub-period order — are the standard
-   Jaimini ones as the later commentarial tradition states them, and they are
-   labelled as such wherever they appear. No verse number is attached to any
-   of them, because none was read from the uploaded files for them.
+   TIER. This is the Jaimini form as the later commentarial tradition states
+   it. BPHS Vol. 2 Ch. 46 vv. 155–167 gives its own Chara daśā, and it differs
+   in two places: the sequence runs forward or backward according to the pāda
+   of the 9th sign (v. 167), not the lagna's; and Vṛścika/Kumbha go to the
+   co-lord whose sign is STRONGER (vv. 158–166), with ±1 for an exalted or
+   debilitated lord. That BPHS form is computed in 77-bphs-dashas.js and shown
+   in "The other daśās of BPHS"; this pane keeps the Jaimini form beside it.
 
    WHERE THE TRADITION DIVIDES, said rather than smoothed over:
 
@@ -152,8 +152,8 @@ function charaDashaSection(D) {
     'Nothing about the Moon enters it, which is why it can be read beside Viṃśottarī rather ' +
     'than against it.</p>' +
     note("Study note — whose system this is",
-      "Jaimini’s, not Parāśara’s. The uploaded Santhanam edition names Chara daśā among the daśās it lists; the working rules used here are the standard Jaimini ones from the later commentarial tradition.",
-      "Three things divide the lineages and are decided here rather than discovered: the sequence takes its direction from the lagna while each sign’s LENGTH is counted in its own direction; Vṛścika and Kumbha have two lords each and the one giving the longer period is used, with the alternative named in the table; and the sub-periods run from the mahādaśā sign rather than from the ninth from it. No verse number is attached to any of these, because none was read from the uploaded files for them.",
+      "This pane is the Jaimini form from the later commentarial tradition. BPHS gives its own Chara daśā (Vol. 2 Ch. 46 vv. 155–167), computed in “The other daśās of BPHS”.",
+      "The two differ. BPHS takes the direction of the whole sequence from the pāda of the 9th sign (v. 167) and gives Vṛścika and Kumbha to the co-lord in the stronger sign, adding one year for an exalted lord and taking one for a debilitated one (vv. 158–166). This pane follows the Jaimini lineage instead: direction from the lagna, the co-lord giving the longer period (the alternative named in the table), and sub-periods from the mahādaśā sign rather than the ninth from it. Each sign’s length — counted in its own direction, minus one — is the same in both.",
       ["dasha", "lagna"]) +
     '<p class="knote">The sequence runs <b>' + (CD.direction ? "forward" : "backward") +
     '</b> from ' + SA[D.LS] + ', because the lagna is in a ' +

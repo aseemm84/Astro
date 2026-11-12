@@ -388,6 +388,12 @@
     }).join("");
   }
 
+  /* The moment box shows minutes, so the chart is cast for the whole minute
+     it shows. Casting for Date.now() kept the seconds the box hides, and a
+     Moon near a sandhi could sit in one bhāva on screen and another for
+     anyone recasting the minute displayed (bhava-verify caught it). */
+  function nowMinute() { return Math.floor(Date.now() / 60000) * 60000; }
+
   function syncWhen() {
     var e = $("bh-when");
     if (!e || S.when == null) return;
@@ -416,7 +422,7 @@
     document.addEventListener("click", function (e) {
       var b = e.target.closest ? e.target.closest("[data-bh]") : null;
       if (b && b.getAttribute("data-bh") === "now") {
-        S.when = Date.now(); syncWhen(); draw(); latPlot();
+        S.when = nowMinute(); syncWhen(); draw(); latPlot();
       }
     });
   }
@@ -428,7 +434,7 @@
   ], function () {
     S.place = (window.NP && window.NP.savedPlace && window.NP.savedPlace()) ||
               { n: "Ujjain", lat: 23.1765, lon: 75.7885, tz: 5.5 };
-    S.when = Date.now();
+    S.when = nowMinute();
     S.lat = Math.round(S.place.lat);
     var ph = $("bh-place");
     if (ph && window.NPlaces.picker) {
