@@ -199,9 +199,16 @@ is(await pg.$(".themepick select") !== null, "every page carries a theme picker"
 const list = await pg.evaluate(() => window.NTheme.list.map((t) => t[0]));
 is(list.length === 5 && list[0] === "",
    "five choices, the first being the site's own palette");
+/* Rishi Paper has been the default since Nov 2026: a reader who has never
+   chosen gets it. "Site default" stays selectable, and choosing it must stick
+   rather than be mistaken for "never chosen". */
+is(await pg.evaluate(() => document.documentElement.getAttribute("data-theme")) === "paper",
+   "a reader who has never chosen gets Rishi Paper");
+await pg.evaluate(() => window.NTheme.set(""));
+await pg.goto(ROOT + "rashis.html");
+await pg.waitForTimeout(300);
 is(await pg.evaluate(() => document.documentElement.hasAttribute("data-theme")) === false,
-   "a reader who has never chosen gets no data-theme at all, so none of " +
-   "the theme layer is in play");
+   "choosing \"Site default\" is remembered: the next page carries no data-theme at all");
 
 /* the choice has to survive a navigation, which is the whole point */
 await pg.evaluate(() => window.NTheme.set("midnight"));

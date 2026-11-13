@@ -68,11 +68,11 @@ differences are documented on the pages themselves rather than quietly reconcile
 /* ===== Nirayana self-test — runs the verification suite in the browser ===== */
 var CHARTS = {
   aseem:  {label:"Reference A (1984, day birth, sign-edge planets)",
-           inp:{year:1984,month:12,day:15,hour:13,minute:31,lat:28.841064,lon:78.795319,tzHours:5.5}},
+           inp:{year:1984,month:12,day:15,hour:13,minute:31,lat:28.841064,lon:78.795319,tzHours:5.5,ayanamsa:"lahiri",houseSystem:"whole"}},
   achyut: {label:"Reference B (2024, first mahādaśā is a balance)",
-           inp:{year:2024,month:5,day:1,hour:12,minute:48,lat:28.83893,lon:78.77684,tzHours:5.5}},
+           inp:{year:2024,month:5,day:1,hour:12,minute:48,lat:28.83893,lon:78.77684,tzHours:5.5,ayanamsa:"lahiri",houseSystem:"whole"}},
   saloni: {label:"Reference C (1987, pre-dawn birth)",
-           inp:{year:1987,month:1,day:18,hour:4,minute:6,lat:27.88165,lon:79.90918,tzHours:5.5}}
+           inp:{year:1987,month:1,day:18,hour:4,minute:6,lat:27.88165,lon:79.90918,tzHours:5.5,ayanamsa:"lahiri",houseSystem:"whole"}}
 };
 /* Values printed by Parashara's Light 9.0 for reference chart A. */
 var GOLDEN = {
@@ -213,9 +213,18 @@ function runAyanamsaChecks(W){
       var a=got[m].ayanamsha_deg; return a>21 && a<25; }),
     ["lahiri","raman","kp","truechitra"].map(function(m){
       return m+" "+got[m].ayanamsha_deg.toFixed(4); }).join("  "));
-  check("Lahiri remains the default and matches the published value",
-    near(W.buildLocalChart(inp).ayanamsha_deg, GOLDEN.ayanamsa, 0.001),
-    W.buildLocalChart(inp).ayanamsha_deg.toFixed(4)+"\u00b0 \u00b7 PL "+GOLDEN.ayanamsa+"\u00b0");
+  /* The reference charts are Lahiri and whole-sign because the published
+     values they are checked against (Parashara's Light) are. Lahiri is no
+     longer the site default — Samanvaya–Ecliptic is — so it is named. */
+  check("Lahiri matches the published value",
+    near(got.lahiri.ayanamsha_deg, GOLDEN.ayanamsa, 0.001),
+    got.lahiri.ayanamsha_deg.toFixed(4)+"\u00b0 \u00b7 PL "+GOLDEN.ayanamsa+"\u00b0");
+  (function(){ var o={}; for(var k in inp) if(k!=="ayanamsa") o[k]=inp[k];
+    var d=W.buildLocalChart(o);
+    check("a chart that names no ayanāṃśa gets the site default, Samanvaya–Ecliptic",
+      d.input && d.input.ayanamsa==="samanvaya_ecliptic" ||
+      near(d.ayanamsha_deg, got.samanvaya_ecliptic ? got.samanvaya_ecliptic.ayanamsha_deg : -1, 1e-9),
+      d.ayanamsha_deg.toFixed(4)+"\u00b0"); })();
   check("Raman sits about 1.45\u00b0 behind Lahiri, as it should",
     near(got.lahiri.ayanamsha_deg-got.raman.ayanamsha_deg, 1.4463, 0.01),
     (got.lahiri.ayanamsha_deg-got.raman.ayanamsha_deg).toFixed(4)+"\u00b0");
@@ -1031,6 +1040,10 @@ async function run(){
       doc.getElementById("k-tob").value=String(i.hour).padStart(2,"0")+":"+String(i.minute).padStart(2,"0");
       doc.getElementById("k-lat").value=i.lat; doc.getElementById("k-lon").value=i.lon;
       doc.getElementById("k-tz").value=i.tzHours;
+      /* the published reference is Lahiri and whole-sign; say so on the form
+         rather than rely on a default that has since changed */
+      if(doc.getElementById("k-ayan")) doc.getElementById("k-ayan").value="lahiri";
+      if(doc.getElementById("k-house")) doc.getElementById("k-house").value="whole";
       doc.getElementById("k-go").click();
       await waitFor(function(){ return doc.querySelectorAll("#k-out .ksec").length>=40; },30000);
       var T=runReportChecks(W,doc,key,r.J,r.D);

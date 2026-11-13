@@ -247,7 +247,7 @@ PLAIN = {
   gist="Make your birth chart (kundli): enter your date, time and place of birth, and the page calculates everything.",
   what="A <i>kundli</i> (janma kuṇḍalī) is a map of the sky at the moment you were born. This page calculates it — planets, signs, houses, strengths, periods and much more — entirely on your device.",
   how="Type your date of birth, your time of birth in 24-hour form (for example 13:31 for 1:31 pm), and search for your birth city. Press <b>Cast the chart</b>. The tabs that appear (Kuṇḍalī, Daśā, Bala and so on) each show one part of the chart. You can print it, save it, or download it.",
-  read="Begin with the chart picture and the planet table, then the Daśā tab for life periods. Every tab has its own explanation. Settings (ayanāṃśa, house system) change the conventions used — the defaults are the common ones.",
+  read="Begin with the chart picture and the planet table, then the Daśā tab for life periods. Every tab has its own explanation. Settings change the conventions used: the defaults are the Samanvaya–Ecliptic ayanāṃśa (where the zodiac starts) and Śrīpati houses (houses drawn from the horizon); Lahiri and whole-sign houses are one click away.",
   care="An accurate birth time matters: some results change within minutes. Nothing you type leaves your device. The chart describes a tradition; please do not base medical, legal, financial or safety decisions on it."),
 
 "kinetic-workstation.html": dict(

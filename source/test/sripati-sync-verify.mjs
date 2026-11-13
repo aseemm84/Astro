@@ -47,8 +47,11 @@ const is = (c, t) => { if (c) { pass++; console.log("  ok   " + t); }
 
 /* The reference chart. Delhi, a latitude where the quadrants are unequal
    enough that the two frames genuinely disagree. */
+/* Lahiri named, not left to the default: the check that some rāśi carries two
+   Śrīpati madhyas and another none is a property of THIS chart in THIS frame,
+   and the site default became Samanvaya–Ecliptic in Nov 2026. */
 const BIRTH = { year: 1990, month: 3, day: 15, hour: 10, minute: 30,
-                lat: 28.6139, lon: 77.2090, tzHours: 5.5 };
+                lat: 28.6139, lon: 77.2090, tzHours: 5.5, ayanamsa: "lahiri" };
 const GRAHAS = ["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn","Rahu","Ketu"];
 /* the payload names grahas in Sanskrit; the report and dashboard in English */
 const SK2EN = { "Sūrya":"Sun","Candra":"Moon","Maṅgala":"Mars","Budha":"Mercury",
@@ -141,7 +144,7 @@ async function fromDashboard(mode, payload) {
   await pg.addInitScript(([p, m]) => {
     try {
       localStorage.setItem("learnhoro.chart", p);
-      localStorage.setItem("nirayana.settings", JSON.stringify({ house: m }));
+      localStorage.setItem("nirayana.settings", JSON.stringify({ house: m, ayan: "lahiri" }));
     } catch (e) {}
   }, [payload, mode]);
   await pg.goto("file://" + CWD + "/dashboard.html");

@@ -319,8 +319,8 @@
       month:+($("k-dob").value||"").slice(5,7), day:+($("k-dob").value||"").slice(8,10),
       hour:+($("k-tob").value||"").slice(0,2), minute:+($("k-tob").value||"").slice(3,5),
       lat:+$("k-lat").value, lon:+$("k-lon").value, tzHours:+$("k-tz").value,
-      ayanamsa:($("k-ayan")&&$("k-ayan").value)||"lahiri",
-      houseSystem:($("k-house")&&$("k-house").value)||"whole",
+      ayanamsa:($("k-ayan")&&$("k-ayan").value)||"samanvaya_ecliptic",
+      houseSystem:($("k-house")&&$("k-house").value)||"sripati",
       node:($("k-node")&&$("k-node").value)||"mean",
       name:($("k-name")&&$("k-name").value||"").trim()||null,
       /* The place name is the one field the reference pages never needed and
@@ -354,7 +354,7 @@
     var dp=dob.split("-"), tp=tob.split(":");
     var nm=($("k-name")&&$("k-name").value||"").trim();
     window.__kname=nm;
-    var ayan=($("k-ayan")&&$("k-ayan").value)||"lahiri";
+    var ayan=($("k-ayan")&&$("k-ayan").value)||"samanvaya_ecliptic";
     /* houseSystem belongs HERE, in the one body that is actually cast. It was
        missing: an earlier pass added it beside every literal
        `ayanamsa:($("k-ayan")...)` in this file, and this site - the real cast
@@ -363,7 +363,7 @@
        test passed because they all called buildLocalChart directly with the
        frame, which is the one caller that was never broken. */
     var body={year:+dp[0],month:+dp[1],day:+dp[2],hour:+tp[0],minute:+tp[1],lat:lat,lon:lon,tzHours:tz,
-              ayanamsa:ayan, houseSystem:(($("k-house")&&$("k-house").value)||"whole"),
+              ayanamsa:ayan, houseSystem:(($("k-house")&&$("k-house").value)||"sripati"),
               node:(($("k-node")&&$("k-node").value)||"mean")};
     if(nm) body.name=nm;
     /* There is one chart source, and it is this machine. The remote
@@ -414,12 +414,12 @@
   }
   function convStrip(){
     var el=$("k-conv"); if(!el) return;
-    var sel=($("k-ayan")&&$("k-ayan").value)||"lahiri";
+    var sel=($("k-ayan")&&$("k-ayan").value)||"samanvaya_ecliptic";
     var M=(window.__ayanModes||{})[sel];
     /* This line used to end with a flat "whole-sign houses", which was true
        when there was no choice and becomes a false statement the moment the
        frame is selectable. It now reports what is actually set. */
-    var hs=($("k-house")&&$("k-house").value)||"whole";
+    var hs=($("k-house")&&$("k-house").value)||"sripati";
     el.innerHTML="Sidereal · "+esc((M&&M.name)||sel)+" ayanāṃśa · "+
                  (hs==="sripati"?"Śrīpati bhāva-chalita":"whole-sign houses");
   }
@@ -439,7 +439,7 @@
   function fillAyanPicker(){
     var sel=$("k-ayan"); if(!sel) return;
     var M=window.__ayanModes; if(!M) return;
-    var want=(sel.value)||"lahiri";
+    var want=(sel.value)||"samanvaya_ecliptic";
     var fams=window.__ayanFamilies, done={}, html="";
     function opt(k){
       done[k]=1;
@@ -458,7 +458,7 @@
     var rest=Object.keys(M).filter(function(k){ return !done[k]; }).map(opt).join("");
     if(rest) html+='<optgroup label="Other">'+rest+'</optgroup>';
     sel.innerHTML=html;
-    sel.value=M[want]?want:"lahiri";
+    sel.value=M[want]?want:"samanvaya_ecliptic";
   }
   /* The bhāva frame picker. Whole-sign is first and is the default, because
      it is what BPHS uses and what every figure on this site is validated
@@ -466,10 +466,10 @@
      exactly as with the ayanāṃśa. */
   function fillHousePicker(){
     var sel=$("k-house"); if(!sel) return;
-    var want=sel.value||"whole";
+    var want=sel.value||"sripati";
     sel.innerHTML='<option value="whole">Whole-sign — rāśi is bhāva, counted from the lagna (BPHS)</option>'+
                   '<option value="sripati">Śrīpati bhāva-chalita — trisected quadrants (later tradition)</option>';
-    sel.value=(want==="sripati")?"sripati":"whole";
+    sel.value=(want==="whole")?"whole":"sripati";
   }
   try{ fillHousePicker(); }catch(e){}
   try{ fillAyanPicker(); }catch(e){}
@@ -837,7 +837,7 @@
        with no way to get the original back, which is the exact failure the
        offer exists to prevent. */
     var mini={learnhoro:1, name:($("k-name").value||"").trim()||null,
-      houseSystem:($("k-house")&&$("k-house").value)||"whole",
+      houseSystem:($("k-house")&&$("k-house").value)||"sripati",
       year:+d[0], month:+d[1], day:+d[2], hour:+tp[0], minute:+tp[1],
       lat:+$("k-lat").value, lon:+$("k-lon").value, tzHours:+$("k-tz").value,
       place:(function(){   /* the searched city if there was one, else the dropdown choice */
@@ -846,8 +846,8 @@
         if(s&&s.selectedIndex>1&&s.options[s.selectedIndex]) return s.options[s.selectedIndex].text.trim();
         var q=$("k-search"); return (q&&q.value||"").trim()||null;
       })(),
-      ayanamsa:($("k-ayan")&&$("k-ayan").value)||"lahiri",
-      houseSystem:($("k-house")&&$("k-house").value)||"whole",
+      ayanamsa:($("k-ayan")&&$("k-ayan").value)||"samanvaya_ecliptic",
+      houseSystem:($("k-house")&&$("k-house").value)||"sripati",
       node:($("k-node")&&$("k-node").value)||"mean"};
     var blob=new Blob([JSON.stringify(mini,null,1)],{type:"application/json"});
     var u=URL.createObjectURL(blob), a=document.createElement("a");
@@ -1007,8 +1007,11 @@
     if(d.length!==3||t.length<2) return "";
     var p=["d="+d[0]+d[1]+d[2], "t="+t[0]+t[1],
            "p="+[$("k-lat").value,$("k-lon").value,$("k-tz").value].join(",")];
-    var a=($("k-ayan")&&$("k-ayan").value)||"lahiri"; if(a!=="lahiri") p.push("a="+a);
-    var hsv=($("k-house")&&$("k-house").value)||"whole"; if(hsv!=="whole") p.push("hs="+hsv);
+    /* Always written, never left implicit. A link that omits a= or hs= is read as
+       Lahiri and whole-sign — what an omission meant when such links were first
+       shared — so a link made under today's defaults must say what it used. */
+    var a=($("k-ayan")&&$("k-ayan").value)||"samanvaya_ecliptic"; p.push("a="+a);
+    var hsv=($("k-house")&&$("k-house").value)||"sripati"; p.push("hs="+hsv);
     var nd=($("k-node")&&$("k-node").value)||"mean";  if(nd!=="mean")  p.push("nd="+nd);
     var nm=($("k-name")&&$("k-name").value||"").trim();
     if(nm) p.push("n="+encodeURIComponent(nm.slice(0,48)));

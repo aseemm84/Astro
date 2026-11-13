@@ -399,7 +399,56 @@ let EL;
                 ACC.siddhanta.measured.length * 2 + 3,
      "and every measured engine mark and every convention (" + r.ruler + ")");
   is(r.bands === ACC.bands.length, "all five certified bands are drawn");
-  is(r.which >= 6 && r.rates === 5, "the switchboard and the five rates are there");
+  is(r.which >= 6 && r.rates === 8, "the switchboard and the eight rates are there (" + r.rates + ")");
+}
+
+head("all fifteen questions, each answered by all three engines");
+{
+  const T0 = Date.UTC(2026, 10, 13, 6, 0);
+  const r = await EL.evaluate((T0) => {
+    const qs = [...document.querySelectorAll("#el-q option")].map(o => o.value);
+    const out = {};
+    qs.forEach(q => {
+      window.__elab.answerAt(T0, q);
+      const rows = [...document.querySelectorAll("#el-answer tbody tr")].map(tr =>
+        [...tr.children].map(td => td.textContent.trim()));
+      out[q] = rows;
+    });
+    return { qs, out, place: window.__elab.place() };
+  }, T0);
+  is(r.qs.length === 15, "fifteen questions on the list (" + r.qs.length + ")");
+  for (const q of r.qs) {
+    const rows = r.out[q] || [];
+    /* columns 1..3 are modern, fitted, as written */
+    const filled = rows.length > 0 && rows.every(c => c.length >= 4 &&
+      [1, 2, 3].filter(i => c[i] && c[i] !== "—").length >= (q === "eclipse" ? 1 : 2));
+    is(filled, q + ": answered (" + rows.length + " row" + (rows.length === 1 ? "" : "s") + ")");
+  }
+  /* parse "9 Dec 2026, 05:32" in the place's time zone */
+  const M = { Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5, Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11 };
+  const tz = (r.place && r.place.tz) || 0;
+  const parse = (s) => { const m = /^(\d+) (\w{3}) (\d{4}), (\d\d):(\d\d)/.exec(s || ""); if (!m) return null;
+    return Date.UTC(+m[3], M[m[2]], +m[1], +m[4], +m[5]) - tz * 3600000; };
+  /* the saṃkrānti: the modern instant is where the Lahiri Sun really changes sign */
+  const sk = r.out.sankranti[0], mAt = parse((sk[1].split(", ").slice(1).join(", ")));
+  const sAt = parse(sk[2].split(", ").slice(1).join(", "));
+  const chk = await EL.evaluate(([mAt, sAt]) => {
+    /* the fitted tier's own Sun either side of its stated instant */
+    const fitSun = (ms) => window.__elab.ss("fit", ms).lon["Sūrya"];
+    const sg = (L) => Math.floor((((L % 360) + 360) % 360) / 30);
+    return { fitBefore: sg(fitSun(sAt - 3 * 60000)), fitAfter: sg(fitSun(sAt + 3 * 60000)) };
+  }, [mAt, sAt]);
+  is(mAt != null && sAt != null && chk.fitAfter === (chk.fitBefore + 1) % 12,
+     "the fitted tier's saṃkrānti is where its own Sun crosses into the next sign (" + sk[2] + ")");
+  /* the new moon: at the fitted tier's stated instant its own elongation is ~0 */
+  const sy = r.out.syzygy[0], fNew = parse(sy[2]);
+  const el = await EL.evaluate((t) => { const x = window.__elab.ss("fit", t).lon;
+    let d = ((x["Candra"] - x["Sūrya"]) % 360 + 360) % 360; if (d > 180) d -= 360; return d; }, fNew);
+  is(fNew != null && Math.abs(el) < 0.6, "the fitted tier's new moon is where its own elongation is zero (" + el.toFixed(3) + "° at the minute shown)");
+  /* the navāṃśa and rāśi questions agree with each other: a graha in the same
+     navāṃśa in two engines is in the same rāśi too, unless it is vargottama-near a boundary */
+  const r9 = r.out.d9, r1 = r.out.rashi;
+  is(r9.length === 7 && r1.length === 7, "rāśi and navāṃśa are given for all seven grahas");
 }
 
 head("the converter is arithmetic, not a table of remembered numbers");

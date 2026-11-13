@@ -542,7 +542,9 @@ window.__swhGetDrawn=function(){ return SWH_OFFSET; };
     when: "sunrise",
     time: "06:00",
     place: null,
-    ayan: "lahiri",
+    /* the settings panel's ayanāṃśa, so this page and a chart agree */
+    ayan: (function () { try { var N = window.NSettings && window.NSettings.get();
+      return (N && N.ayan) || "samanvaya_ecliptic"; } catch (e) { return "samanvaya_ecliptic"; } })(),
     sky: null, pan: null, ms: null,
     ratio: "4:5", theme: null, head: "tithi"
   };

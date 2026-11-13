@@ -1577,6 +1577,66 @@
     return out;
   }
 
+  /* ---- helpers for the questions that need time searched, not read ------- */
+  var HOUR = 3600000, DAYMS = 86400000;
+  function tzOf() { return ST.place && ST.place.tz != null ? ST.place.tz : 0; }
+  function clock(ms) {
+    if (ms == null || !isFinite(ms)) return "—";
+    var d = new Date(ms + tzOf() * HOUR);
+    return String(d.getUTCHours()).padStart(2, "0") + ":" +
+           String(d.getUTCMinutes()).padStart(2, "0");
+  }
+  function stamp(ms) {
+    if (ms == null || !isFinite(ms)) return "—";
+    var d = new Date(ms + tzOf() * HOUR);
+    var M = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return d.getUTCDate() + " " + M[d.getUTCMonth()] + " " + d.getUTCFullYear() + ", " + clock(ms);
+  }
+  function minutesApart(a, b) {
+    if (a == null || b == null || !isFinite(a) || !isFinite(b)) return "—";
+    var m = (a - b) / 60000, sg = m < 0 ? "−" : "+", x = Math.abs(m);
+    if (x >= 2 * 1440) return sg + (x / 1440).toFixed(1) + " d";
+    if (x >= 120) return sg + (x / 60).toFixed(1) + " h";
+    return sg + x.toFixed(0) + " min";
+  }
+  /* the next instant after t0 at which f(t) (a sign number, an index…) changes,
+     stepping `step` ms and then bisecting to a minute */
+  function nextChange(f, t0, step, limit) {
+    var fa = f(t0);
+    for (var t = t0 + step; t <= t0 + limit; t += step) {
+      var ft = f(t);
+      if (ft !== fa) {
+        var lo = t - step, hi = t;
+        while (hi - lo > 60000) { var m = (lo + hi) / 2; if (f(m) === fa) lo = m; else hi = m; }
+        return { at: hi, from: fa, to: f(hi) };
+      }
+    }
+    return null;
+  }
+  /* the next instant the Moon−Sun elongation reaches `want` degrees */
+  function nextElong(elong, t0, want) {
+    var g = function (t) { return sdiff(elong(t), want); };
+    var step = 6 * HOUR, ga = g(t0);
+    for (var t = t0 + step; t < t0 + 40 * DAYMS; t += step) {
+      var gt = g(t);
+      if (ga < 0 && gt >= 0 && Math.abs(gt - ga) < 90) {
+        var lo = t - step, hi = t;
+        while (hi - lo > 60000) { var m = (lo + hi) / 2; if (g(m) < 0) lo = m; else hi = m; }
+        return hi;
+      }
+      ga = gt;
+    }
+    return null;
+  }
+  function ssAhar(ms) { return S.ahargana(ms) + (ST.place ? S.desantara(ST.place) : 0); }
+  function ssLon(sa) { return function (t) { var q = S.trueLongitude(sa, ssAhar(t)); return q ? q.lon : null; }; }
+  function modLon(sa) { return function (t) { var e = window.__kEclip(EN[sa], t); return e ? e.lon : null; }; }
+  /* the modern engine in the Lahiri frame — the frame the fitted tier was fitted
+     in and the one the almanac names its limbs in — so a sign compared across
+     engines is not also a comparison of two sidereal zeros */
+  function modLonL(sa) { return function (t) { var e = window.__kEclip(EN[sa], t);
+    return e ? norm(e.trop - lahiriAt(t / 86400000 + 2440587.5)) : null; }; }
+
   /* ---- the question, answered three ways --------------------------------- */
   var NAKW = 360 / 27;
   function nakOf(L) {
@@ -1626,10 +1686,9 @@
                         b ? b.name + " pāda " + b.pada : "—"] }];
       var same = f && b && mn && f.name === mn && b.name === mn;
       verdict = same
-        ? "<b>All three name the same nakṣatra.</b> This is the usual case, " +
-          "and it is the honest headline about the older method: an error of " +
-          "degrees in longitude still lands inside a division 13°20′ wide " +
-          "most of the time."
+        ? "<b>All three name the same nakṣatra.</b> This is the usual case: " +
+          "a difference of a few degrees in longitude still lands inside a " +
+          "division 13°20′ wide most of the time."
         : "<b>They do not all agree.</b> Note what is being compared: a " +
           "nakṣatra is counted from a sidereal zero, and the bare text's zero " +
           "is its own. That frame difference is part of this disagreement and " +
@@ -1648,8 +1707,8 @@
                 bt ? "no. " + bt.n + " · " + bt.name + " " + bt.paksha : "—"] }];
       verdict = "A tithi is the <b>difference</b> of the Moon's and the " +
         "Sun's longitudes, so whatever sidereal zero each engine uses cancels " +
-        "out of it exactly — this is the one question on the list that is " +
-        "free of the ayanāṃśa. What is left is the two position errors, and " +
+        "out of it exactly — the tithi, karaṇa, new moon and full moon are " +
+        "free of the ayanāṃśa. What is left is the two position differences, and " +
         "because the Moon crosses a tithi in under a day, those are enough to " +
         "move it by one more often than they move the nakṣatra.";
       return render(["Question", "modern", "fitted", "as written"], rows, false);
@@ -1680,6 +1739,155 @@
         "daśā boundary out by weeks.";
       return render(["Engine", "the Moon", "opening lord", "balance at birth"],
                     rows, false);
+    }
+
+    if (ST.q === "rashi" || ST.q === "d9") {
+      var d9 = ST.q === "d9";
+      var signOf = function (L) {
+        if (L == null) return null;
+        return d9 ? Math.floor(norm(L) / (10 / 3)) % 12 : Math.floor(norm(L) / 30);
+      };
+      var agreeAll = 0;
+      rows = SA7.map(function (sa) {
+        var m = signOf(A.mod.lahiri[sa]), f = signOf(A.fit.lon[sa]), b = signOf(A.bare.lon[sa]);
+        if (m != null && m === f && m === b) agreeAll++;
+        return { k: sa, cells: [m == null ? "—" : RS[m], f == null ? "—" : RS[f], b == null ? "—" : RS[b],
+          m === f && m === b ? "all three" : (m === f ? "modern = fitted" : (m === b ? "modern = written" : (f === b ? "fitted = written" : "each different")))] };
+      });
+      verdict = "<b>" + agreeAll + " of 7</b> grahas are placed in the same " +
+        (d9 ? "navāṃśa (the ninth division of a sign, 3°20′ wide)" : "rāśi (30° wide)") + " by all three engines. The modern column is in the Lahiri frame the fitted tier was fitted in; the text as written counts from its own zero. " +
+        (d9 ? "A navāṃśa is a ninth of a sign, so a difference of a degree or two in longitude changes it far more often " +
+              "than it changes the sign — the same three longitudes, read through a finer division."
+            : "A sign is wide, so the three usually agree; where they differ, the graha is near a sign boundary in at least " +
+              "one of them, and each engine counts from its own sidereal zero.");
+      return render(["Graha", "modern", "fitted", "as written", "agreement"], rows, false);
+    }
+
+    if (ST.q === "retro") {
+      var dmod = function (sa) {
+        var f = modLon(sa), a = f(ms - 12 * HOUR), c = f(ms + 12 * HOUR);
+        return (a == null || c == null) ? null : sdiff(c, a);
+      };
+      var dss = function (k, sa) { return withTier(k, function () { return S.trueDailyMotion(sa, ssAhar(ms)); }); };
+      var nSame = 0;
+      rows = SA7.filter(function (sa) { return sa !== "Sūrya" && sa !== "Candra"; }).map(function (sa) {
+        var m = dmod(sa), f = dss("fit", sa), b = dss("bare", sa);
+        var w = function (v) { return v == null ? "—" : (v < 0 ? "vakrī (retrograde)" : "direct") + " · " + v.toFixed(3) + "°/day"; };
+        if (m != null && f != null && b != null && (m < 0) === (f < 0) && (m < 0) === (b < 0)) nSame++;
+        return { k: sa, cells: [w(m), w(f), w(b)] };
+      });
+      verdict = "The Sun and the Moon never turn back, so the question is asked of the five star-planets. <b>" + nSame +
+        " of 5</b> are given the same direction by all three. The modern figure is the change of longitude across the day; " +
+        "the siddhāntic figures are each engine's own true daily motion. Near a station — where the motion passes through " +
+        "zero — the engines can name different directions.";
+      return render(["Graha", "modern", "fitted", "as written"], rows, false);
+    }
+
+    if (ST.q === "yoga" || ST.q === "karana") {
+      var isY = ST.q === "yoga";
+      var mp2 = A.mod.panch && A.mod.panch.at ? (isY ? A.mod.panch.at.yoga : A.mod.panch.at.karana) : null;
+      var fp = A.fit.panch ? (isY ? A.fit.panch.yoga : A.fit.panch.karana) : null;
+      var bp = A.bare.panch ? (isY ? A.bare.panch.yoga : A.bare.panch.karana) : null;
+      rows = [{ k: isY ? "Yoga" : "Karaṇa", cells: [mp2 ? mp2.name : "—", fp ? fp.name : "—", bp ? bp.name : "—"] }];
+      verdict = (isY
+        ? "A yoga is named from the <b>sum</b> of the Sun's and the Moon's longitudes, in 27 parts of 13°20′. Unlike the " +
+          "tithi it does not cancel the sidereal zero — it counts it twice — so each engine's own ayanāṃśa matters here twice over."
+        : "A karaṇa is half a tithi — 6° of the Moon's elongation from the Sun — so, like the tithi, it is free of the " +
+          "sidereal zero; being twice as fine, a small difference in either luminary changes it twice as often.") +
+        " The modern almanac names the limb running at local sunrise, as a pañcāṅga does; the siddhāntic engines name it at their own sunrise.";
+      return render(["Question", "modern", "fitted", "as written"], rows, false);
+    }
+
+    if (ST.q === "sunrise") {
+      if (!ST.place) { host.innerHTML = '<p class="swfail">Choose a place: sunrise depends on where you are.</p>'; return; }
+      var md2 = null; try { md2 = window.NP.day(ms, ST.place); } catch (e) {}
+      var sr = function (k) { return withTier(k, function () { return S.sunriseSunset(ms, ST.place); }); };
+      var fs = sr("fit"), bs = sr("bare");
+      rows = [{ k: "Sunrise", cells: [clock(md2 && md2.sunrise), clock(fs && fs.sunrise), clock(bs && bs.sunrise),
+                                       minutesApart(fs && fs.sunrise, md2 && md2.sunrise), minutesApart(bs && bs.sunrise, md2 && md2.sunrise)] },
+              { k: "Sunset", cells: [clock(md2 && md2.sunset), clock(fs && fs.sunset), clock(bs && bs.sunset),
+                                      minutesApart(fs && fs.sunset, md2 && md2.sunset), minutesApart(bs && bs.sunset, md2 && md2.sunset)] }];
+      verdict = "Times are local to " + esc(ST.place.n || "the chosen place") + ". The modern almanac takes the upper limb of " +
+        "the Sun with refraction, as printed almanacs do; the Sūrya Siddhānta finds sunrise from the Sun's declination and the " +
+        "day-length its latitude gives, through its own equation of time, without refraction — so a few minutes between them " +
+        "comes from the two definitions as much as from the two Suns.";
+      return render(["Question", "modern", "fitted", "as written", "fitted − modern", "written − modern"], rows, false);
+    }
+
+    if (ST.q === "lagna") {
+      if (!ST.place) { host.innerHTML = '<p class="swfail">Choose a place: the lagna depends on where you are.</p>'; return; }
+      var d0 = new Date(ms + tzOf() * HOUR), ml = null;
+      try { ml = window.__kAsc({ year: d0.getUTCFullYear(), month: d0.getUTCMonth() + 1, day: d0.getUTCDate(),
+                                 hour: d0.getUTCHours(), minute: d0.getUTCMinutes() + d0.getUTCSeconds() / 60,
+                                 tzHours: tzOf(), lat: ST.place.lat, lon: ST.place.lon }); } catch (e) {}
+      var sl = function (k) { return withTier(k, function () { var L = S.lagna(ms, ST.place); return L ? L.lon : null; }); };
+      var fl = sl("fit"), bl = sl("bare");
+      rows = [{ k: "Lagna", cells: [ml == null ? "—" : dm(ml), fl == null ? "—" : dm(fl), bl == null ? "—" : dm(bl)] }];
+      var sameSign = ml != null && fl != null && bl != null &&
+        Math.floor(ml / 30) === Math.floor(fl / 30) && Math.floor(ml / 30) === Math.floor(bl / 30);
+      verdict = (sameSign ? "<b>All three put the same sign rising.</b> " : "<b>The rising sign differs between them.</b> ") +
+        "The modern lagna is where the horizon cuts the ecliptic, from sidereal time; the Sūrya Siddhānta walks forward from " +
+        "sunrise through its table of the signs' rising times. The lagna moves about a degree every four minutes, so a few " +
+        "minutes' difference in sunrise is about a degree here. Each is shown in its own sidereal frame.";
+      return render(["Question", "modern", "fitted", "as written"], rows, false);
+    }
+
+    if (ST.q === "sankranti") {
+      var sgn = function (lonF) { return function (t) { var L = lonF(t); return L == null ? null : Math.floor(norm(L) / 30); }; };
+      var mS = nextChange(sgn(modLonL("Sūrya")), ms, DAYMS, 40 * DAYMS);
+      var sS = function (k) { return withTier(k, function () { return nextChange(sgn(ssLon("Sūrya")), ms, DAYMS, 40 * DAYMS); }); };
+      var fS = sS("fit"), bS = sS("bare");
+      var cell = function (x) { return x ? RS[x.from] + " → " + RS[x.to] + ", " + stamp(x.at) : "—"; };
+      rows = [{ k: "Next saṃkrānti", cells: [cell(mS), cell(fS), cell(bS)] },
+              { k: "Difference from modern", cells: ["", minutesApart(fS && fS.at, mS && mS.at), minutesApart(bS && bS.at, mS && mS.at)] }];
+      verdict = "A saṃkrānti is the moment the Sun enters the next sidereal sign — the start of a solar month. The Sun moves " +
+        "about a degree a day, so each degree of difference in its longitude, or in the sidereal zero, moves the saṃkrānti by " +
+        "about a day. The modern column is in the Lahiri frame, as the almanac's solar months are. Times are local.";
+      return render(["Question", "modern", "fitted", "as written"], rows, false);
+    }
+
+    if (ST.q === "syzygy") {
+      var mod0 = null, mod180 = null;
+      try { mod0 = window.Astronomy.SearchMoonPhase(0, new Date(ms), 40).date.getTime(); } catch (e) {}
+      try { mod180 = window.Astronomy.SearchMoonPhase(180, new Date(ms), 40).date.getTime(); } catch (e) {}
+      var sy = function (k, want) { return withTier(k, function () {
+        var sun = ssLon("Sūrya"), moon = ssLon("Candra");
+        return nextElong(function (t) { return norm(moon(t) - sun(t)); }, ms, want); }); };
+      var f0 = sy("fit", 0), b0 = sy("bare", 0), f180 = sy("fit", 180), b180 = sy("bare", 180);
+      rows = [{ k: "Next amāvāsyā (new moon)", cells: [stamp(mod0), stamp(f0), stamp(b0), minutesApart(f0, mod0), minutesApart(b0, mod0)] },
+              { k: "Next pūrṇimā (full moon)", cells: [stamp(mod180), stamp(f180), stamp(b180), minutesApart(f180, mod180), minutesApart(b180, mod180)] }];
+      verdict = "New and full moon are the instants the Moon's elongation from the Sun reaches 0° and 180°. Like the tithi " +
+        "they are free of the sidereal zero. The Moon gains on the Sun about 12° a day, so each degree of difference between " +
+        "two engines' elongations is about two hours on the clock. Times are local.";
+      return render(["Question", "modern", "fitted", "as written", "fitted − modern", "written − modern"], rows, false);
+    }
+
+    if (ST.q === "eclipse") {
+      if (!ST.place) { host.innerHTML = '<p class="swfail">Choose a place: a solar eclipse is judged for where you are.</p>'; return; }
+      var mL = null, mSo = null;
+      try { var le = window.Astronomy.SearchLunarEclipse(new Date(ms)); mL = { at: le.peak.date.getTime(), kind: le.kind }; } catch (e) {}
+      try {
+        var ob = new window.Astronomy.Observer(ST.place.lat, ST.place.lon, 0);
+        var se = window.Astronomy.SearchLocalSolarEclipse(new Date(ms), ob);
+        mSo = { at: se.peak.time.date.getTime(), kind: se.kind };
+      } catch (e) {}
+      var ec = function (k) { return withTier(k, function () {
+        var L = null, So = null, list = [];
+        try { list = S.eclipsesIn(ms, ms + 4 * 365.25 * DAYMS, ST.place) || []; } catch (e) {}
+        list.forEach(function (q) { if (q.kind === "lunar" && !L) L = q.e; if (q.kind === "solar" && !So) So = q.e; });
+        return { L: L, So: So }; }); };
+      var fE = ec("fit"), bE = ec("bare");
+      var w2 = function (e) {
+        return e ? stamp(e.at) + (e.kind ? " · " + e.kind : (e.magnitude != null ? " · magnitude " + e.magnitude.toFixed(2) : ""))
+                 : "none in the next 4 years";
+      };
+      rows = [{ k: "Next lunar eclipse", cells: [w2(mL), w2(fE.L), w2(bE.L)] },
+              { k: "Next solar eclipse seen here", cells: [w2(mSo), w2(fE.So), w2(bE.So)] }];
+      verdict = "Each engine searches forward from the chosen moment. An eclipse needs the Moon near its node at a new or full " +
+        "moon, so the result depends on where each engine places the node as well as on the two luminaries; the siddhāntic " +
+        "search uses the text's own eclipse rules, including its simplified parallax for a solar eclipse at your place. Where " +
+        "one engine finds an eclipse another does not, both answers are shown as found. The siddhāntic search looks four years ahead.";
+      return render(["Question", "modern", "fitted", "as written"], rows, false);
     }
 
     /* vāra */
@@ -1720,7 +1928,7 @@
     if (!host) return;
     var from = +$("el-from").value, to = +$("el-to").value, N = +$("el-n").value;
     if (!(to > from)) return;
-    var hit = { nak: 0, nakFit: 0, tithi: 0, tithiNear: 0, vara: 0, n: 0 };
+    var hit = { nak: 0, nakFit: 0, tithi: 0, tithiNear: 0, vara: 0, yoga: 0, karana: 0, sunSign: 0, n: 0 };
     var gap = { fit: [], bare: [] };
     for (var i = 0; i < N; i++) {
       /* spread across the span AND across the year, so neither the drift nor
@@ -1741,6 +1949,10 @@
         if (d <= 1 || d >= 29) hit.tithiNear++;
       }
       if (b.panch.vara.i === new Date(ms).getUTCDay()) hit.vara++;
+      if (m.panch.at && m.panch.at.yoga && b.panch.yoga && m.panch.at.yoga.name === b.panch.yoga.name) hit.yoga++;
+      if (m.panch.at && m.panch.at.karana && b.panch.karana && m.panch.at.karana.name === b.panch.karana.name) hit.karana++;
+      if (m.lon["Sūrya"] != null && b.lon["Sūrya"] != null &&
+          Math.floor(norm(m.lon["Sūrya"]) / 30) === Math.floor(norm(b.lon["Sūrya"]) / 30)) hit.sunSign++;
       if (m.lahiri["Candra"] != null) {
         gap.fit.push(Math.abs(sdiff(f.lon["Candra"], m.lahiri["Candra"])) * 60);
         gap.bare.push(Math.abs(sdiff(b.lon["Candra"], m.lahiri["Candra"])) * 60);
@@ -1762,7 +1974,13 @@
       ["the tithi, exactly", pc("tithi"),
        "frame-free, and the hardest of the five to get right"],
       ["the tithi, within one", pc("tithiNear"),
-       "which is the honest claim the older method can make"]
+       "a difference of one tithi either way"],
+      ["the karaṇa, bare text", pc("karana"),
+       "half a tithi — frame-free like the tithi, and twice as fine"],
+      ["the yoga, bare text", pc("yoga"),
+       "the SUM of the two longitudes, so each engine's sidereal zero counts twice"],
+      ["the Sun's rāśi, bare text", pc("sunSign"),
+       "a 30° division of the Sun alone — the solar month"]
     ];
     host.innerHTML = '<div class="aytabwrap"><table class="aytab"><thead><tr>' +
       "<th>Agrees with the modern engine on…</th><th>rate</th><th></th>" +
@@ -1778,11 +1996,10 @@
       note.innerHTML = hit.n + " moments sampled between " + from + " and " + to +
         ". Over the same sample the Moon's own longitude is out by <b>" +
         rms(gap.bare).toFixed(0) + "′</b> in the bare text and <b>" +
-        rms(gap.fit).toFixed(0) + "′</b> in the fitted tier — and note that " +
-        "the second figure, forty times better on the Sun, is barely better " +
-        "here. Correcting constants cannot supply the two lunar terms this " +
-        "astronomy does not have, which is why the tithi rate hardly moves " +
-        "either.";
+        rms(gap.fit).toFixed(0) + "′</b> in the fitted tier. Adjusting constants brings the Sun about " +
+        "forty times closer to the modern figure but barely moves the Moon, " +
+        "because the two lunar terms the modern theory contains are absent " +
+        "from this one — which is why the tithi rate hardly moves either.";
     }
   }
 
@@ -2037,7 +2254,10 @@
     if (note && here) {
       var qname = { lon: "the grahas' longitudes", nak: "the Moon's nakṣatra",
                     tithi: "the tithi", dasha: "the opening daśā",
-                    vara: "the vāra" }[ST.q];
+                    vara: "the vāra", rashi: "each graha's rāśi", d9: "each graha's navāṃśa",
+                    retro: "which grahas are retrograde", yoga: "the yoga", karana: "the karaṇa",
+                    sunrise: "sunrise and sunset", lagna: "the lagna", sankranti: "the next saṃkrānti",
+                    syzygy: "the next new and full moon", eclipse: "the next eclipses" }[ST.q] || "this question";
       /* Cycle average; the per-lord span is given alongside, since one
          nakṣatra is one lord's mahādaśā and not the whole 120 years. */
       var dd = here.moon * AC.cost.dashaDaysPerArcsec;
@@ -2061,8 +2281,8 @@
              "</b> on a mahādaśā boundary on the cycle average, or <b>" +
              ddLo.toFixed(1) + "–" + ddHi.toFixed(1) + " days</b> depending on " +
              "which lord owns the Moon's nakṣatra."
-         : ST.q === "tithi"
-           ? "about <b>" + here.tithi + " seconds</b> on a tithi ending."
+         : (ST.q === "tithi" || ST.q === "karana" || ST.q === "yoga" || ST.q === "syzygy")
+           ? "about <b>" + here.tithi + " seconds</b> on a tithi ending" + (ST.q === "tithi" ? "." : ", and the same order on this one.")
          : ST.q === "nak"
            ? "about <b>" + here.nak + " seconds</b> on a nakṣatra boundary, or " +
              "1 ⁄ " + Math.round(48000 / here.moon) + " of the nakṣatra itself."
@@ -2170,6 +2390,11 @@
     }
     syncWhen();
 
+    /* "the site's own ayanāṃśa" means the one the settings panel names */
+    try {
+      var NSa = window.NSettings && window.NSettings.get && window.NSettings.get();
+      window.__setAyan((NSa && NSa.ayan) || "samanvaya_ecliptic");
+    } catch (e) {}
     $("el-q").addEventListener("change", function () {
       ST.q = this.value; answer(); band(); });
     $("el-when").addEventListener("change", function () {
@@ -2203,7 +2428,8 @@
         ss: ssAt, mod: modAt, ac: function () { return AC; },
         setArc: function (a) { ST.arc = a; cost(); marks(); },
         setYear: function (y) { ST.year = y; band(); },
-        state: function () { return { q: ST.q, arc: ST.arc, year: ST.year }; }
+        state: function () { return { q: ST.q, arc: ST.arc, year: ST.year }; },
+        place: function () { return ST.place; }
       };
     } catch (e) {}
   }

@@ -89,8 +89,8 @@ for (const f of PAGES) {
   await pg2.close();
 }
 
-/* ---- 2. the defaults are the site as it was ---------------------------- */
-head("Defaults reproduce the pre-panel site");
+/* ---- 2. the defaults (Samanvaya–Ecliptic and Śrīpati since Nov 2026) ---- */
+head("Defaults: Samanvaya–Ecliptic, Śrīpati, mean node, upper limb, d°m′");
 const pg = await br.newPage();
 pg.on("pageerror", (e) => errs.push("kundli: " + e.message));
 await pg.goto("file://" + CWD + "/kundli.html");
@@ -99,8 +99,12 @@ const def = await pg.evaluate(() => {
   try { localStorage.removeItem("nirayana.settings"); } catch (e) {}
   return window.NSettings.defaults();
 });
-is(def.ayan === "lahiri", "ayanāṃśa defaults to lahiri");
-is(def.house === "whole", "bhāva frame defaults to whole-sign");
+is(def.ayan === "samanvaya_ecliptic", "ayanāṃśa defaults to Samanvaya–Ecliptic (" + def.ayan + ")");
+is(def.house === "sripati", "bhāva frame defaults to Śrīpati (" + def.house + ")");
+const formDef = await pg.evaluate(() => ({ ayan: document.getElementById("k-ayan").value,
+  house: document.getElementById("k-house").value }));
+is(formDef.ayan === "samanvaya_ecliptic" && formDef.house === "sripati",
+  "and a fresh chart form shows them (" + formDef.ayan + ", " + formDef.house + ")");
 is(def.node === "mean", "lunar node defaults to mean");
 is(def.riseconv === "limb", "sunrise defaults to upper limb");
 is(def.degfmt === "dm", "degrees default to degrees-and-minutes");
@@ -115,7 +119,7 @@ const chart = await pg.evaluate(async () => {
              house: document.getElementById("k-house").value,
              node: document.getElementById("k-node") ? document.getElementById("k-node").value : null };
   }
-  window.NSettings.set({ ayan: "raman", house: "sripati", node: "true" });
+  window.NSettings.set({ ayan: "raman", house: "whole", node: "true" });
   await new Promise((r) => setTimeout(r, 120));
   const after = form();
   /* and a chart built from the form must carry them */
@@ -127,11 +131,11 @@ const chart = await pg.evaluate(async () => {
   return { after, back: form(), mode: J.house_system.mode, ayanName: J.ayanamsa_mode };
 });
 is(chart.after.ayan === "raman", "setting the ayanāṃśa moves the chart form's picker");
-is(chart.after.house === "sripati", "setting the bhāva frame moves the chart form's picker");
+is(chart.after.house === "whole", "setting the bhāva frame moves the chart form's picker");
 is(chart.after.node === "true", "setting the node moves the chart form's picker");
-is(chart.mode === "sripati", "a chart built from the form is actually in that frame");
+is(chart.mode === "whole", "a chart built from the form is actually in that frame");
 is(chart.ayanName === "raman", "…and in that ayanāṃśa");
-is(chart.back.ayan === "lahiri" && chart.back.house === "whole",
+is(chart.back.ayan === "samanvaya_ecliptic" && chart.back.house === "sripati",
   "resetting to defaults moves the pickers back");
 
 /* sunrise must reach the key panchanga.js reads, and tell it, not just store */
@@ -228,7 +232,7 @@ const corrupt = await pg.evaluate(() => {
   localStorage.removeItem("nirayana.settings");
   return s;
 });
-is(corrupt.ayan === "lahiri" && corrupt.house === "whole",
+is(corrupt.ayan === "samanvaya_ecliptic" && corrupt.house === "sripati",
   "a corrupt store falls back to defaults instead of throwing");
 const junk = await pg.evaluate(() => {
   /* an unknown value for a closed set must not be honoured */
@@ -242,7 +246,7 @@ const clamped = await pg.evaluate(() => {
   localStorage.removeItem("nirayana.settings");
   return s;
 });
-is(clamped.house === "whole" && clamped.degfmt === "dm",
+is(clamped.house === "sripati" && clamped.degfmt === "dm",
   "a value outside the closed set is clamped to the default, not passed through");
 
 /* ---- 5. the re-cast offer, which is the whole precedence decision ------- */
@@ -359,10 +363,11 @@ head("The dashboard, which renders a chart it did not compute");
   const dk = await br.newPage();
   await dk.goto("file://" + CWD + "/kundli.html");
   await dk.waitForFunction(() => window.buildLocalChart, null, { timeout: 40000 });
-  /* cast under SRIPATI so the frozen note has something to disagree with */
+  /* cast in the NON-default frame (whole-sign, Lahiri) so the page has a
+     difference with the stored defaults to notice and re-cast */
   const payload = await dk.evaluate(() => JSON.stringify(window.buildLocalChart({
     year: 1990, month: 3, day: 15, hour: 10, minute: 30,
-    lat: 28.6139, lon: 77.2090, tzHours: 5.5, houseSystem: "sripati" })));
+    lat: 28.6139, lon: 77.2090, tzHours: 5.5, houseSystem: "whole", ayanamsa: "lahiri" })));
   await dk.close();
 
   const dp = await br.newPage();
@@ -438,8 +443,8 @@ head("The dashboard, which renders a chart it did not compute");
     "no [object Object] anywhere — house_system is an object, and .mode is shown");
 
   /* ---- the casting settings must MOVE THE CHART, not just the labels ----
-     The payload above was cast under SRIPATI while the stored setting is
-     whole, so the page should have re-cast itself on load and said so. */
+     The payload above was cast whole-sign/Lahiri while the default setting
+     is Śrīpati/Samanvaya, so the page should have re-cast itself on load and said so. */
   is(/Re-cast to match your settings/.test(await dp.evaluate(() => document.body.innerText)),
     "a chart cast under other settings is re-cast on arrival, and the page says so");
   const chartState = () => dp.evaluate(() => {

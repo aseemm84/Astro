@@ -105,7 +105,7 @@ birth — transits, gochara, Sade Sati, and the running year's Varṣaphala — 
 | Moon | Improved Lunar Ephemeris (1954), same library |
 | ΔT | observed values 1955–2025 (IERS/USNO), Espenak–Meeus outside them; published per chart with JD(TT), sidereal time and both obliquities |
 | Lunar nodes | mean node (polynomial) or true node (osculating), checked against Swiss Ephemeris |
-| Ayanāṃśa | Lahiri by default; Raman, KP, Yukteshwar, Bhasin, Fagan–Bradley, the true-star and Sūrya Siddhānta modes, and this site's Nirayana and Samanvaya definitions — each with its accuracy stated |
+| Ayanāṃśa | Samanvaya–Ecliptic by default (Śrīpati houses and the Rishi Paper theme are the other defaults); Lahiri, Raman, KP, Yukteshwar, Bhasin, Fagan–Bradley, the true-star and Sūrya Siddhānta modes, and this site's Nirayana and Samanvaya definitions — each with its accuracy stated |
 | Sunrise / sunset | disc centre at the geometric horizon, unrefracted — the Jyotiṣa convention |
 | Everything else | derived here from those positions using the classical rules |
 

@@ -3327,16 +3327,17 @@ html[data-theme] nav.site .themepick select option{
    it is wrapped, and a store that cannot be read simply means the default
    palette rather than a broken page.
 
-   THE DEFAULT IS NO ATTRIBUTE AT ALL, not "paper". Every themed rule in
-   theme.css hangs off html[data-theme], so a reader who has never chosen
-   gets the stylesheet exactly as it was written, with none of the theme
-   layer in play. That is what makes the feature safe: it cannot change the
-   site for anyone who has not asked it to. */
+   THE DEFAULT IS "paper" — Rishi Paper (chosen in November 2026). A reader
+   who has never chosen gets it. "Site default" — the stylesheet exactly as
+   written, with no theme attribute — is still offered, and choosing it is
+   remembered as an explicit choice ("site") so that it is not mistaken for
+   "never chosen" and replaced by Rishi Paper on the next page. */
 
 (function () {
   "use strict";
 
   var KEY = "nirayana.theme";
+  var DEFAULT = "paper";
   var THEMES = [
     ["", "Site default"],
     ["midnight", "Vedic Midnight"],
@@ -3356,14 +3357,13 @@ html[data-theme] nav.site .themepick select option{
   function read() {
     try {
       var v = window.localStorage.getItem(KEY);
-      return known(v) ? v : "";
-    } catch (e) { return ""; }
+      if (v === null) return DEFAULT;           /* never chosen */
+      if (v === "site") return "";              /* chose the plain stylesheet */
+      return known(v) ? v : DEFAULT;
+    } catch (e) { return DEFAULT; }
   }
   function write(t) {
-    try {
-      if (t) window.localStorage.setItem(KEY, t);
-      else window.localStorage.removeItem(KEY);
-    } catch (e) {}
+    try { window.localStorage.setItem(KEY, t ? t : "site"); } catch (e) {}
   }
 
   /* ---- the half that must run before paint ------------------------------ */
@@ -3474,11 +3474,29 @@ answer</i>.</p>
 
 <div class="aybar">
   <label>Question <select id="el-q" class="swin">
+    <optgroup label="Where the grahas are">
     <option value="lon">Where is each graha?</option>
-    <option value="nak" selected>Which nak&#7779;atra and p&amacr;da is the Moon in?</option>
+    <option value="rashi">Which r&amacr;&#347;i is each graha in?</option>
+    <option value="d9">Which nav&amacr;&#7747;&#347;a is each graha in?</option>
+    <option value="retro">Which grahas are retrograde (vakr&imacr;)?</option>
+    </optgroup>
+    <optgroup label="The pa&ntilde;c&amacr;&#7749;ga">
     <option value="tithi">What tithi is it?</option>
-    <option value="dasha">Which Vi&#7747;&#347;ottar&imacr; da&#347;&amacr; would a birth now begin in?</option>
+    <option value="nak" selected>Which nak&#7779;atra and p&amacr;da is the Moon in?</option>
+    <option value="yoga">Which yoga is it?</option>
+    <option value="karana">Which kara&#7751;a is it?</option>
     <option value="vara">Which v&amacr;ra is it?</option>
+    </optgroup>
+    <optgroup label="The day, where you are">
+    <option value="sunrise">When are sunrise and sunset?</option>
+    <option value="lagna">What is rising now (the lagna)?</option>
+    </optgroup>
+    <optgroup label="When things happen next">
+    <option value="sankranti">When does the Sun next change sign (sa&#7747;kr&amacr;nti)?</option>
+    <option value="syzygy">When are the next new moon and full moon?</option>
+    <option value="eclipse">When are the next eclipses?</option>
+    <option value="dasha">Which Vi&#7747;&#347;ottar&imacr; da&#347;&amacr; would a birth now begin in?</option>
+    </optgroup>
   </select></label>
   <label>Moment <input type="datetime-local" id="el-when" class="swin"></label>
   <label>Place <span id="el-place" class="swpick"></span></label>

@@ -36,12 +36,12 @@
   var KEY = "nirayana.settings";
   var RISEKEY = "nirayana.riseconv";
 
-  /* The defaults ARE the site as it was before this panel existed. Whole-sign
-     bhāvas, Lahiri, mean nodes, upper-limb sunrise, degrees-and-minutes, and
-     cautions shown. A reader who never opens the panel must get exactly the
-     site they got yesterday — the same property theme.js secures by applying
-     no attribute at all until asked. */
-  var DEF = { ayan: "lahiri", house: "whole", node: "mean",
+  /* The defaults: the Samanvaya–Ecliptic ayanāṃśa and Śrīpati bhāva-chalita
+     (chosen as the site's defaults in November 2026; before that they were
+     Lahiri and whole-sign), mean nodes, upper-limb sunrise, degrees-and-minutes,
+     and cautions shown. A reader's own stored choice always wins: only a reader
+     who has never chosen gets these. Whole-sign and Lahiri stay one click away. */
+  var DEF = { ayan: "samanvaya_ecliptic", house: "sripati", node: "mean",
               riseconv: "limb", degfmt: "dm", caution: "on" };
 
   var OPTS = {

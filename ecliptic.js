@@ -812,7 +812,9 @@ function skyHorizonOf(eq,S){
   var S = {
     base: null,        /* the target moment, ms */
     place: null,
-    ayan: "lahiri",
+    /* the settings panel's ayanāṃśa, so this page and a chart agree */
+    ayan: (function () { try { var N = window.NSettings && window.NSettings.get();
+      return (N && N.ayan) || "samanvaya_ecliptic"; } catch (e) { return "samanvaya_ecliptic"; } })(),
     span: 43830,       /* minutes either side of the target */
     rate: 1,
     offset: 0,         /* minutes from the target, where the wheel currently is */

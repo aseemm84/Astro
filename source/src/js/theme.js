@@ -17,16 +17,17 @@
    it is wrapped, and a store that cannot be read simply means the default
    palette rather than a broken page.
 
-   THE DEFAULT IS NO ATTRIBUTE AT ALL, not "paper". Every themed rule in
-   theme.css hangs off html[data-theme], so a reader who has never chosen
-   gets the stylesheet exactly as it was written, with none of the theme
-   layer in play. That is what makes the feature safe: it cannot change the
-   site for anyone who has not asked it to. */
+   THE DEFAULT IS "paper" — Rishi Paper (chosen in November 2026). A reader
+   who has never chosen gets it. "Site default" — the stylesheet exactly as
+   written, with no theme attribute — is still offered, and choosing it is
+   remembered as an explicit choice ("site") so that it is not mistaken for
+   "never chosen" and replaced by Rishi Paper on the next page. */
 
 (function () {
   "use strict";
 
   var KEY = "nirayana.theme";
+  var DEFAULT = "paper";
   var THEMES = [
     ["", "Site default"],
     ["midnight", "Vedic Midnight"],
@@ -46,14 +47,13 @@
   function read() {
     try {
       var v = window.localStorage.getItem(KEY);
-      return known(v) ? v : "";
-    } catch (e) { return ""; }
+      if (v === null) return DEFAULT;           /* never chosen */
+      if (v === "site") return "";              /* chose the plain stylesheet */
+      return known(v) ? v : DEFAULT;
+    } catch (e) { return DEFAULT; }
   }
   function write(t) {
-    try {
-      if (t) window.localStorage.setItem(KEY, t);
-      else window.localStorage.removeItem(KEY);
-    } catch (e) {}
+    try { window.localStorage.setItem(KEY, t ? t : "site"); } catch (e) {}
   }
 
   /* ---- the half that must run before paint ------------------------------ */

@@ -495,13 +495,22 @@ console.log("\nthe starfield is not in the way");
 
 console.log("\nthe app follows the OS appearance");
 {
-  for (const [scheme, want] of [["dark", "midnight"], ["light", "paper"]]) {
+  /* Rishi Paper is the default (Nov 2026), so a first launch is paper whatever
+     the OS says. A reader who picks "Site default" hands the choice back to
+     the OS: dark gives midnight, light gives paper. */
+  for (const scheme of ["dark", "light"]) {
     const c = await browser.newContext({ viewport: { width: 1104, height: 724 }, colorScheme: scheme });
     const pg = await c.newPage();
     await pg.goto("file://" + path.join(APP, "dashas.html"));
     await pg.waitForTimeout(260);
     const got = await pg.evaluate(() => document.documentElement.getAttribute("data-theme"));
-    ok("OS " + scheme + " gives " + want, got === want, "got " + got);
+    ok("first launch under OS " + scheme + " gives Rishi Paper", got === "paper", "got " + got);
+    await pg.evaluate(() => { try { localStorage.setItem("nirayana.theme", "site"); } catch (e) {} });
+    await pg.reload();
+    await pg.waitForTimeout(260);
+    const want = scheme === "dark" ? "midnight" : "paper";
+    const got2 = await pg.evaluate(() => document.documentElement.getAttribute("data-theme"));
+    ok("with \"Site default\" chosen, OS " + scheme + " gives " + want, got2 === want, "got " + got2);
     await c.close();
   }
   /* A palette the reader chose must survive, or following the system would

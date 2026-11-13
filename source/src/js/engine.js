@@ -2173,8 +2173,13 @@ window.__kSidAt=function(name,date){
 /* A stripped snapshot for the sky view's time scrubber: sidereal longitudes, the
    lagna, and horizon coordinates. No vargas, ashtakavarga, shadbala or dasha, so it
    is cheap enough to recompute on every frame. */
+/* a caller that names no ayanāṃśa gets the settings panel's, or the site default */
+function defaultAyan(){
+  try{ var N=window.NSettings&&window.NSettings.get(); if(N&&N.ayan&&AYAN_MODES[N.ayan]) return N.ayan; }catch(e){}
+  return "samanvaya_ecliptic";
+}
 window.quickSky=function(inp){
-  setAyanamsaMode(inp.ayanamsa||"lahiri");
+  setAyanamsaMode(inp.ayanamsa||defaultAyan());
   var tz=inp.tzHours, ut=inp.hour+inp.minute/60+(inp.second||0)/3600-tz;
   var jd=jdFromUTC(inp.year,inp.month,inp.day,ut);
   var ms=Date.UTC(inp.year,inp.month-1,inp.day,0,0,0)+ut*3600000;
@@ -2218,7 +2223,7 @@ window.quickSky=function(inp){
           obliquity:epsd,lst:lst,lat:inp.lat,lon:inp.lon};
 };
 window.buildLocalChart=function(inp){
-  setAyanamsaMode(inp.ayanamsa||"lahiri");
+  setAyanamsaMode(inp.ayanamsa||defaultAyan());
   /* The bhāva frame is part of the chart's INPUT, exactly as the ayanāṃśa is,
      rather than a global someone sets beforehand. That way it is saved with
      the chart, round-trips through the stored input, appears in D.input, and
