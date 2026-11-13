@@ -472,11 +472,11 @@ console.log("\nThe reels from the other engines say true things");
     let badConfirm = 0, badMiss = 0;
     E.events.forEach(e => {
       const near = real.some(t => Math.abs(t - e.t) < 2.5 * 86400000);
-      if (e.tally === "confirmed" && !near) badConfirm++;
-      if (e.tally === "missed" && !near) badMiss++;
+      if (e.tally === "in both" && !near) badConfirm++;
+      if (e.tally === "modern only" && !near) badMiss++;
     });
-    out.confirmed = E.events.filter(e => e.tally === "confirmed").length;
-    out.missed = E.events.filter(e => e.tally === "missed").length;
+    out.confirmed = E.events.filter(e => e.tally === "in both").length;
+    out.missed = E.events.filter(e => e.tally === "modern only").length;
     out.badConfirm = badConfirm; out.badMiss = badMiss;
     /* the dates must be in this century, not the fifth: an ahargana is a
        julian day minus an epoch, and feeding one to msOf lands in year 415 */
@@ -507,9 +507,9 @@ console.log("\nThe reels from the other engines say true things");
      "Siddhānta eclipse dates land in this century, not the fifth",
      "first is " + r.firstYear);
   ok(r.badConfirm === 0,
-     "every eclipse the reel calls confirmed is one the library also has",
+     "every eclipse the reel puts in both lists is one the library also has",
      r.badConfirm + " were not");
-  ok(r.badMiss === 0, "and every one it calls missed is real too");
+  ok(r.badMiss === 0, "and every one it calls modern-only is in the library too");
   ok(r.confirmed > 20 && r.missed > 10,
      "it confirms " + r.confirmed + " and misses " + r.missed +
      " over 25 years");

@@ -540,7 +540,7 @@ const C = [
   ["the sidereal, anomalistic and draconitic months to a few seconds",
    Math.abs(A.months.sidereal) < 2 && Math.abs(A.months.anomalistic) < 6 &&
    Math.abs(A.months.draconitic) < 4],
-  ["the revolution counts imply a year a few minutes too long",
+  ["the revolution counts imply a year a few minutes longer than the modern one",
    K.yearExcessSeconds > 150 && K.yearExcessSeconds < 260],
   ["the Sun's measured drift matches what that excess predicts",
    A.drift.worstErr < 0.12],

@@ -327,12 +327,13 @@
     t.appendChild(tb);
     host.appendChild(t);
     host.appendChild(el("p", "ssnote",
-      list.length + " in " + (to - from) + " years. It finds the deep ones " +
-      "reliably and misses some of the slight ones, and the reason is its " +
-      "node: the draconitic month is right to about two seconds, but two " +
-      "seconds carried across the circuits the node has made since the epoch " +
-      "puts it a few degrees from the truth — and an eclipse season sits " +
-      "where the node says it does. Solar eclipses are judged for " + PLACE.n +
+      list.length + " in " + (to - from) + " years, by the Sūrya Siddhānta's " +
+      "own reckoning. Set beside a modern eclipse list, the two agree on the " +
+      "deep eclipses and differ on some slight ones, and the reason is the " +
+      "node: the text's draconitic month differs from the modern one by about " +
+      "two seconds, and two seconds carried across the circuits the node has " +
+      "made since the epoch places it a few degrees from the modern node — " +
+      "and an eclipse season sits where the node says it does. Solar eclipses are judged for " + PLACE.n +
       ", because parallax makes a solar eclipse a question about where you " +
       "are standing."));
   }
@@ -501,7 +502,7 @@
         (which === "Sūrya"
           ? "  ·  which is what a year " +
             S.constants().yearExcessSeconds.toFixed(0) +
-            " seconds too long does over that time"
+            " seconds longer than the modern sidereal year accumulates over that time"
           : "");
     }
   }

@@ -4402,7 +4402,7 @@ function moOwn(src){
       why: "the lambana and nati here follow the text's own simplified form " +
            "rather than a true parallax, so a solar eclipse is placed to " +
            "within a fraction of an hour and not to the minute — which is " +
-           "the method's own accuracy, not an abbreviation of it" },
+           "what the method itself gives, not an abbreviation of it" },
     { what: "The gnomon and shadow problems",
       why: "the chapter on direction, place and time by shadow is a set of " +
            "constructions rather than a computation, and the quantities it " +
@@ -4418,9 +4418,9 @@ function moOwn(src){
   /* ===== THE MEASURED TIER ==================================================
 
      The engine above computes with the text's own constants and lands degrees
-     from the real sky — Śani 6.4° out in 2026, the Moon 6.3°. That is the
-     method's own accuracy, it is reported rather than hidden, and it makes
-     this a good scholarly object and a useless one for casting a chart.
+     from the modern ephemeris — Śani 6.4° apart in 2026, the Moon 6.3°. That
+     is what the method itself gives, and it is reported as a difference, not
+     ranked.
 
      measured() keeps every EQUATION exactly as it is — madhyama, manda,
      śīghra, the epicycle interpolation, the twenty-four-entry sine table —
@@ -8429,8 +8429,8 @@ function moOwn(src){
     var scale = Math.max(0.6, Math.max(Math.abs(lo), Math.abs(hi)) * 1.08);
 
     /* the events are the turning points of the error, which is where the
-       story actually is: the Siddhānta is not randomly wrong, it is wrong in
-       a way that swings and comes back */
+       story actually is: the difference is not random, it swings and comes
+       back */
     var ev = [], i;
     for (i = 1; i < err.length - 1; i++) {
       if ((err[i] > err[i - 1] && err[i] >= err[i + 1]) ||
@@ -8454,7 +8454,7 @@ function moOwn(src){
     var opt = S.options();
     return {
       kicker: "Nirayana · Sūrya Siddhānta",
-      title: "How wrong was the Sūrya Siddhānta?",
+      title: "The Sūrya Siddhānta beside the modern sky",
       subtitle: sa + ", computed twice — once by the Siddhānta's own method " +
                 "and once by a modern ephemeris. The gap is drawn.",
       stage: "drift",
@@ -8473,19 +8473,19 @@ function moOwn(src){
              a degree and the rāśi is never in doubt; Śukra is out by
              twenty-six, which is most of a sign, and saying "the sign is
              almost always right" about that would be false. */
-          "Mean error " + mean.toFixed(2) + "° — " +
+          "Mean difference " + mean.toFixed(2) + "° — " +
           (mean / 30 * 100).toFixed(0) + "% of a rāśi. " +
           (mean < 2
-            ? "Close enough that the sign is almost never in doubt, and the " +
-              "degree almost never right."
+            ? "The two almost always agree on the sign, and almost never on " +
+              "the degree."
             : (mean < 10
-               ? "Enough to put the graha in the wrong rāśi near a boundary, " +
-                 "and to move a nakṣatra outright."
-               : "Enough to be a whole sign out, which is as far wrong as a " +
-                 "position can usefully be.")),
-          "The gap is not noise. It swings and returns, because the " +
-          "Siddhānta's revolution counts are very slightly off and its " +
-          "epicycles are a model rather than an ellipse.",
+               ? "Enough for the two to name different rāśis near a boundary, " +
+                 "and different nakṣatras outright."
+               : "Enough for the two to place the graha a whole sign apart.")),
+          "The gap is not noise. It swings and returns, because the two " +
+          "use slightly different revolution counts, and the Siddhānta " +
+          "models the motion with epicycles where the modern theory uses an " +
+          "ellipse and its perturbations.",
           "Run with the " + opt.sines + " sine table, the " + opt.ayana +
           " ayanāṃśa, bīja corrections " + (opt.bija ? "on" : "off") +
           ". A different setting is a different picture, and this one says " +
@@ -8564,13 +8564,13 @@ function moOwn(src){
       ev.push({
         t: ms, lon: lon || 0, lat: latAt(ms), marked: ok, hold: ev.length < 3,
         band: ok ? "central" : "partial",
-        tally: ok ? "confirmed" : "not there",
+        tally: ok ? "in both" : "Siddhānta only",
         big: dateCaps(ms),
-        small: "The Siddhānta predicts a " + q.kind + " eclipse" +
-               (ok ? ", and one happens within " +
+        small: "The Siddhānta computes a " + q.kind + " eclipse" +
+               (ok ? ", and the modern list has one within " +
                      (bestD / 3600000).toFixed(1) + " hours"
-                   : ", and none happens"),
-        note: ok ? null : "NO ECLIPSE ON THIS DATE"
+                   : ", and the modern list has none"),
+        note: ok ? null : "NOT IN THE MODERN LIST"
       });
     });
     var missed = real.filter(function (R, i) { return !usedReal[i]; });
@@ -8584,10 +8584,10 @@ function moOwn(src){
       ev.push({
         t: R.t, lon: lon, lat: latAt(R.t), marked: false, hold: false,
         band: "none",
-        tally: "missed",
+        tally: "modern only",
         big: dateCaps(R.t),
-        small: "A real " + R.kind + " eclipse the Siddhānta does not predict",
-        note: "MISSED"
+        small: "A " + R.kind + " eclipse in the modern list that the Siddhānta does not compute",
+        note: "MODERN LIST ONLY"
       });
     });
     ev.sort(function (a, b) { return a.t - b.t; });
@@ -8606,9 +8606,9 @@ function moOwn(src){
     var deepHit = deep(hitKinds), deepMiss = deep(missKinds);
     return {
       kicker: "Nirayana · Sūrya Siddhānta",
-      title: "Could the Siddhānta predict an eclipse?",
-      subtitle: "Every eclipse the fifth-century method foresees, against " +
-                "every one that happens.",
+      title: "The Siddhānta's eclipses beside the modern list",
+      subtitle: "Every eclipse the fifth-century method computes, beside " +
+                "every one in a modern list.",
       stage: "nodes",
       method: "Sūrya Siddhānta against a modern ephemeris",
       /* this reel mixes solar and lunar predictions, so there is no single
@@ -8618,29 +8618,28 @@ function moOwn(src){
          error anywhere. */
       inner: 1, outer: 1.5,
       events: ev,
-      tallyKeys: ["confirmed", "not there", "missed"],
+      tallyKeys: ["in both", "Siddhānta only", "modern only"],
       nodeAt: function (t) { return window.__kSidAt("Rahu", new Date(t)); },
       closing: {
-        big: "It called " + hit + (wrong ? " of " + pred.length : "") +
-             ". Every one happened. It missed " + missed.length + ".",
+        big: hit + " in both lists" + (wrong ? ", " + wrong + " in the Siddhānta's only" : "") +
+             ", " + missed.length + " in the modern list only.",
         lines: [
           (deepHit > deepMiss + 0.1
-            ? "It finds the great ones: " + Math.round(deepHit * 100) +
-              "% of what it caught was total, annular or umbral, against " +
-              Math.round(deepMiss * 100) + "% of what it missed. The slight " +
-              "ones are what slip past."
-            : "What it catches and what it misses are much the same mixture " +
+            ? "The two agree on the deep ones: " + Math.round(deepHit * 100) +
+              "% of the shared eclipses are total, annular or umbral, against " +
+              Math.round(deepMiss * 100) + "% of those only the modern list has. " +
+              "The difference lies among the slight ones."
+            : "The shared eclipses and the modern-only ones are much the same mixture " +
               Math.round(deepHit * 100) + "% against " +
               Math.round(deepMiss * 100) + "% deep — so this is not a matter " +
               "of depth.") +
           " The reason is the node: an eclipse season sits where the node " +
-          "says it does, and the Siddhānta's has drifted.",
-          "Its draconitic month is right to about two seconds. Carried " +
-          "across the circuits the node has made since the epoch, two " +
-          "seconds becomes tens of degrees.",
-          "That is a remarkable result for arithmetic done without a " +
-          "telescope, and it is also why this site does not compute your " +
-          "chart with it."
+          "says it does, and the two place the node differently.",
+          "The Siddhānta's draconitic month differs from the modern one by " +
+          "about two seconds. Carried across the circuits the node has made " +
+          "since the epoch, two seconds becomes tens of degrees.",
+          "Charts on this site are cast from the modern ephemeris; this reel " +
+          "sets the older reckoning beside it."
         ]
       }
     };
@@ -8824,17 +8823,17 @@ function moOwn(src){
      ["Sun", 60, 32]].forEach(function (q) {
       add({ key: "ssdrift." + q[0].toLowerCase(),
             group: "Two engines, one question",
-            label: "How wrong was the Siddhānta? — " + SA[q[0]],
-            blurb: "The Sūrya Siddhānta's " + SA[q[0]] + " against a modern " +
-                   "ephemeris, every step out from the ring being the error.",
+            label: "The Siddhānta beside the modern sky — " + SA[q[0]],
+            blurb: "The Sūrya Siddhānta's " + SA[q[0]] + " beside a modern " +
+                   "ephemeris, every step out from the ring being the difference.",
             years: q[1], seconds: q[2],
             build: function (s) { s.body = q[0]; return driftStory(s); } });
     });
     add({ key: "sseclipse", group: "Two engines, one question",
-          label: "Could the Siddhānta predict an eclipse?",
-          blurb: "Every eclipse the fifth-century method foresees, against " +
-                 "every one that happens — the hits, the false alarms and " +
-                 "the misses.",
+          label: "The Siddhānta's eclipses beside the modern list",
+          blurb: "Every eclipse the fifth-century method computes, beside " +
+                 "every one in a modern list — those in both, and those in " +
+                 "only one.",
           years: 25, seconds: 36, build: ssEclipseStory });
 
     [["stop", "The Moon stops revolving", 26],

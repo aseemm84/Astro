@@ -1126,7 +1126,7 @@
       why: "the lambana and nati here follow the text's own simplified form " +
            "rather than a true parallax, so a solar eclipse is placed to " +
            "within a fraction of an hour and not to the minute — which is " +
-           "the method's own accuracy, not an abbreviation of it" },
+           "what the method itself gives, not an abbreviation of it" },
     { what: "The gnomon and shadow problems",
       why: "the chapter on direction, place and time by shadow is a set of " +
            "constructions rather than a computation, and the quantities it " +
@@ -1142,9 +1142,9 @@
   /* ===== THE MEASURED TIER ==================================================
 
      The engine above computes with the text's own constants and lands degrees
-     from the real sky — Śani 6.4° out in 2026, the Moon 6.3°. That is the
-     method's own accuracy, it is reported rather than hidden, and it makes
-     this a good scholarly object and a useless one for casting a chart.
+     from the modern ephemeris — Śani 6.4° apart in 2026, the Moon 6.3°. That
+     is what the method itself gives, and it is reported as a difference, not
+     ranked.
 
      measured() keeps every EQUATION exactly as it is — madhyama, manda,
      śīghra, the epicycle interpolation, the twenty-four-entry sine table —

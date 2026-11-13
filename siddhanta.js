@@ -1126,7 +1126,7 @@
       why: "the lambana and nati here follow the text's own simplified form " +
            "rather than a true parallax, so a solar eclipse is placed to " +
            "within a fraction of an hour and not to the minute — which is " +
-           "the method's own accuracy, not an abbreviation of it" },
+           "what the method itself gives, not an abbreviation of it" },
     { what: "The gnomon and shadow problems",
       why: "the chapter on direction, place and time by shadow is a set of " +
            "constructions rather than a computation, and the quantities it " +
@@ -1142,9 +1142,9 @@
   /* ===== THE MEASURED TIER ==================================================
 
      The engine above computes with the text's own constants and lands degrees
-     from the real sky — Śani 6.4° out in 2026, the Moon 6.3°. That is the
-     method's own accuracy, it is reported rather than hidden, and it makes
-     this a good scholarly object and a useless one for casting a chart.
+     from the modern ephemeris — Śani 6.4° apart in 2026, the Moon 6.3°. That
+     is what the method itself gives, and it is reported as a difference, not
+     ranked.
 
      measured() keeps every EQUATION exactly as it is — madhyama, manda,
      śīghra, the epicycle interpolation, the twenty-four-entry sine table —
@@ -1757,12 +1757,13 @@
     t.appendChild(tb);
     host.appendChild(t);
     host.appendChild(el("p", "ssnote",
-      list.length + " in " + (to - from) + " years. It finds the deep ones " +
-      "reliably and misses some of the slight ones, and the reason is its " +
-      "node: the draconitic month is right to about two seconds, but two " +
-      "seconds carried across the circuits the node has made since the epoch " +
-      "puts it a few degrees from the truth — and an eclipse season sits " +
-      "where the node says it does. Solar eclipses are judged for " + PLACE.n +
+      list.length + " in " + (to - from) + " years, by the Sūrya Siddhānta's " +
+      "own reckoning. Set beside a modern eclipse list, the two agree on the " +
+      "deep eclipses and differ on some slight ones, and the reason is the " +
+      "node: the text's draconitic month differs from the modern one by about " +
+      "two seconds, and two seconds carried across the circuits the node has " +
+      "made since the epoch places it a few degrees from the modern node — " +
+      "and an eclipse season sits where the node says it does. Solar eclipses are judged for " + PLACE.n +
       ", because parallax makes a solar eclipse a question about where you " +
       "are standing."));
   }
@@ -1931,7 +1932,7 @@
         (which === "Sūrya"
           ? "  ·  which is what a year " +
             S.constants().yearExcessSeconds.toFixed(0) +
-            " seconds too long does over that time"
+            " seconds longer than the modern sidereal year accumulates over that time"
           : "");
     }
   }

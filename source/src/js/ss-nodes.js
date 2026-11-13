@@ -114,8 +114,8 @@
        almanac and a modern one disagree about when a saṃkrānti falls. */
     reg("ss.drift", "The drift, over the span",
         "how far the Sūrya Siddhānta's Sun is from the modern one, across " +
-        "whatever span is set — the long consequence of a year that is three " +
-        "and a half minutes too long", ["series"],
+        "whatever span is set — the long consequence of a year three and a " +
+        "half minutes longer than the modern one", ["series"],
         function (C) {
           var ok = false;
           try { ok = modern("Sūrya", C.when) != null; } catch (e) {}
@@ -134,7 +134,7 @@
        separately: a sidereal month a hundredth of a second too long */
     reg("ss.driftMoon", "The Moon's drift, over the span",
         "the Moon computed both ways, differenced across the span — its " +
-        "cause is a sidereal month slightly too long, not the year",
+        "cause is a sidereal month slightly longer than the modern one, not the year",
         ["series"],
         function (C) {
           var ok = false;
@@ -192,7 +192,7 @@
 
     reg("ss.months", "The Sūrya Siddhānta months",
         "the synodic and sidereal months the revolution counts imply — the " +
-        "synodic one is accurate to a tenth of a second", ["sset"],
+        "synodic one within a tenth of a second of the modern value", ["sset"],
         function () {
           var K = S.constants();
           return { kind: "sset", unit: "d", label: "the months",
@@ -372,10 +372,10 @@
                           " years" };
         });
 
-    reg("ss.nodeDrift", "The node, against the real one",
+    reg("ss.nodeDrift", "The node, beside the modern one",
         "Rāhu as the Sūrya Siddhānta places it and as a modern ephemeris " +
-        "does, across the span — the quantity behind most of what it gets " +
-        "wrong about eclipses", ["series"],
+        "does, across the span — the quantity behind most of the difference " +
+        "between their eclipse lists", ["series"],
         function () {
           return { kind: "series", unit: "°", label: "Rāhu: SS minus modern",
             at: function (ms) {
