@@ -590,7 +590,8 @@ def build_adopted():
         panel = ("<style>\n" + read(SRC, "css", "settings.css") + "\n</style>\n"
                  + engine +
                  "<script>\n" + read(SRC, "js", "settings.js") + "\n</script>\n")
-        out[name] = brandify(text[:i] + "\n" + strip + panel + text[i:])
+        plain = plain_block(name, plain_entries()[name], adopted=True)
+        out[name] = brandify(text[:i] + "\n" + strip + panel + plain + text[i:])
     return out
 
 
@@ -937,6 +938,63 @@ def build_shared():
         "test/self-test.html": brandify(read(SRC, "..", "test", "self-test.html")),
     }
 
+def plain_entries():
+    """The plain-language explanations (src/pages/_plain.py), loaded as data."""
+    ns = {}
+    exec(compile(read(SRC, "pages", "_plain.py"), "_plain.py", "exec"), ns)
+    return ns["PLAIN"]
+
+PLAIN_CSS = (
+    ".plainx{margin:0 0 1.4rem;border:1px solid rgba(128,128,128,.35);"
+    "border-left:4px solid #c08a2b;border-radius:10px;background:rgba(192,138,43,.07);"
+    "font-size:1rem;line-height:1.55;color:inherit}"
+    ".plainx>details>summary{cursor:pointer;padding:.75rem 1rem;list-style:none}"
+    ".plainx>details>summary::-webkit-details-marker{display:none}"
+    ".plainx>details>summary b{display:block;font-size:1.02rem}"
+    ".plainx>details>summary b:before{content:'\\25B8  ';}"
+    ".plainx>details[open]>summary b:before{content:'\\25BE  ';}"
+    ".plainx>details>summary span{display:block;opacity:.85;margin-top:.15rem}"
+    ".plainx .plainb{padding:0 1rem .9rem}"
+    ".plainx .plainb h4{margin:.8rem 0 .2rem;font-size:.95rem}"
+    ".plainx .plainb p{margin:.1rem 0}"
+    ".plainx.plainx-adopted{max-width:1100px;width:calc(100% - 32px);margin:1rem auto 1.2rem;box-sizing:border-box}"
+    "@media print{.plainx{display:none}}")
+
+def plain_block(name, entry, adopted=False):
+    hi = entry.get("lang") == "hi"
+    L = (("सरल भाषा में समझें", "यह पृष्ठ क्या है", "इसका उपयोग कैसे करें",
+          "जो दिखता है उसे कैसे पढ़ें", "ध्यान रखें", "विस्तार से पढ़ने के लिए खोलें")
+         if hi else
+         ("Explain in simple language", "What this page is", "How to use it",
+          "How to read what you see", "A word of care", "open for the simple explanation"))
+    parts = [("what", L[1]), ("how", L[2]), ("read", L[3]), ("care", L[4])]
+    body = "".join('<h4>%s</h4><p>%s</p>' % (h, entry[k]) for k, h in parts if entry.get(k))
+    return ('<style>%s</style><section class="plainx%s" data-plain="%s"%s aria-label="%s">'
+            '<details><summary><b>%s</b><span>%s</span></summary>'
+            '<div class="plainb">%s</div></details></section>'
+            % (PLAIN_CSS, " plainx-adopted" if adopted else "", name,
+               ' lang="hi"' if hi else "", L[0], L[0], entry["gist"], body))
+
+def inject_plain(built):
+    """Every page opens with its plain-language box. Refuse to build if a page
+    has none, or if an entry names a page that is not built."""
+    P = plain_entries()
+    pages = sorted(k for k in built if k.endswith(".html") and "/" not in k)
+    missing = [k for k in pages if k not in P]
+    stray = [k for k in P if k not in pages]
+    if missing or stray:
+        raise SystemExit("plain-language entries: missing for %s; no such page %s"
+                         % (missing, stray))
+    for k in pages:
+        t = built[k]
+        if 'data-plain="' in t:
+            continue
+        h = t.find("</head>")
+        m = re.compile(r"<main\b[^>]*>").search(t, max(h, 0))
+        if not m:
+            raise SystemExit("plain-language box: no <main> in %s" % k)
+        built[k] = t[:m.end()] + plain_block(k, P[k]) + t[m.end():]
+
 def build_pages():
     shell  = read(SRC, "pages", "_shell.html")
     # the theme layer comes after the page stylesheet so its overrides win
@@ -1262,6 +1320,7 @@ def main():
     built.update(build_pages())
     built.update(build_shared())
     built.update(build_adopted())
+    inject_plain(built)
     # last, because its cache key is a fingerprint of everything above it
     built.update(build_pwa(built))
     if not APP_MODE:

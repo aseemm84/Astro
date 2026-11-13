@@ -51,6 +51,13 @@ Vimśopaka by BPHS Ch. 7 vv. 21–25
 **Ashtakavarga** — Bhinna and Sarva · the three śodhanas (Trikoṇa, Ekādhipatya,
 Piṇḍa) · kakṣā transits · ashtakavarga computed inside D9 and D10
 
+**Explain in simple language** — every page, on the website and in the desktop app,
+opens with a box of that name: one line saying what the page is for, and when opened,
+what the page shows, how to use it, how to read it, and where to be careful — written
+for a reader with no background in astronomy or Jyotiṣa. All forty live in one file,
+`source/src/pages/_plain.py`; the build refuses to run if a page has none, and
+`plain-verify.mjs` checks every built page.
+
 **Timing** — Vimśottarī to pratyantardaśā across the full 120 years (729 periods,
 expandable) · Aṣṭottarī · Yoginī · the rest of BPHS Ch. 46, each cited to its verses:
 the eight conditional nakṣatra daśās (Ṣoḍaśottarī, Dvādaśottarī, Pañcottarī, Śatābdikā,
