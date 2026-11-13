@@ -337,7 +337,35 @@ var AYAN_MODES={
                     "the textual epochs are withheld from it and scored afterwards",
                c:[0.00030701309468,1.39688795339,20.895012118]}
 };
-var AYAN_MODE="lahiri";
+/* WHICH PAGES CHOOSE THEIR OWN AYANĀṂŚA, and what each starts on.
+   "site" pages follow the ayanāṃśa in Settings; the two comparison pages start
+   on Lahiri because that is the frame their engine-against-engine comparisons
+   are drawn in. On every one of them the reader can pick another convention for
+   that page alone (stored per page under nirayana.pageAyan; the picker lives in
+   settings.js). Resolved here, from storage, because engine.js loads before
+   site.js: the frame has to be right before the first position is computed,
+   not corrected afterwards. Pages not listed keep their own controls (the
+   Kundli form, the Ecliptic wheel's menu) and start on Lahiri as before. */
+var PAGE_AYAN={"now.html":"site","calendar.html":"site","starwheel.html":"site","studio.html":"site",
+  "studio-pro.html":"site","reel.html":"site","director-pro.html":"site","motion.html":"site",
+  "siddhanta.html":"lahiri","engine-lab.html":"lahiri"};
+function pageFile(){ try{ return (location.pathname.split("/").pop()||"index.html").toLowerCase(); }catch(e){ return ""; } }
+function pageAyanRule(){ return PAGE_AYAN[pageFile()]||null; }
+function pageAyan(){
+  var pg=pageFile(), rule=PAGE_AYAN[pg];
+  if(!rule) return null;
+  try{
+    var o=JSON.parse(localStorage.getItem("nirayana.pageAyan")||"{}")||{};
+    if(o[pg]&&AYAN_MODES[o[pg]]) return o[pg];
+  }catch(e){}
+  if(rule!=="site") return rule;
+  try{
+    var st=JSON.parse(localStorage.getItem("nirayana.settings")||"{}")||{};
+    if(st.ayan&&AYAN_MODES[st.ayan]) return st.ayan;
+  }catch(e){}
+  return "samanvaya_ecliptic";
+}
+var AYAN_MODE=pageAyan()||"lahiri";
 function setAyanamsaMode(m){ if(AYAN_MODES[m]) AYAN_MODE=m; return AYAN_MODE; }
 /* The calendar year, computed exactly as ss-engine.js's yearOf does, so the two
    engines cannot drift apart on the two text-based readings. A Julian-year
@@ -1964,7 +1992,21 @@ function sankrantiWeekday(jd,date,targetLon){
 
 try{ window.__AVT=AVT; window.__ayan=ayanamsa;
      window.__ayanModes=AYAN_MODES; window.__setAyan=setAyanamsaMode;
+     window.__pageAyan=pageAyan; window.__pageAyanRule=pageAyanRule;
+     /* the name a caption should print for the frame in use */
+     window.__ayanName=function(m){ m=m||AYAN_MODE; if(m==="lahiri") return "Lahiri";
+       return AYAN_MODES[m]?AYAN_MODES[m].name:m; };
      window.__ayanFor=ayanamsaFor;
+     /* The star catalogues store sidereal longitude under Lahiri (J2000). In any
+        other frame every star moves by the difference between the two
+        ayanāṃśas — the re-basing the star wheel has always done; these two
+        helpers let every other drawing of the stars do the same. */
+     window.__starShift=function(mode,jd){ jd=jd||(Date.now()/86400000+2440587.5);
+       return ayanamsaFor("lahiri",jd)-ayanamsaFor(mode||AYAN_MODE,jd); };
+     window.__framedStars=function(list,mode,jd){ var d=window.__starShift(mode,jd);
+       if(!list||Math.abs(d)<1e-9) return list;
+       return list.map(function(y){ var o={},k; for(k in y) o[k]=y[k]; o.sid=norm(y.sid+d);
+         if(y.id!=null&&y.nak) o.inside=Math.floor(o.sid/(40/3))===y.id; return o; }); };
      /* The divisional formulas exist twice: here, where a graha's varga sign is
         computed, and in the report's vargaLagna, which does the same arithmetic
         for the lagna. Two copies of sixteen formulas is two chances to diverge,
@@ -2164,6 +2206,16 @@ window.calculateSripatiHouses=function(ascSid,mcSid){
   if(window.SPSripati&&window.SPSripati.build) return window.SPSripati.build(ascSid,mcSid);
   return null;
 };
+/* The same, in a NAMED ayanāṃśa, without touching the engine's current mode.
+   The almanac pages need their own convention (the site's, or a per-page
+   override) and must not be moved by another widget on the page that casts a
+   chart in a different mode a moment earlier. */
+window.__kSidAtMode=function(name,date,mode){
+  var jd=date.getTime()/86400000+2440587.5, ay=ayanamsaFor(AYAN_MODES[mode]?mode:"lahiri",jd);
+  if(name==="Rahu") return norm(meanNode(jd)-ay);
+  if(name==="Ketu") return norm(meanNode(jd)-ay+180);
+  return norm(tropLon(name,date)-ay);
+};
 window.__kSidAt=function(name,date){
   var jd=date.getTime()/86400000+2440587.5, ay=ayanamsa(jd);
   if(name==="Rahu") return norm(meanNode(jd)-ay);
@@ -2175,6 +2227,7 @@ window.__kSidAt=function(name,date){
    is cheap enough to recompute on every frame. */
 /* a caller that names no ayanāṃśa gets the settings panel's, or the site default */
 function defaultAyan(){
+  var pa=pageAyan(); if(pa) return pa;     /* a page with its own picker uses it */
   try{ var N=window.NSettings&&window.NSettings.get(); if(N&&N.ayan&&AYAN_MODES[N.ayan]) return N.ayan; }catch(e){}
   return "samanvaya_ecliptic";
 }

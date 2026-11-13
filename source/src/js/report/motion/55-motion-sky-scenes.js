@@ -81,7 +81,7 @@ MO_SKY.push({key:"lagna", label:"Lagna", title:"The sign climbing out of the eas
   var W=moWhere();
   var t0=moBirthMs(), t1=t0+moSpanMs(), ms=t0+(t1-t0)*p;
   var d=new Date(ms), jd=ms/86400000+2440587.5;
-  var ayan=0; try{ ayan=window.__ayanFor?window.__ayanFor("lahiri",jd):23.9; }catch(e){ ayan=23.9; }
+  var ayan=0; try{ ayan=window.__ayanFor?window.__ayanFor(moAyanKey(),jd):23.9; }catch(e){ ayan=23.9; }
   var lst=moLST(jd,W.lon);
   /* The lagna itself comes from the site's own engine, not from the drawing, so
      the degree on screen is the degree the chart would be cast on. */
@@ -90,7 +90,7 @@ MO_SKY.push({key:"lagna", label:"Lagna", title:"The sign climbing out of the eas
     var ut=d.getUTCHours()+d.getUTCMinutes()/60+d.getUTCSeconds()/3600+d.getUTCMilliseconds()/3600000;
     var q=window.quickSky({year:d.getUTCFullYear(),month:d.getUTCMonth()+1,day:d.getUTCDate(),
       hour:ut,minute:0,second:0,tzHours:0,lat:W.lat,lon:W.lon,
-      ayanamsa:(MO.J&&MO.J.input&&MO.J.input.ayanamsa)||"lahiri"});
+      ayanamsa:(MO.J&&MO.J.input&&MO.J.input.ayanamsa)||moAyanKey()});
     lag=q.lagna; pos=q.positions||q.sky||null;
   }catch(e){}
   if(lag==null) throw new Error("no lagna");
@@ -342,7 +342,7 @@ MO_SKY.push({key:"sun", label:"Sūrya", title:"Sūrya, the one graha with no pha
   var dist=(ill&&ill.geo_dist)?ill.geo_dist:1;         /* Earth-Sun, in AU */
   var diam=0.5331/dist;                                /* degrees, from 1 AU */
   var nk=nakOf(su), sgn=Math.floor(su/30)%12;
-  var ayan=0; try{ ayan=window.__ayanFor?window.__ayanFor("lahiri",ms/86400000+2440587.5):23.9; }catch(e){}
+  var ayan=0; try{ ayan=window.__ayanFor?window.__ayanFor(moAyanKey(),ms/86400000+2440587.5):23.9; }catch(e){}
   var trop=((su+ayan)%360+360)%360;
   moStars();
   var Rbase=Math.min(S.w*0.355,(st.h-U*0.17)*0.42);

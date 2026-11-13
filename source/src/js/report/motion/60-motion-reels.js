@@ -371,7 +371,7 @@ MO_REELS.push({
         var ms = ss + (sr - ss) * (k / N);
         var jd = ms / 86400000 + 2440587.5;
         var ayan = 23.9;
-        try { if (window.__ayanFor) ayan = window.__ayanFor("lahiri", jd); } catch (e) {}
+        try { if (window.__ayanFor) ayan = window.__ayanFor(moAyanKey(), jd); } catch (e) {}
         var lst = moLST(jd, W.lon);
         var at = { ms: ms, q: {} };
         for (var n = 0; n < names.length; n++) {
@@ -505,7 +505,7 @@ MO_REELS.push({
         var ms = sr + (ss - sr) * (k / N);
         var jd = ms / 86400000 + 2440587.5;
         var ayan = 23.9;
-        try { if (window.__ayanFor) ayan = window.__ayanFor("lahiri", jd); } catch (e) {}
+        try { if (window.__ayanFor) ayan = window.__ayanFor(moAyanKey(), jd); } catch (e) {}
         var lon = moSidAt("Sun", ms);
         if (lon == null) continue;
         var A = moAltAz(lon, ayan, moLST(jd, W.lon), W.lat);
@@ -529,7 +529,7 @@ MO_REELS.push({
         var R = Math.PI / 180;
         function decAt(ms) {
           var jd = ms / 86400000 + 2440587.5, ay = 23.9;
-          try { if (window.__ayanFor) ay = window.__ayanFor("lahiri", jd); } catch (e) {}
+          try { if (window.__ayanFor) ay = window.__ayanFor(moAyanKey(), jd); } catch (e) {}
           var sid = moSidAt("Sun", ms);
           if (sid == null) return null;
           var trop = ((sid + ay) % 360 + 360) % 360;
@@ -887,7 +887,7 @@ window.__moShadowFacts = function () {
   /* the Sun's declination at the moment of the shortest shadow, which is what
      the closed form needs and what the scene never prints */
   var jd = M.best.ms / 86400000 + 2440587.5, ayan = 23.9;
-  try { if (window.__ayanFor) ayan = window.__ayanFor("lahiri", jd); } catch (e) {}
+  try { if (window.__ayanFor) ayan = window.__ayanFor(moAyanKey(), jd); } catch (e) {}
   var A = moAltAz(moSidAt("Sun", M.best.ms), ayan, moLST(jd, W.lon), W.lat);
   return { shortest: M.best.L, aksha: M.aksha, decAtNoon: A.dec,
            altAtNoon: A.alt, shortestH: moLocalH(M.best.ms, W.tz) };

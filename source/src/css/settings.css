@@ -66,3 +66,10 @@
 .nsfootnote{flex:1 1 22ch;margin:0}
 @media (max-width:520px){.nspanel{max-width:none}.nsover{padding:0}
   .nspanel{border-radius:0;min-height:100%}}
+/* the per-page ayanāṃśa picker (settings.js mountPageAyan) */
+.npayanwrap{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .6rem;flex-basis:100%;margin:.2rem 0}
+.npayan{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;font-size:.9rem;max-width:100%;min-width:0}
+.npayan span{opacity:.85}
+.npayan select{max-width:min(28rem,100%);min-width:0;min-height:32px;box-sizing:border-box}
+@media (max-width:560px){.npayan,.npayan select{width:100%}}
+.npayan-note{font-size:.82rem;opacity:.75;flex-basis:100%}

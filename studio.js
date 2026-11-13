@@ -117,6 +117,15 @@
     });
   }
   function hi() { return S.lang === "hi"; }
+  /* The page reckons in whatever ayanāṃśa its picker (or the site setting)
+     names, so every caption that states the zodiac says which one — a
+     hard-coded "Lahiri" would be false the moment the default changed. */
+  function ayanName() {
+    var k = (NP && NP.ayanKey) ? NP.ayanKey() : "lahiri";
+    if (k === "lahiri") return hi() ? "लाहिड़ी" : "Lahiri";
+    var M = (window.__ayanModes || {})[k];
+    return M ? M.name : k;
+  }
   function rashi(i) { return hi() ? RASHI_HI[i] : RASHI[i]; }
   function graha(n) { return hi() ? (GRAHA_HI[n] || n) : NP.grahaSa(n); }
   function eraOf(D) {
@@ -341,18 +350,18 @@
             ? (graha(e.graha) + " " + rashi(e.sign) + " में — " + whenWord(n))
             : (graha(e.graha) + " enters " + rashi(e.sign) + " " + whenWord(n)),
           body: hi()
-            ? ("यह निरयन (सायन नहीं) राशि-प्रवेश है, लाहिड़ी अयनांश के अनुसार — " +
+            ? ("यह निरयन (सायन नहीं) राशि-प्रवेश है, " + ayanName() + " अयनांश के अनुसार — " +
                "इसीलिए तिथि उस तारीख़ से भिन्न होती है जो सायन पद्धति देती है। " +
                dateAt(e.ms) + ", " + clockAt(e.ms) + "।")
             : ("This is the SIDEREAL ingress — measured against the stars, with " +
-               "the Lahiri ayanāṃśa — not the tropical one. The two differ by " +
+               "the " + ayanName() + " ayanāṃśa — not the tropical one. The two differ by " +
                "about 24 degrees, which is why this date is not the date a " +
                "Western ephemeris gives. " + dateAt(e.ms) + ", " + clockAt(e.ms) + "."),
           facts: [
             lbl("Enters") + ": " + rashi(e.sign) +
               (e.from != null ? " (" + (hi() ? "से " : "from ") + rashi(e.from) + ")" : ""),
             lbl("When") + ": " + dateAt(e.ms) + " " + clockAt(e.ms),
-            lbl("Zodiac") + ": sidereal, Lahiri ayanāṃśa"
+            lbl("Zodiac") + ": sidereal, " + ayanName() + " ayanāṃśa"
           ],
           tags: ["ingress", e.graha.toLowerCase()],
           rec: REC.ingress,
@@ -406,7 +415,7 @@
         facts: [
           lbl("Sun enters") + ": " + rashi(D.sankranti.sign),
           lbl("Exact") + ": " + clockAt(D.sankranti.ms),
-          lbl("Zodiac") + ": sidereal, Lahiri ayanāṃśa"
+          lbl("Zodiac") + ": sidereal, " + ayanName() + " ayanāṃśa"
         ],
         tags: ["sankranti"],
         rec: REC.sankranti,
@@ -526,7 +535,7 @@
       facts: [
         lbl("Sidereal periods") + ": Moon 27.3 d · Sun 365.3 d · Jupiter 11.9 y · Saturn 29.5 y",
         lbl("Māsa") + ": " + masaBoth(D) + " (amānta)",
-        lbl("Zodiac") + ": sidereal, Lahiri ayanāṃśa"
+        lbl("Zodiac") + ": sidereal, " + ayanName() + " ayanāṃśa"
       ],
       tags: ["grahas", "jyotish"],
       headline: hi() ? "शनि को तीस वर्ष क्यों" : "Why Śani takes thirty years",
@@ -597,9 +606,9 @@
     idea.facts.forEach(function (f) { L.push("• " + f); });
     L.push("");
     L.push(hi()
-      ? ("गणना ब्राउज़र में ही — निरयन राशिचक्र, लाहिड़ी अयनांश, " +
+      ? ("गणना ब्राउज़र में ही — निरयन राशिचक्र, " + ayanName() + " अयनांश, " +
          "सूर्योदय: उच्च बिम्ब + 34′ वक्रीभवन। स्थान: " + S.place.n + "。")
-      : ("Computed, not looked up: sidereal zodiac, Lahiri ayanāṃśa, sunrise " +
+      : ("Computed, not looked up: sidereal zodiac, " + ayanName() + " ayanāṃśa, sunrise " +
          "taken as the upper limb with 34′ refraction. Place: " + S.place.n + "."));
     L.push("");
     L.push(tagLine(idea));

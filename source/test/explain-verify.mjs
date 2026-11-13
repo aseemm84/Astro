@@ -411,14 +411,20 @@ console.log("\nThe twenty-seven, against the star catalogue");
      recomputed here straight from the catalogue's longitudes — floor(sid /
      13°20′) against the nakṣatra's own index — and matched against both the
      catalogue's stored flag and what each reel actually says. */
+  /* The catalogue's flag is a Lahiri fact and is checked raw. A REEL speaks
+     in the frame its page is set to (the page's ayanāṃśa picker, else the site
+     setting), so what it says is checked against the same arithmetic done in
+     that frame — stars re-based exactly as the page re-bases them. */
   const r = await pg.evaluate(() => {
     const SEG = 40 / 3, out = [];
+    const F = window.__framedStars ? window.__framedStars(window.YOGATARAS || []) : (window.YOGATARAS || []);
     (window.YOGATARAS || []).forEach((y, i) => {
       const R = window.SPStories.build("learn.nakshatra." + (i + 1),
         { t0: Date.parse("2026-01-01") });
       const x = ((y.sid % 360) + 360) % 360;
       out.push({ i, nak: y.nak, star: y.star,
                  computed: Math.floor(x / SEG) === y.id,
+                 inFrame: Math.floor((((F[i].sid % 360) + 360) % 360) / SEG) === y.id,
                  flagged: !!y.inside,
                  /* searched across the whole reel rather than pinned to a
                     beat index: the set has been reworked once already and a
@@ -436,8 +442,8 @@ console.log("\nThe twenty-seven, against the star catalogue");
   ok(disagree.length === 0,
      "the catalogue's own inside/outside flag matches the arithmetic on " +
      "every one", disagree.map(x => x.nak).join(" | "));
-  const misreported = r.filter(x => x.computed !== x.said ||
-                                    x.computed === x.saidNot);
+  const misreported = r.filter(x => x.inFrame !== x.said ||
+                                    x.inFrame === x.saidNot);
   ok(misreported.length === 0,
      "and every reel says what the arithmetic says, once and unambiguously",
      misreported.map(x => x.nak).join(" | "));

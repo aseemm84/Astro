@@ -1,11 +1,11 @@
 {
  "index": {
-  "title": "{{BRAND}} — Vedic Astrology from Bṛhat Parāśara Horā Śāstra",
+  "title": "{{BRAND}} — Vedic astrology, from the classical texts",
   "h1": "Vedic astrology, from the source",
-  "sub": "{{BRAND}} — {{GLOSS}} — is a source-grounded curriculum for Brihat Parashara Hora Shastra, from first principles to chart synthesis.",
+  "sub": "{{BRAND}} — {{GLOSS}} — teaches Jyotiṣa from its classical sources: Bṛhat Parāśara Horā Śāstra for judging a chart, with the Sūrya Siddhānta, Śrīpati and the pañcāṅga for the sky, the houses and the calendar — from first principles to chart synthesis.",
   "layout": "onecol",
   "has_aside": false,
-  "desc": "A source-grounded Vedic astrology curriculum built on Bṛhat Parāśara Horā Śāstra, with a free chart engine that computes Ṣaḍbala, Aṣṭakavarga and sixteen divisional charts in your browser."
+  "desc": "A source-grounded Vedic astrology curriculum built on Bṛhat Parāśara Horā Śāstra, the Sūrya Siddhānta, Śrīpati and the pañcāṅga, with a free chart engine that computes Ṣaḍbala, Aṣṭakavarga and sixteen divisional charts in your browser."
  },
  "grahas": {
   "title": "The Nine Grahas — {{BRAND}} (BPHS)",
@@ -13,7 +13,8 @@
   "sub": "Full profiles of the Sun through Ketu, the natural benefics and malefics, and the working classifications.",
   "layout": "",
   "has_aside": true,
-  "desc": "The nine grahas of Vedic astrology — their natural significations, benefic and malefic character, dignities and karakatvas, as Bṛhat Parāśara Horā Śāstra describes them."
+  "desc": "The nine grahas of Vedic astrology — their natural significations, benefic and malefic character, dignities and karakatvas, as Bṛhat Parāśara Horā Śāstra describes them.",
+  "eyebrow": "Bṛhat Parāśara Horā Śāstra"
  },
  "dignity": {
   "title": "Planetary Dignity &amp; Relationships — {{BRAND}} (BPHS)",
@@ -21,7 +22,8 @@
   "sub": "Exaltation, debilitation, Moolatrikona and own sign; the three tiers of friendship; combustion, war and retrogression; and the nodes.",
   "layout": "",
   "has_aside": true,
-  "desc": "Exaltation, debilitation, moolatrikona, own sign and the friendship tables — how a graha's strength is graded by the sign it stands in, with the BPHS rules set out in full."
+  "desc": "Exaltation, debilitation, moolatrikona, own sign and the friendship tables — how a graha's strength is graded by the sign it stands in, with the BPHS rules set out in full.",
+  "eyebrow": "Bṛhat Parāśara Horā Śāstra"
  },
  "rashis": {
   "title": "The Twelve Rashis — {{BRAND}} (BPHS)",
@@ -29,7 +31,8 @@
   "sub": "Every sign profiled, plus the modality, element, parity, rising-type, fertility and Kalapurusha classifications that drive later technique.",
   "layout": "",
   "has_aside": true,
-  "desc": "The twelve rāśis: element, mode, gender, lord, body part and the classical descriptions from Bṛhat Parāśara Horā Śāstra, with how each shapes a graha placed in it."
+  "desc": "The twelve rāśis: element, mode, gender, lord, body part and the classical descriptions from Bṛhat Parāśara Horā Śāstra, with how each shapes a graha placed in it.",
+  "eyebrow": "Bṛhat Parāśara Horā Śāstra"
  },
  "bhavas": {
   "title": "The Twelve Bhavas — {{BRAND}} (BPHS)",
@@ -37,7 +40,8 @@
   "sub": "House significations and karakas in depth, functional classes, bhava-lord placements with a worked case, house strength, and how a house prospers or breaks.",
   "layout": "",
   "has_aside": true,
-  "desc": "The twelve bhāvas and what each governs, with the BPHS significations, the bhāva lord's role, and how kendra, trikona, dusthāna and upachaya classify them."
+  "desc": "The twelve bhāvas and what each governs, with the BPHS significations, the bhāva lord's role, and how kendra, trikona, dusthāna and upachaya classify them.",
+  "eyebrow": "Bṛhat Parāśara Horā Śāstra"
  },
  "lagna": {
   "title": "Lagna &amp; Special Ascendants — {{BRAND}} (BPHS)",
@@ -45,7 +49,8 @@
   "sub": "The rising point that anchors the chart, the twelve ascendant temperaments, and the computed Bhava, Hora, Ghatika, Arudha, Sree and Prana ascendants.",
   "layout": "",
   "has_aside": true,
-  "desc": "The lagna — the point of the ecliptic rising in the east — how it is computed, why it moves a degree every four minutes, and why rāśis take unequal times to rise."
+  "desc": "The lagna — the point of the ecliptic rising in the east — how it is computed, why it moves a degree every four minutes, and why rāśis take unequal times to rise.",
+  "eyebrow": "Bṛhat Parāśara Horā Śāstra"
  },
  "vargas": {
   "title": "Shodasha Vargas — {{BRAND}} (BPHS)",
@@ -53,7 +58,8 @@
   "sub": "All sixteen divisional charts, how to read a varga, and the significance of each of the twelve houses within every chart that is read as a chart.",
   "layout": "",
   "has_aside": true,
-  "desc": "The sixteen divisional charts of BPHS — Horā, Drekkāṇa, Navāṃśa, Daśāṃśa and the rest — how each is computed and what each refines in the rāśi chart."
+  "desc": "The sixteen divisional charts of BPHS — Horā, Drekkāṇa, Navāṃśa, Daśāṃśa and the rest — how each is computed and what each refines in the rāśi chart.",
+  "eyebrow": "Bṛhat Parāśara Horā Śāstra"
  },
  "aspects": {
   "title": "Aspects — Graha &amp; Rashi Drishti — {{BRAND}} (BPHS)",
@@ -61,7 +67,8 @@
   "sub": "Planetary aspects with the graded glances and Virupa values, sign aspects in full, aspects on houses, and when to use which system.",
   "layout": "",
   "has_aside": true,
-  "desc": "Graha dṛṣṭi and rāśi dṛṣṭi: the seventh-house aspect every graha casts, the special aspects of Maṅgala, Guru and Śani, and how the two aspect systems differ."
+  "desc": "Graha dṛṣṭi and rāśi dṛṣṭi: the seventh-house aspect every graha casts, the special aspects of Maṅgala, Guru and Śani, and how the two aspect systems differ.",
+  "eyebrow": "Bṛhat Parāśara Horā Śāstra"
  },
  "strength": {
   "title": "Strength — Shadbala, Bhava Bala &amp; Ishta/Kashta — {{BRAND}} (BPHS)",
@@ -69,7 +76,8 @@
   "sub": "Every Shadbala component and its sub-parts and minimums, house strength, benefic vs difficult potency, and Vimsopaka divisional strength.",
   "layout": "",
   "has_aside": true,
-  "desc": "Ṣaḍbala in full: sthāna, dig, kāla, cheṣṭā, naisargika and dṛk bala, with Iṣṭa and Kaṣṭa, Viṃśopaka and the required rūpa thresholds, worked step by step."
+  "desc": "Ṣaḍbala in full: sthāna, dig, kāla, cheṣṭā, naisargika and dṛk bala, with Iṣṭa and Kaṣṭa, Viṃśopaka and the required rūpa thresholds, worked step by step.",
+  "eyebrow": "Bṛhat Parāśara Horā Śāstra"
  },
  "special-points": {
   "title": "Arudhas, Argala, Karakas &amp; Karakamsa — {{BRAND}} (BPHS)",
@@ -77,7 +85,8 @@
   "sub": "Image-points and how to read the Arudha Lagna and Upapada, interventions, both karaka schemes, and the Karakamsa lagna.",
   "layout": "",
   "has_aside": true,
-  "desc": "Arudha padas, Upapada, Argala, the Chara Karakas and Karakāṃśa — the special points of BPHS and Jaimini-adjacent technique, with how each is derived."
+  "desc": "Arudha padas, Upapada, Argala, the Chara Karakas and Karakāṃśa — the special points of BPHS and Jaimini-adjacent technique, with how each is derived.",
+  "eyebrow": "Bṛhat Parāśara Horā Śāstra"
  },
  "yogas": {
   "title": "Yogas — the full catalogue — {{BRAND}} (BPHS)",
@@ -85,7 +94,8 @@
   "sub": "Yogakaraka, the five Mahapurusha yogas, lunar and solar yogas, the 32 Nabhasa yogas, Raja and Dhana yogas, Parivartana, Vipareeta and Neechabhanga, and the arishta and penury combinations.",
   "layout": "",
   "has_aside": true,
-  "desc": "Rāja yogas, Dhana yogas, the Nābhasa yogas and the lunar and solar combinations of BPHS — formation, classical effect, and the cancellation and timing that decide them."
+  "desc": "Rāja yogas, Dhana yogas, the Nābhasa yogas and the lunar and solar combinations of BPHS — formation, classical effect, and the cancellation and timing that decide them.",
+  "eyebrow": "Bṛhat Parāśara Horā Śāstra"
  },
  "avasthas-longevity": {
   "title": "Avasthas, Longevity &amp; Maraka — {{BRAND}} (BPHS)",
@@ -93,7 +103,8 @@
   "sub": "The five avastha schemes, and the longevity methods and Maraka doctrine — presented academically, with care.",
   "layout": "",
   "has_aside": true,
-  "desc": "Bālādi and the other avasthās, with the BPHS longevity and māraka chapters treated as historical doctrine rather than prediction."
+  "desc": "Bālādi and the other avasthās, with the BPHS longevity and māraka chapters treated as historical doctrine rather than prediction.",
+  "eyebrow": "Bṛhat Parāśara Horā Śāstra"
  },
  "dashas": {
   "title": "Dashas — {{BRAND}} (BPHS)",
@@ -101,7 +112,8 @@
   "sub": "Vimshottari with worked balance-at-birth and sub-period examples, the conditional nakshatra dashas, and the rasi (sign) dashas of BPHS.",
   "layout": "",
   "has_aside": true,
-  "desc": "Viṃśottarī daśā from first principles — the nakṣatra lords, the 120-year cycle, balance at birth, and antardaśā arithmetic, with the other BPHS daśā systems."
+  "desc": "Viṃśottarī daśā from first principles — the nakṣatra lords, the 120-year cycle, balance at birth, and antardaśā arithmetic, with the other BPHS daśā systems.",
+  "eyebrow": "Bṛhat Parāśara Horā Śāstra"
  },
  "ashtakavarga": {
   "title": "Ashtakavarga — {{BRAND}} (BPHS)",
@@ -109,7 +121,8 @@
   "sub": "Benefic-point rules, Bhinna- and Sarvashtakavarga with reading thresholds, kakshas, the three shodhanas, and transit interpretation.",
   "layout": "",
   "has_aside": true,
-  "desc": "Aṣṭakavarga worked in full: the bindus each graha contributes, Trikoṇa and Ekādhipatya śodhana, and Sarvāṣṭakavarga with the 337 total that must hold."
+  "desc": "Aṣṭakavarga worked in full: the bindus each graha contributes, Trikoṇa and Ekādhipatya śodhana, and Sarvāṣṭakavarga with the 337 total that must hold.",
+  "eyebrow": "Bṛhat Parāśara Horā Śāstra"
  },
  "now": {
   "title": "Hindu time now — the pañcāṅga for this moment — {{BRAND}}",
@@ -117,7 +130,8 @@
   "sub": "The five limbs of the day as they stand, for the place you choose — computed in your browser, with no birth chart needed.",
   "layout": "",
   "has_aside": true,
-  "desc": "The current Hindu date and time for any place: tithi, nakṣatra, yoga, karaṇa and vāra with their end-times, the lunar month in both reckonings, sunrise and sunset, and the later-tradition divisions of the day."
+  "desc": "The current Hindu date and time for any place: tithi, nakṣatra, yoga, karaṇa and vāra with their end-times, the lunar month in both reckonings, sunrise and sunset, and the later-tradition divisions of the day.",
+  "eyebrow": "Pañcāṅga · the Hindu almanac"
  },
  "calendar": {
   "title": "Pañcāṅga calendar — any month, 1800–2200 — {{BRAND}}",
@@ -125,7 +139,8 @@
   "h1": "Pañcāṅga calendar",
   "sub": "Any month from 1800 to 2200, for the place you choose — with the rule behind every festival shown beside it.",
   "layout": "",
-  "has_aside": true
+  "has_aside": true,
+  "eyebrow": "Pañcāṅga · the Hindu almanac"
  },
  "studio": {
   "title": "Studio — what to post today — {{BRAND}}",
@@ -133,7 +148,8 @@
   "h1": "Studio",
   "sub": "What is worth posting today — the caption, the numbers behind it, and the image.",
   "layout": "",
-  "has_aside": true
+  "has_aside": true,
+  "eyebrow": "Pañcāṅga · the Hindu almanac"
  },
  "studio-pro": {
   "title": "Studio Pro — the combinatorial animation workstation — {{BRAND}}",
@@ -165,7 +181,8 @@
   "h1": "Sūrya Siddhānta",
   "sub": "The same sky, computed the older way — the two set side by side, the epicycles drawn, and the text's own constants open to correction.",
   "layout": "",
-  "has_aside": true
+  "has_aside": true,
+  "eyebrow": "Sūrya Siddhānta · modern ephemeris"
  },
  "engine-lab": {
   "title": "Engine lab — three engines, one question &mdash; {{BRAND}}",
@@ -173,7 +190,8 @@
   "sub": "The modern ephemeris, the Sūrya Siddhānta and its fitted tier put to the same questions — and what their disagreements are actually worth.",
   "layout": "",
   "has_aside": true,
-  "desc": "Every engine in the project asked the same question at once — where the grahas are, which nakṣatra, which tithi, which daśā — with the agreement rate measured over any span, a converter that turns arcseconds into fractions of a division and days of Viṃśottarī, and one logarithmic ruler showing that the conventions disagree by degrees where the engines disagree by arcminutes."
+  "desc": "Every engine in the project asked the same question at once — where the grahas are, which nakṣatra, which tithi, which daśā — with the agreement rate measured over any span, a converter that turns arcseconds into fractions of a division and days of Viṃśottarī, and one logarithmic ruler showing that the conventions disagree by degrees where the engines disagree by arcminutes.",
+  "eyebrow": "Sūrya Siddhānta · modern ephemeris"
  },
  "simulation": {
   "title": "Simulation — what if the Moon moved? — {{BRAND}}",
@@ -229,7 +247,8 @@
   "sub": "Whole sign, equal and Śrīpati drawn on one circle for any moment and place — and exactly which grahas they disagree about.",
   "layout": "",
   "has_aside": true,
-  "desc": "The three ways of dividing the twelve bhāvas compared on one wheel for any moment and place: whole sign, equal from the lagna, and the Śrīpati construction from the lagna and the MC, with the grahas each system places differently, the fifteen-degree madhya rule drawn, and how far latitude distorts the houses."
+  "desc": "The three ways of dividing the twelve bhāvas compared on one wheel for any moment and place: whole sign, equal from the lagna, and the Śrīpati construction from the lagna and the MC, with the grahas each system places differently, the fifteen-degree madhya rule drawn, and how far latitude distorts the houses.",
+  "eyebrow": "Śrīpati Paddhati · BPHS"
  },
  "ayanamsa": {
   "title": "Ayanāṃśa — the gap between two zodiacs &mdash; {{BRAND}}",
@@ -237,7 +256,8 @@
   "sub": "Two zodiacs, two different zeros, and the angle between them — explained from scratch, measured live, and open to one you invent yourself.",
   "layout": "",
   "has_aside": true,
-  "desc": "What the ayanāṃśa is and why it exists, with the gap between the sidereal and tropical zeros drawn for any year, the formula shown term by term, a measured account of what it changes and what it mathematically cannot, all nineteen definitions compared, the band the evidence actually allows, and a sandbox for building your own."
+  "desc": "What the ayanāṃśa is and why it exists, with the gap between the sidereal and tropical zeros drawn for any year, the formula shown term by term, a measured account of what it changes and what it mathematically cannot, all nineteen definitions compared, the band the evidence actually allows, and a sandbox for building your own.",
+  "eyebrow": "Ayanāṃśa · where the zodiac begins"
  },
  "starwheel": {
   "title": "Star wheel &mdash; the whole sky for any day &mdash; {{BRAND}}",
@@ -245,7 +265,8 @@
   "sub": "The whole sky as a tilted disc for any day and place, with that day’s pañcāṅga beneath it — no birth chart needed.",
   "layout": "",
   "has_aside": true,
-  "desc": "The tilted star wheel for any day and place, with the twenty-seven yogatārās at their own longitude and latitude, the whole day’s tithi, nakṣatra, yoga and karaṇa with their end-times, kṣaya and adhika tithis named, and a customisable card to share."
+  "desc": "The tilted star wheel for any day and place, with the twenty-seven yogatārās at their own longitude and latitude, the whole day’s tithi, nakṣatra, yoga and karaṇa with their end-times, kṣaya and adhika tithis named, and a customisable card to share.",
+  "eyebrow": "Pañcāṅga · the Hindu almanac"
  },
  "credits": {
   "title": "Credits &amp; licences &mdash; {{BRAND}}",

@@ -796,9 +796,9 @@
   function starsIn(lo, hi, latLim) {
     var A = window.ECLIP_STARS, L = window.ECLIP_LABELS || [];
     if (!A) return [];
-    var out = [], i;
+    var out = [], i, sh = window.__starShift ? window.__starShift() : 0;
     for (i = 0; i + 3 < A.length; i += 4) {
-      var s = A[i] / 1000, b = A[i + 1] / 1000;
+      var s = norm360(A[i] / 1000 + sh), b = A[i + 1] / 1000;
       if (Math.abs(b) > latLim) continue;
       var d = norm360(s - lo);
       if (d > norm360(hi - lo)) continue;
@@ -1791,6 +1791,7 @@
   var SEG = 40 / 3;                     /* 13°20′ */
   function nakList() {
     var Y = window.YOGATARAS;
+    if (Y && window.__framedStars) Y = window.__framedStars(Y);   /* into the page's frame */
     return (Y && Y.length === 27) ? Y : null;
   }
   function insideOwn(y) { return Math.floor(norm360(y.sid) / SEG) === y.id; }
@@ -1942,7 +1943,7 @@
         lord: lord[0], lordYears: lord[1],
         yoni: KUTA.yoni[i], gana: KUTA.gana[i], nadi: KUTA.nadi[i]
       },
-      method: "HYG catalogue under Lahiri · BPHS, Vol. 2, Ch. 46, " +
+      method: "HYG catalogue under " + (window.__ayanName ? window.__ayanName() : "Lahiri") + " · BPHS, Vol. 2, Ch. 46, " +
               "vv. 12–16",
       closing: {
         big: y.nak,
@@ -1955,7 +1956,7 @@
           "this stretch of sky fall inside the division. " +
           "Vimśottarī lord " + lord[0] + ", " + lord[1] + " years.",
           "Star positions: HYG (Hipparcos/Yale/Gliese), J2000, sidereal " +
-          "under Lahiri. Daśā lords: BPHS, Vol. 2, Ch. 46, " +
+          "under " + (window.__ayanName ? window.__ayanName() : "Lahiri") + ". Daśā lords: BPHS, Vol. 2, Ch. 46, " +
           "vv. 12–16.",
           "A classical framework for study, not a prediction."
         ]
@@ -2242,7 +2243,7 @@
         place: place ? place.n : null,
         drishti: rashiDrishti(i).map(function (j) { return SIGN[j]; })
       },
-      method: "HYG catalogue under Lahiri · passages and ascendant measured",
+      method: "HYG catalogue under " + (window.__ayanName ? window.__ayanName() : "Lahiri") + " · passages and ascendant measured",
       placeName: place ? place.n : null,
       closing: {
         big: SIGN[i],
@@ -2255,7 +2256,7 @@
           (riseM == null ? "." : "; it rises in " + minWords(riseM) + " at " +
             (place ? place.n : "this latitude") + "."),
           "Classifications: BPHS, Vol. 1, Ch. 4. Stars: HYG, J2000, sidereal " +
-          "under Lahiri. Passages and ascendant measured against a modern " +
+          "under " + (window.__ayanName ? window.__ayanName() : "Lahiri") + ". Passages and ascendant measured against a modern " +
           "ephemeris.",
           "A classical framework for study, not a prediction."
         ]

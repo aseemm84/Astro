@@ -1586,8 +1586,9 @@
     t.appendChild(tb);
     host.appendChild(t);
     host.appendChild(el("p", "ssnote",
-      "The modern column is this site's own ephemeris, sidereal, with the " +
-      "same ayanāṃśa the rest of the site uses. The difference is not an " +
+      "The modern column is this site's own ephemeris, sidereal, in the " +
+      (window.__ayanName ? window.__ayanName() : "Lahiri") + " ayanāṃśa — this page's " +
+      "default is Lahiri, and the picker above changes it for this page alone. The difference is not an " +
       "error in either: it is the distance between a fifth-century theory " +
       "and a modern one, and it is what this page exists to show."));
   }

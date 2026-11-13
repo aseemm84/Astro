@@ -50,7 +50,7 @@ var MD_NAK = ["Aśvinī", "Bharaṇī", "Kṛttikā", "Rohiṇī", "Mṛgaśira"
    scrub. */
 function mdAyanAt(year) {
   var jd = 2451545.0 + (year - 2000) * 365.2425;
-  try { if (window.__ayanFor) return window.__ayanFor("lahiri", jd); } catch (e) {}
+  try { if (window.__ayanFor) return window.__ayanFor(moAyanKey(), jd); } catch (e) {}
   var T = (jd - 2451545.0) / 36525.0;
   return 0.000307083556492 * T * T + 1.39688796382 * T + 23.857092356;
 }

@@ -37,6 +37,14 @@ const server=createServer(async(q,r)=>{const u=decodeURIComponent((q.url||"/").s
   r.writeHead(200,{"content-type":T[extname(u)]||"application/octet-stream"});r.end(b);}catch{r.writeHead(404).end("no");}});
 const port=await new Promise(r=>server.listen(0,"127.0.0.1",()=>r(server.address().port)));
 const br=await chromium.launch(); const pg=await br.newPage();
+/* The sampled sky is "now", so the result used to depend on the day the gate
+   ran: on 13 Nov 2026 one random pairing (Candra's combustion + a Maṅgala–Budha
+   opposition) had no event in its one-year window and drew a still, while the
+   same selection forty days either side animated. The page is right to draw a
+   still when there is nothing to animate; the test was wrong to depend on the
+   calendar. Its clock is pinned, so a pass means the same thing every day. */
+await pg.addInitScript(() => { const T = Date.UTC(2026, 10, 1, 6, 0, 0), t0 = performance.now();
+  Date.now = () => T + (performance.now() - t0); });
 const errs=[]; pg.on("pageerror",e=>errs.push(String(e)));
 await pg.goto(`http://127.0.0.1:${port}/kundli.html`,{waitUntil:"load"});
 await pg.waitForFunction(()=>window.buildLocalChart,{timeout:30000});

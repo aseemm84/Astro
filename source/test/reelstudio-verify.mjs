@@ -52,6 +52,12 @@ const ok = (c, m, extra) => {
 
 const br = await chromium.launch();
 const pg = await br.newPage({ viewport: { width: 1300, height: 1000 } });
+/* The festival reels are checked against PUBLISHED 2025 dates, which civil
+   almanacs reckon in Lahiri; Reel Studio follows the site's ayanāṃśa unless
+   the page is set otherwise, so the page is set to Lahiri the way a reader
+   matching a printed almanac would set it, with the per-page picker. */
+await pg.addInitScript(() => { try { localStorage.setItem("nirayana.pageAyan",
+  JSON.stringify({ "reel.html": "lahiri" })); } catch (e) {} });
 const errs = [];
 pg.on("console", m => { if (m.type() === "error") errs.push(m.text()); });
 pg.on("pageerror", e => errs.push("PAGEERROR " + e.message));

@@ -262,6 +262,13 @@
 .nsfootnote{flex:1 1 22ch;margin:0}
 @media (max-width:520px){.nspanel{max-width:none}.nsover{padding:0}
   .nspanel{border-radius:0;min-height:100%}}
+/* the per-page ayanāṃśa picker (settings.js mountPageAyan) */
+.npayanwrap{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .6rem;flex-basis:100%;margin:.2rem 0}
+.npayan{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;font-size:.9rem;max-width:100%;min-width:0}
+.npayan span{opacity:.85}
+.npayan select{max-width:min(28rem,100%);min-width:0;min-height:32px;box-sizing:border-box}
+@media (max-width:560px){.npayan,.npayan select{width:100%}}
+.npayan-note{font-size:.82rem;opacity:.75;flex-basis:100%}
 
 </style>
 <script>
@@ -683,13 +690,106 @@
     document.addEventListener("DOMContentLoaded", function () { mount(); });
   else mount();
 
-  window.NSettings = { get: get, set: set, defaults: function () {
+  /* ---- the almanac pages' own ayanāṃśa ------------------------------------
+     Now, Calendar, Star wheel and Studio name nakṣatras, yogas and solar
+     months. They follow the ayanāṃśa above by default, and each carries its
+     own override so a reader can keep one page on another convention — Lahiri,
+     to match a printed almanac, say — without changing the site. Stored per
+     page under nirayana.pageAyan. */
+  var PAGEKEY = "nirayana.pageAyan";
+  function pageName() {
+    try { return (location.pathname.split("/").pop() || "index.html").toLowerCase(); }
+    catch (e) { return "index.html"; }
+  }
+  function modes() { return window.__ayanModes || null; }
+  function pageOverride() {
+    try {
+      var m = JSON.parse(window.localStorage.getItem(PAGEKEY) || "{}") || {};
+      var v = m[pageName()], M = modes();
+      return (v && (!M || M[v])) ? v : null;
+    } catch (e) { return null; }
+  }
+  /* Which pages carry their own picker, and what each starts on, is decided in
+     ONE place — engine.js's PAGE_AYAN table, which has to resolve the frame
+     before the first position is computed. The almanac pages, Studio Pro, Reel
+     Studio, Director Pro and Motion follow the site setting; the Sūrya
+     Siddhānta and Engine Lab pages start on Lahiri, the frame their
+     comparisons are drawn in. Any of them can be set to another convention for
+     that page alone. A page outside the table answers "lahiri", as before. */
+  function pageRule() { return window.__pageAyanRule ? window.__pageAyanRule() : null; }
+  function almanacAyan() {
+    if (window.__pageAyan) { var a = window.__pageAyan(); return a || "lahiri"; }
+    var M = modes(), v = pageOverride() || get().ayan;
+    return (!M || M[v]) ? v : "samanvaya_ecliptic";
+  }
+  function setPageAyan(key) {
+    try {
+      var m = JSON.parse(window.localStorage.getItem(PAGEKEY) || "{}") || {};
+      if (key) m[pageName()] = key; else delete m[pageName()];
+      window.localStorage.setItem(PAGEKEY, JSON.stringify(m));
+    } catch (e) {}
+    try { window.dispatchEvent(new CustomEvent("nirayana:almanac-ayan", { detail: almanacAyan() })); } catch (e) {}
+  }
+  function ayanName(k) { var M = modes(); return M && M[k] ? M[k].name : k; }
+  /* The picker, mounted into #np-ayan. Changing it reloads the page: every
+     almanac page derives a great deal from the convention, and a reload is the
+     one way to be sure nothing computed under the old one survives. */
+  function mountPageAyan(host) {
+    host = host || document.getElementById("np-ayan");
+    if (!host || host.querySelector("select")) return false;
+    var M = modes(); if (!M) return false;
+    var lab = document.createElement("label"); lab.className = "npayan";
+    var sp = document.createElement("span"); sp.textContent = "Ayanāṃśa for this page";
+    var sel = document.createElement("select"); sel.className = "swin"; sel.id = "np-ayan-sel";
+    var rule = pageRule();
+    var o0 = document.createElement("option"); o0.value = "";
+    o0.textContent = rule && rule !== "site"
+      ? "Page default — " + ayanName(rule) + ", the frame this comparison is drawn in"
+      : "Follow the site setting — " + ayanName(get().ayan);
+    sel.appendChild(o0);
+    Object.keys(M).forEach(function (k) {
+      var o = document.createElement("option"); o.value = k; o.textContent = ayanName(k) +
+        (k === "lahiri" ? " — the Indian civil standard printed almanacs use" : "");
+      sel.appendChild(o);
+    });
+    sel.value = pageOverride() || "";
+    sel.addEventListener("change", function () { setPageAyan(sel.value || null); location.reload(); });
+    lab.appendChild(sp); lab.appendChild(sel); host.appendChild(lab);
+    var note = document.createElement("span"); note.className = "npayan-note";
+    var what = host.getAttribute("data-what") ||
+      "Nakṣatras, yogas and solar months here are named in";
+    note.textContent = what + " " + ayanName(almanacAyan()) +
+      (pageOverride() ? " — chosen for this page only."
+        : (rule && rule !== "site" ? ", this page's default; choosing another here changes this page only."
+                                   : ", the site setting; choosing another here changes this page only.")) +
+      (host.getAttribute("data-after") || " Tithi and karaṇa do not depend on it.");
+    host.appendChild(note);
+    return true;
+  }
+  /* mount as soon as the engine has published its modes */
+  (function tryMount(n) {
+    if (typeof document === "undefined") return;
+    if (document.getElementById("np-ayan") && !mountPageAyan() && n < 100)
+      setTimeout(function () { tryMount(n + 1); }, 150);
+    else if (!document.getElementById("np-ayan") && n < 3)
+      setTimeout(function () { tryMount(n + 1); }, 300);
+  })(0);
+  /* a page following the site setting follows a change to it at once */
+  try {
+    window.addEventListener("nirayana:settings", function (e) {
+      var ch = e && e.detail && e.detail.changed;
+      if (ch && ch.indexOf("ayan") >= 0 && document.getElementById("np-ayan") && !pageOverride() && pageRule() !== "lahiri") location.reload();
+    });
+  } catch (e) {}
+
+  window.NSettings = { get: get, set: set, almanacAyan: almanacAyan, pageAyan: pageOverride,
+    setPageAyan: setPageAyan, mountPageAyan: mountPageAyan, defaults: function () {
     var d = {}; Object.keys(DEF).forEach(function (k) { d[k] = DEF[k]; }); return d;
   }, open: open, close: close, options: OPTS };
 })();
 
 </script>
-<style>.plainx{margin:0 0 1.4rem;border:1px solid rgba(128,128,128,.35);border-left:4px solid #c08a2b;border-radius:10px;background:rgba(192,138,43,.07);font-size:1rem;line-height:1.55;color:inherit}.plainx>details>summary{cursor:pointer;padding:.75rem 1rem;list-style:none}.plainx>details>summary::-webkit-details-marker{display:none}.plainx>details>summary b{display:block;font-size:1.02rem}.plainx>details>summary b:before{content:'\25B8  ';}.plainx>details[open]>summary b:before{content:'\25BE  ';}.plainx>details>summary span{display:block;opacity:.85;margin-top:.15rem}.plainx .plainb{padding:0 1rem .9rem}.plainx .plainb h4{margin:.8rem 0 .2rem;font-size:.95rem}.plainx .plainb p{margin:.1rem 0}.plainx.plainx-adopted{max-width:1100px;width:calc(100% - 32px);margin:1rem auto 1.2rem;box-sizing:border-box}@media print{.plainx{display:none}}</style><section class="plainx plainx-adopted" data-plain="108-nakshatra-padas.html" aria-label="Explain in simple language"><details><summary><b>Explain in simple language</b><span>All 108 quarter-stars (pādas) of the zodiac, what each one is associated with, and how each planet is said to behave there.</span></summary><div class="plainb"><h4>What this page is</h4><p>The zodiac has 27 stars (nakṣatras), each split into four quarters — 108 in all. For each quarter this page lists its divisional sign, ruling planet, presiding deity, symbol, temperament (gana) and naming syllable, and then how each of the nine planets is traditionally described when it sits in that quarter.</p><h4>How to use it</h4><p>Use the search box or the filters (ruling planet, temperament, sign, house) to find a quarter. Choose which planets to show with the buttons. Your own chart from the Kundli page tells you which quarter each of your planets is in.</p><h4>How to read what you see</h4><p>Read each description as a traditional association, a theme to consider alongside the rest of the chart.</p><h4>A word of care</h4><p>These descriptions are tendencies from tradition, not predictions.</p></div></details></section>
+<style>.plainx{margin:0 0 1.4rem;border:1px solid rgba(128,128,128,.35);border-left:4px solid #c08a2b;border-radius:10px;background:rgba(192,138,43,.07);font-size:1rem;line-height:1.55;color:inherit}.plainx>details>summary{cursor:pointer;padding:.75rem 1rem;list-style:none}.plainx>details>summary::-webkit-details-marker{display:none}.plainx>details>summary b{display:block;font-size:1.02rem}.plainx>details>summary b:before{content:'\25B8  ';}.plainx>details[open]>summary b:before{content:'\25BE  ';}.plainx>details>summary span{display:block;opacity:.85;margin-top:.15rem}.plainx .plainb{padding:0 1rem .9rem}.plainx .plainb h4{margin:.8rem 0 .2rem;font-size:.95rem}.plainx .plainb p{margin:.1rem 0}.plainx.plainx-adopted{max-width:1100px;width:calc(100% - 32px);margin:1rem auto 1.2rem;box-sizing:border-box}@media print{.plainx{display:none}}</style><section class="plainx plainx-adopted" data-plain="108-nakshatra-padas.html" aria-label="Explain in simple language"><details><summary><b>Explain in simple language</b><span>All 108 quarter-stars (pādas) of the zodiac, what each one is associated with, and how each planet is said to behave there.</span></summary><div class="plainb"><h4>What this page is</h4><p>The zodiac has 27 stars (nakṣatras), each split into four quarters — 108 in all. For each quarter this page lists its divisional sign, ruling planet, presiding deity, symbol, temperament (gana) and naming syllable, and then how each of the nine planets is traditionally described when it sits in that quarter.</p><h4>How to use it</h4><p>Use the search box or the filters (ruling planet, temperament, navāṃśa sign, house) to find a quarter; tick <b>Vargottama only</b> to see the quarters whose navāṃśa sign matches their own sign, and press <b>Reset</b> to clear the filters. The planet buttons (<b>All 9</b>, Sun, Moon…) mark where those planets of your saved chart sit; <b>Hide</b> removes the marks. Cast your chart on the Kundli page first for these marks to appear.</p><h4>How to read what you see</h4><p>Read each description as a traditional association, a theme to consider alongside the rest of the chart.</p><h4>A word of care</h4><p>These descriptions are tendencies from tradition, not predictions.</p></div></details></section>
   <header class="masthead">
     <p class="kicker">Jyotish Reference &middot; BPHS structure, classical symbolism &amp; a derived graha grid</p>
     <h1>The <span class="n">108</span> Nakshatra Padas &amp; the Nine Grahas</h1>

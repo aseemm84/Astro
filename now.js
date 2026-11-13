@@ -94,8 +94,14 @@
   /* --- the day object ------------------------------------------------------
      Given an instant and a place, everything about the Hindu day that instant
      falls in. This is the function the calendar will be built on. */
+  function almanacKey(){
+    try{ if(window.NSettings&&window.NSettings.almanacAyan) return window.NSettings.almanacAyan(); }catch(e){}
+    return "samanvaya_ecliptic";
+  }
   function sidAt(name,ms){
-    try{ return window.__kSidAt(name,new Date(ms)); }catch(e){ return null; }
+    /* the almanac's convention — see NP.ayanKey in panchanga.js */
+    try{ var d=new Date(ms), k=almanacKey();
+         return window.__kSidAtMode ? window.__kSidAtMode(name,d,k) : window.__kSidAt(name,d); }catch(e){ return null; }
   }
   /* The sunrise convention, held here and passed into every search, so the whole
      page dates its day one way. Changing it re-dates everything downstream — the
@@ -161,7 +167,7 @@
     if(su==null||mo==null) return null;
     var jd=window.__kJD(ms);
     var pc=window.__kPanchang(su,mo,jd);
-    var ayn=0; try{ ayn=window.__ayanFor?window.__ayanFor("lahiri",jd):0; }catch(e){}
+    var ayn=0; try{ ayn=window.__ayanFor?window.__ayanFor(almanacKey(),jd):0; }catch(e){}
     var ms2=window.__kMasa(su,mo,ayn);
     var sr=dayStart(ms,P);
     var ss=(sr==null)?null:riseSet(sr,P,-1);

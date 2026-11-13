@@ -1541,6 +1541,21 @@
     var T = (jd - 2451545.0) / 36525.0;
     return LAH[2] + LAH[1] * T + LAH[0] * T * T;
   }
+  /* The frame the modern column is read in: Lahiri by default (the frame the
+     fitted tier was fitted in, so a comparison is engines and not zeros), or
+     whatever the reader picks for this page. */
+  function pageMode() { try { return (window.__pageAyan && window.__pageAyan()) || "lahiri"; } catch (e) { return "lahiri"; } }
+  function frameAt(jd) {
+    var m = pageMode();
+    if (m === "lahiri" || !window.__ayanFor) return lahiriAt(jd);
+    return window.__ayanFor(m, jd);
+  }
+  function frameNote() {
+    var m = pageMode();
+    if (m === "lahiri") return "The modern column is in the Lahiri frame the fitted tier was fitted in; the text as written counts from its own zero. ";
+    return "The modern column is in the " + (window.__ayanName ? window.__ayanName(m) : m) +
+      " frame chosen for this page; the fitted tier was fitted in Lahiri, so part of every difference here is the gap between the two zeros rather than between the engines. ";
+  }
   /* The engine's state is global, so a tier is entered, read and left. Reading
      all three at one moment is three passes, not one — which is the point. */
   function withTier(k, fn) {
@@ -1569,7 +1584,7 @@
       try {
         var e = window.__kEclip(EN[sa], ms);
         out.lon[sa] = e ? e.lon : null;        /* the site's own ayanāṃśa */
-        out.lahiri[sa] = e ? norm(e.trop - lahiriAt(ms / 86400000 + 2440587.5))
+        out.lahiri[sa] = e ? norm(e.trop - frameAt(ms / 86400000 + 2440587.5))
                            : null;             /* the frame the fit used */
       } catch (err) { out.lon[sa] = null; }
     });
@@ -1635,7 +1650,7 @@
      in and the one the almanac names its limbs in — so a sign compared across
      engines is not also a comparison of two sidereal zeros */
   function modLonL(sa) { return function (t) { var e = window.__kEclip(EN[sa], t);
-    return e ? norm(e.trop - lahiriAt(t / 86400000 + 2440587.5)) : null; }; }
+    return e ? norm(e.trop - frameAt(t / 86400000 + 2440587.5)) : null; }; }
 
   /* ---- the question, answered three ways --------------------------------- */
   var NAKW = 360 / 27;
@@ -1755,7 +1770,7 @@
           m === f && m === b ? "all three" : (m === f ? "modern = fitted" : (m === b ? "modern = written" : (f === b ? "fitted = written" : "each different")))] };
       });
       verdict = "<b>" + agreeAll + " of 7</b> grahas are placed in the same " +
-        (d9 ? "navāṃśa (the ninth division of a sign, 3°20′ wide)" : "rāśi (30° wide)") + " by all three engines. The modern column is in the Lahiri frame the fitted tier was fitted in; the text as written counts from its own zero. " +
+        (d9 ? "navāṃśa (the ninth division of a sign, 3°20′ wide)" : "rāśi (30° wide)") + " by all three engines. " + frameNote() +
         (d9 ? "A navāṃśa is a ninth of a sign, so a difference of a degree or two in longitude changes it far more often " +
               "than it changes the sign — the same three longitudes, read through a finer division."
             : "A sign is wide, so the three usually agree; where they differ, the graha is near a sign boundary in at least " +
@@ -1842,7 +1857,7 @@
               { k: "Difference from modern", cells: ["", minutesApart(fS && fS.at, mS && mS.at), minutesApart(bS && bS.at, mS && mS.at)] }];
       verdict = "A saṃkrānti is the moment the Sun enters the next sidereal sign — the start of a solar month. The Sun moves " +
         "about a degree a day, so each degree of difference in its longitude, or in the sidereal zero, moves the saṃkrānti by " +
-        "about a day. The modern column is in the Lahiri frame, as the almanac's solar months are. Times are local.";
+        "about a day. " + frameNote() + "Times are local.";
       return render(["Question", "modern", "fitted", "as written"], rows, false);
     }
 
@@ -2390,11 +2405,9 @@
     }
     syncWhen();
 
-    /* "the site's own ayanāṃśa" means the one the settings panel names */
-    try {
-      var NSa = window.NSettings && window.NSettings.get && window.NSettings.get();
-      window.__setAyan((NSa && NSa.ayan) || "samanvaya_ecliptic");
-    } catch (e) {}
+    /* the engine reads in this page's frame: Lahiri unless the reader picks
+       another in "Ayanāṃśa for this page" */
+    try { window.__setAyan(pageMode()); } catch (e) {}
     $("el-q").addEventListener("change", function () {
       ST.q = this.value; answer(); band(); });
     $("el-when").addEventListener("change", function () {

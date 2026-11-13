@@ -438,7 +438,7 @@ var MO_SCENES=[
   try{
     var d=new Date(ms), ut=d.getUTCHours()+d.getUTCMinutes()/60+d.getUTCSeconds()/3600;
     sky=window.quickSky({year:d.getUTCFullYear(),month:d.getUTCMonth()+1,day:d.getUTCDate(),
-      hour:ut,minute:0,second:0,tzHours:0,lat:i.lat,lon:i.lon,ayanamsa:i.ayanamsa||"lahiri"});
+      hour:ut,minute:0,second:0,tzHours:0,lat:i.lat,lon:i.lon,ayanamsa:i.ayanamsa||moAyanKey()});
   }catch(e){ throw e; }
   var sun=sky.planets.filter(function(x){return x.en==="Sun";})[0];
   var day=sun&&sun.hz&&sun.hz.alt>0;
@@ -503,7 +503,7 @@ var MO_SCENES=[
  sub:"the yogatārā each nakṣatra is named after",
  draw:function(p){
   var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
-  var Y=(window.YOGATARAS||[]), n=Y.length||27;
+  var Y=(window.YOGATARAS||[]); if(window.__framedStars) Y=window.__framedStars(Y,moAyanKey()); var n=Y.length||27;
   var each=1/n, idx=Math.min(n-1,Math.floor(p/each)), q=(p-idx*each)/each;
   var star=Y[idx]; if(!star) throw new Error("no star catalogue");
   /* hold wide, close in, hold tight — the ease is what makes it feel like a camera */
@@ -586,7 +586,7 @@ var MO_SCENES=[
   try{
     var d=new Date(ms), ut=d.getUTCHours()+d.getUTCMinutes()/60+d.getUTCSeconds()/3600;
     sky=window.quickSky({year:d.getUTCFullYear(),month:d.getUTCMonth()+1,day:d.getUTCDate(),
-      hour:ut,minute:0,second:0,tzHours:0,lat:i.lat,lon:i.lon,ayanamsa:i.ayanamsa||"lahiri"});
+      hour:ut,minute:0,second:0,tzHours:0,lat:i.lat,lon:i.lon,ayanamsa:i.ayanamsa||moAyanKey()});
   }catch(e){ throw e; }
   var lag=sky.lagna, R=st.R, cx=st.cx, cy=st.cy;
   var mode=MO.opt.houses||"both";
@@ -672,7 +672,7 @@ var MO_SCENES=[
     var pm=ms-(t1-t0)/600, pd=new Date(pm);
     var put=pd.getUTCHours()+pd.getUTCMinutes()/60+pd.getUTCSeconds()/3600;
     prevLag=window.quickSky({year:pd.getUTCFullYear(),month:pd.getUTCMonth()+1,day:pd.getUTCDate(),
-      hour:put,minute:0,second:0,tzHours:0,lat:i.lat,lon:i.lon,ayanamsa:i.ayanamsa||"lahiri"}).lagna;
+      hour:put,minute:0,second:0,tzHours:0,lat:i.lat,lon:i.lon,ayanamsa:i.ayanamsa||moAyanKey()}).lagna;
   }catch(e){}
   if(prevLag!=null && Math.floor(prevLag/30)%12!==h1 && mode!=="equal"){
     var txt=moP("lagnaEnters",moTrasi(h1));
@@ -701,7 +701,7 @@ var MO_SCENES=[
   var y0=-500, y1=3500, yr=y0+(y1-y0)*p;
   var jd=2451545.0+(yr-2000)*365.2425;
   var ay=0;
-  try{ ay=window.__ayanFor?window.__ayanFor("lahiri",jd):0; }catch(e){}
+  try{ ay=window.__ayanFor?window.__ayanFor(moAyanKey(),jd):0; }catch(e){}
   var R=st.R, cx=st.cx, cy=st.cy;
   moStars();
   /* the sidereal ring — fixed to the stars, so it never rotates */
@@ -747,7 +747,7 @@ var MO_SCENES=[
     cx,cy-st.h*0.44,S.w*0.046,P.ink,"center",700);
   moText(moP("ayanSep"),
     cx,cy+st.h*0.44,S.w*0.026,P.dim,"center",500);
-  return {ms:null, sub:moP("ayanIs",ay.toFixed(2),"Lahiri")};
+  return {ms:null, sub:moP("ayanIs",ay.toFixed(2),moAyanName())};
  }},
 
 /* -------------------------------------------------------------------- 8. dṛṣṭi */
@@ -1072,7 +1072,7 @@ var MO_MORE=[
   var pc=panchanga(su,mo);
   var nk=nakOf(mo);
   var vi=(Math.floor(jd+1.5)%7+7)%7;
-  var ayn=0; try{ ayn=window.__ayanFor?window.__ayanFor("lahiri",jd):0; }catch(e){}
+  var ayn=0; try{ ayn=window.__ayanFor?window.__ayanFor(moAyanKey(),jd):0; }catch(e){}
   var MS=masaOf(su,mo,ayn);                 /* māsa, ṛtu, ayana — the pañcāṅga heading */
   var elong=((mo-su)%360+360)%360;
   var yogaRaw=((mo+su)%360+360)%360;

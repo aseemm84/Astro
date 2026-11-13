@@ -432,7 +432,7 @@
       subtitle: V.n + " of them in " + yrs.toFixed(0) + " years. Where do " +
                 "they fall?",
       stage: "whirl",
-      method: "sidereal rāśi · Lahiri ayanāṃśa",
+      method: "sidereal rāśi · " + (window.__ayanName ? window.__ayanName() : "Lahiri") + " ayanāṃśa",
       events: ev,
       tallyKeys: [V.what || "events"],
       closing: {

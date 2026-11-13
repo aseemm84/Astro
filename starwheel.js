@@ -543,8 +543,8 @@ window.__swhGetDrawn=function(){ return SWH_OFFSET; };
     time: "06:00",
     place: null,
     /* the settings panel's ayanāṃśa, so this page and a chart agree */
-    ayan: (function () { try { var N = window.NSettings && window.NSettings.get();
-      return (N && N.ayan) || "samanvaya_ecliptic"; } catch (e) { return "samanvaya_ecliptic"; } })(),
+    /* this page's own ayanāṃśa if the reader set one, else the site's */
+    ayan: (function () { try { return window.NSettings.almanacAyan(); } catch (e) { return "samanvaya_ecliptic"; } })(),
     sky: null, pan: null, ms: null,
     ratio: "4:5", theme: null, head: "tithi"
   };
@@ -1048,9 +1048,14 @@ window.__swhGetDrawn=function(){ return SWH_OFFSET; };
   function fillSelects() {
     var a = $("sw-ayan");
     if (a && window.__ayanModes && !a.options.length) {
-      var M = window.__ayanModes;
-      a.innerHTML = Object.keys(M).map(function (k) {
-        return '<option value="' + k + '"' + (k === S.ayan ? " selected" : "") + ">" +
+      var M = window.__ayanModes, own = null, site = "samanvaya_ecliptic";
+      try { own = window.NSettings.pageAyan(); site = window.NSettings.get().ayan; } catch (e) {}
+      /* the first choice follows the site setting; any other is this page's own,
+         and is kept for this page only — the wheel and the pañcāṅga beneath it */
+      a.innerHTML = '<option value=""' + (own ? "" : " selected") + '>Follow the site setting — ' +
+        esc2(M[site] ? M[site].name : site) + "</option>" +
+        Object.keys(M).map(function (k) {
+        return '<option value="' + k + '"' + (k === own ? " selected" : "") + ">" +
                esc2(M[k].name) + "</option>";
       }).join("");
     }
@@ -1085,7 +1090,11 @@ window.__swhGetDrawn=function(){ return SWH_OFFSET; };
         render();
       }
       else if (t.id === "sw-time") { S.time = t.value; render(); }
-      else if (t.id === "sw-ayan") { S.ayan = t.value; render(); }
+      else if (t.id === "sw-ayan") {
+        try { window.NSettings.setPageAyan(t.value || null); S.ayan = window.NSettings.almanacAyan(); }
+        catch (e) { S.ayan = t.value || "samanvaya_ecliptic"; }
+        render();
+      }
       else if (t.id === "sw-wtheme") {
         /* The star wheel's colours come from swhPal(), which already chose
            between a night sky and a print sheet; a named theme is a third case

@@ -7939,7 +7939,7 @@ function moOwn(src){
       subtitle: "Every time " + sa + " hides in the Sun’s glare. Where does " +
                 "it hide?",
       stage: "whirl",
-      method: "sidereal rāśi · Lahiri ayanāṃśa",
+      method: "sidereal rāśi · " + (window.__ayanName ? window.__ayanName() : "Lahiri") + " ayanāṃśa",
       bodyName: body,
       events: ev,
       tallyKeys: ["hidings"],
@@ -8794,7 +8794,7 @@ function moOwn(src){
       subtitle: V.n + " of them in " + yrs.toFixed(0) + " years. Where do " +
                 "they fall?",
       stage: "whirl",
-      method: "sidereal rāśi · Lahiri ayanāṃśa",
+      method: "sidereal rāśi · " + (window.__ayanName ? window.__ayanName() : "Lahiri") + " ayanāṃśa",
       events: ev,
       tallyKeys: [V.what || "events"],
       closing: {
@@ -8996,8 +8996,26 @@ function moOwn(src){
   };
 
   /* ===== primitives ======================================================== */
+  /* THE ALMANAC'S AYANĀṂŚA. Until November 2026 the almanac named its
+     nakṣatras and solar months on Lahiri whatever the site's setting said. It
+     now follows NSettings.almanacAyan(): this page's own override if the reader
+     set one, else the settings panel's ayanāṃśa (Samanvaya–Ecliptic by default).
+     Positions are read through __kSidAtMode, which names the mode, so another
+     widget casting in a different mode cannot move the almanac underneath it. */
+  NP.ayanKey = function () {
+    try { if (window.NSettings && window.NSettings.almanacAyan) return window.NSettings.almanacAyan(); } catch (e) {}
+    return "samanvaya_ecliptic";
+  };
+  try {
+    window.addEventListener("nirayana:almanac-ayan", function () { cacheClear(); });
+  } catch (e) {}
+
   function sidAt(name, ms) {
-    try { return window.__kSidAt(name, new Date(ms)); } catch (e) { return null; }
+    try {
+      var d = new Date(ms);
+      if (window.__kSidAtMode) return window.__kSidAtMode(name, d, NP.ayanKey());
+      return window.__kSidAt(name, d);
+    } catch (e) { return null; }
   }
   NP.sidAt = sidAt;
 
@@ -9352,7 +9370,7 @@ function moOwn(src){
     var jd = window.__kJD(sr);
     var pc = window.__kPanchang(su, mo, jd);
     var ayn = 0;
-    try { ayn = window.__ayanFor ? window.__ayanFor("lahiri", jd) : 0; } catch (e) {}
+    try { ayn = window.__ayanFor ? window.__ayanFor(NP.ayanKey(), jd) : 0; } catch (e) {}
     /* the Sun where it actually was at the new moon that began this lunar
        month, rather than back-projected with mean motions — see masaOf */
     var nmSun = null;
@@ -10009,7 +10027,7 @@ function moOwn(src){
       if (sr == null) return null;
       var noon = sr + 6 * 3600000;
       var jd = window.__kJD(noon), ayan = 0;
-      try { ayan = window.__ayanFor ? window.__ayanFor("lahiri", jd) : 0; } catch (e) {}
+      try { ayan = window.__ayanFor ? window.__ayanFor(NP.ayanKey(), jd) : 0; } catch (e) {}
       var sid = sidAt("Sun", noon);
       if (sid == null) return null;
       var trop = ((sid + ayan) % 360 + 360) % 360, R = Math.PI / 180;
@@ -11057,7 +11075,7 @@ function moOwn(src){
         : ev0.length + " of them across " + span + " years, each placed in " +
           "the Gregorian year it fell in."),
       stage: "year",
-      method: "Lahiri ayanāṃśa · tithi at sunrise",
+      method: (window.__ayanName ? window.__ayanName() : "Lahiri") + " ayanāṃśa · tithi at sunrise",
       cover: { t0: ev0[0].t, t1: ev0[ev0.length - 1].t },
       events: ev,
       tallyKeys: ["years"],
@@ -11301,7 +11319,7 @@ function moOwn(src){
       events: ev,
       tallyKeys: ["tithis", "the day"],
       clockMode: "days",
-      method: "Lahiri ayanāṃśa",
+      method: (window.__ayanName ? window.__ayanName() : "Lahiri") + " ayanāṃśa",
       closing: {
         big: hit.name + " — " + hit.iso,
         lines: [
@@ -12156,8 +12174,8 @@ try{window.ECLIP_LABELS=ECLIP_LABELS;window.ECLIP_STARS=ECLIP_STARS;}catch(e){}
                         : "(Later tradition, not BPHS.)"));
       L.push("");
       L.push((hi ? "तारों की स्थिति HYG सूची से (Hipparcos/Yale/Gliese), J2000, लाहिड़ी अयनांश। "
-                 : hing ? "Taaron ki position HYG catalogue se (Hipparcos/Yale/Gliese), J2000, Lahiri ayanamsa. "
-                        : "Star positions from the HYG catalogue (Hipparcos/Yale/Gliese), J2000, Lahiri ayanāṃśa. ") +
+                 : hing ? "Taaron ki position HYG catalogue se (Hipparcos/Yale/Gliese), J2000, " + (window.__ayanName ? window.__ayanName() : "Lahiri") + " ayanamsa. "
+                        : "Star positions from the HYG catalogue (Hipparcos/Yale/Gliese), J2000, " + (window.__ayanName ? window.__ayanName() : "Lahiri") + " ayanāṃśa. ") +
              (hi ? "Stellarium में स्वयं जाँच लीजिए।"
                  : hing ? "Stellarium kholkar khud jaanch lijiye."
                         : "Check it yourself in Stellarium."));
@@ -12182,8 +12200,8 @@ try{window.ECLIP_LABELS=ECLIP_LABELS;window.ECLIP_STARS=ECLIP_STARS;}catch(e){}
                F.riseTxt + (F.place ? " (" + F.place + ")" : "") + ".");
       L.push("");
       L.push((hi ? "सब कुछ ब्राउज़र में गणना — आधुनिक एफ़ेमेरिस, लाहिड़ी अयनांश।"
-                 : hing ? "Sab kuch browser me compute hua — modern ephemeris, Lahiri ayanamsa."
-                        : "All computed against a modern ephemeris under Lahiri ayanāṃśa."));
+                 : hing ? "Sab kuch browser me compute hua — modern ephemeris, " + (window.__ayanName ? window.__ayanName() : "Lahiri") + " ayanamsa."
+                        : "All computed against a modern ephemeris under " + (window.__ayanName ? window.__ayanName() : "Lahiri") + " ayanāṃśa."));
       L.push(hi ? "आपकी चंद्र राशि कौन सी है?" : hing ? "Aapki chandra rashi kaunsi hai?"
                                                   : "Which is your Moon sign?");
     } else {
@@ -17094,9 +17112,9 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
   function starsIn(lo, hi, latLim) {
     var A = window.ECLIP_STARS, L = window.ECLIP_LABELS || [];
     if (!A) return [];
-    var out = [], i;
+    var out = [], i, sh = window.__starShift ? window.__starShift() : 0;
     for (i = 0; i + 3 < A.length; i += 4) {
-      var s = A[i] / 1000, b = A[i + 1] / 1000;
+      var s = norm360(A[i] / 1000 + sh), b = A[i + 1] / 1000;
       if (Math.abs(b) > latLim) continue;
       var d = norm360(s - lo);
       if (d > norm360(hi - lo)) continue;
@@ -18089,6 +18107,7 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
   var SEG = 40 / 3;                     /* 13°20′ */
   function nakList() {
     var Y = window.YOGATARAS;
+    if (Y && window.__framedStars) Y = window.__framedStars(Y);   /* into the page's frame */
     return (Y && Y.length === 27) ? Y : null;
   }
   function insideOwn(y) { return Math.floor(norm360(y.sid) / SEG) === y.id; }
@@ -18240,7 +18259,7 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
         lord: lord[0], lordYears: lord[1],
         yoni: KUTA.yoni[i], gana: KUTA.gana[i], nadi: KUTA.nadi[i]
       },
-      method: "HYG catalogue under Lahiri · BPHS, Vol. 2, Ch. 46, " +
+      method: "HYG catalogue under " + (window.__ayanName ? window.__ayanName() : "Lahiri") + " · BPHS, Vol. 2, Ch. 46, " +
               "vv. 12–16",
       closing: {
         big: y.nak,
@@ -18253,7 +18272,7 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
           "this stretch of sky fall inside the division. " +
           "Vimśottarī lord " + lord[0] + ", " + lord[1] + " years.",
           "Star positions: HYG (Hipparcos/Yale/Gliese), J2000, sidereal " +
-          "under Lahiri. Daśā lords: BPHS, Vol. 2, Ch. 46, " +
+          "under " + (window.__ayanName ? window.__ayanName() : "Lahiri") + ". Daśā lords: BPHS, Vol. 2, Ch. 46, " +
           "vv. 12–16.",
           "A classical framework for study, not a prediction."
         ]
@@ -18540,7 +18559,7 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
         place: place ? place.n : null,
         drishti: rashiDrishti(i).map(function (j) { return SIGN[j]; })
       },
-      method: "HYG catalogue under Lahiri · passages and ascendant measured",
+      method: "HYG catalogue under " + (window.__ayanName ? window.__ayanName() : "Lahiri") + " · passages and ascendant measured",
       placeName: place ? place.n : null,
       closing: {
         big: SIGN[i],
@@ -18553,7 +18572,7 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
           (riseM == null ? "." : "; it rises in " + minWords(riseM) + " at " +
             (place ? place.n : "this latitude") + "."),
           "Classifications: BPHS, Vol. 1, Ch. 4. Stars: HYG, J2000, sidereal " +
-          "under Lahiri. Passages and ascendant measured against a modern " +
+          "under " + (window.__ayanName ? window.__ayanName() : "Lahiri") + ". Passages and ascendant measured against a modern " +
           "ephemeris.",
           "A classical framework for study, not a prediction."
         ]

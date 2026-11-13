@@ -2556,3 +2556,5 @@ span.gldig.node{background:#5a5e7812;border-left-color:#8a8ea6}
    approximate and they do not need telling again. Only notes carrying .krect
    are affected; the setting claims no more than that. */
 html[data-caution="off"] .krect{display:none}
+
+/* the almanac pages' own ayanāṃśa picker (settings.js mountPageAyan) */

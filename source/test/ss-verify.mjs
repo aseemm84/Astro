@@ -48,7 +48,12 @@ const port=await new Promise(r=>server.listen(0,"127.0.0.1",()=>r(server.address
 const br=await chromium.launch();
 const pg=await br.newPage();
 const errs=[]; pg.on("pageerror",e=>errs.push(String(e)));
-await pg.addInitScript(()=>localStorage.clear());
+/* Studio Pro follows the site's ayanāṃśa unless the page is set otherwise.
+   This suite measures the Siddhānta against a modern pañcāṅga in the Lahiri
+   frame (the civil standard, and the frame the fitted tier was fitted in), so
+   it sets the page to Lahiri exactly as a reader would with the picker. */
+await pg.addInitScript(()=>{ localStorage.clear();
+  localStorage.setItem("nirayana.pageAyan", JSON.stringify({"studio-pro.html":"lahiri"})); });
 await pg.goto(`http://127.0.0.1:${port}/studio-pro.html`,{waitUntil:"load"});
 await pg.waitForFunction(()=>window.SSEngine && window.__kSidAt && window.SPNodes
                             && window.NP, {timeout:30000});

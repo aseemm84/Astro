@@ -995,6 +995,100 @@ def inject_plain(built):
             raise SystemExit("plain-language box: no <main> in %s" % k)
         built[k] = t[:m.end()] + plain_block(k, P[k]) + t[m.end():]
 
+def section_entries():
+    """The per-section explanations (src/pages/_plain_sections.py), as data."""
+    ns = {}
+    exec(compile(read(SRC, "pages", "_plain_sections.py"), "_plain_sections.py", "exec"), ns)
+    return ns
+
+SECX_CSS = (
+    ".secx-b{display:inline-flex;align-items:center;gap:.35em;margin:0 .5em;vertical-align:middle;min-height:32px;min-width:32px;box-sizing:border-box;"
+    "font:600 .72rem/1 system-ui,sans-serif;letter-spacing:0;text-transform:none;padding:.28em .6em .28em .3em;"
+    "border:1px solid rgba(192,138,43,.6);border-radius:999px;background:rgba(192,138,43,.09);float:none;"
+    "color:inherit;cursor:pointer;white-space:nowrap}"
+    ".secx-b .secx-q{display:inline-grid;place-items:center;width:1.5em;height:1.5em;border-radius:50%;"
+    "background:#c08a2b;color:#1b1407;font:700 .8rem/1 system-ui,sans-serif;flex:none}"
+    ".secx-b i{font-style:normal}"
+    ".secx-b:hover,.secx-b:focus-visible{background:rgba(192,138,43,.22)}"
+    "@media (max-width:560px){.secx-b i{display:none}.secx-b{padding:0;justify-content:center}}"
+    ".secx-ov{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;"
+    "padding:16px;background:rgba(0,0,0,.45)}"
+    ".secx-ov[hidden]{display:none}"
+    ".secx-card{position:relative;max-width:34rem;width:100%;max-height:80vh;overflow:auto;box-sizing:border-box;"
+    "padding:1.2rem 1.4rem 1.3rem;border-radius:12px;border-left:5px solid #c08a2b;"
+    "background:var(--paper,#fffaf0);color:var(--ink,#222);"
+    "box-shadow:0 12px 40px rgba(0,0,0,.35);font:1rem/1.6 system-ui,sans-serif;text-align:left}"
+    ".secx-k{margin:0 0 .2rem;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;opacity:.75}"
+    ".secx-card h3{margin:0 2rem .5rem 0;font-size:1.1rem;line-height:1.3;color:inherit}"
+    ".secx-p{margin:0}"
+    ".secx-x{position:absolute;top:.5rem;right:.6rem;width:2rem;height:2rem;border:0;border-radius:50%;"
+    "background:transparent;color:inherit;font-size:1.4rem;line-height:1;cursor:pointer}"
+    ".secx-x:hover,.secx-x:focus-visible{background:rgba(128,128,128,.2)}"
+    "@media print{.secx-b,.secx-ov{display:none!important}}")
+
+def _strip_scripts(t):
+    return re.sub(r"<script\b.*?</script>", "", t, flags=re.S | re.I)
+
+def inject_sections(built):
+    """A plain explanation for EVERY section heading, behind an "In simple
+    words" button. Refuse to build when a heading has no entry, or an entry
+    names a heading that does not exist -- so a new section cannot ship
+    unexplained and a removed one cannot leave a stale explanation behind."""
+    import html as _html
+    N = section_entries()
+    S, REPORT, DASH, TECH = N["SECTIONS"], N["REPORT"], N["DASH"], N["TECH"]
+    errs = []
+
+    def check(where, have, want):
+        miss = [x for x in have if x not in want]
+        stray = [x for x in want if x not in have]
+        if miss or stray:
+            errs.append("%s: missing %s; stray %s" % (where, miss, stray))
+
+    # the report's sections are written by script -- read their titles from source
+    rep = read(SRC, "js", "report", "assemble", "99-main.js")
+    check("Kundli report", list(dict.fromkeys(re.findall(r'\bsec\("([^"]+)"', rep))), REPORT)
+    dsrc = read(SRC, "adopted", "dashboard.html")
+    check("dashboard", [i for i in dict.fromkeys(re.findall(r'\bsection\("([a-z-]+)"', dsrc))
+                        if i != "err-"], DASH)
+
+    runtime = read(SRC, "js", "secx.js")
+    pages = sorted(k for k in built if k.endswith(".html") and "/" not in k)
+    for k in [p for p in S if p not in pages]:
+        errs.append("section entries name a page that is not built: %s" % k)
+    for k in pages:
+        t = built[k]
+        if 'id="secx-data"' in t:
+            continue
+        static = _strip_scripts(t[t.find("</head>"):])
+        ids = list(dict.fromkeys(re.findall(r'<h2\b[^>]*\bid="([^"]+)"', static)))
+        cfg = {"byId": S.get(k, {}), "sel": "h2[id]"}
+        if k in ("kundli.html", "kinetic-workstation.html"):
+            cfg.update(byTitle=REPORT, sel="h2[id], section.ksec > h3.kh", watch=1)
+        if k == "dashboard.html":
+            cfg = {"byId": DASH, "parentId": 1, "sel": "section.sec[id] > header > h2", "watch": 1}
+        elif k == "kundli-technical-report.html":
+            titles = [re.sub(r"\s+", " ", _html.unescape(x)).strip()
+                      for x in re.findall(r"<h2\b[^>]*>([^<]+)", static)]
+            check(k, titles, TECH)
+            cfg = {"byTitle": TECH, "sel": "h2"}
+        else:
+            check(k, ids, S.get(k, {}))
+        if not (cfg.get("byId") or cfg.get("byTitle")):
+            continue
+        if re.search(r'<html[^>]*\blang="hi"', t):
+            cfg["lang"] = "hi"
+        data = json.dumps(cfg, ensure_ascii=False).replace("</", "<\\/")
+        tail = ('<style>%s</style><script type="application/json" id="secx-data">%s</script>'
+                '<script>%s</script>' % (SECX_CSS, data, runtime))
+        e = t.rfind("</body>")
+        if e < 0:
+            errs.append("%s has no </body>" % k)
+            continue
+        built[k] = t[:e] + tail + t[e:]
+    if errs:
+        raise SystemExit("per-section explanations:\n  " + "\n  ".join(errs))
+
 def build_pages():
     shell  = read(SRC, "pages", "_shell.html")
     # the theme layer comes after the page stylesheet so its overrides win
@@ -1047,6 +1141,7 @@ def build_pages():
                      shell.replace("{{CSS}}", css).replace("{{THEMEJS}}", themejs)
                           .replace("{{TITLE}}", brandify(m["title"]))
                           .replace("{{HEAD}}", head_meta(m["desc"], href, brandify(m["title"])))
+                          .replace("{{EYEBROW}}", m.get("eyebrow", "Jyotiṣa · the classical texts, computed"))
                           .replace("{{H1}}", m["h1"]).replace("{{SUB}}", m["sub"])
                           .replace("{{NAV}}", nav_html(href))
                           .replace("{{LAYOUT}}", (" " + m["layout"]).rstrip())
@@ -1321,6 +1416,7 @@ def main():
     built.update(build_shared())
     built.update(build_adopted())
     inject_plain(built)
+    inject_sections(built)
     # last, because its cache key is a fingerprint of everything above it
     built.update(build_pwa(built))
     if not APP_MODE:

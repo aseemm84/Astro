@@ -1,3 +1,9 @@
+/* The frame a scene reckons sidereal positions in: whatever the engine is set
+   to. In a chart report that is the chart's own ayanāṃśa; on the Motion page it
+   is the page's choice (its picker, else the site setting). One helper, so no
+   scene can quietly keep a hard-coded Lahiri while its neighbours follow. */
+function moAyanKey(){ try{ return window.__setAyan ? window.__setAyan() : "lahiri"; }catch(e){ return "lahiri"; } }
+function moAyanName(){ try{ return window.__ayanName ? window.__ayanName(moAyanKey()) : "Lahiri"; }catch(e){ return "Lahiri"; } }
 /* ===== Motion — the context bar ===========================================
    When and where the frame is. Five separate requests came in for this — put the
    time on the pañcāṅga scene, put the place on all of them, put the Hindu tithi
@@ -116,7 +122,7 @@ function moHinduDate(ms){
   if(su==null||mo==null) return null;
   var jd=ms/86400000+2440587.5;
   var pc=panchanga(su,mo);
-  var ayn=0; try{ ayn=window.__ayanFor?window.__ayanFor("lahiri",jd):0; }catch(e){}
+  var ayn=0; try{ ayn=window.__ayanFor?window.__ayanFor(moAyanKey(),jd):0; }catch(e){}
   var MS=masaOf(su,mo,ayn);
   var vi=(Math.floor(jd+1.5)%7+7)%7;
   return moTmasa(MS.amanta)+" "+moTpaksha(pc.paksha)+" · "+

@@ -602,8 +602,8 @@
                         : "(Later tradition, not BPHS.)"));
       L.push("");
       L.push((hi ? "तारों की स्थिति HYG सूची से (Hipparcos/Yale/Gliese), J2000, लाहिड़ी अयनांश। "
-                 : hing ? "Taaron ki position HYG catalogue se (Hipparcos/Yale/Gliese), J2000, Lahiri ayanamsa. "
-                        : "Star positions from the HYG catalogue (Hipparcos/Yale/Gliese), J2000, Lahiri ayanāṃśa. ") +
+                 : hing ? "Taaron ki position HYG catalogue se (Hipparcos/Yale/Gliese), J2000, " + (window.__ayanName ? window.__ayanName() : "Lahiri") + " ayanamsa. "
+                        : "Star positions from the HYG catalogue (Hipparcos/Yale/Gliese), J2000, " + (window.__ayanName ? window.__ayanName() : "Lahiri") + " ayanāṃśa. ") +
              (hi ? "Stellarium में स्वयं जाँच लीजिए।"
                  : hing ? "Stellarium kholkar khud jaanch lijiye."
                         : "Check it yourself in Stellarium."));
@@ -628,8 +628,8 @@
                F.riseTxt + (F.place ? " (" + F.place + ")" : "") + ".");
       L.push("");
       L.push((hi ? "सब कुछ ब्राउज़र में गणना — आधुनिक एफ़ेमेरिस, लाहिड़ी अयनांश।"
-                 : hing ? "Sab kuch browser me compute hua — modern ephemeris, Lahiri ayanamsa."
-                        : "All computed against a modern ephemeris under Lahiri ayanāṃśa."));
+                 : hing ? "Sab kuch browser me compute hua — modern ephemeris, " + (window.__ayanName ? window.__ayanName() : "Lahiri") + " ayanamsa."
+                        : "All computed against a modern ephemeris under " + (window.__ayanName ? window.__ayanName() : "Lahiri") + " ayanāṃśa."));
       L.push(hi ? "आपकी चंद्र राशि कौन सी है?" : hing ? "Aapki chandra rashi kaunsi hai?"
                                                   : "Which is your Moon sign?");
     } else {

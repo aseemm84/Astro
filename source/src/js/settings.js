@@ -416,7 +416,100 @@
     document.addEventListener("DOMContentLoaded", function () { mount(); });
   else mount();
 
-  window.NSettings = { get: get, set: set, defaults: function () {
+  /* ---- the almanac pages' own ayanāṃśa ------------------------------------
+     Now, Calendar, Star wheel and Studio name nakṣatras, yogas and solar
+     months. They follow the ayanāṃśa above by default, and each carries its
+     own override so a reader can keep one page on another convention — Lahiri,
+     to match a printed almanac, say — without changing the site. Stored per
+     page under nirayana.pageAyan. */
+  var PAGEKEY = "nirayana.pageAyan";
+  function pageName() {
+    try { return (location.pathname.split("/").pop() || "index.html").toLowerCase(); }
+    catch (e) { return "index.html"; }
+  }
+  function modes() { return window.__ayanModes || null; }
+  function pageOverride() {
+    try {
+      var m = JSON.parse(window.localStorage.getItem(PAGEKEY) || "{}") || {};
+      var v = m[pageName()], M = modes();
+      return (v && (!M || M[v])) ? v : null;
+    } catch (e) { return null; }
+  }
+  /* Which pages carry their own picker, and what each starts on, is decided in
+     ONE place — engine.js's PAGE_AYAN table, which has to resolve the frame
+     before the first position is computed. The almanac pages, Studio Pro, Reel
+     Studio, Director Pro and Motion follow the site setting; the Sūrya
+     Siddhānta and Engine Lab pages start on Lahiri, the frame their
+     comparisons are drawn in. Any of them can be set to another convention for
+     that page alone. A page outside the table answers "lahiri", as before. */
+  function pageRule() { return window.__pageAyanRule ? window.__pageAyanRule() : null; }
+  function almanacAyan() {
+    if (window.__pageAyan) { var a = window.__pageAyan(); return a || "lahiri"; }
+    var M = modes(), v = pageOverride() || get().ayan;
+    return (!M || M[v]) ? v : "samanvaya_ecliptic";
+  }
+  function setPageAyan(key) {
+    try {
+      var m = JSON.parse(window.localStorage.getItem(PAGEKEY) || "{}") || {};
+      if (key) m[pageName()] = key; else delete m[pageName()];
+      window.localStorage.setItem(PAGEKEY, JSON.stringify(m));
+    } catch (e) {}
+    try { window.dispatchEvent(new CustomEvent("nirayana:almanac-ayan", { detail: almanacAyan() })); } catch (e) {}
+  }
+  function ayanName(k) { var M = modes(); return M && M[k] ? M[k].name : k; }
+  /* The picker, mounted into #np-ayan. Changing it reloads the page: every
+     almanac page derives a great deal from the convention, and a reload is the
+     one way to be sure nothing computed under the old one survives. */
+  function mountPageAyan(host) {
+    host = host || document.getElementById("np-ayan");
+    if (!host || host.querySelector("select")) return false;
+    var M = modes(); if (!M) return false;
+    var lab = document.createElement("label"); lab.className = "npayan";
+    var sp = document.createElement("span"); sp.textContent = "Ayanāṃśa for this page";
+    var sel = document.createElement("select"); sel.className = "swin"; sel.id = "np-ayan-sel";
+    var rule = pageRule();
+    var o0 = document.createElement("option"); o0.value = "";
+    o0.textContent = rule && rule !== "site"
+      ? "Page default — " + ayanName(rule) + ", the frame this comparison is drawn in"
+      : "Follow the site setting — " + ayanName(get().ayan);
+    sel.appendChild(o0);
+    Object.keys(M).forEach(function (k) {
+      var o = document.createElement("option"); o.value = k; o.textContent = ayanName(k) +
+        (k === "lahiri" ? " — the Indian civil standard printed almanacs use" : "");
+      sel.appendChild(o);
+    });
+    sel.value = pageOverride() || "";
+    sel.addEventListener("change", function () { setPageAyan(sel.value || null); location.reload(); });
+    lab.appendChild(sp); lab.appendChild(sel); host.appendChild(lab);
+    var note = document.createElement("span"); note.className = "npayan-note";
+    var what = host.getAttribute("data-what") ||
+      "Nakṣatras, yogas and solar months here are named in";
+    note.textContent = what + " " + ayanName(almanacAyan()) +
+      (pageOverride() ? " — chosen for this page only."
+        : (rule && rule !== "site" ? ", this page's default; choosing another here changes this page only."
+                                   : ", the site setting; choosing another here changes this page only.")) +
+      (host.getAttribute("data-after") || " Tithi and karaṇa do not depend on it.");
+    host.appendChild(note);
+    return true;
+  }
+  /* mount as soon as the engine has published its modes */
+  (function tryMount(n) {
+    if (typeof document === "undefined") return;
+    if (document.getElementById("np-ayan") && !mountPageAyan() && n < 100)
+      setTimeout(function () { tryMount(n + 1); }, 150);
+    else if (!document.getElementById("np-ayan") && n < 3)
+      setTimeout(function () { tryMount(n + 1); }, 300);
+  })(0);
+  /* a page following the site setting follows a change to it at once */
+  try {
+    window.addEventListener("nirayana:settings", function (e) {
+      var ch = e && e.detail && e.detail.changed;
+      if (ch && ch.indexOf("ayan") >= 0 && document.getElementById("np-ayan") && !pageOverride() && pageRule() !== "lahiri") location.reload();
+    });
+  } catch (e) {}
+
+  window.NSettings = { get: get, set: set, almanacAyan: almanacAyan, pageAyan: pageOverride,
+    setPageAyan: setPageAyan, mountPageAyan: mountPageAyan, defaults: function () {
     var d = {}; Object.keys(DEF).forEach(function (k) { d[k] = DEF[k]; }); return d;
   }, open: open, close: close, options: OPTS };
 })();

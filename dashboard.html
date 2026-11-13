@@ -533,6 +533,13 @@ tr.dtrow-now td{background:color-mix(in srgb,var(--gold) 14%,transparent)}
 .nsfootnote{flex:1 1 22ch;margin:0}
 @media (max-width:520px){.nspanel{max-width:none}.nsover{padding:0}
   .nspanel{border-radius:0;min-height:100%}}
+/* the per-page ayanāṃśa picker (settings.js mountPageAyan) */
+.npayanwrap{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem .6rem;flex-basis:100%;margin:.2rem 0}
+.npayan{display:flex;flex-wrap:wrap;align-items:center;gap:.45rem;font-size:.9rem;max-width:100%;min-width:0}
+.npayan span{opacity:.85}
+.npayan select{max-width:min(28rem,100%);min-width:0;min-height:32px;box-sizing:border-box}
+@media (max-width:560px){.npayan,.npayan select{width:100%}}
+.npayan-note{font-size:.82rem;opacity:.75;flex-basis:100%}
 
 </style>
 <script>
@@ -1197,7 +1204,35 @@ var AYAN_MODES={
                     "the textual epochs are withheld from it and scored afterwards",
                c:[0.00030701309468,1.39688795339,20.895012118]}
 };
-var AYAN_MODE="lahiri";
+/* WHICH PAGES CHOOSE THEIR OWN AYANĀṂŚA, and what each starts on.
+   "site" pages follow the ayanāṃśa in Settings; the two comparison pages start
+   on Lahiri because that is the frame their engine-against-engine comparisons
+   are drawn in. On every one of them the reader can pick another convention for
+   that page alone (stored per page under nirayana.pageAyan; the picker lives in
+   settings.js). Resolved here, from storage, because engine.js loads before
+   site.js: the frame has to be right before the first position is computed,
+   not corrected afterwards. Pages not listed keep their own controls (the
+   Kundli form, the Ecliptic wheel's menu) and start on Lahiri as before. */
+var PAGE_AYAN={"now.html":"site","calendar.html":"site","starwheel.html":"site","studio.html":"site",
+  "studio-pro.html":"site","reel.html":"site","director-pro.html":"site","motion.html":"site",
+  "siddhanta.html":"lahiri","engine-lab.html":"lahiri"};
+function pageFile(){ try{ return (location.pathname.split("/").pop()||"index.html").toLowerCase(); }catch(e){ return ""; } }
+function pageAyanRule(){ return PAGE_AYAN[pageFile()]||null; }
+function pageAyan(){
+  var pg=pageFile(), rule=PAGE_AYAN[pg];
+  if(!rule) return null;
+  try{
+    var o=JSON.parse(localStorage.getItem("nirayana.pageAyan")||"{}")||{};
+    if(o[pg]&&AYAN_MODES[o[pg]]) return o[pg];
+  }catch(e){}
+  if(rule!=="site") return rule;
+  try{
+    var st=JSON.parse(localStorage.getItem("nirayana.settings")||"{}")||{};
+    if(st.ayan&&AYAN_MODES[st.ayan]) return st.ayan;
+  }catch(e){}
+  return "samanvaya_ecliptic";
+}
+var AYAN_MODE=pageAyan()||"lahiri";
 function setAyanamsaMode(m){ if(AYAN_MODES[m]) AYAN_MODE=m; return AYAN_MODE; }
 /* The calendar year, computed exactly as ss-engine.js's yearOf does, so the two
    engines cannot drift apart on the two text-based readings. A Julian-year
@@ -2824,7 +2859,21 @@ function sankrantiWeekday(jd,date,targetLon){
 
 try{ window.__AVT=AVT; window.__ayan=ayanamsa;
      window.__ayanModes=AYAN_MODES; window.__setAyan=setAyanamsaMode;
+     window.__pageAyan=pageAyan; window.__pageAyanRule=pageAyanRule;
+     /* the name a caption should print for the frame in use */
+     window.__ayanName=function(m){ m=m||AYAN_MODE; if(m==="lahiri") return "Lahiri";
+       return AYAN_MODES[m]?AYAN_MODES[m].name:m; };
      window.__ayanFor=ayanamsaFor;
+     /* The star catalogues store sidereal longitude under Lahiri (J2000). In any
+        other frame every star moves by the difference between the two
+        ayanāṃśas — the re-basing the star wheel has always done; these two
+        helpers let every other drawing of the stars do the same. */
+     window.__starShift=function(mode,jd){ jd=jd||(Date.now()/86400000+2440587.5);
+       return ayanamsaFor("lahiri",jd)-ayanamsaFor(mode||AYAN_MODE,jd); };
+     window.__framedStars=function(list,mode,jd){ var d=window.__starShift(mode,jd);
+       if(!list||Math.abs(d)<1e-9) return list;
+       return list.map(function(y){ var o={},k; for(k in y) o[k]=y[k]; o.sid=norm(y.sid+d);
+         if(y.id!=null&&y.nak) o.inside=Math.floor(o.sid/(40/3))===y.id; return o; }); };
      /* The divisional formulas exist twice: here, where a graha's varga sign is
         computed, and in the report's vargaLagna, which does the same arithmetic
         for the lagna. Two copies of sixteen formulas is two chances to diverge,
@@ -3024,6 +3073,16 @@ window.calculateSripatiHouses=function(ascSid,mcSid){
   if(window.SPSripati&&window.SPSripati.build) return window.SPSripati.build(ascSid,mcSid);
   return null;
 };
+/* The same, in a NAMED ayanāṃśa, without touching the engine's current mode.
+   The almanac pages need their own convention (the site's, or a per-page
+   override) and must not be moved by another widget on the page that casts a
+   chart in a different mode a moment earlier. */
+window.__kSidAtMode=function(name,date,mode){
+  var jd=date.getTime()/86400000+2440587.5, ay=ayanamsaFor(AYAN_MODES[mode]?mode:"lahiri",jd);
+  if(name==="Rahu") return norm(meanNode(jd)-ay);
+  if(name==="Ketu") return norm(meanNode(jd)-ay+180);
+  return norm(tropLon(name,date)-ay);
+};
 window.__kSidAt=function(name,date){
   var jd=date.getTime()/86400000+2440587.5, ay=ayanamsa(jd);
   if(name==="Rahu") return norm(meanNode(jd)-ay);
@@ -3035,6 +3094,7 @@ window.__kSidAt=function(name,date){
    is cheap enough to recompute on every frame. */
 /* a caller that names no ayanāṃśa gets the settings panel's, or the site default */
 function defaultAyan(){
+  var pa=pageAyan(); if(pa) return pa;     /* a page with its own picker uses it */
   try{ var N=window.NSettings&&window.NSettings.get(); if(N&&N.ayan&&AYAN_MODES[N.ayan]) return N.ayan; }catch(e){}
   return "samanvaya_ecliptic";
 }
@@ -13149,6 +13209,12 @@ latNotDec:   {en:"latitude from the ecliptic \u2014 the śara, not declination",
               hi:"क्रान्तिवृत्त से शर \u2014 क्रान्ति नहीं"}
 };
 for(var _k8 in MO_PHR8) MO_PHR[_k8]=MO_PHR8[_k8];
+/* The frame a scene reckons sidereal positions in: whatever the engine is set
+   to. In a chart report that is the chart's own ayanāṃśa; on the Motion page it
+   is the page's choice (its picker, else the site setting). One helper, so no
+   scene can quietly keep a hard-coded Lahiri while its neighbours follow. */
+function moAyanKey(){ try{ return window.__setAyan ? window.__setAyan() : "lahiri"; }catch(e){ return "lahiri"; } }
+function moAyanName(){ try{ return window.__ayanName ? window.__ayanName(moAyanKey()) : "Lahiri"; }catch(e){ return "Lahiri"; } }
 /* ===== Motion — the context bar ===========================================
    When and where the frame is. Five separate requests came in for this — put the
    time on the pañcāṅga scene, put the place on all of them, put the Hindu tithi
@@ -13267,7 +13333,7 @@ function moHinduDate(ms){
   if(su==null||mo==null) return null;
   var jd=ms/86400000+2440587.5;
   var pc=panchanga(su,mo);
-  var ayn=0; try{ ayn=window.__ayanFor?window.__ayanFor("lahiri",jd):0; }catch(e){}
+  var ayn=0; try{ ayn=window.__ayanFor?window.__ayanFor(moAyanKey(),jd):0; }catch(e){}
   var MS=masaOf(su,mo,ayn);
   var vi=(Math.floor(jd+1.5)%7+7)%7;
   return moTmasa(MS.amanta)+" "+moTpaksha(pc.paksha)+" · "+
@@ -14360,7 +14426,7 @@ var MO_SCENES=[
   try{
     var d=new Date(ms), ut=d.getUTCHours()+d.getUTCMinutes()/60+d.getUTCSeconds()/3600;
     sky=window.quickSky({year:d.getUTCFullYear(),month:d.getUTCMonth()+1,day:d.getUTCDate(),
-      hour:ut,minute:0,second:0,tzHours:0,lat:i.lat,lon:i.lon,ayanamsa:i.ayanamsa||"lahiri"});
+      hour:ut,minute:0,second:0,tzHours:0,lat:i.lat,lon:i.lon,ayanamsa:i.ayanamsa||moAyanKey()});
   }catch(e){ throw e; }
   var sun=sky.planets.filter(function(x){return x.en==="Sun";})[0];
   var day=sun&&sun.hz&&sun.hz.alt>0;
@@ -14425,7 +14491,7 @@ var MO_SCENES=[
  sub:"the yogatārā each nakṣatra is named after",
  draw:function(p){
   var P=moPal(), S=moSize(), st=moStage(), c=MO.ctx;
-  var Y=(window.YOGATARAS||[]), n=Y.length||27;
+  var Y=(window.YOGATARAS||[]); if(window.__framedStars) Y=window.__framedStars(Y,moAyanKey()); var n=Y.length||27;
   var each=1/n, idx=Math.min(n-1,Math.floor(p/each)), q=(p-idx*each)/each;
   var star=Y[idx]; if(!star) throw new Error("no star catalogue");
   /* hold wide, close in, hold tight — the ease is what makes it feel like a camera */
@@ -14508,7 +14574,7 @@ var MO_SCENES=[
   try{
     var d=new Date(ms), ut=d.getUTCHours()+d.getUTCMinutes()/60+d.getUTCSeconds()/3600;
     sky=window.quickSky({year:d.getUTCFullYear(),month:d.getUTCMonth()+1,day:d.getUTCDate(),
-      hour:ut,minute:0,second:0,tzHours:0,lat:i.lat,lon:i.lon,ayanamsa:i.ayanamsa||"lahiri"});
+      hour:ut,minute:0,second:0,tzHours:0,lat:i.lat,lon:i.lon,ayanamsa:i.ayanamsa||moAyanKey()});
   }catch(e){ throw e; }
   var lag=sky.lagna, R=st.R, cx=st.cx, cy=st.cy;
   var mode=MO.opt.houses||"both";
@@ -14594,7 +14660,7 @@ var MO_SCENES=[
     var pm=ms-(t1-t0)/600, pd=new Date(pm);
     var put=pd.getUTCHours()+pd.getUTCMinutes()/60+pd.getUTCSeconds()/3600;
     prevLag=window.quickSky({year:pd.getUTCFullYear(),month:pd.getUTCMonth()+1,day:pd.getUTCDate(),
-      hour:put,minute:0,second:0,tzHours:0,lat:i.lat,lon:i.lon,ayanamsa:i.ayanamsa||"lahiri"}).lagna;
+      hour:put,minute:0,second:0,tzHours:0,lat:i.lat,lon:i.lon,ayanamsa:i.ayanamsa||moAyanKey()}).lagna;
   }catch(e){}
   if(prevLag!=null && Math.floor(prevLag/30)%12!==h1 && mode!=="equal"){
     var txt=moP("lagnaEnters",moTrasi(h1));
@@ -14623,7 +14689,7 @@ var MO_SCENES=[
   var y0=-500, y1=3500, yr=y0+(y1-y0)*p;
   var jd=2451545.0+(yr-2000)*365.2425;
   var ay=0;
-  try{ ay=window.__ayanFor?window.__ayanFor("lahiri",jd):0; }catch(e){}
+  try{ ay=window.__ayanFor?window.__ayanFor(moAyanKey(),jd):0; }catch(e){}
   var R=st.R, cx=st.cx, cy=st.cy;
   moStars();
   /* the sidereal ring — fixed to the stars, so it never rotates */
@@ -14669,7 +14735,7 @@ var MO_SCENES=[
     cx,cy-st.h*0.44,S.w*0.046,P.ink,"center",700);
   moText(moP("ayanSep"),
     cx,cy+st.h*0.44,S.w*0.026,P.dim,"center",500);
-  return {ms:null, sub:moP("ayanIs",ay.toFixed(2),"Lahiri")};
+  return {ms:null, sub:moP("ayanIs",ay.toFixed(2),moAyanName())};
  }},
 
 /* -------------------------------------------------------------------- 8. dṛṣṭi */
@@ -14994,7 +15060,7 @@ var MO_MORE=[
   var pc=panchanga(su,mo);
   var nk=nakOf(mo);
   var vi=(Math.floor(jd+1.5)%7+7)%7;
-  var ayn=0; try{ ayn=window.__ayanFor?window.__ayanFor("lahiri",jd):0; }catch(e){}
+  var ayn=0; try{ ayn=window.__ayanFor?window.__ayanFor(moAyanKey(),jd):0; }catch(e){}
   var MS=masaOf(su,mo,ayn);                 /* māsa, ṛtu, ayana — the pañcāṅga heading */
   var elong=((mo-su)%360+360)%360;
   var yogaRaw=((mo+su)%360+360)%360;
@@ -15925,7 +15991,7 @@ function moChartSheet(){
   rows.push(["UTC offset (hours)",i.tzHours]);
   rows.push(["Latitude",i.lat]); rows.push(["Longitude",i.lon]);
   rows.push(["Zodiac","sidereal (nirayana)"]);
-  rows.push(["Ayanāṃśa",(MO.J&&MO.J.ayanamsha_name)||i.ayanamsa||"Lahiri (Chitrapakṣa)"]);
+  rows.push(["Ayanāṃśa",(MO.J&&MO.J.ayanamsha_name)||moAyanName()]);
   rows.push(["Ayanāṃśa value (°)",MO.J&&MO.J.ayanamsha_deg!=null?+MO.J.ayanamsha_deg.toFixed(6):""]);
   rows.push(["House system","whole sign"]);
   rows.push(["Node reckoning",i.node==="true"?"true node":"mean node"]);
@@ -16041,7 +16107,7 @@ function moSceneSheets(){
       var ms4=b-half+(half*2)*s3/N3, d4=new Date(ms4);
       var ut=d4.getUTCHours()+d4.getUTCMinutes()/60+d4.getUTCSeconds()/3600, sk=null;
       try{ sk=window.quickSky({year:d4.getUTCFullYear(),month:d4.getUTCMonth()+1,day:d4.getUTCDate(),
-        hour:ut,minute:0,second:0,tzHours:0,lat:i3.lat,lon:i3.lon,ayanamsa:i3.ayanamsa||"lahiri"}); }catch(e){}
+        hour:ut,minute:0,second:0,tzHours:0,lat:i3.lat,lon:i3.lon,ayanamsa:i3.ayanamsa||moAyanKey()}); }catch(e){}
       if(!sk) continue;
       sk.planets.forEach(function(pp){
         if(!pp.hz) return;
@@ -16053,7 +16119,7 @@ function moSceneSheets(){
       cols:["Time (UTC)","Graha","Altitude °","Azimuth °","Sidereal longitude °","Rāśi","Horizon"],
       rows:rows3});
   } else if(k==="nakshatra"){
-    var rows4=(window.YOGATARAS||[]).map(function(y){
+    var rows4=(window.__framedStars?window.__framedStars(window.YOGATARAS||[],moAyanKey()):(window.YOGATARAS||[])).map(function(y){
       return [y.id+1,y.nak,y.star,y.bayer,y.hr,+y.sid.toFixed(4),moSignOf(y.sid),
               +y.lat.toFixed(4),+y.mag.toFixed(2),y.inside?"inside":"outside"];
     });
@@ -16072,7 +16138,7 @@ function moSceneSheets(){
       var ms5=b5+86164091*f/N5, d5=new Date(ms5);
       var ut5=d5.getUTCHours()+d5.getUTCMinutes()/60+d5.getUTCSeconds()/3600, sk5=null;
       try{ sk5=window.quickSky({year:d5.getUTCFullYear(),month:d5.getUTCMonth()+1,day:d5.getUTCDate(),
-        hour:ut5,minute:0,second:0,tzHours:0,lat:i5.lat,lon:i5.lon,ayanamsa:i5.ayanamsa||"lahiri"}); }catch(e){}
+        hour:ut5,minute:0,second:0,tzHours:0,lat:i5.lat,lon:i5.lon,ayanamsa:i5.ayanamsa||moAyanKey()}); }catch(e){}
       if(!sk5) continue;
       var h1=Math.floor(sk5.lagna/30)%12;
       rows5.push([moISO(ms5),+sk5.lagna.toFixed(4),moTrasi(h1),+(sk5.lagna%30).toFixed(4),
@@ -16156,7 +16222,7 @@ function moSceneSheets(){
        govern it. The second is the one worth keeping — it is the table BPHS asks
        for when it says the ascendant follows the rāśi durations of the place. */
     var W=moWhere(), tL=moBirthMs(), eL=tL+moSpanMs();
-    var ayL=0; try{ ayL=window.__ayanFor?window.__ayanFor("lahiri",tL/86400000+2440587.5):23.9; }catch(e){}
+    var ayL=0; try{ ayL=window.__ayanFor?window.__ayanFor(moAyanKey(),tL/86400000+2440587.5):23.9; }catch(e){}
     var RT=moRisingTimes(W.lat,ayL);
     out.push({name:"Rāśi rising times",
       cols:["Rāśi","Oblique ascension °","Rising time (minutes)","Rising time (h:mm)",
@@ -16176,7 +16242,7 @@ function moSceneSheets(){
         var utL=dL.getUTCHours()+dL.getUTCMinutes()/60+dL.getUTCSeconds()/3600;
         lagv=window.quickSky({year:dL.getUTCFullYear(),month:dL.getUTCMonth()+1,
           day:dL.getUTCDate(),hour:utL,minute:0,second:0,tzHours:0,
-          lat:W.lat,lon:W.lon,ayanamsa:"lahiri"}).lagna;
+          lat:W.lat,lon:W.lon,ayanamsa:moAyanKey()}).lagna;
       }catch(e){}
       if(lagv==null) continue;
       var sg=Math.floor(lagv/30)%12;
@@ -16216,7 +16282,7 @@ function moSceneSheets(){
       } else {
         var ilS=null; try{ ilS=Astronomy.Illumination(Astronomy.Body.Sun,dM); }catch(e){}
         var dsS=(ilS&&ilS.geo_dist)?ilS.geo_dist:1;
-        var ayS=0; try{ ayS=window.__ayanFor?window.__ayanFor("lahiri",mM/86400000+2440587.5):23.9; }catch(e){}
+        var ayS=0; try{ ayS=window.__ayanFor?window.__ayanFor(moAyanKey(),mM/86400000+2440587.5):23.9; }catch(e){}
         var trS=((suM+ayS)%360+360)%360, nkS=nakOf(suM);
         rowsM.push([moISO(mM),+suM.toFixed(4),moSignOf(suM),+(suM%30).toFixed(4),
                     nkS.name,nkS.pada,+dsS.toFixed(6),+((0.5331/dsS)*60).toFixed(3),
@@ -16350,7 +16416,7 @@ function moSceneSheets(){
       if(suP==null||moP==null) continue;
       var pcP=panchanga(suP,moP), nkP=nakOf(moP);
       var jdP=mP/86400000+2440587.5, viP=(Math.floor(jdP+1.5)%7+7)%7;
-      var ayP=0; try{ ayP=window.__ayanFor?window.__ayanFor("lahiri",jdP):0; }catch(e){}
+      var ayP=0; try{ ayP=window.__ayanFor?window.__ayanFor(moAyanKey(),jdP):0; }catch(e){}
       var msP=masaOf(suP,moP,ayP);
       var elP=((moP-suP)%360+360)%360, ygP=((moP+suP)%360+360)%360;
       rowsP.push([moISO(mP), msP.amanta, msP.purnimanta, msP.ritu, msP.ayana,
@@ -17376,7 +17442,7 @@ MO_SKY.push({key:"lagna", label:"Lagna", title:"The sign climbing out of the eas
   var W=moWhere();
   var t0=moBirthMs(), t1=t0+moSpanMs(), ms=t0+(t1-t0)*p;
   var d=new Date(ms), jd=ms/86400000+2440587.5;
-  var ayan=0; try{ ayan=window.__ayanFor?window.__ayanFor("lahiri",jd):23.9; }catch(e){ ayan=23.9; }
+  var ayan=0; try{ ayan=window.__ayanFor?window.__ayanFor(moAyanKey(),jd):23.9; }catch(e){ ayan=23.9; }
   var lst=moLST(jd,W.lon);
   /* The lagna itself comes from the site's own engine, not from the drawing, so
      the degree on screen is the degree the chart would be cast on. */
@@ -17385,7 +17451,7 @@ MO_SKY.push({key:"lagna", label:"Lagna", title:"The sign climbing out of the eas
     var ut=d.getUTCHours()+d.getUTCMinutes()/60+d.getUTCSeconds()/3600+d.getUTCMilliseconds()/3600000;
     var q=window.quickSky({year:d.getUTCFullYear(),month:d.getUTCMonth()+1,day:d.getUTCDate(),
       hour:ut,minute:0,second:0,tzHours:0,lat:W.lat,lon:W.lon,
-      ayanamsa:(MO.J&&MO.J.input&&MO.J.input.ayanamsa)||"lahiri"});
+      ayanamsa:(MO.J&&MO.J.input&&MO.J.input.ayanamsa)||moAyanKey()});
     lag=q.lagna; pos=q.positions||q.sky||null;
   }catch(e){}
   if(lag==null) throw new Error("no lagna");
@@ -17637,7 +17703,7 @@ MO_SKY.push({key:"sun", label:"Sūrya", title:"Sūrya, the one graha with no pha
   var dist=(ill&&ill.geo_dist)?ill.geo_dist:1;         /* Earth-Sun, in AU */
   var diam=0.5331/dist;                                /* degrees, from 1 AU */
   var nk=nakOf(su), sgn=Math.floor(su/30)%12;
-  var ayan=0; try{ ayan=window.__ayanFor?window.__ayanFor("lahiri",ms/86400000+2440587.5):23.9; }catch(e){}
+  var ayan=0; try{ ayan=window.__ayanFor?window.__ayanFor(moAyanKey(),ms/86400000+2440587.5):23.9; }catch(e){}
   var trop=((su+ayan)%360+360)%360;
   moStars();
   var Rbase=Math.min(S.w*0.355,(st.h-U*0.17)*0.42);
@@ -19299,7 +19365,7 @@ MO_REELS.push({
         var ms = ss + (sr - ss) * (k / N);
         var jd = ms / 86400000 + 2440587.5;
         var ayan = 23.9;
-        try { if (window.__ayanFor) ayan = window.__ayanFor("lahiri", jd); } catch (e) {}
+        try { if (window.__ayanFor) ayan = window.__ayanFor(moAyanKey(), jd); } catch (e) {}
         var lst = moLST(jd, W.lon);
         var at = { ms: ms, q: {} };
         for (var n = 0; n < names.length; n++) {
@@ -19433,7 +19499,7 @@ MO_REELS.push({
         var ms = sr + (ss - sr) * (k / N);
         var jd = ms / 86400000 + 2440587.5;
         var ayan = 23.9;
-        try { if (window.__ayanFor) ayan = window.__ayanFor("lahiri", jd); } catch (e) {}
+        try { if (window.__ayanFor) ayan = window.__ayanFor(moAyanKey(), jd); } catch (e) {}
         var lon = moSidAt("Sun", ms);
         if (lon == null) continue;
         var A = moAltAz(lon, ayan, moLST(jd, W.lon), W.lat);
@@ -19457,7 +19523,7 @@ MO_REELS.push({
         var R = Math.PI / 180;
         function decAt(ms) {
           var jd = ms / 86400000 + 2440587.5, ay = 23.9;
-          try { if (window.__ayanFor) ay = window.__ayanFor("lahiri", jd); } catch (e) {}
+          try { if (window.__ayanFor) ay = window.__ayanFor(moAyanKey(), jd); } catch (e) {}
           var sid = moSidAt("Sun", ms);
           if (sid == null) return null;
           var trop = ((sid + ay) % 360 + 360) % 360;
@@ -19815,7 +19881,7 @@ window.__moShadowFacts = function () {
   /* the Sun's declination at the moment of the shortest shadow, which is what
      the closed form needs and what the scene never prints */
   var jd = M.best.ms / 86400000 + 2440587.5, ayan = 23.9;
-  try { if (window.__ayanFor) ayan = window.__ayanFor("lahiri", jd); } catch (e) {}
+  try { if (window.__ayanFor) ayan = window.__ayanFor(moAyanKey(), jd); } catch (e) {}
   var A = moAltAz(moSidAt("Sun", M.best.ms), ayan, moLST(jd, W.lon), W.lat);
   return { shortest: M.best.L, aksha: M.aksha, decAtNoon: A.dec,
            altAtNoon: A.alt, shortestH: moLocalH(M.best.ms, W.tz) };
@@ -19957,7 +20023,7 @@ var MD_NAK = ["Aśvinī", "Bharaṇī", "Kṛttikā", "Rohiṇī", "Mṛgaśira"
    scrub. */
 function mdAyanAt(year) {
   var jd = 2451545.0 + (year - 2000) * 365.2425;
-  try { if (window.__ayanFor) return window.__ayanFor("lahiri", jd); } catch (e) {}
+  try { if (window.__ayanFor) return window.__ayanFor(moAyanKey(), jd); } catch (e) {}
   var T = (jd - 2451545.0) / 36525.0;
   return 0.000307083556492 * T * T + 1.39688796382 * T + 23.857092356;
 }
@@ -22718,7 +22784,7 @@ function moSceneOpts(){
       '<span class="mohint">one sidereal day — the gold spokes slide continuously, the '+
       'whole-sign ring steps once per rāśi</span>';
   } else if(k==="ayanamsa"){
-    h='<span class="mohint">500 BCE to 3500 CE — the Lahiri value, the same one the charts use</span>';
+    h='<span class="mohint">500 BCE to 3500 CE — the '+moAyanName()+' value, the frame this page is set to</span>';
   } else if(k==="tithi"){
     h='<span class="mohint">one synodic month from today, new Moon to new Moon</span>';
   }
@@ -25835,7 +25901,100 @@ window.buildKundliReport=function(J){
     document.addEventListener("DOMContentLoaded", function () { mount(); });
   else mount();
 
-  window.NSettings = { get: get, set: set, defaults: function () {
+  /* ---- the almanac pages' own ayanāṃśa ------------------------------------
+     Now, Calendar, Star wheel and Studio name nakṣatras, yogas and solar
+     months. They follow the ayanāṃśa above by default, and each carries its
+     own override so a reader can keep one page on another convention — Lahiri,
+     to match a printed almanac, say — without changing the site. Stored per
+     page under nirayana.pageAyan. */
+  var PAGEKEY = "nirayana.pageAyan";
+  function pageName() {
+    try { return (location.pathname.split("/").pop() || "index.html").toLowerCase(); }
+    catch (e) { return "index.html"; }
+  }
+  function modes() { return window.__ayanModes || null; }
+  function pageOverride() {
+    try {
+      var m = JSON.parse(window.localStorage.getItem(PAGEKEY) || "{}") || {};
+      var v = m[pageName()], M = modes();
+      return (v && (!M || M[v])) ? v : null;
+    } catch (e) { return null; }
+  }
+  /* Which pages carry their own picker, and what each starts on, is decided in
+     ONE place — engine.js's PAGE_AYAN table, which has to resolve the frame
+     before the first position is computed. The almanac pages, Studio Pro, Reel
+     Studio, Director Pro and Motion follow the site setting; the Sūrya
+     Siddhānta and Engine Lab pages start on Lahiri, the frame their
+     comparisons are drawn in. Any of them can be set to another convention for
+     that page alone. A page outside the table answers "lahiri", as before. */
+  function pageRule() { return window.__pageAyanRule ? window.__pageAyanRule() : null; }
+  function almanacAyan() {
+    if (window.__pageAyan) { var a = window.__pageAyan(); return a || "lahiri"; }
+    var M = modes(), v = pageOverride() || get().ayan;
+    return (!M || M[v]) ? v : "samanvaya_ecliptic";
+  }
+  function setPageAyan(key) {
+    try {
+      var m = JSON.parse(window.localStorage.getItem(PAGEKEY) || "{}") || {};
+      if (key) m[pageName()] = key; else delete m[pageName()];
+      window.localStorage.setItem(PAGEKEY, JSON.stringify(m));
+    } catch (e) {}
+    try { window.dispatchEvent(new CustomEvent("nirayana:almanac-ayan", { detail: almanacAyan() })); } catch (e) {}
+  }
+  function ayanName(k) { var M = modes(); return M && M[k] ? M[k].name : k; }
+  /* The picker, mounted into #np-ayan. Changing it reloads the page: every
+     almanac page derives a great deal from the convention, and a reload is the
+     one way to be sure nothing computed under the old one survives. */
+  function mountPageAyan(host) {
+    host = host || document.getElementById("np-ayan");
+    if (!host || host.querySelector("select")) return false;
+    var M = modes(); if (!M) return false;
+    var lab = document.createElement("label"); lab.className = "npayan";
+    var sp = document.createElement("span"); sp.textContent = "Ayanāṃśa for this page";
+    var sel = document.createElement("select"); sel.className = "swin"; sel.id = "np-ayan-sel";
+    var rule = pageRule();
+    var o0 = document.createElement("option"); o0.value = "";
+    o0.textContent = rule && rule !== "site"
+      ? "Page default — " + ayanName(rule) + ", the frame this comparison is drawn in"
+      : "Follow the site setting — " + ayanName(get().ayan);
+    sel.appendChild(o0);
+    Object.keys(M).forEach(function (k) {
+      var o = document.createElement("option"); o.value = k; o.textContent = ayanName(k) +
+        (k === "lahiri" ? " — the Indian civil standard printed almanacs use" : "");
+      sel.appendChild(o);
+    });
+    sel.value = pageOverride() || "";
+    sel.addEventListener("change", function () { setPageAyan(sel.value || null); location.reload(); });
+    lab.appendChild(sp); lab.appendChild(sel); host.appendChild(lab);
+    var note = document.createElement("span"); note.className = "npayan-note";
+    var what = host.getAttribute("data-what") ||
+      "Nakṣatras, yogas and solar months here are named in";
+    note.textContent = what + " " + ayanName(almanacAyan()) +
+      (pageOverride() ? " — chosen for this page only."
+        : (rule && rule !== "site" ? ", this page's default; choosing another here changes this page only."
+                                   : ", the site setting; choosing another here changes this page only.")) +
+      (host.getAttribute("data-after") || " Tithi and karaṇa do not depend on it.");
+    host.appendChild(note);
+    return true;
+  }
+  /* mount as soon as the engine has published its modes */
+  (function tryMount(n) {
+    if (typeof document === "undefined") return;
+    if (document.getElementById("np-ayan") && !mountPageAyan() && n < 100)
+      setTimeout(function () { tryMount(n + 1); }, 150);
+    else if (!document.getElementById("np-ayan") && n < 3)
+      setTimeout(function () { tryMount(n + 1); }, 300);
+  })(0);
+  /* a page following the site setting follows a change to it at once */
+  try {
+    window.addEventListener("nirayana:settings", function (e) {
+      var ch = e && e.detail && e.detail.changed;
+      if (ch && ch.indexOf("ayan") >= 0 && document.getElementById("np-ayan") && !pageOverride() && pageRule() !== "lahiri") location.reload();
+    });
+  } catch (e) {}
+
+  window.NSettings = { get: get, set: set, almanacAyan: almanacAyan, pageAyan: pageOverride,
+    setPageAyan: setPageAyan, mountPageAyan: mountPageAyan, defaults: function () {
     var d = {}; Object.keys(DEF).forEach(function (k) { d[k] = DEF[k]; }); return d;
   }, open: open, close: close, options: OPTS };
 })();
@@ -27332,5 +27491,89 @@ window.__nsHonours = ["ayan","house","node","degfmt"];
 })();
 
 </script>
-</body>
+<style>.secx-b{display:inline-flex;align-items:center;gap:.35em;margin:0 .5em;vertical-align:middle;min-height:32px;min-width:32px;box-sizing:border-box;font:600 .72rem/1 system-ui,sans-serif;letter-spacing:0;text-transform:none;padding:.28em .6em .28em .3em;border:1px solid rgba(192,138,43,.6);border-radius:999px;background:rgba(192,138,43,.09);float:none;color:inherit;cursor:pointer;white-space:nowrap}.secx-b .secx-q{display:inline-grid;place-items:center;width:1.5em;height:1.5em;border-radius:50%;background:#c08a2b;color:#1b1407;font:700 .8rem/1 system-ui,sans-serif;flex:none}.secx-b i{font-style:normal}.secx-b:hover,.secx-b:focus-visible{background:rgba(192,138,43,.22)}@media (max-width:560px){.secx-b i{display:none}.secx-b{padding:0;justify-content:center}}.secx-ov{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.45)}.secx-ov[hidden]{display:none}.secx-card{position:relative;max-width:34rem;width:100%;max-height:80vh;overflow:auto;box-sizing:border-box;padding:1.2rem 1.4rem 1.3rem;border-radius:12px;border-left:5px solid #c08a2b;background:var(--paper,#fffaf0);color:var(--ink,#222);box-shadow:0 12px 40px rgba(0,0,0,.35);font:1rem/1.6 system-ui,sans-serif;text-align:left}.secx-k{margin:0 0 .2rem;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;opacity:.75}.secx-card h3{margin:0 2rem .5rem 0;font-size:1.1rem;line-height:1.3;color:inherit}.secx-p{margin:0}.secx-x{position:absolute;top:.5rem;right:.6rem;width:2rem;height:2rem;border:0;border-radius:50%;background:transparent;color:inherit;font-size:1.4rem;line-height:1;cursor:pointer}.secx-x:hover,.secx-x:focus-visible{background:rgba(128,128,128,.2)}@media print{.secx-b,.secx-ov{display:none!important}}</style><script type="application/json" id="secx-data">{"byId": {"birth": "The moment of birth described in the old calendar — the lunar day, weekday, Moon's star and so on — plus the extra rising points and calculated 'shadow' points the book uses.", "chart": "The birth chart drawn as a diagram, with a switch to show any divisional chart in the same frame. In the North Indian style the houses stay put and the signs move; in the South Indian style it is the other way round.", "planets": "Every planet at birth: its sign and degree, how strong or weak it is placed, whether it is moving backwards, which house it falls in under each house system, and its 'state'.", "houses": "The twelve houses: the sign on each, its owner and the planets in it, plus its image-point (ārūḍha), which signs look at it, and which planets intervene in its affairs.", "aspects": "Which planets look at which (and how strongly), and whether each pair are friends, neutrals or enemies in this chart.", "strength": "Each planet's six-fold strength from the book with all its parts, its capacity for agreeable and difficult results, its score across the divisional charts, and each house's strength.", "ashtakavarga": "The point-scores: each planet gives a point to a sign or not, by fixed rules. Higher totals mean a sign gives more support to whatever passes through it.", "vargas": "Where each planet falls in every divisional chart — the finer slicings of each sign, each read for one part of life.", "vargadiagrams": "The divisional charts drawn as diagrams, so you can see each one at a glance rather than as a table.", "vargaanalysis": "How consistently each planet is well or badly placed across all the divisional charts — a planet strong in many divisions counts for more.", "yogas": "The named combinations of planets found in this chart, with the rule for each. A combination is a theme the tradition names, not a promise.", "dashas": "The planet-period systems (Viṃśottarī, Aṣṭottarī and Yoginī): which planet rules which years of life, from birth to the end of each cycle, with the period running now marked.", "dashatree": "The main 120-year period system as a tree: open a main period to see its sub-periods, and open those for finer ones.", "transits": "Where the planets are on the chosen date, and which house of the birth chart each one is passing through.", "readings": "Short notes put together from the chart's data, each naming the rule it comes from. They describe the tradition's themes; they are not predictions.", "reliability": "How much the chart depends on the exact birth minute, how it would change under other ayanāṃśas or house systems, and how it was calculated.", "additional": "Any extra information the chart file holds beyond the usual layout, shown as it is.", "data": "Every value in the chart file, as a tree you can open branch by branch or search by name or value."}, "parentId": 1, "sel": "section.sec[id] > header > h2", "watch": 1}</script><script>/* "In simple words" — one small button beside every section heading, opening
+   an overlay that explains just that section. The explanations come from
+   source/src/pages/_plain_sections.py, inlined per page by build.py as
+   <script type="application/json" id="secx-data">. Headings rendered later by
+   script (the Kundli report, the dashboard) are picked up as they appear. */
+(function () {
+  "use strict";
+  var el = document.getElementById("secx-data");
+  if (!el) return;
+  var D; try { D = JSON.parse(el.textContent); } catch (e) { return; }
+  var HI = D.lang === "hi";
+  var LBL = HI ? "सरल शब्दों में" : "In simple words";
+  var CLOSE = HI ? "बंद करें" : "Close";
+
+  function titleOf(h) {           // heading text without its <span> subtitle / our button
+    var t = "";
+    for (var n = h.firstChild; n; n = n.nextSibling)
+      if (n.nodeType === 3) t += n.nodeValue;
+      else if (n.nodeType === 1 && n.tagName !== "SPAN" && n.tagName !== "BUTTON" && !n.classList.contains("sensb")) t += n.textContent;
+    return t.replace(/\s+/g, " ").trim();
+  }
+  function lookup(h) {
+    if (D.byId) {
+      var id = h.id || (D.parentId && h.closest("section[id]") ? h.closest("section[id]").id : "");
+      if (id && D.byId[id]) return D.byId[id];
+    }
+    if (D.byTitle) { var t = titleOf(h); if (D.byTitle[t]) return D.byTitle[t]; }
+    return null;
+  }
+
+  var ov, card, ttl, txt, lastFocus;
+  function build() {
+    ov = document.createElement("div");
+    ov.className = "secx-ov"; ov.hidden = true;
+    ov.innerHTML = '<div class="secx-card" role="dialog" aria-modal="true" aria-labelledby="secx-t" tabindex="-1">' +
+      '<button type="button" class="secx-x" aria-label="' + CLOSE + '">×</button>' +
+      '<p class="secx-k">' + LBL + '</p><h3 id="secx-t"></h3><p class="secx-p"></p></div>';
+    document.body.appendChild(ov);
+    card = ov.firstChild; ttl = card.querySelector("h3"); txt = card.querySelector(".secx-p");
+    ov.addEventListener("click", function (e) { if (e.target === ov) hide(); });
+    card.querySelector(".secx-x").addEventListener("click", hide);
+    document.addEventListener("keydown", function (e) {
+      if (ov.hidden) return;
+      if (e.key === "Escape") { e.preventDefault(); hide(); }
+      else if (e.key === "Tab") { e.preventDefault(); card.querySelector(".secx-x").focus(); }
+    });
+  }
+  function show(title, body, from) {
+    if (!ov) build();
+    lastFocus = from; ttl.textContent = title; txt.textContent = body;
+    ov.hidden = false; card.querySelector(".secx-x").focus();
+  }
+  function hide() { ov.hidden = true; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+
+  function decorate(h) {
+    if (h.__secx) return; h.__secx = 1;
+    var body = lookup(h); if (!body) return;
+    var b = document.createElement("button");
+    b.type = "button"; b.className = "secx-b";
+    b.setAttribute("aria-haspopup", "dialog");
+    b.title = LBL + ": " + titleOf(h);
+    b.innerHTML = '<b class="secx-q" aria-hidden="true">?</b><i>' + LBL + "</i>";
+    b.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); show(titleOf(h), body, b); });
+    var side = h.querySelector(":scope > span");
+    if (side) h.insertBefore(b, side); else h.appendChild(b);
+  }
+  var SEL = D.sel || "h2[id]";
+  function scan(root) {
+    if (!root.querySelectorAll) return;
+    if (root.matches && root.matches(SEL)) decorate(root);
+    var l = root.querySelectorAll(SEL);
+    for (var i = 0; i < l.length; i++) decorate(l[i]);
+  }
+  function start() {
+    scan(document);
+    if (D.watch && window.MutationObserver)
+      new MutationObserver(function (ms) {
+        for (var i = 0; i < ms.length; i++)
+          for (var j = 0; j < ms[i].addedNodes.length; j++) scan(ms[i].addedNodes[j]);
+      }).observe(document.body, { childList: true, subtree: true });
+  }
+  window.__secx = { lookup: lookup, titleOf: titleOf, data: D };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", start); else start();
+})();
+</script></body>
 </html>

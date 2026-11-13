@@ -1,6 +1,7 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Motion — the sky, moving — {{BRAND}}</title><!--HEAD--><!--CSS--><!--THEMEJS--></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="{{BRAND}} — home"><span class="lhmarkwrap"><!--LOGO--></span><span class="lhword"><span class="lhname">{{BRAND}}</span><span class="lhdeva">{{BRAND_DEVA}}</span></span></a><p class="eyebrow">Brihat Parashara Hora Shastra</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself — of forty-four in all. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site">{{NAV}}</nav><div class="layout onecol wide"><main>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Motion — the sky, moving — {{BRAND}}</title><!--HEAD--><!--CSS--><!--THEMEJS--></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="{{BRAND}} — home"><span class="lhmarkwrap"><!--LOGO--></span><span class="lhword"><span class="lhname">{{BRAND}}</span><span class="lhdeva">{{BRAND_DEVA}}</span></span></a><p class="eyebrow">Jyotiṣa · the classical texts, computed</p><h1>Motion</h1><p class="sub">Thirty-two scenes about the sky itself — of forty-four in all. None of them needs a birth chart — a year of transits, a lunation, an eclipse season and the bodies themselves are facts about the sky, not about a person.</p></header><nav class="site">{{NAV}}</nav><div class="layout onecol wide"><main>
 
 <p class="mochartbar" id="mo-chart"></p>
+<div id="np-ayan" class="npayanwrap" data-what="Scenes that name signs or nakṣatras reckon them in" data-after=" Scenes drawn from your chart use the chart's own setting."></div>
 <div id="mo-host" class="kreport"><p class="k-status" id="mo-status">Loading the scenes…</p></div>
 
 <noscript><p class="caution"><b>These scenes are drawn in the browser.</b> With JavaScript off there is nothing to draw them, and nothing here to read instead. Every figure the scenes use is computed on this machine from the same engine the chart pages use.</p></noscript>
@@ -56,6 +57,9 @@
     if (!window.buildLocalChart || !window.__derive) return null;
     try {
       var J = window.buildLocalChart(i);
+      /* casting switches the engine to the chart's own ayanāṃśa; the chart
+         keeps it, and the sky scenes go back to this page's choice */
+      try { if (window.__pageAyan && window.__setAyan) window.__setAyan(window.__pageAyan() || "lahiri"); } catch (e) {}
       return { J: J, D: window.__derive(J), name: i.name || null, place: i.place || null };
     } catch (e) { return null; }
   }
@@ -98,4 +102,5 @@
   else setTimeout(go, 40);
 })();
 </script>
+<script src="site.js" defer></script>
 </body></html>

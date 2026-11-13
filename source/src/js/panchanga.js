@@ -112,8 +112,26 @@
   };
 
   /* ===== primitives ======================================================== */
+  /* THE ALMANAC'S AYANĀṂŚA. Until November 2026 the almanac named its
+     nakṣatras and solar months on Lahiri whatever the site's setting said. It
+     now follows NSettings.almanacAyan(): this page's own override if the reader
+     set one, else the settings panel's ayanāṃśa (Samanvaya–Ecliptic by default).
+     Positions are read through __kSidAtMode, which names the mode, so another
+     widget casting in a different mode cannot move the almanac underneath it. */
+  NP.ayanKey = function () {
+    try { if (window.NSettings && window.NSettings.almanacAyan) return window.NSettings.almanacAyan(); } catch (e) {}
+    return "samanvaya_ecliptic";
+  };
+  try {
+    window.addEventListener("nirayana:almanac-ayan", function () { cacheClear(); });
+  } catch (e) {}
+
   function sidAt(name, ms) {
-    try { return window.__kSidAt(name, new Date(ms)); } catch (e) { return null; }
+    try {
+      var d = new Date(ms);
+      if (window.__kSidAtMode) return window.__kSidAtMode(name, d, NP.ayanKey());
+      return window.__kSidAt(name, d);
+    } catch (e) { return null; }
   }
   NP.sidAt = sidAt;
 
@@ -468,7 +486,7 @@
     var jd = window.__kJD(sr);
     var pc = window.__kPanchang(su, mo, jd);
     var ayn = 0;
-    try { ayn = window.__ayanFor ? window.__ayanFor("lahiri", jd) : 0; } catch (e) {}
+    try { ayn = window.__ayanFor ? window.__ayanFor(NP.ayanKey(), jd) : 0; } catch (e) {}
     /* the Sun where it actually was at the new moon that began this lunar
        month, rather than back-projected with mean motions — see masaOf */
     var nmSun = null;
@@ -1125,7 +1143,7 @@
       if (sr == null) return null;
       var noon = sr + 6 * 3600000;
       var jd = window.__kJD(noon), ayan = 0;
-      try { ayan = window.__ayanFor ? window.__ayanFor("lahiri", jd) : 0; } catch (e) {}
+      try { ayan = window.__ayanFor ? window.__ayanFor(NP.ayanKey(), jd) : 0; } catch (e) {}
       var sid = sidAt("Sun", noon);
       if (sid == null) return null;
       var trop = ((sid + ayan) % 360 + 360) % 360, R = Math.PI / 180;

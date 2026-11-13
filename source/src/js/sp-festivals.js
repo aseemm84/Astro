@@ -375,7 +375,7 @@
         : ev0.length + " of them across " + span + " years, each placed in " +
           "the Gregorian year it fell in."),
       stage: "year",
-      method: "Lahiri ayanāṃśa · tithi at sunrise",
+      method: (window.__ayanName ? window.__ayanName() : "Lahiri") + " ayanāṃśa · tithi at sunrise",
       cover: { t0: ev0[0].t, t1: ev0[ev0.length - 1].t },
       events: ev,
       tallyKeys: ["years"],
@@ -619,7 +619,7 @@
       events: ev,
       tallyKeys: ["tithis", "the day"],
       clockMode: "days",
-      method: "Lahiri ayanāṃśa",
+      method: (window.__ayanName ? window.__ayanName() : "Lahiri") + " ayanāṃśa",
       closing: {
         big: hit.name + " — " + hit.iso,
         lines: [

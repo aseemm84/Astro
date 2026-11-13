@@ -160,7 +160,7 @@ function moChartSheet(){
   rows.push(["UTC offset (hours)",i.tzHours]);
   rows.push(["Latitude",i.lat]); rows.push(["Longitude",i.lon]);
   rows.push(["Zodiac","sidereal (nirayana)"]);
-  rows.push(["Ayanāṃśa",(MO.J&&MO.J.ayanamsha_name)||i.ayanamsa||"Lahiri (Chitrapakṣa)"]);
+  rows.push(["Ayanāṃśa",(MO.J&&MO.J.ayanamsha_name)||moAyanName()]);
   rows.push(["Ayanāṃśa value (°)",MO.J&&MO.J.ayanamsha_deg!=null?+MO.J.ayanamsha_deg.toFixed(6):""]);
   rows.push(["House system","whole sign"]);
   rows.push(["Node reckoning",i.node==="true"?"true node":"mean node"]);
@@ -276,7 +276,7 @@ function moSceneSheets(){
       var ms4=b-half+(half*2)*s3/N3, d4=new Date(ms4);
       var ut=d4.getUTCHours()+d4.getUTCMinutes()/60+d4.getUTCSeconds()/3600, sk=null;
       try{ sk=window.quickSky({year:d4.getUTCFullYear(),month:d4.getUTCMonth()+1,day:d4.getUTCDate(),
-        hour:ut,minute:0,second:0,tzHours:0,lat:i3.lat,lon:i3.lon,ayanamsa:i3.ayanamsa||"lahiri"}); }catch(e){}
+        hour:ut,minute:0,second:0,tzHours:0,lat:i3.lat,lon:i3.lon,ayanamsa:i3.ayanamsa||moAyanKey()}); }catch(e){}
       if(!sk) continue;
       sk.planets.forEach(function(pp){
         if(!pp.hz) return;
@@ -288,7 +288,7 @@ function moSceneSheets(){
       cols:["Time (UTC)","Graha","Altitude °","Azimuth °","Sidereal longitude °","Rāśi","Horizon"],
       rows:rows3});
   } else if(k==="nakshatra"){
-    var rows4=(window.YOGATARAS||[]).map(function(y){
+    var rows4=(window.__framedStars?window.__framedStars(window.YOGATARAS||[],moAyanKey()):(window.YOGATARAS||[])).map(function(y){
       return [y.id+1,y.nak,y.star,y.bayer,y.hr,+y.sid.toFixed(4),moSignOf(y.sid),
               +y.lat.toFixed(4),+y.mag.toFixed(2),y.inside?"inside":"outside"];
     });
@@ -307,7 +307,7 @@ function moSceneSheets(){
       var ms5=b5+86164091*f/N5, d5=new Date(ms5);
       var ut5=d5.getUTCHours()+d5.getUTCMinutes()/60+d5.getUTCSeconds()/3600, sk5=null;
       try{ sk5=window.quickSky({year:d5.getUTCFullYear(),month:d5.getUTCMonth()+1,day:d5.getUTCDate(),
-        hour:ut5,minute:0,second:0,tzHours:0,lat:i5.lat,lon:i5.lon,ayanamsa:i5.ayanamsa||"lahiri"}); }catch(e){}
+        hour:ut5,minute:0,second:0,tzHours:0,lat:i5.lat,lon:i5.lon,ayanamsa:i5.ayanamsa||moAyanKey()}); }catch(e){}
       if(!sk5) continue;
       var h1=Math.floor(sk5.lagna/30)%12;
       rows5.push([moISO(ms5),+sk5.lagna.toFixed(4),moTrasi(h1),+(sk5.lagna%30).toFixed(4),
@@ -391,7 +391,7 @@ function moSceneSheets(){
        govern it. The second is the one worth keeping — it is the table BPHS asks
        for when it says the ascendant follows the rāśi durations of the place. */
     var W=moWhere(), tL=moBirthMs(), eL=tL+moSpanMs();
-    var ayL=0; try{ ayL=window.__ayanFor?window.__ayanFor("lahiri",tL/86400000+2440587.5):23.9; }catch(e){}
+    var ayL=0; try{ ayL=window.__ayanFor?window.__ayanFor(moAyanKey(),tL/86400000+2440587.5):23.9; }catch(e){}
     var RT=moRisingTimes(W.lat,ayL);
     out.push({name:"Rāśi rising times",
       cols:["Rāśi","Oblique ascension °","Rising time (minutes)","Rising time (h:mm)",
@@ -411,7 +411,7 @@ function moSceneSheets(){
         var utL=dL.getUTCHours()+dL.getUTCMinutes()/60+dL.getUTCSeconds()/3600;
         lagv=window.quickSky({year:dL.getUTCFullYear(),month:dL.getUTCMonth()+1,
           day:dL.getUTCDate(),hour:utL,minute:0,second:0,tzHours:0,
-          lat:W.lat,lon:W.lon,ayanamsa:"lahiri"}).lagna;
+          lat:W.lat,lon:W.lon,ayanamsa:moAyanKey()}).lagna;
       }catch(e){}
       if(lagv==null) continue;
       var sg=Math.floor(lagv/30)%12;
@@ -451,7 +451,7 @@ function moSceneSheets(){
       } else {
         var ilS=null; try{ ilS=Astronomy.Illumination(Astronomy.Body.Sun,dM); }catch(e){}
         var dsS=(ilS&&ilS.geo_dist)?ilS.geo_dist:1;
-        var ayS=0; try{ ayS=window.__ayanFor?window.__ayanFor("lahiri",mM/86400000+2440587.5):23.9; }catch(e){}
+        var ayS=0; try{ ayS=window.__ayanFor?window.__ayanFor(moAyanKey(),mM/86400000+2440587.5):23.9; }catch(e){}
         var trS=((suM+ayS)%360+360)%360, nkS=nakOf(suM);
         rowsM.push([moISO(mM),+suM.toFixed(4),moSignOf(suM),+(suM%30).toFixed(4),
                     nkS.name,nkS.pada,+dsS.toFixed(6),+((0.5331/dsS)*60).toFixed(3),
@@ -585,7 +585,7 @@ function moSceneSheets(){
       if(suP==null||moP==null) continue;
       var pcP=panchanga(suP,moP), nkP=nakOf(moP);
       var jdP=mP/86400000+2440587.5, viP=(Math.floor(jdP+1.5)%7+7)%7;
-      var ayP=0; try{ ayP=window.__ayanFor?window.__ayanFor("lahiri",jdP):0; }catch(e){}
+      var ayP=0; try{ ayP=window.__ayanFor?window.__ayanFor(moAyanKey(),jdP):0; }catch(e){}
       var msP=masaOf(suP,moP,ayP);
       var elP=((moP-suP)%360+360)%360, ygP=((moP+suP)%360+360)%360;
       rowsP.push([moISO(mP), msP.amanta, msP.purnimanta, msP.ritu, msP.ayana,

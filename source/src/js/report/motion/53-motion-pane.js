@@ -449,7 +449,7 @@ function moSceneOpts(){
       '<span class="mohint">one sidereal day — the gold spokes slide continuously, the '+
       'whole-sign ring steps once per rāśi</span>';
   } else if(k==="ayanamsa"){
-    h='<span class="mohint">500 BCE to 3500 CE — the Lahiri value, the same one the charts use</span>';
+    h='<span class="mohint">500 BCE to 3500 CE — the '+moAyanName()+' value, the frame this page is set to</span>';
   } else if(k==="tithi"){
     h='<span class="mohint">one synodic month from today, new Moon to new Moon</span>';
   }

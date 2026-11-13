@@ -207,8 +207,13 @@
        The privacy promise stays on the site pages, where it is a promise to
        the person it concerns. */
     c.fillText(o.method ||
-               (o.hi ? "लाहिरी अयनांश · सूर्योदय पर तिथि"
-                     : "Lahiri ayanāṃśa · tithi at sunrise"),
+               (function () {
+                 var k = (window.NP && NP.ayanKey) ? NP.ayanKey() : "lahiri",
+                     M = (window.__ayanModes || {})[k],
+                     nm = k === "lahiri" ? (o.hi ? "लाहिरी" : "Lahiri") : (M ? M.name : k);
+                 return o.hi ? nm + " अयनांश · सूर्योदय पर तिथि"
+                             : nm + " ayanāṃśa · tithi at sunrise";
+               })(),
                tx, fy + mk * 0.86);
     c.textAlign = "right";
     c.fillStyle = PAL.pale;
@@ -250,7 +255,8 @@
       return window.quickSky({
         year: d.getUTCFullYear(), month: d.getUTCMonth() + 1, day: d.getUTCDate(),
         hour: ut, minute: 0, second: 0, tzHours: 0,
-        lat: P.lat, lon: P.lon, ayanamsa: "lahiri"
+        lat: P.lat, lon: P.lon,
+        ayanamsa: (window.NP && window.NP.ayanKey) ? window.NP.ayanKey() : "samanvaya_ecliptic"
       });
     } catch (e) { return null; }
   };
@@ -344,8 +350,10 @@
 
     /* the yogatārās, which are what a nakṣatra is named after */
     if (o.stars !== false && window.YOGATARAS) {
+      var stSh = 0;
+      try { if (window.__starShift) stSh = window.__starShift((window.NP && NP.ayanKey) ? NP.ayanKey() : null); } catch (e) {}
       window.YOGATARAS.forEach(function (st) {
-        var lon = st.lon != null ? st.lon : st.sid;
+        var lon = st.lon != null ? st.lon : (st.sid != null ? st.sid + stSh : null);
         if (lon == null) return;
         var q = pt(lon, st.lat || st.beta || 0, rNakIn * 0.985);
         c.globalAlpha = q.above ? 0.95 : 0.35;

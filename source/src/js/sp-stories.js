@@ -364,7 +364,7 @@
       subtitle: "Every time " + sa + " hides in the Sun’s glare. Where does " +
                 "it hide?",
       stage: "whirl",
-      method: "sidereal rāśi · Lahiri ayanāṃśa",
+      method: "sidereal rāśi · " + (window.__ayanName ? window.__ayanName() : "Lahiri") + " ayanāṃśa",
       bodyName: body,
       events: ev,
       tallyKeys: ["hidings"],
