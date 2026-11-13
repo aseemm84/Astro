@@ -2578,6 +2578,19 @@ span.gldig.node{background:#5a5e7812;border-left-color:#8a8ea6}
 html[data-caution="off"] .krect{display:none}
 
 /* the almanac pages' own ayanāṃśa picker (settings.js mountPageAyan) */
+/* Engine Lab: the three engines explained, the glossary, the error tables */
+.eltbl3 td{vertical-align:top;font-size:.92rem}
+.eltblwrap{overflow-x:auto;max-width:100%;margin:.4rem 0 .8rem}
+.elerr{min-width:520px}
+.elerr td,.elerr th{font-size:.9rem}
+.elerr .elw{opacity:.7;font-size:.82rem}
+.elerr .elsub{font-style:italic;opacity:.85;background:transparent}
+.elh4{margin:1rem 0 .3rem;font-size:1rem}
+.elgloss{margin:.6rem 0 1.2rem;border:1px solid var(--line);border-radius:8px;padding:.5rem .9rem}
+.elgloss summary{cursor:pointer}
+.elgloss dt{font-weight:600;margin-top:.55rem}
+.elgloss dd{margin:.1rem 0 0 0;opacity:.92}
+@media (max-width:640px){.eltbl3 thead{display:none}.eltbl3 tr{display:block;border-bottom:1px solid var(--line);padding:.4rem 0}.eltbl3 td{display:block;border:0;padding:.15rem .3rem}}
 
 /* ===== the master settings overlay ======================================
    THE ONE COPY. This used to be duplicated verbatim in app.css and pages.css,
@@ -3473,6 +3486,7 @@ page says so rather than inventing a rhythm.</p>
   <div class="reelside">
     <h2 id="stories">The stories</h2>
 <div id="np-ayan" class="npayanwrap" data-what="Signs, nakṣatras and festival dates in the reels are reckoned in" data-after=" The Moon's phase, the tithi and the planets' turning points do not depend on it."></div>
+<div id="np-engine" class="npayanwrap"></div>
 
     <div id="reel-picker" class="reelpicker"></div>
     <p id="reel-blurb" class="reelblurb" hidden></p>

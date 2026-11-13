@@ -40,6 +40,20 @@ def read(*p):
     with open(os.path.join(*p), encoding="utf-8") as f:
         return f.read()
 
+def engine_js():
+    """engine.js as every page receives it: the Sūrya Siddhānta engine and its
+    fitted constants first, so the site engine can place the grahas by the
+    Siddhānta (as written or fitted) when a reader chooses it in Settings. The
+    copy is the site engine's own: pages that also bundle ss-engine.js for
+    their comparisons replace window.SSEngine with a fresh instance after this
+    one has been captured, so a comparison page flipping tiers cannot move the
+    site engine, and the site engine cannot move a comparison."""
+    fit = read(os.path.dirname(SRC), "data", "siddhanta-measured.json").strip()
+    json.loads(fit)
+    return (jsread(SRC, "js", "ss-engine.js") + "\n" +
+            "window.__SS_FIT_DATA=" + fit + ";\n" +
+            jsread(SRC, "js", "engine.js"))
+
 def jsread(*p):
     """A JavaScript file, safe to concatenate with the next one.
 
@@ -212,7 +226,7 @@ def build_kundli():
                             read(SRC, "css", "cosmos.css"), "style"),
              ("<!--THEMEJS-->", read(SRC, "js", "theme.js"), "script"),
              ("<!--JS0-->", astro_lib(), "script"),
-             ("<!--JS1-->", jsread(SRC, "js", "engine.js"), "script"),
+             ("<!--JS1-->", engine_js(), "script"),
              ("<!--JS2-->", report_bundle(), "script"),
              # places.js before ui.js: the form's city search and the motion
              # pane's place picker are the same code now, and the bundle must
@@ -274,7 +288,7 @@ def build_motion():
                             read(SRC, "css", "cosmos.css"), "style"),
              ("<!--THEMEJS-->", read(SRC, "js", "theme.js"), "script"),
              ("<!--JS0-->", astro_lib(), "script"),
-             ("<!--JS1-->", jsread(SRC, "js", "engine.js"), "script"),
+             ("<!--JS1-->", engine_js(), "script"),
              ("<!--JS2-->", report_bundle(), "script"),
              # places.js for the pane's own place picker; sp-cosmos for the
              # starfield, which the app build skips and the website keeps.
@@ -322,7 +336,7 @@ def build_ceremony():
                             read(SRC, "css", "cosmos.css"), "style"),
              ("<!--THEMEJS-->", read(SRC, "js", "theme.js"), "script"),
              ("<!--JS0-->", astro_lib(), "script"),
-             ("<!--JS1-->", jsread(SRC, "js", "engine.js"), "script"),
+             ("<!--JS1-->", engine_js(), "script"),
              # 54-motion-bodies supplies the graha discs the ring is drawn
              # with; without it sp-cosmos falls back to plain dots, which is a
              # working ceremony but not this one.
@@ -373,7 +387,7 @@ def build_workstation():
                             read(SRC, "css", "cosmos.css"), "style"),
              ("<!--THEMEJS-->", read(SRC, "js", "theme.js"), "script"),
              ("<!--JS0-->", astro_lib(), "script"),
-             ("<!--JS1-->", jsread(SRC, "js", "engine.js"), "script"),
+             ("<!--JS1-->", engine_js(), "script"),
              ("<!--JS2-->", report_bundle(), "script"),
              ("<!--JS3-->", jsread(SRC, "js", "places.js") + "\n" +
                             jsread(SRC, "js", "ui.js") + "\n" +
@@ -584,7 +598,7 @@ def build_adopted():
         engine = ""
         if name == "dashboard.html":
             engine = ("<script>\n" + astro_lib() +
-                      "\n</script>\n<script>\n" + jsread(SRC, "js", "engine.js") +
+                      "\n</script>\n<script>\n" + engine_js() +
                       "\n</script>\n<script>\n" + report_bundle() +
                       "\n</script>\n")
         panel = ("<style>\n" + read(SRC, "css", "settings.css") + "\n</style>\n"
@@ -685,7 +699,7 @@ def build_shared():
     subject to the restriction that blocks fetch() on file://."""
     return {
         "engine.js": (astro_lib() + "\n" +
-                      brandify(jsread(SRC, "js", "engine.js"))),
+                      brandify(engine_js())),
         # settings.js rides along inside site.js. It is wanted on every page,
         # and site.js is already referenced by the shell, listed in the app's
         # file table and precached by the service worker. A separate shared

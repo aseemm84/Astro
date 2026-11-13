@@ -38,7 +38,7 @@
   }
   function modern(sa, ms) {
     if (!EN[sa]) return null;
-    try { return window.__kSidAt(EN[sa], new Date(ms)); } catch (e) { return null; }
+    try { return window.__kSidAtModern(EN[sa], new Date(ms)); } catch (e) { return null; }
   }
 
   var WHEN = Date.now();

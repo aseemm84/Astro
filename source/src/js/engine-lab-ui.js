@@ -152,7 +152,7 @@
     var out = { lon: {}, panch: null, lahiri: {} };
     SA7.forEach(function (sa) {
       try {
-        var e = window.__kEclip(EN[sa], ms);
+        var e = window.__kEclipModern(EN[sa], ms);
         out.lon[sa] = e ? e.lon : null;        /* the site's own ayanāṃśa */
         out.lahiri[sa] = e ? norm(e.trop - frameAt(ms / 86400000 + 2440587.5))
                            : null;             /* the frame the fit used */
@@ -215,11 +215,11 @@
   }
   function ssAhar(ms) { return S.ahargana(ms) + (ST.place ? S.desantara(ST.place) : 0); }
   function ssLon(sa) { return function (t) { var q = S.trueLongitude(sa, ssAhar(t)); return q ? q.lon : null; }; }
-  function modLon(sa) { return function (t) { var e = window.__kEclip(EN[sa], t); return e ? e.lon : null; }; }
+  function modLon(sa) { return function (t) { var e = window.__kEclipModern(EN[sa], t); return e ? e.lon : null; }; }
   /* the modern engine in the Lahiri frame — the frame the fitted tier was fitted
      in and the one the almanac names its limbs in — so a sign compared across
      engines is not also a comparison of two sidereal zeros */
-  function modLonL(sa) { return function (t) { var e = window.__kEclip(EN[sa], t);
+  function modLonL(sa) { return function (t) { var e = window.__kEclipModern(EN[sa], t);
     return e ? norm(e.trop - frameAt(t / 86400000 + 2440587.5)) : null; }; }
 
   /* ---- the question, answered three ways --------------------------------- */
@@ -586,6 +586,84 @@
         "because the two lunar terms the modern theory contains are absent " +
         "from this one — which is why the tithi rate hardly moves either.";
     }
+  }
+
+  /* ---- what each engine's REAL error is, and what it changes ---------------
+     Every figure from the two measured files: modern from accuracy.json
+     (against ERFA, 1800–2200, in arcseconds), fitted and as-written from
+     siddhanta-measured.json's residuals (arcminutes; the fitted ones are the
+     HOLDOUT, moments the optimiser never saw). Each error is then turned into
+     time with the body's mean geocentric motion — how much earlier or later a
+     sign or nakṣatra change, a tithi's end or a daśā start would be dated. */
+  var MEANMOT = { "Sūrya": 0.98565, "Candra": 13.17640, "Maṅgala": 0.52403,
+                  "Budha": 0.98565, "Guru": 0.08309, "Śukra": 0.98565, "Śani": 0.03346 };
+  function span(days) {
+    var d = Math.abs(days);
+    if (d * 1440 < 1) return "under a minute";
+    if (d < 1 / 24) return Math.round(d * 1440) + " min";
+    if (d < 1.5) return (d * 24).toFixed(d * 24 < 10 ? 1 : 0) + " h";
+    if (d < 60) return d.toFixed(d < 10 ? 1 : 0) + " days";
+    if (d < 730) return (d / 30.44).toFixed(1) + " months";
+    return (d / 365.25).toFixed(1) + " years";
+  }
+  function errors() {
+    var host = $("el-errtab"); if (!host || !AC || !FIT) return;
+    var M = {};
+    (AC.modern.perBody || []).forEach(function (b) { M[b.sa] = b; });
+    var R = FIT.residuals || {};
+    function rowErr(sa) {
+      var m = M[sa], r = R[sa] || {};
+      return {
+        mod: m ? { t: m.lonRms, w: m.lonWorst } : null,                         /* arcsec */
+        fit: r.holdout ? { t: r.holdout.rms * 60, w: r.holdout.worst * 60 } : null,
+        bare: r.bare ? { t: r.bare.rms * 60, w: r.bare.worst * 60 } : null
+      };
+    }
+    function cell(e) { return e ? ang(e.t) + ' <span class="elw">(worst ' + ang(e.w) + ")</span>" : "—"; }
+    var h = '<div class="eltblwrap"><table class="tbl elerr"><thead><tr><th>Graha</th>' +
+      "<th>modern<br><small>typical (worst)</small></th><th>fitted<br><small>typical (worst)</small></th>" +
+      "<th>as written<br><small>typical (worst)</small></th></tr></thead><tbody>";
+    SA7.forEach(function (sa) {
+      var e = rowErr(sa);
+      h += "<tr><td><b>" + sa + "</b> <small>" + EN[sa] + "</small></td><td>" + cell(e.mod) +
+        "</td><td>" + cell(e.fit) + "</td><td>" + cell(e.bare) + "</td></tr>";
+    });
+    h += "</tbody></table></div>";
+
+    h += '<h4 class="elh4">What the typical error changes</h4>' +
+      '<div class="eltblwrap"><table class="tbl elerr"><thead><tr><th>Graha</th>' +
+      "<th>modern</th><th>fitted</th><th>as written</th></tr></thead><tbody>" +
+      '<tr><td colspan="4" class="elsub">The date a graha changes sign, nakṣatra or pāda moves by about…</td></tr>';
+    SA7.forEach(function (sa) {
+      var e = rowErr(sa), mm = MEANMOT[sa];
+      function t(x) { return x ? span(x.t / 3600 / mm) : "—"; }
+      h += "<tr><td><b>" + sa + "</b></td><td>" + t(e.mod) + "</td><td>" + t(e.fit) + "</td><td>" + t(e.bare) + "</td></tr>";
+    });
+    /* the Moon carries the pañcāṅga and the daśā clock */
+    var em = rowErr("Candra"), es = rowErr("Sūrya");
+    var rate = (AC.cost && AC.cost.dashaDaysPerArcsec) || 0.101;
+    function tith(k) {
+      var a = em[k], b = es[k]; if (!a || !b) return "—";
+      var as = Math.sqrt(a.t * a.t + b.t * b.t);        /* the two errors, independent */
+      return span(as / 3600 / 12.19);
+    }
+    function dasha(k) { var a = em[k]; return a ? span(a.t * rate) : "—"; }
+    function pada(k) { var a = em[k]; if (!a) return "—"; var v = 100 * a.t / 12000;
+      return (v < 1 ? "under 1%" : Math.round(v) + "%") + " of a pāda"; }
+    h += '<tr><td colspan="4" class="elsub">Through the Moon:</td></tr>' +
+      "<tr><td>A tithi’s end</td><td>" + tith("mod") + "</td><td>" + tith("fit") + "</td><td>" + tith("bare") + "</td></tr>" +
+      "<tr><td>The Moon’s place, as a share of one pāda (3°20′)</td><td>" + pada("mod") + "</td><td>" + pada("fit") + "</td><td>" + pada("bare") + "</td></tr>" +
+      "<tr><td>Every Viṃśottarī daśā date</td><td>" + dasha("mod") + "</td><td>" + dasha("fit") + "</td><td>" + dasha("bare") + "</td></tr>" +
+      "</tbody></table></div>";
+    host.innerHTML = h;
+    var n = $("el-errnote");
+    if (n) n.innerHTML = "How to read it: an engine whose typical error moves a date by minutes agrees with the sky " +
+      "for every practical purpose; one that moves a daśā date by months or years gives a <b>different chart timeline</b>, " +
+      "even though the method is the same. The daśā row uses the average rate of " + rate.toFixed(3) +
+      " days of daśā per arcsecond of the Moon (it varies by lord). A minute of birth-time uncertainty already moves the " +
+      "Moon about " + ang((AC.cost && AC.cost.birthMinuteArcsec) || 33) + " — more than the modern engine’s whole error. " +
+      "For comparison, two ayanāṃśa conventions can differ by degrees; that is a choice, not an engine error, and it moves " +
+      "signs and nakṣatras but never a tithi.";
   }
 
   /* ---- the cost converter ------------------------------------------------- */
@@ -1003,7 +1081,7 @@
       }
     });
 
-    answer(); cost(); marks(); ruler(); band(); which(); rates();
+    answer(); cost(); marks(); errors(); ruler(); band(); which(); rates();
 
     try {
       window.__elab = {
@@ -1019,7 +1097,7 @@
 
   need([
     { src: "engine.js", have: function () {
-        return !!(window.__kEclip && window.__kVims); } },
+        return !!(window.__kEclipModern && window.__kVims); } },
     { src: "panchanga.js", have: function () {
         return !!(window.NP && window.NP.day); } },
     { src: "places.js", have: function () { return !!window.NPlaces; } }

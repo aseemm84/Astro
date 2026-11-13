@@ -404,7 +404,10 @@ else boot();
      and cautions shown. A reader's own stored choice always wins: only a reader
      who has never chosen gets these. Whole-sign and Lahiri stay one click away. */
   var DEF = { ayan: "samanvaya_ecliptic", house: "sripati", node: "mean",
-              riseconv: "limb", degfmt: "dm", caution: "on" };
+              riseconv: "limb", degfmt: "dm", caution: "on",
+              /* the engine that places the grahas, and the frame a Siddhānta
+                 engine's positions are read in (engine.js, "THE ENGINE") */
+              engine: "modern", ssframe: "own" };
 
   var OPTS = {
     house: [["whole", "Whole-sign — rāśi is bhāva, from the lagna (BPHS)"],
@@ -417,6 +420,11 @@ else boot();
     degfmt: [["dm", "Degrees and minutes — 12°34′"],
              ["dms", "Degrees, minutes, seconds — 12°34′56″"],
              ["dec", "Decimal degrees — 12.5822°"]],
+    engine: [["modern", "Modern ephemeris — astronomy-engine, checked against professional references"],
+             ["ss", "Sūrya Siddhānta — as written, with the text's own numbers"],
+             ["ssfit", "Sūrya Siddhānta — fitted: the text's equations, constants fitted to the modern sky"]],
+    ssframe: [["own", "The engine's own zero — the text's for 'as written', Lahiri for 'fitted'"],
+              ["ayan", "The ayanāṃśa chosen above"]],
     caution: [["on", "Show rectification cautions"],
               ["off", "Hide them — I know the birth time is approximate"]]
   };
@@ -628,6 +636,24 @@ else boot();
             'BPHS reckons Rāhu and Ketu as the mean node. The true node can sit up to about ' +
             '1½° away.')
             : frozenRow("Lunar nodes", get().node, "node")) +
+          (canHonour("engine") ? row("engine", "Engine",
+            'Which calculation places the nine grahas, for every page and every new chart. ' +
+            '<b>Modern</b> is today’s astronomy. <b>Sūrya Siddhānta as written</b> computes ' +
+            'the way the classical text does, with its own numbers, and today lands up to several ' +
+            'degrees from the modern sky. <b>Fitted</b> keeps the text’s equations but uses ' +
+            'constants fitted to the modern sky, the way later astronomers applied bīja corrections. ' +
+            'Signs, nakṣatras, daśās, strengths and the pañcāṅga follow the engine. Sunrise, the ' +
+            'clock behind the lagna, eclipse searches and drawings of the physical solar system ' +
+            'stay modern, because the Siddhānta engine does not model them in a form that can be ' +
+            'substituted. Any page can choose its own engine. ' +
+            '<a href="engine-lab.html">Engine Lab</a> compares the three.')
+            : frozenRow("Engine", get().engine, "engine")) +
+          (canHonour("engine") ? row("ssframe", "Siddhānta frame",
+            'Only used when a Sūrya Siddhānta engine is chosen. <b>Own zero</b> keeps the ' +
+            'text’s positions as it gives them; the lagna is converted with the text’s own ' +
+            'ayanāṃśa so the chart stays in one frame. <b>The ayanāṃśa chosen above</b> carries ' +
+            'the text’s positions into that convention instead.')
+            : "") +
           (canHonour("riseconv") ? row("riseconv", "Sunrise",
             'Re-dates everything downstream: the vāra, the ghaṭī count, which tithi is ' +
             'today’s, and therefore which day a festival lands on.')
@@ -854,6 +880,63 @@ else boot();
     host.appendChild(note);
     return true;
   }
+  /* THE PER-PAGE ENGINE PICKER, mounted into #np-engine. Same shape as the
+     ayanāṃśa picker: follow the site setting, or pick an engine for this page
+     alone (stored under nirayana.pageEngine). Pages whose subject is the
+     comparison of engines are locked to modern and say so. */
+  var ENGKEY = "nirayana.pageEngine";
+  function pageEngineOverride() {
+    try {
+      var m = JSON.parse(window.localStorage.getItem(ENGKEY) || "{}") || {};
+      var v = m[pageName()], E = window.__engineModes;
+      return (v && (!E || E[v])) ? v : null;
+    } catch (e) { return null; }
+  }
+  function setPageEngine(key) {
+    try {
+      var m = JSON.parse(window.localStorage.getItem(ENGKEY) || "{}") || {};
+      if (key) m[pageName()] = key; else delete m[pageName()];
+      window.localStorage.setItem(ENGKEY, JSON.stringify(m));
+    } catch (e) {}
+  }
+  function mountPageEngine(host) {
+    host = host || document.getElementById("np-engine");
+    if (!host || host.querySelector("select,.npeng-lock")) return false;
+    var E = window.__engineModes; if (!E) return false;
+    if (window.__engineLocked && window.__engineLocked()) {
+      var lk = document.createElement("p"); lk.className = "npayan-note npeng-lock";
+      lk.textContent = "This page compares the engines, so its modern column is always the modern " +
+        "ephemeris, whatever engine the site is set to.";
+      host.appendChild(lk); return true;
+    }
+    var lab = document.createElement("label"); lab.className = "npayan";
+    var sp = document.createElement("span"); sp.textContent = "Engine for this page";
+    var sel = document.createElement("select"); sel.className = "swin"; sel.id = "np-engine-sel";
+    var o0 = document.createElement("option"); o0.value = "";
+    o0.textContent = "Follow the site setting — " + (E[get().engine] || E.modern);
+    sel.appendChild(o0);
+    Object.keys(E).forEach(function (k) {
+      var o = document.createElement("option"); o.value = k; o.textContent = E[k]; sel.appendChild(o);
+    });
+    sel.value = pageEngineOverride() || "";
+    sel.addEventListener("change", function () { setPageEngine(sel.value || null); location.reload(); });
+    lab.appendChild(sp); lab.appendChild(sel); host.appendChild(lab);
+    var cur = window.__engine ? window.__engine() : null;
+    var note = document.createElement("span"); note.className = "npayan-note";
+    note.textContent = "Grahas on this page are placed by the " + (cur ? cur.name : "modern ephemeris") +
+      (pageEngineOverride() ? " — chosen for this page only." : ", the site setting; choosing another here changes this page only.") +
+      (cur && cur.mode !== "modern" ? " Sunrise and the lagna's clock stay modern." : "");
+    host.appendChild(note);
+    return true;
+  }
+  (function tryMountEngine(n) {
+    if (typeof document === "undefined") return;
+    if (document.getElementById("np-engine") && !mountPageEngine() && n < 100)
+      setTimeout(function () { tryMountEngine(n + 1); }, 150);
+    else if (!document.getElementById("np-engine") && n < 3)
+      setTimeout(function () { tryMountEngine(n + 1); }, 300);
+  })(0);
+
   /* mount as soon as the engine has published its modes */
   (function tryMount(n) {
     if (typeof document === "undefined") return;
@@ -867,11 +950,17 @@ else boot();
     window.addEventListener("nirayana:settings", function (e) {
       var ch = e && e.detail && e.detail.changed;
       if (ch && ch.indexOf("ayan") >= 0 && document.getElementById("np-ayan") && !pageOverride() && pageRule() !== "lahiri") location.reload();
+      /* a page following the site's engine follows a change to it; the
+         Kundli builder and the Workstation recast instead (ui.js) */
+      if (ch && (ch.indexOf("engine") >= 0 || ch.indexOf("ssframe") >= 0) &&
+          document.getElementById("np-engine") && !pageEngineOverride() &&
+          !(window.__engineLocked && window.__engineLocked())) location.reload();
     });
   } catch (e) {}
 
   window.NSettings = { get: get, set: set, almanacAyan: almanacAyan, pageAyan: pageOverride,
-    setPageAyan: setPageAyan, mountPageAyan: mountPageAyan, defaults: function () {
+    setPageAyan: setPageAyan, mountPageAyan: mountPageAyan,
+    pageEngine: pageEngineOverride, setPageEngine: setPageEngine, mountPageEngine: mountPageEngine, defaults: function () {
     var d = {}; Object.keys(DEF).forEach(function (k) { d[k] = DEF[k]; }); return d;
   }, open: open, close: close, options: OPTS };
 })();

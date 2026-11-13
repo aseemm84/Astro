@@ -7,8 +7,35 @@ arcseconds means nothing until it is converted into the units the work is done
 in. <b>No birth chart required</b>, and everything below is computed in your
 browser as you read.</p>
 
+<h2 id="three">The three engines, in plain words<span class="kdeva">त्रि-यन्त्रम्</span></h2>
+
+<p>An <b>engine</b> here means a method of calculating where the planets are at a given moment. Every column on this page is headed by one of three, and they are always shown in the same order.</p>
+
+<table class="tbl eltbl3">
+<thead><tr><th>Shown as</th><th>What it is</th><th>Where its numbers come from</th><th>How close it is to the real sky</th></tr></thead>
+<tbody>
+<tr><td><b>modern</b></td><td>Today&rsquo;s astronomy: the modern ephemeris (a table-maker&rsquo;s word for &ldquo;positions of the planets&rdquo;) that this site uses by default.</td><td>The astronomy-engine library, checked against the professional IAU reference computation.</td><td>Within about 15 arcseconds for the Sun, Moon, Mercury and Venus, under a minute of arc for Mars, and about a minute and a half at worst for Jupiter and Saturn, where the reference itself is the limit. Far finer than anything a chart is read in.</td></tr>
+<tr><td><b>fitted</b></td><td>The S&umacr;rya Siddh&amacr;nta&rsquo;s own method &mdash; its equations, its sine table, its epicycles &mdash; with the adjustable constants re-measured against today&rsquo;s sky.</td><td>Only the quantities the tradition itself treated as correctable were changed: each planet&rsquo;s revolution count (a <i>b&imacr;ja</i> correction, as later Indian astronomers applied), its starting position, its epicycle sizes and its apogee. No equation was changed or added. It was tested on moments the fitting never saw.</td><td>About a minute of arc for the Sun; a few to eight minutes for Jupiter, Venus and Saturn; about a degree for the Moon and Mars; nearly two degrees for Mercury. The nodes (R&amacr;hu and Ketu) are not fitted and stay as the text gives them. <b>This is not the S&umacr;rya Siddh&amacr;nta&rsquo;s own answer</b> &mdash; it shows how close the text&rsquo;s method can come when given today&rsquo;s numbers.</td></tr>
+<tr><td><b>as written</b></td><td>The S&umacr;rya Siddh&amacr;nta computed exactly as the text gives it, with its own numbers and nothing adjusted.</td><td>The text&rsquo;s constants: revolutions in a great age (mah&amacr;yuga), epicycle sizes, apogees, and its own reckoning from the start of the Kali age.</td><td>Today it lands from under a degree up to several degrees from the modern sky, depending on the planet and the date. That is what the text&rsquo;s method gives, reported as a difference, not as a fault.</td></tr>
+</tbody></table>
+
+<p>The exact figures for each planet, and what they change in a chart, are in <a href="#cost">What an arcsecond is worth</a> below. <b>You can make any of the three the engine for the whole site</b> (Settings &rarr; Engine), or for any single page with its &ldquo;Engine for this page&rdquo; menu. This page always keeps all three side by side, so its modern column is always the modern engine.</p>
+
+<details class="elgloss"><summary><b>Words used on this page</b></summary>
+<dl>
+<dt>Arcsecond (&Prime;), arcminute (&prime;), degree (&deg;)</dt><dd>Units of angle on the sky. 60 arcseconds make an arcminute and 60 arcminutes make a degree; the full circle is 360&deg;. The Moon&rsquo;s disc is about half a degree wide.</dd>
+<dt>R&amacr;&#347;i, nak&#7779;atra, p&amacr;da, nav&amacr;&#7747;&#347;a</dt><dd>The ways the circle is divided: 12 signs of 30&deg;, 27 lunar mansions of 13&deg;20&prime;, each mansion in 4 quarters (p&amacr;das) of 3&deg;20&prime;, and the navāṃśa, a ninth of a sign (also 3&deg;20&prime;).</dd>
+<dt>Tithi, kara&#7751;a, yoga, v&amacr;ra</dt><dd>Parts of the Hindu day. A tithi is each 12&deg; the Moon moves ahead of the Sun; a karaṇa is half a tithi; a yoga comes from the Sun and Moon&rsquo;s longitudes added together; the vāra is the weekday.</dd>
+<dt>Sa&#7747;kr&amacr;nti</dt><dd>The moment the Sun enters a new sidereal sign &mdash; the start of a solar month.</dd>
+<dt>Lagna</dt><dd>The sign and degree rising on the eastern horizon at a given moment and place.</dd>
+<dt>Ayan&amacr;&#7747;&#347;a, frame</dt><dd>Where the zodiac is taken to start. Different conventions put the start a little differently; comparing two engines in two different frames would mostly measure the frames, so the page says which frame each column is in.</dd>
+<dt>Measured, convention</dt><dd>&ldquo;Measured&rdquo; means checked against an independent calculation. &ldquo;Convention&rdquo; means a choice with no single correct value, such as which ayanāṃśa to use; a difference between two conventions is not an error.</dd>
+<dt>Holdout</dt><dd>The moments kept back when the fitted engine was tuned, so its accuracy is judged on moments it never saw.</dd>
+</dl></details>
+
 <h2 id="bench">Ask all three the same question<span class="kdeva">त्रि-प्रश्नः</span></h2>
 <div id="np-ayan" class="npayanwrap" data-what="The modern engine's signs, nakṣatras and saṅkrāntis are reckoned in" data-after=" Tithi, karaṇa, sunrise and the new and full moons do not depend on it."></div>
+<div id="np-engine" class="npayanwrap"></div>
 
 
 <p>Arcseconds are the wrong unit for judging an engine, because nobody reads a
@@ -91,6 +118,11 @@ and each body actually sits, measured.</p>
 <div id="el-marks"></div>
 <div id="el-cost"></div>
 
+<h3 id="el-errh">How far each engine is from the real sky, and what that changes</h3>
+<p>The slider shows any error you like; this table shows the errors the three engines <b>actually have</b>, measured, and turns each into something a reader of a chart or an almanac would notice. &ldquo;Typical&rdquo; is the root-mean-square difference and &ldquo;worst&rdquo; the largest seen. All three are measured over 1800&ndash;2200: the modern engine against the professional reference, and the two Siddh&amacr;nta engines against the modern sky, with the fitted figures taken on moments the fit never saw. R&amacr;hu and Ketu are left out: the fit does not adjust them, so both Siddh&amacr;nta engines place them as the text does.</p>
+<div id="el-errtab"></div>
+<p class="k-note" id="el-errnote"></p>
+
 <div class="note"><b>The one that surprises people.</b> Traversing one
 nak&#7779;atra of 13&deg;20&prime; traverses that nak&#7779;atra lord&rsquo;s
 whole mah&amacr;da&#347;&amacr; &mdash; six years for the Sun, twenty for Venus
@@ -149,12 +181,12 @@ value, which is not an error however large it is.</p>
 
 <div class="note"><b>What none of these engines is.</b> None of them is a
 prediction, and the difference between two of their columns is not an error in
-either one. Charts on this site are cast from the modern ephemeris; the fitted
-tier's Moon sits about sixty arcminutes from it, most of a p&amacr;da, and the
-bare text's several degrees. The siddh&amacr;ntic tiers are here so that the
-arithmetic the tradition was built on can be seen working, and so that its
-distance from a modern computation is a thing you can measure instead of a
-thing you are told.</div>
+either one. Charts on this site are cast from the modern ephemeris unless you
+choose otherwise: any of the three can be made the engine for the whole site
+(Settings &rarr; Engine) or for one page. The fitted tier's Moon sits about a
+degree from the modern one, most of a p&amacr;da, and the text as written several
+degrees. Whichever you choose, the choice is named on every chart and page that
+uses it, so a position is never shown without the method that produced it.</div>
 
 {{DATA:accuracy}}
 {{DATA:siddhanta-measured}}

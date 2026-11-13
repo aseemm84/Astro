@@ -70,6 +70,18 @@
       <option value="mean" selected>Mean node — the smoothed average, the usual Jyotiṣa choice</option>
       <option value="true">True node — the instantaneous node, which wobbles and can turn direct</option>
     </select></div>
+  <div class="k-full"><label for="k-engine">Engine</label>
+    <select id="k-engine">
+      <option value="modern" selected>Modern ephemeris — today's astronomy</option>
+      <option value="ss">Sūrya Siddhānta — as written, the text's own numbers</option>
+      <option value="ssfit">Sūrya Siddhānta — fitted to the modern sky</option>
+    </select>
+    <p class="k-note">Which calculation places the nine grahas. The two Sūrya Siddhānta engines compute the way the classical text does; <a href="engine-lab.html">Engine Lab</a> shows how far apart the three are. Sunrise and the lagna's clock stay modern.</p></div>
+  <div class="k-full"><label for="k-ssframe">Siddhānta frame</label>
+    <select id="k-ssframe">
+      <option value="own" selected>The engine's own zero (the text's for 'as written', Lahiri for 'fitted')</option>
+      <option value="ayan">The ayanāṃśa chosen above</option>
+    </select></div>
 </div></details>
 <p class="k-note" id="k-herenote"><b>Here &amp; now</b> asks the browser where this device is and casts a chart for that place at the present moment &mdash; useful for a praśna question, or simply to see the sky as it stands. The position comes from the browser, the clock and the UTC offset from the device, and the nearest town from the city list already on this page; nothing is sent anywhere. It needs the site to be open over https, so it will not work from a file opened directly off disk.</p>
 </div><!-- /#k-inputs -->

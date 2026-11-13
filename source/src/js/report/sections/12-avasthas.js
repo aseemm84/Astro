@@ -377,7 +377,7 @@ function sadeSatiSection(D){
   function satSignAt(jd){
     var ms=Date.now()+(jd-nowJd)*86400000, d=new Date(ms);
     try{ var ay=AY(jd);
-      return Math.floor(((Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body.Saturn,d,true)).elon-ay)%360+360)%360/30)%12;
+      return Math.floor((((window.__kTrop?window.__kTrop("Saturn",d):Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body.Saturn,d,true)).elon)-ay)%360+360)%360/30)%12;
     }catch(e){ return null; }
   }
   var step=20, startJd=nowJd-30*365.25, endJd=nowJd+40*365.25;
@@ -425,7 +425,7 @@ function ingressSection(D){
   var nowJd=D.nowJd;
   function sidLon(body,jd){
     var d=new Date(Date.now()+(jd-nowJd)*86400000);
-    return ((Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[body],d,true)).elon-AY(jd))%360+360)%360;
+    return (((window.__kTrop?window.__kTrop(body,d):Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[body],d,true)).elon)-AY(jd))%360+360)%360;
   }
   names.forEach(function(n){
     var prevSign=null, prevRetro=null, step=(n==="Sun"||n==="Mercury"||n==="Venus")?2:5;

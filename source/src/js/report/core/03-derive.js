@@ -119,7 +119,7 @@ function derive(J){
        if(_ev&&_ev.riseDate){
          try{
            var _rjd=jdFrom(_i.year,_i.month,_i.day,(_ev.rise-_i.tzHours));
-           D.sunAtSunrise=((Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body.Sun,_ev.riseDate,true)).elon
+           D.sunAtSunrise=(((window.__kTrop?window.__kTrop("Sun",_ev.riseDate):Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body.Sun,_ev.riseDate,true)).elon)
                             -AY(_rjd))%360+360)%360;
          }catch(e){ D.sunAtSunrise=null; }
        }

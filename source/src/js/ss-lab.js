@@ -70,7 +70,7 @@
      siddhānta's constants. */
   function refLon(sa, ms) {
     try {
-      var e = window.__kEclip(EN[sa], ms);
+      var e = window.__kEclipModern(EN[sa], ms);
       if (!e) return null;
       return norm(e.trop - lahiriAt(ms / 86400000 + 2440587.5));
     } catch (err) { return null; }

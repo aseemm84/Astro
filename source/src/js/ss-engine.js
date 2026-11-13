@@ -996,13 +996,13 @@
       /* recovered from the modern Moon's own latitude and longitude, so this
          needs no second table: the node is where the latitude passes through
          zero going north */
-      var lon = window.__kSidAt("Moon", new Date(ms));
-      var e = window.__kEclip("Moon", ms);
+      var lon = window.__kSidAtModern("Moon", new Date(ms));
+      var e = window.__kEclipModern("Moon", ms);
       if (e && e.lat != null) {
         var s2 = clamp(Math.sin(e.lat * D2R) / Math.sin(5.145 * D2R), -1, 1);
         var arg = Math.asin(s2) * R2D;
         /* resolve the quadrant with the latitude's own rate */
-        var e2 = window.__kEclip("Moon", ms + 3600000);
+        var e2 = window.__kEclipModern("Moon", ms + 3600000);
         if (e2 && e2.lat != null && e2.lat < e.lat) arg = 180 - arg;
         modern = norm(lon - arg);
       }

@@ -1793,10 +1793,10 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>retheme
    Sunrise picker here would change a stored key and nothing on the page.
    Palette is absent for its own reason: these pages carry their own styling
    and load neither theme.js nor theme.css. */
-window.__nsHonours = ["ayan","house","node","degfmt"];
+window.__nsHonours = ["ayan","house","node","degfmt","engine"];
 
 (function(){
-  const castKeys = ["ayan","house","node"];
+  const castKeys = ["ayan","house","node","engine","ssframe"];
   const readS = () => { try { return window.NSettings && window.NSettings.get(); }
                         catch(e){ return null; } };
   const sig = (S) => S ? castKeys.map(k=>String(S[k])).join("|") : "";
@@ -1807,10 +1807,14 @@ window.__nsHonours = ["ayan","house","node","degfmt"];
   function castWith(d){
     const hs = d && d.house_system;
     return {
-      ayan: (d && (d.ayanamsa_mode || (d.input&&d.input.ayanamsa))) || null,
+      /* the convention ASKED for: under a Siddhānta engine in its own frame
+         the mode in force is the text's own zero, which no setting names */
+      ayan: (d && ((d.engine && d.engine.requested_ayanamsa) || d.ayanamsa_mode || (d.input&&d.input.ayanamsa))) || null,
       house: hs ? (typeof hs==="string" ? hs : (hs.mode||null))
                 : ((d&&d.input&&d.input.houseSystem) || null),
-      node: (d && (d.node_mode || (d.input&&d.input.node))) || null
+      node: (d && (d.node_mode || (d.input&&d.input.node))) || null,
+      engine: (d && ((d.engine&&d.engine.mode) || (d.input&&d.input.engine))) || "modern",
+      ssframe: (d && ((d.engine&&d.engine.frame) || (d.input&&d.input.ssframe))) || "own"
     };
   }
   function recast(){
@@ -1819,7 +1823,8 @@ window.__nsHonours = ["ayan","house","node","degfmt"];
     /* Overlay the settings on the ORIGINAL birth data. D.input round-trips
        into buildLocalChart unchanged, which is what makes this safe. */
     const inp = Object.assign({}, LAST_DATA.input, {
-      ayanamsa: S.ayan, houseSystem: S.house, node: S.node });
+      ayanamsa: S.ayan, houseSystem: S.house, node: S.node,
+      engine: S.engine || "modern", ssframe: S.ssframe || "own" });
     let D;
     try { D = window.buildLocalChart(inp); } catch(e){ return false; }
     if(!D) return false;
@@ -1852,6 +1857,8 @@ window.__nsHonours = ["ayan","house","node","degfmt"];
     /* The ayanāṃśa is compared by MODE KEY, which is what the setting holds;
        the payload's ayanamsa_mode is the same vocabulary. */
     if(was.ayan && String(S.ayan) !== String(was.ayan)) diff.unshift("ayanāṃśa");
+    if(String(S.engine||"modern") !== String(was.engine||"modern")) diff.push("engine");
+    else if((S.engine||"modern") !== "modern" && String(S.ssframe||"own") !== String(was.ssframe||"own")) diff.push("Siddhānta frame");
     if(!diff.length) return;
     const before = was;
     if(recast()){

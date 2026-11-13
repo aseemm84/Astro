@@ -4272,13 +4272,13 @@ function moOwn(src){
       /* recovered from the modern Moon's own latitude and longitude, so this
          needs no second table: the node is where the latitude passes through
          zero going north */
-      var lon = window.__kSidAt("Moon", new Date(ms));
-      var e = window.__kEclip("Moon", ms);
+      var lon = window.__kSidAtModern("Moon", new Date(ms));
+      var e = window.__kEclipModern("Moon", ms);
       if (e && e.lat != null) {
         var s2 = clamp(Math.sin(e.lat * D2R) / Math.sin(5.145 * D2R), -1, 1);
         var arg = Math.asin(s2) * R2D;
         /* resolve the quadrant with the latitude's own rate */
-        var e2 = window.__kEclip("Moon", ms + 3600000);
+        var e2 = window.__kEclipModern("Moon", ms + 3600000);
         if (e2 && e2.lat != null && e2.lat < e.lat) arg = 180 - arg;
         modern = norm(lon - arg);
       }
@@ -8407,7 +8407,7 @@ function moOwn(src){
   /* ===== 1. the Siddhānta's drift ========================================= */
   function driftStory(spec) {
     var S = window.SSEngine;
-    if (!S || !window.__kSidAt) return null;
+    if (!S || !window.__kSidAtModern) return null;
     var body = spec.body || "Jupiter", sa = SA[body];
     var everyDays = spec.everyDays ||
       (body === "Moon" ? 1 : (body === "Mercury" ? 4 : 15));
@@ -8416,7 +8416,7 @@ function moOwn(src){
     while (t <= spec.t1 && guard++ < 60000) {
       var q = null;
       try { q = S.trueLongitude(sa, S.ahargana(t)); } catch (e) { q = null; }
-      var m = window.__kSidAt(body, new Date(t));
+      var m = window.__kSidAtModern(body, new Date(t));
       if (q && q.lon != null && m != null) {
         var d = sep(q.lon, m);
         lon.push(m); err.push(d); ts.push(t);
@@ -8619,7 +8619,7 @@ function moOwn(src){
       inner: 1, outer: 1.5,
       events: ev,
       tallyKeys: ["in both", "Siddhānta only", "modern only"],
-      nodeAt: function (t) { return window.__kSidAt("Rahu", new Date(t)); },
+      nodeAt: function (t) { return window.__kSidAtModern("Rahu", new Date(t)); },
       closing: {
         big: hit + " in both lists" + (wrong ? ", " + wrong + " in the Siddhānta's only" : "") +
              ", " + missed.length + " in the modern list only.",
@@ -8751,8 +8751,8 @@ function moOwn(src){
      template out of forty-three, at one playhead, which is exactly the kind
      of thing that reaches a viewer rather than a developer. */
   function latAt(ms) {
-    if (!window.__kEclip) return 0;
-    var q = window.__kEclip("Moon", ms);
+    if (!window.__kEclipModern) return 0;
+    var q = window.__kEclipModern("Moon", ms);
     return q && isFinite(q.lat) ? q.lat : 0;
   }
 

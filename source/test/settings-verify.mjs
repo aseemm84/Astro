@@ -420,7 +420,7 @@ head("The dashboard, which renders a chart it did not compute");
     "Sunrise stays FROZEN even with the engine present — buildLocalChart " +
     "ignores riseconv, so a picker would change nothing here");
   is(await dp.evaluate(() => JSON.stringify(window.__nsHonours)) ===
-     JSON.stringify(["ayan", "house", "node", "degfmt"]),
+     JSON.stringify(["ayan", "house", "node", "degfmt", "engine"]),
     "and the page declares exactly what it honours");
   is(!!byLabel("Degrees") && byLabel("Degrees").select === true,
     "Degrees IS offered here, because this page honours it");

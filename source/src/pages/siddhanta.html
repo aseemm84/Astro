@@ -4,8 +4,9 @@ ephemeris — so the two can be set beside each other.</p>
 
 <h2 id="what">What this is, and what it is not</h2>
 
-<p>Every other page on this site computes positions from a modern ephemeris.
-This one computes them the way the <b>Sūrya Siddhānta</b> does: from the number
+<p>The rest of this site computes positions from a modern ephemeris unless you choose otherwise
+(Settings &rarr; Engine can make the S&umacr;rya Siddh&amacr;nta the engine for every page).
+This page always computes them both ways, side by side. The Siddh&amacr;nta side computes them the way the <b>Sūrya Siddhānta</b> does: from the number
 of revolutions each graha makes in a Mahāyuga, the number of civil days in that
 Mahāyuga, and a pair of epicycle corrections. The two are set side by side
 and the page does not rank them: each is computed as its own method
@@ -29,6 +30,39 @@ absent. A reader who wants the verses should take these numbers to the
 translation and find them there — which is a better use of the volumes than a
 reference printed here on anyone's say-so.</p>
 
+<h2 id="plain">In plain words: the three versions, and the terms<span class="kdeva">सरल-परिचयः</span></h2>
+
+<p>This page can run the S&umacr;rya Siddh&amacr;nta in three versions. The sections before the sandbox compute <b>the text as written</b>. The buttons in <a href="#sandbox">Adjust the constants yourself</a> switch the sandbox between the three, and its ring of three skies shows the text, the fitted tier and the modern sky together.</p>
+
+<table class="tbl eltbl3">
+<thead><tr><th>Version</th><th>What it is</th><th>Why it is here</th></tr></thead>
+<tbody>
+<tr><td><b>The text as written</b></td><td>The S&umacr;rya Siddh&amacr;nta&rsquo;s own equations with its own numbers, unchanged.</td><td>This is the classical answer: what an astronomer working from this text would have computed. Today it lands from under a degree up to several degrees from the modern sky, depending on the planet and the date.</td></tr>
+<tr><td><b>The fitted tier</b></td><td>The same equations, with the adjustable constants (revolution counts, starting positions, epicycle sizes, apogees) re-measured against today&rsquo;s sky.</td><td>It shows how close the text&rsquo;s <i>method</i> can come when given today&rsquo;s numbers, the way later astronomers corrected a siddh&amacr;nta with b&imacr;ja. It is <b>not</b> the text&rsquo;s own answer, and the page always says so when it is in use.</td></tr>
+<tr><td><b>Var&amacr;hamihira&rsquo;s Saura</b></td><td>The same equations with the numbers of an older version of the solar text, as Var&amacr;hamihira summarised it around 505 CE.</td><td>It shows how the text&rsquo;s numbers changed between the older and the later version.</td></tr>
+</tbody></table>
+
+<p>The <b>modern</b> column throughout is this site&rsquo;s modern ephemeris, read in the ayan&amacr;&#7747;&#347;a chosen in &ldquo;Ayan&amacr;&#7747;&#347;a for this page&rdquo; (Lahiri unless you change it). <a href="engine-lab.html">Engine Lab</a> puts all three to the same everyday questions, and lists how far each one is from the real sky and what that changes in a chart.</p>
+
+<details class="elgloss"><summary><b>Words used on this page</b></summary>
+<dl>
+<dt>Mah&amacr;yuga</dt><dd>The great age of 4,320,000 years. The text gives how many times each planet goes round in one mah&amacr;yuga; dividing by the days in it gives the planet&rsquo;s average daily motion.</dd>
+<dt>Ahargaṇa</dt><dd>The count of days since the start of the Kali age (18 February 3102 BCE). Multiply it by a planet&rsquo;s daily motion and you have its average position, the <i>mean longitude</i>.</dd>
+<dt>Deferent and epicycle</dt><dd>The text corrects the mean position with small circles. A planet rides a small circle (the epicycle) whose centre moves round a large one (the deferent). The shift this produces, seen from the centre, is the <i>equation</i> added to or subtracted from the mean position.</dd>
+<dt>Manda and śīghra</dt><dd>The two corrections. <i>Manda</i> (&ldquo;slow&rdquo;) accounts for the planet&rsquo;s own uneven speed. <i>Śīghra</i> (&ldquo;fast&rdquo;) accounts, in modern terms, for watching from a moving Earth, and is what makes a planet appear to go backwards.</dd>
+<dt>Mandocca, śīghrocca</dt><dd>The reference points for each correction: the manda apogee (where the planet is slowest) and the śīghra point that the second correction is measured from.</dd>
+<dt>Anomaly</dt><dd>How far the planet is from its reference point; the size of each correction depends on it.</dd>
+<dt>Paridhi</dt><dd>An epicycle&rsquo;s circumference, given in degrees of the deferent.</dd>
+<dt>Karṇa</dt><dd>The &ldquo;hypotenuse&rdquo;: the distance from the centre to the planet in the śīghra step.</dd>
+<dt>Sine table, radius 3438</dt><dd>The text works with a table of 24 sines instead of a sine function. 3438 is the number of arcminutes in a radian, the radius the table is scaled to.</dd>
+<dt>Sāyana, nirayana</dt><dd>Measured from the equinox (sāyana, the Western zodiac) or from the stars (nirayana, the Indian zodiac). The text works nirayana and converts when it needs to.</dd>
+<dt>Ayanāṃśa libration</dt><dd>The text describes the zodiac&rsquo;s starting point as swinging back and forth by up to 27&deg; over 7,200 years, rather than moving steadily. That is the text&rsquo;s own ayanāṃśa.</dd>
+<dt>Declination, ascensional difference, equation of time</dt><dd>What is needed for sunrise: how far north or south the Sun is, how much that lengthens or shortens the day at your latitude, and the small correction between the Sun&rsquo;s average and true timing.</dd>
+<dt>Syzygy</dt><dd>A new or full moon: the moment the Sun and Moon line up. Eclipses can happen only then.</dd>
+<dt>Bīja</dt><dd>&ldquo;Seed&rdquo;: a small correction to a revolution count, applied by later astronomers who compared the text with the sky.</dd>
+<dt>Recension</dt><dd>A version of a text. The S&umacr;rya Siddh&amacr;nta survives in an older version (summarised by Var&amacr;hamihira) and a later one (the one usually translated, and the one this page computes).</dd>
+</dl></details>
+
 <h2 id="params">The parameters it uses</h2>
 
 <p>Generated from the engine itself, so what you read is what it is computing
@@ -41,6 +75,7 @@ is part of the method.</p>
 
 <h2 id="now">The two skies</h2>
 <div id="np-ayan" class="npayanwrap" data-what="The modern column is reckoned in" data-after=" The Siddhānta's own column keeps its own zero and does not change; only the modern side of each comparison moves."></div>
+<div id="np-engine" class="npayanwrap"></div>
 
 
 <div class="ssrow">

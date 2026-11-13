@@ -178,6 +178,7 @@ SECTIONS = {
 },
 
 "siddhanta.html": {
+  "plain": "The three versions of the Sūrya Siddhānta this page can run — the text as written, the fitted tier and Varāhamihira's older Saura — and a glossary of the technical words the page uses (mahāyuga, manda, śīghra, epicycle, bīja and the rest).",
   "what": "What this page does: it computes the sky the way the old Sūrya Siddhānta text does, and shows it next to a modern computation.",
   "params": "The text's own numbers that the computation uses — revolutions in a great age, epicycle sizes, and so on.",
   "now": "For the moment you choose, every planet's position by both methods, side by side.",
@@ -194,8 +195,9 @@ SECTIONS = {
 },
 
 "engine-lab.html": {
+  "three": "What the three engines are — modern (today's astronomy), fitted (the Sūrya Siddhānta's method with re-measured constants) and as written (the text's own numbers) — how close each is to the real sky, and a glossary of the words used on the page.",
   "bench": "Pick a question (where is each planet, what lunar day, when is the next new moon…) and see the answer from all three calculating methods side by side.",
-  "cost": "Converts a small error in degrees into what it changes in a chart — signs, stars, quarters, and period dates.",
+  "cost": "Converts an error in degrees into what it changes in a chart. Below the slider, a table gives each engine's real, measured error for every planet, and what that error does to sign-change dates, tithi end times and daśā dates.",
   "scale": "One ruler showing that differences between conventions (such as ayanāṃśa) are far bigger than differences between the engines.",
   "bands": "How confident the modern engine is in different centuries, and what that means for the question you chose.",
   "which": "Which engine the site uses for which job.",

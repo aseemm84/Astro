@@ -365,8 +365,74 @@ function pageAyan(){
   }catch(e){}
   return "samanvaya_ecliptic";
 }
-var AYAN_MODE=pageAyan()||"lahiri";
-function setAyanamsaMode(m){ if(AYAN_MODES[m]) AYAN_MODE=m; return AYAN_MODE; }
+/* ===== THE ENGINE: which planetary theory places the grahas ==============
+
+   modern  the modern ephemeris (astronomy-engine), the default
+   ss      the Sūrya Siddhānta as written — the text's own constants
+   ssfit   the Sūrya Siddhānta's equations with constants fitted to the
+           modern sky (bīja-style corrections; see ss-engine.js)
+
+   A reader picks one in Settings; any page can override it for itself; a
+   chart carries the engine it was cast with as part of its input, exactly as
+   it carries its ayanāṃśa. The two pages whose subject IS the comparison of
+   engines (the Sūrya Siddhānta page and Engine Lab) are locked to modern for
+   their "modern" columns — they read the Siddhānta through their own copy.
+
+   What the choice reaches: the longitude, speed and latitude of the seven
+   grahas and the nodes, and so everything computed from them — signs,
+   nakṣatras, vargas, daśās, strengths, the pañcāṅga's tithi, nakṣatra, yoga
+   and karaṇa. What it does not: sunrise, the lagna's sidereal-time geometry,
+   eclipse searches and the drawings of the physical solar system, which the
+   Siddhānta engine does not model in a form this site can substitute; those
+   stay modern whatever is chosen, and the Settings panel says so.
+
+   THE FRAME (SS_FRAME). "own": the Siddhānta's longitudes are used as the text
+   gives them, from its own zero; the lagna is converted with the text's own
+   ayanāṃśa (ss_text) so lagna and grahas share one frame. For the fitted tier
+   the own frame is Lahiri, the frame it was fitted in. "ayan": the text's
+   positions are carried to tropical by its own ayanāṃśa and then read in
+   whichever ayanāṃśa the reader has chosen. */
+var SITE_SS=(typeof window!=="undefined"&&window.SSEngine)?window.SSEngine:null;
+try{ if(SITE_SS&&window.__SS_FIT_DATA) SITE_SS.setMeasured(window.__SS_FIT_DATA); }catch(e){}
+var ENGINE_MODES={modern:"Modern ephemeris",ss:"Sūrya Siddhānta — as written",ssfit:"Sūrya Siddhānta — fitted"};
+var PAGE_ENGINE_LOCK={"siddhanta.html":1,"engine-lab.html":1};
+function readStore(k){ try{ return JSON.parse(localStorage.getItem(k)||"{}")||{}; }catch(e){ return {}; } }
+function pageEngine(){
+  var pg=pageFile();
+  if(PAGE_ENGINE_LOCK[pg]) return "modern";
+  var o=readStore("nirayana.pageEngine"); if(o[pg]&&ENGINE_MODES[o[pg]]) return o[pg];
+  var st=readStore("nirayana.settings"); return ENGINE_MODES[st.engine]?st.engine:"modern";
+}
+function siteSsFrame(){ var st=readStore("nirayana.settings"); return st.ssframe==="ayan"?"ayan":"own"; }
+var ENGINE_MODE="modern", SS_FRAME="own", REQ_AYAN="lahiri";
+function ssTextAyan(jd){
+  if(!SITE_SS) return ayanamsaFor("lahiri",jd);
+  try{ return SITE_SS.ayanamsa((jd-2440587.5)*86400000); }catch(e){ return ayanamsaFor("lahiri",jd); }
+}
+/* the ayanāṃśa actually in force: the requested convention, unless a Siddhānta
+   engine is being read in its own frame */
+function effectiveAyan(req){
+  if(ENGINE_MODE!=="modern"&&SS_FRAME==="own") return ENGINE_MODE==="ss"?"ss_engine":"lahiri";
+  return AYAN_MODES[req]?req:"lahiri";
+}
+function setEngineMode(m,frame){
+  if(m==null) return ENGINE_MODE;
+  ENGINE_MODE=(ENGINE_MODES[m]&&(m==="modern"||SITE_SS))?m:"modern";
+  if(frame!=null) SS_FRAME=frame==="ayan"?"ayan":"own";
+  /* bare() also forgets the fitted constants, so they are handed back after
+     every switch — the same order Engine Lab's withTier() uses */
+  if(SITE_SS){ try{
+    var FD=window.__SS_FIT_DATA||null;
+    SITE_SS.bare(); if(FD) SITE_SS.setMeasured(FD);
+    if(ENGINE_MODE==="ssfit"){ if(!FD||!SITE_SS.measured()){ ENGINE_MODE="ss"; } }
+  }catch(e){} }
+  AYAN_MODE=effectiveAyan(REQ_AYAN);
+  return ENGINE_MODE;
+}
+var AYAN_MODE="lahiri";
+function setAyanamsaMode(m){ if(m!=null&&AYAN_MODES[m]) REQ_AYAN=m; AYAN_MODE=effectiveAyan(REQ_AYAN); return AYAN_MODE; }
+setEngineMode(pageEngine(),siteSsFrame());
+setAyanamsaMode(pageAyan()||"lahiri");
 /* The calendar year, computed exactly as ss-engine.js's yearOf does, so the two
    engines cannot drift apart on the two text-based readings. A Julian-year
    approximation from T would be close but not identical, and "close" between
@@ -376,6 +442,11 @@ function ayanYearOf(jd){
   return d.getUTCFullYear()+(d.getUTCMonth()+0.5)/12;
 }
 function ayanamsaFor(mode,jd){
+  /* "ss_engine": the Sūrya Siddhānta's own ayanāṃśa (its libration of the
+     asterisms), the zero a Siddhānta engine counts from when its positions
+     are read in the text's own frame. Not one of the nineteen conventions and
+     not offered in their pickers — it exists only for that engine. */
+  if(mode==="ss_engine") return ssTextAyan(jd);
   var M=AYAN_MODES[mode]||AYAN_MODES.lahiri, v=0;
   if(M.f) return M.f(ayanYearOf(jd));
   var T=Tof(jd);
@@ -387,6 +458,9 @@ function ayanamsa(jd){ return ayanamsaFor(AYAN_MODE,jd); }
    plane, taken in the ecliptic of date. Verified against Swiss Ephemeris TRUE_NODE
    to better than 0.3 arcminutes on the reference charts. */
 function trueNodeAt(date){
+  /* the Siddhānta gives the mean node only, so a Siddhānta engine answers
+     with it whichever node was asked for */
+  if(ENGINE_MODE!=="modern") return meanNode(date.getTime()/86400000+2440587.5);
   var dt=0.0005;
   function ec(t){ var e=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body.Moon,t,false));
                   return e.vec?e.vec:e; }
@@ -397,13 +471,41 @@ function trueNodeAt(date){
   return norm(Math.atan2(h.x,-h.y)*180/Math.PI);
 }
 /* mean lunar node (tropical) */
-function meanNode(jd){var T=Tof(jd);
+function meanNode(jd){
+  if(ENGINE_MODE!=="modern"){
+    var L=ssLonOf("Rāhu",(jd-2440587.5)*86400000);
+    if(L!=null) return norm(L+ssNativeAyan(jd));
+  }
+  return meanNodeModern(jd);
+}
+function meanNodeModern(jd){var T=Tof(jd);
   return norm(125.0445479-1934.1362891*T+0.0020754*T*T+T*T*T/467441-T*T*T*T/60616000);}
 
 var BODY={Sun:"Sun",Moon:"Moon",Mars:"Mars",Mercury:"Mercury",Jupiter:"Jupiter",Venus:"Venus",Saturn:"Saturn"};
-function tropLon(name,date){
+function tropLonModern(name,date){
   var ev=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[BODY[name]],date,true));
   return norm(ev.elon);
+}
+var SS_NAME={Sun:"Sūrya",Moon:"Candra",Mars:"Maṅgala",Mercury:"Budha",Jupiter:"Guru",Venus:"Śukra",Saturn:"Śani"};
+/* the tropical frame a Siddhānta longitude is carried to: the text's own
+   ayanāṃśa for the text as written, Lahiri for the fitted tier */
+function ssNativeAyan(jd){ return ENGINE_MODE==="ss"?ssTextAyan(jd):ayanamsaFor("lahiri",jd); }
+function ssLonOf(sa,ms){
+  try{ var q=SITE_SS.trueLongitude(sa,SITE_SS.ahargana(ms)); return q?q.lon:null; }catch(e){ return null; }
+}
+function tropLon(name,date){
+  if(ENGINE_MODE!=="modern"&&SS_NAME[name]){
+    var L=ssLonOf(SS_NAME[name],date.getTime());
+    if(L!=null) return norm(L+ssNativeAyan(date.getTime()/86400000+2440587.5));
+  }
+  return tropLonModern(name,date);
+}
+/* ecliptic latitude, from the same engine as the longitude */
+function eclLat(name,date){
+  if(ENGINE_MODE!=="modern"&&SS_NAME[name]){
+    try{ var v=SITE_SS.latitudeOf(SS_NAME[name],SITE_SS.ahargana(date.getTime())); if(v!=null) return v; }catch(e){}
+  }
+  try{ return Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[BODY[name]],date,true)).elat; }catch(e){ return null; }
 }
 function lonAndSpeed(name,date){
   var h=0.5/24, d0=new Date(date.getTime()-h*86400000), d1=new Date(date.getTime()+h*86400000);
@@ -1181,7 +1283,7 @@ function bhayat(moonSid,moonSpeed,jd,date,ay){
   // solve for the instants the Moon actually crosses the nakshatra boundaries
   function moonAt(ms){ var d=new Date(ms);
     var jd2=jd+(ms-date.getTime())/86400000;
-    return ((Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body.Moon,d,true)).elon-ayanamsa(jd2))%360+360)%360; }
+    return ((tropLon("Moon",d)-ayanamsa(jd2))%360+360)%360; }
   function cross(target,guessDays){
     var t=date.getTime()+guessDays*86400000;
     for(var k=0;k<40;k++){
@@ -1981,7 +2083,7 @@ function sankrantiWeekday(jd,date,targetLon){
   var t=date.getTime();
   for(var k=0;k<60;k++){
     var d=new Date(t), j2=jd+(t-date.getTime())/86400000;
-    var lon=norm(Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body.Sun,d,true)).elon-ayanamsa(j2));
+    var lon=norm(tropLon("Sun",d)-ayanamsa(j2));
     var diff=((lon-targetLon+180)%360+360)%360-180;
     if(Math.abs(diff)<1e-5)break;
     t-=diff/0.9856*86400000;
@@ -1992,9 +2094,17 @@ function sankrantiWeekday(jd,date,targetLon){
 
 try{ window.__AVT=AVT; window.__ayan=ayanamsa;
      window.__ayanModes=AYAN_MODES; window.__setAyan=setAyanamsaMode;
-     window.__pageAyan=pageAyan; window.__pageAyanRule=pageAyanRule;
+     window.__pageAyan=function(){ var a=pageAyan(); return a?effectiveAyan(a):a; };
+     window.__pageAyanRequested=pageAyan; window.__pageAyanRule=pageAyanRule;
+     /* the engine: read, set, and what this page would use */
+     window.__engine=function(){ return {mode:ENGINE_MODE, frame:SS_FRAME, name:ENGINE_MODES[ENGINE_MODE],
+       ayan:AYAN_MODE, requestedAyan:REQ_AYAN}; };
+     window.__setEngine=setEngineMode; window.__pageEngine=pageEngine;
+     window.__engineModes=ENGINE_MODES; window.__engineLocked=function(){ return !!PAGE_ENGINE_LOCK[pageFile()]; };
+     window.__kTrop=tropLon; window.__kTropModern=tropLonModern; window.__kLat=eclLat;
      /* the name a caption should print for the frame in use */
      window.__ayanName=function(m){ m=m||AYAN_MODE; if(m==="lahiri") return "Lahiri";
+       if(m==="ss_engine") return "the Sūrya Siddhānta's own zero";
        return AYAN_MODES[m]?AYAN_MODES[m].name:m; };
      window.__ayanFor=ayanamsaFor;
      /* The star catalogues store sidereal longitude under Lahiri (J2000). In any
@@ -2146,12 +2256,19 @@ window.__kAsc=function(inp,offMin){
    which planet stands to the north, and north of the ECLIPTIC — the śara or
    vikṣepa — is a latitude, not a declination. Returning both from one call
    also guarantees the pair are read at the same instant. */
-window.__kEclip=function(name,ms){
+window.__kEclipModern=function(name,ms){
   var key=BODY[name]||name;
   if(!Astronomy.Body[key]) return null;
   var date=new Date(ms), jd=ms/86400000+2440587.5;
   var ev=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[key],date,true));
   return {lon:norm(ev.elon-ayanamsa(jd)), trop:norm(ev.elon), lat:ev.elat};
+};
+/* the same, from whichever engine is in force; comparison code that needs the
+   modern sky whatever the reader chose calls __kEclipModern */
+window.__kEclip=function(name,ms){
+  if(ENGINE_MODE==="modern"||!SS_NAME[name]) return window.__kEclipModern(name,ms);
+  var date=new Date(ms), jd=ms/86400000+2440587.5, t=tropLon(name,date);
+  return {lon:norm(t-ayanamsa(jd)), trop:t, lat:eclLat(name,date)};
 };
 /* The Śrīpati construction, exposed from the engine under the name the
    build spec asks for. The arithmetic lives in the report module that owns
@@ -2211,10 +2328,19 @@ window.calculateSripatiHouses=function(ascSid,mcSid){
    override) and must not be moved by another widget on the page that casts a
    chart in a different mode a moment earlier. */
 window.__kSidAtMode=function(name,date,mode){
-  var jd=date.getTime()/86400000+2440587.5, ay=ayanamsaFor(AYAN_MODES[mode]?mode:"lahiri",jd);
+  /* a Siddhānta engine read in its own frame overrides the convention asked for */
+  var m=(ENGINE_MODE!=="modern"&&SS_FRAME==="own")?effectiveAyan(mode):mode;
+  var jd=date.getTime()/86400000+2440587.5, ay=ayanamsaFor((AYAN_MODES[m]||m==="ss_engine")?m:"lahiri",jd);
   if(name==="Rahu") return norm(meanNode(jd)-ay);
   if(name==="Ketu") return norm(meanNode(jd)-ay+180);
   return norm(tropLon(name,date)-ay);
+};
+/* the modern ephemeris, whatever engine is in force — for comparison code */
+window.__kSidAtModern=function(name,date){
+  var jd=date.getTime()/86400000+2440587.5, ay=ayanamsa(jd);
+  if(name==="Rahu") return norm(meanNodeModern(jd)-ay);
+  if(name==="Ketu") return norm(meanNodeModern(jd)-ay+180);
+  return norm(tropLonModern(name,date)-ay);
 };
 window.__kSidAt=function(name,date){
   var jd=date.getTime()/86400000+2440587.5, ay=ayanamsa(jd);
@@ -2226,12 +2352,14 @@ window.__kSidAt=function(name,date){
    lagna, and horizon coordinates. No vargas, ashtakavarga, shadbala or dasha, so it
    is cheap enough to recompute on every frame. */
 /* a caller that names no ayanāṃśa gets the settings panel's, or the site default */
+function defaultEngine(){ return pageEngine(); }
 function defaultAyan(){
   var pa=pageAyan(); if(pa) return pa;     /* a page with its own picker uses it */
   try{ var N=window.NSettings&&window.NSettings.get(); if(N&&N.ayan&&AYAN_MODES[N.ayan]) return N.ayan; }catch(e){}
   return "samanvaya_ecliptic";
 }
 window.quickSky=function(inp){
+  setEngineMode(inp.engine||defaultEngine(), inp.ssframe||siteSsFrame());
   setAyanamsaMode(inp.ayanamsa||defaultAyan());
   var tz=inp.tzHours, ut=inp.hour+inp.minute/60+(inp.second||0)/3600-tz;
   var jd=jdFromUTC(inp.year,inp.month,inp.day,ut);
@@ -2240,7 +2368,7 @@ window.quickSky=function(inp){
   var obs=new Astronomy.Observer(inp.lat,inp.lon,0);
   var names=["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn"], out=[];
   names.forEach(function(n){
-    var ev=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[BODY[n]],date,true));
+    var ev={elon:tropLon(n,date), elat:eclLat(n,date)};
     var sid=norm(ev.elon-ay), hz=null;
     try{
       var eq=Astronomy.Equator(Astronomy.Body[BODY[n]],date,obs,true,true);
@@ -2276,6 +2404,8 @@ window.quickSky=function(inp){
           obliquity:epsd,lst:lst,lat:inp.lat,lon:inp.lon};
 };
 window.buildLocalChart=function(inp){
+  /* the engine, like the ayanāṃśa, is part of the chart's input */
+  setEngineMode(inp.engine||defaultEngine(), inp.ssframe||siteSsFrame());
   setAyanamsaMode(inp.ayanamsa||defaultAyan());
   /* The bhāva frame is part of the chart's INPUT, exactly as the ayanāṃśa is,
      rather than a global someone sets beforehand. That way it is saved with
@@ -2293,7 +2423,7 @@ window.buildLocalChart=function(inp){
        be a degree apart in the sky, and latitude is what tells them apart — it is
        also what the later authorities use to settle a planetary war. */
     var lat=null;
-    try{ lat=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[BODY[n]],date,true)).elat; }catch(e){}
+    try{ lat=eclLat(n,date); }catch(e){}
     pos[n]={sid:norm(r.lon-ay),speed:r.speed,lat:lat};});
   var nodeMode=(inp.node==="true")?"true":"mean";
   var nodeTrop=(nodeMode==="true")?trueNodeAt(date):meanNode(jd);
@@ -2762,8 +2892,12 @@ window.buildLocalChart=function(inp){
       lagna_rashi_idx:lagRashi,
       lagna_rashi_rising_minutes:(risingT&&risingT[lagRashi])?risingT[lagRashi].rising_minutes:null,
       rashis:risingT},
-    ayanamsa_mode:AYAN_MODE, ayanamsa_name:AYAN_MODES[AYAN_MODE].name, node_mode:nodeMode,
-    ayanamsa_note:AYAN_MODES[AYAN_MODE].note, ashtakavarga:avOut, yogas:yg, bhayat:bb, shadbala:sbOut,
+    ayanamsa_mode:AYAN_MODE, ayanamsa_name:(AYAN_MODE==="ss_engine"?"Sūrya Siddhānta's own zero (its libration ayanāṃśa)":AYAN_MODES[AYAN_MODE].name), node_mode:nodeMode,
+    engine:{mode:ENGINE_MODE, name:ENGINE_MODES[ENGINE_MODE], frame:ENGINE_MODE==="modern"?null:SS_FRAME,
+            requested_ayanamsa:REQ_AYAN,
+            note:ENGINE_MODE==="modern"?null:("Graha and node positions from the "+ENGINE_MODES[ENGINE_MODE]+
+              "; sunrise and the lagna's sidereal time are computed with the modern method.")},
+    ayanamsa_note:(AYAN_MODE==="ss_engine"?"the text's own libration of the asterisms, ±27° over 7200 years, zero in 499 CE — used because this chart was cast with a Sūrya Siddhānta engine in its own frame":AYAN_MODES[AYAN_MODE].note), ashtakavarga:avOut, yogas:yg, bhayat:bb, shadbala:sbOut,
     /* Śrīpati's exact bhāva bala; null under BPHS, where the report's own
        simplified section stands. The ±1 rūpa occupancy rule is recorded but
        not applied — his worked table does not apply it either. */
@@ -2808,7 +2942,7 @@ window.buildLocalChart=function(inp){
     /* Identifier, not branding: 99-main.js tests this string by substring to tell
        a locally computed chart from a remote one. The two must agree, so it keeps
        its original spelling through any rename. */
-    substrate_stamp:"LearnHoro built-in engine · astronomy-engine (MIT) · Lahiri ayanāṃśa fitted to Swiss Ephemeris"};
+    substrate_stamp:(ENGINE_MODE==="modern"?"LearnHoro built-in engine · astronomy-engine (MIT) · Lahiri ayanāṃśa fitted to Swiss Ephemeris":"LearnHoro built-in engine · grahas from the "+ENGINE_MODES[ENGINE_MODE]+" (ss-engine.js) · sunrise and sidereal time from astronomy-engine (MIT)")};
 };
 })();
 

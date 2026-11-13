@@ -2578,6 +2578,19 @@ span.gldig.node{background:#5a5e7812;border-left-color:#8a8ea6}
 html[data-caution="off"] .krect{display:none}
 
 /* the almanac pages' own ayanāṃśa picker (settings.js mountPageAyan) */
+/* Engine Lab: the three engines explained, the glossary, the error tables */
+.eltbl3 td{vertical-align:top;font-size:.92rem}
+.eltblwrap{overflow-x:auto;max-width:100%;margin:.4rem 0 .8rem}
+.elerr{min-width:520px}
+.elerr td,.elerr th{font-size:.9rem}
+.elerr .elw{opacity:.7;font-size:.82rem}
+.elerr .elsub{font-style:italic;opacity:.85;background:transparent}
+.elh4{margin:1rem 0 .3rem;font-size:1rem}
+.elgloss{margin:.6rem 0 1.2rem;border:1px solid var(--line);border-radius:8px;padding:.5rem .9rem}
+.elgloss summary{cursor:pointer}
+.elgloss dt{font-weight:600;margin-top:.55rem}
+.elgloss dd{margin:.1rem 0 0 0;opacity:.92}
+@media (max-width:640px){.eltbl3 thead{display:none}.eltbl3 tr{display:block;border-bottom:1px solid var(--line);padding:.4rem 0}.eltbl3 td{display:block;border:0;padding:.15rem .3rem}}
 
 /* ===== the master settings overlay ======================================
    THE ONE COPY. This used to be duplicated verbatim in app.css and pages.css,
@@ -3478,6 +3491,7 @@ html[data-theme] nav.site .themepick select option{
   <span class="nowlab"><label for="nowconv">Sunrise is</label></span>
   <select id="nowconv" class="nowsel"></select>
   <div id="np-ayan" class="npayanwrap"></div>
+<div id="np-engine" class="npayanwrap"></div>
   <span class="nowhint">Everything is computed in this browser from the same engine the chart pages use &mdash; nothing is sent anywhere, and the page works offline. Sunrise, and therefore the whole day, depends on the place &mdash; and on which definition of sunrise you pick. The default is the one the printed almanacs use: the Sun&rsquo;s <b>upper limb</b> touching the horizon, with the standard 34&prime; allowance for refraction. Taking the centre of the disc instead puts sunrise about a minute later; dropping refraction too puts it about four minutes later. Four minutes is enough to move a day label when a tithi ends inside that window, which is why it is shown rather than assumed.</span>
 </div>
 

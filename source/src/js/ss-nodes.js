@@ -34,7 +34,7 @@
   }
   function modern(sa, ms) {
     if (!EN[sa]) return null;
-    try { return window.__kSidAt(EN[sa], new Date(ms)); } catch (e) { return null; }
+    try { return window.__kSidAtModern(EN[sa], new Date(ms)); } catch (e) { return null; }
   }
 
   function reg(id, label, hint, roles, get) {
@@ -220,7 +220,7 @@
             var v = S.latitudeOf(sa, a);
             if (v == null) return;
             var m = null;
-            try { var e = window.__kEclip(EN[sa], C.when); m = e ? e.lat : null; }
+            try { var e = window.__kEclipModern(EN[sa], C.when); m = e ? e.lat : null; }
             catch (x) {}
             items.push({ k: sa, v: v,
               work: m == null ? "Sūrya Siddhānta" :

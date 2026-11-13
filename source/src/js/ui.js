@@ -322,6 +322,7 @@
       ayanamsa:($("k-ayan")&&$("k-ayan").value)||"samanvaya_ecliptic",
       houseSystem:($("k-house")&&$("k-house").value)||"sripati",
       node:($("k-node")&&$("k-node").value)||"mean",
+      engine:($("k-engine")&&$("k-engine").value)||"modern", ssframe:($("k-ssframe")&&$("k-ssframe").value)||"own",
       name:($("k-name")&&$("k-name").value||"").trim()||null,
       /* The place name is the one field the reference pages never needed and
          the chip does. It goes in now because this record has a second job: it
@@ -364,7 +365,8 @@
        frame, which is the one caller that was never broken. */
     var body={year:+dp[0],month:+dp[1],day:+dp[2],hour:+tp[0],minute:+tp[1],lat:lat,lon:lon,tzHours:tz,
               ayanamsa:ayan, houseSystem:(($("k-house")&&$("k-house").value)||"sripati"),
-              node:(($("k-node")&&$("k-node").value)||"mean")};
+              node:(($("k-node")&&$("k-node").value)||"mean"),
+              engine:($("k-engine")&&$("k-engine").value)||"modern", ssframe:($("k-ssframe")&&$("k-ssframe").value)||"own"};
     if(nm) body.name=nm;
     /* There is one chart source, and it is this machine. The remote
        cross-check that used to sit here — an opt-in POST to a Cloudflare
@@ -420,8 +422,16 @@
        when there was no choice and becomes a false statement the moment the
        frame is selectable. It now reports what is actually set. */
     var hs=($("k-house")&&$("k-house").value)||"sripati";
-    el.innerHTML="Sidereal · "+esc((M&&M.name)||sel)+" ayanāṃśa · "+
-                 (hs==="sripati"?"Śrīpati bhāva-chalita":"whole-sign houses");
+    var en=($("k-engine")&&$("k-engine").value)||"modern", sf=($("k-ssframe")&&$("k-ssframe").value)||"own";
+    var EN={modern:"",ss:"Sūrya Siddhānta (as written)",ssfit:"Sūrya Siddhānta (fitted)"};
+    /* a Siddhānta engine in its own frame does not use the ayanāṃśa picked
+       above, and the line must not say it does */
+    var ayTxt=(en!=="modern"&&sf==="own")
+      ? (en==="ss"?"the Siddhānta's own zero":"Lahiri (the fitted engine's frame)")
+      : esc((M&&M.name)||sel)+" ayanāṃśa";
+    el.innerHTML="Sidereal · "+ayTxt+" · "+
+                 (hs==="sripati"?"Śrīpati bhāva-chalita":"whole-sign houses")+
+                 (en!=="modern"?" · grahas by the "+EN[en]:"");
   }
   /* ---- the ayanāṃśa picker, built from the engine's own table ----
      This was sixteen hand-written <option> rows in the builder's shell and
@@ -475,6 +485,8 @@
   try{ fillAyanPicker(); }catch(e){}
   if($("k-ayan")) $("k-ayan").addEventListener("change",convStrip);
   if($("k-house")) $("k-house").addEventListener("change",convStrip);
+  if($("k-engine")) $("k-engine").addEventListener("change",convStrip);
+  if($("k-ssframe")) $("k-ssframe").addEventListener("change",convStrip);
   /* the master panel is the other way in: when it changes, the form follows */
   try{
     window.addEventListener("nirayana:settings",function(ev){
@@ -482,6 +494,8 @@
       if($("k-ayan")&&S.ayan) $("k-ayan").value=S.ayan;
       if($("k-house")&&S.house) $("k-house").value=S.house;
       if($("k-node")&&S.node) $("k-node").value=S.node;
+      if($("k-engine")&&S.engine) $("k-engine").value=S.engine;
+      if($("k-ssframe")&&S.ssframe) $("k-ssframe").value=S.ssframe;
       var st=$("k-recast"); if(st) st.remove();
       convStrip();
       /* AND RE-CAST, if a chart is on screen. Without this the panel moved the
@@ -492,7 +506,7 @@
          trigger it — theme and degrees do not change a longitude. */
       var ch=(ev.detail&&ev.detail.changed)||[];
       var needs=ch.some(function(k){
-        return k==="ayan"||k==="house"||k==="node"||k==="riseconv"; });
+        return k==="ayan"||k==="house"||k==="node"||k==="riseconv"||k==="engine"||k==="ssframe"; });
       var out=$("k-out");
       if(needs && out && out.innerHTML && out.innerHTML.length>200){
         var g=$("k-go"); if(g) g.click();
@@ -507,6 +521,8 @@
       if($("k-ayan")&&M0.ayan) $("k-ayan").value=M0.ayan;
       if($("k-house")&&M0.house) $("k-house").value=M0.house;
       if($("k-node")&&M0.node) $("k-node").value=M0.node;
+      if($("k-engine")&&M0.engine) $("k-engine").value=M0.engine;
+      if($("k-ssframe")&&M0.ssframe) $("k-ssframe").value=M0.ssframe;
     }
   }catch(e){}
   convStrip();
@@ -848,7 +864,8 @@
       })(),
       ayanamsa:($("k-ayan")&&$("k-ayan").value)||"samanvaya_ecliptic",
       houseSystem:($("k-house")&&$("k-house").value)||"sripati",
-      node:($("k-node")&&$("k-node").value)||"mean"};
+      node:($("k-node")&&$("k-node").value)||"mean",
+      engine:($("k-engine")&&$("k-engine").value)||"modern", ssframe:($("k-ssframe")&&$("k-ssframe").value)||"own"};
     var blob=new Blob([JSON.stringify(mini,null,1)],{type:"application/json"});
     var u=URL.createObjectURL(blob), a=document.createElement("a");
     a.href=u; a.download=((mini.name||"chart").replace(/[^\w\- ]+/g,"").replace(/\s+/g,"-")
@@ -877,7 +894,9 @@
       var M=(window.NSettings&&window.NSettings.get)?window.NSettings.get():null;
       var FIELDS=[["k-ayan","ayanamsa","ayan","ayanāṃśa"],
                   ["k-house","houseSystem","house","bhāva frame"],
-                  ["k-node","node","node","lunar node"]];
+                  ["k-node","node","node","lunar node"],
+                  ["k-engine","engine","engine","engine"],
+                  ["k-ssframe","ssframe","ssframe","Siddhānta frame"]];
       var diff=[], orig={};
       FIELDS.forEach(function(f){
         var el=$(f[0]); if(!el) return;
@@ -1000,7 +1019,8 @@
   function chartKey(){
     return [$("k-dob").value,$("k-tob").value,$("k-lat").value,$("k-lon").value,$("k-tz").value,
       ($("k-ayan")&&$("k-ayan").value)||"",($("k-node")&&$("k-node").value)||"",
-      ($("k-house")&&$("k-house").value)||""].join("|");
+      ($("k-house")&&$("k-house").value)||"",($("k-engine")&&$("k-engine").value)||"",
+      ($("k-ssframe")&&$("k-ssframe").value)||""].join("|");
   }
   function buildHash(tab){
     var d=($("k-dob").value||"").split("-"), t=($("k-tob").value||"").split(":");
@@ -1013,6 +1033,10 @@
     var a=($("k-ayan")&&$("k-ayan").value)||"samanvaya_ecliptic"; p.push("a="+a);
     var hsv=($("k-house")&&$("k-house").value)||"sripati"; p.push("hs="+hsv);
     var nd=($("k-node")&&$("k-node").value)||"mean";  if(nd!=="mean")  p.push("nd="+nd);
+    /* the engine is written only when it is not the modern one, so every link
+       made before engines were selectable still means what it meant */
+    var en=($("k-engine")&&$("k-engine").value)||"modern"; if(en!=="modern"){ p.push("en="+en);
+      p.push("sf="+(($("k-ssframe")&&$("k-ssframe").value)||"own")); }
     var nm=($("k-name")&&$("k-name").value||"").trim();
     if(nm) p.push("n="+encodeURIComponent(nm.slice(0,48)));
     /* Only a named place is worth carrying; the coordinate fallback is already in p=. */
@@ -1032,7 +1056,7 @@
     return {dob:o.d.slice(0,4)+"-"+o.d.slice(4,6)+"-"+o.d.slice(6,8),
             tob:o.t.slice(0,2)+":"+o.t.slice(2,4),
             lat:p[0], lon:p[1], tz:p[2], ayan:o.a||"lahiri", node:o.nd||"mean",
-            houseSystem:o.hs||"whole",
+            houseSystem:o.hs||"whole", engine:o.en||"modern", ssframe:o.sf||"own",
             name:o.n||"", place:o.pl||"", tab:o.v||"overview"};
   }
   /* A cast is a new place in history; changing tab is not — otherwise Back would walk
@@ -1051,7 +1075,12 @@
     if($("k-ayan")) $("k-ayan").value=o.ayan;
     if($("k-house")) $("k-house").value=o.houseSystem||"whole";
     if($("k-node")) $("k-node").value=o.node;
+    if($("k-engine")) $("k-engine").value=o.engine||"modern";
+    if($("k-ssframe")) $("k-ssframe").value=o.ssframe||"own";
     if(o.place) window.__kplace=o.place;
+    /* .value fires no change event: without this the conventions line kept
+       describing the form as it was before the link was opened */
+    try{ convStrip(); }catch(e){}
   }
   function castFromHash(){
     var o=parseHash(); if(!o) return false;
@@ -1172,7 +1201,7 @@
     if(!i||i.year==null||i.lat==null||isNaN(+i.lat)) return false;
     if(!applyChart({learnhoro:1,year:i.year,month:i.month,day:i.day,hour:i.hour,
       minute:i.minute,lat:i.lat,lon:i.lon,tzHours:i.tzHours,ayanamsa:i.ayanamsa,
-      houseSystem:i.houseSystem,
+      houseSystem:i.houseSystem, engine:i.engine, ssframe:i.ssframe,
       node:i.node,name:i.name})) return false;
     if(i.place) window.__kplace=i.place;
     if(i.tab) pendingTab=i.tab;
