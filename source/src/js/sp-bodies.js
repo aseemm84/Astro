@@ -96,9 +96,12 @@
     R = Math.max(3, R);
     var rb = R < 14 ? Math.round(R) : Math.round(R / 3) * 3;
     if (name === "Sun" || name === "Sūrya") {
-      var sk = "sun|" + rb + "|" + Math.round((opt.spinDeg || 0) / 30);
+      var sk = "sun|" + rb + "|" + Math.round((opt.spinDeg || 0) / 30) + "|" + (opt.glow === false ? 0 : 1);
       if (CACHE[sk]) return CACHE[sk];
       if (typeof moSunDisc !== "function") return null;
+      /* the same glowing token __moDisc draws (see moSunToken) */
+      if (opt.glow !== false && typeof moSunToken === "function")
+        return put(sk, moSunToken(rb, opt.spinDeg || 0));
       return put(sk, moSunDisc(rb, opt.spinDeg || 0));
     }
     var tex = texOf(name);
@@ -122,12 +125,22 @@
        for the same reason: the dark side is not actually black. */
     var narrow = Math.min(pb, 360 - pb) < 70;
     var night = narrow ? [16, 19, 27] : [2, 2, 3];
-    var cv = moBody(rb, {
+    var isMoon = (name === "Moon" || name === "Candra");
+    var bo = {
       tex: tex, lx: lx, ly: 0.03, lz: lz, rot: sb,
       axis: AX[key2] == null ? 0 : AX[key2],
       relief: (tex.gx ? (RELIEF[key2] == null ? 1 : RELIEF[key2]) : 0),
-      b: (RELIEF[key2] ? 0.82 : 0.25), exposure: 1.15, night: night
-    });
+      b: (RELIEF[key2] ? 0.82 : 0.25),
+      /* the same token exposure __moDisc uses, so a crescent reads the same
+         in the ceremony as on a wheel (see moPhaseExposure) */
+      exposure: (isMoon && typeof moPhaseExposure === "function") ? moPhaseExposure(pb) : 1.15,
+      night: night
+    };
+    /* Śani with its rings, drawn by the same function as __moDisc's token */
+    if ((name === "Saturn" || name === "Śani") && opt.rings !== false &&
+        typeof moSaturnToken === "function")
+      return put(key, moSaturnToken(rb, bo, opt.ringOpen));
+    var cv = moBody(rb, bo);
     return put(key, cv);
   }
 

@@ -27,6 +27,13 @@ const browser = await chromium.launch();
 
 async function open() {
   const p = await browser.newPage({ viewport: { width: 1280, height: 1200 } });
+  /* The page opens on "now", and two checks below are about the geometry of that
+     moment: that Śrīpati houses are unequal, and that they are more even at the
+     equator than at 40°. At some sidereal times the lagna and the MC fall almost
+     exactly 90° apart and both are briefly false — which is astronomy, not a
+     fault. It failed on 13 November 2026 for exactly that reason. The clock is
+     pinned so a pass means the same thing every day; timers keep running. */
+  await p.clock.setFixedTime(new Date(Date.UTC(2026, 10, 1, 6, 0, 0)));
   const errs = [];
   p.on("pageerror", e => errs.push(String(e && e.message || e)));
   p.on("console", m => { if (m.type() === "error") errs.push("console: " + m.text()); });
