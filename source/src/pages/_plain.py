@@ -168,10 +168,17 @@ PLAIN = {
 
 "engine-lab.html": dict(
   gist="Ask the same question — 'where is the Moon?', 'what lunar day is it?' — of three different calculating methods and compare their answers.",
-  what="The site has a modern astronomical engine, a classical one (the Sūrya Siddhānta), and a version of the classical one with adjusted constants. This page asks all three the same question and shows their answers side by side, and how often they agree over a span of years.",
+  what="The site has a modern astronomical engine, a classical one (the Sūrya Siddhānta), a version of the classical one with adjusted constants, and Kālasetu, which keeps the classical count of time with a modern geometry and holds across 3600 BCE – 3600 CE. This page asks all four the same question and shows their answers side by side, and how often they agree over a span of years.",
   how="Choose a question, a moment and a place (or press <b>This moment</b>) and the three engines answer side by side. To see agreement over time, set a <b>From</b> and <b>To</b> year and a number of <b>Samples</b>, then press <b>Measure the agreement</b>. The <b>Error in longitude</b> slider shows what an error of that size would change in a chart, and the <b>Year</b> slider shows how confident the modern engine is in that century. <b>Ayanāṃśa for this page</b> sets the modern engine's frame: Lahiri by default, because the fitted engine was fitted in it; choose another and the page says how much of each difference comes from the change of frame. Start with 'The three engines, in plain words' for what modern, fitted and as written mean. <b>Engine</b> in Settings makes any of the three the engine for the whole site.",
   read="Agreement is shown as a percentage or a difference in degrees. A small difference in degrees can still change a lunar day or a star near a boundary.",
   care="The differences between methods are differences of method, shown as they are; the page does not rank them."),
+
+"kalasetu.html": dict(
+  gist="The site's fourth way of calculating where the planets are — one that stays accurate for any date from 3600 BCE to 3600 CE.",
+  what="Kālasetu keeps the old Indian text's way of counting days and carries a modern understanding of the planets' orbits on it. It was tuned against the modern computation across seven thousand two hundred years, and this page shows it working: where it puts each planet on any day, every step of one calculation, and how close it comes, century by century.",
+  how="Set an <b>Era</b>, <b>Year</b>, <b>Month</b>, <b>Day</b> and <b>Time</b> (or press one of the preset dates) and the nine planets are placed, beside the modern answer. Choose a <b>Graha</b> under 'How one longitude is made' to follow its calculation. Under 'How close', pick a planet for its error century by century, or set <b>From</b>, <b>To</b> and <b>Moments</b> and press <b>Measure</b> to test it yourself against the older fitted engine. Untick a group of the Moon's terms to see how much worse the Moon gets without it. Settings → Engine, or the Engine menu on Kundli, makes Kālasetu the engine for your charts.",
+  read="Differences are in arcminutes (′), sixtieths of a degree. For scale, a nakṣatra quarter (pāda) is 200′; anything under a few arcminutes changes nothing a chart is read in.",
+  care="It is compared with the modern computation, which is itself checked against the real sky only from 1000 to 3000 CE. For the distant past both are calculations, not observations."),
 
 "simulation.html": dict(
   gist="'What if?' experiments with the Sun, Earth and Moon — change one thing and watch what physics does next.",

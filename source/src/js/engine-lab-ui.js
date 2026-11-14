@@ -48,7 +48,9 @@
     { k: "fit", label: "siddhānta, fitted tier",
       note: "the text's equations, measured constants" },
     { k: "bare", label: "Sūrya Siddhānta as written",
-      note: "the text's own numbers" }
+      note: "the text's own numbers" },
+    { k: "ks", label: "Kālasetu",
+      note: "the text's time-count, a modern geometry, fitted across 3600 BCE – 3600 CE (Samanvaya–Ecliptic frame)" }
   ];
 
   var AC = null, FIT = null, LAH = null;
@@ -149,18 +151,63 @@
     });
   }
   function modAt(ms) {
-    var out = { lon: {}, panch: null, lahiri: {} };
+    var out = { lon: {}, panch: null, lahiri: {}, sam: {} };
     SA7.forEach(function (sa) {
       try {
         var e = window.__kEclipModern(EN[sa], ms);
         out.lon[sa] = e ? e.lon : null;        /* the site's own ayanāṃśa */
         out.lahiri[sa] = e ? norm(e.trop - frameAt(ms / 86400000 + 2440587.5))
                            : null;             /* the frame the fit used */
+        out.sam[sa] = e && window.__ayanFor
+          ? norm(e.trop - window.__ayanFor("samanvaya_ecliptic", ms / 86400000 + 2440587.5))
+          : null;                              /* Kālasetu's frame */
       } catch (err) { out.lon[sa] = null; }
     });
     try { out.panch = window.NP.day(ms, ST.place); } catch (e) {}
     return out;
   }
+
+  /* KĀLASETU: the fourth engine, standalone (kalasetu-engine.js, loaded on
+     every page with engine.js). It places the grahas and the nodes in its own
+     Samanvaya–Ecliptic frame; the pañcāṅga limbs below are read off its Sun
+     and Moon exactly as the Sūrya Siddhānta's own panchanga() reads them off
+     its. Sunrise, the lagna and eclipses it does not compute — on the site it
+     borrows the modern engine's, as every Siddhānta engine does. */
+  var KS = null;
+  var KAR_MOV = ["Bava", "Bālava", "Kaulava", "Taitila", "Gara", "Vaṇija", "Viṣṭi"],
+      KAR_FIX = ["Śakuni", "Catuṣpada", "Nāga", "Kiṃstughna"];
+  function ksLon(sa) { return function (t) { return KS ? KS.longitude(sa, t) : null; }; }
+  /* lon: in Kālasetu's own Samanvaya–Ecliptic frame. page: carried into this
+     page's frame — Kālasetu is a castable engine and is cast in whatever
+     ayanāṃśa a reader picks, so its signs and nakṣatras are compared in the
+     same zero as the modern column, and what is left is the engine. The
+     pañcāṅga limbs are read at panchMs — the modern almanac's own sunrise,
+     when the caller has it — because that is the instant the almanac names
+     them at, and comparing a limb at sunrise with one at another hour would
+     measure the clock, not the engine. */
+  function ksAt(ms, panchMs) {
+    var out = { lon: {}, page: {}, panch: null };
+    if (!KS) return out;
+    var shift = function (t) { var jd = t / 86400000 + 2440587.5;
+      return window.__ayanFor ? window.__ayanFor("samanvaya_ecliptic", jd) - frameAt(jd) : 0; };
+    var sh = shift(ms);
+    SA7.forEach(function (sa) { try { out.lon[sa] = KS.longitude(sa, ms); out.page[sa] = norm(out.lon[sa] + sh); }
+                                catch (e) { out.lon[sa] = out.page[sa] = null; } });
+    var pm = panchMs != null && isFinite(panchMs) ? panchMs : ms, ps = shift(pm);
+    var sun = norm(KS.longitude("Sūrya", pm) + ps), moon = norm(KS.longitude("Candra", pm) + ps);
+    if (sun == null || moon == null) return out;
+    var el = norm(moon - sun), tI = Math.floor(el / 12), half = Math.floor(el / 6);
+    var nk = nakOf(moon), yI = Math.floor(norm(sun + moon) / NAKW);
+    out.panch = {
+      tithi: { n: tI + 1, paksha: tI < 15 ? "śukla" : "kṛṣṇa",
+               name: tI === 14 ? "Pūrṇimā" : (tI === 29 ? "Amāvāsyā" : ((S && S.TITHI) ? S.TITHI[tI % 15] : "")) },
+      nakshatra: { name: (S && S.NAK) ? S.NAK[nk.i] : "no. " + (nk.i + 1), pada: nk.pada },
+      yoga: { name: (S && S.YOGA) ? S.YOGA[yI] : "no. " + (yI + 1) },
+      karana: { name: half === 0 ? KAR_FIX[3] : (half >= 57 ? KAR_FIX[half - 57] : KAR_MOV[(half - 1) % 7]) }
+    };
+    return out;
+  }
+  function ksSpan(ms) { return KS && KS.inSpan ? KS.inSpan(ms) : true; }
 
   /* ---- helpers for the questions that need time searched, not read ------- */
   var HOUR = 3600000, DAYMS = 86400000;
@@ -237,25 +284,31 @@
     var host = $("el-answer");
     if (!host) return;
     var ms = ST.when;
-    var A = { mod: modAt(ms), fit: ssAt("fit", ms), bare: ssAt("bare", ms) };
+    var MA = modAt(ms);
+    var A = { mod: MA, fit: ssAt("fit", ms), bare: ssAt("bare", ms), ks: ksAt(ms, MA.panch && MA.panch.sunrise) };
+    var NA = "uses the modern one";
     var rows = [], verdict = "", nakNames = null;
     try { nakNames = S.NAK; } catch (e) {}
 
     if (ST.q === "lon") {
       rows = SA7.map(function (sa) {
         return { k: sa,
-          cells: [dm(A.mod.lon[sa]), dm(A.fit.lon[sa]), dm(A.bare.lon[sa])],
+          cells: [dm(A.mod.lon[sa]), dm(A.fit.lon[sa]), dm(A.bare.lon[sa]), dm(A.ks.lon[sa])],
           /* the fitted tier's own frame is Lahiri, so it is compared against
-             the modern engine in that frame and not in the page's */
+             the modern engine in that frame and not in the page's; Kālasetu's
+             is Samanvaya–Ecliptic, and it is compared in that */
           gap: [ang(Math.abs(sdiff(A.fit.lon[sa], A.mod.lahiri[sa])) * 3600),
-                ang(Math.abs(sdiff(A.bare.lon[sa], A.mod.lahiri[sa])) * 3600)] };
+                ang(Math.abs(sdiff(A.bare.lon[sa], A.mod.lahiri[sa])) * 3600),
+                A.ks.lon[sa] == null ? "—" : ang(Math.abs(sdiff(A.ks.lon[sa], A.mod.sam[sa])) * 3600)] };
       });
-      verdict = "Longitude is the question on which the three always differ, " +
-        "and by the smallest amount that matters least. The two gap columns " +
-        "are each siddhāntic tier against the modern engine in the same " +
-        "sidereal frame the fit was made in.";
-      return render(["Graha", "modern", "fitted", "as written",
-                     "fitted − modern", "written − modern"], rows, true);
+      verdict = "Longitude is the question on which the four always differ, " +
+        "and by the smallest amount that matters least. Each gap column " +
+        "is one engine against the modern engine in the sidereal frame that " +
+        "engine was fitted in — Lahiri for the two Sūrya Siddhānta tiers, " +
+        "Samanvaya–Ecliptic for Kālasetu." + (ksSpan(ms) ? "" :
+        " <b>This moment is outside Kālasetu's fitted span (3600 BCE – 3600 CE)</b>, so its column claims nothing here.");
+      return render(["Graha", "modern", "fitted", "as written", "Kālasetu",
+                     "fitted − modern", "written − modern", "Kālasetu − modern"], rows, true);
     }
 
     if (ST.q === "nak") {
@@ -265,44 +318,48 @@
         ? A.mod.panch.at.nak.pada : null;
       var f = A.fit.panch ? A.fit.panch.nakshatra : null;
       var b = A.bare.panch ? A.bare.panch.nakshatra : null;
+      var kn = A.ks.panch ? A.ks.panch.nakshatra : null;
       rows = [{ k: "Moon's nakṣatra",
                 cells: [mn ? mn + (mp ? " pāda " + mp : "") : "—",
                         f ? f.name + " pāda " + f.pada : "—",
-                        b ? b.name + " pāda " + b.pada : "—"] }];
-      var same = f && b && mn && f.name === mn && b.name === mn;
+                        b ? b.name + " pāda " + b.pada : "—",
+                        kn ? kn.name + " pāda " + kn.pada : "—"] }];
+      var same = f && b && mn && kn && f.name === mn && b.name === mn && kn.name === mn;
       verdict = same
-        ? "<b>All three name the same nakṣatra.</b> This is the usual case: " +
+        ? "<b>All four name the same nakṣatra.</b> This is the usual case: " +
           "a difference of a few degrees in longitude still lands inside a " +
           "division 13°20′ wide most of the time."
         : "<b>They do not all agree.</b> Note what is being compared: a " +
           "nakṣatra is counted from a sidereal zero, and the bare text's zero " +
           "is its own. That frame difference is part of this disagreement and " +
           "is deliberately not corrected away, because it is the disagreement " +
-          "a reader actually meets when two almanacs are put side by side.";
-      return render(["Question", "modern", "fitted", "as written"], rows, false);
+          "a reader actually meets when two almanacs are put side by side. Kālasetu is read in this page's frame and at the almanac's sunrise.";
+      return render(["Question", "modern", "fitted", "as written", "Kālasetu"], rows, false);
     }
 
     if (ST.q === "tithi") {
       var mt = modTithi(A.mod.panch);
       var ft = A.fit.panch ? A.fit.panch.tithi : null;
       var bt = A.bare.panch ? A.bare.panch.tithi : null;
+      var kt = A.ks.panch ? A.ks.panch.tithi : null;
       rows = [{ k: "Tithi",
         cells: [mt == null ? "—" : "no. " + mt,
                 ft ? "no. " + ft.n + " · " + ft.name + " " + ft.paksha : "—",
-                bt ? "no. " + bt.n + " · " + bt.name + " " + bt.paksha : "—"] }];
+                bt ? "no. " + bt.n + " · " + bt.name + " " + bt.paksha : "—",
+                kt ? "no. " + kt.n + " · " + kt.name + " " + kt.paksha : "—"] }];
       verdict = "A tithi is the <b>difference</b> of the Moon's and the " +
         "Sun's longitudes, so whatever sidereal zero each engine uses cancels " +
         "out of it exactly — the tithi, karaṇa, new moon and full moon are " +
         "free of the ayanāṃśa. What is left is the two position differences, and " +
         "because the Moon crosses a tithi in under a day, those are enough to " +
         "move it by one more often than they move the nakṣatra.";
-      return render(["Question", "modern", "fitted", "as written"], rows, false);
+      return render(["Question", "modern", "fitted", "as written", "Kālasetu"], rows, false);
     }
 
     if (ST.q === "dasha") {
       var V = window.__kVims;
-      rows = ["mod", "fit", "bare"].map(function (k) {
-        var L = k === "mod" ? A.mod.lahiri["Candra"] : A[k].lon["Candra"];
+      rows = ["mod", "fit", "bare", "ks"].map(function (k) {
+        var L = k === "mod" ? A.mod.lahiri["Candra"] : (k === "ks" ? A.ks.page["Candra"] : A[k].lon["Candra"]);
         if (L == null) return null;
         var v = V.atMoon(L);
         return { k: TIERS.filter(function (t) { return t.k === k; })[0].label,
@@ -315,13 +372,13 @@
       var mb = V.atMoon(A.mod.lahiri["Candra"]).balance;
       var fb = V.atMoon(A.fit.lon["Candra"]).balance;
       verdict = (allSame
-        ? "All three would open on <b>" + esc(lords[0]) + "</b>. "
+        ? "All four would open on <b>" + esc(lords[0]) + "</b>. "
         : "They do not agree on the opening lord. ") +
         "The balances differ by <b>" +
         Math.abs((mb - fb) * 365.2425).toFixed(0) + " days</b> between the " +
         "modern engine and the fitted tier — which is the exchange rate in " +
         "the next section doing its work: a Moon out by an arcminute is a " +
-        "daśā boundary out by weeks.";
+        "daśā boundary out by weeks. Kālasetu's row is read in this page's frame, as a chart cast with it in this ayanāṃśa would be.";
       return render(["Engine", "the Moon", "opening lord", "balance at birth"],
                     rows, false);
     }
@@ -334,18 +391,19 @@
       };
       var agreeAll = 0;
       rows = SA7.map(function (sa) {
-        var m = signOf(A.mod.lahiri[sa]), f = signOf(A.fit.lon[sa]), b = signOf(A.bare.lon[sa]);
-        if (m != null && m === f && m === b) agreeAll++;
-        return { k: sa, cells: [m == null ? "—" : RS[m], f == null ? "—" : RS[f], b == null ? "—" : RS[b],
-          m === f && m === b ? "all three" : (m === f ? "modern = fitted" : (m === b ? "modern = written" : (f === b ? "fitted = written" : "each different")))] };
+        var m = signOf(A.mod.lahiri[sa]), f = signOf(A.fit.lon[sa]), b = signOf(A.bare.lon[sa]), q = signOf(A.ks.page[sa]);
+        if (m != null && m === f && m === b && m === q) agreeAll++;
+        var with_ = [f === m ? "fitted" : null, b === m ? "written" : null, q === m ? "Kālasetu" : null].filter(Boolean);
+        return { k: sa, cells: [m == null ? "—" : RS[m], f == null ? "—" : RS[f], b == null ? "—" : RS[b], q == null ? "—" : RS[q],
+          with_.length === 3 ? "all four" : (with_.length ? "modern = " + with_.join(", ") : "none with modern")] };
       });
       verdict = "<b>" + agreeAll + " of 7</b> grahas are placed in the same " +
-        (d9 ? "navāṃśa (the ninth division of a sign, 3°20′ wide)" : "rāśi (30° wide)") + " by all three engines. " + frameNote() +
+        (d9 ? "navāṃśa (the ninth division of a sign, 3°20′ wide)" : "rāśi (30° wide)") + " by all four engines. " + frameNote() +
         (d9 ? "A navāṃśa is a ninth of a sign, so a difference of a degree or two in longitude changes it far more often " +
               "than it changes the sign — the same three longitudes, read through a finer division."
-            : "A sign is wide, so the three usually agree; where they differ, the graha is near a sign boundary in at least " +
+            : "A sign is wide, so the four usually agree; where they differ, the graha is near a sign boundary in at least " +
               "one of them, and each engine counts from its own sidereal zero.");
-      return render(["Graha", "modern", "fitted", "as written", "agreement"], rows, false);
+      return render(["Graha", "modern", "fitted", "as written", "Kālasetu", "agreement"], rows, false);
     }
 
     if (ST.q === "retro") {
@@ -357,15 +415,16 @@
       var nSame = 0;
       rows = SA7.filter(function (sa) { return sa !== "Sūrya" && sa !== "Candra"; }).map(function (sa) {
         var m = dmod(sa), f = dss("fit", sa), b = dss("bare", sa);
+        var kf = ksLon(sa), ka = kf(ms - 12 * HOUR), kc = kf(ms + 12 * HOUR), kd = (ka == null || kc == null) ? null : sdiff(kc, ka);
         var w = function (v) { return v == null ? "—" : (v < 0 ? "vakrī (retrograde)" : "direct") + " · " + v.toFixed(3) + "°/day"; };
-        if (m != null && f != null && b != null && (m < 0) === (f < 0) && (m < 0) === (b < 0)) nSame++;
-        return { k: sa, cells: [w(m), w(f), w(b)] };
+        if (m != null && f != null && b != null && kd != null && (m < 0) === (f < 0) && (m < 0) === (b < 0) && (m < 0) === (kd < 0)) nSame++;
+        return { k: sa, cells: [w(m), w(f), w(b), w(kd)] };
       });
       verdict = "The Sun and the Moon never turn back, so the question is asked of the five star-planets. <b>" + nSame +
-        " of 5</b> are given the same direction by all three. The modern figure is the change of longitude across the day; " +
+        " of 5</b> are given the same direction by all four. The modern figure is the change of longitude across the day; " +
         "the siddhāntic figures are each engine's own true daily motion. Near a station — where the motion passes through " +
-        "zero — the engines can name different directions.";
-      return render(["Graha", "modern", "fitted", "as written"], rows, false);
+        "zero — the engines can name different directions. Kālasetu's figure, like the modern one, is the change of longitude across the day.";
+      return render(["Graha", "modern", "fitted", "as written", "Kālasetu"], rows, false);
     }
 
     if (ST.q === "yoga" || ST.q === "karana") {
@@ -373,14 +432,15 @@
       var mp2 = A.mod.panch && A.mod.panch.at ? (isY ? A.mod.panch.at.yoga : A.mod.panch.at.karana) : null;
       var fp = A.fit.panch ? (isY ? A.fit.panch.yoga : A.fit.panch.karana) : null;
       var bp = A.bare.panch ? (isY ? A.bare.panch.yoga : A.bare.panch.karana) : null;
-      rows = [{ k: isY ? "Yoga" : "Karaṇa", cells: [mp2 ? mp2.name : "—", fp ? fp.name : "—", bp ? bp.name : "—"] }];
+      var kp = A.ks.panch ? (isY ? A.ks.panch.yoga : A.ks.panch.karana) : null;
+      rows = [{ k: isY ? "Yoga" : "Karaṇa", cells: [mp2 ? mp2.name : "—", fp ? fp.name : "—", bp ? bp.name : "—", kp ? kp.name : "—"] }];
       verdict = (isY
         ? "A yoga is named from the <b>sum</b> of the Sun's and the Moon's longitudes, in 27 parts of 13°20′. Unlike the " +
           "tithi it does not cancel the sidereal zero — it counts it twice — so each engine's own ayanāṃśa matters here twice over."
         : "A karaṇa is half a tithi — 6° of the Moon's elongation from the Sun — so, like the tithi, it is free of the " +
           "sidereal zero; being twice as fine, a small difference in either luminary changes it twice as often.") +
-        " The modern almanac names the limb running at local sunrise, as a pañcāṅga does; the siddhāntic engines name it at their own sunrise.";
-      return render(["Question", "modern", "fitted", "as written"], rows, false);
+        " The modern almanac names the limb running at local sunrise, as a pañcāṅga does; the siddhāntic engines name it at their own sunrise; Kālasetu at the almanac's sunrise, in this page's frame.";
+      return render(["Question", "modern", "fitted", "as written", "Kālasetu"], rows, false);
     }
 
     if (ST.q === "sunrise") {
@@ -389,14 +449,14 @@
       var sr = function (k) { return withTier(k, function () { return S.sunriseSunset(ms, ST.place); }); };
       var fs = sr("fit"), bs = sr("bare");
       rows = [{ k: "Sunrise", cells: [clock(md2 && md2.sunrise), clock(fs && fs.sunrise), clock(bs && bs.sunrise),
-                                       minutesApart(fs && fs.sunrise, md2 && md2.sunrise), minutesApart(bs && bs.sunrise, md2 && md2.sunrise)] },
+                                       NA, minutesApart(fs && fs.sunrise, md2 && md2.sunrise), minutesApart(bs && bs.sunrise, md2 && md2.sunrise)] },
               { k: "Sunset", cells: [clock(md2 && md2.sunset), clock(fs && fs.sunset), clock(bs && bs.sunset),
-                                      minutesApart(fs && fs.sunset, md2 && md2.sunset), minutesApart(bs && bs.sunset, md2 && md2.sunset)] }];
+                                      NA, minutesApart(fs && fs.sunset, md2 && md2.sunset), minutesApart(bs && bs.sunset, md2 && md2.sunset)] }];
       verdict = "Times are local to " + esc(ST.place.n || "the chosen place") + ". The modern almanac takes the upper limb of " +
         "the Sun with refraction, as printed almanacs do; the Sūrya Siddhānta finds sunrise from the Sun's declination and the " +
         "day-length its latitude gives, through its own equation of time, without refraction — so a few minutes between them " +
-        "comes from the two definitions as much as from the two Suns.";
-      return render(["Question", "modern", "fitted", "as written", "fitted − modern", "written − modern"], rows, false);
+        "comes from the two definitions as much as from the two Suns. Kālasetu places the grahas only; for sunrise it uses the modern computation.";
+      return render(["Question", "modern", "fitted", "as written", "Kālasetu", "fitted − modern", "written − modern"], rows, false);
     }
 
     if (ST.q === "lagna") {
@@ -407,28 +467,28 @@
                                  tzHours: tzOf(), lat: ST.place.lat, lon: ST.place.lon }); } catch (e) {}
       var sl = function (k) { return withTier(k, function () { var L = S.lagna(ms, ST.place); return L ? L.lon : null; }); };
       var fl = sl("fit"), bl = sl("bare");
-      rows = [{ k: "Lagna", cells: [ml == null ? "—" : dm(ml), fl == null ? "—" : dm(fl), bl == null ? "—" : dm(bl)] }];
+      rows = [{ k: "Lagna", cells: [ml == null ? "—" : dm(ml), fl == null ? "—" : dm(fl), bl == null ? "—" : dm(bl), NA] }];
       var sameSign = ml != null && fl != null && bl != null &&
         Math.floor(ml / 30) === Math.floor(fl / 30) && Math.floor(ml / 30) === Math.floor(bl / 30);
       verdict = (sameSign ? "<b>All three put the same sign rising.</b> " : "<b>The rising sign differs between them.</b> ") +
         "The modern lagna is where the horizon cuts the ecliptic, from sidereal time; the Sūrya Siddhānta walks forward from " +
         "sunrise through its table of the signs' rising times. The lagna moves about a degree every four minutes, so a few " +
-        "minutes' difference in sunrise is about a degree here. Each is shown in its own sidereal frame.";
-      return render(["Question", "modern", "fitted", "as written"], rows, false);
+        "minutes' difference in sunrise is about a degree here. Each is shown in its own sidereal frame. Kālasetu does not compute a lagna; a chart cast with it takes the modern one.";
+      return render(["Question", "modern", "fitted", "as written", "Kālasetu"], rows, false);
     }
 
     if (ST.q === "sankranti") {
       var sgn = function (lonF) { return function (t) { var L = lonF(t); return L == null ? null : Math.floor(norm(L) / 30); }; };
       var mS = nextChange(sgn(modLonL("Sūrya")), ms, DAYMS, 40 * DAYMS);
       var sS = function (k) { return withTier(k, function () { return nextChange(sgn(ssLon("Sūrya")), ms, DAYMS, 40 * DAYMS); }); };
-      var fS = sS("fit"), bS = sS("bare");
+      var fS = sS("fit"), bS = sS("bare"), kS = nextChange(sgn(ksLon("Sūrya")), ms, DAYMS, 40 * DAYMS);
       var cell = function (x) { return x ? RS[x.from] + " → " + RS[x.to] + ", " + stamp(x.at) : "—"; };
-      rows = [{ k: "Next saṃkrānti", cells: [cell(mS), cell(fS), cell(bS)] },
-              { k: "Difference from modern", cells: ["", minutesApart(fS && fS.at, mS && mS.at), minutesApart(bS && bS.at, mS && mS.at)] }];
+      rows = [{ k: "Next saṃkrānti", cells: [cell(mS), cell(fS), cell(bS), cell(kS)] },
+              { k: "Difference from modern", cells: ["", minutesApart(fS && fS.at, mS && mS.at), minutesApart(bS && bS.at, mS && mS.at), minutesApart(kS && kS.at, mS && mS.at)] }];
       verdict = "A saṃkrānti is the moment the Sun enters the next sidereal sign — the start of a solar month. The Sun moves " +
         "about a degree a day, so each degree of difference in its longitude, or in the sidereal zero, moves the saṃkrānti by " +
-        "about a day. " + frameNote() + "Times are local.";
-      return render(["Question", "modern", "fitted", "as written"], rows, false);
+        "about a day. " + frameNote() + "Kālasetu's Sun is in Samanvaya–Ecliptic, so its saṃkrānti also carries that zero's difference from the page's. Times are local.";
+      return render(["Question", "modern", "fitted", "as written", "Kālasetu"], rows, false);
     }
 
     if (ST.q === "syzygy") {
@@ -439,12 +499,15 @@
         var sun = ssLon("Sūrya"), moon = ssLon("Candra");
         return nextElong(function (t) { return norm(moon(t) - sun(t)); }, ms, want); }); };
       var f0 = sy("fit", 0), b0 = sy("bare", 0), f180 = sy("fit", 180), b180 = sy("bare", 180);
-      rows = [{ k: "Next amāvāsyā (new moon)", cells: [stamp(mod0), stamp(f0), stamp(b0), minutesApart(f0, mod0), minutesApart(b0, mod0)] },
-              { k: "Next pūrṇimā (full moon)", cells: [stamp(mod180), stamp(f180), stamp(b180), minutesApart(f180, mod180), minutesApart(b180, mod180)] }];
+      var kel = function (t) { var a = KS ? KS.longitude("Candra", t) : null, c = KS ? KS.longitude("Sūrya", t) : null;
+        return (a == null || c == null) ? null : norm(a - c); };
+      var k0 = nextElong(kel, ms, 0), k180 = nextElong(kel, ms, 180);
+      rows = [{ k: "Next amāvāsyā (new moon)", cells: [stamp(mod0), stamp(f0), stamp(b0), stamp(k0), minutesApart(f0, mod0), minutesApart(b0, mod0), minutesApart(k0, mod0)] },
+              { k: "Next pūrṇimā (full moon)", cells: [stamp(mod180), stamp(f180), stamp(b180), stamp(k180), minutesApart(f180, mod180), minutesApart(b180, mod180), minutesApart(k180, mod180)] }];
       verdict = "New and full moon are the instants the Moon's elongation from the Sun reaches 0° and 180°. Like the tithi " +
         "they are free of the sidereal zero. The Moon gains on the Sun about 12° a day, so each degree of difference between " +
         "two engines' elongations is about two hours on the clock. Times are local.";
-      return render(["Question", "modern", "fitted", "as written", "fitted − modern", "written − modern"], rows, false);
+      return render(["Question", "modern", "fitted", "as written", "Kālasetu", "fitted − modern", "written − modern", "Kālasetu − modern"], rows, false);
     }
 
     if (ST.q === "eclipse") {
@@ -466,27 +529,28 @@
         return e ? stamp(e.at) + (e.kind ? " · " + e.kind : (e.magnitude != null ? " · magnitude " + e.magnitude.toFixed(2) : ""))
                  : "none in the next 4 years";
       };
-      rows = [{ k: "Next lunar eclipse", cells: [w2(mL), w2(fE.L), w2(bE.L)] },
-              { k: "Next solar eclipse seen here", cells: [w2(mSo), w2(fE.So), w2(bE.So)] }];
+      rows = [{ k: "Next lunar eclipse", cells: [w2(mL), w2(fE.L), w2(bE.L), "not computed"] },
+              { k: "Next solar eclipse seen here", cells: [w2(mSo), w2(fE.So), w2(bE.So), "not computed"] }];
       verdict = "Each engine searches forward from the chosen moment. An eclipse needs the Moon near its node at a new or full " +
         "moon, so the result depends on where each engine places the node as well as on the two luminaries; the siddhāntic " +
         "search uses the text's own eclipse rules, including its simplified parallax for a solar eclipse at your place. Where " +
-        "one engine finds an eclipse another does not, both answers are shown as found. The siddhāntic search looks four years ahead.";
-      return render(["Question", "modern", "fitted", "as written"], rows, false);
+        "one engine finds an eclipse another does not, both answers are shown as found. The siddhāntic search looks four years ahead. " +
+        "Kālasetu carries no eclipse search of its own.";
+      return render(["Question", "modern", "fitted", "as written", "Kālasetu"], rows, false);
     }
 
     /* vāra */
     var fv = A.fit.panch ? A.fit.panch.vara : null;
     var utc = new Date(ms).getUTCDay();
     rows = [{ k: "Vāra", cells: [DAYS[utc], fv ? fv.english : "—",
-                                 fv ? fv.english : "—"] }];
+                                 fv ? fv.english : "—", DAYS[utc]] }];
     verdict = "The weekday is the one limb that carries <b>no position at " +
       "all</b>: it is the ahargaṇa — the count of days since the epoch — " +
       "modulo seven. So the siddhānta and a modern calendar agree on it " +
       "always, and will go on agreeing however far the longitudes drift. " +
       "Both siddhāntic columns are identical here for the same reason: " +
-      "correcting the constants cannot change a day count.";
-    return render(["Question", "modern", "fitted", "as written"], rows, false);
+      "correcting the constants cannot change a day count. Kālasetu counts the same civil days.";
+    return render(["Question", "modern", "fitted", "as written", "Kālasetu"], rows, false);
 
     function render(heads, rows, gaps) {
       host.innerHTML = '<div class="aytabwrap"><table class="aytab"><thead><tr>' +
@@ -513,35 +577,46 @@
     if (!host) return;
     var from = +$("el-from").value, to = +$("el-to").value, N = +$("el-n").value;
     if (!(to > from)) return;
-    var hit = { nak: 0, nakFit: 0, tithi: 0, tithiNear: 0, vara: 0, yoga: 0, karana: 0, sunSign: 0, n: 0 };
-    var gap = { fit: [], bare: [] };
+    var hit = { nak: 0, nakFit: 0, tithi: 0, tithiNear: 0, vara: 0, yoga: 0, karana: 0, sunSign: 0, n: 0,
+                nakKs: 0, tithiKs: 0, karanaKs: 0 };
+    var gap = { fit: [], bare: [], ks: [] };
     for (var i = 0; i < N; i++) {
       /* spread across the span AND across the year, so neither the drift nor
          the annual term is aliased away */
       var frac = i / Math.max(1, N - 1);
-      var ms = Date.UTC(Math.round(from + (to - from) * frac), 0, 1) +
-               ((i * 137) % 365) * 86400000 + 6 * 3600000;
-      var m = modAt(ms), f = ssAt("fit", ms), b = ssAt("bare", ms);
+      /* setUTCFullYear, not Date.UTC: Date.UTC reads 0–99 as 1900–1999 */
+      var d0 = new Date(Date.UTC(2000, 0, 1)); d0.setUTCFullYear(Math.round(from + (to - from) * frac));
+      var ms = d0.getTime() + ((i * 137) % 365) * 86400000 + 6 * 3600000;
+      var m = modAt(ms), f = ssAt("fit", ms), b = ssAt("bare", ms), q = ksAt(ms, m.panch && m.panch.sunrise);
       if (!m.panch || !f.panch || !b.panch) continue;
       hit.n++;
       var mn = m.panch.at && m.panch.at.nak ? m.panch.at.nak.name : null;
       if (mn && b.panch.nakshatra.name === mn) hit.nak++;
       if (mn && f.panch.nakshatra.name === mn) hit.nakFit++;
+      if (mn && q.panch && q.panch.nakshatra.name === mn) hit.nakKs++;
       var mt = modTithi(m.panch);
       if (mt != null) {
         var d = Math.abs(b.panch.tithi.n - mt);
         if (d === 0) hit.tithi++;
         if (d <= 1 || d >= 29) hit.tithiNear++;
+        if (q.panch && q.panch.tithi.n === mt) hit.tithiKs++;
       }
       if (b.panch.vara.i === new Date(ms).getUTCDay()) hit.vara++;
       if (m.panch.at && m.panch.at.yoga && b.panch.yoga && m.panch.at.yoga.name === b.panch.yoga.name) hit.yoga++;
-      if (m.panch.at && m.panch.at.karana && b.panch.karana && m.panch.at.karana.name === b.panch.karana.name) hit.karana++;
+      /* the almanac spells the fifth movable karaṇa "Garaja", the Sūrya
+         Siddhānta engine "Gara" — one karaṇa, two spellings, which this
+         comparison used to count as a disagreement */
+      var kn = function (n) { return n === "Garaja" ? "Gara" : n; };
+      if (m.panch.at && m.panch.at.karana && b.panch.karana && kn(m.panch.at.karana.name) === kn(b.panch.karana.name)) hit.karana++;
+      if (m.panch.at && m.panch.at.karana && q.panch && kn(m.panch.at.karana.name) === kn(q.panch.karana.name)) hit.karanaKs++;
       if (m.lon["Sūrya"] != null && b.lon["Sūrya"] != null &&
           Math.floor(norm(m.lon["Sūrya"]) / 30) === Math.floor(norm(b.lon["Sūrya"]) / 30)) hit.sunSign++;
       if (m.lahiri["Candra"] != null) {
         gap.fit.push(Math.abs(sdiff(f.lon["Candra"], m.lahiri["Candra"])) * 60);
         gap.bare.push(Math.abs(sdiff(b.lon["Candra"], m.lahiri["Candra"])) * 60);
       }
+      if (q.lon["Candra"] != null && m.sam["Candra"] != null)
+        gap.ks.push(Math.abs(sdiff(q.lon["Candra"], m.sam["Candra"])) * 60);
     }
     if (!hit.n) { host.innerHTML = ""; return; }
     var pc = function (k) { return (hit[k] / hit.n * 100).toFixed(0) + "%"; };
@@ -567,6 +642,13 @@
       ["the Sun's rāśi, bare text", pc("sunSign"),
        "a 30° division of the Sun alone — the solar month"]
     ];
+    if (KS) ROWS.push(
+      ["the nakṣatra, Kālasetu", pc("nakKs"),
+       "read in this page's frame and at the almanac's sunrise, as a chart cast with it would be"],
+      ["the tithi exactly, Kālasetu", pc("tithiKs"),
+       "frame-free, at the almanac's sunrise"],
+      ["the karaṇa, Kālasetu", pc("karanaKs"),
+       "half a tithi, frame-free, at the almanac's sunrise"]);
     host.innerHTML = '<div class="aytabwrap"><table class="aytab"><thead><tr>' +
       "<th>Agrees with the modern engine on…</th><th>rate</th><th></th>" +
       "<th>why</th></tr></thead><tbody>" + ROWS.map(function (r) {
@@ -584,7 +666,9 @@
         rms(gap.fit).toFixed(0) + "′</b> in the fitted tier. Adjusting constants brings the Sun about " +
         "forty times closer to the modern figure but barely moves the Moon, " +
         "because the two lunar terms the modern theory contains are absent " +
-        "from this one — which is why the tithi rate hardly moves either.";
+        "from this one — which is why the tithi rate hardly moves either." +
+        (gap.ks.length ? " Kālasetu, which carries those terms, has its Moon <b>" + rms(gap.ks).toFixed(2) +
+          "′</b> from the modern one over the same sample, in its own frame." : "");
     }
   }
 
@@ -613,22 +697,26 @@
     var M = {};
     (AC.modern.perBody || []).forEach(function (b) { M[b.sa] = b; });
     var R = FIT.residuals || {};
+    var KD = window.__KALASETU_DATA, KR = (KD && KD.residuals) || {};
     function rowErr(sa) {
       var m = M[sa], r = R[sa] || {};
       return {
         mod: m ? { t: m.lonRms, w: m.lonWorst } : null,                         /* arcsec */
         fit: r.holdout ? { t: r.holdout.rms * 60, w: r.holdout.worst * 60 } : null,
-        bare: r.bare ? { t: r.bare.rms * 60, w: r.bare.worst * 60 } : null
+        bare: r.bare ? { t: r.bare.rms * 60, w: r.bare.worst * 60 } : null,
+        /* Kālasetu's file is already in arcminutes, and its figures are held
+           back across 3600 BCE – 3600 CE, not 1800–2200 */
+        ks: (KR[sa] && KR[sa].holdout) ? { t: KR[sa].holdout.rms * 60, w: KR[sa].holdout.worst * 60 } : null
       };
     }
     function cell(e) { return e ? ang(e.t) + ' <span class="elw">(worst ' + ang(e.w) + ")</span>" : "—"; }
     var h = '<div class="eltblwrap"><table class="tbl elerr"><thead><tr><th>Graha</th>' +
       "<th>modern<br><small>typical (worst)</small></th><th>fitted<br><small>typical (worst)</small></th>" +
-      "<th>as written<br><small>typical (worst)</small></th></tr></thead><tbody>";
+      "<th>as written<br><small>typical (worst)</small></th><th>Kālasetu<br><small>typical (worst), 3600 BCE – 3600 CE</small></th></tr></thead><tbody>";
     SA7.forEach(function (sa) {
       var e = rowErr(sa);
       h += "<tr><td><b>" + sa + "</b> <small>" + EN[sa] + "</small></td><td>" + cell(e.mod) +
-        "</td><td>" + cell(e.fit) + "</td><td>" + cell(e.bare) + "</td></tr>";
+        "</td><td>" + cell(e.fit) + "</td><td>" + cell(e.bare) + "</td><td>" + cell(e.ks) + "</td></tr>";
     });
     /* THE NODE. Rāhu and Ketu are fitted too (Ketu is Rāhu + 180°, so one row
        serves both). The modern column has no error to show: the modern MEAN
@@ -637,23 +725,29 @@
     if (R["Rāhu"]) {
       var en = rowErr("Rāhu");
       h += "<tr><td><b>Rāhu · Ketu</b> <small>mean node</small></td>" +
-        '<td><span class="elw">the reference</span></td><td>' + cell(en.fit) + "</td><td>" + cell(en.bare) + "</td></tr>";
+        '<td><span class="elw">the reference</span></td><td>' + cell(en.fit) + "</td><td>" + cell(en.bare) + "</td><td>" + cell(en.ks) + "</td></tr>";
+    }
+    if (KR["Rāhu (true)"] && KR["Rāhu (true)"].holdout) {
+      var kt = KR["Rāhu (true)"].holdout;
+      h += "<tr><td><b>Rāhu · Ketu</b> <small>true node</small></td>" +
+        '<td><span class="elw">the reference</span></td><td>mean node only</td><td>mean node only</td><td>' +
+        cell({ t: kt.rms * 60, w: kt.worst * 60 }) + "</td></tr>";
     }
     h += "</tbody></table></div>";
 
     h += '<h4 class="elh4">What the typical error changes</h4>' +
       '<div class="eltblwrap"><table class="tbl elerr"><thead><tr><th>Graha</th>' +
-      "<th>modern</th><th>fitted</th><th>as written</th></tr></thead><tbody>" +
-      '<tr><td colspan="4" class="elsub">The date a graha changes sign, nakṣatra or pāda moves by about…</td></tr>';
+      "<th>modern</th><th>fitted</th><th>as written</th><th>Kālasetu</th></tr></thead><tbody>" +
+      '<tr><td colspan="5" class="elsub">The date a graha changes sign, nakṣatra or pāda moves by about…</td></tr>';
     SA7.forEach(function (sa) {
       var e = rowErr(sa), mm = MEANMOT[sa];
       function t(x) { return x ? span(x.t / 3600 / mm) : "—"; }
-      h += "<tr><td><b>" + sa + "</b></td><td>" + t(e.mod) + "</td><td>" + t(e.fit) + "</td><td>" + t(e.bare) + "</td></tr>";
+      h += "<tr><td><b>" + sa + "</b></td><td>" + t(e.mod) + "</td><td>" + t(e.fit) + "</td><td>" + t(e.bare) + "</td><td>" + t(e.ks) + "</td></tr>";
     });
     if (R["Rāhu"]) {
       var en2 = rowErr("Rāhu"), mn = MEANMOT["Rāhu"];
       function tn(x) { return x ? span(x.t / 3600 / mn) : "—"; }
-      h += "<tr><td><b>Rāhu · Ketu</b></td><td>—</td><td>" + tn(en2.fit) + "</td><td>" + tn(en2.bare) + "</td></tr>";
+      h += "<tr><td><b>Rāhu · Ketu</b></td><td>—</td><td>" + tn(en2.fit) + "</td><td>" + tn(en2.bare) + "</td><td>" + tn(en2.ks) + "</td></tr>";
     }
     /* the Moon carries the pañcāṅga and the daśā clock */
     var em = rowErr("Candra"), es = rowErr("Sūrya");
@@ -666,10 +760,10 @@
     function dasha(k) { var a = em[k]; return a ? span(a.t * rate) : "—"; }
     function pada(k) { var a = em[k]; if (!a) return "—"; var v = 100 * a.t / 12000;
       return (v < 1 ? "under 1%" : Math.round(v) + "%") + " of a pāda"; }
-    h += '<tr><td colspan="4" class="elsub">Through the Moon:</td></tr>' +
-      "<tr><td>A tithi’s end</td><td>" + tith("mod") + "</td><td>" + tith("fit") + "</td><td>" + tith("bare") + "</td></tr>" +
-      "<tr><td>The Moon’s place, as a share of one pāda (3°20′)</td><td>" + pada("mod") + "</td><td>" + pada("fit") + "</td><td>" + pada("bare") + "</td></tr>" +
-      "<tr><td>Every Viṃśottarī daśā date</td><td>" + dasha("mod") + "</td><td>" + dasha("fit") + "</td><td>" + dasha("bare") + "</td></tr>" +
+    h += '<tr><td colspan="5" class="elsub">Through the Moon:</td></tr>' +
+      "<tr><td>A tithi’s end</td><td>" + tith("mod") + "</td><td>" + tith("fit") + "</td><td>" + tith("bare") + "</td><td>" + tith("ks") + "</td></tr>" +
+      "<tr><td>The Moon’s place, as a share of one pāda (3°20′)</td><td>" + pada("mod") + "</td><td>" + pada("fit") + "</td><td>" + pada("bare") + "</td><td>" + pada("ks") + "</td></tr>" +
+      "<tr><td>Every Viṃśottarī daśā date</td><td>" + dasha("mod") + "</td><td>" + dasha("fit") + "</td><td>" + dasha("bare") + "</td><td>" + dasha("ks") + "</td></tr>" +
       "</tbody></table></div>";
     host.innerHTML = h;
     var n = $("el-errnote");
@@ -1007,6 +1101,12 @@
        "Sun " + byName("Sūrya").measuredRms.toFixed(2) + "′, Moon " +
        byName("Candra").measuredRms.toFixed(0) + "′ — study only, not for casting",
        "siddhanta-measured-verify"],
+      ["A chart for any date from 3600 BCE to 3600 CE", "Kālasetu",
+       (function () { var K = (window.__KALASETU_DATA || {}).residuals || {};
+         var f = function (n) { return K[n] && K[n].holdout ? K[n].holdout.rms.toFixed(2) + "′" : "—"; };
+         return "Sun " + f("Sūrya") + ", Moon " + f("Candra") + ", Saturn " + f("Śani") +
+           " from the modern engine across the whole span, on moments the fit never saw"; })(),
+       "kalasetu-verify"],
       ["Which sidereal zero to measure from", "a convention, not an engine",
        "the " + AC.ayanamsa.modes.length + " modes span " +
        AC.ayanamsa.spreadDeg + "°, which no accuracy figure can narrow",
@@ -1041,6 +1141,7 @@
     try { FIT = JSON.parse($("data-siddhanta-measured").textContent); }
     catch (e) { FIT = null; }
     S = window.SSEngine;
+    KS = (window.KalasetuEngine && window.KalasetuEngine.isFitted()) ? window.KalasetuEngine : null;
     if (!AC || !FIT || !FIT.lahiri || !S) {
       $("el-answer").innerHTML = '<p class="swfail">The measured data or the ' +
         "siddhāntic engine did not load, so this page has nothing to compare.</p>";

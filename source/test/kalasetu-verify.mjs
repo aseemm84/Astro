@@ -259,6 +259,71 @@ head("Engine Lab shows the measurement");
   is(errs.length === 0, `no page errors (${errs.join("; ")})`);
 }
 
+head("The Kālasetu page");
+{
+  const { p, errs } = await page("kalasetu.html");
+  await p.waitForFunction(() => window.__ksPage && document.querySelector("#ks-skytab tbody tr"), null, { timeout: 60000 });
+  const r = await p.evaluate(() => ({
+    sky: document.querySelectorAll("#ks-skytab tbody tr").length,
+    wheel: document.querySelectorAll("#ks-wheel .ks-dot").length,
+    steps: document.querySelectorAll("#ks-steps li").length,
+    bands: document.querySelectorAll("#ks-bands rect").length,
+    moon: document.querySelectorAll("#ks-moontab tbody tr").length,
+    measure: document.querySelectorAll("#ks-measure tbody tr").length,
+    charts: ["ks-gi", "ks-dt", "ks-node"].every(id => document.querySelector("#" + id + " path")),
+    cost: document.querySelectorAll("#ks-cost tbody tr").length,
+    nav: !!document.querySelector('nav a[href="kalasetu.html"]'),
+    wide: document.documentElement.scrollWidth > window.innerWidth + 1 }));
+  is(r.sky === 10 && r.wheel === 9, "the sky table places the nine grahas and the true node, and the wheel draws all nine");
+  is(r.steps >= 5 && r.bands === 12 && r.moon === 36 && r.measure === 8 && r.cost === 9,
+     "the steps, the twelve bands, all 36 lunar terms, the measurement and the cost table render");
+  is(r.charts, "the great-inequality, ΔT and node charts draw");
+  is(r.nav, "the page is in the site navigation");
+  /* a BCE moment, typed in, through the page's own controls */
+  await p.evaluate(() => { const set = (id, v) => { const el = document.getElementById(id); el.value = v; el.dispatchEvent(new Event("change", { bubbles: true })); };
+    set("ks-era", "BCE"); set("ks-year", "3102"); set("ks-month", "2"); set("ks-day", "18"); set("ks-time", "00:00"); });
+  const bce = await p.evaluate(() => ({ note: document.getElementById("ks-skynote").textContent,
+    diffs: [...document.querySelectorAll("#ks-skytab tbody tr")].map(tr => parseFloat(tr.lastElementChild.textContent)) }));
+  is(/3102 BCE/.test(bce.note) && bce.diffs.every(d => Math.abs(d) < 15),
+     `a BCE date typed into the page is placed, and every graha is within ${Math.max(...bce.diffs.map(Math.abs)).toFixed(1)}′ of the modern engine`);
+  /* the step-through ends on the engine's own number */
+  const st = await p.evaluate(() => { const g = document.getElementById("ks-graha"); g.value = "Śani"; g.dispatchEvent(new Event("change"));
+    const li = [...document.querySelectorAll("#ks-steps li")]; return { n: li.length, last: li[li.length - 1].textContent }; });
+  is(st.n >= 8 && /Samanvaya–Ecliptic/.test(st.last), `Śani's working runs to the answer in ${st.n} steps`);
+  /* switching off Candraśekhara's terms makes the Moon measurably worse */
+  const mo = await p.evaluate(() => { const before = document.getElementById("ks-moonerr").textContent;
+    const c = document.querySelector('[data-ks-group="cs"]'); c.checked = false; c.dispatchEvent(new Event("change", { bubbles: true }));
+    return [before, document.getElementById("ks-moonerr").textContent]; });
+  const num = t => { const m = t.match(/typically ([\d.]+)(°|′)/); return m ? (+m[1]) * (m[2] === "°" ? 60 : 1) : NaN; };
+  is(num(mo[1]) > 20 * num(mo[0]), `without Candraśekhara's three terms the Moon goes from ${num(mo[0]).toFixed(2)}′ to ${num(mo[1]).toFixed(0)}′`);
+  is(errs.length === 0, `no page errors (${errs.join("; ")})`);
+  const ph = await browser.newPage({ viewport: { width: 400, height: 900 } });
+  await ph.goto("file://" + ROOT + "/kalasetu.html");
+  await ph.waitForFunction(() => window.__ksPage, null, { timeout: 60000 });
+  is(await ph.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), "at phone width the page does not scroll sideways");
+}
+
+head("Engine Lab carries Kālasetu as its fourth engine");
+{
+  const { p, errs } = await page("engine-lab.html");
+  await p.waitForFunction(() => document.querySelector("#el-answer table"), null, { timeout: 60000 });
+  const cols = await p.evaluate(() => { const out = {};
+    for (const q of ["lon", "rashi", "d9", "retro", "tithi", "nak", "yoga", "karana", "vara", "sunrise", "lagna", "sankranti", "syzygy"]) {
+      const s = document.getElementById("el-q"); s.value = q; s.dispatchEvent(new Event("change"));
+      out[q] = [...document.querySelectorAll("#el-answer thead th")].map(t => t.textContent); }
+    return out; });
+  is(Object.values(cols).every(h => h.includes("Kālasetu")), "every question carries a Kālasetu column");
+  const err = await p.evaluate(() => [...document.querySelectorAll("#el-errtab thead th")].some(t => /Kālasetu/.test(t.textContent)));
+  is(err, "the error table carries Kālasetu");
+  await p.evaluate(() => { document.getElementById("el-n").value = "120"; document.querySelector('[data-el="roll"]').click(); });
+  await p.waitForFunction(() => /Kālasetu/.test(document.getElementById("el-rates").textContent), null, { timeout: 60000 });
+  const rates = await p.evaluate(() => Object.fromEntries([...document.querySelectorAll("#el-rates tbody tr")]
+    .map(r => [r.children[0].textContent, parseFloat(r.children[1].textContent)])));
+  is(rates["the nakṣatra, Kālasetu"] >= 98 && rates["the tithi exactly, Kālasetu"] >= 98,
+     `over 1900–2100 Kālasetu names the almanac's nakṣatra ${rates["the nakṣatra, Kālasetu"]}% and tithi ${rates["the tithi exactly, Kālasetu"]}% of the time`);
+  is(errs.length === 0, `no page errors (${errs.join("; ")})`);
+}
+
 await browser.close();
 console.log(`\n${pass} passed, ${fail} failed`);
 if (fail) { console.log("FAIL"); process.exit(1); }

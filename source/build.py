@@ -762,6 +762,12 @@ def build_shared():
         # reason: a second Sūrya Siddhānta would eventually disagree with the
         # one on siddhanta.html, and the whole page is an argument about
         # engines agreeing.
+        # kalasetu.html, the fourth engine's own page. Its "Measure it yourself"
+        # compares against the fitted Sūrya Siddhānta tier, so it carries its own
+        # ss-engine.js for the same reason engine-lab.js does: a page flipping
+        # tiers on its copy cannot move the site engine.
+        "kalasetu.js": brandify(jsread(SRC, "js", "ss-engine.js") + "\n" +
+                                jsread(SRC, "js", "kalasetu-page.js")),
         "engine-lab.js": brandify(jsread(SRC, "js", "ss-engine.js") + "\n" +
                                   jsread(SRC, "js", "engine-lab-ui.js") + "\n" +
                                   jsread(SRC, "js", "kalasetu-lab.js")),

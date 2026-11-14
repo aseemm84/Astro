@@ -185,13 +185,22 @@
   "eyebrow": "Sūrya Siddhānta · modern ephemeris"
  },
  "engine-lab": {
-  "title": "Engine lab — three engines, one question &mdash; {{BRAND}}",
+  "title": "Engine lab — four engines, one question &mdash; {{BRAND}}",
   "h1": "Engine lab",
-  "sub": "The modern ephemeris, the Sūrya Siddhānta and its fitted tier put to the same questions — and what their disagreements are actually worth.",
+  "sub": "The modern ephemeris, the Sūrya Siddhānta, its fitted tier and Kālasetu put to the same questions — and what their disagreements are actually worth.",
   "layout": "",
   "has_aside": true,
   "desc": "Every engine in the project asked the same question at once — where the grahas are, which nakṣatra, which tithi, which daśā — with the agreement rate measured over any span, a converter that turns arcseconds into fractions of a division and days of Viṃśottarī, and one logarithmic ruler showing that the conventions disagree by degrees where the engines disagree by arcminutes.",
-  "eyebrow": "Sūrya Siddhānta · modern ephemeris"
+  "eyebrow": "Sūrya Siddhānta · Kālasetu · modern ephemeris"
+ },
+ "kalasetu": {
+  "title": "Kālasetu Siddhānta — the bridge across time &mdash; {{BRAND}}",
+  "h1": "Kālasetu Siddhānta",
+  "sub": "The site's fourth engine: the Sūrya Siddhānta's own count of time carrying a modern geometry, fitted across 3600 BCE – 3600 CE — computed live, step by step, on any day in seven thousand years.",
+  "layout": "",
+  "has_aside": true,
+  "desc": "Kālasetu, the fourth engine: the Sūrya Siddhānta's time-count with a modern geometry, fitted in the Samanvaya–Ecliptic frame across 3600 BCE – 3600 CE. Place the nine grahas on any day in the span, follow one longitude from the day count to the answer, measure its accuracy band by band, switch the Moon's terms on and off, and see the great inequality, ΔT and the true node drawn across the millennia.",
+  "eyebrow": "Kālasetu · the fourth engine"
  },
  "simulation": {
   "title": "Simulation — what if the Moon moved? — {{BRAND}}",

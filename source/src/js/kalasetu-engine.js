@@ -142,6 +142,13 @@
     [1,0,0,0,-1],[2,0,0,0,-1],[1,0,0,0,-2],[2,0,0,0,-2],[3,0,0,0,-2],[3,0,0,0,-1],[4,0,0,0,-2],
     [2,0,0,0,-3],[3,0,0,0,-4],[4,0,0,0,-3],[0,1,0,0,-1]];
   var PERT = { "Guru": GS, "Śani": GS, "Maṅgala": MARS, "Budha": [], "Śukra": [] };
+  /* Some of these arguments are close to the body's own mean longitude and
+     anomaly, so they and the orbit can trade against one another: the sum is
+     what the fit measures, and it is held to arcminutes, but an individual
+     term is not a physical amplitude and is not presented as one. Dropping
+     those terms halved Śani's accuracy, and penalising their size (a ridge)
+     cost up to 2′ without making them physical; see fit-kalasetu.mjs. */
+  function active(b, i) { return !!PERT[b][i]; }
 
   /* the parameter names each body carries — the fitter and the data file use these */
   function keysOf(b) {
@@ -155,8 +162,8 @@
       LUNAR_LAT.forEach(function (_, i) { k.push("B" + i); });
       return k;
     }
-    k = ["l0","l1","l2","l3","w0","w1","w2","e0","e1","e2","a0","n0","n1","i0"];
-    (PERT[b] || []).forEach(function (_, i) { k.push("ps" + i, "pc" + i); });
+    k = ["l0","l1","l2","l3","w0","w1","w2","w3","e0","e1","e2","e3","a0","n0","n1","i0"];
+    (PERT[b] || []).forEach(function (_, i) { if (active(b, i)) k.push("ps" + i, "pc" + i); });
     return k;
   }
   var BODIES = ["Sūrya", "Rāhu", "Candra", "Budha", "Śukra", "Maṅgala", "Guru", "Śani"];
@@ -200,20 +207,24 @@
      about the Earth; for a planet, its path about the Sun. */
   function orbit(b, ahar, Tm, X) {
     var p = P[b], L = meanOf(b, ahar, Tm);
-    var w = W0[b] + p.w0 + p.w1 * Tm + p.w2 * Tm * Tm;
-    var e = E0[b] * (1 + p.e0) + (p.e1 * Tm + p.e2 * Tm * Tm) * 0.001;
+    var w = W0[b] + p.w0 + Tm * (p.w1 + Tm * (p.w2 + Tm * (p.w3 || 0)));
+    var e = E0[b] * (1 + p.e0) + Tm * (p.e1 + Tm * (p.e2 + Tm * (p.e3 || 0))) * 0.001;
     var k = kepler((L - w) * D2R, e), lam = w * D2R + k.v;
-    var T = PERT[b];
+    var T = PERT[b], rec = TR ? { L: L, w: w, e: e, M: norm(L - w), eqc: k.v / D2R - norm(L - w), terms: [] } : null;
+    if (rec && rec.eqc > 180) rec.eqc -= 360; if (rec && rec.eqc < -180) rec.eqc += 360;
     if (T) for (var i = 0; i < T.length; i++) {
+      if (!active(b, i)) continue;
       var t = T[i], arg;
       if (b === "Maṅgala") arg = (t[0] * L + t[1] * X.Lj + t[4] * X.Le) * D2R;
       else arg = (t[0] * X.Lj + t[1] * X.Ls + t[4] * X.Lu) * D2R + t[2] * (L - w) * D2R;
       var f = t[3] ? Math.pow(Tm, t[3]) : 1;
       lam += f * (p["ps" + i] * Math.sin(arg) + p["pc" + i] * Math.cos(arg)) * D2R;
+      if (rec) rec.terms.push({ i: i, arg: t, deg: f * (p["ps" + i] * Math.sin(arg) + p["pc" + i] * Math.cos(arg)) });
       if (BASIS && BASIS.b === b) { BASIS.s[i] = f * Math.sin(arg); BASIS.c[i] = f * Math.cos(arg); }
     }
     if (BASIS && BASIS.b === b) lam += BASIS.dl * D2R;
     var r = (b === "Sūrya" ? 1 : A0[b] * (1 + p.a0)) * k.r;
+    if (rec) { rec.lam = norm(lam / D2R); rec.r = r; rec.pert = rec.terms.reduce(function (a, x) { return a + x.deg; }, 0); TR[b] = rec; }
     if (b === "Sūrya") return { x: r * Math.cos(lam), y: r * Math.sin(lam), z: 0, L: L, w: w };
     var node = (N0[b] + p.n0 + p.n1 * Tm) * D2R, inc = (I0[b] + p.i0) * D2R, u = lam - node;
     var xo = r * Math.cos(u), yo = r * Math.sin(u);
@@ -346,13 +357,56 @@
     BASIS = null;
     var dl = (((q1.lon - q0.lon) % 360 + 540) % 360 - 180) / h, db = (q1.lat - q0.lat) / h;
     for (i = 0; i < T.length; i++) {
+      if (!active(b, i)) continue;
       out["ps" + i] = [dl * S0[i], db * S0[i]];
       out["pc" + i] = [dl * C0[i], db * C0[i]];
     }
     return out;
   }
 
+  /* WHAT THE PAGE SHOWS STEP BY STEP. The same arithmetic as longitude(),
+     recorded as it goes, so the explanation on kalasetu.html cannot drift
+     from the number it explains: the final value is the engine's own. */
+  var TR = null;
+  function textMean(key, ahar) { return norm((EPOCH0[key] || 0) + REV[key] * 360 * ahar / CIVIL_DAYS); }
+  function trace(sa, ms) {
+    var c = ctx(ms), out = { sa: sa, ms: ms, dt: (c.Tm * 365250 + 2451545) - (ms / 86400000 + 2440587.5),
+                             ahar: c.ahar, Tm: c.Tm, inSpan: inSpan(ms) };
+    out.dt *= 86400;
+    var key = sa === "Ketu" ? "Rāhu" : sa;
+    if (REV[key] != null) {
+      out.textMean = textMean(key, c.ahar);
+      out.correction = poly(P[key], "l", c.Tm);
+      out.mean = norm(out.textMean + out.correction);
+      out.rev = REV[key];
+    }
+    if (sa === "Rāhu" || sa === "Ketu") {
+      var a = lunarArgs(ms), pr = P["Rāhu"], per = 0;
+      for (var i = 0; i < NODE_TRUE.length; i++) { var t = NODE_TRUE[i], g = t[0] * a.D + t[1] * a.M + t[2] * a.Ms + t[3] * a.F;
+        per += (pr["t" + i] || 0) * (t[5] ? Math.pow(a.Tm, t[5]) : 1) * (t[4] ? Math.cos(g) : Math.sin(g)); }
+      out.trueSecular = poly(pr, "t_", a.Tm); out.truePeriodic = per;
+      out.lon = longitude(sa, ms); out.trueLon = norm(trueNode(ms) + (sa === "Ketu" ? 180 : 0));
+      return out;
+    }
+    if (sa === "Candra") {
+      var A2 = lunarArgs(ms), pm = P["Candra"], terms = [];
+      out.apogee = norm(apogeeOf(c.ahar, c.Tm)); out.apogeeText = textMean("candraUcca", c.ahar);
+      for (var j = 0; j < LUNAR.length; j++) { var u = LUNAR[j];
+        terms.push({ i: j, arg: u, amp: pm["L" + j], deg: pm["L" + j] * Math.sin(u[0] * A2.D + u[1] * A2.M + u[2] * A2.Ms + u[3] * A2.F) }); }
+      out.terms = terms; out.args = { D: norm(A2.D / D2R), M: norm(A2.M / D2R), Ms: norm(A2.Ms / D2R), F: norm(A2.F / D2R) };
+      var mo = moon(ms); out.lon = mo.lon; out.lat = mo.lat;
+      return out;
+    }
+    if (!P[sa]) return null;
+    TR = {};
+    try { var q = body(sa, ms); out.lon = q.lon; out.lat = q.lat; out.dist = q.dist; out.orbit = TR[sa]; out.sun = TR["Sūrya"]; }
+    finally { TR = null; }
+    if (sa !== "Sūrya") out.lightDays = out.dist * 0.0057755;
+    return out;
+  }
+
   var API = {
+    trace: trace, keysAll: function () { return { LUNAR: LUNAR, NODE_TRUE: NODE_TRUE, PERT: PERT }; },
     basis: basis,
     longitude: longitude, latitude: latitude, trueNode: trueNode, setDeltaT: setDeltaT,
     hasDeltaT: function () { return !!DT; }, setData: setData, inSpan: inSpan,

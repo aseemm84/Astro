@@ -399,7 +399,8 @@ let EL;
                 ACC.siddhanta.measured.length * 2 + 3,
      "and every measured engine mark and every convention (" + r.ruler + ")");
   is(r.bands === ACC.bands.length, "all five certified bands are drawn");
-  is(r.which >= 6 && r.rates === 8, "the switchboard and the eight rates are there (" + r.rates + ")");
+  /* eight for the three original engines, three more for Kālasetu (nakṣatra, tithi, karaṇa) */
+  is(r.which >= 6 && r.rates === 11, "the switchboard and the eleven rates are there (" + r.rates + ")");
 }
 
 head("all fifteen questions, each answered by all three engines");
@@ -555,7 +556,7 @@ head("the bench's answers come from three engines and not from one");
   is(r.out.lon.length === 7, "the longitude question answers for all seven");
   is(r.out.lon.every(row => row[1] !== row[3]),
      "and no graha has the modern and the bare answers identical");
-  is(r.out.dasha.length === 3,
+  is(r.out.dasha.length === 4,
      "the daśā question answers once per engine (" + r.out.dasha.length + ")");
   /* the vāra is the limb that carries no position, so the two siddhāntic
      columns must be IDENTICAL — that is the page's stated point about it */

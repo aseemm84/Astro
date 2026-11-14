@@ -139,7 +139,8 @@ console.log("\nEngine Lab explains the three, with their real errors");
   is(r.gloss >= 6, "with a glossary of the page's terms (" + r.gloss + ")");
   /* seven grahas and, since 14 November 2026, the node: the fitted engine
      corrects Rāhu and Ketu too, so its error is reported beside the others */
-  is(r.rows === 8 && r.node, "the error table has all seven grahas and the node (" + r.rows + " rows)");
+  /* seven grahas, the mean node, and Kālasetu's true-node row */
+  is(r.rows === 9 && r.node, "the error table has all seven grahas, the node and the true node (" + r.rows + " rows)");
   is(r.dasha && r.note.length > 100, "and turns the errors into tithi, pāda and daśā consequences");
   await p.close();
 }

@@ -97,8 +97,23 @@ export const hash = s => { let h = 2166136261;
   return (h >>> 0) / 4294967296; };
 
 /* lon (and, where the body has one, lat) residuals in arcminutes */
-export function residuals(SL, b, set, withLat) {
+/* THE RIDGE. Perturbation amplitudes enter as extra residuals of
+   RIDGE × amplitude (arcminutes per degree), so a term costs something to
+   grow. Without it the near-degenerate arguments (see the engine) trade
+   against the orbit without limit: a 75° "perturbation" cancelled by its
+   neighbours, harmless to the fit and meaningless to read. Added only while
+   fitting (withRidge); every reported residual is the plain one. */
+/* Set to 0. It was tried at 6 and at 40: it shrinks the individual terms
+   but cannot make them physical (the great inequality still came out several
+   times its real size), and it cost Śani up to 2′ of accuracy. The page
+   therefore shows the planets' residuals across the span, not the terms. */
+export const RIDGE = 0;
+export function residuals(SL, b, set, withLat, withRidge) {
   const out = [];
+  if (withRidge && RIDGE && SL.params()[b]) {
+    const P = SL.params()[b];
+    for (const k of Object.keys(P)) if (/^(ps|pc)/.test(k)) out.push(RIDGE * P[k]);
+  }
   for (const s of set) {
     if (b === "Rāhu-true") { out.push(sdiff(SL.trueNode(s.ms), s.ref[b]) * 60); continue; }
     out.push(sdiff(SL.longitude(b, s.ms), s.ref[b]) * 60);
@@ -122,7 +137,7 @@ function solve(A, b) {
 }
 function lm(SL, b, keys, set, withLat, iters) {
   const P = SL.params()[b === "Rāhu-true" ? "Rāhu" : b];
-  const res = () => residuals(SL, b, set, withLat);
+  const res = () => residuals(SL, b, set, withLat, true);
   let lam = 1e-3, r = res(), f = r.reduce((p, c) => p + c * c, 0);
   for (let it = 0; it < iters; it++) {
     /* the linear amplitudes take their columns from the engine's closed-form
@@ -134,6 +149,7 @@ function lm(SL, b, keys, set, withLat, iters) {
     const J = keys.map(k => {
       if (BS && LIN.test(k)) {
         const col = [];
+        if (RIDGE && /^(ps|pc)/.test(k)) for (const kk of Object.keys(P)) if (/^(ps|pc)/.test(kk)) col.push(kk === k ? RIDGE : 0);
         for (const B of BS) { const v = B[k] || [0, 0]; col.push(v[0] * 60); if (withLat) col.push(v[1] * 60); }
         return col;
       }
