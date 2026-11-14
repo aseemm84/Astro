@@ -1163,6 +1163,14 @@
 
          Sūrya 1.0′    Guru 6.0′    Śani 7.3′    Śukra 8.4′
          Maṅgala 58′   Candra 62′   Budha 107′
+         Rāhu (and so Ketu) 0.13′, against the modern mean node
+
+     The node was added after the tier first shipped. Until then Rāhu and Ketu
+     kept the text's own constants inside an otherwise fitted chart, which put
+     them 236′ (rms) from the modern mean node — 3.9° on a 1984 chart. It
+     takes an epoch and a bīja, the same two kinds of number every other body
+     has, and is fitted to the MEAN node because the text has no other: the
+     true node's wobble is a term the theory lacks, like the Moon's evection.
 
      The split is not a surprise and it is not a shortcoming of the fit. The
      Moon's residual, regressed on the arguments of the two terms this theory
@@ -2026,7 +2034,9 @@
      time with the body's mean geocentric motion — how much earlier or later a
      sign or nakṣatra change, a tithi's end or a daśā start would be dated. */
   var MEANMOT = { "Sūrya": 0.98565, "Candra": 13.17640, "Maṅgala": 0.52403,
-                  "Budha": 0.98565, "Guru": 0.08309, "Śukra": 0.98565, "Śani": 0.03346 };
+                  "Budha": 0.98565, "Guru": 0.08309, "Śukra": 0.98565, "Śani": 0.03346,
+                  /* the mean node, moving backwards; the rate is what matters here */
+                  "Rāhu": 0.05295 };
   function span(days) {
     var d = Math.abs(days);
     if (d * 1440 < 1) return "under a minute";
@@ -2058,6 +2068,15 @@
       h += "<tr><td><b>" + sa + "</b> <small>" + EN[sa] + "</small></td><td>" + cell(e.mod) +
         "</td><td>" + cell(e.fit) + "</td><td>" + cell(e.bare) + "</td></tr>";
     });
+    /* THE NODE. Rāhu and Ketu are fitted too (Ketu is Rāhu + 180°, so one row
+       serves both). The modern column has no error to show: the modern MEAN
+       node is the published polynomial the other two are measured against, so
+       it is the reference itself rather than a measurement of the sky. */
+    if (R["Rāhu"]) {
+      var en = rowErr("Rāhu");
+      h += "<tr><td><b>Rāhu · Ketu</b> <small>mean node</small></td>" +
+        '<td><span class="elw">the reference</span></td><td>' + cell(en.fit) + "</td><td>" + cell(en.bare) + "</td></tr>";
+    }
     h += "</tbody></table></div>";
 
     h += '<h4 class="elh4">What the typical error changes</h4>' +
@@ -2069,6 +2088,11 @@
       function t(x) { return x ? span(x.t / 3600 / mm) : "—"; }
       h += "<tr><td><b>" + sa + "</b></td><td>" + t(e.mod) + "</td><td>" + t(e.fit) + "</td><td>" + t(e.bare) + "</td></tr>";
     });
+    if (R["Rāhu"]) {
+      var en2 = rowErr("Rāhu"), mn = MEANMOT["Rāhu"];
+      function tn(x) { return x ? span(x.t / 3600 / mn) : "—"; }
+      h += "<tr><td><b>Rāhu · Ketu</b></td><td>—</td><td>" + tn(en2.fit) + "</td><td>" + tn(en2.bare) + "</td></tr>";
+    }
     /* the Moon carries the pañcāṅga and the daśā clock */
     var em = rowErr("Candra"), es = rowErr("Sūrya");
     var rate = (AC.cost && AC.cost.dashaDaysPerArcsec) || 0.101;

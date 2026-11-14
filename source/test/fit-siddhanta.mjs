@@ -92,11 +92,28 @@ const REFNAME = { "Sūrya": "Sun", "Candra": "Moon", "Maṅgala": "Mars",
 const norm = x => ((x % 360) + 360) % 360;
 const sdiff = (a, b) => { const d = norm(a - b); return d > 180 ? d - 360 : d; };
 
+/* THE NODE'S REFERENCE. The fixture carries the seven grahas only, and it does
+   not need to carry the node: the modern mean node is a published polynomial
+   (Meeus, Astronomical Algorithms 2nd ed., eq. 47.7), and the chart engine
+   uses exactly this one when the reader asks for the mean node —
+   engine.js meanNodeModern(). Copied here for the same reason as LAHIRI, and
+   asserted against the engine by siddhanta-measured-verify.mjs.
+
+   The fitted tier is fitted to the MEAN node because the Sūrya Siddhānta has
+   only a mean node, and a fitted tier keeps the text's form: the true node's
+   ±1.5° wobble is a term the text does not have, exactly as the Moon's
+   evection is, and this tier does not add terms. */
+const meanNodeModern = jd => {
+  const T = (jd - 2451545.0) / 36525.0;
+  return norm(125.0445479 - 1934.1362891 * T + 0.0020754 * T * T
+              + T * T * T / 467441 - T * T * T * T / 60616000);
+};
 const samples = fx.samples.map(s => {
   const ms = (s.jdUTC - 2440587.5) * 86400000;   /* as production calls it */
   const ay = lahiriAt(s.jdUTC);
   const ref = {};
   for (const b of BODIES) ref[b] = norm(s.bodies[REFNAME[b]].lon - ay);
+  ref["Rāhu"] = norm(meanNodeModern(s.jdUTC) - ay);
   return { ms, ahar: S.ahargana(ms), ref, iso: s.iso };
 });
 /* THE SPLIT IS HASHED, NOT ALTERNATE. Taking even indices looked tidy and was
@@ -254,6 +271,16 @@ const STAGES = [
   { body: "Śani",   keys: ["epoch.Śani", "bija.Śani", "mandaOdd.Śani", "mandaEven.Śani",
                            "sighraOdd.Śani", "sighraEven.Śani", "mandocca.Śani"],
     step: [3, 10, 0.1, 0.1, 0.1, 0.1, 3] },
+  /* THE NODE, added after the fitted tier had shipped without it: Rāhu and Ketu
+     stayed on the text's own constants, so a chart cast with the fitted engine
+     had seven corrected grahas and a node 3.9° from the modern mean node (on a
+     1984 chart). The node has no equation — the text moves it uniformly — so
+     its two numbers are the two the tradition would correct: where it stood at
+     the epoch, and a bīja on its revolutions. Ketu is Rāhu + 180° by
+     construction and needs nothing of its own. Fitted last; nothing else
+     depends on it, so the seven stages above are unchanged by its presence. */
+  { body: "Rāhu",   keys: ["epoch.Rāhu", "bija.Rāhu"],
+    step: [3, 20] },
 ];
 
 const DEFAULT = k => /^(manda|sighra)(Odd|Even)\./.test(k) ? 1 : 0;
@@ -406,7 +433,8 @@ const doc = {
       "One per classical quantity: a bīja on each body's revolutions, a scale "
       + "on each manda and śīghra paridhi (which keeps the odd/even "
       + "interpolation the text prescribes and moves only its size), and an "
-      + "offset on each mandocca. Twenty-seven numbers, every one of them a "
+      + "offset on each mandocca, and for the node an epoch and a bīja. "
+      + Object.keys(P).length + " numbers, every one of them a "
       + "quantity the tradition has a name for. No free terms were added.",
     outOfSample:
       "The 400 reference samples are split by index: even fitted, odd held "

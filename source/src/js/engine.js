@@ -370,7 +370,9 @@ function pageAyan(){
    modern  the modern ephemeris (astronomy-engine), the default
    ss      the Sūrya Siddhānta as written — the text's own constants
    ssfit   the Sūrya Siddhānta's equations with constants fitted to the
-           modern sky (bīja-style corrections; see ss-engine.js)
+           modern sky (bīja-style corrections; see ss-engine.js) — the seven
+           grahas and the mean node, so Rāhu and Ketu follow the modern mean
+           node to a fraction of an arcminute
 
    A reader picks one in Settings; any page can override it for itself; a
    chart carries the engine it was cast with as part of its input, exactly as

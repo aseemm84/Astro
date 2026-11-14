@@ -14,7 +14,7 @@
    1800,
    2200
   ],
-  "generated": "2026-11-13"
+  "generated": "2026-11-14"
  },
  "modern": {
   "library": "astronomy-engine v2 (MIT), ±1′ claimed against NOVAS",
@@ -1721,7 +1721,7 @@
   "fitProvenance": {
    "fitSamples": 187,
    "holdoutSamples": 213,
-   "parameters": 46,
+   "parameters": 48,
    "notTheText": "THIS IS NOT THE SŪRYA SIDDHĀNTA'S ANSWER and must never be presented as one. It is the text's METHOD carrying measured numbers. The bare text stays selectable and unchanged; siddhanta-measured-verify.mjs asserts it is still bit-identical."
   }
  },

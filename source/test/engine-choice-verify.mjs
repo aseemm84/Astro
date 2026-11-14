@@ -132,11 +132,14 @@ console.log("\nEngine Lab explains the three, with their real errors");
     three: !!document.getElementById("three") && /as written/.test(document.querySelector(".eltbl3").textContent),
     gloss: document.querySelectorAll(".elgloss dt").length,
     rows: document.querySelectorAll("#el-errtab table.elerr")[0]?.querySelectorAll("tbody tr").length || 0,
+    node: /Rāhu · Ketu/.test((document.querySelectorAll("#el-errtab table.elerr")[0] || {}).textContent || ""),
     dasha: /daśā date/.test(document.getElementById("el-errtab").textContent),
     note: (document.getElementById("el-errnote") || {}).textContent || "" }));
   is(r.three, "a plain-words section names modern, fitted and as written");
   is(r.gloss >= 6, "with a glossary of the page's terms (" + r.gloss + ")");
-  is(r.rows === 7, "the error table has all seven grahas");
+  /* seven grahas and, since 14 November 2026, the node: the fitted engine
+     corrects Rāhu and Ketu too, so its error is reported beside the others */
+  is(r.rows === 8 && r.node, "the error table has all seven grahas and the node (" + r.rows + " rows)");
   is(r.dasha && r.note.length > 100, "and turns the errors into tithi, pāda and daśā consequences");
   await p.close();
 }

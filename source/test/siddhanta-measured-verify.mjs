@@ -188,6 +188,73 @@ head("the holdout residuals are what the data file says");
   S.bare();
 }
 
+/* ---- 2b. the node is fitted too ---------------------------------------
+   The fitted tier shipped with the seven grahas corrected and Rāhu/Ketu left
+   on the text's own constants, so a fitted chart's node sat degrees from the
+   modern mean node — 3.9° on a 15 Dec 1984 chart, found by comparing a real
+   reader's screenshots with the engine. The node is now fitted on the same
+   samples and split, with two numbers of the same classical kinds. */
+
+head("Rāhu and Ketu are fitted, out of sample, to the modern mean node");
+{
+  /* the reference polynomial the generator uses must be the chart engine's own
+     mean node, or the fit is to a different node from the one readers compare */
+  const COEF = "125.0445479-1934.1362891*T+0.0020754*T*T+T*T*T/467441-T*T*T*T/60616000";
+  const eng = readFileSync(ROOT + "/source/src/js/engine.js", "utf8");
+  const gen = readFileSync(ROOT + "/source/test/fit-siddhanta.mjs", "utf8").replace(/\s+/g, "");
+  is(eng.includes("return norm(" + COEF + ");"),
+     "engine.js meanNodeModern() is the published mean-node polynomial");
+  is(gen.includes(COEF.replace(/\*T\*T\*T\//, "*T*T*T/")),
+     "and fit-siddhanta.mjs fits to exactly that polynomial");
+  const meanNodeModern = jd => { const T = (jd - 2451545.0) / 36525.0;
+    return norm(125.0445479 - 1934.1362891 * T + 0.0020754 * T * T
+                + T * T * T / 467441 - T * T * T * T / 60616000); };
+
+  is(M.params["epoch.Rāhu"] != null && M.params["bija.Rāhu"] != null,
+     "the data file carries an epoch and a bīja for Rāhu");
+  is(Object.keys(M.params).filter(k => /\.(Rāhu|Ketu)$/.test(k)).length === 2,
+     "and only those two — the node has no equation for a paridhi or mandocca to scale");
+
+  const S = loadSS(); S.setMeasured(M); S.measured();
+  const L = M.lahiri;
+  const lahiriAt = jd => { const T = (jd - 2451545.0) / 36525.0;
+    return L[2] + L[1] * T + L[0] * T * T; };
+  const hash = s => { let h = 2166136261;
+    for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+    return (h >>> 0) / 4294967296; };
+  const r = [];
+  for (const smp of fx.samples.filter(x => hash(x.iso) >= 0.5)) {
+    const ms = (smp.jdUTC - 2440587.5) * 86400000;
+    const ref = norm(meanNodeModern(smp.jdUTC) - lahiriAt(smp.jdUTC));
+    r.push(sdiff(S.trueLongitude("Rāhu", S.ahargana(ms)).lon, ref) * 60);
+  }
+  const got = rms(r), worstR = Math.max(...r.map(Math.abs));
+  is(Math.abs(got - M.residuals["Rāhu"].holdout.rms) < 0.01,
+     "Rāhu: holdout rms " + got.toFixed(3) + "′ matches the committed "
+     + M.residuals["Rāhu"].holdout.rms.toFixed(3) + "′");
+  is(got < 1 && worstR < 1,
+     "and is under one arcminute, worst " + worstR.toFixed(2) + "′, across 1800–2200");
+  is(M.residuals["Rāhu"].bare.rms > 60,
+     "against " + M.residuals["Rāhu"].bare.rms.toFixed(0) + "′ for the text as written — recorded, not hidden");
+
+  /* the case that found it */
+  const ms84 = Date.UTC(1984, 11, 15, 8, 1), jd84 = ms84 / 86400000 + 2440587.5;
+  const a84 = S.ahargana(ms84);
+  const d84 = sdiff(S.trueLongitude("Rāhu", a84).lon,
+                    norm(meanNodeModern(jd84) - lahiriAt(jd84))) * 60;
+  is(Math.abs(d84) < 1,
+     "15 Dec 1984 13:31 IST: the fitted Rāhu is " + d84.toFixed(2) + "′ from the modern mean node (was 3.9°)");
+  is(Math.abs(sdiff(S.trueLongitude("Ketu", a84).lon,
+                    S.trueLongitude("Rāhu", a84).lon + 180)) < 1e-9,
+     "and Ketu stays exactly opposite");
+
+  /* bare() must give the text's node back, bit for bit */
+  const pristine = loadSS();
+  S.bare();
+  is(Math.abs(S.trueLongitude("Rāhu", a84).lon - pristine.trueLongitude("Rāhu", a84).lon) < 1e-12,
+     "bare() restores the text's own node exactly");
+}
+
 /* ---- 3. the limit is where the data says it is ------------------------- */
 
 head("the Moon's limit is the absence of terms, re-measured not quoted");

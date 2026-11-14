@@ -3892,7 +3892,7 @@ fifth-century theory and a modern one.</p>
   "what": "The Sūrya Siddhānta's own constants — revolution counts, epicycle circumferences, apogee longitudes — measured against a modern sky, with the text's equations untouched.",
   "why": "ss-engine.js with the text's constants lands degrees from the real sky, which is the method's own accuracy and makes it a museum piece. This makes the tradition's method castable while keeping its form.",
   "notTheText": "THIS IS NOT THE SŪRYA SIDDHĀNTA'S ANSWER and must never be presented as one. It is the text's METHOD carrying measured numbers. The bare text stays selectable and unchanged; siddhanta-measured-verify.mjs asserts it is still bit-identical.",
-  "parameters": "One per classical quantity: a bīja on each body's revolutions, a scale on each manda and śīghra paridhi (which keeps the odd/even interpolation the text prescribes and moves only its size), and an offset on each mandocca. Twenty-seven numbers, every one of them a quantity the tradition has a name for. No free terms were added.",
+  "parameters": "One per classical quantity: a bīja on each body's revolutions, a scale on each manda and śīghra paridhi (which keeps the odd/even interpolation the text prescribes and moves only its size), and an offset on each mandocca, and for the node an epoch and a bīja. 48 numbers, every one of them a quantity the tradition has a name for. No free terms were added.",
   "outOfSample": "The 400 reference samples are split by index: even fitted, odd held out and never seen by the optimiser. The holdout figures are the ones to read; a fit judged on its own residuals tells you nothing.",
   "timescale": "The ahargaṇa comes from the civil instant exactly as a caller supplies it, not from TT. A siddhānta has no ΔT, so fitting in TT would have reported residuals no user could reproduce. ΔT stays an unmodelled systematic that the holdout numbers include.",
   "frame": "Sidereal on the site's own Lahiri polynomial, not the text's libration ayanāṃśa, because a measured tier exists to be comparable with the modern engine on the same chart. The text's ayanāṃśa stays on the unfitted path.",
@@ -3959,7 +3959,9 @@ fifth-century theory and a modern one.</p>
   "mandaEven.Śani": 0.7957841580241336,
   "sighraOdd.Śani": 0.9794449445667087,
   "sighraEven.Śani": 0.9447417904450287,
-  "mandocca.Śani": 8.457986163620314
+  "mandocca.Śani": 8.457986163620314,
+  "epoch.Rāhu": 9.525736031471851,
+  "bija.Rāhu": -31.572561234998048
  },
  "residuals": {
   "Sūrya": {
@@ -4133,6 +4135,26 @@ fifth-century theory and a modern one.</p>
     "mean": 1.8913
    },
    "gain": 52.3
+  },
+  "Rāhu": {
+   "params": {
+    "epoch.Rāhu": 9.525736031471851,
+    "bija.Rāhu": -31.572561234998048
+   },
+   "bare": {
+    "rms": 236.34,
+    "worst": 265.061
+   },
+   "fit": {
+    "rms": 0.1249,
+    "worst": 0.2913
+   },
+   "holdout": {
+    "rms": 0.1297,
+    "worst": 0.3027,
+    "mean": 0.0145
+   },
+   "gain": 1821.5
   }
  },
  "lunarDiagnostic": {

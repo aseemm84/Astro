@@ -1163,6 +1163,14 @@
 
          Sūrya 1.0′    Guru 6.0′    Śani 7.3′    Śukra 8.4′
          Maṅgala 58′   Candra 62′   Budha 107′
+         Rāhu (and so Ketu) 0.13′, against the modern mean node
+
+     The node was added after the tier first shipped. Until then Rāhu and Ketu
+     kept the text's own constants inside an otherwise fitted chart, which put
+     them 236′ (rms) from the modern mean node — 3.9° on a 1984 chart. It
+     takes an epoch and a bīja, the same two kinds of number every other body
+     has, and is fitted to the MEAN node because the text has no other: the
+     true node's wobble is a term the theory lacks, like the Moon's evection.
 
      The split is not a surprise and it is not a shortcoming of the fit. The
      Moon's residual, regressed on the arguments of the two terms this theory
