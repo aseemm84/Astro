@@ -23,7 +23,7 @@ window.buildKundliReport=function(J){
       if(E.mode==="kalasetu"){
         t+=E.span&&E.span.in_span===false
           ? ' <b>This date is outside '+esc(E.span.label)+', the span the engine was fitted on</b> — no accuracy is claimed here; choose <b>Modern ephemeris</b>.</div>'
-          : ' It is fitted to the modern engine across '+esc((E.span&&E.span.label)||"3600 BCE – 3600 CE")+' and agrees with it to arcminutes; the modern engine itself is checked against the sky only over 1000–3000 CE.</div>';
+          : ' It is fitted to the modern engine across '+esc((E.span&&E.span.label)||"5000 BCE – 3600 CE")+' and agrees with it to arcminutes; the modern engine itself is checked against the sky only over 1000–3000 CE.</div>';
       }
       else t+=' It is offered for study and comparison. To cast the chart from the measured sky, choose <b>Modern ephemeris</b> as the engine.</div>';
       H.push(t);

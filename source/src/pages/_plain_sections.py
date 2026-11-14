@@ -196,7 +196,7 @@ SECTIONS = {
 
 "kalasetu.html": {
   "what": "What this engine is: which parts come from the Sūrya Siddhānta (its way of counting days) and which are modern (the shape of the orbits and the extra corrections), and what it is compared against.",
-  "sky": "Choose any date from 3600 BCE to 3600 CE and see where the nine planets are, with the modern answer beside each one and the difference between them. The wheel shows both at once.",
+  "sky": "Choose any date from 5000 BCE to 3600 CE and see where the nine planets are, with the modern answer beside each one and the difference between them. The wheel shows both at once.",
   "pipeline": "One planet's position worked out step by step — from the count of days since the start of the Kali age to the final degree — with every number taken from the engine as it calculates.",
   "accuracy": "How far the engine is from the modern computation, measured on dates it was never tuned on, in 600-year stretches so you can see it holds across the whole span. You can also run your own test against the older fitted engine.",
   "moon": "Every correction the engine applies to the Moon, with the size it found beside the textbook size. Switch a group off to see how much accuracy it was worth.",
@@ -209,9 +209,9 @@ SECTIONS = {
 },
 
 "engine-lab.html": {
-  "three": "What the four engines are — modern (today's astronomy), fitted (the Sūrya Siddhānta's method with re-measured constants), as written (the text's own numbers) and Kālasetu (the text's count of time with a modern geometry, fitted across 3600 BCE – 3600 CE) — how close each is to the real sky, and a glossary of the words used on the page.",
+  "three": "What the four engines are — modern (today's astronomy), fitted (the Sūrya Siddhānta's method with re-measured constants), as written (the text's own numbers) and Kālasetu (the text's count of time with a modern geometry, fitted across 5000 BCE – 3600 CE) — how close each is to the real sky, and a glossary of the words used on the page.",
   "bench": "Pick a question (where is each planet, what lunar day, when is the next new moon…) and see the answer from all four calculating methods side by side.",
-  "longspan": "The fourth engine, Kālasetu: the Sūrya Siddhānta's own time-count with a modern geometry, fitted across 3600 BCE – 3600 CE. The table shows how far it is from the modern engine on dates the fit never saw, in 600-year bands; the slider compares the two on any year in the span.",
+  "longspan": "The fourth engine, Kālasetu: the Sūrya Siddhānta's own time-count with a modern geometry, fitted across 5000 BCE – 3600 CE. The table shows how far it is from the modern engine on dates the fit never saw, in 600-year bands; the slider compares the two on any year in the span.",
   "cost": "Converts an error in degrees into what it changes in a chart. Below the slider, a table gives each engine's real, measured error for every planet, and what that error does to sign-change dates, tithi end times and daśā dates.",
   "scale": "One ruler showing that differences between conventions (such as ayanāṃśa) are far bigger than differences between the engines.",
   "bands": "How confident the modern engine is in different centuries, and what that means for the question you chose.",

@@ -4,8 +4,8 @@
  * present: the text as written is degrees out, and the fitted tier was fitted
  * on 1800–2200 and falls apart away from it (its Moon is about 8° out by
  * 3600 BCE and its Saturn about 24°). This engine is fitted across the whole of
- * 3600 BCE – 3600 CE, in the Samanvaya–Ecliptic frame (which is Āryabhaṭa's to
- * 0.28″), so that a chart for any date in those seven thousand two hundred
+ * 5000 BCE – 3600 CE, in the Samanvaya–Ecliptic frame (which is Āryabhaṭa's to
+ * 0.28″), so that a chart for any date in those eight thousand six hundred
  * years is cast to within arcminutes of the modern engine.
  *
  * WHAT IT KEEPS FROM THE SIDDHĀNTA, AND WHAT IT DOES NOT. Read this before
@@ -18,7 +18,7 @@
  *   operations is the siddhāntic one: mean place, manda (the body's own
  *   orbit), śīghra (the Sun's), each body's karṇa.
  *
- *   Not kept: the text's geometry. Over seven millennia the text's epicycles
+ *   Not kept: the text's geometry. Over eight millennia the text's epicycles
  *   cannot hold — a fixed epicycle has no second harmonic, the śīghra on the
  *   mean Sun ignores the Earth's own eccentricity, and nothing in the text
  *   lets an apogee or an eccentricity drift. So:
@@ -69,8 +69,8 @@
   function ahargana(ms) { return ms / 86400000 + 2440587.5 - EPOCH_JD; }
 
   /* the span the engine was fitted and measured on */
-  var SPAN = { from: Date.UTC(-3599, 0, 1), to: Date.UTC(3600, 11, 31, 23, 59, 59),
-               label: "3600 BCE – 3600 CE" };
+  var SPAN = { from: Date.UTC(-4999, 0, 1), to: Date.UTC(3600, 11, 31, 23, 59, 59),
+               label: "5000 BCE – 3600 CE" };
   function inSpan(ms) { return ms >= SPAN.from && ms <= SPAN.to; }
 
   /* ---- starting values, before the fit: the modern mean elements of J2000,
@@ -154,7 +154,7 @@
   function keysOf(b) {
     var k;
     if (b === "Sūrya") return ["l0","l1","l2","l3","w0","w1","w2","e0","e1","e2"];
-    if (b === "Rāhu") { k = ["l0","l1","l2","l3","t_0","t_1","t_2","t_3"];
+    if (b === "Rāhu") { k = ["l0","l1","l2","l3","l4","t_0","t_1","t_2","t_3"];
       NODE_TRUE.forEach(function (_, i) { k.push("t" + i); }); return k; }
     if (b === "Candra") {
       k = ["l0","l1","l2","l3","c0","c1","c2","c3"];
@@ -162,7 +162,8 @@
       LUNAR_LAT.forEach(function (_, i) { k.push("B" + i); });
       return k;
     }
-    k = ["l0","l1","l2","l3","w0","w1","w2","w3","e0","e1","e2","e3","a0","n0","n1","i0"];
+    /* quartic secular terms: at 8,600 years a cubic starts to bend the wrong way */
+    k = ["l0","l1","l2","l3","l4","w0","w1","w2","w3","w4","e0","e1","e2","e3","e4","a0","n0","n1","i0"];
     (PERT[b] || []).forEach(function (_, i) { if (active(b, i)) k.push("ps" + i, "pc" + i); });
     return k;
   }
@@ -186,7 +187,7 @@
   setData(null);
 
   function poly(p, pre, Tm) {
-    return (p[pre + "0"] || 0) + Tm * ((p[pre + "1"] || 0) + Tm * ((p[pre + "2"] || 0) + Tm * (p[pre + "3"] || 0)));
+    return (p[pre + "0"] || 0) + Tm * ((p[pre + "1"] || 0) + Tm * ((p[pre + "2"] || 0) + Tm * ((p[pre + "3"] || 0) + Tm * (p[pre + "4"] || 0))));
   }
   /* the siddhāntic mean place, with its corrections */
   function meanOf(key, ahar, Tm) {
@@ -207,8 +208,8 @@
      about the Earth; for a planet, its path about the Sun. */
   function orbit(b, ahar, Tm, X) {
     var p = P[b], L = meanOf(b, ahar, Tm);
-    var w = W0[b] + p.w0 + Tm * (p.w1 + Tm * (p.w2 + Tm * (p.w3 || 0)));
-    var e = E0[b] * (1 + p.e0) + Tm * (p.e1 + Tm * (p.e2 + Tm * (p.e3 || 0))) * 0.001;
+    var w = W0[b] + p.w0 + Tm * (p.w1 + Tm * (p.w2 + Tm * ((p.w3 || 0) + Tm * (p.w4 || 0))));
+    var e = E0[b] * (1 + p.e0) + Tm * (p.e1 + Tm * (p.e2 + Tm * ((p.e3 || 0) + Tm * (p.e4 || 0)))) * 0.001;
     var k = kepler((L - w) * D2R, e), lam = w * D2R + k.v;
     var T = PERT[b], rec = TR ? { L: L, w: w, e: e, M: norm(L - w), eqc: k.v / D2R - norm(L - w), terms: [] } : null;
     if (rec && rec.eqc > 180) rec.eqc -= 360; if (rec && rec.eqc < -180) rec.eqc += 360;

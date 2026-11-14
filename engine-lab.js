@@ -1510,7 +1510,7 @@
     { k: "bare", label: "Sūrya Siddhānta as written",
       note: "the text's own numbers" },
     { k: "ks", label: "Kālasetu",
-      note: "the text's time-count, a modern geometry, fitted across 3600 BCE – 3600 CE (Samanvaya–Ecliptic frame)" }
+      note: "the text's time-count, a modern geometry, fitted across 5000 BCE – 3600 CE (Samanvaya–Ecliptic frame)" }
   ];
 
   var AC = null, FIT = null, LAH = null;
@@ -1766,7 +1766,7 @@
         "is one engine against the modern engine in the sidereal frame that " +
         "engine was fitted in — Lahiri for the two Sūrya Siddhānta tiers, " +
         "Samanvaya–Ecliptic for Kālasetu." + (ksSpan(ms) ? "" :
-        " <b>This moment is outside Kālasetu's fitted span (3600 BCE – 3600 CE)</b>, so its column claims nothing here.");
+        " <b>This moment is outside Kālasetu's fitted span (5000 BCE – 3600 CE)</b>, so its column claims nothing here.");
       return render(["Graha", "modern", "fitted", "as written", "Kālasetu",
                      "fitted − modern", "written − modern", "Kālasetu − modern"], rows, true);
     }
@@ -2165,14 +2165,14 @@
         fit: r.holdout ? { t: r.holdout.rms * 60, w: r.holdout.worst * 60 } : null,
         bare: r.bare ? { t: r.bare.rms * 60, w: r.bare.worst * 60 } : null,
         /* Kālasetu's file is already in arcminutes, and its figures are held
-           back across 3600 BCE – 3600 CE, not 1800–2200 */
+           back across 5000 BCE – 3600 CE, not 1800–2200 */
         ks: (KR[sa] && KR[sa].holdout) ? { t: KR[sa].holdout.rms * 60, w: KR[sa].holdout.worst * 60 } : null
       };
     }
     function cell(e) { return e ? ang(e.t) + ' <span class="elw">(worst ' + ang(e.w) + ")</span>" : "—"; }
     var h = '<div class="eltblwrap"><table class="tbl elerr"><thead><tr><th>Graha</th>' +
       "<th>modern<br><small>typical (worst)</small></th><th>fitted<br><small>typical (worst)</small></th>" +
-      "<th>as written<br><small>typical (worst)</small></th><th>Kālasetu<br><small>typical (worst), 3600 BCE – 3600 CE</small></th></tr></thead><tbody>";
+      "<th>as written<br><small>typical (worst)</small></th><th>Kālasetu<br><small>typical (worst), 5000 BCE – 3600 CE</small></th></tr></thead><tbody>";
     SA7.forEach(function (sa) {
       var e = rowErr(sa);
       h += "<tr><td><b>" + sa + "</b> <small>" + EN[sa] + "</small></td><td>" + cell(e.mod) +
@@ -2561,7 +2561,7 @@
        "Sun " + byName("Sūrya").measuredRms.toFixed(2) + "′, Moon " +
        byName("Candra").measuredRms.toFixed(0) + "′ — study only, not for casting",
        "siddhanta-measured-verify"],
-      ["A chart for any date from 3600 BCE to 3600 CE", "Kālasetu",
+      ["A chart for any date from 5000 BCE to 3600 CE", "Kālasetu",
        (function () { var K = (window.__KALASETU_DATA || {}).residuals || {};
          var f = function (n) { return K[n] && K[n].holdout ? K[n].holdout.rms.toFixed(2) + "′" : "—"; };
          return "Sun " + f("Sūrya") + ", Moon " + f("Candra") + ", Saturn " + f("Śani") +

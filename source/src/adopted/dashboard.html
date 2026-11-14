@@ -683,7 +683,7 @@ function renderHeader(N){
       (d.engine.mode==="kalasetu"
         ? (d.engine.span&&d.engine.span.in_span===false
             ? ` This date is outside ${esc(d.engine.span.label)}, the span it was fitted on; no accuracy is claimed here.`
-            : ` Fitted to the modern engine across ${esc((d.engine.span&&d.engine.span.label)||"3600 BCE – 3600 CE")}.`)
+            : ` Fitted to the modern engine across ${esc((d.engine.span&&d.engine.span.label)||"5000 BCE – 3600 CE")}.`)
         : ` For study and comparison; choose the modern engine to cast from the measured sky.`);
     top.append(b);
   }

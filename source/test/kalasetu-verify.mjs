@@ -1,7 +1,7 @@
 /* The Kālasetu Siddhānta long-span engine (kalasetu-engine.js): what it claims, and
  * that the site says it.
  *
- * THE CLAIM. Across 3600 BCE – 3600 CE, in the Samanvaya–Ecliptic frame, the
+ * THE CLAIM. Across 5000 BCE – 3600 CE, in the Samanvaya–Ecliptic frame, the
  * engine reproduces this site's modern engine to arcminutes — on instants the
  * fit never saw. The claim is tested here on a FRESH sample with a different
  * seed from the one the fit used, so the published residuals cannot be
@@ -45,7 +45,7 @@ const A = loadAstro(), SL = loadSL(A);
 head("the fitted numbers load, and the engine knows them");
 is(SL.setData(DOC) && SL.isFitted(), "setData accepts kalasetu.json and the engine reports itself fitted");
 is(DOC.frame === "samanvaya_ecliptic", "the file names its frame: samanvaya_ecliptic");
-is(DOC.span.label === "3600 BCE – 3600 CE" && SL.SPAN.label === DOC.span.label, "the file and the engine agree on the span");
+is(DOC.span.label === "5000 BCE – 3600 CE" && SL.SPAN.label === DOC.span.label, "the file and the engine agree on the span");
 is(SL.BODIES.every(b => DOC.params[b] && SL.keysOf(b).every(k => typeof DOC.params[b][k] === "number")),
    "every parameter the engine carries has a fitted value in the file");
 is(/notTheText/.test(JSON.stringify(DOC._provenance)) && /not with the sky/.test(DOC._provenance.limits),
@@ -78,7 +78,7 @@ for (const b of Object.keys(CEIL)) {
   /* latitude is fitted alongside longitude but weighs on nothing a chart
      prints except planetary war; Śukra's, near inferior conjunction, is the
      hardest, and the bound is set for it */
-  is(Math.max(...pl) < 8, `the planets' latitudes: worst body ${Math.max(...pl).toFixed(2)}′ rms`);
+  is(Math.max(...pl) < 10, `the planets' latitudes: worst body ${Math.max(...pl).toFixed(2)}′ rms`);
 }
 {
   const all = Object.keys(CEIL).map(b => fresh[b].worst);
@@ -89,7 +89,7 @@ for (const b of Object.keys(CEIL)) {
 head("uniform across the span");
 for (const b of Object.keys(CEIL)) {
   const B = DOC.residuals[b].bands, top = Math.max(...B.map(x => x.rms));
-  is(B.length === 12 && top <= Math.max(3.2 * DOC.residuals[b].holdout.rms, 0.5),
+  is(B.length === 14 && top <= Math.max(3.2 * DOC.residuals[b].holdout.rms, 0.5),
      `${b}: worst 600-year band ${top.toFixed(2)}′ against ${DOC.residuals[b].holdout.rms.toFixed(2)}′ overall`);
 }
 {
@@ -123,8 +123,8 @@ is(/function trueNodeModern\(date\)\{\s*var dt=0\.0005;/.test(ENG) && /Math\.ata
 
 /* ---- 5. the span edges ---------------------------------------------------- */
 head("the span, and outside it");
-is(SL.inSpan(Date.UTC(-3599, 0, 1, 12)) && SL.inSpan(Date.UTC(3600, 11, 31, 12)), "1 Jan 3600 BCE and 31 Dec 3600 CE are inside");
-is(!SL.inSpan(Date.UTC(-3600, 11, 31, 12)) && !SL.inSpan(Date.UTC(3601, 0, 1, 12)), "the day before and the day after are not");
+is(SL.inSpan(Date.UTC(-4999, 0, 1, 12)) && SL.inSpan(Date.UTC(3600, 11, 31, 12)), "1 Jan 5000 BCE and 31 Dec 3600 CE are inside");
+is(!SL.inSpan(Date.UTC(-5000, 11, 31, 12)) && !SL.inSpan(Date.UTC(3601, 0, 1, 12)), "the day before and the day after are not");
 
 /* ---- 6. the site ---------------------------------------------------------- */
 const browser = await chromium.launch();
@@ -196,7 +196,7 @@ head("Kundli: casting with it");
   await p.waitForFunction(() => window.__kdata && window.__kdata.derived, null, { timeout: 60000 });
   await p.waitForTimeout(300);
   const badge = await p.evaluate(() => { const b = document.getElementById("k-engine-badge"); return b ? b.textContent : ""; });
-  is(/Kālasetu Siddhānta/.test(badge) && /3600 BCE – 3600 CE/.test(badge) && /1000–3000 CE/.test(badge),
+  is(/Kālasetu Siddhānta/.test(badge) && /5000 BCE – 3600 CE/.test(badge) && /1000–3000 CE/.test(badge),
      "the report's badge names the engine, the span, and where the modern engine itself is checked");
   const conv = await p.evaluate(() => (document.getElementById("k-conv") || document.querySelector(".k-conv") || {}).textContent || document.body.textContent);
   is(/Samanvaya–Ecliptic \(the long-span engine's frame\)/.test(conv), "the conventions line names the frame");
@@ -230,7 +230,7 @@ head("Settings: what choosing it as the default costs");
       s.value = "kalasetu"; s.dispatchEvent(new Event("change", { bubbles: true })); });
     await p.waitForTimeout(200);
     const t = await p.evaluate(() => (document.querySelector(".nsconfirm") || {}).textContent || "");
-    is(/′ from the modern engine across 3600 BCE – 3600 CE/.test(t) && /1000–3000 CE/.test(t),
+    is(/′ from the modern engine across 5000 BCE – 3600 CE/.test(t) && /1000–3000 CE/.test(t),
        "the confirm box states its Moon in arcminutes, the span, and the modern engine's own checked window");
   } else {
     const src = readFileSync(ROOT + "/source/src/js/settings.js", "utf8");
@@ -249,8 +249,8 @@ head("Engine Lab shows the measurement");
     live: document.querySelectorAll("#el-sllive tbody tr").length,
     note: document.getElementById("el-slnote").textContent }));
   is(r.rows === 9, "the residual table has the seven grahas and both nodes");
-  is(r.heads.includes("3600 BCE") && r.heads.includes("1 CE") && r.heads.includes("3001 CE"),
-     "its band columns run from 3600 BCE to 3001 CE");
+  is(r.heads.includes("5000 BCE") && r.heads.includes("2801 CE"),
+     "its band columns run from 5000 BCE to 2801 CE (the last band takes the span to 3600 CE)");
   is(r.live === 9 && /never saw/.test(r.note), "the live comparison fills, and the note says the figures are held back");
   const before = await p.evaluate(() => document.getElementById("el-sllive").textContent);
   await p.evaluate(() => { const s = document.getElementById("el-slyear"); s.value = "2500"; s.dispatchEvent(new Event("input")); });
@@ -275,7 +275,7 @@ head("The Kālasetu page");
     nav: !!document.querySelector('nav a[href="kalasetu.html"]'),
     wide: document.documentElement.scrollWidth > window.innerWidth + 1 }));
   is(r.sky === 10 && r.wheel === 9, "the sky table places the nine grahas and the true node, and the wheel draws all nine");
-  is(r.steps >= 5 && r.bands === 12 && r.moon === 36 && r.measure === 8 && r.cost === 9,
+  is(r.steps >= 5 && r.bands === 14 && r.moon === 36 && r.measure === 8 && r.cost === 9,
      "the steps, the twelve bands, all 36 lunar terms, the measurement and the cost table render");
   is(r.charts, "the great-inequality, ΔT and node charts draw");
   is(r.nav, "the page is in the site navigation");

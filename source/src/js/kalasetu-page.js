@@ -56,7 +56,7 @@
     ST.ms = ms;
   }
   var PRESETS = [
-    ["The span opens · 1 Jan 3600 BCE", function () { return msFor(-3599, 1, 1, 6, 0); }],
+    ["The span opens · 1 Jan 5000 BCE", function () { return msFor(-4999, 1, 1, 6, 0); }],
     ["The Kali epoch · Ujjain midnight, JD 588465.5", function () { return (588465.5 - 2440587.5) * 86400000; }],
     ["Āryabhaṭa's zero · 21 Mar 499 CE", function () { return (1903396.75 - 2440587.5) * 86400000; }],
     ["1 CE", function () { return msFor(1, 1, 1, 6, 0); }],
@@ -197,7 +197,7 @@
     $("ks-tiles").innerHTML = ROWS.map(function (b) {
       return R[b] ? '<div class="ks-tile"><b>' + am(R[b].holdout.rms) + "</b><span>" + esc(b === "Rāhu" ? "Rāhu · Ketu (mean)" :
         b === "Rāhu (true)" ? "Rāhu · Ketu (true)" : b) + "</span></div>" : "";
-    }).join("") + '<div class="ks-tile"><b>7,200</b><span>years fitted, 3600 BCE – 3600 CE</span></div>';
+    }).join("") + '<div class="ks-tile"><b>8,600</b><span>years fitted, 5000 BCE – 3600 CE</span></div>';
   }
   function bands() {
     var b = $("ks-accbody").value, R = D.residuals[b]; if (!R || !R.bands) return;
@@ -252,7 +252,7 @@
       }).join("") + "</tbody></table></div>";
     $("ks-measurenote").innerHTML = N + " moments between " + yearLabel(from) + " and " + yearLabel(to) +
       ", typical (rms) difference from the modern engine. The fitted Sūrya Siddhānta tier was fitted on 1800–2200; " +
-      "try a span far from it to see why a fourth engine was needed. Years are astronomical: 0 is 1 BCE, −3599 is 3600 BCE.";
+      "try a span far from it to see why a fourth engine was needed. Years are astronomical: 0 is 1 BCE, −4999 is 5000 BCE.";
   }
 
   /* ---- the Moon's terms ------------------------------------------------------------ */
@@ -272,7 +272,7 @@
     if (MOONSET) return MOONSET;
     MOONSET = [];
     for (var i = 0; i < 160; i++) {
-      var y = -3599 + 7199 * (i + 0.5) / 160, Y = Math.floor(y), ms = msFor(Y, 1, 1, 0, 0) + (y - Y) * 365.2425 * 86400000 + ((i * 6007) % 1440) * 60000;
+      var y = -4999 + 8599 * (i + 0.5) / 160, Y = Math.floor(y), ms = msFor(Y, 1, 1, 0, 0) + (y - Y) * 365.2425 * 86400000 + ((i * 6007) % 1440) * 60000;
       MOONSET.push({ ms: ms, t: K.trace("Candra", ms), ref: modSid("Candra", ms) });
     }
     return MOONSET;
@@ -327,13 +327,13 @@
     h.push("</svg>");
     host.innerHTML = h.join("") + (opt.legend ? '<p class="ks-legend">' + opt.legend + "</p>" : "");
   }
-  var YT = [-3599, -2399, -1199, 1, 1200, 2400, 3600];
+  var YT = [-4999, -3599, -1999, -599, 1400, 2800];
   var GI_CACHE = null;
   function gi() {
     if (!GI_CACHE) {
       GI_CACHE = { sa: [], ju: [] };
-      for (var i = 0; i <= 288; i++) {
-        var y = -3599 + 7199 * i / 288, Y = Math.floor(y), ms = msFor(Y, 7, 1, 0, 0);
+      for (var i = 0; i <= 344; i++) {
+        var y = -4999 + 8599 * i / 344, Y = Math.floor(y), ms = msFor(Y, 7, 1, 0, 0);
         GI_CACHE.sa.push([y, sdiff(K.longitude("Śani", ms), modSid("Śani", ms)) * 60]);
         GI_CACHE.ju.push([y, sdiff(K.longitude("Guru", ms), modSid("Guru", ms)) * 60]);
       }
@@ -342,28 +342,53 @@
     var top = Math.max(5, Math.ceil(Math.max.apply(null, all)));
     lineChart($("ks-gi"), [{ cls: "ks-l1", pts: GI_CACHE.sa }, { cls: "ks-l2", pts: GI_CACHE.ju }],
       { label: "Jupiter and Saturn: Kālasetu minus the modern engine across the span", fy: function (v) { return (Math.abs(v) < 0.05 ? 0 : v).toFixed(1) + "′"; },
-        fx: yearLabel, xt: YT, y0: -top, y1: top, mark: Y0 >= -3599 && Y0 <= 3600 ? Y0 : null,
+        fx: yearLabel, xt: YT, y0: -top, y1: top, mark: Y0 >= -4999 && Y0 <= 3600 ? Y0 : null,
         legend: '<span><i style="background:var(--sem-info,#3f6fa6)"></i>Śani</span><span><i style="background:var(--sem-bad,#a1493a)"></i>Guru (dashed)</span><span>arcminutes; gold line: the moment chosen above</span>' });
     var w = function (a) { return Math.max.apply(null, a.map(function (p) { return Math.abs(p[1]); })); };
-    $("ks-ginote").innerHTML = "Over these 289 moments Saturn never strays more than " + am(w(GI_CACHE.sa)) + " from the modern engine and Jupiter " +
+    $("ks-ginote").innerHTML = "Over these 345 moments Saturn never strays more than " + am(w(GI_CACHE.sa)) + " from the modern engine and Jupiter " +
       am(w(GI_CACHE.ju)) + ". The great inequality and its companions are carried as about 170 measured terms for each planet. Their sum is what the fit " +
       "measures; individually some of them trade against the orbit itself, so no single term is offered here as a physical size.";
   }
+  /* How well ΔT is KNOWN, not just what it is. Two published estimates of its
+     standard error, which disagree, and the disagreement is the point:
+       – Morrison & Stephenson (2004): σ ≈ 0.8 t² s, t in centuries from 1820 —
+         stated by its authors for 1000 BCE to 1200 CE only;
+       – Huber (2000), a random walk in the length of day calibrated on
+         −500 to +2000: σ = 365.25 N √((N Q / 3)(1 + N / M)) / 1000 s, with
+         N years before −500, M = 2500, Q = 0.058 ms²/yr.
+     Both as given on NASA's eclipse pages (Espenak). Before 720 BCE there are
+     no timed eclipses at all, so every figure there is extrapolation. */
+  function sigmaMS(y) { var t = (y - 1820) / 100; return 0.8 * t * t; }
+  function sigmaHuber(y) { var N = -500 - y; if (N <= 0) return null;
+    return 365.25 * N * Math.sqrt((N * 0.058 / 3) * (1 + N / 2500)) / 1000; }
   var DT_CACHE = null;
   function deltaT() {
-    if (!DT_CACHE) { DT_CACHE = [];
-      for (var i = 0; i <= 240; i++) { var y = -3599 + 7199 * i / 240, ms = msFor(Math.floor(y), 7, 1, 0, 0), h = 0;
+    if (!DT_CACHE) { DT_CACHE = { dt: [], hu: [], ms: [] };
+      for (var i = 0; i <= 240; i++) { var y = -4999 + 8599 * i / 240, ms = msFor(Math.floor(y), 7, 1, 0, 0), h = 0;
         try { var t = window.Astronomy.MakeTime(new Date(ms)); h = (t.tt - t.ut) * 24; } catch (e) {}
-        DT_CACHE.push([y, h]); } }
+        DT_CACHE.dt.push([y, h]);
+        var su = sigmaHuber(y); DT_CACHE.hu.push([y, su == null ? 0 : su / 3600]);
+        DT_CACHE.ms.push([y, sigmaMS(y) / 3600]); } }
     var Y0 = new Date(ST.ms).getUTCFullYear(), here = null;
     try { var t0 = window.Astronomy.MakeTime(new Date(ST.ms)); here = (t0.tt - t0.ut) * 24; } catch (e) {}
-    lineChart($("ks-dt"), [{ cls: "ks-l1", pts: DT_CACHE }],
-      { label: "ΔT across the span, in hours", fy: function (v) { return v.toFixed(0) + " h"; }, fx: yearLabel, xt: YT, y0: 0,
-        mark: Y0 >= -3599 && Y0 <= 3600 ? Y0 : null });
-    $("ks-dtnote").innerHTML = here == null ? "" : "At the moment chosen above, ΔT is <b>" + (Math.abs(here) < 0.2 ? (here * 3600).toFixed(0) + " seconds" :
-      here.toFixed(2) + " hours") + "</b>. In that time the Moon moves <b>" + (here / 24 * 13.176).toFixed(here < 0.2 ? 3 : 2) + "°</b> — the size of the error a " +
-      "clock without ΔT would carry into every lunar position, tithi and nakṣatra. The curve is the model the modern engine uses (Espenak and Meeus, with " +
-      "observed values since 1955); its own uncertainty grows to hours at the ends of the span.";
+    lineChart($("ks-dt"), [{ cls: "ks-l1", pts: DT_CACHE.dt }, { cls: "ks-l2", pts: DT_CACHE.hu }, { cls: "ks-l3", pts: DT_CACHE.ms }],
+      { label: "ΔT across the span and how well it is known, in hours", fy: function (v) { return v.toFixed(0) + " h"; }, fx: yearLabel, xt: YT, y0: 0,
+        mark: Y0 >= -4999 && Y0 <= 3600 ? Y0 : null,
+        legend: '<span><i style="background:var(--sem-info,#3f6fa6)"></i>ΔT, as the modern engine models it</span>' +
+          '<span><i style="background:var(--sem-bad,#a1493a)"></i>its uncertainty, Huber (dashed)</span>' +
+          '<span><i style="background:var(--accent,#c9a24b)"></i>its uncertainty, Morrison &amp; Stephenson (dotted)</span>' });
+    var sH = sigmaHuber(Y0), sM = sigmaMS(Y0);
+    var moon = function (sec) { return (sec * 0.549 / 3600); }, earth = function (sec) { return sec / 240; };
+    $("ks-dtnote").innerHTML = (here == null ? "" : "At the moment chosen above, ΔT is <b>" + (Math.abs(here) < 0.2 ? (here * 3600).toFixed(0) + " seconds" :
+      here.toFixed(2) + " hours") + "</b>, which Kālasetu applies exactly as the modern engine does. ") +
+      "<b>How well that figure is known</b> is another matter. " +
+      (Y0 < 1200 ? "Here the two published estimates of its error are " + (sH == null ? "" : "<b>±" + (sH / 3600).toFixed(1) + " h</b> (Huber) and ") +
+        "<b>±" + (sM / 3600).toFixed(sM < 3600 ? 2 : 1) + " h</b> (Morrison &amp; Stephenson" + (Y0 < -1000 ? ", stated only from 1000 BCE, so extrapolated here" : "") + "). " +
+        "An error of " + ((sH || sM) / 3600).toFixed(1) + " h moves the Moon by about <b>" + moon(sH || sM).toFixed(1) + "°</b> and the Earth's turn — the lagna — by about <b>" +
+        earth(sH || sM).toFixed(0) + "°</b>. " : "In this era it is known to seconds or minutes, from telescopic and modern timing. ") +
+      "Before 720 BCE there is no timed eclipse to measure it from, so every value there is extrapolation; and the Earth, still rebounding " +
+      "from the weight of the Ice Age ice sheets, was changing its own rotation as it did. This is a limit on what anyone can know about a clock-time moment, not on Kālasetu: the engine places " +
+      "the grahas for a given moment of uniform time to arcminutes.";
   }
   function nodes() {
     var ms0 = ST.ms, pk = [], pm = [], DAY = 86400000;

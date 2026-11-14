@@ -3,7 +3,7 @@
  * THE TARGET. This site's modern engine — astronomy-engine with the site's own
  * ΔT (deltat.js), apparent geocentric longitude in the ecliptic of date —
  * carried into the Samanvaya–Ecliptic frame with engine.js's own polynomial.
- * 3,000 instants spread over 1 Jan 3600 BCE – 31 Dec 3600 CE, each jittered
+ * 3,600 instants spread over 1 Jan 5000 BCE – 31 Dec 3600 CE, each jittered
  * inside its own slot so no two share a phase. Sampled as production calls the
  * engine: civil time in, no ΔT applied by the engine.
  *
@@ -75,7 +75,7 @@ export const NAMES = { "Sūrya": "Sun", "Candra": "Moon", "Maṅgala": "Mars", "
 
 /* ---- the reference ------------------------------------------------------ */
 export function makeReference(A, n, seed) {
-  const t0 = Date.UTC(-3599, 0, 1), t1 = Date.UTC(3600, 11, 31, 23, 59, 59);
+  const t0 = Date.UTC(-4999, 0, 1), t1 = Date.UTC(3600, 11, 31, 23, 59, 59);
   let s = seed >>> 0;
   const rnd = () => { s = (Math.imul(s, 1103515245) + 12345) >>> 0; return (s >>> 1) / 2147483648; };
   const out = [];
@@ -196,7 +196,7 @@ if (import.meta.url === "file://" + process.argv[1]) {
       for (const b of SL.BODIES) for (const k of Object.keys(P[b])) if (/^(l\d|c\d)$/.test(k)) P[b][k] = 0;
       console.log("seeded from " + process.argv[i + 1]); } }
   const T0 = Date.now();
-  const REF = makeReference(A, 3000, 20260114);
+  const REF = makeReference(A, 3600, 20261114);
   const FIT = REF.filter(s => hash(s.key) < 0.5), HOLD = REF.filter(s => hash(s.key) >= 0.5);
   console.log(`reference: ${REF.length} instants (${FIT.length} fit, ${HOLD.length} held back) in ${((Date.now() - T0) / 1000).toFixed(1)} s`);
 
@@ -224,10 +224,11 @@ if (import.meta.url === "file://" + process.argv[1]) {
 
   /* ---- what gets written: the parameters and the held-back measurement --- */
   const yr = ms => new Date(ms).getUTCFullYear();
-  const BANDS = []; for (let y = -3600; y < 3600; y += 600) BANDS.push(y);
-  /* astronomical year −3599 (= 3600 BCE) opens band 0 */
+  /* fourteen bands of 600 years from 5000 BCE; the last also takes 3401–3600 */
+  const BANDS = []; for (let y = -5000; y < 3400; y += 600) BANDS.push(y);
+  /* astronomical year −4999 (= 5000 BCE) opens band 0 */
   const bandOf = ms => {
-    return Math.min(BANDS.length - 1, Math.max(0, Math.floor((yr(ms) + 3599) / 600))); };
+    return Math.min(BANDS.length - 1, Math.max(0, Math.floor((yr(ms) + 4999) / 600))); };
   const resid = {};
   for (const b of SL.BODIES) {
     const lon = HOLD.map(s => sdiff(SL.longitude(b, s.ms), s.ref[b]) * 60);
@@ -256,15 +257,15 @@ if (import.meta.url === "file://" + process.argv[1]) {
     _provenance: {
       what: "The Kālasetu Siddhānta long-span engine's fitted numbers: corrections on the Later Sūrya Siddhānta's own mean-motion count, the orbit of each body, and the measured amplitudes of the further terms.",
       target: "This site's modern engine (astronomy-engine v2 with deltat.js), apparent geocentric ecliptic of date, in the Samanvaya–Ecliptic frame (engine.js AYAN_MODES.samanvaya_ecliptic). The mean node against the published polynomial engine.js meanNodeModern() uses.",
-      span: "1 January 3600 BCE – 31 December 3600 CE (astronomical years −3599 to 3600), 3,000 instants, hashed half held back. Every residual below is the held-back half's unless labelled fit.",
+      span: "1 January 5000 BCE – 31 December 3600 CE (astronomical years −4999 to 3600), 3,600 instants, hashed half held back. Every residual below is the held-back half's unless labelled fit.",
       notTheText: "Not the Sūrya Siddhānta's answer. The time-count is the text's; the geometry is not — see the header of kalasetu-engine.js for exactly what was added and from where.",
       limits: "Agreement with the modern engine, not with the sky. The modern engine is checked against an independent reference only over 1000–3000 CE, and ΔT is uncertain by hours at the span's ends.",
       units: "residuals in arcminutes of longitude (latitude where given)"
     },
     generated: new Date().toISOString().slice(0, 10),
     frame: "samanvaya_ecliptic",
-    span: { from: "-3599-01-01", to: "3600-12-31", label: "3600 BCE – 3600 CE" },
-    samples: { total: REF.length, fit: FIT.length, holdout: HOLD.length, seed: 20260114 },
+    span: { from: "-4999-01-01", to: "3600-12-31", label: "5000 BCE – 3600 CE" },
+    samples: { total: REF.length, fit: FIT.length, holdout: HOLD.length, seed: 20261114 },
     terms: SL.terms(),
     residuals: resid,
     params

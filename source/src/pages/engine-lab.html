@@ -17,7 +17,7 @@ browser as you read.</p>
 <tr><td><b>modern</b></td><td>Today&rsquo;s astronomy: the modern ephemeris (a table-maker&rsquo;s word for &ldquo;positions of the planets&rdquo;) that this site uses by default.</td><td>The astronomy-engine library, checked against the professional IAU reference computation.</td><td>Within about 15 arcseconds for the Sun, Moon, Mercury and Venus, under a minute of arc for Mars, and about a minute and a half at worst for Jupiter and Saturn, where the reference itself is the limit. Far finer than anything a chart is read in.</td></tr>
 <tr><td><b>fitted</b></td><td>The S&umacr;rya Siddh&amacr;nta&rsquo;s own method &mdash; its equations, its sine table, its epicycles &mdash; with the adjustable constants re-measured against today&rsquo;s sky.</td><td>Only the quantities the tradition itself treated as correctable were changed: each planet&rsquo;s revolution count (a <i>b&imacr;ja</i> correction, as later Indian astronomers applied), its starting position, its epicycle sizes and its apogee. No equation was changed or added. It was tested on moments the fitting never saw.</td><td>About a minute of arc for the Sun; a few to eight minutes for Jupiter, Venus and Saturn; about a degree for the Moon and Mars; nearly two degrees for Mercury. The nodes (R&amacr;hu and Ketu) are fitted to the modern mean node, to a fraction of an arcminute. <b>This is not the S&umacr;rya Siddh&amacr;nta&rsquo;s own answer</b> &mdash; it shows how close the text&rsquo;s method can come when given today&rsquo;s numbers.</td></tr>
 <tr><td><b>as written</b></td><td>The S&umacr;rya Siddh&amacr;nta computed exactly as the text gives it, with its own numbers and nothing adjusted.</td><td>The text&rsquo;s constants: revolutions in a great age (mah&amacr;yuga), epicycle sizes, apogees, and its own reckoning from the start of the Kali age.</td><td>Today it lands from under a degree up to several degrees from the modern sky, depending on the planet and the date. That is what the text&rsquo;s method gives, reported as a difference, not as a fault.</td></tr>
-<tr><td><b>K&amacr;lasetu</b></td><td>The site&rsquo;s fourth engine, K&amacr;lasetu Siddh&amacr;nta (&ldquo;the bridge across time&rdquo;): the S&umacr;rya Siddh&amacr;nta&rsquo;s own count of time &mdash; its revolutions in a great age, counted in days from the Kali epoch &mdash; carrying a modern geometry, so that it holds across seven thousand years rather than near the present only.</td><td>Fitted to the modern engine across 3600&nbsp;BCE&nbsp;&ndash;&nbsp;3600&nbsp;CE in the Samanvaya&ndash;Ecliptic frame, on moments chosen across the whole span, half kept back to test it. Its orbits are solved exactly, the Moon carries Candra&#347;ekhara S&amacr;manta&rsquo;s evection, variation and annual equation and the further lunar terms, and it is given the Earth&rsquo;s clock (&Delta;T). Its geometry is therefore <b>not</b> the text&rsquo;s.</td><td>Under a minute of arc for the Sun, Moon, Venus, Jupiter and both nodes; one to two minutes for Mercury, Mars and Saturn &mdash; across the whole span, not just today. It agrees with the modern engine; the modern engine itself is checked against the sky only over 1000&ndash;3000&nbsp;CE. Its own page is <a href="kalasetu.html">K&amacr;lasetu</a>.</td></tr>
+<tr><td><b>K&amacr;lasetu</b></td><td>The site&rsquo;s fourth engine, K&amacr;lasetu Siddh&amacr;nta (&ldquo;the bridge across time&rdquo;): the S&umacr;rya Siddh&amacr;nta&rsquo;s own count of time &mdash; its revolutions in a great age, counted in days from the Kali epoch &mdash; carrying a modern geometry, so that it holds across seven thousand years rather than near the present only.</td><td>Fitted to the modern engine across 5000&nbsp;BCE&nbsp;&ndash;&nbsp;3600&nbsp;CE in the Samanvaya&ndash;Ecliptic frame, on moments chosen across the whole span, half kept back to test it. Its orbits are solved exactly, the Moon carries Candra&#347;ekhara S&amacr;manta&rsquo;s evection, variation and annual equation and the further lunar terms, and it is given the Earth&rsquo;s clock (&Delta;T). Its geometry is therefore <b>not</b> the text&rsquo;s.</td><td>Under a minute of arc for the Sun, Moon, Venus, Jupiter and both nodes; one to two minutes for Mercury, Mars and Saturn &mdash; across the whole span, not just today. It agrees with the modern engine; the modern engine itself is checked against the sky only over 1000&ndash;3000&nbsp;CE. Its own page is <a href="kalasetu.html">K&amacr;lasetu</a>.</td></tr>
 </tbody></table>
 
 <p>The exact figures for each planet, and what they change in a chart, are in <a href="#cost">What an arcsecond is worth</a> below. <b>You can make any of the four the engine for the whole site</b> (Settings &rarr; Engine), or for any single page with its &ldquo;Engine for this page&rdquo; menu. This page always keeps all four side by side, so its modern column is always the modern engine.</p>
@@ -90,8 +90,8 @@ position at all &mdash; but the tithi, which is the difference of two longitudes
 and so collects both errors, is the one a reader would notice.</p>
 
 <div class="aybar">
-  <label>From <input type="number" id="el-from" class="swin" value="1900" min="-3599" max="3590" step="10"></label>
-  <label>To <input type="number" id="el-to" class="swin" value="2100" min="-3590" max="3600" step="10"></label>
+  <label>From <input type="number" id="el-from" class="swin" value="1900" min="-4999" max="3590" step="10"></label>
+  <label>To <input type="number" id="el-to" class="swin" value="2100" min="-4990" max="3600" step="10"></label>
   <label>Samples <select id="el-n" class="swin">
     <option value="120">120</option>
     <option value="400" selected>400</option>
@@ -171,12 +171,12 @@ question you chose at the top of the page.</p>
 <div class="aywrap"><div id="el-band"></div></div>
 <p class="k-note" id="el-bandnote"></p>
 
-<h2 id="longspan">The fourth engine: seven thousand years<span class="kdeva">समन्वय-यन्त्रम्</span></h2>
+<h2 id="longspan">The fourth engine: eight thousand years<span class="kdeva">समन्वय-यन्त्रम्</span></h2>
 
 <p>The three engines above are all pinned to the present. The text as written is
 degrees out everywhere; the fitted tier was fitted on 1800&ndash;2200 and comes apart
 away from it. The <b>KThe <b>Samanvaya Siddh&amacr;nta</b> engineamacr;lasetu SiddhThe <b>Samanvaya Siddh&amacr;nta</b> engineamacr;nta</b> engine (The <b>Samanvaya Siddh&amacr;nta</b> engine#2325;The <b>Samanvaya Siddh&amacr;nta</b> engine#2366;The <b>Samanvaya Siddh&amacr;nta</b> engine#2354;The <b>Samanvaya Siddh&amacr;nta</b> engine#2360;The <b>Samanvaya Siddh&amacr;nta</b> engine#2375;The <b>Samanvaya Siddh&amacr;nta</b> engine#2340;The <b>Samanvaya Siddh&amacr;nta</b> engine#2369;, The <b>Samanvaya Siddh&amacr;nta</b> engineldquo;the bridge across timeThe <b>Samanvaya Siddh&amacr;nta</b> enginerdquo;) is fitted across the whole
-of <b>3600&nbsp;BCE &ndash; 3600&nbsp;CE</b>, in the Samanvaya&ndash;Ecliptic frame
+of <b>5000&nbsp;BCE &ndash; 3600&nbsp;CE</b>, in the Samanvaya&ndash;Ecliptic frame
 (&Amacr;ryabha&#7789;a&rsquo;s, to 0.28&Prime;). It keeps the Later S&umacr;rya
 Siddh&amacr;nta&rsquo;s own time-count &mdash; every mean place is the text&rsquo;s
 revolutions over its civil days, from the Kali epoch &mdash; and corrects it. It does
@@ -193,7 +193,7 @@ figure below is from instants the fit never saw.</p>
 The comparison is made in the Samanvaya&ndash;Ecliptic frame for both, so the
 difference is the engine&rsquo;s alone.</p>
 <div class="aybar">
-  <label class="elwide">Year <input type="range" id="el-slyear" min="-3599" max="3600" step="1" value="-1000"></label>
+  <label class="elwide">Year <input type="range" id="el-slyear" min="-4999" max="3600" step="1" value="-1000"></label>
   <span class="ayread" id="el-slyearread"></span>
 </div>
 <div id="el-sllive"></div>

@@ -2999,7 +2999,7 @@ window.buildLocalChart=function(inp){
               "; sunrise and the lagna's sidereal time are computed with the modern method."+
               (ENGINE_MODE==="kalasetu"?(SITE_KS&&SITE_KS.inSpan(ms)
                 ? " This date is inside the span the engine was fitted and measured on ("+SITE_KS.SPAN.label+")."
-                : " THIS DATE IS OUTSIDE THE SPAN THE ENGINE WAS FITTED ON ("+(SITE_KS?SITE_KS.SPAN.label:"3600 BCE – 3600 CE")+
+                : " THIS DATE IS OUTSIDE THE SPAN THE ENGINE WAS FITTED ON ("+(SITE_KS?SITE_KS.SPAN.label:"5000 BCE – 3600 CE")+
                   "): its polynomials were never tested here, so no accuracy is claimed — cast with the modern engine."):"")),
             span:ENGINE_MODE==="kalasetu"&&SITE_KS?{label:SITE_KS.SPAN.label, in_span:SITE_KS.inSpan(ms)}:null,
             vs_modern:ENGINE_MODE==="modern"?null:engineVsModern(pos.Moon.sid,date,jd)},
