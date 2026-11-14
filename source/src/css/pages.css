@@ -2609,3 +2609,12 @@ html[data-caution="off"] .krect{display:none}
 .ks-legend{display:flex;flex-wrap:wrap;gap:.3rem 1rem;font-size:.8rem;color:var(--text-soft,#4a4e68)}
 .ks-legend i{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:.3rem}
 .ks-l3{fill:none;stroke:var(--accent,#c9a24b);stroke-width:1.6;stroke-dasharray:1.5 3}
+.ks-where input[type=number]{width:7rem}
+.ks-place{display:inline-block;position:relative;min-width:14rem}
+.ks-place .npfind{width:100%}
+.ks-asc{stroke:var(--accent,#c9a24b);stroke-width:2.5}
+.ks-scroller{display:flex;flex-direction:column;gap:.5rem;margin:.2rem 0 .9rem}
+.ks-scroller .aybar{margin:0}
+.ks-stepbtns{display:inline-flex;flex-wrap:wrap;gap:.3rem}
+.ks-scroller input[type=range]{width:100%;min-width:0}
+.ks-scroller .elwide{flex:1 1 16rem;min-width:0}

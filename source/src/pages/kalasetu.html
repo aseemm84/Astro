@@ -49,18 +49,50 @@ both are models.</p>
 <p>Choose a moment &mdash; BCE or CE, any day between 1 January 5000&nbsp;BCE and
 31 December 3600&nbsp;CE &mdash; and K&amacr;lasetu places the nine grahas. The modern
 engine&rsquo;s answer is beside it in the same frame, so the last column is the
-engine&rsquo;s difference alone. Dates are in the proleptic Gregorian calendar and the
-time is Universal Time.</p>
+engine&rsquo;s difference alone. Dates are in the proleptic Gregorian calendar.</p>
+
+<p>The nine grahas are the same seen from anywhere on Earth (they are computed from the
+Earth&rsquo;s centre). A <b>place</b> sets two things: the <b>lagna</b>, which depends on
+where the horizon is, and how a clock time there turns into Universal Time. Before
+standard time zones (the 1880s), a place kept <b>local mean time</b>, set by its own
+longitude &mdash; so for an ancient moment that is the natural choice.</p>
 
 <div class="aybar ks-when">
   <label>Era <select id="ks-era" class="swin"><option value="CE">CE</option><option value="BCE">BCE</option></select></label>
   <label>Year <input type="number" id="ks-year" class="swin" min="1" max="3600" step="1" value="2026"></label>
   <label>Month <input type="number" id="ks-month" class="swin" min="1" max="12" step="1" value="1"></label>
   <label>Day <input type="number" id="ks-day" class="swin" min="1" max="31" step="1" value="1"></label>
-  <label>Time (UT) <input type="time" id="ks-time" class="swin" value="06:00"></label>
+  <label>Time <input type="time" id="ks-time" class="swin" value="06:00"></label>
+  <label>Time is <select id="ks-tmode" class="swin">
+    <option value="lmt" selected>local mean time at the place</option>
+    <option value="zone">the place&rsquo;s clock (time zone)</option>
+    <option value="ut">Universal Time</option></select></label>
   <button type="button" class="swbtn" data-ks="now">This moment</button>
 </div>
+<div class="aybar ks-where">
+  <label class="ks-placel">Place <span id="ks-place" class="ks-place"></span></label>
+  <label>Latitude <input type="number" id="ks-lat" class="swin" step="0.0001" min="-89.9" max="89.9" value="23.1765"></label>
+  <label>Longitude <input type="number" id="ks-lon" class="swin" step="0.0001" min="-180" max="180" value="75.7885"></label>
+</div>
 <div class="ks-presets" id="ks-presets"></div>
+<div class="ks-scroller" id="ks-scroller">
+  <div class="aybar ks-scrub">
+    <label>Step by <select id="ks-unit" class="swin">
+      <option value="hour">hour</option><option value="day" selected>day</option><option value="month">month</option>
+      <option value="year">year</option><option value="decade">decade</option><option value="century">century</option></select></label>
+    <span class="ks-stepbtns" role="group" aria-label="Step through time">
+      <button type="button" class="swbtn" data-ks-step="-10" aria-label="Back ten steps">&laquo; 10</button>
+      <button type="button" class="swbtn" data-ks-step="-1" aria-label="Back one step">&lsaquo; 1</button>
+      <button type="button" class="swbtn" data-ks-play aria-pressed="false">Play</button>
+      <button type="button" class="swbtn" data-ks-step="1" aria-label="Forward one step">1 &rsaquo;</button>
+      <button type="button" class="swbtn" data-ks-step="10" aria-label="Forward ten steps">10 &raquo;</button>
+    </span>
+  </div>
+  <div class="aybar">
+    <label class="elwide">Scroll <input type="range" id="ks-scrub" min="-366" max="366" step="1" value="0" aria-describedby="ks-scrubread"></label>
+    <span class="ayread" id="ks-scrubread"></span>
+  </div>
+</div>
 <div class="ks-skygrid">
   <div id="ks-skytab"></div>
   <div id="ks-wheel" class="ks-wheel"></div>
@@ -206,4 +238,5 @@ for the Samanvaya&ndash;Ecliptic frame, and <a href="kundli.html">Kundli 2.0</a>
 with K&amacr;lasetu (Engine &rarr; K&amacr;lasetu Siddh&amacr;nta).</p>
 
 <script src="engine.js" defer></script>
+<script src="places.js" defer></script>
 <script src="kalasetu.js" defer></script>

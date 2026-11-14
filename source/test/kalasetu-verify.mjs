@@ -274,7 +274,7 @@ head("The Kālasetu page");
     cost: document.querySelectorAll("#ks-cost tbody tr").length,
     nav: !!document.querySelector('nav a[href="kalasetu.html"]'),
     wide: document.documentElement.scrollWidth > window.innerWidth + 1 }));
-  is(r.sky === 10 && r.wheel === 9, "the sky table places the nine grahas and the true node, and the wheel draws all nine");
+  is(r.sky === 11 && r.wheel === 9, "the sky table places the nine grahas, the true node and the lagna, and the wheel draws all nine");
   is(r.steps >= 5 && r.bands === 14 && r.moon === 36 && r.measure === 8 && r.cost === 9,
      "the steps, the twelve bands, all 36 lunar terms, the measurement and the cost table render");
   is(r.charts, "the great-inequality, ΔT and node charts draw");
@@ -283,9 +283,51 @@ head("The Kālasetu page");
   await p.evaluate(() => { const set = (id, v) => { const el = document.getElementById(id); el.value = v; el.dispatchEvent(new Event("change", { bubbles: true })); };
     set("ks-era", "BCE"); set("ks-year", "3102"); set("ks-month", "2"); set("ks-day", "18"); set("ks-time", "00:00"); });
   const bce = await p.evaluate(() => ({ note: document.getElementById("ks-skynote").textContent,
-    diffs: [...document.querySelectorAll("#ks-skytab tbody tr")].map(tr => parseFloat(tr.lastElementChild.textContent)) }));
+    diffs: [...document.querySelectorAll("#ks-skytab tbody tr:not(.ks-lagrow)")].map(tr => parseFloat(tr.lastElementChild.textContent)) }));
   is(/3102 BCE/.test(bce.note) && bce.diffs.every(d => Math.abs(d) < 15),
      `a BCE date typed into the page is placed, and every graha is within ${Math.max(...bce.diffs.map(Math.abs)).toFixed(1)}′ of the modern engine`);
+  /* the place: the lagna, the clock, and the grahas unmoved */
+  const pl = await p.evaluate(() => {
+    const set = (id, v) => { const el = document.getElementById(id); el.value = v; el.dispatchEvent(new Event("change", { bubbles: true })); };
+    set("ks-tmode", "zone");
+    set("ks-era", "CE"); set("ks-year", "1984"); set("ks-month", "12"); set("ks-day", "15"); set("ks-time", "13:31");
+    const read = () => ({ ms: window.__ksPage.state().ms, lag: document.querySelector(".ks-lagrow td:nth-child(2)").textContent,
+      sun: document.querySelector("#ks-skytab tbody tr td:nth-child(2)").textContent, note: document.getElementById("ks-skynote").textContent });
+    const a = read();                                  /* Ujjain, the place's clock (IST) */
+    set("ks-lat", "51.4769"); set("ks-lon", "-0.0005");
+    const b = read();                                  /* Greenwich, same clock reading */
+    set("ks-tmode", "lmt");
+    const c = read();
+    return { a, b, c };
+  });
+  is(pl.a.ms === Date.UTC(1984, 11, 15, 8, 1), `13:31 on the place's clock at Ujjain is 08:01 UT (${new Date(pl.a.ms).toISOString()})`);
+  is(pl.b.lag !== pl.a.lag, `moving the place moves the lagna (${pl.a.lag} at Ujjain, ${pl.b.lag} at Greenwich)`);
+  is(/Custom coordinates/.test(pl.b.note) && /local mean time|UT/.test(pl.c.note), "the note names the place and the clock");
+  is(pl.c.ms === pl.b.ms, "changing what the clock means keeps the instant and rewrites the clock");
+  /* the time scroller: a month is a calendar month, a century is a hundred years, the slider reaches back */
+  const sc = await p.evaluate(() => {
+    const set = (id, v, ev) => { const el = document.getElementById(id); el.value = v; el.dispatchEvent(new Event(ev || "change", { bubbles: true })); };
+    set("ks-tmode", "ut");
+    set("ks-era", "CE"); set("ks-year", "2000"); set("ks-month", "1"); set("ks-day", "31"); set("ks-time", "06:00");
+    const out = {};
+    set("ks-unit", "month"); document.querySelector('[data-ks-step="1"]').click();
+    out.month = new Date(window.__ksPage.state().ms).toISOString();
+    set("ks-unit", "century"); document.querySelector('[data-ks-step="-10"]').click();
+    out.century = new Date(window.__ksPage.state().ms).toISOString();
+    set("ks-unit", "year"); set("ks-scrub", "-150", "input");
+    out.scrub = new Date(window.__ksPage.state().ms).getUTCFullYear();
+    out.read = document.getElementById("ks-scrubread").textContent;
+    set("ks-scrub", "-150", "change");
+    out.after = document.getElementById("ks-scrub").value;
+    set("ks-unit", "century"); for (let i = 0; i < 100; i++) document.querySelector('[data-ks-step="-10"]').click();
+    out.edge = new Date(window.__ksPage.state().ms).getUTCFullYear();
+    return out;
+  });
+  is(/^2000-02-29T06:00/.test(sc.month), `one month on from 31 January 2000 is the last day of February (${sc.month.slice(0, 10)})`);
+  is(/^1000-02-28T06:00/.test(sc.century), `ten centuries back from 29 Feb 2000 is 28 Feb 1000, not a leap year (${sc.century.slice(0, 10)})`);
+  is(sc.scrub === 850 && /150 years/.test(sc.read), `the slider reaches 150 years back (${sc.scrub}) and says so`);
+  is(sc.after === "0", "releasing the slider picks it up again from the new moment");
+  is(sc.edge === -4999, "stepping back stops at the span's first year, 5000 BCE");
   /* the step-through ends on the engine's own number */
   const st = await p.evaluate(() => { const g = document.getElementById("ks-graha"); g.value = "Śani"; g.dispatchEvent(new Event("change"));
     const li = [...document.querySelectorAll("#ks-steps li")]; return { n: li.length, last: li[li.length - 1].textContent }; });

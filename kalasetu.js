@@ -1499,17 +1499,52 @@
   var MEANMOT = { "Sūrya": 0.98565, "Candra": 13.17640, "Maṅgala": 0.52403, "Budha": 0.98565, "Guru": 0.08309,
                   "Śukra": 0.98565, "Śani": 0.03346, "Rāhu": 0.05295, "Rāhu (true)": 0.05295 };
 
-  var K = null, D = null, S = null, ST = { ms: Date.now() };
+  var K = null, D = null, S = null,
+      ST = { ms: Date.now(), place: { n: "Ujjain, Madhya Pradesh, India", lat: 23.1765, lon: 75.7885, zone: "Asia/Kolkata" } };
+
+  /* ---- the place ---------------------------------------------------------------
+     The grahas are geocentric, so a place changes only the lagna and the clock.
+     The clock: local mean time is the place's own longitude ÷ 15 hours from UT,
+     which is what any place kept before standard zones; "the place's clock" asks
+     the browser's time-zone database, which before a zone existed returns the
+     local mean time of the zone's own reference city, not of this place. */
+  var QUICK = [
+    { n: "Ujjain, Madhya Pradesh, India", lat: 23.1765, lon: 75.7885, tz: 5.5, zone: "Asia/Kolkata" },
+    { n: "Kurukshetra, Haryana, India", lat: 29.9695, lon: 76.8783, tz: 5.5, zone: "Asia/Kolkata" },
+    { n: "Varanasi, Uttar Pradesh, India", lat: 25.3176, lon: 82.9739, tz: 5.5, zone: "Asia/Kolkata" },
+    { n: "Ayodhya, Uttar Pradesh, India", lat: 26.7922, lon: 82.1998, tz: 5.5, zone: "Asia/Kolkata" },
+    { n: "Pataliputra (Patna), Bihar, India", lat: 25.5941, lon: 85.1376, tz: 5.5, zone: "Asia/Kolkata" },
+    { n: "Delhi, India", lat: 28.6139, lon: 77.2090, tz: 5.5, zone: "Asia/Kolkata" },
+    { n: "Abu Dhabi, United Arab Emirates", lat: 24.4539, lon: 54.3773, tz: 4, zone: "Asia/Dubai" },
+    { n: "Greenwich, London, United Kingdom", lat: 51.4769, lon: -0.0005, tz: 0, zone: "Europe/London" }
+  ];
+  function lonNow() { var v = +$("ks-lon").value; return isFinite(v) ? Math.max(-180, Math.min(180, v)) : 0; }
+  function latNow() { var v = +$("ks-lat").value; return isFinite(v) ? Math.max(-89.9, Math.min(89.9, v)) : 0; }
+  /* hours to ADD to UT to get the clock time chosen in "Time is" */
+  function offsetAt(msUT) {
+    var m = $("ks-tmode").value;
+    ST.zoneFell = false;
+    if (m === "ut") return 0;
+    if (m === "zone" && ST.place && ST.place.zone && window.NPlaces) {
+      var o = window.NPlaces.offsetAt(ST.place.zone, msUT);
+      if (o != null) return o;
+      ST.zoneFell = true;
+    }
+    return lonNow() / 15;
+  }
+  function hm(ms) { var d = new Date(ms); return String(d.getUTCHours()).padStart(2, "0") + ":" + String(d.getUTCMinutes()).padStart(2, "0"); }
 
   /* ---- the moment ----------------------------------------------------------- */
   function readWhen() {
     var era = $("ks-era").value, y = Math.max(1, Math.min(3600, +$("ks-year").value || 1));
     var t = ($("ks-time").value || "06:00").split(":");
     var Y = era === "BCE" ? 1 - y : y;
-    ST.ms = msFor(Y, +$("ks-month").value || 1, +$("ks-day").value || 1, +t[0] || 0, +t[1] || 0);
+    var local = msFor(Y, +$("ks-month").value || 1, +$("ks-day").value || 1, +t[0] || 0, +t[1] || 0);
+    var ut = local - offsetAt(local) * 3600000;
+    ST.ms = local - offsetAt(ut) * 3600000;      /* once more, for a zone whose offset changes that day */
   }
   function writeWhen(ms) {
-    var d = new Date(ms), Y = d.getUTCFullYear();
+    var d = new Date(ms + offsetAt(ms) * 3600000), Y = d.getUTCFullYear();
     $("ks-era").value = Y <= 0 ? "BCE" : "CE"; $("ks-year").value = Y <= 0 ? 1 - Y : Y;
     $("ks-month").value = d.getUTCMonth() + 1; $("ks-day").value = d.getUTCDate();
     $("ks-time").value = String(d.getUTCHours()).padStart(2, "0") + ":" + String(d.getUTCMinutes()).padStart(2, "0");
@@ -1547,18 +1582,40 @@
     var tn = K.trueNode(ms), tm = norm(window.__kNodesModern(ms).true - window.__ayanFor("samanvaya_ecliptic", jdOf(ms)));
     rows.push("<tr><td><b>Rāhu</b> <span class=\"elw\">true node</span></td><td>" + inSign(tn) + "</td><td>" + nakOf(tn) +
       "</td><td>" + inSign(tm) + "</td><td class=\"num\">" + am(sdiff(tn, tm) * 60) + "</td></tr>");
+    var lat = latNow(), lon = lonNow(), asc = null;
+    try { asc = norm(window.__kAscTrop(ms, lat, lon) - window.__ayanFor("samanvaya_ecliptic", jdOf(ms))); } catch (e) {}
+    if (asc != null) {
+      pos.Lagna = asc;
+      rows.push('<tr class="ks-lagrow"><td><b>Lagna</b> <span class="elw">ascendant at the place</span></td><td>' + inSign(asc) +
+        "</td><td>" + nakOf(asc) + "</td><td>" + inSign(asc) + '</td><td class="num">same method</td></tr>');
+    }
     $("ks-skytab").innerHTML = '<div class="eltblwrap"><table class="aytab"><thead><tr><th>graha</th><th>Kālasetu</th>' +
       "<th>nakṣatra · pāda</th><th>modern engine</th><th>difference</th></tr></thead><tbody>" + rows.join("") + "</tbody></table></div>";
     wheel(pos);
-    var d = new Date(ms), Y = d.getUTCFullYear(), dt = null;
-    try { var t = window.Astronomy.MakeTime(d); dt = (t.tt - t.ut) * 86400; } catch (e) {}
+    /* the date and time as the reader gave them, on the clock "Time is" names;
+       UT beside it when that is not UT */
+    var mode = $("ks-tmode").value, d = new Date(ms + offsetAt(ms) * 3600000), Y = d.getUTCFullYear(), dt = null;
+    try { var t = window.Astronomy.MakeTime(new Date(ms)); dt = (t.tt - t.ut) * 86400; } catch (e) {}
     $("ks-skynote").innerHTML = "<b>" + d.getUTCDate() + " " + ["January", "February", "March", "April", "May", "June", "July",
       "August", "September", "October", "November", "December"][d.getUTCMonth()] + " " + yearLabel(Y) + ", " +
-      String(d.getUTCHours()).padStart(2, "0") + ":" + String(d.getUTCMinutes()).padStart(2, "0") + " UT</b> · Samanvaya–Ecliptic ayanāṃśa " +
-      dms(window.__ayanFor("samanvaya_ecliptic", jdOf(ms))) +
+      hm(d.getTime()) + (mode === "ut" ? " UT" : mode === "lmt" ? " local mean time" : (ST.zoneFell ? " local mean time" : " clock time")) +
+      "</b> at " + esc(ST.place && ST.place.n ? ST.place.n : "the place") + " (" + lat.toFixed(2) + "°, " + lon.toFixed(2) + "°)" +
+      (mode === "ut" ? "" : " = " + hm(ms) + " UT" + (new Date(ms).getUTCDate() !== d.getUTCDate() ? " (" + new Date(ms).getUTCDate() + " " +
+        ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][new Date(ms).getUTCMonth()] + ")" : "")) +
+      " · Samanvaya–Ecliptic ayanāṃśa " + dms(window.__ayanFor("samanvaya_ecliptic", jdOf(ms))) +
+      (ST.zoneFell ? " · <b>no time zone existed here then, so local mean time is used</b>" : "") +
       (dt != null ? " · ΔT " + (Math.abs(dt) < 600 ? dt.toFixed(0) + " s" : (dt / 3600).toFixed(1) + " hours") : "") +
       " · Kali day " + Math.floor(K.ahargana(ms)).toLocaleString("en") +
-      (K.inSpan(ms) ? "" : " · <b>outside the fitted span — no accuracy is claimed here</b>");
+      (K.inSpan(ms) ? "" : " · <b>outside the fitted span — no accuracy is claimed here</b>") +
+      (function () {
+        /* the lagna turns a full circle a day, so ΔT's own uncertainty (see the
+           Earth's clock, below) moves it 15° an hour for a clock-time moment */
+        var s1 = sigmaMS(Y), s2 = sigmaHuber(Y);
+        if (Y >= 1000 || asc == null) return "";
+        var hi = Math.max(s1, s2 || 0) / 240, lo = Math.min(s1, s2 == null ? s1 : s2) / 240;
+        return ". <b>The lagna for a clock time this far back is uncertain by about ±" + Math.round(lo) + "°" +
+          (hi - lo > 2 ? " to ±" + Math.round(hi) + "°" : "") + "</b>, from the Earth's clock alone (ΔT; see below)";
+      })();
   }
   function wheel(pos) {
     var W = 300, c = W / 2, R1 = 132, R0 = 104, h = [];
@@ -1570,7 +1627,11 @@
       h.push('<line class="ks-ring" x1="' + a[0].toFixed(1) + '" y1="' + a[1].toFixed(1) + '" x2="' + b[0].toFixed(1) + '" y2="' + b[1].toFixed(1) + '"/>');
       h.push('<text class="ks-sign" x="' + t[0].toFixed(1) + '" y="' + t[1].toFixed(1) + '">' + esc(RS[s].slice(0, 3)) + "</text>");
     }
-    var ring = 0;
+    if (pos.Lagna != null) {
+      var la = P(pos.Lagna, 34), lb = P(pos.Lagna, R1 + 6), lt = P(pos.Lagna, R1 + 15);
+      h.push('<line class="ks-asc" x1="' + la[0].toFixed(1) + '" y1="' + la[1].toFixed(1) + '" x2="' + lb[0].toFixed(1) + '" y2="' + lb[1].toFixed(1) + '"/>');
+      h.push('<text class="ks-glyph" x="' + lt[0].toFixed(1) + '" y="' + lt[1].toFixed(1) + '">As</text>');
+    }
     G.forEach(function (g, i) {
       var r = 86 - (i % 3) * 18, k = P(pos[g[0]].k, r), m = P(pos[g[0]].m, r);
       h.push('<circle class="ks-mod" cx="' + m[0].toFixed(1) + '" cy="' + m[1].toFixed(1) + '" r="9.5"/>');
@@ -1579,7 +1640,7 @@
     });
     h.push("</svg>");
     $("ks-wheel").innerHTML = h.join("") + '<p class="ks-legend"><span>filled: Kālasetu</span><span>ring: modern engine</span>' +
-      "<span>Meṣa at the left, counter-clockwise</span></p>";
+      "<span>As: the lagna</span><span>Meṣa at the left, counter-clockwise</span></p>";
   }
 
   /* ---- the steps --------------------------------------------------------------- */
@@ -1906,7 +1967,69 @@
   }
 
   /* ---- wiring ------------------------------------------------------------------------------------- */
-  function redrawMoment() { sky(); steps(); deltaT(); nodes(); gi(); }
+  /* The table, the wheel and the steps follow the moment at once; the three
+     span-wide charts (which only move their marker, or sample a year of nodes)
+     wait until the moment settles, so scrolling and playing stay smooth. */
+  function redrawMoment() {
+    sky(); steps();
+    clearTimeout(ST.heavy);
+    ST.heavy = setTimeout(function () { deltaT(); nodes(); gi(); }, 250);
+    if (!ST.scrubbing) resetScrub();
+  }
+
+  /* ---- scrolling through time ----------------------------------------------------
+     A step moves the CLOCK reading by a calendar unit (a month is a month, not
+     30 days), at the place, so the date fields stay on whole days and months;
+     the instant follows from the clock as everywhere else on the page. The
+     slider reaches N units either side of where it was picked up. */
+  var SPAN0 = Date.UTC(-4999, 0, 1), SPAN1 = Date.UTC(3600, 11, 31, 23, 59);
+  var REACH = { hour: 72, day: 366, month: 120, year: 200, decade: 120, century: 86 };
+  var UNIT_NAME = { hour: ["hour", "hours"], day: ["day", "days"], month: ["month", "months"], year: ["year", "years"],
+                    decade: ["decade", "decades"], century: ["century", "centuries"] };
+  function shifted(ms, unit, k) {
+    var off = offsetAt(ms) * 3600000, t = new Date(ms + off);
+    if (unit === "hour") t = new Date(t.getTime() + k * 3600000);
+    else if (unit === "day") t.setUTCDate(t.getUTCDate() + k);
+    else {
+      /* by calendar months, keeping the day where the month has it: 31 January
+         plus a month is the last day of February, not 2 March */
+      var months = unit === "month" ? k : 12 * k * (unit === "year" ? 1 : unit === "decade" ? 10 : 100);
+      var y = t.getUTCFullYear(), m = t.getUTCMonth() + months, day = t.getUTCDate();
+      y += Math.floor(m / 12); m = ((m % 12) + 12) % 12;
+      var last = new Date(Date.UTC(2000, m + 1, 0)); last.setUTCFullYear(y, m + 1, 0);
+      var u = new Date(t.getTime()); u.setUTCFullYear(y, m, Math.min(day, last.getUTCDate()));
+      t = u;
+    }
+    var local = t.getTime(), ut = local - offsetAt(local) * 3600000;
+    ut = local - offsetAt(ut) * 3600000;
+    return Math.max(SPAN0, Math.min(SPAN1, ut));
+  }
+  function unitNow() { return $("ks-unit").value; }
+  function resetScrub() {
+    var r = $("ks-scrub"); if (!r) return;
+    var n = REACH[unitNow()];
+    r.min = -n; r.max = n; r.value = 0; ST.anchor = ST.ms;
+    scrubLabel(0);
+  }
+  function scrubLabel(k) {
+    var u = UNIT_NAME[unitNow()], el = $("ks-scrubread"); if (!el) return;
+    el.textContent = k === 0 ? "drag to move up to " + REACH[unitNow()] + " " + u[1] + " either way"
+      : (k > 0 ? "+" : "−") + Math.abs(k) + " " + (Math.abs(k) === 1 ? u[0] : u[1]) + " from where you started";
+  }
+  function stepBy(k) {
+    var ms = shifted(ST.ms, unitNow(), k);
+    if (ms === ST.ms) { stopPlay(); return false; }
+    writeWhen(ms); redrawMoment(); return true;
+  }
+  function stopPlay() {
+    if (ST.play) { clearInterval(ST.play); ST.play = null; }
+    document.querySelectorAll("[data-ks-play]").forEach(function (b) { b.textContent = "Play"; b.setAttribute("aria-pressed", "false"); });
+  }
+  function togglePlay() {
+    if (ST.play) { stopPlay(); return; }
+    document.querySelectorAll("[data-ks-play]").forEach(function (b) { b.textContent = "Pause"; b.setAttribute("aria-pressed", "true"); });
+    ST.play = setInterval(function () { if (!stepBy(1)) stopPlay(); }, 400);
+  }
   function bind() {
     K = window.KalasetuEngine; D = window.__KALASETU_DATA;
     if (!K || !D || !K.isFitted() || !window.__kEclipModern || !window.__ayanFor || !window.__kNodesModern) {
@@ -1922,18 +2045,48 @@
     writeWhen(Date.now());
     ["ks-era", "ks-year", "ks-month", "ks-day", "ks-time"].forEach(function (id) {
       $(id).addEventListener("change", function () { readWhen(); redrawMoment(); }); });
+    /* changing what the clock means keeps the instant and rewrites the clock */
+    $("ks-tmode").addEventListener("change", function () { writeWhen(ST.ms); redrawMoment(); });
+    /* changing the place keeps the clock time and moves the instant — a birth
+       time is given on the place's own clock */
+    function placeChanged() { readWhen(); redrawMoment(); }
+    ["ks-lat", "ks-lon"].forEach(function (id) { $(id).addEventListener("change", function () {
+      ST.place = { n: "Custom coordinates", lat: latNow(), lon: lonNow(), zone: null };
+      if (ST.picker) ST.picker.set(ST.place); placeChanged(); }); });
+    if (window.NPlaces && window.NPlaces.picker) {
+      ST.picker = window.NPlaces.picker({ host: $("ks-place"), value: ST.place, quick: QUICK, label: "Place",
+        refMs: function () { return Date.now(); },
+        onPick: function (p) {
+          ST.place = { n: p.n, lat: p.lat, lon: p.lon, zone: p.zone || null };
+          $("ks-lat").value = (+p.lat).toFixed(4); $("ks-lon").value = (+p.lon).toFixed(4);
+          placeChanged();
+        } });
+    }
     document.addEventListener("click", function (e) {
+      var sb = e.target.closest && e.target.closest("[data-ks-step],[data-ks-play]");
+      if (sb) { if (sb.hasAttribute("data-ks-play")) togglePlay(); else { stopPlay(); stepBy(+sb.getAttribute("data-ks-step")); } return; }
       var t = e.target.closest && e.target.closest("[data-ks-preset],[data-ks]"); if (!t) return;
-      if (t.hasAttribute("data-ks-preset")) { writeWhen(PRESETS[+t.getAttribute("data-ks-preset")][1]()); redrawMoment(); }
+      if (t.hasAttribute("data-ks-preset")) { stopPlay(); writeWhen(PRESETS[+t.getAttribute("data-ks-preset")][1]()); redrawMoment(); }
       else if (t.getAttribute("data-ks") === "now") { writeWhen(Date.now()); redrawMoment(); }
       else if (t.getAttribute("data-ks") === "measure") measure();
     });
     $("ks-graha").addEventListener("change", steps);
+    $("ks-unit").addEventListener("change", function () { stopPlay(); resetScrub(); });
+    var scrub = $("ks-scrub");
+    scrub.addEventListener("input", function () {
+      stopPlay();
+      if (!ST.scrubbing) { ST.scrubbing = true; if (ST.anchor == null) ST.anchor = ST.ms; }
+      var k = +scrub.value;
+      writeWhen(shifted(ST.anchor, unitNow(), k)); redrawMoment(); scrubLabel(k);
+    });
+    scrub.addEventListener("change", function () { ST.scrubbing = false; resetScrub(); });
     $("ks-accbody").addEventListener("change", bands);
     $("ks-groups").addEventListener("change", moonTerms);
     tiles(); accTable(); bands(); cost(); built();
-    redrawMoment(); moonTerms(); measure();
-    window.__ksPage = { setMoment: function (ms) { writeWhen(ms); redrawMoment(); }, measure: measure, moonTerms: moonTerms };
+    redrawMoment(); clearTimeout(ST.heavy); deltaT(); nodes(); gi(); moonTerms(); measure();
+    window.__ksPage = { setMoment: function (ms) { writeWhen(ms); redrawMoment(); }, measure: measure, moonTerms: moonTerms,
+      step: stepBy,
+      state: function () { return { ms: ST.ms, place: ST.place, mode: $("ks-tmode").value }; } };
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind); else bind();
 })();

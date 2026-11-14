@@ -6407,6 +6407,13 @@ window.__kRiseConv=function(){
     out.list.push({key:k, label:K_RISE_CONV[k].label, alt:K_RISE_CONV[k].alt});
   return out;
 };
+/* The TROPICAL ascendant for an instant and a place, with no ayanāṃśa —
+   for a caller (kalasetu.html) that reads it in a frame of its own choosing
+   rather than the page's. Same construction as every chart's lagna. */
+window.__kAscTrop=function(ms,lat,lon){
+  var jd=ms/86400000+2440587.5;
+  return ascendant(jd,new Date(ms),lat,lon,0);
+};
 window.__kAsc=function(inp,offMin){
   var ut=inp.hour+inp.minute/60+(offMin||0)/60-inp.tzHours;
   var jd=jdFromUTC(inp.year,inp.month,inp.day,ut);
