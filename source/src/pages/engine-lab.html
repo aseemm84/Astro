@@ -90,8 +90,8 @@ position at all &mdash; but the tithi, which is the difference of two longitudes
 and so collects both errors, is the one a reader would notice.</p>
 
 <div class="aybar">
-  <label>From <input type="number" id="el-from" class="swin" value="1900" min="-4999" max="3590" step="10"></label>
-  <label>To <input type="number" id="el-to" class="swin" value="2100" min="-4990" max="3600" step="10"></label>
+  <label>From <input type="number" id="el-from" class="swin" value="1900" min="-12999" max="3590" step="10"></label>
+  <label>To <input type="number" id="el-to" class="swin" value="2100" min="-7990" max="3600" step="10"></label>
   <label>Samples <select id="el-n" class="swin">
     <option value="120">120</option>
     <option value="400" selected>400</option>
@@ -171,20 +171,23 @@ question you chose at the top of the page.</p>
 <div class="aywrap"><div id="el-band"></div></div>
 <p class="k-note" id="el-bandnote"></p>
 
-<h2 id="longspan">The fourth engine: eight thousand years<span class="kdeva">समन्वय-यन्त्रम्</span></h2>
+<h2 id="longspan">The fourth engine: sixteen thousand years<span class="kdeva">समन्वय-यन्त्रम्</span></h2>
 
 <p>The three engines above are all pinned to the present. The text as written is
 degrees out everywhere; the fitted tier was fitted on 1800&ndash;2200 and comes apart
-away from it. The <b>KThe <b>Samanvaya Siddh&amacr;nta</b> engineamacr;lasetu SiddhThe <b>Samanvaya Siddh&amacr;nta</b> engineamacr;nta</b> engine (The <b>Samanvaya Siddh&amacr;nta</b> engine#2325;The <b>Samanvaya Siddh&amacr;nta</b> engine#2366;The <b>Samanvaya Siddh&amacr;nta</b> engine#2354;The <b>Samanvaya Siddh&amacr;nta</b> engine#2360;The <b>Samanvaya Siddh&amacr;nta</b> engine#2375;The <b>Samanvaya Siddh&amacr;nta</b> engine#2340;The <b>Samanvaya Siddh&amacr;nta</b> engine#2369;, The <b>Samanvaya Siddh&amacr;nta</b> engineldquo;the bridge across timeThe <b>Samanvaya Siddh&amacr;nta</b> enginerdquo;) is fitted across the whole
-of <b>5000&nbsp;BCE &ndash; 3600&nbsp;CE</b>, in the Samanvaya&ndash;Ecliptic frame
-(&Amacr;ryabha&#7789;a&rsquo;s, to 0.28&Prime;). It keeps the Later S&umacr;rya
-Siddh&amacr;nta&rsquo;s own time-count &mdash; every mean place is the text&rsquo;s
-revolutions over its civil days, from the Kali epoch &mdash; and corrects it. It does
-<b>not</b> keep the text&rsquo;s geometry: the orbits are solved exactly, the
-&#347;&imacr;ghra is taken with true distances, the Moon carries Candra&#347;ekhara
-S&amacr;manta&rsquo;s evection, variation and annual equation and the further terms of
-the modern lunar series, and Guru and &#346;ani their great inequality. Every
-figure below is from instants the fit never saw.</p>
+away from it. The <b>K&amacr;lasetu Siddh&amacr;nta</b> engine (&#2325;&#2366;&#2354;&#2360;&#2375;&#2340;&#2369;,
+&ldquo;the bridge across time&rdquo;) is fitted across the whole of
+<b>13000&nbsp;BCE &ndash; 3600&nbsp;CE</b>, in three overlapping fits, in the
+Samanvaya&ndash;Ecliptic frame (&Amacr;ryabha&#7789;a&rsquo;s, to 0.28&Prime;), against NASA JPL&rsquo;s
+DE422 ephemeris and, outside DE422&rsquo;s 3000&nbsp;BCE &ndash; 3000&nbsp;CE, a numerical integration of
+the Solar System started from it. It keeps the Later S&umacr;rya Siddh&amacr;nta&rsquo;s own
+time-count &mdash; every mean place is the text&rsquo;s revolutions over its civil days, from
+the Kali epoch &mdash; and corrects it. It does <b>not</b> keep the text&rsquo;s geometry: the
+orbits are solved exactly, the &#347;&imacr;ghra is taken with true distances, the Moon
+carries Candra&#347;ekhara S&amacr;manta&rsquo;s evection, variation and annual equation and the
+further terms of the modern lunar series, and Guru and &#346;ani their great inequality.
+Every figure below is from instants the fit never saw. Its own page,
+<a href="kalasetu.html">K&amacr;lasetu</a>, gives every era&rsquo;s error bar.</p>
 
 <div id="el-sltab"></div>
 <p class="k-note" id="el-slnote"></p>
@@ -193,15 +196,16 @@ figure below is from instants the fit never saw.</p>
 The comparison is made in the Samanvaya&ndash;Ecliptic frame for both, so the
 difference is the engine&rsquo;s alone.</p>
 <div class="aybar">
-  <label class="elwide">Year <input type="range" id="el-slyear" min="-4999" max="3600" step="1" value="-1000"></label>
+  <label class="elwide">Year <input type="range" id="el-slyear" min="-12999" max="3600" step="1" value="-1000"></label>
   <span class="ayread" id="el-slyearread"></span>
 </div>
 <div id="el-sllive"></div>
-<p class="k-note">What it agrees with is the <i>modern engine</i>. That engine is held
-to an independent sky only over 1000&ndash;3000&nbsp;CE; before and after, both are
-models, and &Delta;T &mdash; the Earth&rsquo;s own clock &mdash; is uncertain by hours
-at the ends of the span. So read the residuals as how well this engine reproduces
-modern theory, not as how well either one knows the sky in 3000&nbsp;BCE.</p>
+<p class="k-note">The live comparison is with the site&rsquo;s <i>modern engine</i>, the only other
+ephemeris in the browser. Over 1000&ndash;3600&nbsp;CE it is a fair yardstick. Further back it is
+the modern engine that drifts: against DE422 its Moon is half a degree out by 1000&nbsp;BCE and its
+Saturn degrees out before 5000&nbsp;BCE, so a large difference there is mostly the yardstick&rsquo;s.
+And &Delta;T &mdash; the Earth&rsquo;s own clock &mdash; is uncertain by hours before 1000&nbsp;BCE and by
+most of a day at 13000&nbsp;BCE, which no engine can remove.</p>
 
 <h2 id="which">Which engine answers which question<span class="kdeva">यन्त्र-विभागः</span></h2>
 

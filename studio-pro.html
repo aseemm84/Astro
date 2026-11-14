@@ -2638,6 +2638,19 @@ html[data-caution="off"] .krect{display:none}
 .ks-stepbtns{display:inline-flex;flex-wrap:wrap;gap:.3rem}
 .ks-scroller input[type=range]{width:100%;min-width:0}
 .ks-scroller .elwide{flex:1 1 16rem;min-width:0}
+/* Kālasetu: how far to trust a number, by era — four grades on the site's own
+   semantic tokens, so both themes carry them */
+.ks-g1{background:color-mix(in srgb,var(--sem-good,#2e7d4f) 16%,transparent)}
+.ks-g2{background:color-mix(in srgb,var(--sem-mid,#b58a1b) 16%,transparent)}
+.ks-g3{background:color-mix(in srgb,var(--sem-bad,#a1493a) 14%,transparent)}
+.ks-g4{background:color-mix(in srgb,var(--sem-bad,#a1493a) 30%,transparent)}
+.ks-gk{display:inline-block;padding:.05rem .4rem;border-radius:4px;font-size:.78rem}
+.ks-bar.core{fill:var(--accent,#c9a24b)}
+.ks-bar.early{fill:var(--sem-info,#3f6fa6)}
+.ks-bar.deep{fill:var(--sem-bad,#a1493a)}
+.ks-bar.ex{opacity:.45}
+.ks-fitbar{display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center}
+.ks-era td:first-child{white-space:nowrap}
 
 /* ===== the master settings overlay ======================================
    THE ONE COPY. This used to be duplicated verbatim in app.css and pages.css,

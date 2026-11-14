@@ -1510,7 +1510,7 @@
     { k: "bare", label: "Sūrya Siddhānta as written",
       note: "the text's own numbers" },
     { k: "ks", label: "Kālasetu",
-      note: "the text's time-count, a modern geometry, fitted across 5000 BCE – 3600 CE (Samanvaya–Ecliptic frame)" }
+      note: "the text's time-count, a modern geometry, fitted across 13000 BCE – 3600 CE (Samanvaya–Ecliptic frame)" }
   ];
 
   var AC = null, FIT = null, LAH = null;
@@ -1766,7 +1766,7 @@
         "is one engine against the modern engine in the sidereal frame that " +
         "engine was fitted in — Lahiri for the two Sūrya Siddhānta tiers, " +
         "Samanvaya–Ecliptic for Kālasetu." + (ksSpan(ms) ? "" :
-        " <b>This moment is outside Kālasetu's fitted span (5000 BCE – 3600 CE)</b>, so its column claims nothing here.");
+        " <b>This moment is outside Kālasetu's fitted span (13000 BCE – 3600 CE)</b>, so its column claims nothing here.");
       return render(["Graha", "modern", "fitted", "as written", "Kālasetu",
                      "fitted − modern", "written − modern", "Kālasetu − modern"], rows, true);
     }
@@ -2164,15 +2164,16 @@
         mod: m ? { t: m.lonRms, w: m.lonWorst } : null,                         /* arcsec */
         fit: r.holdout ? { t: r.holdout.rms * 60, w: r.holdout.worst * 60 } : null,
         bare: r.bare ? { t: r.bare.rms * 60, w: r.bare.worst * 60 } : null,
-        /* Kālasetu's file is already in arcminutes, and its figures are held
-           back across 5000 BCE – 3600 CE, not 1800–2200 */
-        ks: (KR[sa] && KR[sa].holdout) ? { t: KR[sa].holdout.rms * 60, w: KR[sa].holdout.worst * 60 } : null
+        /* Kālasetu's file is already in arcminutes; its figures are held back
+           against JPL DE422 over 3000 BCE – 3000 CE (the core fit's own
+           measured span; earlier eras are on the Kālasetu page) */
+        ks: (KR[sa] && (KR[sa].de || KR[sa].holdout)) ? { t: (KR[sa].de || KR[sa].holdout).rms * 60, w: (KR[sa].de || KR[sa].holdout).worst * 60 } : null
       };
     }
     function cell(e) { return e ? ang(e.t) + ' <span class="elw">(worst ' + ang(e.w) + ")</span>" : "—"; }
     var h = '<div class="eltblwrap"><table class="tbl elerr"><thead><tr><th>Graha</th>' +
       "<th>modern<br><small>typical (worst)</small></th><th>fitted<br><small>typical (worst)</small></th>" +
-      "<th>as written<br><small>typical (worst)</small></th><th>Kālasetu<br><small>typical (worst), 5000 BCE – 3600 CE</small></th></tr></thead><tbody>";
+      "<th>as written<br><small>typical (worst)</small></th><th>Kālasetu<br><small>typical (worst), against DE422, 3000 BCE – 3000 CE</small></th></tr></thead><tbody>";
     SA7.forEach(function (sa) {
       var e = rowErr(sa);
       h += "<tr><td><b>" + sa + "</b> <small>" + EN[sa] + "</small></td><td>" + cell(e.mod) +
@@ -2188,7 +2189,7 @@
         '<td><span class="elw">the reference</span></td><td>' + cell(en.fit) + "</td><td>" + cell(en.bare) + "</td><td>" + cell(en.ks) + "</td></tr>";
     }
     if (KR["Rāhu (true)"] && KR["Rāhu (true)"].holdout) {
-      var kt = KR["Rāhu (true)"].holdout;
+      var kt = KR["Rāhu (true)"].de || KR["Rāhu (true)"].holdout;
       h += "<tr><td><b>Rāhu · Ketu</b> <small>true node</small></td>" +
         '<td><span class="elw">the reference</span></td><td>mean node only</td><td>mean node only</td><td>' +
         cell({ t: kt.rms * 60, w: kt.worst * 60 }) + "</td></tr>";
@@ -2561,11 +2562,11 @@
        "Sun " + byName("Sūrya").measuredRms.toFixed(2) + "′, Moon " +
        byName("Candra").measuredRms.toFixed(0) + "′ — study only, not for casting",
        "siddhanta-measured-verify"],
-      ["A chart for any date from 5000 BCE to 3600 CE", "Kālasetu",
+      ["A chart for any date from 13000 BCE to 3600 CE", "Kālasetu",
        (function () { var K = (window.__KALASETU_DATA || {}).residuals || {};
-         var f = function (n) { return K[n] && K[n].holdout ? K[n].holdout.rms.toFixed(2) + "′" : "—"; };
+         var f = function (n) { var q = K[n] && (K[n].de || K[n].holdout); return q ? q.rms.toFixed(2) + "′" : "—"; };
          return "Sun " + f("Sūrya") + ", Moon " + f("Candra") + ", Saturn " + f("Śani") +
-           " from the modern engine across the whole span, on moments the fit never saw"; })(),
+           " from JPL DE422 over 3000 BCE – 3000 CE, on moments the fit never saw; every era's own figure on its page"; })(),
        "kalasetu-verify"],
       ["Which sidereal zero to measure from", "a convention, not an engine",
        "the " + AC.ayanamsa.modes.length + " modes span " +
@@ -2702,25 +2703,33 @@
               ["Maṅgala", "Mars"], ["Guru", "Jupiter"], ["Śani", "Saturn"], ["Rāhu", "mean node"],
               ["Rāhu (true)", "true node"]];
 
-  function table(D) {
+  /* 600-year eras across the whole span; each read from the fit Auto picks
+     for it (the engine's accuracyAt), so the row is the error bar a chart in
+     that era carries */
+  var ERAS = []; for (var ey = -13000; ey + 600 <= 3800; ey += 600) ERAS.push(ey);
+  function midOf(y0) { var d = new Date(Date.UTC(2000, 6, 1)); d.setUTCFullYear(y0 + 1 + (y0 + 600 > 3400 ? 400 : 300)); return d.getTime(); }
+  function table(D, SL) {
     var host = $("el-sltab"); if (!host) return;
-    var bands = (D.residuals["Sūrya"].bands || []).map(function (b) { return b.from; });
-    var h = '<div class="eltblwrap"><table class="aytab elerr"><thead><tr><th>graha</th><th>held back, rms</th><th>worst</th>' +
-      bands.map(function (y) { return "<th>" + esc(yearLabel(y + 1)) + "</th>"; }).join("") +
+    var h = '<div class="eltblwrap"><table class="aytab elerr"><thead><tr><th>graha</th><th>within DE422, rms</th><th>worst</th>' +
+      ERAS.map(function (y) { return "<th>" + esc(yearLabel(y + 1)) + "</th>"; }).join("") +
       "</tr></thead><tbody>";
     ROWS.forEach(function (r) {
-      var R = D.residuals[r[0]]; if (!R) return;
+      var R = D.residuals[r[0]]; if (!R) return; var q = R.de || R.holdout;
       h += "<tr><td><b>" + esc(r[0]) + "</b> <span class=\"elw\">" + esc(r[1]) + "</span></td><td>" +
-        am(R.holdout.rms) + "</td><td>" + am(R.holdout.worst) + "</td>" +
-        bands.map(function (_, i) { var B = R.bands && R.bands[i]; return "<td>" + (B ? am(B.rms) : "—") + "</td>"; }).join("") + "</tr>";
+        am(q.rms) + "</td><td>" + am(q.worst) + "</td>" +
+        ERAS.map(function (y0) { var ms = midOf(y0), a = SL && SL.accuracyAt ? SL.accuracyAt(r[0], ms) : null, yy = new Date(ms).getUTCFullYear();
+          var ex = (r[0] === "Candra" || r[0] === "Rāhu (true)") && (yy < -2999 || yy > 2999);
+          return "<td" + (ex ? ' title="no independent reference: the spread between two extrapolations" style="opacity:.6"' : "") + ">" +
+            (a ? am(a.rms) + (ex ? "*" : "") : "—") + "</td>"; }).join("") + "</tr>";
     });
     h += "</tbody></table></div>";
     host.innerHTML = h;
     var n = $("el-slnote");
-    if (n) n.textContent = "Arcminutes of sidereal longitude, against the modern engine, on " + D.samples.holdout +
-      " instants the fit never saw (" + D.samples.total + " in all, spread over " + D.span.label +
-      "). The band columns are 600-year bands, each labelled by its first year. Written by fit-kalasetu; " +
-      "checked by kalasetu-verify. For scale, a nakṣatra pāda is 200′ and a D60 aṃśa 30′.";
+    if (n) n.textContent = "Arcminutes of sidereal longitude, on instants the fits never saw, against JPL DE422 (3000 BCE – 3000 CE) and, " +
+      "outside it, a numerical integration started from DE422. Three fits cover " + (SL ? SL.SPAN.label : D.span.label) +
+      "; each era column is read from the fit Kālasetu uses there. * the Moon and true node before 3000 BCE (and after 3000 CE) " +
+      "have no independent reference: the figure is the spread between two extrapolations. The band columns are 600 years each, labelled by their first year. " +
+      "Written by fit-kalasetu; checked by kalasetu-verify. For scale, a nakṣatra pāda is 200′ and a D60 aṃśa 30′.";
   }
 
   function live(SL) {
@@ -2754,7 +2763,7 @@
       $("el-sltab").innerHTML = '<p class="swfail">The long-span engine or its fitted numbers did not load.</p>';
       return;
     }
-    table(D); live(SL);
+    table(D, SL); live(SL);
     $("el-slyear").addEventListener("input", function () { live(SL); });
     window.__slLab = { live: function () { live(SL); } };
   }

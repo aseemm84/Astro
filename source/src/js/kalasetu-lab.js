@@ -18,25 +18,33 @@
               ["Maṅgala", "Mars"], ["Guru", "Jupiter"], ["Śani", "Saturn"], ["Rāhu", "mean node"],
               ["Rāhu (true)", "true node"]];
 
-  function table(D) {
+  /* 600-year eras across the whole span; each read from the fit Auto picks
+     for it (the engine's accuracyAt), so the row is the error bar a chart in
+     that era carries */
+  var ERAS = []; for (var ey = -13000; ey + 600 <= 3800; ey += 600) ERAS.push(ey);
+  function midOf(y0) { var d = new Date(Date.UTC(2000, 6, 1)); d.setUTCFullYear(y0 + 1 + (y0 + 600 > 3400 ? 400 : 300)); return d.getTime(); }
+  function table(D, SL) {
     var host = $("el-sltab"); if (!host) return;
-    var bands = (D.residuals["Sūrya"].bands || []).map(function (b) { return b.from; });
-    var h = '<div class="eltblwrap"><table class="aytab elerr"><thead><tr><th>graha</th><th>held back, rms</th><th>worst</th>' +
-      bands.map(function (y) { return "<th>" + esc(yearLabel(y + 1)) + "</th>"; }).join("") +
+    var h = '<div class="eltblwrap"><table class="aytab elerr"><thead><tr><th>graha</th><th>within DE422, rms</th><th>worst</th>' +
+      ERAS.map(function (y) { return "<th>" + esc(yearLabel(y + 1)) + "</th>"; }).join("") +
       "</tr></thead><tbody>";
     ROWS.forEach(function (r) {
-      var R = D.residuals[r[0]]; if (!R) return;
+      var R = D.residuals[r[0]]; if (!R) return; var q = R.de || R.holdout;
       h += "<tr><td><b>" + esc(r[0]) + "</b> <span class=\"elw\">" + esc(r[1]) + "</span></td><td>" +
-        am(R.holdout.rms) + "</td><td>" + am(R.holdout.worst) + "</td>" +
-        bands.map(function (_, i) { var B = R.bands && R.bands[i]; return "<td>" + (B ? am(B.rms) : "—") + "</td>"; }).join("") + "</tr>";
+        am(q.rms) + "</td><td>" + am(q.worst) + "</td>" +
+        ERAS.map(function (y0) { var ms = midOf(y0), a = SL && SL.accuracyAt ? SL.accuracyAt(r[0], ms) : null, yy = new Date(ms).getUTCFullYear();
+          var ex = (r[0] === "Candra" || r[0] === "Rāhu (true)") && (yy < -2999 || yy > 2999);
+          return "<td" + (ex ? ' title="no independent reference: the spread between two extrapolations" style="opacity:.6"' : "") + ">" +
+            (a ? am(a.rms) + (ex ? "*" : "") : "—") + "</td>"; }).join("") + "</tr>";
     });
     h += "</tbody></table></div>";
     host.innerHTML = h;
     var n = $("el-slnote");
-    if (n) n.textContent = "Arcminutes of sidereal longitude, against the modern engine, on " + D.samples.holdout +
-      " instants the fit never saw (" + D.samples.total + " in all, spread over " + D.span.label +
-      "). The band columns are 600-year bands, each labelled by its first year. Written by fit-kalasetu; " +
-      "checked by kalasetu-verify. For scale, a nakṣatra pāda is 200′ and a D60 aṃśa 30′.";
+    if (n) n.textContent = "Arcminutes of sidereal longitude, on instants the fits never saw, against JPL DE422 (3000 BCE – 3000 CE) and, " +
+      "outside it, a numerical integration started from DE422. Three fits cover " + (SL ? SL.SPAN.label : D.span.label) +
+      "; each era column is read from the fit Kālasetu uses there. * the Moon and true node before 3000 BCE (and after 3000 CE) " +
+      "have no independent reference: the figure is the spread between two extrapolations. The band columns are 600 years each, labelled by their first year. " +
+      "Written by fit-kalasetu; checked by kalasetu-verify. For scale, a nakṣatra pāda is 200′ and a D60 aṃśa 30′.";
   }
 
   function live(SL) {
@@ -70,7 +78,7 @@
       $("el-sltab").innerHTML = '<p class="swfail">The long-span engine or its fitted numbers did not load.</p>';
       return;
     }
-    table(D); live(SL);
+    table(D, SL); live(SL);
     $("el-slyear").addEventListener("input", function () { live(SL); });
     window.__slLab = { live: function () { live(SL); } };
   }

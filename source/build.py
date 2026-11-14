@@ -53,10 +53,20 @@ def engine_js():
     # the long-span engine and its fitted numbers (fit-kalasetu.mjs)
     sl = read(os.path.dirname(SRC), "data", "kalasetu.json").strip()
     json.loads(sl)
+    # and its two earlier sets (early, deep), each fitted on its own five or six
+    # millennia; engine.js loads them beside the core set
+    sets = []
+    for nm in ("early", "deep"):
+        fp = os.path.join(os.path.dirname(SRC), "data", "kalasetu-" + nm + ".json")
+        if os.path.exists(fp):
+            t = read(os.path.dirname(SRC), "data", "kalasetu-" + nm + ".json").strip()
+            json.loads(t)
+            sets.append('"' + nm + '":' + t)
     return (jsread(SRC, "js", "ss-engine.js") + "\n" +
             "window.__SS_FIT_DATA=" + fit + ";\n" +
             jsread(SRC, "js", "kalasetu-engine.js") + "\n" +
             "window.__KALASETU_DATA=" + sl + ";\n" +
+            "window.__KALASETU_SETS={" + ",".join(sets) + "};\n" +
             jsread(SRC, "js", "engine.js"))
 
 def jsread(*p):

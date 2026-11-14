@@ -1,10 +1,10 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Kālasetu Siddhānta — the bridge across time &mdash; Nirayana</title><meta name="description" content="Kālasetu, the fourth engine: the Sūrya Siddhānta's time-count with a modern geometry, fitted in the Samanvaya–Ecliptic frame across 5000 BCE – 3600 CE. Place the nine grahas on any day in the span, follow one longitude from the day count to the answer, measure its accuracy band by band, switch the Moon's terms on and off, and see the great inequality, ΔT and the true node drawn across the millennia.">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Kālasetu Siddhānta — the bridge across time &mdash; Nirayana</title><meta name="description" content="Kālasetu, the fourth engine: the Sūrya Siddhānta's time-count with a modern geometry, fitted in the Samanvaya–Ecliptic frame across 13000 BCE – 3600 CE in three fits, against JPL DE422 and an integration started from it. Place the nine grahas on any day in the span with each one's measured error for that era, follow one longitude from the day count to the answer, read every era's error, bias and worst case, switch the Moon's terms on and off, and see the great inequality, ΔT and the true node drawn across the millennia.">
 <link rel="canonical" href="https://aseemm84.github.io/Astro/kalasetu.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Nirayana">
 <meta property="og:locale" content="en_GB">
 <meta property="og:title" content="Kālasetu Siddhānta — the bridge across time &amp;mdash; Nirayana">
-<meta property="og:description" content="Kālasetu, the fourth engine: the Sūrya Siddhānta's time-count with a modern geometry, fitted in the Samanvaya–Ecliptic frame across 5000 BCE – 3600 CE. Place the nine grahas on any day in the span, follow one longitude from the day count to the answer, measure its accuracy band by band, switch the Moon's terms on and off, and see the great inequality, ΔT and the true node drawn across the millennia.">
+<meta property="og:description" content="Kālasetu, the fourth engine: the Sūrya Siddhānta's time-count with a modern geometry, fitted in the Samanvaya–Ecliptic frame across 13000 BCE – 3600 CE in three fits, against JPL DE422 and an integration started from it. Place the nine grahas on any day in the span with each one's measured error for that era, follow one longitude from the day count to the answer, read every era's error, bias and worst case, switch the Moon's terms on and off, and see the great inequality, ΔT and the true node drawn across the millennia.">
 <meta property="og:url" content="https://aseemm84.github.io/Astro/kalasetu.html">
 <meta property="og:image" content="https://aseemm84.github.io/Astro/assets/og-nirayana.png">
 <meta property="og:image:width" content="1200">
@@ -12,7 +12,7 @@
 <meta property="og:image:alt" content="Nirayana — a Vedic astrology reference and chart engine">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Kālasetu Siddhānta — the bridge across time &amp;mdash; Nirayana">
-<meta name="twitter:description" content="Kālasetu, the fourth engine: the Sūrya Siddhānta's time-count with a modern geometry, fitted in the Samanvaya–Ecliptic frame across 5000 BCE – 3600 CE. Place the nine grahas on any day in the span, follow one longitude from the day count to the answer, measure its accuracy band by band, switch the Moon's terms on and off, and see the great inequality, ΔT and the true node drawn across the millennia.">
+<meta name="twitter:description" content="Kālasetu, the fourth engine: the Sūrya Siddhānta's time-count with a modern geometry, fitted in the Samanvaya–Ecliptic frame across 13000 BCE – 3600 CE in three fits, against JPL DE422 and an integration started from it. Place the nine grahas on any day in the span with each one's measured error for that era, follow one longitude from the day count to the answer, read every era's error, bias and worst case, switch the Moon's terms on and off, and see the great inequality, ΔT and the true node drawn across the millennia.">
 <meta name="twitter:image" content="https://aseemm84.github.io/Astro/assets/og-nirayana.png">
 <meta name="theme-color" content="#1d2340">
 <meta name="color-scheme" content="light">
@@ -2638,6 +2638,19 @@ html[data-caution="off"] .krect{display:none}
 .ks-stepbtns{display:inline-flex;flex-wrap:wrap;gap:.3rem}
 .ks-scroller input[type=range]{width:100%;min-width:0}
 .ks-scroller .elwide{flex:1 1 16rem;min-width:0}
+/* Kālasetu: how far to trust a number, by era — four grades on the site's own
+   semantic tokens, so both themes carry them */
+.ks-g1{background:color-mix(in srgb,var(--sem-good,#2e7d4f) 16%,transparent)}
+.ks-g2{background:color-mix(in srgb,var(--sem-mid,#b58a1b) 16%,transparent)}
+.ks-g3{background:color-mix(in srgb,var(--sem-bad,#a1493a) 14%,transparent)}
+.ks-g4{background:color-mix(in srgb,var(--sem-bad,#a1493a) 30%,transparent)}
+.ks-gk{display:inline-block;padding:.05rem .4rem;border-radius:4px;font-size:.78rem}
+.ks-bar.core{fill:var(--accent,#c9a24b)}
+.ks-bar.early{fill:var(--sem-info,#3f6fa6)}
+.ks-bar.deep{fill:var(--sem-bad,#a1493a)}
+.ks-bar.ex{opacity:.45}
+.ks-fitbar{display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center}
+.ks-era td:first-child{white-space:nowrap}
 
 /* ===== the master settings overlay ======================================
    THE ONE COPY. This used to be duplicated verbatim in app.css and pages.css,
@@ -3530,12 +3543,14 @@ html[data-theme] nav.site .themepick select option{
     return true;
   }, list: THEMES };
 })();
-</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Kālasetu · the fourth engine</p><h1>Kālasetu Siddhānta</h1><p class="sub">The site's fourth engine: the Sūrya Siddhānta's own count of time carrying a modern geometry, fitted across 5000 BCE – 3600 CE — computed live, step by step, on any day in seven thousand years.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="kalasetu.html" class="active">Kālasetu</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#what">What K&amacr;lasetu is</a><a href="#sky">The sky on any day in eight thousand years</a><a href="#pipeline">How one longitude is made</a><a href="#accuracy">How close, across the span</a><a href="#moon">The Moon&rsquo;s terms</a><a href="#great">Jupiter and Saturn across eight thousand years</a><a href="#clock">The Earth&rsquo;s clock</a><a href="#nodes">R&amacr;hu and Ketu</a><a href="#cost">What its error costs a chart</a><a href="#limits">What it does not claim</a><a href="#built">How it was built and checked</a></aside><main><style>.plainx{margin:0 0 1.4rem;border:1px solid rgba(128,128,128,.35);border-left:4px solid #c08a2b;border-radius:10px;background:rgba(192,138,43,.07);font-size:1rem;line-height:1.55;color:inherit}.plainx>details>summary{cursor:pointer;padding:.75rem 1rem;list-style:none}.plainx>details>summary::-webkit-details-marker{display:none}.plainx>details>summary b{display:block;font-size:1.02rem}.plainx>details>summary b:before{content:'\25B8  ';}.plainx>details[open]>summary b:before{content:'\25BE  ';}.plainx>details>summary span{display:block;opacity:.85;margin-top:.15rem}.plainx .plainb{padding:0 1rem .9rem}.plainx .plainb h4{margin:.8rem 0 .2rem;font-size:.95rem}.plainx .plainb p{margin:.1rem 0}.plainx.plainx-adopted{max-width:1100px;width:calc(100% - 32px);margin:1rem auto 1.2rem;box-sizing:border-box}@media print{.plainx{display:none}}</style><section class="plainx" data-plain="kalasetu.html" aria-label="Explain in simple language"><details><summary><b>Explain in simple language</b><span>The site's fourth way of calculating where the planets are — one that stays accurate for any date from 5000 BCE to 3600 CE.</span></summary><div class="plainb"><h4>What this page is</h4><p>Kālasetu keeps the old Indian text's way of counting days and carries a modern understanding of the planets' orbits on it. It was tuned against the modern computation across seven thousand two hundred years, and this page shows it working: where it puts each planet on any day, every step of one calculation, and how close it comes, century by century.</p><h4>How to use it</h4><p>Set an <b>Era</b>, <b>Year</b>, <b>Month</b>, <b>Day</b> and <b>Time</b> (or press one of the preset dates) and the nine planets are placed, beside the modern answer. Choose a <b>Graha</b> under 'How one longitude is made' to follow its calculation. Under 'How close', pick a planet for its error century by century, or set <b>From</b>, <b>To</b> and <b>Moments</b> and press <b>Measure</b> to test it yourself against the older fitted engine. Untick a group of the Moon's terms to see how much worse the Moon gets without it. Settings → Engine, or the Engine menu on Kundli, makes Kālasetu the engine for your charts.</p><h4>How to read what you see</h4><p>Differences are in arcminutes (′), sixtieths of a degree. For scale, a nakṣatra quarter (pāda) is 200′; anything under a few arcminutes changes nothing a chart is read in.</p><h4>A word of care</h4><p>It is compared with the modern computation, which is itself checked against the real sky only from 1000 to 3000 CE. For the distant past both are calculations, not observations.</p></div></details></section><p class="lede"><b>K&amacr;lasetu Siddh&amacr;nta</b> &mdash; &#2325;&#2366;&#2354;&#2360;&#2375;&#2340;&#2369;, &ldquo;the bridge
+</script></head><body><header class="masthead"><a class="lhbrand" href="index.html" aria-label="Nirayana — home"><span class="lhmarkwrap"><img class="lhmark" src="assets/brand/mark.svg" width="512" height="512" alt="" decoding="async"></span><span class="lhword"><span class="lhname">Nirayana</span><span class="lhdeva">निरयन</span></span></a><p class="eyebrow">Kālasetu · the fourth engine</p><h1>Kālasetu Siddhānta</h1><p class="sub">The site's fourth engine: the Sūrya Siddhānta's own count of time carrying a modern geometry, fitted across 13000 BCE – 3600 CE against JPL DE422 — computed live, with its error bar, on any day in sixteen thousand years.</p></header><nav class="site"><a href="index.html">Home</a><a href="now.html">Hindu time now</a><a href="calendar.html">Calendar</a><a href="starwheel.html">Star wheel</a><a href="ecliptic.html">Ecliptic wheel</a><a href="ayanamsa.html">Ayanāṃśa</a><a href="bhava-systems.html">Bhāva systems</a><a href="divisions.html">Divisions</a><a href="graha-lab.html">Graha lab</a><a href="studio.html">Studio</a><a href="studio-pro.html">Studio Pro</a><a href="reel.html">Reel Studio</a><a href="director-pro.html">Director Pro</a><a href="motion.html">Motion</a><a href="ceremony.html">Ceremony</a><a href="siddhanta.html">Sūrya Siddhānta</a><a href="engine-lab.html">Engine lab</a><a href="kalasetu.html" class="active">Kālasetu</a><a href="accuracy.html">Accuracy</a><a href="simulation.html">Simulation</a><a href="kundli.html">Kundli 2.0</a><a href="kinetic-workstation.html">Workstation</a><a href="grahas.html">Grahas</a><a href="dignity.html">Dignity</a><a href="rashis.html">Rashis</a><a href="bhavas.html">Bhavas</a><a href="lagna.html">Lagna</a><a href="aspects.html">Aspects</a><a href="vargas.html">Vargas</a><a href="strength.html">Strength</a><a href="special-points.html">Special Points</a><a href="yogas.html">Yogas</a><a href="avasthas-longevity.html">Avasthas & Longevity</a><a href="dashas.html">Dashas</a><a href="ashtakavarga.html">Ashtakavarga</a><a href="108-nakshatra-padas.html">108 Padas ↗</a></nav><div class="layout"><aside class="onpage"><b>On this page</b><a href="#what">What K&amacr;lasetu is</a><a href="#sky">The sky on any day in sixteen thousand years</a><a href="#pipeline">How one longitude is made</a><a href="#fits">Three fits, and what each era can be trusted to</a><a href="#accuracy">How close, across the span</a><a href="#moon">The Moon&rsquo;s terms</a><a href="#great">Jupiter and Saturn, and the great inequality</a><a href="#clock">The Earth&rsquo;s clock</a><a href="#nodes">R&amacr;hu and Ketu</a><a href="#cost">What its error costs a chart</a><a href="#limits">What it does not claim</a><a href="#built">How it was built and checked</a></aside><main><style>.plainx{margin:0 0 1.4rem;border:1px solid rgba(128,128,128,.35);border-left:4px solid #c08a2b;border-radius:10px;background:rgba(192,138,43,.07);font-size:1rem;line-height:1.55;color:inherit}.plainx>details>summary{cursor:pointer;padding:.75rem 1rem;list-style:none}.plainx>details>summary::-webkit-details-marker{display:none}.plainx>details>summary b{display:block;font-size:1.02rem}.plainx>details>summary b:before{content:'\25B8  ';}.plainx>details[open]>summary b:before{content:'\25BE  ';}.plainx>details>summary span{display:block;opacity:.85;margin-top:.15rem}.plainx .plainb{padding:0 1rem .9rem}.plainx .plainb h4{margin:.8rem 0 .2rem;font-size:.95rem}.plainx .plainb p{margin:.1rem 0}.plainx.plainx-adopted{max-width:1100px;width:calc(100% - 32px);margin:1rem auto 1.2rem;box-sizing:border-box}@media print{.plainx{display:none}}</style><section class="plainx" data-plain="kalasetu.html" aria-label="Explain in simple language"><details><summary><b>Explain in simple language</b><span>The site's fourth way of calculating where the planets are — one that stays accurate for any date from 13000 BCE to 3600 CE.</span></summary><div class="plainb"><h4>What this page is</h4><p>Kālasetu keeps the old Indian text's way of counting days and carries a modern understanding of the planets' orbits on it. It was tuned against NASA's long-span planet tables (DE422) and, beyond their 6,000 years, a computer simulation of the planets started from them, in three fits covering sixteen thousand six hundred years. This page shows it working: where it puts each planet on any day, how far each one can be trusted in that era, every step of one calculation, and how close it comes, century by century.</p><h4>How to use it</h4><p>Set an <b>Era</b>, <b>Year</b>, <b>Month</b>, <b>Day</b> and <b>Time</b> (or press one of the preset dates) and the nine planets are placed, beside the modern answer. Choose a <b>Graha</b> under 'How one longitude is made' to follow its calculation. Under 'How close', pick a planet for its error century by century, or set <b>From</b>, <b>To</b> and <b>Moments</b> and press <b>Measure</b> to test it yourself against the older fitted engine. Untick a group of the Moon's terms to see how much worse the Moon gets without it. Settings → Engine, or the Engine menu on Kundli, makes Kālasetu the engine for your charts.</p><h4>How to read what you see</h4><p>Differences are in arcminutes (′), sixtieths of a degree. For scale, a nakṣatra quarter (pāda) is 200′; anything under a few arcminutes changes nothing a chart is read in.</p><h4>A word of care</h4><p>Before 3000 BCE the planets rest on a simulation and the Moon on an extrapolation — no observation reaches that far — and the Earth's clock is uncertain by hours, so a clock-time Moon and lagna there are uncertain whatever engine is used. Every number on the page carries its era's error bar.</p></div></details></section><p class="lede"><b>K&amacr;lasetu Siddh&amacr;nta</b> &mdash; &#2325;&#2366;&#2354;&#2360;&#2375;&#2340;&#2369;, &ldquo;the bridge
 across time&rdquo; &mdash; is this site&rsquo;s fourth engine. It keeps the S&umacr;rya
 Siddh&amacr;nta&rsquo;s own way of counting time and carries a modern geometry on it, and
-it is fitted across <b>eight thousand six hundred years</b>, from 5000&nbsp;BCE to
-3600&nbsp;CE, in the Samanvaya&ndash;Ecliptic frame. Everything on this page is computed
-in your browser from the engine itself, as you read; no birth chart is needed.</p>
+it is fitted across <b>sixteen thousand six hundred years</b>, from 13000&nbsp;BCE to
+3600&nbsp;CE, in the Samanvaya&ndash;Ecliptic frame, against NASA JPL&rsquo;s DE422
+ephemeris and a numerical integration of the Solar System started from it. Every
+number carries its own error bar for its era. Everything on this page is computed in
+your browser from the engine itself, as you read; no birth chart is needed.</p>
 
 <div id="ks-tiles" class="ks-tiles"></div>
 
@@ -3561,7 +3576,7 @@ speaks of, from before the Kali epoch to sixteen centuries from now.</p>
     <p>Every fitted number is a correction <i>on</i> that count of the kind the
     tradition itself made: a <i>b&imacr;ja</i> on a mean motion, a <i>sa&#7747;sk&amacr;ra</i>
     on an epoch, a re-measured <i>mandocca</i> (apogee). They are allowed to drift slowly,
-    because over eight millennia apogees move and orbits change shape.</p></div>
+    because over eleven millennia apogees move and orbits change shape.</p></div>
   <div class="ks-card"><h3>Not the text&rsquo;s</h3>
     <p><b>The geometry.</b> The orbits are solved exactly; the &#347;&imacr;ghra uses true
     distances (N&imacr;laka&#7751;&#7789;ha&rsquo;s revision, c.&nbsp;1500, applied to all five
@@ -3571,17 +3586,24 @@ speaks of, from before the Kali epoch to sixteen centuries from now.</p>
     &Delta;T. None of this is presented as the S&umacr;rya Siddh&amacr;nta&rsquo;s answer.</p></div>
 </div>
 
-<p class="k-note">Because K&amacr;lasetu was fitted to the site&rsquo;s modern engine, &ldquo;how close&rdquo;
-below always means <i>how close to the modern engine</i>. That engine is held to an
-independent computation of the sky only over 1000&ndash;3000&nbsp;CE. Before and after,
-both are models.</p>
+<p class="k-note"><b>What &ldquo;how close&rdquo; means on this page.</b> From 3000&nbsp;BCE to
+3000&nbsp;CE it means how close to <b>JPL DE422</b>, NASA&rsquo;s long-span ephemeris. Outside
+that, for the Sun and planets it means how close to a <b>numerical integration</b> of the
+Solar System started from DE422&rsquo;s own positions; run across DE422&rsquo;s own six thousand
+years, that integration never strays more than 9&Prime; from it. For the <b>Moon</b> and
+R&amacr;hu&ndash;Ketu before 3000&nbsp;BCE there is no independent reference at all, and the page says
+so wherever it applies. K&amacr;lasetu was first fitted to the site&rsquo;s modern engine; that
+engine&rsquo;s own error before 1000&nbsp;BCE turned out to be large, and is shown below beside
+K&amacr;lasetu&rsquo;s.</p>
 
-<h2 id="sky">The sky on any day in eight thousand years<span class="kdeva">काल-द्रष्टा</span></h2>
+<h2 id="sky">The sky on any day in sixteen thousand years<span class="kdeva">काल-द्रष्टा</span></h2>
 
-<p>Choose a moment &mdash; BCE or CE, any day between 1 January 5000&nbsp;BCE and
-31 December 3600&nbsp;CE &mdash; and K&amacr;lasetu places the nine grahas. The modern
-engine&rsquo;s answer is beside it in the same frame, so the last column is the
-engine&rsquo;s difference alone. Dates are in the proleptic Gregorian calendar.</p>
+<p>Choose a moment &mdash; BCE or CE, any day between 1 January 13000&nbsp;BCE and
+31 December 3600&nbsp;CE &mdash; and K&amacr;lasetu places the nine grahas. Beside each one is
+<b>the error measured for that graha in that era</b>: its typical size, its bias (whether
+it runs early or late on average) and the worst case, from moments the fit never saw.
+The modern engine&rsquo;s answer is in the last columns for comparison. Dates are in the
+proleptic Gregorian calendar.</p>
 
 <p>The nine grahas are the same seen from anywhere on Earth (they are computed from the
 Earth&rsquo;s centre). A <b>place</b> sets two things: the <b>lagna</b>, which depends on
@@ -3589,9 +3611,17 @@ where the horizon is, and how a clock time there turns into Universal Time. Befo
 standard time zones (the 1880s), a place kept <b>local mean time</b>, set by its own
 longitude &mdash; so for an ancient moment that is the natural choice.</p>
 
+<div class="aybar ks-fitbar">
+  <label>Fit <select id="ks-fit" class="swin">
+    <option value="auto" selected>Auto &mdash; the fit made for the date</option>
+    <option value="core">Core &middot; 5000 BCE &ndash; 3600 CE</option>
+    <option value="early">Early &middot; 9000 &ndash; 3000 BCE</option>
+    <option value="deep">Deep &middot; 13000 &ndash; 8000 BCE</option></select></label>
+  <span class="ayread" id="ks-fitread"></span>
+</div>
 <div class="aybar ks-when">
   <label>Era <select id="ks-era" class="swin"><option value="CE">CE</option><option value="BCE">BCE</option></select></label>
-  <label>Year <input type="number" id="ks-year" class="swin" min="1" max="3600" step="1" value="2026"></label>
+  <label>Year <input type="number" id="ks-year" class="swin" min="1" max="13000" step="1" value="2026"></label>
   <label>Month <input type="number" id="ks-month" class="swin" min="1" max="12" step="1" value="1"></label>
   <label>Day <input type="number" id="ks-day" class="swin" min="1" max="31" step="1" value="1"></label>
   <label>Time <input type="time" id="ks-time" class="swin" value="06:00"></label>
@@ -3642,12 +3672,36 @@ the explanation and the result cannot drift apart.</p>
 </div>
 <ol id="ks-steps" class="ks-steps"></ol>
 
+<h2 id="fits">Three fits, and what each era can be trusted to<span class="kdeva">त्रि-संस्करणम्</span></h2>
+
+<p>One set of numbers cannot hold sixteen millennia: a single fit stretched to 8000&nbsp;BCE
+already cost the present-day Moon half an arcminute. So K&amacr;lasetu carries <b>three fitted
+sets</b> of the same engine, each with its own centre of time &mdash; <b>Core</b>
+(5000&nbsp;BCE &ndash; 3600&nbsp;CE), <b>Early</b> (9000 &ndash; 3000&nbsp;BCE) and <b>Deep</b>
+(13000 &ndash; 8000&nbsp;BCE). They overlap, and across the middle of each overlap the answer is
+blended from one to the next, so scrolling across a seam does not jump. <b>Auto</b>, the
+default everywhere on the site, reads each date from the fit made for it.</p>
+
+<p>The table is the error bar for every 600-year era: K&amacr;lasetu&rsquo;s typical error, its
+<b>bias</b> (the average signed error: a bias near zero means the errors scatter both ways;
+a bias as large as the typical error means the graha runs consistently ahead or behind),
+its worst moment, what it was measured against, and beside it the modern engine&rsquo;s own
+error against the same reference, and how well the Earth&rsquo;s clock is known.</p>
+
+<div class="aybar">
+  <label>Graha <select id="ks-erabody" class="swin"></select></label>
+  <span class="ks-legend"><span class="ks-gk ks-g1">under 1&prime;</span><span class="ks-gk ks-g2">1&ndash;5&prime;</span>
+    <span class="ks-gk ks-g3">5&ndash;30&prime;</span><span class="ks-gk ks-g4">over 30&prime;</span></span>
+</div>
+<div id="ks-eras"></div>
+<p class="k-note" id="ks-erasnote"></p>
+
 <h2 id="accuracy">How close, across the span<span class="kdeva">सूक्ष्मता</span></h2>
 
-<p>The fit used 3,000 moments spread over the whole span. Half were kept back and never
-shown to it, and every figure here is from that half. The bars are 600-year bands, so a
-graha that drifted away from the modern engine in the far past would show as a tall bar
-at the left.</p>
+<p>Each fit was given about three thousand moments across its own span. Half were kept
+back and never shown to it, and every figure here is from that half. The bars are
+600-year bands across all sixteen millennia, coloured by the fit that reads them; a pale
+bar is one with no independent reference (the Moon and nodes before 3000&nbsp;BCE).</p>
 
 <div class="aybar">
   <label>Graha <select id="ks-accbody" class="swin"></select></label>
@@ -3657,16 +3711,19 @@ at the left.</p>
 
 <h3 id="ks-measureh">Measure it yourself</h3>
 <p>Sample any span and compare K&amacr;lasetu with the fitted S&umacr;rya Siddh&amacr;nta tier on
-the same moments. Both are measured against the modern engine in their own frames
-(Samanvaya&ndash;Ecliptic and Lahiri), so each difference is the engine&rsquo;s alone.</p>
+the same moments. In the browser the only other ephemeris to hand is the modern engine,
+so both are measured against it, in their own frames (Samanvaya&ndash;Ecliptic and Lahiri).
+Inside 1000&ndash;3000&nbsp;CE that is a fair yardstick. Further back the modern engine is itself
+wrong by more than K&amacr;lasetu (see the table above), so a large figure there is mostly the
+yardstick&rsquo;s error.</p>
 <div class="aybar">
-  <label>From <input type="number" id="ks-from" class="swin" value="-4900" min="-4999" max="3590" step="10"></label>
-  <label>To <input type="number" id="ks-to" class="swin" value="-3900" min="-4990" max="3600" step="10"></label>
+  <label>From <input type="number" id="ks-from" class="swin" value="1000" min="-12999" max="3590" step="10"></label>
+  <label>To <input type="number" id="ks-to" class="swin" value="3000" min="-12990" max="3600" step="10"></label>
   <label>Moments <select id="ks-n" class="swin"><option value="60">60</option><option value="150" selected>150</option><option value="400">400</option></select></label>
   <button type="button" class="swbtn" data-ks="measure">Measure</button>
 </div>
 <div id="ks-measure"></div>
-<p class="k-note" id="ks-measurenote">Years are astronomical: 0 is 1&nbsp;BCE, &minus;4999 is 5000&nbsp;BCE.</p>
+<p class="k-note" id="ks-measurenote">Years are astronomical: 0 is 1&nbsp;BCE, &minus;12999 is 13000&nbsp;BCE.</p>
 
 <h2 id="moon">The Moon&rsquo;s terms<span class="kdeva">चन्द्र-संस्काराः</span></h2>
 
@@ -3674,33 +3731,36 @@ the same moments. Both are measured against the modern engine in their own frame
 Vi&#7747;&#347;ottar&imacr; date &mdash; and the one the S&umacr;rya Siddh&amacr;nta gets least right,
 because the text has a single correction to the Moon&rsquo;s mean place where the Moon
 needs dozens. Below is every term K&amacr;lasetu carries, with the amplitude the fit found
-beside the textbook value. Switch a group off to see what the Moon loses without it.</p>
+beside the textbook value. Switch a group off to see what the Moon loses without it
+(measured over 1000&ndash;3000&nbsp;CE, where the modern engine&rsquo;s Moon is itself sound).</p>
 
 <div class="aybar ks-groups" id="ks-groups"></div>
 <div id="ks-moonerr"></div>
 <div id="ks-moontab"></div>
 
-<h2 id="great">Jupiter and Saturn across eight thousand years<span class="kdeva">गुरु-शनि</span></h2>
+<h2 id="great">Jupiter and Saturn, and the great inequality<span class="kdeva">गुरु-शनि</span></h2>
 
 <p>Five of Saturn&rsquo;s years are very nearly two of Jupiter&rsquo;s, so the two pull on each
 other in step for centuries at a time. The result is a slow swing in both their places
 with a period of about 880 years &mdash; the <b>great inequality</b>, close to a degree for
 Saturn at its largest. No Indian text has it, and without it no fixed set of constants
-can hold either planet across eight millennia. K&amacr;lasetu carries it, with its
+can hold either planet across sixteen millennia. K&amacr;lasetu carries it, with its
 companions and Saturn&rsquo;s terms with Uranus. What is drawn here is the proof that it
-works: Jupiter&rsquo;s and Saturn&rsquo;s difference from the modern engine, every 25 years
-across the whole span. An engine without the great inequality would show an 880-year
-wave of nearly a degree; this one stays within a few arcminutes.</p>
+works: Jupiter&rsquo;s and Saturn&rsquo;s difference from the modern engine every 10 years over
+1000&ndash;3600&nbsp;CE, where the modern engine is sound. An engine without the great inequality
+would show an 880-year wave of nearly a degree; this one stays within a few arcminutes.
+For the whole span, against DE422 and the integration, see the table above.</p>
 <div id="ks-gi" class="ks-chart"></div>
 <p class="k-note" id="ks-ginote"></p>
 
 <h2 id="clock">The Earth&rsquo;s clock<span class="kdeva">काल-भेदः</span></h2>
 
 <p>A siddh&amacr;nta counts civil days, and civil days are not uniform: the Earth&rsquo;s
-rotation slows, so a day in 5000&nbsp;BCE was a fraction of a second shorter, and the
+rotation slows, so a day in 13000&nbsp;BCE was a fraction of a second shorter, and the
 fractions add up. The accumulated difference is called <b>&Delta;T</b>. It is the one
 input K&amacr;lasetu takes from outside itself, and it is the one thing no Indian text
-supplies. Without it the Moon was out by 1.5&prime;; with it, about 0.6&prime;.</p>
+supplies. The reference uses the same &Delta;T, with the tidal slowing of the Moon that
+&Delta;T&rsquo;s tables assume.</p>
 <div id="ks-dt" class="ks-chart"></div>
 <p class="k-note" id="ks-dtnote"></p>
 
@@ -3727,23 +3787,38 @@ time by which it would move the date that graha changes sign or nak&#7779;atra.<
 <h2 id="limits">What it does not claim<span class="kdeva">मर्यादा</span></h2>
 
 <ul class="ks-limits">
-<li><b>It agrees with the modern engine, not with the sky.</b> The modern engine is held to
-an independent reference only over 1000&ndash;3000&nbsp;CE. Before and after, both are
-models.</li>
+<li><b>It agrees with a reference, not with the sky directly.</b> From 3000&nbsp;BCE to
+3000&nbsp;CE the reference is JPL DE422. Outside it, the Sun and planets come from an
+integration started from DE422; it has no asteroids, and across DE422&rsquo;s own span it
+stayed within 9&Prime; (Mars) and 3&Prime; (the rest). Over ten more millennia that error
+grows, but on any reasonable estimate it stays under an arcminute.</li>
+<li><b>The Moon and R&amacr;hu&ndash;Ketu before 3000&nbsp;BCE are extrapolated, not measured.</b>
+K&amacr;lasetu&rsquo;s Moon is fitted to DE422 and carried back by its own secular terms. The only
+other long Moon to hand, the modern engine&rsquo;s brought onto DE422&rsquo;s tides, differs from it by
+about a degree at 5000&nbsp;BCE and several by 13000&nbsp;BCE. That spread is printed as the
+Moon&rsquo;s error there, and it is a real limit: how fast the tides slowed the Moon in the
+Ice Age is not known to that precision.</li>
 <li><b>A clock-time moment in the far past is not knowable to arcminutes by anyone.</b>
 The Earth&rsquo;s clock, &Delta;T, is measured from timed eclipses only back to 720&nbsp;BCE.
 Before that it is extrapolated, and the two published estimates of its error disagree:
-at 5000&nbsp;BCE, about &plusmn;1&nbsp;hour on one and &plusmn;7&nbsp;hours on the other. That is
-&plusmn;0.6&deg; to &plusmn;4&deg; of Moon and &plusmn;15&deg; to &plusmn;100&deg; of lagna for a birth time
-given on a clock. K&amacr;lasetu&rsquo;s arcminutes are for a moment of uniform time; for a
+at 5000&nbsp;BCE, about &plusmn;1&nbsp;hour on one and &plusmn;7&nbsp;hours on the other; at 8000&nbsp;BCE, about
+&plusmn;2&nbsp;hours and &plusmn;18&nbsp;hours; at 13000&nbsp;BCE, about &plusmn;5&nbsp;hours and &plusmn;2&nbsp;days.
+At 5000&nbsp;BCE that is &plusmn;0.6&deg; to &plusmn;4&deg; of Moon and &plusmn;15&deg; to &plusmn;100&deg; of lagna for a
+birth time given on a clock; from 8000&nbsp;BCE the Moon&rsquo;s nak&#7779;atra is uncertain and the lagna is
+not knowable at all. K&amacr;lasetu&rsquo;s arcminutes are for a moment of uniform time; for a
 moment on a clock before about 1000&nbsp;BCE, read the Moon&rsquo;s p&amacr;da, the lagna and the
 finer divisions as uncertain whatever engine is used.</li>
-<li><b>&ldquo;Perfect&rdquo; is not claimed.</b> Mars and Saturn are the weakest &mdash; one to two
-arcminutes typical, and up to about twelve at close opposition or at the ends of the
-span.</li>
+<li><b>&ldquo;Perfect&rdquo; is not claimed.</b> The planets are about an arcminute or better
+typical in every era; Mars, at close opposition, reaches several. The table above gives
+every graha&rsquo;s figure era by era.</li>
+<li><b>The modern engine is not sound before about 1000&nbsp;BCE.</b> Its planets are a
+truncated series built for the present, and its Moon carries a different tidal slowing from
+the one &Delta;T assumes: against DE422 its Moon is half a degree out by 1000&nbsp;BCE and a
+degree and a half by 3000&nbsp;BCE, and before that its Saturn drifts by degrees. That is the
+site&rsquo;s main engine, and it is reported here, not yet changed.</li>
 <li><b>It places grahas only.</b> Sunrise, the lagna and eclipse searches stay with the
 modern engine, as they do for every Siddh&amacr;nta engine on the site.</li>
-<li><b>Outside 5000&nbsp;BCE &ndash; 3600&nbsp;CE it still answers</b>, but nothing was tested
+<li><b>Outside 13000&nbsp;BCE &ndash; 3600&nbsp;CE it still answers</b>, but nothing was tested
 there; a chart cast outside the span says so in capitals.</li>
 <li><b>Its geometry is modern.</b> It is the S&umacr;rya Siddh&amacr;nta&rsquo;s count of time
 carrying a modern geometry, and it is never presented as the text&rsquo;s answer. The text
@@ -3762,8 +3837,14 @@ named after Candra&#347;ekhara S&amacr;manta&rsquo;s <i>Siddh&amacr;nta Darpa&#7
 the evection, variation and annual equation independently; the true-distance &#347;&imacr;ghra
 after N&imacr;laka&#7751;&#7789;ha Somay&amacr;j&imacr;&rsquo;s <i>Tantrasa&#7749;graha</i> (c.&nbsp;1500). Textbook lunar
 amplitudes from J. Meeus, <i>Astronomical Algorithms</i>, Table 47.A. The reference is
-astronomy-engine v2 (MIT, vendored) with the site&rsquo;s own &Delta;T (<code>deltat.js</code>).
-The fit is <code>fit-kalasetu</code>; the checks are <code>kalasetu-verify</code>. No BPHS verse is
+JPL DE422 (Folkner 2009; read from the <code>de422</code> package&rsquo;s Chebyshev arrays by
+<code>source/tools/de422.py</code>), extended by <code>source/tools/nbody.mjs</code>: the Sun, Moon
+and nine planets with DE422&rsquo;s masses, the Sun&rsquo;s relativistic term, the Earth&rsquo;s J2 and the
+Moon&rsquo;s tidal slowing, integrated with Yoshida&rsquo;s sixth-order method (1990). Nutation is
+IAU&nbsp;1980&rsquo;s. The comparison engine is astronomy-engine v2 (MIT, vendored), with the
+site&rsquo;s own &Delta;T (<code>deltat.js</code>). The reference is built by
+<code>kalasetu-reference</code>, the fit is <code>fit-kalasetu</code>, the checks are
+<code>kalasetu-verify</code>. No BPHS verse is
 cited on this page: planetary theory is not what BPHS supplies. See <a href="engine-lab.html">Engine
 Lab</a> to put all four engines to the same questions, <a href="ayanamsa.html">Ayan&amacr;&#7745;&#347;a</a>
 for the Samanvaya&ndash;Ecliptic frame, and <a href="kundli.html">Kundli 2.0</a> to cast a chart
@@ -3772,7 +3853,7 @@ with K&amacr;lasetu (Engine &rarr; K&amacr;lasetu Siddh&amacr;nta).</p>
 <script src="engine.js" defer></script>
 <script src="places.js" defer></script>
 <script src="kalasetu.js" defer></script>
-</main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p><b>How the numbers are worked out:</b> <a href="kundli-technical-report.html">the chart engine, in detail</a> &mdash; the ephemeris, the ayanāṃśa modes, the sunrise convention and what each divisional chart is computed from. <b>Built with others&rsquo; work:</b> <a href="credits.html">credits &amp; licences</a>.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script><style>.secx-b{display:inline-flex;align-items:center;gap:.35em;margin:0 .5em;vertical-align:middle;min-height:32px;min-width:32px;box-sizing:border-box;font:600 .72rem/1 system-ui,sans-serif;letter-spacing:0;text-transform:none;padding:.28em .6em .28em .3em;border:1px solid rgba(192,138,43,.6);border-radius:999px;background:rgba(192,138,43,.09);float:none;color:inherit;cursor:pointer;white-space:nowrap}.secx-b .secx-q{display:inline-grid;place-items:center;width:1.5em;height:1.5em;border-radius:50%;background:#c08a2b;color:#1b1407;font:700 .8rem/1 system-ui,sans-serif;flex:none}.secx-b i{font-style:normal}.secx-b:hover,.secx-b:focus-visible{background:rgba(192,138,43,.22)}@media (max-width:560px){.secx-b i{display:none}.secx-b{padding:0;justify-content:center}}.secx-ov{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.45)}.secx-ov[hidden]{display:none}.secx-card{position:relative;max-width:34rem;width:100%;max-height:80vh;overflow:auto;box-sizing:border-box;padding:1.2rem 1.4rem 1.3rem;border-radius:12px;border-left:5px solid #c08a2b;background:var(--paper,#fffaf0);color:var(--ink,#222);box-shadow:0 12px 40px rgba(0,0,0,.35);font:1rem/1.6 system-ui,sans-serif;text-align:left}.secx-k{margin:0 0 .2rem;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;opacity:.75}.secx-card h3{margin:0 2rem .5rem 0;font-size:1.1rem;line-height:1.3;color:inherit}.secx-p{margin:0}.secx-x{position:absolute;top:.5rem;right:.6rem;width:2rem;height:2rem;border:0;border-radius:50%;background:transparent;color:inherit;font-size:1.4rem;line-height:1;cursor:pointer}.secx-x:hover,.secx-x:focus-visible{background:rgba(128,128,128,.2)}@media print{.secx-b,.secx-ov{display:none!important}}</style><script type="application/json" id="secx-data">{"byId": {"what": "What this engine is: which parts come from the Sūrya Siddhānta (its way of counting days) and which are modern (the shape of the orbits and the extra corrections), and what it is compared against.", "sky": "Choose any date from 5000 BCE to 3600 CE and see where the nine planets are, with the modern answer beside each one and the difference between them. The wheel shows both at once.", "pipeline": "One planet's position worked out step by step — from the count of days since the start of the Kali age to the final degree — with every number taken from the engine as it calculates.", "accuracy": "How far the engine is from the modern computation, measured on dates it was never tuned on, in 600-year stretches so you can see it holds across the whole span. You can also run your own test against the older fitted engine.", "moon": "Every correction the engine applies to the Moon, with the size it found beside the textbook size. Switch a group off to see how much accuracy it was worth.", "great": "Jupiter and Saturn pull on each other in a slow 880-year rhythm. The chart shows this engine's Jupiter and Saturn against the modern ones every 25 years across the whole span, staying within a few arcminutes because it carries that rhythm.", "clock": "How far the Earth's slowing rotation has put clocks out of step with the planets (ΔT), across the span — the one input this engine takes from outside itself.", "nodes": "Rāhu and Ketu: the smooth average node and the true node that wobbles around it, from this engine and from the modern one, over a year.", "cost": "Each planet's typical error turned into what it changes in a chart: a share of a nakṣatra quarter, a share of the finest division, and how far it moves the date of a sign change.", "limits": "What this engine does not claim: that it matches the real sky in the far past, that it is perfect, or that it is the old text's own answer.", "built": "How the engine was tuned and tested: how many numbers it carries, what it was compared against, and the checks that run every time the site is built."}, "sel": "h2[id]"}</script><script>/* "In simple words" — one small button beside every section heading, opening
+</main></div><footer><div class="wrap"><p><b>Three layers, kept distinct.</b> <b>BPHS text</b> = what the translated verses state · <b>translator/commentary</b> = notes in the Santhanam edition · <b>study notes</b> = plain-language synthesis or later analytical practice added here. Chapter citations refer to the uploaded Santhanam edition; verse numbers are OCR-affected, so confirm exact numbers in the PDF.</p><p><b>How the numbers are worked out:</b> <a href="kundli-technical-report.html">the chart engine, in detail</a> &mdash; the ephemeris, the ayanāṃśa modes, the sunrise convention and what each divisional chart is computed from. <b>Built with others&rsquo; work:</b> <a href="credits.html">credits &amp; licences</a>.</p><p>Educational reference on traditional doctrine only — not a scientific, medical, legal, financial or predictive claim about any person. For health, legal, financial, relationship or safety matters, consult a qualified professional.</p></div></footer><script src="site.js" defer></script><style>.secx-b{display:inline-flex;align-items:center;gap:.35em;margin:0 .5em;vertical-align:middle;min-height:32px;min-width:32px;box-sizing:border-box;font:600 .72rem/1 system-ui,sans-serif;letter-spacing:0;text-transform:none;padding:.28em .6em .28em .3em;border:1px solid rgba(192,138,43,.6);border-radius:999px;background:rgba(192,138,43,.09);float:none;color:inherit;cursor:pointer;white-space:nowrap}.secx-b .secx-q{display:inline-grid;place-items:center;width:1.5em;height:1.5em;border-radius:50%;background:#c08a2b;color:#1b1407;font:700 .8rem/1 system-ui,sans-serif;flex:none}.secx-b i{font-style:normal}.secx-b:hover,.secx-b:focus-visible{background:rgba(192,138,43,.22)}@media (max-width:560px){.secx-b i{display:none}.secx-b{padding:0;justify-content:center}}.secx-ov{position:fixed;inset:0;z-index:2147483000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.45)}.secx-ov[hidden]{display:none}.secx-card{position:relative;max-width:34rem;width:100%;max-height:80vh;overflow:auto;box-sizing:border-box;padding:1.2rem 1.4rem 1.3rem;border-radius:12px;border-left:5px solid #c08a2b;background:var(--paper,#fffaf0);color:var(--ink,#222);box-shadow:0 12px 40px rgba(0,0,0,.35);font:1rem/1.6 system-ui,sans-serif;text-align:left}.secx-k{margin:0 0 .2rem;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;opacity:.75}.secx-card h3{margin:0 2rem .5rem 0;font-size:1.1rem;line-height:1.3;color:inherit}.secx-p{margin:0}.secx-x{position:absolute;top:.5rem;right:.6rem;width:2rem;height:2rem;border:0;border-radius:50%;background:transparent;color:inherit;font-size:1.4rem;line-height:1;cursor:pointer}.secx-x:hover,.secx-x:focus-visible{background:rgba(128,128,128,.2)}@media print{.secx-b,.secx-ov{display:none!important}}</style><script type="application/json" id="secx-data">{"byId": {"what": "What this engine is: which parts come from the Sūrya Siddhānta (its way of counting days) and which are modern (the shape of the orbits and the extra corrections), and what it is compared against.", "sky": "Choose any date from 13000 BCE to 3600 CE and see where the nine planets are, with how far each one can be trusted in that era, and the modern answer beside it. The wheel shows both at once.", "fits": "The engine is three fits, each made for its own stretch of time. The table gives, for every 600 years, how far off each planet is on average, whether it leans one way, its worst case, what it was checked against, how far off the site's main engine is there, and how well the Earth's clock is known.", "pipeline": "One planet's position worked out step by step — from the count of days since the start of the Kali age to the final degree — with every number taken from the engine as it calculates.", "accuracy": "How far the engine is from NASA's long-span planet tables (and, further back, a computer simulation of the planets started from them), measured on dates it was never tuned on, in 600-year stretches so you can see it holds across the whole span. You can also run your own test against the older fitted engine.", "moon": "Every correction the engine applies to the Moon, with the size it found beside the textbook size. Switch a group off to see how much accuracy it was worth.", "great": "Jupiter and Saturn pull on each other in a slow 880-year rhythm. The chart shows this engine's Jupiter and Saturn against the modern ones every 10 years from 1000 to 3600 CE, staying within a few arcminutes because it carries that rhythm.", "clock": "How far the Earth's slowing rotation has put clocks out of step with the planets (ΔT), across the span — the one input this engine takes from outside itself.", "nodes": "Rāhu and Ketu: the smooth average node and the true node that wobbles around it, from this engine and from the modern one, over a year.", "cost": "Each planet's typical error turned into what it changes in a chart: a share of a nakṣatra quarter, a share of the finest division, and how far it moves the date of a sign change.", "limits": "What this engine does not claim: that the Moon before 3000 BCE is measured (it is extrapolated), that a clock time in the far past can be pinned down, that it is perfect, or that it is the old text's own answer. It also says where the site's main engine goes wrong in the far past.", "built": "How the engine was tuned and tested: how many numbers it carries, what it was compared against, and the checks that run every time the site is built."}, "sel": "h2[id]"}</script><script>/* "In simple words" — one small button beside every section heading, opening
    an overlay that explains just that section. The explanations come from
    source/src/pages/_plain_sections.py, inlined per page by build.py as
    <script type="application/json" id="secx-data">. Headings rendered later by

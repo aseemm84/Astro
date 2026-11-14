@@ -405,6 +405,26 @@ try{ if(SITE_SS&&window.__SS_FIT_DATA) SITE_SS.setMeasured(window.__SS_FIT_DATA)
    Sūrya Siddhānta can move it; its numbers come from kalasetu.json */
 var SITE_KS=(typeof window!=="undefined"&&window.KalasetuEngine)?window.KalasetuEngine:null;
 try{ if(SITE_KS&&window.__KALASETU_DATA) SITE_KS.setData(window.__KALASETU_DATA); }catch(e){}
+/* its earlier sets (early: 9000–3000 BCE, deep: 13000–8000 BCE); it reads
+   whichever set a date belongs to, blended across their overlaps */
+try{ if(SITE_KS&&window.__KALASETU_SETS) for(var KSN in window.__KALASETU_SETS) SITE_KS.setData(window.__KALASETU_SETS[KSN],KSN); }catch(e){}
+/* which of its fitted sets a date reads, and the held-back error measured for
+   that set in the 600-year band holding the date — so a chart says how far to
+   trust each graha, not one figure for sixteen millennia */
+function ksSpanInfo(ms){
+  var o={label:SITE_KS.SPAN.label, in_span:SITE_KS.inSpan(ms)};
+  try{ if(SITE_KS.setAt){ var f=SITE_KS.setAt(ms); o.fit={set:f.set,name:f.name,label:f.label,blend_with:f.blendWith,weight:f.weight};
+    var e={}; ["Sūrya","Candra","Maṅgala","Budha","Guru","Śukra","Śani","Rāhu","Rāhu (true)"].forEach(function(b){
+      var a=SITE_KS.accuracyAt(b,ms); if(a) e[b]={rms_arcmin:a.rms,bias_arcmin:a.bias,worst_arcmin:a.worst}; });
+    o.expected_error=e; } }catch(x){}
+  return o;
+}
+function ksFitNote(ms){
+  try{ var f=SITE_KS.setAt(ms), m=SITE_KS.accuracyAt("Candra",ms), s=SITE_KS.accuracyAt("Śani",ms);
+    return ", read from its "+f.name+" fit ("+f.label+")"+(f.blendWith?" blended with its "+f.blendName+" fit":"")+
+      (m?"; measured error here: Moon "+m.rms.toFixed(1)+"′ typical, "+m.worst.toFixed(0)+"′ worst"+(s?", Saturn "+s.rms.toFixed(1)+"′":""):"");
+  }catch(x){ return ""; }
+}
 /* it counts in uniform time, with the ΔT the modern engine itself uses (see
    ctx() in kalasetu-engine.js for why) — handed over here, read at call time */
 try{ if(SITE_KS) SITE_KS.setDeltaT(function(ms){
@@ -470,7 +490,7 @@ function engineVsModern(moonSid,date,jd){
     var SD=(typeof window!=="undefined"&&window.__KALASETU_DATA)||null;
     if(ENGINE_MODE==="kalasetu"){
       if(SD&&SD.residuals&&SD.residuals["Candra"]){
-        var sa=SD.residuals["Candra"].holdout.rms;   /* arcminutes already */
+        var sa=(SD.residuals["Candra"].de||SD.residuals["Candra"].holdout).rms;   /* arcminutes already; within DE422 */
         typ={moon_arcmin:+sa.toFixed(2), dasha_days_cycle_avg:+(sa*60*365.2425/3600).toFixed(1),
              over:SD.span&&SD.span.label};
       }
@@ -3005,10 +3025,10 @@ window.buildLocalChart=function(inp){
             note:ENGINE_MODE==="modern"?null:("Graha and node positions from the "+ENGINE_MODES[ENGINE_MODE]+
               "; sunrise and the lagna's sidereal time are computed with the modern method."+
               (ENGINE_MODE==="kalasetu"?(SITE_KS&&SITE_KS.inSpan(ms)
-                ? " This date is inside the span the engine was fitted and measured on ("+SITE_KS.SPAN.label+")."
-                : " THIS DATE IS OUTSIDE THE SPAN THE ENGINE WAS FITTED ON ("+(SITE_KS?SITE_KS.SPAN.label:"5000 BCE – 3600 CE")+
+                ? " This date is inside the span the engine was fitted and measured on ("+SITE_KS.SPAN.label+")"+ksFitNote(ms)+"."
+                : " THIS DATE IS OUTSIDE THE SPAN THE ENGINE WAS FITTED ON ("+(SITE_KS?SITE_KS.SPAN.label:"13000 BCE – 3600 CE")+
                   "): its polynomials were never tested here, so no accuracy is claimed — cast with the modern engine."):"")),
-            span:ENGINE_MODE==="kalasetu"&&SITE_KS?{label:SITE_KS.SPAN.label, in_span:SITE_KS.inSpan(ms)}:null,
+            span:ENGINE_MODE==="kalasetu"&&SITE_KS?ksSpanInfo(ms):null,
             vs_modern:ENGINE_MODE==="modern"?null:engineVsModern(pos.Moon.sid,date,jd)},
     ayanamsa_note:(AYAN_MODE==="ss_engine"?"the text's own libration of the asterisms, ±27° over 7200 years, zero in 499 CE — used because this chart was cast with a Sūrya Siddhānta engine in its own frame":AYAN_MODES[AYAN_MODE].note), ashtakavarga:avOut, yogas:yg, bhayat:bb, shadbala:sbOut,
     /* Śrīpati's exact bhāva bala; null under BPHS, where the report's own

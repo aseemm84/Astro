@@ -4,9 +4,22 @@
  * present: the text as written is degrees out, and the fitted tier was fitted
  * on 1800–2200 and falls apart away from it (its Moon is about 8° out by
  * 3600 BCE and its Saturn about 24°). This engine is fitted across the whole of
- * 5000 BCE – 3600 CE, in the Samanvaya–Ecliptic frame (which is Āryabhaṭa's to
- * 0.28″), so that a chart for any date in those eight thousand six hundred
+ * 13000 BCE – 3600 CE, in the Samanvaya–Ecliptic frame (which is Āryabhaṭa's to
+ * 0.28″), so that a chart for any date in those sixteen thousand six hundred
  * years is cast to within arcminutes of the modern engine.
+ *
+ * THREE FITS, ONE ENGINE. One set of numbers cannot hold sixteen millennia: a
+ * single fit to 8000 BCE already cost the present-day Moon half an arcminute
+ * and Maṅgala's worst case became a degree. So the same engine carries three
+ * fitted parameter sets, each with its own centre of time:
+ *     core   5000 BCE – 3600 CE   (the original fit, centred on J2000)
+ *     early  9000 – 3000 BCE      (centred on 6000 BCE)
+ *     deep   13000 – 8000 BCE     (centred on 10500 BCE)
+ * Early overlaps core by two thousand years and deep by one; in the middle
+ * sixty per cent of each overlap the answer is blended linearly from one to the other, so a scroll
+ * across a seam does not jump. use("auto") — the default — picks per date;
+ * use("core") etc. forces one, and the pages can show each set's own error
+ * table. The model is the same in all three; only the numbers differ.
  *
  * WHAT IT KEEPS FROM THE SIDDHĀNTA, AND WHAT IT DOES NOT. Read this before
  * calling it a Siddhānta.
@@ -18,7 +31,7 @@
  *   operations is the siddhāntic one: mean place, manda (the body's own
  *   orbit), śīghra (the Sun's), each body's karṇa.
  *
- *   Not kept: the text's geometry. Over eight millennia the text's epicycles
+ *   Not kept: the text's geometry. Over eleven millennia the text's epicycles
  *   cannot hold — a fixed epicycle has no second harmonic, the śīghra on the
  *   mean Sun ignores the Earth's own eccentricity, and nothing in the text
  *   lets an apogee or an eccentricity drift. So:
@@ -68,10 +81,26 @@
   var EPOCH_JD = KALI_MIDNIGHT_JD + 0.25 - UJJAIN_LON / 360;   /* Laṅkā sunrise */
   function ahargana(ms) { return ms / 86400000 + 2440587.5 - EPOCH_JD; }
 
-  /* the span the engine was fitted and measured on */
-  var SPAN = { from: Date.UTC(-4999, 0, 1), to: Date.UTC(3600, 11, 31, 23, 59, 59),
-               label: "5000 BCE – 3600 CE" };
+  /* the fitted sets: each its own span and its own centre of time (tc, in
+     millennia from J2000) about which its secular polynomials are expanded */
+  var SETS = {
+    core:  { from: Date.UTC(-4999, 0, 1), to: Date.UTC(3600, 11, 31, 23, 59, 59), tc: 0,
+             label: "5000 BCE – 3600 CE", name: "Core" },
+    early: { from: Date.UTC(-8999, 0, 1), to: Date.UTC(-2999, 11, 31, 23, 59, 59), tc: -8,
+             label: "9000 – 3000 BCE", name: "Early" },
+    deep:  { from: Date.UTC(-12999, 0, 1), to: Date.UTC(-7999, 11, 31, 23, 59, 59), tc: -12.5,
+             label: "13000 – 8000 BCE", name: "Deep" } };
+  var SET_ORDER = ["core", "early", "deep"];
+  /* the span the engine was fitted and measured on: the union of the loaded sets */
+  var SPAN = { from: SETS.core.from, to: SETS.core.to, label: SETS.core.label };
   function inSpan(ms) { return ms >= SPAN.from && ms <= SPAN.to; }
+  function loaded(n) { return !!(SETS[n].DOC && SETS[n].DOC.params); }
+  function refreshSpan() {
+    var first = null; SET_ORDER.forEach(function (n) { if (loaded(n)) first = n; });
+    SPAN.from = first ? SETS[first].from : SETS.core.from;
+    SPAN.label = (first && first !== "core") ? (SETS[first].label.replace(/ – .*/, "") + " BCE – 3600 CE")
+                                             : SETS.core.label;
+  }
 
   /* ---- starting values, before the fit: the modern mean elements of J2000,
      read in a sidereal frame near the Samanvaya zero. The fit moves every one
@@ -150,26 +179,48 @@
      cost up to 2′ without making them physical; see fit-kalasetu.mjs. */
   function active(b, i) { return !!PERT[b][i]; }
 
+  /* THE FRAME. The site reads every graha in astronomy-engine's true ecliptic
+     of date, whose precession is the IAU 2006 polynomial. Far from the present
+     that polynomial is extrapolated: by 13000 BCE its ecliptic is tipped about
+     2° from the plane the Earth actually moves in, so the Sun there shows a
+     latitude and a twice-yearly wobble in longitude of about a minute. The
+     site's lagna is computed in the same frame, so the engine follows it: each
+     body carries a small rotation of its geocentric direction (about the
+     frame's 0° and 90° axes, fa and fb, quadratic in time), zero in the core
+     set and fitted in the older ones. Degrees. */
+  var FRAME_KEYS = ["fa0", "fa1", "fa2", "fb0", "fb1", "fb2"];
+  function tilt(v, p, Tm) {
+    var a = (p.fa0 || 0) + Tm * ((p.fa1 || 0) + Tm * (p.fa2 || 0)), b = (p.fb0 || 0) + Tm * ((p.fb1 || 0) + Tm * (p.fb2 || 0));
+    if (!a && !b) return v;
+    a *= D2R; b *= D2R;
+    var y1 = v.y * Math.cos(a) - v.z * Math.sin(a), z1 = v.y * Math.sin(a) + v.z * Math.cos(a);
+    return { x: v.x * Math.cos(b) + z1 * Math.sin(b), y: y1, z: -v.x * Math.sin(b) + z1 * Math.cos(b) };
+  }
   /* the parameter names each body carries — the fitter and the data file use these */
   function keysOf(b) {
     var k;
-    if (b === "Sūrya") return ["l0","l1","l2","l3","w0","w1","w2","e0","e1","e2"];
+    if (b === "Sūrya") return ["l0","l1","l2","l3","l4","l5","w0","w1","w2","w3","e0","e1","e2","e3"].concat(FRAME_KEYS);
     if (b === "Rāhu") { k = ["l0","l1","l2","l3","l4","t_0","t_1","t_2","t_3"];
       NODE_TRUE.forEach(function (_, i) { k.push("t" + i); }); return k; }
     if (b === "Candra") {
-      k = ["l0","l1","l2","l3","c0","c1","c2","c3"];
+      k = ["l0","l1","l2","l3","l4","l5","c0","c1","c2","c3","c4"];
       LUNAR.forEach(function (_, i) { k.push("L" + i); });
       LUNAR_LAT.forEach(function (_, i) { k.push("B" + i); });
       return k;
     }
     /* quartic secular terms: at 8,600 years a cubic starts to bend the wrong way */
-    k = ["l0","l1","l2","l3","l4","w0","w1","w2","w3","w4","e0","e1","e2","e3","e4","a0","n0","n1","i0"];
+    /* quintic secular terms: over 11,600 years a quartic still bends the wrong way */
+    /* and the orbit's plane drifts against the ecliptic of date: over five
+       millennia a straight-line node and a fixed inclination leave Śukra's
+       latitude two degrees out, so both carry a cubic */
+    k = ["l0","l1","l2","l3","l4","l5","w0","w1","w2","w3","w4","w5","e0","e1","e2","e3","e4","e5","a0",
+         "n0","n1","n2","n3","i0","i1","i2","i3"].concat(FRAME_KEYS);
     (PERT[b] || []).forEach(function (_, i) { if (active(b, i)) k.push("ps" + i, "pc" + i); });
     return k;
   }
   var BODIES = ["Sūrya", "Rāhu", "Candra", "Budha", "Śukra", "Maṅgala", "Guru", "Śani"];
 
-  var P = null, DOC = null;
+  var P = null, DOC = null, TC = 0;
   function zeroParams() {
     var o = {};
     BODIES.forEach(function (b) { o[b] = {}; keysOf(b).forEach(function (k) { o[b][k] = 0; }); });
@@ -177,17 +228,47 @@
     o["Candra"].L0 = -6.29; o["Candra"].B0 = 5.13;
     return o;
   }
-  function setData(doc) {
+  /* load a fitted set; the set is named by the file (doc.set), else core */
+  function setData(doc, name) {
+    name = name || (doc && doc.set) || "core";
+    if (!SETS[name]) return false;
     var z = zeroParams();
     if (doc && doc.params) for (var b in doc.params) if (z[b]) for (var k in doc.params[b])
       if (k in z[b]) z[b][k] = doc.params[b][k];
-    P = z; DOC = doc || null;
+    SETS[name].P = z; SETS[name].DOC = doc || null;
+    refreshSpan(); bind(home());
     return !!(doc && doc.params);
   }
+  /* which set the date reads. "auto": the set whose span holds it, blended
+     across the middle of an overlap; outside every span, the nearest. */
+  var MODE = "auto";
+  function home() { return MODE !== "auto" ? MODE : "core"; }
+  function bind(n) { var s = SETS[n]; P = s.P; DOC = s.DOC; TC = s.tc; }
+  function pickSet(ms) {
+    if (MODE !== "auto") return { a: MODE };
+    var have = SET_ORDER.filter(loaded);
+    if (have.length < 2) return { a: have[0] || "core" };
+    var cov = have.filter(function (n) { return ms >= SETS[n].from && ms <= SETS[n].to; });
+    if (!cov.length) return { a: ms > SETS[have[0]].to ? have[0] : have[have.length - 1] };
+    if (cov.length === 1) return { a: cov[0] };
+    /* two cover it: the newer (a) and the older (b); blend over the middle
+       sixty per cent of their overlap */
+    var A = SETS[cov[0]], B = SETS[cov[1]], lo = A.from, hi = B.to, z0 = lo + 0.2 * (hi - lo), z1 = hi - 0.2 * (hi - lo);
+    var w = Math.max(0, Math.min(1, (ms - z0) / (z1 - z0)));
+    if (w >= 1) return { a: cov[0] };
+    if (w <= 0) return { a: cov[1] };
+    return { a: cov[0], b: cov[1], w: w };
+  }
+  function use(m) {
+    if (m !== "auto" && !SETS[m]) return false;
+    MODE = m; bind(home()); return true;
+  }
+  SETS.core.P = zeroParams(); SETS.early.P = zeroParams(); SETS.deep.P = zeroParams();
   setData(null);
 
   function poly(p, pre, Tm) {
-    return (p[pre + "0"] || 0) + Tm * ((p[pre + "1"] || 0) + Tm * ((p[pre + "2"] || 0) + Tm * ((p[pre + "3"] || 0) + Tm * (p[pre + "4"] || 0))));
+    return (p[pre + "0"] || 0) + Tm * ((p[pre + "1"] || 0) + Tm * ((p[pre + "2"] || 0) + Tm * ((p[pre + "3"] || 0) +
+           Tm * ((p[pre + "4"] || 0) + Tm * (p[pre + "5"] || 0)))));
   }
   /* the siddhāntic mean place, with its corrections */
   function meanOf(key, ahar, Tm) {
@@ -208,8 +289,8 @@
      about the Earth; for a planet, its path about the Sun. */
   function orbit(b, ahar, Tm, X) {
     var p = P[b], L = meanOf(b, ahar, Tm);
-    var w = W0[b] + p.w0 + Tm * (p.w1 + Tm * (p.w2 + Tm * ((p.w3 || 0) + Tm * (p.w4 || 0))));
-    var e = E0[b] * (1 + p.e0) + Tm * (p.e1 + Tm * (p.e2 + Tm * ((p.e3 || 0) + Tm * (p.e4 || 0)))) * 0.001;
+    var w = W0[b] + p.w0 + Tm * (p.w1 + Tm * (p.w2 + Tm * ((p.w3 || 0) + Tm * ((p.w4 || 0) + Tm * (p.w5 || 0)))));
+    var e = E0[b] * (1 + p.e0) + Tm * (p.e1 + Tm * (p.e2 + Tm * ((p.e3 || 0) + Tm * ((p.e4 || 0) + Tm * (p.e5 || 0))))) * 0.001;
     var k = kepler((L - w) * D2R, e), lam = w * D2R + k.v;
     var T = PERT[b], rec = TR ? { L: L, w: w, e: e, M: norm(L - w), eqc: k.v / D2R - norm(L - w), terms: [] } : null;
     if (rec && rec.eqc > 180) rec.eqc -= 360; if (rec && rec.eqc < -180) rec.eqc += 360;
@@ -227,7 +308,8 @@
     var r = (b === "Sūrya" ? 1 : A0[b] * (1 + p.a0)) * k.r;
     if (rec) { rec.lam = norm(lam / D2R); rec.r = r; rec.pert = rec.terms.reduce(function (a, x) { return a + x.deg; }, 0); TR[b] = rec; }
     if (b === "Sūrya") return { x: r * Math.cos(lam), y: r * Math.sin(lam), z: 0, L: L, w: w };
-    var node = (N0[b] + p.n0 + p.n1 * Tm) * D2R, inc = (I0[b] + p.i0) * D2R, u = lam - node;
+    var node = (N0[b] + p.n0 + Tm * (p.n1 + Tm * ((p.n2 || 0) + Tm * (p.n3 || 0)))) * D2R,
+        inc = (I0[b] + p.i0 + Tm * ((p.i1 || 0) + Tm * ((p.i2 || 0) + Tm * (p.i3 || 0)))) * D2R, u = lam - node;
     var xo = r * Math.cos(u), yo = r * Math.sin(u);
     return { x: xo * Math.cos(node) - yo * Math.cos(inc) * Math.sin(node),
              y: xo * Math.sin(node) + yo * Math.cos(inc) * Math.cos(node),
@@ -249,25 +331,37 @@
     var dt = 0;
     if (DT) { try { dt = (+DT(ms) || 0) / 86400; } catch (e) { dt = 0; } }
     var ahar = ahargana(ms) + dt - (lagDays || 0);
-    var Tm = (ms / 86400000 + 2440587.5 + dt - (lagDays || 0) - 2451545) / 365250;
-    var Tc = Tm * 10;
+    var TmJ = (ms / 86400000 + 2440587.5 + dt - (lagDays || 0) - 2451545) / 365250;
+    var Tc = TmJ * 10, Tm = TmJ - TC;   /* Tm: millennia from the set's own centre */
     /* the arguments of the perturbations are FIXED functions of time — the
        modern mean longitudes (Standish's J2000 elements, carried to a
        sidereal frame by general precession) — rather than this engine's own
        fitted means, so that fitting Śani cannot move Guru's terms and the
        other way round */
-    return { ahar: ahar, Tm: Tm,
+    return { ahar: ahar, Tm: Tm, TmJ: TmJ,
              Lj: 34.39644 + 3034.74612775 * Tc - 1.3969713 * Tc - 22.5,
              Ls: 49.95424 + 1222.49362201 * Tc - 1.3969713 * Tc - 22.5,
              Le: 100.46457166 + 35999.37244981 * Tc - 1.3969713 * Tc - 22.5,
-             Lu: uranusL(Tm) };
+             Lu: uranusL(TmJ) };
+  }
+  /* NUTATION IN LONGITUDE. The modern engine gives apparent places in the
+     true ecliptic of date, which nods with the Moon's node: ±17″ over 18.6
+     years, the same for every body. Measured on the core fit's residuals it
+     was +16.6″·sin Ω on the Sun, Mercury and Venus alike — a third of the
+     Sun's whole error — so it is added here with the IAU 1980 amplitudes on
+     fixed (tropical, modern) arguments, as the perturbations' arguments are.
+     Degrees; t in Julian centuries from J2000. */
+  function nutation(TmJ) {
+    var t = TmJ * 10, Om = (125.04452 - 1934.136261 * t) * D2R,
+        Ls = (280.4665 + 36000.7698 * t) * D2R, Lm = (218.3165 + 481267.8813 * t) * D2R;
+    return (-17.20 * Math.sin(Om) - 1.32 * Math.sin(2 * Ls) - 0.23 * Math.sin(2 * Lm) + 0.21 * Math.sin(2 * Om)) / 3600;
   }
   /* the Moon, and its latitude: the manda equation and the further terms, on
      the siddhāntic mean places of Moon, apogee, Sun and node */
   function moon(ms) {
     var c = ctx(ms), ahar = c.ahar, Tm = c.Tm, p = P["Candra"];
     var Lm = meanOf("Candra", ahar, Tm), Ls = meanOf("Sūrya", ahar, Tm);
-    var sp = P["Sūrya"], ws = W0["Sūrya"] + sp.w0 + sp.w1 * Tm + sp.w2 * Tm * Tm;
+    var sp = P["Sūrya"], ws = W0["Sūrya"] + sp.w0 + Tm * (sp.w1 + Tm * (sp.w2 + Tm * (sp.w3 || 0)));
     var D = (Lm - Ls) * D2R, M = (Lm - apogeeOf(ahar, Tm)) * D2R, Ms = (Ls - ws) * D2R,
         F = (Lm - meanOf("Rāhu", ahar, Tm)) * D2R;
     var lon = Lm, lat = 0, i, t;
@@ -275,23 +369,25 @@
       lon += p["L" + i] * Math.sin(t[0] * D + t[1] * M + t[2] * Ms + t[3] * F); }
     for (i = 0; i < LUNAR_LAT.length; i++) { t = LUNAR_LAT[i];
       lat += p["B" + i] * Math.sin(t[0] * D + t[1] * M + t[2] * Ms + t[3] * F); }
-    return { lon: norm(lon), lat: lat };
+    return { lon: norm(lon + nutation(c.TmJ)), lat: lat };
   }
   /* the mean places the lunar terms are read on */
   function lunarArgs(ms) {
     var c = ctx(ms), ahar = c.ahar, Tm = c.Tm;
     var Lm = meanOf("Candra", ahar, Tm), Ls = meanOf("Sūrya", ahar, Tm), sp = P["Sūrya"];
-    var ws = W0["Sūrya"] + sp.w0 + sp.w1 * Tm + sp.w2 * Tm * Tm, Ln = meanOf("Rāhu", ahar, Tm);
+    var ws = W0["Sūrya"] + sp.w0 + Tm * (sp.w1 + Tm * (sp.w2 + Tm * (sp.w3 || 0))), Ln = meanOf("Rāhu", ahar, Tm);
     return { D: (Lm - Ls) * D2R, M: (Lm - apogeeOf(ahar, Tm)) * D2R, Ms: (Ls - ws) * D2R,
              F: (Lm - Ln) * D2R, node: Ln, Tm: Tm };
   }
   /* the true (osculating) node, as the modern engine defines it: the mean
      node plus measured periodic terms */
-  function trueNode(ms) {
+  function tn0(ms) {
     /* its own secular offset from the mean node: the mean node is fitted to
        a published polynomial, the true node is a plane measured against the
        ecliptic of date, and far from the present the two drift apart */
-    var a = lunarArgs(ms), p = P["Rāhu"], L = a.node + poly(p, "t_", a.Tm);
+    /* the osculating node is measured in the true ecliptic of date, so it
+       nods too; the mean node (a published polynomial) does not */
+    var a = lunarArgs(ms), p = P["Rāhu"], L = a.node + poly(p, "t_", a.Tm) + nutation(a.Tm + TC);
     for (var i = 0; i < NODE_TRUE.length; i++) { var t = NODE_TRUE[i];
       var g = t[0] * a.D + t[1] * a.M + t[2] * a.Ms + t[3] * a.F;
       L += (p["t" + i] || 0) * (t[5] ? Math.pow(a.Tm, t[5]) : 1) * (t[4] ? Math.cos(g) : Math.sin(g)); }
@@ -301,24 +397,26 @@
      and with the light-time the modern engine also applies */
   function body(b, ms) {
     var c = ctx(ms), sun = orbit("Sūrya", c.ahar, c.Tm, c);
-    if (b === "Sūrya") return { lon: norm(Math.atan2(sun.y, sun.x) / D2R), lat: 0, dist: Math.hypot(sun.x, sun.y) };
+    var nu = nutation(c.TmJ);
+    if (b === "Sūrya") { var sv = tilt({ x: sun.x, y: sun.y, z: 0 }, P["Sūrya"], c.Tm);
+      return { lon: norm(Math.atan2(sv.y, sv.x) / D2R + nu), lat: Math.atan2(sv.z, Math.hypot(sv.x, sv.y)) / D2R, dist: Math.hypot(sun.x, sun.y) }; }
     var pl = orbit(b, c.ahar, c.Tm, c);
     var g = { x: pl.x + sun.x, y: pl.y + sun.y, z: pl.z };
     var tau = Math.hypot(g.x, g.y, g.z) * 0.0057755;     /* days of light-time per AU */
     var c2 = ctx(ms, tau); pl = orbit(b, c2.ahar, c2.Tm, c2);
-    g = { x: pl.x + sun.x, y: pl.y + sun.y, z: pl.z };
+    g = tilt({ x: pl.x + sun.x, y: pl.y + sun.y, z: pl.z }, P[b], c.Tm);
     var rho = Math.hypot(g.x, g.y);
-    return { lon: norm(Math.atan2(g.y, g.x) / D2R), lat: Math.atan2(g.z, rho) / D2R,
+    return { lon: norm(Math.atan2(g.y, g.x) / D2R + nu), lat: Math.atan2(g.z, rho) / D2R,
              dist: Math.hypot(g.x, g.y, g.z) };
   }
-  function longitude(sa, ms) {
+  function lon0(sa, ms) {
     if (sa === "Candra") return moon(ms).lon;
     if (sa === "Rāhu") { var c = ctx(ms); return norm(meanOf("Rāhu", c.ahar, c.Tm)); }
     if (sa === "Ketu") { var c2 = ctx(ms); return norm(meanOf("Rāhu", c2.ahar, c2.Tm) + 180); }
     if (P[sa]) return body(sa, ms).lon;
     return null;
   }
-  function latitude(sa, ms) {
+  function lat0(sa, ms) {
     if (sa === "Candra") return moon(ms).lat;
     if (sa === "Sūrya" || sa === "Rāhu" || sa === "Ketu") return 0;
     if (P[sa]) return body(sa, ms).lat;
@@ -370,9 +468,9 @@
      from the number it explains: the final value is the engine's own. */
   var TR = null;
   function textMean(key, ahar) { return norm((EPOCH0[key] || 0) + REV[key] * 360 * ahar / CIVIL_DAYS); }
-  function trace(sa, ms) {
-    var c = ctx(ms), out = { sa: sa, ms: ms, dt: (c.Tm * 365250 + 2451545) - (ms / 86400000 + 2440587.5),
-                             ahar: c.ahar, Tm: c.Tm, inSpan: inSpan(ms) };
+  function trace0(sa, ms) {
+    var c = ctx(ms), out = { sa: sa, ms: ms, dt: (c.TmJ * 365250 + 2451545) - (ms / 86400000 + 2440587.5),
+                             ahar: c.ahar, Tm: c.TmJ, TmLocal: c.Tm, inSpan: inSpan(ms) };
     out.dt *= 86400;
     var key = sa === "Ketu" ? "Rāhu" : sa;
     if (REV[key] != null) {
@@ -386,7 +484,7 @@
       for (var i = 0; i < NODE_TRUE.length; i++) { var t = NODE_TRUE[i], g = t[0] * a.D + t[1] * a.M + t[2] * a.Ms + t[3] * a.F;
         per += (pr["t" + i] || 0) * (t[5] ? Math.pow(a.Tm, t[5]) : 1) * (t[4] ? Math.cos(g) : Math.sin(g)); }
       out.trueSecular = poly(pr, "t_", a.Tm); out.truePeriodic = per;
-      out.lon = longitude(sa, ms); out.trueLon = norm(trueNode(ms) + (sa === "Ketu" ? 180 : 0));
+      out.lon = lon0(sa, ms); out.trueLon = norm(tn0(ms) + (sa === "Ketu" ? 180 : 0));
       return out;
     }
     if (sa === "Candra") {
@@ -406,8 +504,69 @@
     return out;
   }
 
+  /* ---- the public face: every call reads the set its date belongs to ---- */
+  function sdiff(a, b) { var d = norm(a - b); return d > 180 ? d - 360 : d; }
+  function run(ms, f, ang) {
+    var k = pickSet(ms);
+    try {
+      bind(k.a); var va = f();
+      if (!k.b || va == null) return va;
+      bind(k.b); var vb = f();
+      if (vb == null) return va;
+      return ang ? norm(vb + k.w * sdiff(va, vb)) : vb + k.w * (va - vb);
+    } finally { bind(home()); }
+  }
+  function longitude(sa, ms) { return run(ms, function () { return lon0(sa, ms); }, true); }
+  function latitude(sa, ms) { return run(ms, function () { return lat0(sa, ms); }, false); }
+  function trueNode(ms) { return run(ms, function () { return tn0(ms); }, true); }
+  function setAt(ms) {
+    var k = pickSet(ms), S = SETS[k.a];
+    return { set: k.a, name: S.name, label: S.label, blendWith: k.b || null,
+             blendName: k.b ? SETS[k.b].name : null, weight: k.b ? +k.w.toFixed(3) : 1,
+             inSpan: inSpan(ms), inSetSpan: ms >= S.from && ms <= S.to };
+  }
+  function trace(sa, ms) {
+    var k = pickSet(ms), out;
+    try { bind(k.a); out = trace0(sa, ms); } finally { bind(home()); }
+    if (!out) return out;
+    out.fit = setAt(ms);
+    /* across a seam the engine's answer is the blend; the steps shown are the
+       newer set's, and the page says so */
+    if (k.b && out.lon != null) { out.lonSet = out.lon; out.lon = longitude(sa, ms);
+      if (out.lat != null && sa !== "Rāhu" && sa !== "Ketu") out.lat = latitude(sa, ms); }
+    return out;
+  }
+  /* the measured error where a date falls: the held-back figures of its set,
+     for the 600-year band that holds it — rms, bias (the mean signed
+     residual) and worst, in arcminutes — so a page can print the error bar
+     beside the number */
+  function bandStats(doc, b, yr) {
+    var R = doc && doc.residuals && doc.residuals[b]; if (!R || !R.bands) return null;
+    var B = R.bands, i = 0;
+    while (i + 1 < B.length && yr >= B[i + 1].from) i++;
+    return B[i];
+  }
+  function accuracyAt(b, ms) {
+    var key = b === "Ketu" ? "Rāhu" : b, yr = new Date(ms).getUTCFullYear(), k = pickSet(ms);
+    var one = function (n) { var x = bandStats(SETS[n].DOC, key, yr); return x ? {
+      set: n, rms: x.rms, worst: x.worst, bias: x.bias != null ? x.bias : null, n: x.n, from: x.from } : null; };
+    var a = one(k.a); if (!a) return null;
+    if (k.b) { var c = one(k.b); if (c) { a.rms = Math.max(a.rms, c.rms); a.worst = Math.max(a.worst, c.worst); a.blend = k.b; } }
+    a.inSpan = inSpan(ms);
+    /* the modern engine itself is checked against an independent sky only
+       over 1000–3000 CE */
+    a.referenceChecked = yr >= 1000 && yr <= 3000;
+    return a;
+  }
+  function setsInfo() {
+    var o = {}; SET_ORDER.forEach(function (n) { var S = SETS[n];
+      o[n] = { name: S.name, label: S.label, from: S.from, to: S.to, tc: S.tc, loaded: loaded(n), doc: S.DOC || null }; });
+    return o;
+  }
+
   var API = {
-    trace: trace, keysAll: function () { return { LUNAR: LUNAR, NODE_TRUE: NODE_TRUE, PERT: PERT }; },
+    trace: trace, use: use, mode: function () { return MODE; }, sets: setsInfo, setAt: setAt,
+    accuracyAt: accuracyAt, SET_ORDER: SET_ORDER, keysAll: function () { return { LUNAR: LUNAR, NODE_TRUE: NODE_TRUE, PERT: PERT }; },
     basis: basis,
     longitude: longitude, latitude: latitude, trueNode: trueNode, setDeltaT: setDeltaT,
     hasDeltaT: function () { return !!DT; }, setData: setData, inSpan: inSpan,
@@ -417,8 +576,9 @@
     params: function () { return P; },
     terms: function () { return { lunar: LUNAR.length, lunarLat: LUNAR_LAT.length, trueNode: NODE_TRUE.length,
                                   gs: GS.length, mars: MARS.length }; },
+    nutation: function (ms) { return nutation((ms / 86400000 + 2440587.5 - 2451545) / 365250); },
     data: function () { return DOC; },
-    isFitted: function () { return !!(DOC && DOC.params); }
+    isFitted: function () { return loaded("core"); }
   };
   if (typeof window !== "undefined") window.KalasetuEngine = API;
   else if (typeof globalThis !== "undefined") globalThis.KalasetuEngine = API;

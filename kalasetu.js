@@ -1536,7 +1536,7 @@
 
   /* ---- the moment ----------------------------------------------------------- */
   function readWhen() {
-    var era = $("ks-era").value, y = Math.max(1, Math.min(3600, +$("ks-year").value || 1));
+    var era = $("ks-era").value, y = Math.max(1, Math.min(era === "BCE" ? 13000 : 3600, +$("ks-year").value || 1));
     var t = ($("ks-time").value || "06:00").split(":");
     var Y = era === "BCE" ? 1 - y : y;
     var local = msFor(Y, +$("ks-month").value || 1, +$("ks-day").value || 1, +t[0] || 0, +t[1] || 0);
@@ -1551,7 +1551,9 @@
     ST.ms = ms;
   }
   var PRESETS = [
-    ["The span opens · 1 Jan 5000 BCE", function () { return msFor(-4999, 1, 1, 6, 0); }],
+    ["The span opens · 1 Jan 13000 BCE", function () { return msFor(-12999, 1, 1, 6, 0); }],
+    ["Deep gives way to Early · 8500 BCE", function () { return msFor(-8499, 6, 21, 6, 0); }],
+    ["Early gives way to Core · 4000 BCE", function () { return msFor(-3999, 6, 21, 6, 0); }],
     ["The Kali epoch · Ujjain midnight, JD 588465.5", function () { return (588465.5 - 2440587.5) * 86400000; }],
     ["Āryabhaṭa's zero · 21 Mar 499 CE", function () { return (1903396.75 - 2440587.5) * 86400000; }],
     ["1 CE", function () { return msFor(1, 1, 1, 6, 0); }],
@@ -1571,26 +1573,43 @@
   }
 
   /* ---- the sky ----------------------------------------------------------------- */
+  /* the error bar for a graha at a moment: its set's held-back figures for the
+     600-year band holding the date */
+  function errCell(key, ms) {
+    var a = K.accuracyAt ? K.accuracyAt(key, ms) : null;
+    if (!a) return '<td class="num">—</td>';
+    var ex = extrapolated(key, ms);
+    return '<td class="num ' + grade(a.rms) + '" title="' + esc((ex ? "no independent reference here: the spread between two extrapolations. " : "") +
+      "typical " + am(a.rms) + ", bias " + am(a.bias) + ", worst " + am(a.worst) + ", from " + a.n + " held-back moments") + '">±' + am(a.rms) +
+      ' <span class="elw">bias ' + am(a.bias) + " · worst " + am(a.worst) + (ex ? " · extrapolated" : "") + "</span></td>";
+  }
+  /* the Moon and the nodes have no independent reference outside DE422 */
+  function extrapolated(key, ms) {
+    var y = new Date(ms).getUTCFullYear();
+    return (key === "Candra" || key === "Rāhu (true)") && (y < -2999 || y > 2999);
+  }
+  function grade(x) { return x == null ? "" : x < 1 ? "ks-g1" : x < 5 ? "ks-g2" : x < 30 ? "ks-g3" : "ks-g4"; }
   function sky() {
     var ms = ST.ms, rows = [], pos = {};
     G.forEach(function (g) {
       var k = K.longitude(g[0], ms), m = modSid(g[0], ms);
       pos[g[0]] = { k: k, m: m };
       rows.push("<tr><td><b>" + esc(g[0]) + "</b> <span class=\"elw\">" + esc(g[1]) + "</span></td><td>" + inSign(k) +
-        "</td><td>" + nakOf(k) + "</td><td>" + inSign(m) + "</td><td class=\"num\">" + am(sdiff(k, m) * 60) + "</td></tr>");
+        "</td><td>" + nakOf(k) + "</td>" + errCell(g[0] === "Ketu" ? "Rāhu" : g[0], ms) + "<td>" + inSign(m) + "</td><td class=\"num\">" + am(sdiff(k, m) * 60) + "</td></tr>");
     });
     var tn = K.trueNode(ms), tm = norm(window.__kNodesModern(ms).true - window.__ayanFor("samanvaya_ecliptic", jdOf(ms)));
     rows.push("<tr><td><b>Rāhu</b> <span class=\"elw\">true node</span></td><td>" + inSign(tn) + "</td><td>" + nakOf(tn) +
-      "</td><td>" + inSign(tm) + "</td><td class=\"num\">" + am(sdiff(tn, tm) * 60) + "</td></tr>");
+      "</td>" + errCell("Rāhu (true)", ms) + "<td>" + inSign(tm) + "</td><td class=\"num\">" + am(sdiff(tn, tm) * 60) + "</td></tr>");
     var lat = latNow(), lon = lonNow(), asc = null;
     try { asc = norm(window.__kAscTrop(ms, lat, lon) - window.__ayanFor("samanvaya_ecliptic", jdOf(ms))); } catch (e) {}
     if (asc != null) {
       pos.Lagna = asc;
       rows.push('<tr class="ks-lagrow"><td><b>Lagna</b> <span class="elw">ascendant at the place</span></td><td>' + inSign(asc) +
-        "</td><td>" + nakOf(asc) + "</td><td>" + inSign(asc) + '</td><td class="num">same method</td></tr>');
+        "</td><td>" + nakOf(asc) + '</td><td class="num">see the note below</td><td>' + inSign(asc) + '</td><td class="num">same method</td></tr>');
     }
     $("ks-skytab").innerHTML = '<div class="eltblwrap"><table class="aytab"><thead><tr><th>graha</th><th>Kālasetu</th>' +
-      "<th>nakṣatra · pāda</th><th>modern engine</th><th>difference</th></tr></thead><tbody>" + rows.join("") + "</tbody></table></div>";
+      "<th>nakṣatra · pāda</th><th>error here, measured</th><th>modern engine</th><th>difference</th></tr></thead><tbody>" + rows.join("") + "</tbody></table></div>";
+    fitRead();
     wheel(pos);
     /* the date and time as the reader gave them, on the clock "Time is" names;
        UT beside it when that is not UT */
@@ -1607,6 +1626,7 @@
       (dt != null ? " · ΔT " + (Math.abs(dt) < 600 ? dt.toFixed(0) + " s" : (dt / 3600).toFixed(1) + " hours") : "") +
       " · Kali day " + Math.floor(K.ahargana(ms)).toLocaleString("en") +
       (K.inSpan(ms) ? "" : " · <b>outside the fitted span — no accuracy is claimed here</b>") +
+      (function () { var y = new Date(ms).getUTCFullYear(); return y < -2999 ? " · <b>the Moon and nodes here are extrapolated from DE422, not measured</b>" : ""; })() +
       (function () {
         /* the lagna turns a full circle a day, so ΔT's own uncertainty (see the
            Earth's clock, below) moves it 15° an hour for a clock-time moment */
@@ -1713,41 +1733,95 @@
 
   /* ---- accuracy ------------------------------------------------------------------ */
   var ROWS = ["Sūrya", "Candra", "Budha", "Śukra", "Maṅgala", "Guru", "Śani", "Rāhu", "Rāhu (true)"];
+  var SETN = ["core", "early", "deep"];
+  /* the 600-year eras across the whole span, 13000 BCE onwards; the last runs to 3600 CE */
+  var ERAS = []; for (var ey = -13000; ey + 600 <= 3800; ey += 600) ERAS.push(ey);
+  function eraMid(y0) { var y = y0 + 1 + (y0 + 600 > 3400 ? 400 : 300); return msFor(Math.floor(y), 7, 1, 0, 0); }
+  function docOf(n) { return K.sets ? (K.sets()[n] || {}).doc : (n === "core" ? D : null); }
+  function fitRead() {
+    var el = $("ks-fitread"); if (!el || !K.setAt) return;
+    var f = K.setAt(ST.ms);
+    el.innerHTML = (K.mode() === "auto" ? "Auto reads this date from the <b>" + esc(f.name) + "</b> fit (" + esc(f.label) + ")" +
+        (f.blendWith ? ", blended " + Math.round(100 * f.weight) + " : " + Math.round(100 * (1 - f.weight)) + " with the " + esc(f.blendName) + " fit" : "")
+      : "Forced to the <b>" + esc(f.name) + "</b> fit (" + esc(f.label) + ")" + (f.inSetSpan ? "" : " — <b>this date is outside that fit's own span</b>, so its error bars do not apply")) + ".";
+  }
   function tiles() {
     var R = D.residuals;
     $("ks-tiles").innerHTML = ROWS.map(function (b) {
-      return R[b] ? '<div class="ks-tile"><b>' + am(R[b].holdout.rms) + "</b><span>" + esc(b === "Rāhu" ? "Rāhu · Ketu (mean)" :
-        b === "Rāhu (true)" ? "Rāhu · Ketu (true)" : b) + "</span></div>" : "";
-    }).join("") + '<div class="ks-tile"><b>8,600</b><span>years fitted, 5000 BCE – 3600 CE</span></div>';
+      return R[b] ? '<div class="ks-tile"><b>' + am((R[b].de || R[b].holdout).rms) + "</b><span>" + esc(b === "Rāhu" ? "Rāhu · Ketu (mean)" :
+        b === "Rāhu (true)" ? "Rāhu · Ketu (true)" : b) + (b === "Rāhu" ? ", against the published polynomial" : ", against DE422") + "</span></div>" : "";
+    }).join("") + '<div class="ks-tile"><b>16,600</b><span>years fitted, 13000 BCE – 3600 CE, in three fits</span></div>';
   }
   function bands() {
-    var b = $("ks-accbody").value, R = D.residuals[b]; if (!R || !R.bands) return;
-    var W = 640, H = 200, L = 46, B = 34, n = R.bands.length, bw = (W - L - 10) / n;
-    var top = Math.max.apply(null, R.bands.map(function (x) { return x.rms; })) * 1.15 || 1;
-    var h = ['<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Held-back error by 600-year band">'];
+    var b = $("ks-accbody").value;
+    var cells = ERAS.map(function (y0) { var ms = eraMid(y0), a = K.accuracyAt ? K.accuracyAt(b, ms) : null;
+      return { y0: y0, a: a, set: K.setAt ? K.setAt(ms).set : "core", ex: extrapolated(b, ms) }; }).filter(function (c) { return c.a; });
+    if (!cells.length) return;
+    var W = 640, H = 210, L = 46, B = 34, n = cells.length, bw = (W - L - 10) / n;
+    var top = Math.max.apply(null, cells.map(function (c) { return c.a.rms; })) * 1.15 || 1;
+    var h = ['<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Held-back error by 600-year band, 13000 BCE to 3600 CE">'];
     for (var g = 0; g <= 4; g++) { var v = top * g / 4, y = H - B - (H - B - 10) * g / 4;
       h.push('<line class="ks-ax" x1="' + L + '" y1="' + y + '" x2="' + (W - 6) + '" y2="' + y + '"/><text class="ks-axt" x="' + (L - 4) +
-        '" y="' + (y + 3) + '" text-anchor="end">' + v.toFixed(v < 1 ? 2 : 1) + "′</text>"); }
-    R.bands.forEach(function (x, i) {
-      var hh = (H - B - 10) * x.rms / top, X = L + i * bw + 3;
-      h.push('<rect class="ks-bar" x="' + X.toFixed(1) + '" y="' + (H - B - hh).toFixed(1) + '" width="' + (bw - 6).toFixed(1) + '" height="' + hh.toFixed(1) + '"><title>' +
-        esc(yearLabel(x.from + 1)) + ": " + x.rms.toFixed(2) + "′ rms, worst " + x.worst.toFixed(1) + "′</title></rect>");
-      h.push('<text class="ks-axt" x="' + (X + bw / 2 - 3).toFixed(1) + '" y="' + (H - B + 13) + '" text-anchor="middle">' + esc(yearLabel(x.from + 1).replace(" BCE", "").replace(" CE", "")) + "</text>");
+        '" y="' + (y + 3) + '" text-anchor="end">' + (v < 1 ? v.toFixed(2) : v < 10 ? v.toFixed(1) : v.toFixed(0)) + "′</text>"); }
+    cells.forEach(function (c, i) {
+      var hh = (H - B - 10) * c.a.rms / top, X = L + i * bw + 1.5;
+      h.push('<rect class="ks-bar ' + c.set + (c.ex ? " ex" : "") + '" x="' + X.toFixed(1) + '" y="' + (H - B - hh).toFixed(1) + '" width="' + (bw - 3).toFixed(1) +
+        '" height="' + hh.toFixed(1) + '"><title>' + esc(yearLabel(c.y0 + 1)) + ", " + c.set + " fit: " + am(c.a.rms) + " typical, bias " + am(c.a.bias) +
+        ", worst " + am(c.a.worst) + (c.ex ? " — extrapolated, no independent reference" : "") + "</title></rect>");
+      if (i % 4 === 0) h.push('<text class="ks-axt" x="' + (X + bw / 2).toFixed(1) + '" y="' + (H - B + 13) + '" text-anchor="middle">' + esc(yearLabel(c.y0 + 1)) + "</text>");
     });
-    h.push('<text class="ks-axt" x="' + (L + 6) + '" y="' + (H - 4) + '">BCE ←</text><text class="ks-axt" x="' + (W - 8) + '" y="' + (H - 4) + '" text-anchor="end">→ CE</text>');
     h.push("</svg>");
-    $("ks-bands").innerHTML = h.join("");
+    $("ks-bands").innerHTML = h.join("") + '<p class="ks-legend"><span><i style="background:var(--accent,#c9a24b)"></i>Core fit</span>' +
+      '<span><i style="background:var(--sem-info,#3f6fa6)"></i>Early fit</span><span><i style="background:var(--sem-bad,#a1493a)"></i>Deep fit</span>' +
+      "<span>pale: no independent reference (the spread between two extrapolations)</span></p>";
   }
   function accTable() {
-    var R = D.residuals;
-    $("ks-acctab").innerHTML = '<div class="eltblwrap"><table class="aytab"><thead><tr><th>graha</th><th>held back, typical</th><th>worst moment</th>' +
-      "<th>worst 600-year band</th><th>latitude, typical</th></tr></thead><tbody>" + ROWS.map(function (b) {
-        var x = R[b]; if (!x) return "";
-        var wb = x.bands ? Math.max.apply(null, x.bands.map(function (q) { return q.rms; })) : null;
-        return "<tr><td><b>" + esc(b) + "</b></td><td>" + am(x.holdout.rms) + "</td><td>" + am(x.holdout.worst) + "</td><td>" + am(wb) +
-          "</td><td>" + (x.latitude ? am(x.latitude.rms) : "—") + "</td></tr>";
+    var heads = SETN.map(function (n) { var d = docOf(n); return d ? "<th>" + esc(n.charAt(0).toUpperCase() + n.slice(1)) + "<br><small>" +
+      esc(d.span.label) + "</small></th>" : ""; }).join("");
+    $("ks-acctab").innerHTML = '<div class="eltblwrap"><table class="aytab"><thead><tr><th>graha</th>' + heads +
+      "<th>latitude, Core</th></tr></thead><tbody>" + ROWS.map(function (b) {
+        if (!D.residuals[b]) return "";
+        return "<tr><td><b>" + esc(b) + "</b></td>" + SETN.map(function (n) { var d = docOf(n); if (!d) return "";
+          var x = d.residuals[b]; if (!x) return "<td>—</td>";
+          var lunar = b === "Candra" || b === "Rāhu (true)", spread = lunar && d.moon && d.moon.fitted === false;
+          /* the Core fit's Moon is quoted where it is measured, inside DE422 */
+          var q = n === "core" && lunar && x.de ? x.de : x.holdout;
+          return '<td class="' + grade(q.rms) + '">' + am(q.rms) + ' <span class="elw">worst ' + am(q.worst) +
+            (spread ? " · spread, not measured" : n === "core" && lunar && x.de ? " · within DE422" : "") + "</span></td>"; }).join("") +
+          "<td>" + (D.residuals[b].latitude ? am(D.residuals[b].latitude.rms) : "—") + "</td></tr>";
       }).join("") + "</tbody></table></div>";
   }
+  /* the era table: every 600 years, the selected graha's error bar, its
+     basis, the modern engine's own error against the same reference, and
+     how well the Earth's clock is known */
+  var MKEY = { "Rāhu (true)": "Rāhu-true" };
+  function eras() {
+    var b = $("ks-erabody").value, MR = D.reference && D.reference.modern_vs_reference && D.reference.modern_vs_reference.bands;
+    var mrows = MR ? MR[MKEY[b] || b] : null;
+    $("ks-eras").innerHTML = '<div class="eltblwrap"><table class="aytab ks-era"><thead><tr><th>era</th><th>fit</th><th>typical</th><th>bias</th>' +
+      "<th>worst</th><th>measured against</th><th>modern engine, typical</th><th>ΔT known to</th></tr></thead><tbody>" +
+      ERAS.map(function (y0, i) {
+        var ms = eraMid(y0), a = K.accuracyAt(b, ms), f = K.setAt(ms), ex = extrapolated(b, ms), y = new Date(ms).getUTCFullYear();
+        var basis = ex ? "nothing independent: the spread between two extrapolations" : (y >= -2999 && y <= 2999 ? "JPL DE422" :
+          (b === "Rāhu" ? "the published mean-node polynomial" : "the integration from DE422"));
+        var m = mrows && mrows[i] && mrows[i].rms != null ? mrows[i].rms : null;
+        var sH = sigmaHuber(y), sM = sigmaMS(y), dt = y >= 1600 ? "seconds" : y >= 1000 ? "minutes" :
+          "±" + fmtH(Math.min(sM, sH == null ? sM : sH)) + (sH != null && Math.abs(sH - sM) > 600 ? " – " + fmtH(Math.max(sM, sH)) : "");
+        if (!a) return "";
+        return "<tr><td>" + esc(yearLabel(y0 + 1)) + "–" + esc(yearLabel(Math.min(3600, y0 + 600))) + "</td><td>" + esc(f.name) +
+          (f.blendWith ? " ⇄ " + esc(f.blendName) : "") + '</td><td class="num ' + grade(a.rms) + '">' + am(a.rms) + '</td><td class="num">' + am(a.bias) +
+          '</td><td class="num">' + am(a.worst) + "</td><td>" + esc(basis) + '</td><td class="num ' + grade(m) + '">' + (m == null ? "—" : m > 120 ? (m / 60).toFixed(1) + "°" : am(m)) +
+          '</td><td class="num">' + dt + "</td></tr>";
+      }).join("") + "</tbody></table></div>";
+    var IC = D.reference && D.reference.integrator_check && D.reference.integrator_check.bodies;
+    $("ks-erasnote").innerHTML = "Typical is the rms of the held-back moments in that era; bias their mean; worst the largest. Arcminutes of sidereal longitude. " +
+      (IC ? "The integration that stands in for DE422 outside 3000 BCE – 3000 CE was checked by running it across DE422's own six thousand years: it stayed within " +
+        Object.keys(IC).map(function (k) { return k + " " + IC[k].worst.toFixed(1) + "″"; }).join(", ") + " of DE422. " : "") +
+      "“Modern engine” is the site's main engine against the same reference — before about 1000 BCE it is the larger error. " +
+      "ΔT is known to seconds after 1600, minutes from 1000; before that the two published estimates of its error are shown. " +
+      "An error in ΔT moves the Moon about 0.55° and the lagna 15° per hour, for a moment given on a clock.";
+  }
+  function fmtH(sec) { var h = sec / 3600; return h < 1 ? Math.round(sec / 60) + " min" : h < 48 ? h.toFixed(h < 10 ? 1 : 0) + " h" : (h / 24).toFixed(1) + " days"; }
   function measure() {
     var from = +$("ks-from").value, to = +$("ks-to").value, N = +$("ks-n").value;
     if (!(to > from)) { $("ks-measure").innerHTML = '<p class="swfail">“To” must be after “From”.</p>'; return; }
@@ -1773,7 +1847,8 @@
       }).join("") + "</tbody></table></div>";
     $("ks-measurenote").innerHTML = N + " moments between " + yearLabel(from) + " and " + yearLabel(to) +
       ", typical (rms) difference from the modern engine. The fitted Sūrya Siddhānta tier was fitted on 1800–2200; " +
-      "try a span far from it to see why a fourth engine was needed. Years are astronomical: 0 is 1 BCE, −4999 is 5000 BCE.";
+      "try a span far from it to see why a fourth engine was needed" + (from < 1000 ? ". Before 1000 CE part of every figure here is the modern engine's own error (see the era table)" : "") +
+      ". Years are astronomical: 0 is 1 BCE, −12999 is 13000 BCE.";
   }
 
   /* ---- the Moon's terms ------------------------------------------------------------ */
@@ -1792,8 +1867,8 @@
   function moonSamples() {
     if (MOONSET) return MOONSET;
     MOONSET = [];
-    for (var i = 0; i < 160; i++) {
-      var y = -4999 + 8599 * (i + 0.5) / 160, Y = Math.floor(y), ms = msFor(Y, 1, 1, 0, 0) + (y - Y) * 365.2425 * 86400000 + ((i * 6007) % 1440) * 60000;
+    for (var i = 0; i < 200; i++) {
+      var y = 1000 + 2000 * (i + 0.5) / 200, Y = Math.floor(y), ms = msFor(Y, 1, 1, 0, 0) + (y - Y) * 365.2425 * 86400000 + ((i * 6007) % 1440) * 60000;
       MOONSET.push({ ms: ms, t: K.trace("Candra", ms), ref: modSid("Candra", ms) });
     }
     return MOONSET;
@@ -1811,8 +1886,8 @@
     var r = Math.sqrt(err.reduce(function (a, x) { return a + x * x; }, 0) / err.length);
     var anyOff = Object.keys(off).some(function (k) { return off[k]; });
     $("ks-moonerr").innerHTML = '<p class="ks-moonbig">With ' + (anyOff ? "the chosen terms switched off" : "every term") +
-      ", the Moon is typically <b>" + (r > 120 ? (r / 60).toFixed(2) + "°" : am(r)) + "</b> from the modern engine across the span" +
-      " (160 moments). That is " + (r * 60 * 0.101 < 60 ? (r * 60 * 0.101).toFixed(0) + " days" : (r * 60 * 0.101 / 365.25).toFixed(1) + " years") +
+      ", the Moon is typically <b>" + (r > 120 ? (r / 60).toFixed(2) + "°" : am(r)) + "</b> from the modern engine over 1000–3000 CE" +
+      " (200 moments). That is " + (r * 60 * 0.101 < 60 ? (r * 60 * 0.101).toFixed(0) + " days" : (r * 60 * 0.101 / 365.25).toFixed(1) + " years") +
       " of Viṃśottarī on the cycle average, and " + (100 * r / 200).toFixed(r < 20 ? 1 : 0) + "% of a pāda.</p>";
     var amp = (D.params && D.params["Candra"]) || {};
     var t = S2[0].t;
@@ -1848,13 +1923,13 @@
     h.push("</svg>");
     host.innerHTML = h.join("") + (opt.legend ? '<p class="ks-legend">' + opt.legend + "</p>" : "");
   }
-  var YT = [-4999, -3599, -1999, -599, 1400, 2800];
+  var YT = [-12999, -9999, -6999, -3999, -999, 2000];
   var GI_CACHE = null;
   function gi() {
     if (!GI_CACHE) {
       GI_CACHE = { sa: [], ju: [] };
-      for (var i = 0; i <= 344; i++) {
-        var y = -4999 + 8599 * i / 344, Y = Math.floor(y), ms = msFor(Y, 7, 1, 0, 0);
+      for (var i = 0; i <= 260; i++) {
+        var y = 1000 + 2600 * i / 260, Y = Math.floor(y), ms = msFor(Y, 7, 1, 0, 0);
         GI_CACHE.sa.push([y, sdiff(K.longitude("Śani", ms), modSid("Śani", ms)) * 60]);
         GI_CACHE.ju.push([y, sdiff(K.longitude("Guru", ms), modSid("Guru", ms)) * 60]);
       }
@@ -1862,11 +1937,11 @@
     var Y0 = new Date(ST.ms).getUTCFullYear(), all = GI_CACHE.sa.concat(GI_CACHE.ju).map(function (p) { return Math.abs(p[1]); });
     var top = Math.max(5, Math.ceil(Math.max.apply(null, all)));
     lineChart($("ks-gi"), [{ cls: "ks-l1", pts: GI_CACHE.sa }, { cls: "ks-l2", pts: GI_CACHE.ju }],
-      { label: "Jupiter and Saturn: Kālasetu minus the modern engine across the span", fy: function (v) { return (Math.abs(v) < 0.05 ? 0 : v).toFixed(1) + "′"; },
-        fx: yearLabel, xt: YT, y0: -top, y1: top, mark: Y0 >= -4999 && Y0 <= 3600 ? Y0 : null,
+      { label: "Jupiter and Saturn: Kālasetu minus the modern engine, 1000–3600 CE", fy: function (v) { return (Math.abs(v) < 0.05 ? 0 : v).toFixed(1) + "′"; },
+        fx: yearLabel, xt: [1000, 1500, 2000, 2500, 3000, 3500], y0: -top, y1: top, mark: Y0 >= 1000 && Y0 <= 3600 ? Y0 : null,
         legend: '<span><i style="background:var(--sem-info,#3f6fa6)"></i>Śani</span><span><i style="background:var(--sem-bad,#a1493a)"></i>Guru (dashed)</span><span>arcminutes; gold line: the moment chosen above</span>' });
     var w = function (a) { return Math.max.apply(null, a.map(function (p) { return Math.abs(p[1]); })); };
-    $("ks-ginote").innerHTML = "Over these 345 moments Saturn never strays more than " + am(w(GI_CACHE.sa)) + " from the modern engine and Jupiter " +
+    $("ks-ginote").innerHTML = "Over these 261 moments Saturn never strays more than " + am(w(GI_CACHE.sa)) + " from the modern engine and Jupiter " +
       am(w(GI_CACHE.ju)) + ". The great inequality and its companions are carried as about 170 measured terms for each planet. Their sum is what the fit " +
       "measures; individually some of them trade against the orbit itself, so no single term is offered here as a physical size.";
   }
@@ -1885,7 +1960,7 @@
   var DT_CACHE = null;
   function deltaT() {
     if (!DT_CACHE) { DT_CACHE = { dt: [], hu: [], ms: [] };
-      for (var i = 0; i <= 240; i++) { var y = -4999 + 8599 * i / 240, ms = msFor(Math.floor(y), 7, 1, 0, 0), h = 0;
+      for (var i = 0; i <= 240; i++) { var y = -12999 + 16599 * i / 240, ms = msFor(Math.floor(y), 7, 1, 0, 0), h = 0;
         try { var t = window.Astronomy.MakeTime(new Date(ms)); h = (t.tt - t.ut) * 24; } catch (e) {}
         DT_CACHE.dt.push([y, h]);
         var su = sigmaHuber(y); DT_CACHE.hu.push([y, su == null ? 0 : su / 3600]);
@@ -1894,7 +1969,7 @@
     try { var t0 = window.Astronomy.MakeTime(new Date(ST.ms)); here = (t0.tt - t0.ut) * 24; } catch (e) {}
     lineChart($("ks-dt"), [{ cls: "ks-l1", pts: DT_CACHE.dt }, { cls: "ks-l2", pts: DT_CACHE.hu }, { cls: "ks-l3", pts: DT_CACHE.ms }],
       { label: "ΔT across the span and how well it is known, in hours", fy: function (v) { return v.toFixed(0) + " h"; }, fx: yearLabel, xt: YT, y0: 0,
-        mark: Y0 >= -4999 && Y0 <= 3600 ? Y0 : null,
+        mark: Y0 >= -12999 && Y0 <= 3600 ? Y0 : null,
         legend: '<span><i style="background:var(--sem-info,#3f6fa6)"></i>ΔT, as the modern engine models it</span>' +
           '<span><i style="background:var(--sem-bad,#a1493a)"></i>its uncertainty, Huber (dashed)</span>' +
           '<span><i style="background:var(--accent,#c9a24b)"></i>its uncertainty, Morrison &amp; Stephenson (dotted)</span>' });
@@ -1923,8 +1998,10 @@
         xt: [-180, -90, 0, 90, 180], mark: 0,
         legend: '<span><i style="background:var(--sem-info,#3f6fa6)"></i>Kālasetu</span><span><i style="background:var(--sem-bad,#a1493a)"></i>modern engine (dashed)</span><span>true node minus mean node, degrees, over ±180 days</span>' });
     var dif = pk.map(function (p, i) { return Math.abs(p[1] - pm[i][1]) * 60; });
-    $("ks-nodenote").innerHTML = "The two curves lie on top of each other: over this year they differ by at most " + am(Math.max.apply(null, dif)) +
-      ". The largest swing is the 2D − 2F term, about 1.5°, half a synodic-draconitic cycle of 173 days.";
+    var yN = new Date(ms0).getUTCFullYear();
+    $("ks-nodenote").innerHTML = (yN >= 1000 ? "The two curves lie on top of each other: over this year they differ by at most " + am(Math.max.apply(null, dif)) + ". "
+      : "Over this year the two differ by up to " + am(Math.max.apply(null, dif)) + ": this far back the modern engine's Moon, and so its node, has drifted (see the era table). ") +
+      "The largest swing is the 2D − 2F term, about 1.5°, half a synodic-draconitic cycle of 173 days.";
   }
 
   /* ---- what it costs -------------------------------------------------------------------- */
@@ -1935,33 +2012,36 @@
     var R = D.residuals;
     $("ks-cost").innerHTML = '<div class="eltblwrap"><table class="aytab"><thead><tr><th>graha</th><th>typical error</th><th>share of a pāda</th>' +
       "<th>share of a D60 aṃśa</th><th>moves a sign or nakṣatra change by</th></tr></thead><tbody>" + ROWS.map(function (b) {
-        var x = R[b]; if (!x) return ""; var e = x.holdout.rms;
+        var x = R[b]; if (!x) return ""; var e = (x.de || x.holdout).rms;
         return "<tr><td><b>" + esc(b) + "</b></td><td>" + am(e) + "</td><td>1 ⁄ " + Math.round(200 / e) + "</td><td>1 ⁄ " + (30 / e).toFixed(30 / e < 10 ? 1 : 0) +
           "</td><td>" + span(e / 60 / MEANMOT[b]) + "</td></tr>";
       }).join("") + "</tbody></table></div>";
-    var m = R["Candra"].holdout.rms;
-    $("ks-costnote").innerHTML = "Through the Moon, every Viṃśottarī date moves by about <b>" + (m * 60 * 0.101).toFixed(1) +
+    var m = (R["Candra"].de || R["Candra"].holdout).rms;
+    $("ks-costnote").innerHTML = "These are the Core fit's figures inside DE422 (3000 BCE – 3000 CE); for any other era read the table above. Through the Moon, every Viṃśottarī date moves by about <b>" + (m * 60 * 0.101).toFixed(1) +
       " days</b> on the cycle average (0.101 days of daśā per arcsecond of Moon), and a tithi's end by about " + span(m / 60 / 12.19) +
       ". For comparison, one minute of uncertainty in a birth time moves the Moon about 33″ — so Kālasetu's own error is worth about " +
-      (m * 60 / 33).toFixed(0) + " minutes of birth time. Inside 1000–3000 CE the modern engine's Moon is good to 15″; Kālasetu is " +
+      (m * 60 / 33).toFixed(0) + " minutes of birth time. Inside 1000–3000 CE the modern engine's Moon is also good to about an arcminute; Kālasetu is " +
       "for the span where nothing else on the site holds.";
   }
 
   /* ---- how it was built --------------------------------------------------------------------- */
   function built() {
-    var n = 0; Object.keys(D.params).forEach(function (b) { n += Object.keys(D.params[b]).length; });
+    var n = 0, sets = SETN.map(docOf).filter(Boolean);
+    sets.forEach(function (d) { Object.keys(d.params).forEach(function (b) { n += Object.keys(d.params[b]).length; }); });
     var T = D.terms || {};
     $("ks-built").innerHTML = '<ul class="ks-limits">' +
-      "<li><b>" + n.toLocaleString("en") + " fitted numbers</b> in <code>kalasetu.json</code>: corrections on the text's mean motions, each orbit's apogee, " +
-      "eccentricity and drift, " + T.lunar + " lunar longitude terms and " + T.lunarLat + " latitude terms, " + T.trueNode + " true-node terms, " +
-      T.gs + " Jupiter–Saturn terms and " + T.mars + " for Mars.</li>" +
-      "<li><b>The reference:</b> " + D.samples.total.toLocaleString("en") + " moments spread across " + esc(D.span.label) + ", from the site's modern engine " +
-      "with its own ΔT, in the Samanvaya–Ecliptic frame. Split by a hash of the instant into " + D.samples.fit + " to fit and " + D.samples.holdout +
-      " held back; every accuracy on this page is the held-back half.</li>" +
+      "<li><b>" + n.toLocaleString("en") + " fitted numbers</b> in three files (<code>kalasetu.json</code>, <code>kalasetu-early.json</code>, <code>kalasetu-deep.json</code>), " +
+      "each: corrections on the text's mean motions, each orbit's apogee, eccentricity, node and inclination and their drift, " + T.lunar + " lunar longitude terms and " + T.lunarLat + " latitude terms, " + T.trueNode + " true-node terms, " +
+      T.gs + " Jupiter–Saturn terms and " + T.mars + " for Mars; and the IAU 1980 nutation on every graha.</li>" +
+      "<li><b>The reference:</b> JPL DE422 from about 3000 BCE to 3000 CE, read from its own Chebyshev coefficients; outside that, a numerical integration of the Sun, Moon and nine planets " +
+      "started from DE422's states, with DE422's masses, the Sun's relativistic term, the Earth's oblateness and the Moon's tidal slowing. " +
+      sets.map(function (d) { return d.samples.total.toLocaleString("en") + " moments across " + esc(d.span.label); }).join("; ") +
+      ", each split by a hash of the instant into halves to fit and to hold back; every accuracy on this page is a held-back half. " +
+      "The Moon and true node are fitted on DE422's moments only and carried into the older fits, re-centred.</li>" +
       "<li><b>The optimiser:</b> Levenberg–Marquardt, staged per graha — epoch and bīja first, then the orbit, then everything. The linear amplitudes take " +
       "their derivatives in closed form from the engine itself, which is what makes fitting 172 Jupiter–Saturn terms a matter of seconds.</li>" +
-      "<li><b>The check:</b> <code>kalasetu-verify</code> draws a fresh 900 moments with a different seed from the fit's, holds every graha under a " +
-      "ceiling, refuses any 600-year band that runs away from the rest, confirms the frame is engine.js's own to the digit, and that switching the Sūrya " +
+      "<li><b>The check:</b> <code>kalasetu-verify</code> holds every graha under a ceiling on a fresh 1,800 moments across all sixteen millennia, drawn with a " +
+      "different seed from every fit's, refuses any 600-year band that runs away from the rest, confirms the frame is engine.js's own to the digit, and that switching the Sūrya " +
       "Siddhānta between its tiers leaves Kālasetu bit-identical.</li>" +
       "<li><b>Generated</b> " + esc(D.generated) + ". The engine is <code>kalasetu-engine.js</code>, standalone, loaded on every page.</li></ul>";
   }
@@ -1982,8 +2062,8 @@
      30 days), at the place, so the date fields stay on whole days and months;
      the instant follows from the clock as everywhere else on the page. The
      slider reaches N units either side of where it was picked up. */
-  var SPAN0 = Date.UTC(-4999, 0, 1), SPAN1 = Date.UTC(3600, 11, 31, 23, 59);
-  var REACH = { hour: 72, day: 366, month: 120, year: 200, decade: 120, century: 86 };
+  var SPAN0 = Date.UTC(-12999, 0, 1), SPAN1 = Date.UTC(3600, 11, 31, 23, 59);
+  var REACH = { hour: 72, day: 366, month: 120, year: 200, decade: 120, century: 166 };
   var UNIT_NAME = { hour: ["hour", "hours"], day: ["day", "days"], month: ["month", "months"], year: ["year", "years"],
                     decade: ["decade", "decades"], century: ["century", "centuries"] };
   function shifted(ms, unit, k) {
@@ -2041,6 +2121,11 @@
     $("ks-presets").innerHTML = PRESETS.map(function (p, i) { return '<button type="button" class="swbtn" data-ks-preset="' + i + '">' + esc(p[0]) + "</button>"; }).join("");
     $("ks-graha").innerHTML = G.map(function (g) { return '<option value="' + g[0] + '">' + esc(g[0] + " · " + g[1]) + "</option>"; }).join("");
     $("ks-accbody").innerHTML = ROWS.map(function (b) { return '<option value="' + esc(b) + '"' + (b === "Candra" ? " selected" : "") + ">" + esc(b) + "</option>"; }).join("");
+    $("ks-erabody").innerHTML = ROWS.map(function (b) { return '<option value="' + esc(b) + '"' + (b === "Śani" ? " selected" : "") + ">" + esc(b) + "</option>"; }).join("");
+    /* the fit: Auto everywhere on the site; forcing one here is this page's alone */
+    $("ks-fit").addEventListener("change", function () { if (K.use) K.use($("ks-fit").value); redrawMoment(); });
+    $("ks-erabody").addEventListener("change", eras);
+    $("ks-era").addEventListener("change", function () { $("ks-year").max = $("ks-era").value === "BCE" ? 13000 : 3600; });
     $("ks-groups").innerHTML = GROUPS.map(function (g) { return '<label><input type="checkbox" checked data-ks-group="' + g[0] + '"> ' + esc(g[1]) + "</label>"; }).join("");
     writeWhen(Date.now());
     ["ks-era", "ks-year", "ks-month", "ks-day", "ks-time"].forEach(function (id) {
@@ -2082,10 +2167,10 @@
     scrub.addEventListener("change", function () { ST.scrubbing = false; resetScrub(); });
     $("ks-accbody").addEventListener("change", bands);
     $("ks-groups").addEventListener("change", moonTerms);
-    tiles(); accTable(); bands(); cost(); built();
+    tiles(); accTable(); bands(); eras(); cost(); built();
     redrawMoment(); clearTimeout(ST.heavy); deltaT(); nodes(); gi(); moonTerms(); measure();
     window.__ksPage = { setMoment: function (ms) { writeWhen(ms); redrawMoment(); }, measure: measure, moonTerms: moonTerms,
-      step: stepBy,
+      step: stepBy, eras: eras, useFit: function (m) { $("ks-fit").value = m; if (K.use) K.use(m); redrawMoment(); },
       state: function () { return { ms: ST.ms, place: ST.place, mode: $("ks-tmode").value }; } };
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind); else bind();

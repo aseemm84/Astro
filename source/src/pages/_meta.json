@@ -196,10 +196,10 @@
  "kalasetu": {
   "title": "Kālasetu Siddhānta — the bridge across time &mdash; {{BRAND}}",
   "h1": "Kālasetu Siddhānta",
-  "sub": "The site's fourth engine: the Sūrya Siddhānta's own count of time carrying a modern geometry, fitted across 5000 BCE – 3600 CE — computed live, step by step, on any day in seven thousand years.",
+  "sub": "The site's fourth engine: the Sūrya Siddhānta's own count of time carrying a modern geometry, fitted across 13000 BCE – 3600 CE against JPL DE422 — computed live, with its error bar, on any day in sixteen thousand years.",
   "layout": "",
   "has_aside": true,
-  "desc": "Kālasetu, the fourth engine: the Sūrya Siddhānta's time-count with a modern geometry, fitted in the Samanvaya–Ecliptic frame across 5000 BCE – 3600 CE. Place the nine grahas on any day in the span, follow one longitude from the day count to the answer, measure its accuracy band by band, switch the Moon's terms on and off, and see the great inequality, ΔT and the true node drawn across the millennia.",
+  "desc": "Kālasetu, the fourth engine: the Sūrya Siddhānta's time-count with a modern geometry, fitted in the Samanvaya–Ecliptic frame across 13000 BCE – 3600 CE in three fits, against JPL DE422 and an integration started from it. Place the nine grahas on any day in the span with each one's measured error for that era, follow one longitude from the day count to the answer, read every era's error, bias and worst case, switch the Moon's terms on and off, and see the great inequality, ΔT and the true node drawn across the millennia.",
   "eyebrow": "Kālasetu · the fourth engine"
  },
  "simulation": {

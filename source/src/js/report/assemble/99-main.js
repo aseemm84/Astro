@@ -23,7 +23,10 @@ window.buildKundliReport=function(J){
       if(E.mode==="kalasetu"){
         t+=E.span&&E.span.in_span===false
           ? ' <b>This date is outside '+esc(E.span.label)+', the span the engine was fitted on</b> — no accuracy is claimed here; choose <b>Modern ephemeris</b>.</div>'
-          : ' It is fitted to the modern engine across '+esc((E.span&&E.span.label)||"5000 BCE – 3600 CE")+' and agrees with it to arcminutes; the modern engine itself is checked against the sky only over 1000–3000 CE.</div>';
+          : ' It is fitted to JPL\u2019s DE422 ephemeris (and, before 3000 BCE, to an integration of the Solar System started from it) across '+esc((E.span&&E.span.label)||"13000 BCE – 3600 CE")+'.'+
+            (E.span&&E.span.fit&&E.span.expected_error&&E.span.expected_error["Candra"]
+              ? ' This date reads its <b>'+esc(E.span.fit.name)+'</b> fit ('+esc(E.span.fit.label)+'), whose Moon was measured here at '+E.span.expected_error["Candra"].rms_arcmin.toFixed(1)+'′ typical and '+E.span.expected_error["Candra"].worst_arcmin.toFixed(0)+'′ worst.' : '')+
+            ' Before 3000 BCE the Moon and the Earth\u2019s clock (ΔT) are themselves uncertain; the Kālasetu page shows by how much.</div>';
       }
       else t+=' It is offered for study and comparison. To cast the chart from the measured sky, choose <b>Modern ephemeris</b> as the engine.</div>';
       H.push(t);

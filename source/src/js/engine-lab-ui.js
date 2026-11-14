@@ -50,7 +50,7 @@
     { k: "bare", label: "Sūrya Siddhānta as written",
       note: "the text's own numbers" },
     { k: "ks", label: "Kālasetu",
-      note: "the text's time-count, a modern geometry, fitted across 5000 BCE – 3600 CE (Samanvaya–Ecliptic frame)" }
+      note: "the text's time-count, a modern geometry, fitted across 13000 BCE – 3600 CE (Samanvaya–Ecliptic frame)" }
   ];
 
   var AC = null, FIT = null, LAH = null;
@@ -306,7 +306,7 @@
         "is one engine against the modern engine in the sidereal frame that " +
         "engine was fitted in — Lahiri for the two Sūrya Siddhānta tiers, " +
         "Samanvaya–Ecliptic for Kālasetu." + (ksSpan(ms) ? "" :
-        " <b>This moment is outside Kālasetu's fitted span (5000 BCE – 3600 CE)</b>, so its column claims nothing here.");
+        " <b>This moment is outside Kālasetu's fitted span (13000 BCE – 3600 CE)</b>, so its column claims nothing here.");
       return render(["Graha", "modern", "fitted", "as written", "Kālasetu",
                      "fitted − modern", "written − modern", "Kālasetu − modern"], rows, true);
     }
@@ -704,15 +704,16 @@
         mod: m ? { t: m.lonRms, w: m.lonWorst } : null,                         /* arcsec */
         fit: r.holdout ? { t: r.holdout.rms * 60, w: r.holdout.worst * 60 } : null,
         bare: r.bare ? { t: r.bare.rms * 60, w: r.bare.worst * 60 } : null,
-        /* Kālasetu's file is already in arcminutes, and its figures are held
-           back across 5000 BCE – 3600 CE, not 1800–2200 */
-        ks: (KR[sa] && KR[sa].holdout) ? { t: KR[sa].holdout.rms * 60, w: KR[sa].holdout.worst * 60 } : null
+        /* Kālasetu's file is already in arcminutes; its figures are held back
+           against JPL DE422 over 3000 BCE – 3000 CE (the core fit's own
+           measured span; earlier eras are on the Kālasetu page) */
+        ks: (KR[sa] && (KR[sa].de || KR[sa].holdout)) ? { t: (KR[sa].de || KR[sa].holdout).rms * 60, w: (KR[sa].de || KR[sa].holdout).worst * 60 } : null
       };
     }
     function cell(e) { return e ? ang(e.t) + ' <span class="elw">(worst ' + ang(e.w) + ")</span>" : "—"; }
     var h = '<div class="eltblwrap"><table class="tbl elerr"><thead><tr><th>Graha</th>' +
       "<th>modern<br><small>typical (worst)</small></th><th>fitted<br><small>typical (worst)</small></th>" +
-      "<th>as written<br><small>typical (worst)</small></th><th>Kālasetu<br><small>typical (worst), 5000 BCE – 3600 CE</small></th></tr></thead><tbody>";
+      "<th>as written<br><small>typical (worst)</small></th><th>Kālasetu<br><small>typical (worst), against DE422, 3000 BCE – 3000 CE</small></th></tr></thead><tbody>";
     SA7.forEach(function (sa) {
       var e = rowErr(sa);
       h += "<tr><td><b>" + sa + "</b> <small>" + EN[sa] + "</small></td><td>" + cell(e.mod) +
@@ -728,7 +729,7 @@
         '<td><span class="elw">the reference</span></td><td>' + cell(en.fit) + "</td><td>" + cell(en.bare) + "</td><td>" + cell(en.ks) + "</td></tr>";
     }
     if (KR["Rāhu (true)"] && KR["Rāhu (true)"].holdout) {
-      var kt = KR["Rāhu (true)"].holdout;
+      var kt = KR["Rāhu (true)"].de || KR["Rāhu (true)"].holdout;
       h += "<tr><td><b>Rāhu · Ketu</b> <small>true node</small></td>" +
         '<td><span class="elw">the reference</span></td><td>mean node only</td><td>mean node only</td><td>' +
         cell({ t: kt.rms * 60, w: kt.worst * 60 }) + "</td></tr>";
@@ -1101,11 +1102,11 @@
        "Sun " + byName("Sūrya").measuredRms.toFixed(2) + "′, Moon " +
        byName("Candra").measuredRms.toFixed(0) + "′ — study only, not for casting",
        "siddhanta-measured-verify"],
-      ["A chart for any date from 5000 BCE to 3600 CE", "Kālasetu",
+      ["A chart for any date from 13000 BCE to 3600 CE", "Kālasetu",
        (function () { var K = (window.__KALASETU_DATA || {}).residuals || {};
-         var f = function (n) { return K[n] && K[n].holdout ? K[n].holdout.rms.toFixed(2) + "′" : "—"; };
+         var f = function (n) { var q = K[n] && (K[n].de || K[n].holdout); return q ? q.rms.toFixed(2) + "′" : "—"; };
          return "Sun " + f("Sūrya") + ", Moon " + f("Candra") + ", Saturn " + f("Śani") +
-           " from the modern engine across the whole span, on moments the fit never saw"; })(),
+           " from JPL DE422 over 3000 BCE – 3000 CE, on moments the fit never saw; every era's own figure on its page"; })(),
        "kalasetu-verify"],
       ["Which sidereal zero to measure from", "a convention, not an engine",
        "the " + AC.ayanamsa.modes.length + " modes span " +

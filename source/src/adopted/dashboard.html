@@ -683,7 +683,9 @@ function renderHeader(N){
       (d.engine.mode==="kalasetu"
         ? (d.engine.span&&d.engine.span.in_span===false
             ? ` This date is outside ${esc(d.engine.span.label)}, the span it was fitted on; no accuracy is claimed here.`
-            : ` Fitted to the modern engine across ${esc((d.engine.span&&d.engine.span.label)||"5000 BCE – 3600 CE")}.`)
+            : ` Fitted to JPL DE422 (before 3000 BCE, to an integration started from it) across ${esc((d.engine.span&&d.engine.span.label)||"13000 BCE – 3600 CE")}`+
+              (d.engine.span&&d.engine.span.fit&&d.engine.span.expected_error&&d.engine.span.expected_error["Candra"]
+                ? `; this date reads its ${esc(d.engine.span.fit.name)} fit, measured here at ${d.engine.span.expected_error["Candra"].rms_arcmin.toFixed(1)}′ typical for the Moon.` : "."))
         : ` For study and comparison; choose the modern engine to cast from the measured sky.`);
     top.append(b);
   }
