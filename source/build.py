@@ -50,8 +50,13 @@ def engine_js():
     site engine, and the site engine cannot move a comparison."""
     fit = read(os.path.dirname(SRC), "data", "siddhanta-measured.json").strip()
     json.loads(fit)
+    # the long-span engine and its fitted numbers (fit-kalasetu.mjs)
+    sl = read(os.path.dirname(SRC), "data", "kalasetu.json").strip()
+    json.loads(sl)
     return (jsread(SRC, "js", "ss-engine.js") + "\n" +
             "window.__SS_FIT_DATA=" + fit + ";\n" +
+            jsread(SRC, "js", "kalasetu-engine.js") + "\n" +
+            "window.__KALASETU_DATA=" + sl + ";\n" +
             jsread(SRC, "js", "engine.js"))
 
 def jsread(*p):
@@ -758,7 +763,8 @@ def build_shared():
         # one on siddhanta.html, and the whole page is an argument about
         # engines agreeing.
         "engine-lab.js": brandify(jsread(SRC, "js", "ss-engine.js") + "\n" +
-                                  jsread(SRC, "js", "engine-lab-ui.js")),
+                                  jsread(SRC, "js", "engine-lab-ui.js") + "\n" +
+                                  jsread(SRC, "js", "kalasetu-lab.js")),
         # The bhāva-systems page. 72-sripati.js is the report's own Śrīpati
         # construction, concatenated rather than reimplemented so a cusp here
         # and a cusp in the chart report cannot disagree; it has no free

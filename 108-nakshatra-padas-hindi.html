@@ -336,8 +336,9 @@
              ["dec", "Decimal degrees — 12.5822°"]],
     engine: [["modern", "Modern ephemeris — astronomy-engine, checked against professional references"],
              ["ss", "Sūrya Siddhānta — as written, with the text's own numbers"],
-             ["ssfit", "Sūrya Siddhānta — fitted: the text's equations, constants fitted to the modern sky"]],
-    ssframe: [["own", "The engine's own zero — the text's for 'as written', Lahiri for 'fitted'"],
+             ["ssfit", "Sūrya Siddhānta — fitted: the text's equations, constants fitted to the modern sky"],
+             ["kalasetu", "Kālasetu Siddhānta — long span: the text's time-count, a modern geometry, fitted over 3600 BCE – 3600 CE"]],
+    ssframe: [["own", "The engine's own zero — the text's for 'as written', Lahiri for 'fitted', Samanvaya–Ecliptic for 'long span'"],
               ["ayan", "The ayanāṃśa chosen above"]],
     caution: [["on", "Show rectification cautions"],
               ["off", "Hide them — I know the birth time is approximate"]]
@@ -656,8 +657,16 @@
         if (old) old.remove();
         var FD = window.__SS_FIT_DATA, R = FD && FD.residuals && FD.residuals["Candra"];
         var arc = R ? (want === "ssfit" ? R.holdout.rms : R.bare.rms) : null;
+        /* the long-span engine's residuals are written in arcminutes; this
+           block works in degrees (siddhanta-measured.json's unit) */
+        var SD = window.__KALASETU_DATA, SR = SD && SD.residuals && SD.residuals["Candra"];
+        if (want === "kalasetu") arc = SR ? SR.holdout.rms / 60 : null;
         var days = arc != null ? arc * 60 * 365.2425 / 3600 : null;
-        var cost = arc == null ? "" : " Its Moon is typically " + (arc / 60).toFixed(1) + "° off the measured sky, " +
+        var cost = arc == null ? "" : want === "kalasetu"
+          ? " Its Moon is typically " + (arc * 60).toFixed(1) + "′ from the modern engine across " + (SD.span && SD.span.label) +
+            ", which moves Viṃśottarī dates by about " + days.toFixed(0) + " days on average. It agrees with the modern " +
+            "engine, which is checked against the sky only over 1000–3000 CE."
+          : " Its Moon is typically " + (arc / 60).toFixed(1) + "° off the measured sky, " +
           "which moves Viṃśottarī dates by about " + (days < 730 ? (days / 30.44).toFixed(0) + " months" : (days / 365.25).toFixed(1) + " years") +
           " on average.";
         var box = document.createElement("div");

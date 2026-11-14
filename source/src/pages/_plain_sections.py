@@ -197,6 +197,7 @@ SECTIONS = {
 "engine-lab.html": {
   "three": "What the three engines are — modern (today's astronomy), fitted (the Sūrya Siddhānta's method with re-measured constants) and as written (the text's own numbers) — how close each is to the real sky, and a glossary of the words used on the page.",
   "bench": "Pick a question (where is each planet, what lunar day, when is the next new moon…) and see the answer from all three calculating methods side by side.",
+  "longspan": "The fourth engine, Kālasetu: the Sūrya Siddhānta's own time-count with a modern geometry, fitted across 3600 BCE – 3600 CE. The table shows how far it is from the modern engine on dates the fit never saw, in 600-year bands; the slider compares the two on any year in the span.",
   "cost": "Converts an error in degrees into what it changes in a chart. Below the slider, a table gives each engine's real, measured error for every planet, and what that error does to sign-change dates, tithi end times and daśā dates.",
   "scale": "One ruler showing that differences between conventions (such as ayanāṃśa) are far bigger than differences between the engines.",
   "bands": "How confident the modern engine is in different centuries, and what that means for the question you chose.",

@@ -21,6 +21,11 @@ var D2R=Math.PI/180, R2D=180/Math.PI;
 function jdFromUTC(y,m,d,ut){if(m<=2){y--;m+=12;}var A=Math.floor(y/100),B=2-A+Math.floor(A/4);
   return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+B-1524.5+ut/24;}
 function Tof(jd){return (jd-2451545.0)/36525.0;}
+/* The instant, from the Julian day rather than from Date.UTC: Date.UTC reads a
+   year from 0 to 99 as 1900–1999, so a chart for 50 CE was being placed in
+   1950 while its ayanāṃśa was computed for 50 CE. jdFromUTC is proleptic
+   Gregorian, which is Date's own calendar, so every other year is unchanged. */
+function msOfJd(jd){ return Math.round((jd-2440587.5)*86400000); }
 
 /* ===== THE CERTIFIED WINDOW ===============================================
 
@@ -396,7 +401,17 @@ function pageAyan(){
    whichever ayanāṃśa the reader has chosen. */
 var SITE_SS=(typeof window!=="undefined"&&window.SSEngine)?window.SSEngine:null;
 try{ if(SITE_SS&&window.__SS_FIT_DATA) SITE_SS.setMeasured(window.__SS_FIT_DATA); }catch(e){}
-var ENGINE_MODES={modern:"Modern ephemeris",ss:"Sūrya Siddhānta — as written",ssfit:"Sūrya Siddhānta — fitted"};
+/* the long-span engine (kalasetu-engine.js): standalone, so no tier switch on the
+   Sūrya Siddhānta can move it; its numbers come from kalasetu.json */
+var SITE_KS=(typeof window!=="undefined"&&window.KalasetuEngine)?window.KalasetuEngine:null;
+try{ if(SITE_KS&&window.__KALASETU_DATA) SITE_KS.setData(window.__KALASETU_DATA); }catch(e){}
+/* it counts in uniform time, with the ΔT the modern engine itself uses (see
+   ctx() in kalasetu-engine.js for why) — handed over here, read at call time */
+try{ if(SITE_KS) SITE_KS.setDeltaT(function(ms){
+  var A=window.Astronomy; if(!A||!A.MakeTime) return 0;
+  var t=A.MakeTime(new Date(ms)); return (t.tt-t.ut)*86400; }); }catch(e){}
+var ENGINE_MODES={modern:"Modern ephemeris",ss:"Sūrya Siddhānta — as written",ssfit:"Sūrya Siddhānta — fitted",
+                  kalasetu:"Kālasetu Siddhānta — long span"};
 var PAGE_ENGINE_LOCK={"siddhanta.html":1,"engine-lab.html":1};
 function readStore(k){ try{ return JSON.parse(localStorage.getItem(k)||"{}")||{}; }catch(e){ return {}; } }
 function pageEngine(){
@@ -414,12 +429,13 @@ function ssTextAyan(jd){
 /* the ayanāṃśa actually in force: the requested convention, unless a Siddhānta
    engine is being read in its own frame */
 function effectiveAyan(req){
-  if(ENGINE_MODE!=="modern"&&SS_FRAME==="own") return ENGINE_MODE==="ss"?"ss_engine":"lahiri";
+  if(ENGINE_MODE!=="modern"&&SS_FRAME==="own")
+    return ENGINE_MODE==="ss"?"ss_engine":(ENGINE_MODE==="kalasetu"?"samanvaya_ecliptic":"lahiri");
   return AYAN_MODES[req]?req:"lahiri";
 }
 function setEngineMode(m,frame){
   if(m==null) return ENGINE_MODE;
-  ENGINE_MODE=(ENGINE_MODES[m]&&(m==="modern"||SITE_SS))?m:"modern";
+  ENGINE_MODE=(ENGINE_MODES[m]&&(m==="modern"||(m==="kalasetu"?(SITE_KS&&SITE_KS.isFitted()):SITE_SS)))?m:"modern";
   if(frame!=null) SS_FRAME=frame==="ayan"?"ayan":"own";
   /* bare() also forgets the fitted constants, so they are handed back after
      every switch — the same order Engine Lab's withTier() uses */
@@ -451,7 +467,15 @@ function engineVsModern(moonSid,date,jd){
     var lord=VIM_LORD[Math.floor(norm(moonSid)/(40/3))%9];
     var days=as*VIM_YRS[lord]*365.2425/48000;
     var FD=(typeof window!=="undefined"&&window.__SS_FIT_DATA)||null, typ=null;
-    if(FD&&FD.residuals&&FD.residuals["Candra"]){
+    var SD=(typeof window!=="undefined"&&window.__KALASETU_DATA)||null;
+    if(ENGINE_MODE==="kalasetu"){
+      if(SD&&SD.residuals&&SD.residuals["Candra"]){
+        var sa=SD.residuals["Candra"].holdout.rms;   /* arcminutes already */
+        typ={moon_arcmin:+sa.toFixed(2), dasha_days_cycle_avg:+(sa*60*365.2425/3600).toFixed(1),
+             over:SD.span&&SD.span.label};
+      }
+    }
+    else if(FD&&FD.residuals&&FD.residuals["Candra"]){
       var R=FD.residuals["Candra"], arc=(ENGINE_MODE==="ssfit"?R.holdout.rms:R.bare.rms)*60;
       typ={moon_arcmin:+(arc/60).toFixed(1), dasha_days_cycle_avg:Math.round(arc*365.2425/3600)};
     }
@@ -489,7 +513,18 @@ function ayanamsa(jd){ return ayanamsaFor(AYAN_MODE,jd); }
 function trueNodeAt(date){
   /* the Siddhānta gives the mean node only, so a Siddhānta engine answers
      with it whichever node was asked for */
+  if(ENGINE_MODE==="kalasetu"&&SITE_KS){
+    /* this engine carries the true node's periodic terms, fitted to the
+       modern branch below */
+    try{ var jd0=date.getTime()/86400000+2440587.5;
+         return norm(SITE_KS.trueNode(date.getTime())+ayanamsaFor("samanvaya_ecliptic",jd0)); }catch(e){}
+  }
   if(ENGINE_MODE!=="modern") return meanNode(date.getTime()/86400000+2440587.5);
+  return trueNodeModern(date);
+}
+/* the modern osculating node whatever engine is in force — what the
+   long-span engine's true node is fitted to (fit-kalasetu.mjs copies it) */
+function trueNodeModern(date){
   var dt=0.0005;
   function ec(t){ var e=Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body.Moon,t,false));
                   return e.vec?e.vec:e; }
@@ -518,8 +553,12 @@ function tropLonModern(name,date){
 var SS_NAME={Sun:"Sūrya",Moon:"Candra",Mars:"Maṅgala",Mercury:"Budha",Jupiter:"Guru",Venus:"Śukra",Saturn:"Śani"};
 /* the tropical frame a Siddhānta longitude is carried to: the text's own
    ayanāṃśa for the text as written, Lahiri for the fitted tier */
-function ssNativeAyan(jd){ return ENGINE_MODE==="ss"?ssTextAyan(jd):ayanamsaFor("lahiri",jd); }
+function ssNativeAyan(jd){
+  if(ENGINE_MODE==="kalasetu") return ayanamsaFor("samanvaya_ecliptic",jd);
+  return ENGINE_MODE==="ss"?ssTextAyan(jd):ayanamsaFor("lahiri",jd);
+}
 function ssLonOf(sa,ms){
+  if(ENGINE_MODE==="kalasetu"){ try{ return SITE_KS?SITE_KS.longitude(sa,ms):null; }catch(e){ return null; } }
   try{ var q=SITE_SS.trueLongitude(sa,SITE_SS.ahargana(ms)); return q?q.lon:null; }catch(e){ return null; }
 }
 function tropLon(name,date){
@@ -531,7 +570,10 @@ function tropLon(name,date){
 }
 /* ecliptic latitude, from the same engine as the longitude */
 function eclLat(name,date){
-  if(ENGINE_MODE!=="modern"&&SS_NAME[name]){
+  if(ENGINE_MODE==="kalasetu"&&SS_NAME[name]&&SITE_KS){
+    try{ var w=SITE_KS.latitude(SS_NAME[name],date.getTime()); if(w!=null) return w; }catch(e){}
+  }
+  else if(ENGINE_MODE!=="modern"&&SS_NAME[name]){
     try{ var v=SITE_SS.latitudeOf(SS_NAME[name],SITE_SS.ahargana(date.getTime())); if(v!=null) return v; }catch(e){}
   }
   try{ return Astronomy.Ecliptic(Astronomy.GeoVector(Astronomy.Body[BODY[name]],date,true)).elat; }catch(e){ return null; }
@@ -2150,6 +2192,8 @@ try{ window.__AVT=AVT; window.__ayan=ayanamsa;
        if(m==="ss_engine") return "the Sūrya Siddhānta's own zero";
        return AYAN_MODES[m]?AYAN_MODES[m].name:m; };
      window.__ayanFor=ayanamsaFor;
+     window.__kNodesModern=function(ms){ var d=new Date(ms);
+       return {mean:meanNodeModern(ms/86400000+2440587.5), true:trueNodeModern(d)}; };
      /* The star catalogues store sidereal longitude under Lahiri (J2000). In any
         other frame every star moves by the difference between the two
         ayanāṃśas — the re-basing the star wheel has always done; these two
@@ -2288,7 +2332,7 @@ window.__kRiseConv=function(){
 window.__kAsc=function(inp,offMin){
   var ut=inp.hour+inp.minute/60+(offMin||0)/60-inp.tzHours;
   var jd=jdFromUTC(inp.year,inp.month,inp.day,ut);
-  var date=new Date(Date.UTC(inp.year,inp.month-1,inp.day,0,0,0)+ut*3600000);
+  var date=new Date(msOfJd(jd));
   return ascendant(jd,date,inp.lat,inp.lon,ayanamsa(jd));
 };
 /* sidereal longitude of a graha at any instant — used by the timeline, events and Now panel */
@@ -2406,7 +2450,7 @@ window.quickSky=function(inp){
   setAyanamsaMode(inp.ayanamsa||defaultAyan());
   var tz=inp.tzHours, ut=inp.hour+inp.minute/60+(inp.second||0)/3600-tz;
   var jd=jdFromUTC(inp.year,inp.month,inp.day,ut);
-  var ms=Date.UTC(inp.year,inp.month-1,inp.day,0,0,0)+ut*3600000;
+  var ms=msOfJd(jd);
   var date=new Date(ms), ay=ayanamsa(jd);
   var obs=new Astronomy.Observer(inp.lat,inp.lon,0);
   var names=["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn"], out=[];
@@ -2458,7 +2502,7 @@ window.buildLocalChart=function(inp){
   setHouseMode(inp.houseSystem||"whole");
   var tz=inp.tzHours, ut=inp.hour+inp.minute/60-tz;
   var jd=jdFromUTC(inp.year,inp.month,inp.day,ut);
-  var ms=Date.UTC(inp.year,inp.month-1,inp.day,0,0,0)+ut*3600000;
+  var ms=msOfJd(jd);
   var date=new Date(ms), ay=ayanamsa(jd);
   var names=["Sun","Moon","Mars","Mercury","Jupiter","Venus","Saturn"], pos={},grahas=[];
   names.forEach(function(n){var r=lonAndSpeed(n,date);
@@ -2474,7 +2518,7 @@ window.buildLocalChart=function(inp){
      — "true" — over a mean node, and the dashboard printed "true nodes". It now
      records what was used, what was asked for, and why they differ. */
   var nodeReq=(inp.node==="true")?"true":"mean";
-  var nodeMode=(nodeReq==="true"&&ENGINE_MODE!=="modern")?"mean":nodeReq;
+  var nodeMode=(nodeReq==="true"&&ENGINE_MODE!=="modern"&&ENGINE_MODE!=="kalasetu")?"mean":nodeReq;
   var nodeNote=(nodeMode!==nodeReq)
     ? "You asked for the true node. The "+ENGINE_MODES[ENGINE_MODE]+" has only a mean node — the text moves "+
       "the node uniformly and has no term for the true node's ±1.5° wobble — so Rāhu and Ketu here are the "+
@@ -2952,7 +2996,12 @@ window.buildLocalChart=function(inp){
     engine:{mode:ENGINE_MODE, name:ENGINE_MODES[ENGINE_MODE], frame:ENGINE_MODE==="modern"?null:SS_FRAME,
             requested_ayanamsa:REQ_AYAN,
             note:ENGINE_MODE==="modern"?null:("Graha and node positions from the "+ENGINE_MODES[ENGINE_MODE]+
-              "; sunrise and the lagna's sidereal time are computed with the modern method."),
+              "; sunrise and the lagna's sidereal time are computed with the modern method."+
+              (ENGINE_MODE==="kalasetu"?(SITE_KS&&SITE_KS.inSpan(ms)
+                ? " This date is inside the span the engine was fitted and measured on ("+SITE_KS.SPAN.label+")."
+                : " THIS DATE IS OUTSIDE THE SPAN THE ENGINE WAS FITTED ON ("+(SITE_KS?SITE_KS.SPAN.label:"3600 BCE – 3600 CE")+
+                  "): its polynomials were never tested here, so no accuracy is claimed — cast with the modern engine."):"")),
+            span:ENGINE_MODE==="kalasetu"&&SITE_KS?{label:SITE_KS.SPAN.label, in_span:SITE_KS.inSpan(ms)}:null,
             vs_modern:ENGINE_MODE==="modern"?null:engineVsModern(pos.Moon.sid,date,jd)},
     ayanamsa_note:(AYAN_MODE==="ss_engine"?"the text's own libration of the asterisms, ±27° over 7200 years, zero in 499 CE — used because this chart was cast with a Sūrya Siddhānta engine in its own frame":AYAN_MODES[AYAN_MODE].note), ashtakavarga:avOut, yogas:yg, bhayat:bb, shadbala:sbOut,
     /* Śrīpati's exact bhāva bala; null under BPHS, where the report's own
@@ -2999,7 +3048,7 @@ window.buildLocalChart=function(inp){
     /* Identifier, not branding: 99-main.js tests this string by substring to tell
        a locally computed chart from a remote one. The two must agree, so it keeps
        its original spelling through any rename. */
-    substrate_stamp:(ENGINE_MODE==="modern"?"LearnHoro built-in engine · astronomy-engine (MIT) · Lahiri ayanāṃśa fitted to Swiss Ephemeris":"LearnHoro built-in engine · grahas from the "+ENGINE_MODES[ENGINE_MODE]+" (ss-engine.js) · sunrise and sidereal time from astronomy-engine (MIT)")};
+    substrate_stamp:(ENGINE_MODE==="modern"?"LearnHoro built-in engine · astronomy-engine (MIT) · Lahiri ayanāṃśa fitted to Swiss Ephemeris":"LearnHoro built-in engine · grahas from the "+ENGINE_MODES[ENGINE_MODE]+(ENGINE_MODE==="kalasetu"?" (kalasetu-engine.js, Samanvaya–Ecliptic frame)":" (ss-engine.js)")+" · sunrise and sidereal time from astronomy-engine (MIT)")};
 };
 })();
 

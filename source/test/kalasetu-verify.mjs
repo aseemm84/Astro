@@ -1,0 +1,265 @@
+/* The Kālasetu Siddhānta long-span engine (kalasetu-engine.js): what it claims, and
+ * that the site says it.
+ *
+ * THE CLAIM. Across 3600 BCE – 3600 CE, in the Samanvaya–Ecliptic frame, the
+ * engine reproduces this site's modern engine to arcminutes — on instants the
+ * fit never saw. The claim is tested here on a FRESH sample with a different
+ * seed from the one the fit used, so the published residuals cannot be
+ * flattering the fit's own hold-out by accident of draw.
+ *
+ * THE OTHER CLAIMS, each a way it could quietly go wrong:
+ *   – it holds across the span, not on average: no 600-year band is allowed to
+ *     run away from the rest (that is exactly how the fitted Sūrya Siddhānta
+ *     tier fails, and this suite measures that failure too, for contrast);
+ *   – the frame really is Samanvaya–Ecliptic: the fitter's polynomial is
+ *     engine.js's, and the fitter's copy of the modern true node is the
+ *     engine's;
+ *   – it is standalone: flipping the Sūrya Siddhānta between its tiers does
+ *     not move it;
+ *   – a chart cast with it says so, says the span, and says when a date falls
+ *     outside it; Settings states its cost; Engine Lab shows the measurement;
+ *   – a chart for a year 0–99 CE is placed in that year (Date.UTC reads those
+ *     as 1900–1999 — found while building this engine).
+ *
+ * Run from the repo root: node source/test/kalasetu-verify.mjs
+ */
+import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import { loadAstro, loadSL, makeReference, sdiff, norm, SAMANVAYA, trueNodeModern } from "./fit-kalasetu.mjs";
+const require = createRequire(import.meta.url);
+let chromium;
+try { ({ chromium } = require("playwright")); }
+catch (e) { ({ chromium } = createRequire("/opt/npm-tools/package.json")("playwright")); }
+
+const ROOT = process.cwd();
+let pass = 0, fail = 0;
+const head = t => console.log("\n" + t);
+const is = (c, t) => { if (c) { pass++; console.log("  ok   " + t); } else { fail++; console.log("  FAIL " + t); } };
+const rms = a => Math.sqrt(a.reduce((p, c) => p + c * c, 0) / a.length);
+const worst = a => Math.max(...a.map(Math.abs));
+
+const DOC = JSON.parse(readFileSync(ROOT + "/source/data/kalasetu.json", "utf8"));
+const A = loadAstro(), SL = loadSL(A);
+
+/* ---- 1. the data file, and the engine reading it ------------------------ */
+head("the fitted numbers load, and the engine knows them");
+is(SL.setData(DOC) && SL.isFitted(), "setData accepts kalasetu.json and the engine reports itself fitted");
+is(DOC.frame === "samanvaya_ecliptic", "the file names its frame: samanvaya_ecliptic");
+is(DOC.span.label === "3600 BCE – 3600 CE" && SL.SPAN.label === DOC.span.label, "the file and the engine agree on the span");
+is(SL.BODIES.every(b => DOC.params[b] && SL.keysOf(b).every(k => typeof DOC.params[b][k] === "number")),
+   "every parameter the engine carries has a fitted value in the file");
+is(/notTheText/.test(JSON.stringify(DOC._provenance)) && /not with the sky/.test(DOC._provenance.limits),
+   "the provenance says it is not the text's answer, and that it agrees with the modern engine, not the sky");
+
+/* ---- 2. the claim, on a fresh draw ------------------------------------- */
+head("a fresh sample, drawn with a different seed from the fit's");
+const FRESH = makeReference(A, 900, 9090901);
+/* bounds: the published hold-out with headroom for a different draw, and an
+   absolute ceiling per body that is the engine's real promise */
+const CEIL = { "Sūrya": 0.6, "Rāhu": 0.3, "Candra": 3, "Budha": 2, "Śukra": 1, "Maṅgala": 3, "Guru": 2, "Śani": 3 };
+const fresh = {};
+for (const b of Object.keys(CEIL)) {
+  const r = FRESH.map(s => sdiff(SL.longitude(b, s.ms), s.ref[b]) * 60);
+  fresh[b] = { rms: rms(r), worst: worst(r) };
+  const pub = DOC.residuals[b].holdout.rms;
+  is(fresh[b].rms <= Math.max(pub * 1.35, pub + 0.15) && fresh[b].rms <= CEIL[b],
+     `${b}: ${fresh[b].rms.toFixed(2)}′ rms on the fresh draw (published ${pub.toFixed(2)}′, ceiling ${CEIL[b]}′), worst ${fresh[b].worst.toFixed(1)}′`);
+}
+{
+  const r = FRESH.map(s => sdiff(SL.trueNode(s.ms), s.ref["Rāhu-true"]) * 60);
+  const pub = DOC.residuals["Rāhu (true)"].holdout.rms;
+  is(rms(r) <= Math.max(pub * 1.35, pub + 0.15) && rms(r) < 3,
+     `the true node: ${rms(r).toFixed(2)}′ rms (published ${pub.toFixed(2)}′) — the 1.5° wobble the Siddhānta tiers cannot give`);
+}
+{
+  const lat = FRESH.map(s => (SL.latitude("Candra", s.ms) - s.lat["Candra"]) * 60);
+  is(rms(lat) < 2, `the Moon's latitude: ${rms(lat).toFixed(2)}′ rms`);
+  const pl = ["Maṅgala", "Budha", "Guru", "Śukra", "Śani"].map(b => rms(FRESH.map(s => (SL.latitude(b, s.ms) - s.lat[b]) * 60)));
+  /* latitude is fitted alongside longitude but weighs on nothing a chart
+     prints except planetary war; Śukra's, near inferior conjunction, is the
+     hardest, and the bound is set for it */
+  is(Math.max(...pl) < 8, `the planets' latitudes: worst body ${Math.max(...pl).toFixed(2)}′ rms`);
+}
+{
+  const all = Object.keys(CEIL).map(b => fresh[b].worst);
+  is(Math.max(...all) < 30, `no single instant on the fresh draw is a D60 aṃśa (30′) out — worst of all bodies ${Math.max(...all).toFixed(1)}′`);
+}
+
+/* ---- 3. it holds across the span, not on average ------------------------ */
+head("uniform across the span");
+for (const b of Object.keys(CEIL)) {
+  const B = DOC.residuals[b].bands, top = Math.max(...B.map(x => x.rms));
+  is(B.length === 12 && top <= Math.max(3.2 * DOC.residuals[b].holdout.rms, 0.5),
+     `${b}: worst 600-year band ${top.toFixed(2)}′ against ${DOC.residuals[b].holdout.rms.toFixed(2)}′ overall`);
+}
+{
+  /* the contrast that is the reason this engine exists: the fitted Sūrya
+     Siddhānta tier, fitted on 1800–2200, at the far end of the span */
+  const g = { console, Date, Math, JSON, parseFloat, parseInt, isNaN, isFinite, String, Number, Array, Object, RegExp, Error };
+  g.window = g; g.globalThis = g;
+  const vm = await import("node:vm");
+  vm.runInContext(readFileSync(ROOT + "/source/src/js/ss-engine.js", "utf8"), vm.createContext(g));
+  const S = g.SSEngine; S.setMeasured(JSON.parse(readFileSync(ROOT + "/source/data/siddhanta-measured.json", "utf8"))); S.measured();
+  const LAH = [0.000307083556492, 1.39688796382, 23.857092356];
+  const lah = jd => { const T = (jd - 2451545) / 36525; return (LAH[0] * T + LAH[1]) * T + LAH[2]; };
+  const far = FRESH.filter(s => new Date(s.ms).getUTCFullYear() < -2400);
+  const sam = far.map(s => (s.ref.Candra + (SAMANVAYA[0] * ((s.jd - 2451545) / 36525) ** 2 + SAMANVAYA[1] * ((s.jd - 2451545) / 36525) + SAMANVAYA[2])));
+  const ssfit = rms(far.map((s, i) => sdiff(S.trueLongitude("Candra", S.ahargana(s.ms)).lon, norm(sam[i] - lah(s.jd))) * 60));
+  const ours = rms(far.map(s => sdiff(SL.longitude("Candra", s.ms), s.ref.Candra) * 60));
+  is(ssfit > 100 && ours < 4, `before 2400 BCE the fitted SS tier's Moon is ${(ssfit / 60).toFixed(1)}° out; this engine's ${ours.toFixed(2)}′`);
+}
+
+/* ---- 4. the frame, and the fitter's copies of engine code ---------------- */
+head("the frame and the copied references are the engine's own");
+const ENG = readFileSync(ROOT + "/source/src/js/engine.js", "utf8");
+{
+  const m = ENG.match(/samanvaya_ecliptic:\s*\{[\s\S]*?c:\[([^\]]+)\]/);
+  const c = m ? m[1].split(",").map(Number) : [];
+  is(c.length === 3 && c.every((v, i) => v === SAMANVAYA[i]),
+     "fit-kalasetu's polynomial is engine.js AYAN_MODES.samanvaya_ecliptic, digit for digit");
+}
+is(/function trueNodeModern\(date\)\{\s*var dt=0\.0005;/.test(ENG) && /Math\.atan2\(h\.x,-h\.y\)/.test(ENG),
+   "engine.js's modern true node is the construction fit-kalasetu copies (osculating plane, ±0.0005 d)");
+
+/* ---- 5. the span edges ---------------------------------------------------- */
+head("the span, and outside it");
+is(SL.inSpan(Date.UTC(-3599, 0, 1, 12)) && SL.inSpan(Date.UTC(3600, 11, 31, 12)), "1 Jan 3600 BCE and 31 Dec 3600 CE are inside");
+is(!SL.inSpan(Date.UTC(-3600, 11, 31, 12)) && !SL.inSpan(Date.UTC(3601, 0, 1, 12)), "the day before and the day after are not");
+
+/* ---- 6. the site ---------------------------------------------------------- */
+const browser = await chromium.launch();
+async function page(file) {
+  const c = await browser.newContext({ viewport: { width: 1280, height: 1400 } });
+  const p = await c.newPage(); const errs = [];
+  p.on("pageerror", e => errs.push(String(e && e.message || e)));
+  await p.goto("file://" + ROOT + "/" + file);
+  return { p, errs };
+}
+
+head("Kundli: casting with it");
+{
+  const { p, errs } = await page("kundli.html");
+  await p.waitForFunction(() => window.buildLocalChart && window.__kEclipModern && window.KalasetuEngine, null, { timeout: 60000 });
+  const opt = await p.evaluate(() => [...document.querySelectorAll("#k-engine option")].map(o => o.value));
+  is(opt.includes("kalasetu"), "the Kundli engine picker offers it");
+  const R = await p.evaluate(() => {
+    const base = { month: 6, day: 21, hour: 12, minute: 0, lat: 23.1765, lon: 75.7885, tzHours: 5.5,
+                   ayanamsa: "lahiri", houseSystem: "whole" };
+    const one = (year, engine, node) => window.buildLocalChart(Object.assign({}, base, { year, engine, node: node || "mean", ssframe: "own" }));
+    const out = {};
+    for (const y of [-2500, 50, 1984, 3200]) {
+      const L = one(y, "kalasetu", "true"), M = one(y, "modern", "true");
+      const t = new Date(Date.UTC(2000, 5, 21, 6, 30)); t.setUTCFullYear(y);
+      const jd = t.getTime() / 86400000 + 2440587.5;
+      const d = {};
+      L.grahas.forEach(g => { const m = M.grahas.find(x => x.key === g.key);
+        /* the modern chart is in Lahiri; carry both to tropical to compare engines alone */
+        d[g.key] = ((g.sidereal_deg + window.__ayanFor(L.ayanamsa_mode, jd)) -
+                    (m.sidereal_deg + window.__ayanFor(M.ayanamsa_mode, jd))); });
+      out[y] = { d, eng: L.engine, ay: L.ayanamsa_mode, nodeMode: L.node_mode, nodeNote: L.node_note, stamp: L.substrate_stamp };
+    }
+    const far = one(5000, "kalasetu");
+    out.far = { eng: far.engine };
+    /* the 0–99 CE instant: the modern chart for 50 CE must have its Sun where
+       the modern ephemeris puts the Sun in 50 CE, not 1950 */
+    const c50 = one(50, "modern");
+    const sun50 = c50.grahas.find(g => g.key === "Sūrya" || g.key === "Sun").sidereal_deg;
+    const ms50 = (() => { const d = new Date(Date.UTC(2000, 5, 21, 6, 30)); d.setUTCFullYear(50); return d.getTime(); })();
+    const ref50 = window.__kEclipModern("Sun", ms50).trop - window.__ayanFor("lahiri", ms50 / 86400000 + 2440587.5);
+    out.sun50 = { got: sun50, want: ((ref50 % 360) + 360) % 360 };
+    return out;
+  });
+  for (const y of [-2500, 50, 1984, 3200]) {
+    const d = Object.values(R[y].d).map(x => Math.abs((((x % 360) + 540) % 360 - 180) * 60));
+    is(Math.max(...d) < 20, `${y < 1 ? (1 - y) + " BCE" : y + " CE"}: every graha and node within ${Math.max(...d).toFixed(1)}′ of the modern chart (tropical, so the frame drops out)`);
+  }
+  is(R[1984].ay === "samanvaya_ecliptic", "in its own frame the chart is read in Samanvaya–Ecliptic, whatever was requested");
+  is(R[1984].eng.mode === "kalasetu" && /Kālasetu Siddhānta/.test(R[1984].eng.name), "the payload names the engine");
+  is(R[-2500].eng.span && R[-2500].eng.span.in_span === true && /inside the span/.test(R[-2500].eng.note),
+     "2501 BCE is inside the span, and the note says so");
+  is(R.far.eng.span && R.far.eng.span.in_span === false && /OUTSIDE THE SPAN/.test(R.far.eng.note),
+     "5000 CE is outside it, and the note says so in capitals");
+  is(R[1984].nodeMode === "true" && R[1984].nodeNote == null,
+     "a true-node request is answered with the true node — this engine carries its periodic terms");
+  is(/kalasetu-engine\.js/.test(R[1984].stamp), "the substrate stamp names kalasetu-engine.js");
+  is(Math.abs(sdiff(R.sun50.got, R.sun50.want)) * 60 < 5,
+     `a chart for 50 CE puts the Sun where 50 CE has it (${(sdiff(R.sun50.got, R.sun50.want) * 60).toFixed(2)}′) — not 1950`);
+
+  /* the report badge */
+  await p.evaluate(() => {
+    const set = (id, v) => { const el = document.getElementById(id); el.value = String(v);
+      el.dispatchEvent(new Event("input", { bubbles: true })); el.dispatchEvent(new Event("change", { bubbles: true })); };
+    set("k-name", "Long"); set("k-dob", "1984-12-15"); set("k-tob", "13:31");
+    set("k-lat", 28.8386); set("k-lon", 78.7733); set("k-tz", 5.5); set("k-engine", "kalasetu"); set("k-ssframe", "own");
+  });
+  await p.click("#k-go");
+  await p.waitForFunction(() => window.__kdata && window.__kdata.derived, null, { timeout: 60000 });
+  await p.waitForTimeout(300);
+  const badge = await p.evaluate(() => { const b = document.getElementById("k-engine-badge"); return b ? b.textContent : ""; });
+  is(/Kālasetu Siddhānta/.test(badge) && /3600 BCE – 3600 CE/.test(badge) && /1000–3000 CE/.test(badge),
+     "the report's badge names the engine, the span, and where the modern engine itself is checked");
+  const conv = await p.evaluate(() => (document.getElementById("k-conv") || document.querySelector(".k-conv") || {}).textContent || document.body.textContent);
+  is(/Samanvaya–Ecliptic \(the long-span engine's frame\)/.test(conv), "the conventions line names the frame");
+  is(errs.length === 0, `no page errors (${errs.join("; ")})`);
+}
+
+head("Independence from the Sūrya Siddhānta's tiers");
+{
+  const { p } = await page("siddhanta.html");
+  await p.waitForFunction(() => window.KalasetuEngine && window.SSEngine, null, { timeout: 60000 });
+  const r = await p.evaluate(() => {
+    const ms = Date.UTC(1000, 2, 1), a = window.KalasetuEngine.longitude("Candra", ms);
+    window.SSEngine.panchaSaura(); const b = window.KalasetuEngine.longitude("Candra", ms);
+    window.SSEngine.bare(); const c = window.KalasetuEngine.longitude("Candra", ms);
+    return [a, b, c];
+  });
+  is(r[0] === r[1] && r[1] === r[2], "switching the Sūrya Siddhānta to the Pañca-saura tier and back leaves it bit-identical");
+}
+
+head("Settings: what choosing it as the default costs");
+{
+  const { p } = await page("kundli.html");
+  await p.waitForFunction(() => window.__engineModes, null, { timeout: 60000 });
+  const ok = await p.evaluate(() => !!window.__engineModes.kalasetu);
+  is(ok, "the site's engine table carries it");
+  const opened = await p.evaluate(() => { const b = document.querySelector("[data-nset-open],#nset-open,.nset-open"); if (b) b.click(); return !!b; });
+  await p.waitForTimeout(300);
+  const has = await p.evaluate(() => !!document.querySelector('select[data-nset="engine"] option[value="kalasetu"], [name="engine"] option[value="kalasetu"]'));
+  if (opened && has) {
+    await p.evaluate(() => { const s = document.querySelector('select[data-nset="engine"], [name="engine"]');
+      s.value = "kalasetu"; s.dispatchEvent(new Event("change", { bubbles: true })); });
+    await p.waitForTimeout(200);
+    const t = await p.evaluate(() => (document.querySelector(".nsconfirm") || {}).textContent || "");
+    is(/′ from the modern engine across 3600 BCE – 3600 CE/.test(t) && /1000–3000 CE/.test(t),
+       "the confirm box states its Moon in arcminutes, the span, and the modern engine's own checked window");
+  } else {
+    const src = readFileSync(ROOT + "/source/src/js/settings.js", "utf8");
+    is(/\["kalasetu", "Kālasetu Siddhānta — long span/.test(src) && /from the modern engine across/.test(src),
+       "Settings offers it and its confirm states the cost (checked in source; the panel did not open here)");
+  }
+}
+
+head("Engine Lab shows the measurement");
+{
+  const { p, errs } = await page("engine-lab.html");
+  await p.waitForFunction(() => window.__slLab && document.querySelector("#el-sltab table"), null, { timeout: 60000 });
+  const r = await p.evaluate(() => ({
+    rows: document.querySelectorAll("#el-sltab tbody tr").length,
+    heads: [...document.querySelectorAll("#el-sltab thead th")].map(t => t.textContent),
+    live: document.querySelectorAll("#el-sllive tbody tr").length,
+    note: document.getElementById("el-slnote").textContent }));
+  is(r.rows === 9, "the residual table has the seven grahas and both nodes");
+  is(r.heads.includes("3600 BCE") && r.heads.includes("1 CE") && r.heads.includes("3001 CE"),
+     "its band columns run from 3600 BCE to 3001 CE");
+  is(r.live === 9 && /never saw/.test(r.note), "the live comparison fills, and the note says the figures are held back");
+  const before = await p.evaluate(() => document.getElementById("el-sllive").textContent);
+  await p.evaluate(() => { const s = document.getElementById("el-slyear"); s.value = "2500"; s.dispatchEvent(new Event("input")); });
+  const after = await p.evaluate(() => [document.getElementById("el-sllive").textContent, document.getElementById("el-slyearread").textContent]);
+  is(after[0] !== before && /2500 CE/.test(after[1]), "dragging the year recomputes it");
+  is(errs.length === 0, `no page errors (${errs.join("; ")})`);
+}
+
+await browser.close();
+console.log(`\n${pass} passed, ${fail} failed`);
+if (fail) { console.log("FAIL"); process.exit(1); }
+console.log("the long-span engine holds across the span, and the site says what it is");

@@ -680,7 +680,11 @@ function renderHeader(N){
     b.innerHTML=`<b>Cast with the ${esc(d.engine.name)}, not the modern ephemeris.</b> `+
       (V?`Its Moon is ${(Math.abs(V.moon_deg)*60).toFixed(1)}′ from the modern Moon here, moving every Viṃśottarī date by about ${sp(V.dasha_shift_days)}`+
          (V.typical?` (typically ${V.typical.moon_arcmin}′ and ${sp(V.typical.dasha_days_cycle_avg)}).`:"."):"")+
-      ` For study and comparison; choose the modern engine to cast from the measured sky.`;
+      (d.engine.mode==="kalasetu"
+        ? (d.engine.span&&d.engine.span.in_span===false
+            ? ` This date is outside ${esc(d.engine.span.label)}, the span it was fitted on; no accuracy is claimed here.`
+            : ` Fitted to the modern engine across ${esc((d.engine.span&&d.engine.span.label)||"3600 BCE – 3600 CE")}.`)
+        : ` For study and comparison; choose the modern engine to cast from the measured sky.`);
     top.append(b);
   }
   const act=h("div",{class:"actions"});

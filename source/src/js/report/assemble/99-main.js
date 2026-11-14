@@ -20,7 +20,12 @@ window.buildKundliReport=function(J){
            'which moves every Viṃśottarī date by about <b>'+spanTxt(V.dasha_shift_days)+'</b> (birth daśā of '+esc(V.dasha_lord)+').';
         if(V.typical) t+=' Typically this engine\u2019s Moon is '+V.typical.moon_arcmin+'′ off, about '+spanTxt(V.typical.dasha_days_cycle_avg)+' of daśā on average.';
       }
-      t+=' It is offered for study and comparison. To cast the chart from the measured sky, choose <b>Modern ephemeris</b> as the engine.</div>';
+      if(E.mode==="kalasetu"){
+        t+=E.span&&E.span.in_span===false
+          ? ' <b>This date is outside '+esc(E.span.label)+', the span the engine was fitted on</b> — no accuracy is claimed here; choose <b>Modern ephemeris</b>.</div>'
+          : ' It is fitted to the modern engine across '+esc((E.span&&E.span.label)||"3600 BCE – 3600 CE")+' and agrees with it to arcminutes; the modern engine itself is checked against the sky only over 1000–3000 CE.</div>';
+      }
+      else t+=' It is offered for study and comparison. To cast the chart from the measured sky, choose <b>Modern ephemeris</b> as the engine.</div>';
       H.push(t);
     }
     if(J.node_note) H.push('<div class="kbox kwarn" id="k-node-note"><b>Mean node used</b>'+esc(J.node_note)+'</div>');

@@ -423,11 +423,11 @@
        frame is selectable. It now reports what is actually set. */
     var hs=($("k-house")&&$("k-house").value)||"sripati";
     var en=($("k-engine")&&$("k-engine").value)||"modern", sf=($("k-ssframe")&&$("k-ssframe").value)||"own";
-    var EN={modern:"",ss:"Sūrya Siddhānta (as written)",ssfit:"Sūrya Siddhānta (fitted)"};
+    var EN={modern:"",ss:"Sūrya Siddhānta (as written)",ssfit:"Sūrya Siddhānta (fitted)",kalasetu:"Kālasetu Siddhānta (long span)"};
     /* a Siddhānta engine in its own frame does not use the ayanāṃśa picked
        above, and the line must not say it does */
     var ayTxt=(en!=="modern"&&sf==="own")
-      ? (en==="ss"?"the Siddhānta's own zero":"Lahiri (the fitted engine's frame)")
+      ? (en==="ss"?"the Siddhānta's own zero":(en==="kalasetu"?"Samanvaya–Ecliptic (the long-span engine's frame)":"Lahiri (the fitted engine's frame)"))
       : esc((M&&M.name)||sel)+" ayanāṃśa";
     el.innerHTML="Sidereal · "+ayTxt+" · "+
                  (hs==="sripati"?"Śrīpati bhāva-chalita":"whole-sign houses")+
