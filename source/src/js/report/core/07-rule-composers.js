@@ -33,7 +33,8 @@ function aGrahas(D){
   if(!strong.length&&!weak.length)b+="No planet is exalted or debilitated; dignity is moderate across the chart. ";
   var d="";
   if(flags.length)d+="Notable states: "+list(flags)+". ";
-  var av=D.planets.filter(function(p){return p.avpct===0;}).map(function(p){return p.en;});
+  /* by name: Vṛddha is also 0 on the scale, but BPHS calls it negligible, not nil */
+  var av=D.planets.filter(function(p){return p.avastha==="Mṛta";}).map(function(p){return p.en;});
   if(av.length)d+="The engine places "+list(av)+" in Mṛta avasthā, which tempers how fully even a dignified "+
     "placement expresses — dignity describes the ground, avasthā how awake the planet is on it. ";
   d+="Each planet should then be read through its house ownership from this lagna, not by its natural character alone.";

@@ -432,6 +432,33 @@ function setEngineMode(m,frame){
   return ENGINE_MODE;
 }
 var AYAN_MODE="lahiri";
+/* WHAT A SIDDHĀNTA ENGINE COSTS THIS CHART. A chart cast with the fitted or the
+   as-written engine is a study object (claude/engine-accuracy.md §4b: "for
+   study and comparison, not for casting") — and a reader whose Settings default
+   is one of them may not know their chart was cast with it. This measures the
+   one quantity where the difference really bites, the Moon, against the modern
+   ephemeris IN THE SAME FRAME (so it is the engine's difference, not the
+   ayanāṃśa's), and turns it into Viṃśottarī time with the lord-specific rate
+   of engine-accuracy.md §5: days per arcsecond = years(lord) × 365.2425 / 48000.
+   It also carries the engine's TYPICAL Moon error from the fitted data file,
+   because one chart can be lucky. */
+var VIM_LORD=["Ketu","Venus","Sun","Moon","Mars","Rahu","Jupiter","Saturn","Mercury"],
+    VIM_YRS={Ketu:7,Venus:20,Sun:6,Moon:10,Mars:7,Rahu:18,Jupiter:16,Saturn:19,Mercury:17};
+function engineVsModern(moonSid,date,jd){
+  try{
+    var modern=norm(tropLonModern("Moon",date)-ayanamsa(jd));
+    var d=((moonSid-modern+540)%360)-180, as=Math.abs(d)*3600;
+    var lord=VIM_LORD[Math.floor(norm(moonSid)/(40/3))%9];
+    var days=as*VIM_YRS[lord]*365.2425/48000;
+    var FD=(typeof window!=="undefined"&&window.__SS_FIT_DATA)||null, typ=null;
+    if(FD&&FD.residuals&&FD.residuals["Candra"]){
+      var R=FD.residuals["Candra"], arc=(ENGINE_MODE==="ssfit"?R.holdout.rms:R.bare.rms)*60;
+      typ={moon_arcmin:+(arc/60).toFixed(1), dasha_days_cycle_avg:Math.round(arc*365.2425/3600)};
+    }
+    return {moon_deg:+d.toFixed(4), dasha_lord:lord, dasha_shift_days:Math.round(days), typical:typ,
+            frame:"the same ayanāṃśa as this chart, so the figure is the engine's difference alone"};
+  }catch(e){ return null; }
+}
 function setAyanamsaMode(m){ if(m!=null&&AYAN_MODES[m]) REQ_AYAN=m; AYAN_MODE=effectiveAyan(REQ_AYAN); return AYAN_MODE; }
 setEngineMode(pageEngine(),siteSsFrame());
 setAyanamsaMode(pageAyan()||"lahiri");
@@ -576,9 +603,23 @@ function vargaSign(code,sid){
     case "D60": return (s+Math.floor(d*2))%12;
   } return 0;
 }
+/* BĀLĀDI AVASTHĀ. BPHS, Vol. 1, Ch. 45, v. 3 (Santhanam): infant, youthful,
+   adolescent, old and dead, six degrees each, in that order in odd signs and
+   reversed in even signs. v. 4 gives what each state yields: "One fourth,
+   half, full, negligible and nil are the grades of results due to a planet in
+   infant, youthful, adolescent, old and dead states."
+
+   Until 14 November 2026 this table carried 50 / 100 / 100 / 50 / 0, which is
+   not that verse — Bāla was shown as half where the text says a quarter, and
+   Kumāra and Vṛddha were each a grade too high. The text's own words travel
+   with the number now, because "negligible" is not a percentage: it is shown
+   as 0 on a scale but labelled negligible, never as nil, which belongs to
+   Mṛta alone. */
+var BALADI=[["Bāla",25,"one fourth"],["Kumāra",50,"half"],["Yuvā",100,"full"],
+            ["Vṛddha",0,"negligible"],["Mṛta",0,"nil"]];
 function baladi(sid){var s=Math.floor(norm(sid)/30)%12,d=norm(sid)-s*30,odd=(s%2===0);
   var k=Math.floor(d/6); if(!odd)k=4-k;
-  return [["Bāla",50],["Kumāra",100],["Yuvā",100],["Vṛddha",50],["Mṛta",0]][Math.max(0,Math.min(4,k))];}
+  return BALADI[Math.max(0,Math.min(4,k))];}
 /* The ārūḍha is counted in RĀŚIS — that is intrinsic to the method and does
    not change. What the house system decides is only which rāśi the bhāva is,
    which is the starting point of the count. Under whole-sign that is
@@ -2427,7 +2468,18 @@ window.buildLocalChart=function(inp){
     var lat=null;
     try{ lat=eclLat(n,date); }catch(e){}
     pos[n]={sid:norm(r.lon-ay),speed:r.speed,lat:lat};});
-  var nodeMode=(inp.node==="true")?"true":"mean";
+  /* THE NODE ACTUALLY USED. The Sūrya Siddhānta has a mean node only, so a
+     Siddhānta engine answers a request for the true node with the mean one
+     (trueNodeAt says so). The payload used to repeat the REQUEST as node_mode
+     — "true" — over a mean node, and the dashboard printed "true nodes". It now
+     records what was used, what was asked for, and why they differ. */
+  var nodeReq=(inp.node==="true")?"true":"mean";
+  var nodeMode=(nodeReq==="true"&&ENGINE_MODE!=="modern")?"mean":nodeReq;
+  var nodeNote=(nodeMode!==nodeReq)
+    ? "You asked for the true node. The "+ENGINE_MODES[ENGINE_MODE]+" has only a mean node — the text moves "+
+      "the node uniformly and has no term for the true node's ±1.5° wobble — so Rāhu and Ketu here are the "+
+      "mean node. Cast with the modern engine for the true node."
+    : null;
   var nodeTrop=(nodeMode==="true")?trueNodeAt(date):meanNode(jd);
   var ra=norm(nodeTrop-ay);
   /* the nodes sit on the ecliptic by definition — they are where Candra crosses it */
@@ -2577,7 +2629,8 @@ window.buildLocalChart=function(inp){
                 "Children-significator","Cousin-significator","Spouse-significator"][i],
       graha:SK[x.n],deg_in_sign:x.d};});
   var av=names.map(function(n){var b=baladi(pos[n].sid);
-    return {graha:SK[n],avastha_iast:b[0],strength_percent:b[1]};});
+    return {graha:SK[n],avastha_iast:b[0],strength_percent:b[1],grade:b[2],
+            source:"BPHS Vol. 1 Ch. 45 vv. 3–4"};});
   var ar=[];
   for(var b2=1;b2<=12;b2++){var sg=arudhaOf(b2,LS,posBySign,FRAME.madhyaSignOfHouse(b2));
     ar.push({bhava_idx:b2-1,bhava_sa:BH[b2-1],arudha_label:(b2===1?"AL":"A"+b2),
@@ -2895,10 +2948,12 @@ window.buildLocalChart=function(inp){
       lagna_rashi_rising_minutes:(risingT&&risingT[lagRashi])?risingT[lagRashi].rising_minutes:null,
       rashis:risingT},
     ayanamsa_mode:AYAN_MODE, ayanamsa_name:(AYAN_MODE==="ss_engine"?"Sūrya Siddhānta's own zero (its libration ayanāṃśa)":AYAN_MODES[AYAN_MODE].name), node_mode:nodeMode,
+    node_requested:nodeReq, node_note:nodeNote,
     engine:{mode:ENGINE_MODE, name:ENGINE_MODES[ENGINE_MODE], frame:ENGINE_MODE==="modern"?null:SS_FRAME,
             requested_ayanamsa:REQ_AYAN,
             note:ENGINE_MODE==="modern"?null:("Graha and node positions from the "+ENGINE_MODES[ENGINE_MODE]+
-              "; sunrise and the lagna's sidereal time are computed with the modern method.")},
+              "; sunrise and the lagna's sidereal time are computed with the modern method."),
+            vs_modern:ENGINE_MODE==="modern"?null:engineVsModern(pos.Moon.sid,date,jd)},
     ayanamsa_note:(AYAN_MODE==="ss_engine"?"the text's own libration of the asterisms, ±27° over 7200 years, zero in 499 CE — used because this chart was cast with a Sūrya Siddhānta engine in its own frame":AYAN_MODES[AYAN_MODE].note), ashtakavarga:avOut, yogas:yg, bhayat:bb, shadbala:sbOut,
     /* Śrīpati's exact bhāva bala; null under BPHS, where the report's own
        simplified section stands. The ±1 rūpa occupancy rule is recorded but

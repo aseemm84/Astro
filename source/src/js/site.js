@@ -215,7 +215,8 @@ PAGE.yogas=function(J){
 PAGE["avasthas-longevity"]=function(J){
   return (J.avasthas||[]).map(function(a){
     return li("<b>"+esc(a.graha)+"</b> — "+esc(a.avastha_iast)+" avasthā"+
-      (a.strength_percent!=null?(", "+a.strength_percent+"% of its scale"):"")); }).join("");
+      (a.grade?(", "+a.grade+" of its results (BPHS Ch. 45 v. 4)"):
+       (a.strength_percent!=null?(", "+a.strength_percent+"% of its scale"):""))); }).join("");
 };
 PAGE.ashtakavarga=function(J){
   var av=J.ashtakavarga; if(!av) return "";

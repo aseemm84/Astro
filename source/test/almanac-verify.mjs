@@ -57,8 +57,10 @@ say(S.brahmaYear === S.kalpa * 2 * 360 && Math.abs(S.brahmaYear - 3.1104e12) < 1
 say(Math.abs(S.brahmaLife - 3.1104e14) < 1e2,
   `a life of Brahmā is ${(S.brahmaLife / 1e12).toFixed(2)} trillion years`);
 
-/* the Kali year today, against the figure every panchanga prints */
-const V = await page.evaluate(() => window.NP.vedicTime(Date.now()));
+/* the Kali year on a fixed day, against the figure every panchanga printed for
+   it. Pinned: the year turns at Meṣa saṅkrānti each April, so "today" would
+   make this check fail every spring. 1 November 2026 sits in Kali 5128. */
+const V = await page.evaluate(() => window.NP.vedicTime(Date.UTC(2026, 10, 1, 6, 0, 0)));
 say(V.kaliElapsed === 5127 && V.kaliCurrent === 5128,
   `${V.kaliElapsed} Kali years have elapsed and we stand in the ${V.kaliCurrent}th — ` +
   `almanacs printing "5127" mean the former`);
@@ -319,9 +321,15 @@ const EP = await page.evaluate(() => {
   const S = { place: P, lang: "en" };
   const out = {};
   /* today: "now" must be a real now inside the day */
-  const now = new Date();
-  const T = window.NP.dayOfDate(now.getFullYear(), now.getMonth() + 1, now.getDate(),
-                                P, { ends: true, month: true });
+  /* the place's own day, not the machine's: in Delhi the date turns at 18:30
+     UTC, and an almanac day runs sunrise to sunrise, so before sunrise "today"
+     is still the previous date's day */
+  const loc = new Date(Date.now() + P.tz * 3600000);
+  const dayAt = k => { const d = new Date(Date.UTC(loc.getUTCFullYear(), loc.getUTCMonth(), loc.getUTCDate() + k));
+    return window.NP.dayOfDate(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(),
+                               P, { ends: true, month: true }); };
+  let T = dayAt(0);
+  if (T.sunrise != null && Date.now() < T.sunrise) T = dayAt(-1);
   out.today = window.__ncElongPair(T, S);
   /* a day that is not today: "now" must fall back to midday, not to an
      instant that has not happened */

@@ -56,7 +56,7 @@ function derive(J){
       nak:nk.name,pada:nk.pada,naklord:nk.lord,dig:dignity(en,s,deg),retro:!!g.retrograde,
       combust:(COMB[en]!=null&&sep<=COMB[en]&&en!=="Sun"),sep:sep,
       speed:(g.speed_deg_per_day!=null?g.speed_deg_per_day:null),
-      avastha:avm[en]?avm[en].avastha_iast:null,avpct:avm[en]?avm[en].strength_percent:null,
+      avastha:avm[en]?avm[en].avastha_iast:null,avpct:avm[en]?avm[en].strength_percent:null,avgrade:avm[en]?avm[en].grade||null:null,
       digbala:DIGB[en]};
   });
   D.P={};D.planets.forEach(function(p){D.P[p.en]=p;});

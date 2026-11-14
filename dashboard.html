@@ -110,6 +110,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible,[
 /* header */
 .top{padding:30px 0 8px}
 .top .meta{color:var(--muted);margin-top:8px;max-width:80ch}
+.top .engine-badge{margin-top:10px;max-width:80ch;padding:10px 14px;border-left:4px solid var(--gold);background:var(--wash);border-radius:6px;color:var(--ink);font-size:.95em}
 .top .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 .btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer}
 .btn:hover{border-color:var(--muted)}
@@ -524,6 +525,13 @@ tr.dtrow-now td{background:color-mix(in srgb,var(--gold) 14%,transparent)}
   border:1px solid var(--border,#d8d8e6);border-radius:6px}
 .nsnote{margin:4px 0 0;font-size:12.5px;line-height:1.5;color:var(--text-soft,#555)}
 .nsrow .themepick{display:block}
+/* the one-time question before a Siddhānta engine becomes the default */
+.nsconfirm{margin:8px 0 0;padding:10px 12px;border-left:3px solid var(--accent,#b07a06);
+  background:var(--surface-2,#f4f4f7);border-radius:6px;font-size:12.5px;line-height:1.5}
+.nsconfirm p{margin:0 0 8px}
+.nsconfirm button{font:inherit;font-size:12.5px;cursor:pointer;padding:5px 10px;margin:0 6px 4px 0;
+  background:var(--surface,#fff);color:var(--text,#1c1c22);border:1px solid var(--border,#d8d8e6);border-radius:6px}
+.nsconfirm button:first-of-type{font-weight:600}
 .nsfoot{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
   margin-top:18px;padding-top:14px;border-top:1px solid var(--border,#d8d8e6)}
 .nsbtn{font:inherit;font-size:13px;cursor:pointer;padding:5px 11px;
@@ -2091,14 +2099,34 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
      they are an older recension's own numbers, and the tier exists to show
      what the method gives with them.
 
-     WHAT IS THE TEXT'S, AND WHAT IS BORROWED. The body of that PDF is page
+     WHAT IS THE TEXT'S, AND WHAT WAS BORROWED. The body of that PDF is page
      images; only pages 408–419 carry a text layer, so every figure below was
-     OCR'd at 300–400 dpi and checked, and the ones the extraction never
-     reached are NOT invented — they are taken from the Later Sūrya Siddhānta
-     constants above and NAMED, individually, in panchaSauraInfo().borrowed.
-     Any page showing this tier must print that list. A tier that is four
-     twentieths someone else's numbers while wearing Varāhamihira's name would
-     be a worse object than no tier at all.
+     OCR'd at 300–400 dpi and checked. Until 14 November 2026 four quantities
+     the extraction had not reached were the Later Sūrya Siddhānta's, each
+     named in panchaSauraInfo().borrowed. All four are in Ch. IX — not Ch.
+     XVI, where the earlier note looked — and they are now the text's own:
+
+       the Moon's apogee   IX.3–4: days × 900 + 22,60,356, ÷ 29,08,789, then
+                           + 10″/297 per revolution. Sastry (notes to IX.4)
+                           shows the rule encodes 4,88,219 revolutions per
+                           Mahāyuga; the Later SS has 4,88,203.
+       the node            IX.5–6: days × 2700 + 63,13,219, ÷ 1,83,45,827,
+                           deducted from 12 rāśis. 2,32,226.002 per Mahāyuga
+                           (Sastry: 2,32,226, the rule's 46″ excess "neglected
+                           by the author"); the Later SS has 2,32,238.
+       the Moon's epicycle IX.7–8: "multiply the sine of the anomaly … of the
+                           Moon by 31" and divide by 360 — ONE circumference,
+                           31°, against the later pair 32° / 31°40′.
+       the Sun's apogee    IX.7: "the mean longitude of the Sun minus 80° is
+                           called the Sun's anomaly" — 80°, against 77°17′.
+
+     The two revolution counts are taken from the rules exactly as written
+     (Mahāyuga days × multiplier ÷ divisor, with the apogee's second step),
+     not from Sastry's rounded integers, so the tier computes what the verse
+     computes. Their EPOCH longitudes (apogee 90°, node 180° at Kali) were
+     already text-verified and are unchanged; Sastry's derivation of both
+     kṣepas starts from them. The list stays, now empty, so a page that prints
+     it says "none" rather than nothing.
 
      Known differences from the Later SS, all text-verified:
 
@@ -2137,7 +2165,13 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
       "Budha":   17937000,      /* śīghrocca; days × 100 ÷ 8797 */
       "Guru":    364220,        /* days × 100 ÷ 433,232 */
       "Śukra":   7022388,       /* śīghrocca; days × 10 ÷ 2247 */
-      "Śani":    146564         /* days × 1000 ÷ 10,766,066 */
+      "Śani":    146564,        /* days × 1000 ÷ 10,766,066 */
+      /* IX.3–4, the rule as written: Mahāyuga days × 900 ÷ 29,08,789, then the
+         second step, + 10″ per 297 revolutions (a revolution is 1,296,000″) */
+      "candraUcca": (1577917800 * 900 / 2908789) * (1 + 10 / (297 * 1296000)),
+      /* IX.5–6, as written: × 2700 ÷ 1,83,45,827, and deducted from 12 rāśis,
+         so the node goes backwards — negative, as this engine counts it */
+      "Rāhu":    -(1577917800 * 2700 / 18345827)
     },
     /* One circumference per body, not a pair. Where the text gives one value
        both quadrant entries take it, so the interpolation that makes the
@@ -2149,34 +2183,27 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
       "Budha":   { manda: 28,  sighra: 132 },
       "Guru":    { manda: 32,  sighra: 72 },
       "Śukra":   { manda: 14,  sighra: 260 },
-      "Śani":    { manda: 60,  sighra: 40 }
+      "Śani":    { manda: 60,  sighra: 40 },
+      /* IX.7–8: sine of the Moon's anomaly × 31 ÷ 360 — one value, 31° */
+      "Candra":  { manda: 31,  sighra: null }
+    },
+    /* IX.7: the Sun's apogee at 80°. The five star-planets' mandocca were
+       already the text's and agree with the Later SS exactly. */
+    mandocca: { "Sūrya": 80 },
+    /* where each of the four once-borrowed quantities is read, for any page
+       that wants to cite it */
+    sources: {
+      "YUGA.rev.candraUcca": "PS IX.3–4 (Sastry tr. p. 199; notes p. 200–201)",
+      "YUGA.rev.Rāhu":       "PS IX.5–6 (Sastry tr. p. 201; notes p. 202–203)",
+      "EPI.Candra":          "PS IX.7–8 (Sastry tr. p. 203–204)",
+      "MANDOCCA.Sūrya":      "PS IX.7 (Sastry tr. p. 203)"
     },
     /* Named individually, because an undisclosed borrow is the whole risk
        here. Each entry says what was wanted and why it is not the text's. */
-    borrowed: [
-      ["YUGA.rev.candraUcca", "the Moon's apogee revolutions",
-       "PS I.14 gives the Moon but neither the apogee nor the node. Ch. XVI " +
-       "was not reached by the OCR for them. Only their EPOCH LONGITUDES are " +
-       "text-verified (apogee 90°, node 180°), and those are already what " +
-       "this engine ships."],
-      /* "as above" was the first draft of this, and the harness refused it:
-         each entry is rendered on its own in a list, where a back-reference
-         explains nothing. */
-      ["YUGA.rev.Rāhu", "the node's revolutions",
-       "PS I.14 gives the lunar revolutions but not the node's. Ch. XVI was " +
-       "not reached by the OCR for it. Its EPOCH LONGITUDE of 180° is " +
-       "text-verified — Sastry's notes to Ch. XVI put the node there at Kali " +
-       "in the Āryabhaṭīya, the Ardharātrika-pakṣa, Varāhamihira's Saura, " +
-       "Bhaṭṭotpala's Pauliśa and the Later Sūrya Siddhānta alike — and that " +
-       "is already what this engine ships."],
-      ["EPI.Candra", "the Moon's epicycle",
-       "the extraction recorded the five star-planets and the Sun's value " +
-       "(via Śukra's), not the Moon's. The later recension's pair is kept " +
-       "rather than guessing a single value from the one-value pattern."],
-      ["MANDOCCA.Sūrya", "the Sun's apogee",
-       "the five star-planets' mandocca are text-verified and agree exactly; " +
-       "the Sun's was not among them."]
-    ]
+    /* Empty since 14 November 2026: the four entries it held are closed
+       from Ch. IX (see the note above). Kept, so the disclosure is still
+       rendered from the engine and still says "none" rather than nothing. */
+    borrowed: []
   };
   function applyPanchaSaura(){
     for (var r in PS_CONST.rev) YUGA.rev[r] = PS_CONST.rev[r];
@@ -2187,6 +2214,7 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
       EPI[b].manda = [v.manda, v.manda];
       EPI[b].sighra = (v.sighra == null) ? null : [v.sighra, v.sighra];
     }
+    for (var m in PS_CONST.mandocca) MANDOCCA[m] = PS_CONST.mandocca[m];
     OPT.bija = null;          /* a constants tier, never a fitted one */
     PS_ON = true;
     return true;
@@ -2229,14 +2257,14 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
     bare: restoreConstants,
     isMeasured: function(){ return !!(MEASURED && OPT.bija); },
     /* the Pañcasiddhāntikā Saura tier — see the long note above it.
-       panchaSauraInfo().borrowed is NOT optional reading for a page that
-       displays this tier: four quantities in it are the Later Sūrya
-       Siddhānta's because the OCR never reached them, and each is named. */
+       panchaSauraInfo().borrowed is still what a page displaying this tier
+       must print. Since the Ch. IX reading it is empty — every constant is
+       the text's own — and the page says "none". */
     panchaSaura: applyPanchaSaura,
     isPanchaSaura: function(){ return PS_ON; },
     panchaSauraInfo: function(){
       return {
-        source: "Pañcasiddhāntikā of Varāhamihira, Ch. XVI–XVII; Kuppanna " +
+        source: "Pañcasiddhāntikā of Varāhamihira, Ch. I.14, IX and XVI–XVII; Kuppanna " +
                 "Sastry tr., K. V. Sarma ed., PPST Foundation, Madras, 1993",
         civilDays: PS_CONST.civilDays,
         laterSSCivilDays: BASE_CONST.civilDays,
@@ -2244,6 +2272,8 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
         impliedYear: PS_CONST.civilDays / YUGA.years,
         rev: JSON.parse(JSON.stringify(PS_CONST.rev)),
         epi: JSON.parse(JSON.stringify(PS_CONST.epi)),
+        mandocca: JSON.parse(JSON.stringify(PS_CONST.mandocca)),
+        sources: JSON.parse(JSON.stringify(PS_CONST.sources)),
         oneEpicycleNotTwo: true,
         borrowed: PS_CONST.borrowed.map(function (b) {
           return { path: b[0], what: b[1], why: b[2] };
@@ -3024,6 +3054,33 @@ function setEngineMode(m,frame){
   return ENGINE_MODE;
 }
 var AYAN_MODE="lahiri";
+/* WHAT A SIDDHĀNTA ENGINE COSTS THIS CHART. A chart cast with the fitted or the
+   as-written engine is a study object (claude/engine-accuracy.md §4b: "for
+   study and comparison, not for casting") — and a reader whose Settings default
+   is one of them may not know their chart was cast with it. This measures the
+   one quantity where the difference really bites, the Moon, against the modern
+   ephemeris IN THE SAME FRAME (so it is the engine's difference, not the
+   ayanāṃśa's), and turns it into Viṃśottarī time with the lord-specific rate
+   of engine-accuracy.md §5: days per arcsecond = years(lord) × 365.2425 / 48000.
+   It also carries the engine's TYPICAL Moon error from the fitted data file,
+   because one chart can be lucky. */
+var VIM_LORD=["Ketu","Venus","Sun","Moon","Mars","Rahu","Jupiter","Saturn","Mercury"],
+    VIM_YRS={Ketu:7,Venus:20,Sun:6,Moon:10,Mars:7,Rahu:18,Jupiter:16,Saturn:19,Mercury:17};
+function engineVsModern(moonSid,date,jd){
+  try{
+    var modern=norm(tropLonModern("Moon",date)-ayanamsa(jd));
+    var d=((moonSid-modern+540)%360)-180, as=Math.abs(d)*3600;
+    var lord=VIM_LORD[Math.floor(norm(moonSid)/(40/3))%9];
+    var days=as*VIM_YRS[lord]*365.2425/48000;
+    var FD=(typeof window!=="undefined"&&window.__SS_FIT_DATA)||null, typ=null;
+    if(FD&&FD.residuals&&FD.residuals["Candra"]){
+      var R=FD.residuals["Candra"], arc=(ENGINE_MODE==="ssfit"?R.holdout.rms:R.bare.rms)*60;
+      typ={moon_arcmin:+(arc/60).toFixed(1), dasha_days_cycle_avg:Math.round(arc*365.2425/3600)};
+    }
+    return {moon_deg:+d.toFixed(4), dasha_lord:lord, dasha_shift_days:Math.round(days), typical:typ,
+            frame:"the same ayanāṃśa as this chart, so the figure is the engine's difference alone"};
+  }catch(e){ return null; }
+}
 function setAyanamsaMode(m){ if(m!=null&&AYAN_MODES[m]) REQ_AYAN=m; AYAN_MODE=effectiveAyan(REQ_AYAN); return AYAN_MODE; }
 setEngineMode(pageEngine(),siteSsFrame());
 setAyanamsaMode(pageAyan()||"lahiri");
@@ -3168,9 +3225,23 @@ function vargaSign(code,sid){
     case "D60": return (s+Math.floor(d*2))%12;
   } return 0;
 }
+/* BĀLĀDI AVASTHĀ. BPHS, Vol. 1, Ch. 45, v. 3 (Santhanam): infant, youthful,
+   adolescent, old and dead, six degrees each, in that order in odd signs and
+   reversed in even signs. v. 4 gives what each state yields: "One fourth,
+   half, full, negligible and nil are the grades of results due to a planet in
+   infant, youthful, adolescent, old and dead states."
+
+   Until 14 November 2026 this table carried 50 / 100 / 100 / 50 / 0, which is
+   not that verse — Bāla was shown as half where the text says a quarter, and
+   Kumāra and Vṛddha were each a grade too high. The text's own words travel
+   with the number now, because "negligible" is not a percentage: it is shown
+   as 0 on a scale but labelled negligible, never as nil, which belongs to
+   Mṛta alone. */
+var BALADI=[["Bāla",25,"one fourth"],["Kumāra",50,"half"],["Yuvā",100,"full"],
+            ["Vṛddha",0,"negligible"],["Mṛta",0,"nil"]];
 function baladi(sid){var s=Math.floor(norm(sid)/30)%12,d=norm(sid)-s*30,odd=(s%2===0);
   var k=Math.floor(d/6); if(!odd)k=4-k;
-  return [["Bāla",50],["Kumāra",100],["Yuvā",100],["Vṛddha",50],["Mṛta",0]][Math.max(0,Math.min(4,k))];}
+  return BALADI[Math.max(0,Math.min(4,k))];}
 /* The ārūḍha is counted in RĀŚIS — that is intrinsic to the method and does
    not change. What the house system decides is only which rāśi the bhāva is,
    which is the starting point of the count. Under whole-sign that is
@@ -5019,7 +5090,18 @@ window.buildLocalChart=function(inp){
     var lat=null;
     try{ lat=eclLat(n,date); }catch(e){}
     pos[n]={sid:norm(r.lon-ay),speed:r.speed,lat:lat};});
-  var nodeMode=(inp.node==="true")?"true":"mean";
+  /* THE NODE ACTUALLY USED. The Sūrya Siddhānta has a mean node only, so a
+     Siddhānta engine answers a request for the true node with the mean one
+     (trueNodeAt says so). The payload used to repeat the REQUEST as node_mode
+     — "true" — over a mean node, and the dashboard printed "true nodes". It now
+     records what was used, what was asked for, and why they differ. */
+  var nodeReq=(inp.node==="true")?"true":"mean";
+  var nodeMode=(nodeReq==="true"&&ENGINE_MODE!=="modern")?"mean":nodeReq;
+  var nodeNote=(nodeMode!==nodeReq)
+    ? "You asked for the true node. The "+ENGINE_MODES[ENGINE_MODE]+" has only a mean node — the text moves "+
+      "the node uniformly and has no term for the true node's ±1.5° wobble — so Rāhu and Ketu here are the "+
+      "mean node. Cast with the modern engine for the true node."
+    : null;
   var nodeTrop=(nodeMode==="true")?trueNodeAt(date):meanNode(jd);
   var ra=norm(nodeTrop-ay);
   /* the nodes sit on the ecliptic by definition — they are where Candra crosses it */
@@ -5169,7 +5251,8 @@ window.buildLocalChart=function(inp){
                 "Children-significator","Cousin-significator","Spouse-significator"][i],
       graha:SK[x.n],deg_in_sign:x.d};});
   var av=names.map(function(n){var b=baladi(pos[n].sid);
-    return {graha:SK[n],avastha_iast:b[0],strength_percent:b[1]};});
+    return {graha:SK[n],avastha_iast:b[0],strength_percent:b[1],grade:b[2],
+            source:"BPHS Vol. 1 Ch. 45 vv. 3–4"};});
   var ar=[];
   for(var b2=1;b2<=12;b2++){var sg=arudhaOf(b2,LS,posBySign,FRAME.madhyaSignOfHouse(b2));
     ar.push({bhava_idx:b2-1,bhava_sa:BH[b2-1],arudha_label:(b2===1?"AL":"A"+b2),
@@ -5487,10 +5570,12 @@ window.buildLocalChart=function(inp){
       lagna_rashi_rising_minutes:(risingT&&risingT[lagRashi])?risingT[lagRashi].rising_minutes:null,
       rashis:risingT},
     ayanamsa_mode:AYAN_MODE, ayanamsa_name:(AYAN_MODE==="ss_engine"?"Sūrya Siddhānta's own zero (its libration ayanāṃśa)":AYAN_MODES[AYAN_MODE].name), node_mode:nodeMode,
+    node_requested:nodeReq, node_note:nodeNote,
     engine:{mode:ENGINE_MODE, name:ENGINE_MODES[ENGINE_MODE], frame:ENGINE_MODE==="modern"?null:SS_FRAME,
             requested_ayanamsa:REQ_AYAN,
             note:ENGINE_MODE==="modern"?null:("Graha and node positions from the "+ENGINE_MODES[ENGINE_MODE]+
-              "; sunrise and the lagna's sidereal time are computed with the modern method.")},
+              "; sunrise and the lagna's sidereal time are computed with the modern method."),
+            vs_modern:ENGINE_MODE==="modern"?null:engineVsModern(pos.Moon.sid,date,jd)},
     ayanamsa_note:(AYAN_MODE==="ss_engine"?"the text's own libration of the asterisms, ±27° over 7200 years, zero in 499 CE — used because this chart was cast with a Sūrya Siddhānta engine in its own frame":AYAN_MODES[AYAN_MODE].note), ashtakavarga:avOut, yogas:yg, bhayat:bb, shadbala:sbOut,
     /* Śrīpati's exact bhāva bala; null under BPHS, where the report's own
        simplified section stands. The ±1 rūpa occupancy rule is recorded but
@@ -5958,7 +6043,7 @@ function derive(J){
       nak:nk.name,pada:nk.pada,naklord:nk.lord,dig:dignity(en,s,deg),retro:!!g.retrograde,
       combust:(COMB[en]!=null&&sep<=COMB[en]&&en!=="Sun"),sep:sep,
       speed:(g.speed_deg_per_day!=null?g.speed_deg_per_day:null),
-      avastha:avm[en]?avm[en].avastha_iast:null,avpct:avm[en]?avm[en].strength_percent:null,
+      avastha:avm[en]?avm[en].avastha_iast:null,avpct:avm[en]?avm[en].strength_percent:null,avgrade:avm[en]?avm[en].grade||null:null,
       digbala:DIGB[en]};
   });
   D.P={};D.planets.forEach(function(p){D.P[p.en]=p;});
@@ -6320,7 +6405,8 @@ function aGrahas(D){
   if(!strong.length&&!weak.length)b+="No planet is exalted or debilitated; dignity is moderate across the chart. ";
   var d="";
   if(flags.length)d+="Notable states: "+list(flags)+". ";
-  var av=D.planets.filter(function(p){return p.avpct===0;}).map(function(p){return p.en;});
+  /* by name: Vṛddha is also 0 on the scale, but BPHS calls it negligible, not nil */
+  var av=D.planets.filter(function(p){return p.avastha==="Mṛta";}).map(function(p){return p.en;});
   if(av.length)d+="The engine places "+list(av)+" in Mṛta avasthā, which tempers how fully even a dignified "+
     "placement expresses — dignity describes the ground, avasthā how awake the planet is on it. ";
   d+="Each planet should then be read through its house ownership from this lagna, not by its natural character alone.";
@@ -23921,10 +24007,11 @@ MO_CYC.push({
 /* The events as computed, so the figure's claims can be re-derived from the
    longitudes rather than read off the frame. */
 try {
-window.__moCycleFacts = function (which, spanYears) {
+window.__moCycleFacts = function (which, spanYears, startMs) {
   var E = MC_EVENTS[which || "purnima"];
   if (!E) return null;
-  var t0 = Date.now(), t1 = t0 + (spanYears || 19) * 31556952000;
+  /* startMs lets a test pin the window; the scene itself counts from now */
+  var t0 = startMs != null ? startMs : Date.now(), t1 = t0 + (spanYears || 19) * 31556952000;
   var ts = mcFind(E, t0, t1, 420);
   if (ts.length < 3) return null;
   var lons = ts.map(E.mark);
@@ -25299,7 +25386,7 @@ function jxAvasthas(D){
     ctx.withSun[n]=(n!=="Sun")&&D.P.Sun&&D.P.Sun.house===p.house;
     var d=deeptadi(n,p.dig,{combust:{},war:{}});
     if(p.combust) d=["Vikala","crippled — combust"];
-    return {graha:n, baladi:p.avastha, baladi_strength_percent:p.avpct,
+    return {graha:n, baladi:p.avastha, baladi_strength_percent:p.avpct, baladi_grade:p.avgrade,
             jagradadi:jagradadi(p.dig)[0], deeptadi:d[0], lajjitadi:lajjitadi(n,ctx)};
   }).filter(Boolean);
 }
@@ -27075,6 +27162,25 @@ window.buildKundliReport=function(J){
   try{ SENS=sensCompute(J); }catch(e){ SENS=null; } __secUsed={};
   var D=derive(J),LS=D.LS,H=[];
   H.push('<div class="kreport" id="kreport">');
+  /* A chart cast with a Siddhānta engine says so at the top, with what the
+     engine costs THIS chart — see engineVsModern() in engine.js. A reader whose
+     Settings default is the fitted engine had no way to see it from the chart. */
+  (function(){
+    var E=J.engine||{}, V=E.vs_modern;
+    if(E.mode&&E.mode!=="modern"){
+      var spanTxt=function(d){ d=Math.abs(d); if(d<1)return "under a day"; if(d<60)return Math.round(d)+" days";
+        if(d<730)return (d/30.44).toFixed(1)+" months"; return (d/365.25).toFixed(1)+" years"; };
+      var t='<div class="kbox kwarn" id="k-engine-badge"><b>Cast with the '+esc(E.name||E.mode)+', not the modern ephemeris</b>';
+      if(V){
+        t+='On this chart its Moon is <b>'+(Math.abs(V.moon_deg)*60).toFixed(1)+'′</b> from the modern Moon (same ayanāṃśa), '+
+           'which moves every Viṃśottarī date by about <b>'+spanTxt(V.dasha_shift_days)+'</b> (birth daśā of '+esc(V.dasha_lord)+').';
+        if(V.typical) t+=' Typically this engine\u2019s Moon is '+V.typical.moon_arcmin+'′ off, about '+spanTxt(V.typical.dasha_days_cycle_avg)+' of daśā on average.';
+      }
+      t+=' It is offered for study and comparison. To cast the chart from the measured sky, choose <b>Modern ephemeris</b> as the engine.</div>';
+      H.push(t);
+    }
+    if(J.node_note) H.push('<div class="kbox kwarn" id="k-node-note"><b>Mean node used</b>'+esc(J.node_note)+'</div>');
+  })();
   H.push('<div class="katoggle"><button type="button" id="k-depth" class="k-btn sec" aria-pressed="false">Show detailed analysis</button>'+
     '<span class="kmut"> Notes below each section are composed from this site\'s rules — a transparent synthesis, not BPHS quotations.</span></div>');
   // vitals
@@ -27164,7 +27270,7 @@ window.buildKundliReport=function(J){
     return '<tr><td><b>'+esc(p.iast)+'</b> <span class="kmut">'+esc(p.en)+'</span></td><td>'+SA[p.sign]+' '+dm(p.deg)+'</td>'+
      '<td class="knum">'+p.sid.toFixed(4)+'°</td><td>'+p.house+'</td><td>'+((D.owns[p.en]||[]).join(", ")||"—")+'</td>'+
      '<td class="knum">'+(p.speed!=null?(p.speed>=0?"+":"")+p.speed.toFixed(3):"—")+'</td>'+'<td>'+gbButton("dignity",p.en,chip(p.dig),"How this dignity was decided")+' <span class="kmut">'+esc(p.status||"")+'</span></td><td>'+padaLink(p.nak,p.pada)+'<br><span class="kmut">lord '+esc(p.naklord)+'</span></td>'+
-     '<td>'+(p.avastha?esc(p.avastha)+(p.avpct!=null?' <span class="kmut">'+p.avpct+'%</span>':''):"—")+'</td>'+
+     '<td>'+(p.avastha?esc(p.avastha)+(p.avgrade?' <span class="kmut">'+esc(p.avgrade)+(p.avpct?' ('+p.avpct+'%)':'')+'</span>':(p.avpct!=null?' <span class="kmut">'+p.avpct+'%</span>':'')):"—")+'</td>'+
      '<td class="kmut">'+(f.join("; ")||"—")+'</td></tr>';});
   H.push(sec("Grahas","position, dignity, state",
     tbl(["Graha","Rāśi &amp; degree","Sidereal","House","Owns","Speed/day","Dignity &amp; status","Nakṣatra · pāda","Avasthā","State"],rows)+yuddhaSection(D)+aGrahas(D)));
@@ -27804,6 +27910,13 @@ window.buildKundliReport=function(J){
     EL.addEventListener("click", function (e) {
       var t = e.target;
       if (t && t.getAttribute && t.getAttribute("data-nset-close")) { close(); return; }
+      if (t && t.getAttribute && t.getAttribute("data-nset-engine-ok")) {
+        set({ engine: t.getAttribute("data-nset-engine-ok") });
+        var bx = t.closest(".nsconfirm"); if (bx) bx.remove(); refresh(); return;
+      }
+      if (t && t.getAttribute && t.getAttribute("data-nset-engine-no")) {
+        var bx2 = t.closest(".nsconfirm"); if (bx2) bx2.remove(); refresh(); return;
+      }
       if (t && t.getAttribute && t.getAttribute("data-nset-reset")) {
         set(DEF); refresh(); return;
       }
@@ -27811,6 +27924,33 @@ window.buildKundliReport=function(J){
     EL.addEventListener("change", function (e) {
       var t = e.target, k = t && t.getAttribute && t.getAttribute("data-nset");
       if (!k) return;
+      /* A SIDDHĀNTA ENGINE AS THE DEFAULT IS ASKED ABOUT ONCE, IN PLACE.
+         Choosing it here recasts every chart on the site with an engine whose
+         Moon is typically about a degree off (the fitted tier) or several
+         (the text as written) — a year or more of Viṃśottarī. A reader did
+         exactly this and then could not tell from their chart that it had
+         happened. So the choice waits for a second, explicit click that says
+         what it costs; until then the stored setting does not change. No
+         browser dialog: the question sits under the control it is about. */
+      if (k === "engine" && t.value !== "modern" && t.value !== get().engine) {
+        var want = t.value, row = t.parentNode, old = row.querySelector(".nsconfirm");
+        if (old) old.remove();
+        var FD = window.__SS_FIT_DATA, R = FD && FD.residuals && FD.residuals["Candra"];
+        var arc = R ? (want === "ssfit" ? R.holdout.rms : R.bare.rms) : null;
+        var days = arc != null ? arc * 60 * 365.2425 / 3600 : null;
+        var cost = arc == null ? "" : " Its Moon is typically " + (arc / 60).toFixed(1) + "° off the measured sky, " +
+          "which moves Viṃśottarī dates by about " + (days < 730 ? (days / 30.44).toFixed(0) + " months" : (days / 365.25).toFixed(1) + " years") +
+          " on average.";
+        var box = document.createElement("div");
+        box.className = "nsconfirm"; box.setAttribute("role", "group");
+        box.innerHTML = "<p><b>Cast every chart with the " + esc((window.__engineModes || {})[want] || want) + "?</b>" + cost +
+          " It is meant for study and comparison; charts cast with it will say so at the top.</p>" +
+          '<button type="button" data-nset-engine-ok="' + esc(want) + '">Yes, use it for every chart</button> ' +
+          '<button type="button" data-nset-engine-no="1">Keep the modern ephemeris</button>';
+        row.appendChild(box);
+        t.value = get().engine;                  /* nothing is stored until confirmed */
+        return;
+      }
       set.call(null, (function () { var p = {}; p[k] = t.value; return p; })());
     });
     /* Escape closes, and focus goes back to the button that opened it —
@@ -28324,7 +28464,17 @@ function renderHeader(N){
   const lat=isNum(i.lat)?`${Math.abs(i.lat).toFixed(4)}°${i.lat>=0?"N":"S"}`:"",lon=isNum(i.lon)?`${Math.abs(i.lon).toFixed(4)}°${i.lon>=0?"E":"W"}`:"";
   const top=h("header",{class:"top wrap"});
   top.innerHTML=`<h1>${esc(N.name)}</h1>
-   <p class="meta">Born ${esc(born)} at ${pad(i.hour??0)}:${pad(i.minute??0)} local time (${tz}), ${lat} ${lon}. ${esc(d.ayanamsa_name||i.ayanamsa||"")} ayanāṃśa of ${dms(d.ayanamsha_deg)}, ${esc(d.node_mode||i.node||"")} nodes, ${esc(houseName(d,i))} houses.</p>`;
+   <p class="meta">Born ${esc(born)} at ${pad(i.hour??0)}:${pad(i.minute??0)} local time (${tz}), ${lat} ${lon}. ${esc(d.ayanamsa_name||i.ayanamsa||"")} ayanāṃśa of ${dms(d.ayanamsha_deg)}, ${esc(d.node_mode||i.node||"")} nodes${d.node_note?" (true node asked for; this engine has only the mean)":""}, ${esc(houseName(d,i))} houses, ${esc((d.engine&&d.engine.name)||"Modern ephemeris")}.</p>`;
+  /* a chart cast with a Siddhānta engine says so where the reader looks first */
+  if(d.engine&&d.engine.mode&&d.engine.mode!=="modern"){
+    const V=d.engine.vs_modern, sp=x=>{x=Math.abs(x);return x<1?"under a day":x<60?Math.round(x)+" days":x<730?(x/30.44).toFixed(1)+" months":(x/365.25).toFixed(1)+" years";};
+    const b=h("p",{class:"engine-badge",id:"engine-badge"});
+    b.innerHTML=`<b>Cast with the ${esc(d.engine.name)}, not the modern ephemeris.</b> `+
+      (V?`Its Moon is ${(Math.abs(V.moon_deg)*60).toFixed(1)}′ from the modern Moon here, moving every Viṃśottarī date by about ${sp(V.dasha_shift_days)}`+
+         (V.typical?` (typically ${V.typical.moon_arcmin}′ and ${sp(V.typical.dasha_days_cycle_avg)}).`:"."):"")+
+      ` For study and comparison; choose the modern engine to cast from the measured sky.`;
+    top.append(b);
+  }
   const act=h("div",{class:"actions"});
   const b1=h("button",{class:"btn",type:"button"},"Load another chart");b1.onclick=()=>$("#filepick").click();
   const bP=h("button",{class:"btn",type:"button"},"Save as PDF");
@@ -28439,11 +28589,35 @@ function secCharts(N){
   const cw=card(g,{title:"Zodiac wheel",sub:"Sidereal longitudes with the ascendant on the left. Inner dashed lines are the Śrīpati house cusps; the outer ring holds the transits.",span:"s6"});
   let showT=true;
   cw.querySelector(".ch").append(seg([{v:1,l:"With transits"},{v:0,l:"Natal only"}],v=>{showT=!!v;dw()},1));
+  /* LETTERS OR PLANET IMAGES. Letters stay the default — at 12 px they read
+     faster than any picture — and the choice is remembered in this browser
+     only. The images are the site's own renderer (bodies.js), the same
+     discs the ceremony and Motion draw; offered only where it is loaded. */
+  let imgs=false; try{imgs=localStorage.getItem("nirayana.wheelImages")==="1"}catch(e){}
+  if(typeof window.__moDisc==="function")
+    cw.querySelector(".ch").append(seg([{v:0,l:"Letters"},{v:1,l:"Planet images"}],v=>{imgs=!!v;try{localStorage.setItem("nirayana.wheelImages",imgs?"1":"0")}catch(e){}dw()},imgs?1:0));
+  else imgs=false;
   const wb=h("div",{class:"wheel"});cw.append(wb);
-  function dw(){wb.innerHTML="";wb.append(wheelSVG(N,showT))}
+  function dw(){wb.innerHTML="";wb.append(wheelSVG(N,showT,imgs))}
   dw();
 }
-function wheelSVG(N,showT){
+/* a planet image for the wheel, as a data URI, cached per body and phase */
+const WIMG={};
+function wheelImg(p,phase){
+  const k=p+"|"+(phase==null?"":Math.round(phase/6));
+  if(k in WIMG)return WIMG[k];
+  let u=null;
+  try{ if(p!=="Rahu"&&p!=="Ketu"){const cv=window.__moDisc(p,48,phase==null?{}:{phase});u=cv?cv.toDataURL("image/png"):null;} }catch(e){u=null}
+  return WIMG[k]=u;
+}
+/* Rāhu and Ketu have no surface — they are where the Moon's path crosses the
+   Sun's — so, as everywhere else on the site, they are drawn as shadow discs */
+function nodeDisc(cx,cy,r,ring){
+  const g=s("g");
+  g.append(s("circle",{cx,cy,r,fill:"#2B2140","fill-opacity":.9,stroke:ring||"rgba(176,152,220,.6)","stroke-width":ring?2:1.4}));
+  return g;
+}
+function wheelSVG(N,showT,imgs){
   const {d,D,G}=N,asc=d.lagna?.sidereal_deg??N.lagSign*30;
   const S=640,c=320,svg=s("svg",{viewBox:`0 0 ${S} ${S}`,role:"img","aria-label":"Zodiac wheel"});
   const th=l=>(180+l-asc)*Math.PI/180;const P=(r,l)=>[c+r*Math.cos(th(l)),c-r*Math.sin(th(l))];
@@ -28494,13 +28668,25 @@ function wheelSVG(N,showT){
   // natal
   const nat=spread(N.planets.map(p=>({p,lon:G[p].lon})).filter(x=>isNum(x.lon)),9);
   nat.forEach(x=>{const [x1,y1]=P(RN[0],x.lon),[x2,y2]=P(RN[0]-8,x.lon);svg.append(s("line",{x1,y1,x2,y2,stroke:pc(x.p),"stroke-width":2.5}));
-    const r=200-x.L*24;const [cx2,cy2]=P(r,x.lon);const gg=s("g");gg.append(s("circle",{cx:cx2,cy:cy2,r:12,fill:pc(x.p)}));gg.append(s("text",{x:cx2,y:cy2+.5,"text-anchor":"middle","dominant-baseline":"middle",style:"font-size:10.5px;font-weight:600;fill:#fff"},AB[x.p]));gg.append(s("title",{},`${x.p} ${lonTxt(x.lon)}${G[x.p].r?" retrograde":""}`));svg.append(gg)});
+    const r=200-x.L*24;const [cx2,cy2]=P(r,x.lon);const gg=s("g");
+    /* the natal Moon in the phase it had at birth: its elongation from the Sun */
+    const ph=(x.p==="Moon"&&isNum(G.Sun?.lon))?((G.Moon.lon-G.Sun.lon)%360+360)%360:null;
+    const u=imgs?wheelImg(x.p,ph):null;
+    if(imgs&&(x.p==="Rahu"||x.p==="Ketu"))gg.append(nodeDisc(cx2,cy2,11));
+    else if(u)gg.append(s("image",{href:u,x:cx2-14,y:cy2-14,width:28,height:28}));
+    else{gg.append(s("circle",{cx:cx2,cy:cy2,r:12,fill:pc(x.p)}));gg.append(s("text",{x:cx2,y:cy2+.5,"text-anchor":"middle","dominant-baseline":"middle",style:"font-size:10.5px;font-weight:600;fill:#fff"},AB[x.p]))}
+    gg.append(s("title",{},`${x.p} ${lonTxt(x.lon)}${G[x.p].r?" retrograde":""}`));svg.append(gg)});
   // special points
   const sp=[...(D.special_lagnas||[]).map(x=>({lab:x.abbr,lon:x.lon,full:x.name})),...((D.upagrahas?.dhumadi)||[]).map(x=>({lab:x.name.slice(0,2),lon:x.longitude,full:x.name}))];
   spread(sp,8).forEach(x=>{const [px,py]=P(126-x.L*16,x.lon);const gg=s("g");gg.append(s("rect",{x:px-4,y:py-4,width:8,height:8,transform:`rotate(45 ${px} ${py})`,fill:"var(--gold)"}));gg.append(s("text",{x:px+8,y:py,"dominant-baseline":"middle",style:"font-size:10px;fill:var(--muted)"},x.lab));gg.append(s("title",{},`${x.full} ${lonTxt(x.lon)}`));svg.append(gg)});
   // transits
   if(showT&&N.transits.length){spread(N.transits.filter(t=>isNum(t.lon)).map(t=>({...t})),9).forEach(t=>{const [x1,y1]=P(RS[1],t.lon),[x2,y2]=P(RS[1]+6,t.lon);svg.append(s("line",{x1,y1,x2,y2,stroke:pc(t.n),"stroke-width":2}));
-    const [cx2,cy2]=P(294+(t.L%2)*0,t.lon);const gg=s("g");gg.append(s("circle",{cx:cx2,cy:cy2,r:11,fill:"var(--surface)",stroke:pc(t.n),"stroke-width":2}));gg.append(s("text",{x:cx2,y:cy2+.5,"text-anchor":"middle","dominant-baseline":"middle",style:`font-size:10px;font-weight:600;fill:${pc(t.n)}`},AB[t.n]||t.n.slice(0,2)));gg.append(s("title",{},`Transit ${t.n} ${lonTxt(t.lon)}${t.r?" retrograde":""}`));svg.append(gg)})}
+    const [cx2,cy2]=P(294+(t.L%2)*0,t.lon);const gg=s("g");
+    /* a transit keeps a ring in its planet's colour, so it is never mistaken for a natal position */
+    const tu=imgs?wheelImg(t.n,null):null;
+    if(imgs&&(t.n==="Rahu"||t.n==="Ketu"))gg.append(nodeDisc(cx2,cy2,10,pc(t.n)));
+    else if(tu){gg.append(s("circle",{cx:cx2,cy:cy2,r:12,fill:"var(--surface)",stroke:pc(t.n),"stroke-width":2}));gg.append(s("image",{href:tu,x:cx2-10,y:cy2-10,width:20,height:20}))}
+    else{gg.append(s("circle",{cx:cx2,cy:cy2,r:11,fill:"var(--surface)",stroke:pc(t.n),"stroke-width":2}));gg.append(s("text",{x:cx2,y:cy2+.5,"text-anchor":"middle","dominant-baseline":"middle",style:`font-size:10px;font-weight:600;fill:${pc(t.n)}`},AB[t.n]||t.n.slice(0,2)))}gg.append(s("title",{},`Transit ${t.n} ${lonTxt(t.lon)}${t.r?" retrograde":""}`));svg.append(gg)})}
   svg.append(s("text",{x:c,y:c-8,"text-anchor":"middle",style:"font-family:var(--serif);font-size:15px;font-weight:600;fill:var(--ink)"},SIGNS[N.lagSign]));
   svg.append(s("text",{x:c,y:c+12,"text-anchor":"middle",style:"font-size:11px;fill:var(--muted)"},"ascendant"));
   return svg;
@@ -28553,15 +28739,16 @@ function secPlanets(N){
     xAxis:axis(t,{type:"value"}),yAxis:axis(t,{type:"category",data:N.planets,inverse:true,splitLine:{show:false}}),
     series:[{type:"bar",barWidth:14,data:N.planets.map(p=>({value:D.speed?.[p]??G[p].speed,itemStyle:{color:pc(p),borderRadius:4}})),label:{show:true,position:"right",color:t.muted,fontSize:11,formatter:p=>p.value.toFixed(3)}}]}));
 
-  const c3=card(g,{title:"Age state (bālādi)",sub:"Strength percentage of each planet by its bālādi avasthā.",span:"s6"});
+  const c3=card(g,{title:"Age state (bālādi)",sub:"The share of its results BPHS gives each bālādi state: one fourth, half, full, negligible, nil (Vol. 1, Ch. 45, v. 4).",span:"s6"});
+  const grd=p=>AF[p]?.baladi_grade??AV[p]?.grade;
   const pls=N.planets.filter(p=>AF[p]||AV[p]);
   chart(c3,300,t=>({grid:{left:70,right:90,top:10,bottom:24},tooltip:{trigger:"axis",axisPointer:{type:"shadow"}},
     xAxis:axis(t,{type:"value",max:100}),yAxis:axis(t,{type:"category",data:pls,inverse:true,splitLine:{show:false}}),
-    series:[{type:"bar",barWidth:14,data:pls.map(p=>({value:AF[p]?.baladi_strength_percent??AV[p]?.strength_percent,itemStyle:{color:pc(p),borderRadius:4}})),label:{show:true,position:"right",color:t.ink,fontSize:11.5,formatter:x=>`${x.value}% ${AF[x.name]?.baladi||AV[x.name]?.avastha_iast||""}`}}]}));
+    series:[{type:"bar",barWidth:14,data:pls.map(p=>({value:AF[p]?.baladi_strength_percent??AV[p]?.strength_percent,itemStyle:{color:pc(p),borderRadius:4}})),label:{show:true,position:"right",color:t.ink,fontSize:11.5,formatter:x=>{const gr=grd(x.name),nm=AF[x.name]?.baladi||AV[x.name]?.avastha_iast||"";return gr?`${gr} · ${nm}`:`${x.value}% ${nm}`;}}}]}));
 
   if(D.avasthas_full||d.avasthas){
     const c4=card(g,{title:"Avasthās",sub:"The five classical state schemes for each planet."});
-    table(c4,[{h:"Graha",f:r=>pname(r)},{h:"Bālādi",f:r=>esc(AF[r]?.baladi??AV[r]?.avastha_iast??"")},{h:"%",f:r=>AF[r]?.baladi_strength_percent??AV[r]?.strength_percent??"",num:1},{h:"Jāgradādi",f:r=>esc(AF[r]?.jagradadi??"")},{h:"Dīptādi",f:r=>esc(AF[r]?.deeptadi??"")},{h:"Lajjitādi",wrap:1,f:r=>(AF[r]?.lajjitadi||[]).map(esc).join("<br>")}],pls);
+    table(c4,[{h:"Graha",f:r=>pname(r)},{h:"Bālādi",f:r=>esc(AF[r]?.baladi??AV[r]?.avastha_iast??"")},{h:"Share (Ch. 45 v. 4)",f:r=>{const gr=AF[r]?.baladi_grade??AV[r]?.grade;const v=AF[r]?.baladi_strength_percent??AV[r]?.strength_percent;return gr?esc(gr)+(v?` (${v}%)`:""):(v??"");}},{h:"Jāgradādi",f:r=>esc(AF[r]?.jagradadi??"")},{h:"Dīptādi",f:r=>esc(AF[r]?.deeptadi??"")},{h:"Lajjitādi",wrap:1,f:r=>(AF[r]?.lajjitadi||[]).map(esc).join("<br>")}],pls);
   }
   if(d.chara_karakas){
     const c5=card(g,{title:"Chara kārakas",sub:"Ranked by degree within sign; the highest becomes the Ātmakāraka.",span:"s6"});
@@ -29465,7 +29652,10 @@ window.__nsHonours = ["ayan","house","node","degfmt","engine"];
       ayan: (d && ((d.engine && d.engine.requested_ayanamsa) || d.ayanamsa_mode || (d.input&&d.input.ayanamsa))) || null,
       house: hs ? (typeof hs==="string" ? hs : (hs.mode||null))
                 : ((d&&d.input&&d.input.houseSystem) || null),
-      node: (d && (d.node_mode || (d.input&&d.input.node))) || null,
+      /* the node ASKED for. node_mode is the node USED, which under a
+         Siddhānta engine is always the mean; comparing the setting with that
+         would announce a "nodes" difference on every load that is not one. */
+      node: (d && (d.node_requested || d.node_mode || (d.input&&d.input.node))) || null,
       engine: (d && ((d.engine&&d.engine.mode) || (d.input&&d.input.engine))) || "modern",
       ssframe: (d && ((d.engine&&d.engine.frame) || (d.input&&d.input.ssframe))) || "own"
     };

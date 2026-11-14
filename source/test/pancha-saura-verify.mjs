@@ -12,10 +12,11 @@
  *     symptom. So the suite computes a full position set bare, switches to the
  *     PS tier, switches back, and demands the identical numbers.
  *
- *  2. The borrowed quantities must stay DISCLOSED. Four of them are the Later
- *     SS's, because the PDF body is page images and the OCR never reached
- *     Ch. XVI for them. The tier is honest only while panchaSauraInfo()
- *     names them, so the names are asserted here rather than trusted.
+ *  2. Nothing is borrowed any more, and that is asserted, not assumed. Four
+ *     quantities used to be the Later SS's because the OCR had not reached
+ *     them; on 14 November 2026 all four were read from Ch. IX (not XVI, where
+ *     the old note looked) and replaced with the text's own. The list stays,
+ *     empty, and the page must print "none" from it.
  *
  *  3. The text-verified figures must be the text's. Spot-checked against
  *     claude/pancasiddhantika-cross-check.md and
@@ -92,39 +93,72 @@ is(JSON.stringify(during.pos) !== JSON.stringify(before.pos),
   "the tier does change the positions while it is on — so the restore check " +
   "above is not vacuous");
 
-/* ---- 2. the borrowed list --------------------------------------------- */
-head("the borrowed quantities are disclosed, by name");
+/* ---- 2. nothing is borrowed: the four are Ch. IX's ---------------------- */
+head("the four once-borrowed quantities are the text's own, from Ch. IX");
 const info = await pg.evaluate(() => window.SSEngine.panchaSauraInfo());
-is(Array.isArray(info.borrowed) && info.borrowed.length === 4,
-  "four quantities are declared borrowed (got " +
-  (info.borrowed || []).length + ")");
-const paths = (info.borrowed || []).map((b) => b.path).sort();
-is(JSON.stringify(paths) === JSON.stringify(
-    ["EPI.Candra", "MANDOCCA.Sūrya", "YUGA.rev.Rāhu", "YUGA.rev.candraUcca"]),
-  "and they are exactly the four the OCR never reached: " + paths.join(", "));
-is((info.borrowed || []).every((b) => b.what && b.why && b.why.length > 20),
-  "each says what it is and why it is not the text's");
+is(Array.isArray(info.borrowed) && info.borrowed.length === 0,
+  "no quantity is declared borrowed (got " + (info.borrowed || []).length + ")");
 is(/R = 120/.test(info.notImplemented || ""),
-  "and the tier states that the PS's own R = 120 trigonometry is NOT implemented");
-is(/Kuppanna Sastry/.test(info.source || "") && /1993/.test(info.source || ""),
-  "the edition is named, with its date");
+  "and the tier still states that the PS's own R = 120 trigonometry is NOT implemented");
+is(/Kuppanna Sastry/.test(info.source || "") && /1993/.test(info.source || "") && /IX/.test(info.source || ""),
+  "the edition is named, with its date, and Ch. IX is among the chapters cited");
+const SRC = info.sources || {};
+is(/IX\.3–4/.test(SRC["YUGA.rev.candraUcca"] || "") && /IX\.5–6/.test(SRC["YUGA.rev.Rāhu"] || "") &&
+   /IX\.7–8/.test(SRC["EPI.Candra"] || "") && /IX\.7/.test(SRC["MANDOCCA.Sūrya"] || ""),
+  "each of the four carries its verse");
 
-/* A borrowed quantity must actually still BE the Later SS's, or the list is
-   lying in the other direction. */
 await pg.evaluate(() => window.SSEngine.panchaSaura());
-const borrowedLive = await pg.evaluate(() => ({
+const live = await pg.evaluate(() => ({
   candraUcca: window.SSEngine.YUGA.rev.candraUcca,
   rahu: window.SSEngine.YUGA.rev["Rāhu"],
-  candraEpi: JSON.stringify(window.SSEngine.EPI.Candra),
+  candraEpi: window.SSEngine.EPI.Candra.manda.slice(),
   suryaMandocca: window.SSEngine.MANDOCCA["Sūrya"]
 }));
-is(borrowedLive.candraUcca === before.rev.candraUcca &&
-   borrowedLive.rahu === before.rev["Rāhu"],
-  "the apogee and node revolutions are unchanged from the Later SS, as declared");
-is(borrowedLive.candraEpi === before.epi.Candra,
-  "the Moon's epicycle is unchanged, as declared");
-is(borrowedLive.suryaMandocca === before.mandocca["Sūrya"],
-  "the Sun's mandocca is unchanged, as declared");
+/* IX.3–4 and IX.5–6 as written, over the Mahāyuga; Sastry's notes give the
+   integers these must land on: 4,88,219 and 2,32,226 */
+const D = 1577917800;
+const apo = (D * 900 / 2908789) * (1 + 10 / (297 * 1296000));
+const nod = D * 2700 / 18345827;
+is(Math.abs(live.candraUcca - apo) < 1e-6 && Math.abs(live.candraUcca - 488219) < 0.001,
+  "the Moon's apogee: IX.3–4's rule, " + live.candraUcca.toFixed(5) +
+  " revolutions per Mahāyuga — Sastry's 4,88,219 (the Later SS has " +
+  before.rev.candraUcca.toLocaleString("en-US") + ")");
+is(Math.abs(-live.rahu - nod) < 1e-6 && Math.abs(-live.rahu - 232226) < 0.01,
+  "the node: IX.5–6's rule, " + (-live.rahu).toFixed(4) +
+  " — Sastry's 2,32,226 with the 46″ excess he notes the author neglected (Later SS " +
+  (-before.rev["Rāhu"]).toLocaleString("en-US") + ")");
+is(live.rahu < 0, "and the node still runs backwards, deducted from 12 rāśis as IX.6 says");
+is(live.candraEpi[0] === 31 && live.candraEpi[1] === 31,
+  "the Moon's epicycle is IX.7–8's single 31°, in both quadrant entries (Later SS " +
+  before.epi.Candra + ")");
+is(live.suryaMandocca === 80,
+  "the Sun's apogee is IX.7's 80° (Later SS " + before.mandocca["Sūrya"].toFixed(2) + "°)");
+
+/* SASTRY'S OWN WORKED EXAMPLE, IX.4 Ex. 3: 5,28,931 days from epoch, Ujjain
+   mean noon on 21 May 1953 (06:57 UT). His apogee is rā. 5-5-33.2. The node is
+   worked here by IX.5–6's rule as printed, for the same day. The tier counts
+   from Kali with the text's epoch longitudes; the verse counts from Śaka 427
+   with a kṣepa — two routes to one number, so they must agree. */
+const ex = await pg.evaluate(() => {
+  const E = window.SSEngine, ms = Date.UTC(1953, 4, 21, 6, 57);
+  E.bare(); let a = E.ahargana(ms);
+  const bare = { apo: E.trueLongitude("Candra", a).ucca, rahu: E.trueLongitude("Rāhu", a).lon };
+  E.panchaSaura(); a = E.ahargana(ms);
+  const ps = { apo: E.trueLongitude("Candra", a).ucca, rahu: E.trueLongitude("Rāhu", a).lon };
+  /* left in the tier, as found: the checks below read its live constants */
+  return { bare, ps };
+});
+const days = 528931;
+const xr = (days * 2700 + 6313219) / 18345827, ruleRahu = ((-xr % 1) + 1) % 1 * 360;
+const sastryApo = 150 + 5 + 33.2 / 60;
+const dm = (a, b) => { let x = a - b; while (x > 180) x -= 360; while (x < -180) x += 360; return Math.abs(x) * 60; };
+is(dm(ex.ps.apo, sastryApo) < 3,
+  "Sastry's Example 3: the apogee is rā. 5-5-33.2; the tier gives " + ex.ps.apo.toFixed(3) +
+  "°, " + dm(ex.ps.apo, sastryApo).toFixed(1) + "′ apart (the later constants: " +
+  (dm(ex.bare.apo, sastryApo) / 60).toFixed(1) + "° apart)");
+is(dm(ex.ps.rahu, ruleRahu) < 3,
+  "and IX.5–6's rule, worked for that day, gives Rāhu " + ruleRahu.toFixed(3) + "°; the tier " +
+  ex.ps.rahu.toFixed(3) + "°, " + dm(ex.ps.rahu, ruleRahu).toFixed(1) + "′ apart");
 
 /* ---- 3. the text's own figures ---------------------------------------- */
 head("the text-verified constants are the text's");
@@ -214,12 +248,14 @@ is(d.Budha[2026] > 120,
 is(d["Sūrya"][2026] > 1 && d["Sūrya"][2026] < 30,
   "the Sun moves a few arcminutes (" + d["Sūrya"][2026].toFixed(1) +
   "′) — the 28-day civil-day gap and nothing else");
-/* The borrowed bodies must be nearly still, and that is a CHECK ON THE
-   DISCLOSURE: if Rāhu moved like a star-planet, something not on the
-   borrowed list would have changed it. */
-is(d["Rāhu"][2026] < 1,
-  "Rāhu barely moves (" + d["Rāhu"][2026].toFixed(2) +
-  "′) — its revolutions are borrowed, exactly as the list says");
+/* Rāhu USED to be the check on the disclosure: borrowed revolutions kept it
+   still. With IX.5–6's own count it now moves, by about 12 revolutions per
+   Mahāyuga — 1° per thousand years — so the gap must GROW from 500 CE and
+   stand near five degrees by now. A still node would mean the tier is not
+   applying the text's count. */
+is(d["Rāhu"][2026] > d["Rāhu"][500] && d["Rāhu"][2026] / 60 > 4.5 && d["Rāhu"][2026] / 60 < 5.8,
+  "Rāhu now moves, " + (d["Rāhu"][500] / 60).toFixed(2) + "° at 500 CE to " +
+  (d["Rāhu"][2026] / 60).toFixed(2) + "° by 2026 — the text's 2,32,226 revolutions against the later 2,32,238");
 
 /* ---- 5. the lab's third button ---------------------------------------- */
 head("the siddhānta lab offers it, and the modes cannot compound");
@@ -253,11 +289,9 @@ if (hasBtn) {
      follows and the suite confirms it followed. */
   const shown = await pg.evaluate(() =>
     [...document.querySelectorAll("#ss-psborrow li")].map((li) => li.textContent));
-  is(shown.length === info.borrowed.length,
-    "the page lists exactly as many borrowed quantities as the engine declares (" +
-    shown.length + " of " + info.borrowed.length + ")");
-  is(info.borrowed.every((b) => shown.some((t) => t.indexOf(b.path) >= 0)),
-    "and every declared path appears in it, so the disclosure cannot drift");
+  is(shown.length === 1 && /^None/.test(shown[0] || ""),
+    "the page's disclosure, rendered from the engine's now-empty list, says none (" +
+    (shown[0] || "nothing") + ")");
   const bareBtn = await pg.$('[data-ss="bare"]');
   await bareBtn.click();
   await pg.waitForTimeout(2000);

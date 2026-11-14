@@ -6,6 +6,25 @@ window.buildKundliReport=function(J){
   try{ SENS=sensCompute(J); }catch(e){ SENS=null; } __secUsed={};
   var D=derive(J),LS=D.LS,H=[];
   H.push('<div class="kreport" id="kreport">');
+  /* A chart cast with a Siddhānta engine says so at the top, with what the
+     engine costs THIS chart — see engineVsModern() in engine.js. A reader whose
+     Settings default is the fitted engine had no way to see it from the chart. */
+  (function(){
+    var E=J.engine||{}, V=E.vs_modern;
+    if(E.mode&&E.mode!=="modern"){
+      var spanTxt=function(d){ d=Math.abs(d); if(d<1)return "under a day"; if(d<60)return Math.round(d)+" days";
+        if(d<730)return (d/30.44).toFixed(1)+" months"; return (d/365.25).toFixed(1)+" years"; };
+      var t='<div class="kbox kwarn" id="k-engine-badge"><b>Cast with the '+esc(E.name||E.mode)+', not the modern ephemeris</b>';
+      if(V){
+        t+='On this chart its Moon is <b>'+(Math.abs(V.moon_deg)*60).toFixed(1)+'′</b> from the modern Moon (same ayanāṃśa), '+
+           'which moves every Viṃśottarī date by about <b>'+spanTxt(V.dasha_shift_days)+'</b> (birth daśā of '+esc(V.dasha_lord)+').';
+        if(V.typical) t+=' Typically this engine\u2019s Moon is '+V.typical.moon_arcmin+'′ off, about '+spanTxt(V.typical.dasha_days_cycle_avg)+' of daśā on average.';
+      }
+      t+=' It is offered for study and comparison. To cast the chart from the measured sky, choose <b>Modern ephemeris</b> as the engine.</div>';
+      H.push(t);
+    }
+    if(J.node_note) H.push('<div class="kbox kwarn" id="k-node-note"><b>Mean node used</b>'+esc(J.node_note)+'</div>');
+  })();
   H.push('<div class="katoggle"><button type="button" id="k-depth" class="k-btn sec" aria-pressed="false">Show detailed analysis</button>'+
     '<span class="kmut"> Notes below each section are composed from this site\'s rules — a transparent synthesis, not BPHS quotations.</span></div>');
   // vitals
@@ -95,7 +114,7 @@ window.buildKundliReport=function(J){
     return '<tr><td><b>'+esc(p.iast)+'</b> <span class="kmut">'+esc(p.en)+'</span></td><td>'+SA[p.sign]+' '+dm(p.deg)+'</td>'+
      '<td class="knum">'+p.sid.toFixed(4)+'°</td><td>'+p.house+'</td><td>'+((D.owns[p.en]||[]).join(", ")||"—")+'</td>'+
      '<td class="knum">'+(p.speed!=null?(p.speed>=0?"+":"")+p.speed.toFixed(3):"—")+'</td>'+'<td>'+gbButton("dignity",p.en,chip(p.dig),"How this dignity was decided")+' <span class="kmut">'+esc(p.status||"")+'</span></td><td>'+padaLink(p.nak,p.pada)+'<br><span class="kmut">lord '+esc(p.naklord)+'</span></td>'+
-     '<td>'+(p.avastha?esc(p.avastha)+(p.avpct!=null?' <span class="kmut">'+p.avpct+'%</span>':''):"—")+'</td>'+
+     '<td>'+(p.avastha?esc(p.avastha)+(p.avgrade?' <span class="kmut">'+esc(p.avgrade)+(p.avpct?' ('+p.avpct+'%)':'')+'</span>':(p.avpct!=null?' <span class="kmut">'+p.avpct+'%</span>':'')):"—")+'</td>'+
      '<td class="kmut">'+(f.join("; ")||"—")+'</td></tr>';});
   H.push(sec("Grahas","position, dignity, state",
     tbl(["Graha","Rāśi &amp; degree","Sidereal","House","Owns","Speed/day","Dignity &amp; status","Nakṣatra · pāda","Avasthā","State"],rows)+yuddhaSection(D)+aGrahas(D)));

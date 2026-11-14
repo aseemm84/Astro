@@ -86,7 +86,9 @@ const R = await pg.evaluate(() => {
   const out={};
   for (const kind of Object.keys(ROOTS)) {
     const yrs=SPAN[kind];
-    const F=window.__moCycleFacts(kind, yrs);
+    /* Pinned start: the scene counts from now, and whether a 30-year window of
+       Maṅgala happens to hold a near-return depends on where it starts. */
+    const F=window.__moCycleFacts(kind, yrs, Date.UTC(2026,10,1,0,0,0));
     if (!F) { out[kind]={fail:"no facts"}; continue; }
     /* The brute scan has to reach PAST the last event and start BEFORE the
        first, because a crossing is detected between two samples: without the

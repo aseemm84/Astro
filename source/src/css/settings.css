@@ -57,6 +57,13 @@
   border:1px solid var(--border,#d8d8e6);border-radius:6px}
 .nsnote{margin:4px 0 0;font-size:12.5px;line-height:1.5;color:var(--text-soft,#555)}
 .nsrow .themepick{display:block}
+/* the one-time question before a Siddhānta engine becomes the default */
+.nsconfirm{margin:8px 0 0;padding:10px 12px;border-left:3px solid var(--accent,#b07a06);
+  background:var(--surface-2,#f4f4f7);border-radius:6px;font-size:12.5px;line-height:1.5}
+.nsconfirm p{margin:0 0 8px}
+.nsconfirm button{font:inherit;font-size:12.5px;cursor:pointer;padding:5px 10px;margin:0 6px 4px 0;
+  background:var(--surface,#fff);color:var(--text,#1c1c22);border:1px solid var(--border,#d8d8e6);border-radius:6px}
+.nsconfirm button:first-of-type{font-weight:600}
 .nsfoot{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
   margin-top:18px;padding-top:14px;border-top:1px solid var(--border,#d8d8e6)}
 .nsbtn{font:inherit;font-size:13px;cursor:pointer;padding:5px 11px;

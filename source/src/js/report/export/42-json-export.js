@@ -104,7 +104,7 @@ function jxAvasthas(D){
     ctx.withSun[n]=(n!=="Sun")&&D.P.Sun&&D.P.Sun.house===p.house;
     var d=deeptadi(n,p.dig,{combust:{},war:{}});
     if(p.combust) d=["Vikala","crippled — combust"];
-    return {graha:n, baladi:p.avastha, baladi_strength_percent:p.avpct,
+    return {graha:n, baladi:p.avastha, baladi_strength_percent:p.avpct, baladi_grade:p.avgrade,
             jagradadi:jagradadi(p.dig)[0], deeptadi:d[0], lajjitadi:lajjitadi(n,ctx)};
   }).filter(Boolean);
 }

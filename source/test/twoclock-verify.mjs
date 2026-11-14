@@ -156,7 +156,11 @@ const checks = [
   ["nakṣatra boundaries exact", R.nakErrMax < 2],
   ["tithi boundaries exact (in elongation)", R.tiErrMax < 2],
   ["frame's slide matches the longitudes", Math.abs(R.slide - R.frameSlide) < 0.0005],
-  ["slide = the Sun's mean motion", Math.abs(R.sunRate - 0.9856) < 0.03],
+  /* the true Sun, not the mean one: about 0.953°/day at aphelion (early July)
+     and 1.019°/day at perihelion (early January), so the check holds on any
+     date rather than only away from January */
+  ["slide = the Sun's own motion (0.95–1.02°/day through the year)",
+   R.sunRate > 0.950 && R.sunRate < 1.022],
   /* The Moon's speed is not a constant: about 11.8°/day at apogee and 15.4°/day
      at perigee. These two checks used to assert the MEAN, 13.18 ± 1.2, which
      is only true near mean distance — so the suite passed or failed with the

@@ -506,10 +506,11 @@ MO_CYC.push({
 /* The events as computed, so the figure's claims can be re-derived from the
    longitudes rather than read off the frame. */
 try {
-window.__moCycleFacts = function (which, spanYears) {
+window.__moCycleFacts = function (which, spanYears, startMs) {
   var E = MC_EVENTS[which || "purnima"];
   if (!E) return null;
-  var t0 = Date.now(), t1 = t0 + (spanYears || 19) * 31556952000;
+  /* startMs lets a test pin the window; the scene itself counts from now */
+  var t0 = startMs != null ? startMs : Date.now(), t1 = t0 + (spanYears || 19) * 31556952000;
   var ts = mcFind(E, t0, t1, 420);
   if (ts.length < 3) return null;
   var lons = ts.map(E.mark);

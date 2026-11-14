@@ -110,6 +110,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible,[
 /* header */
 .top{padding:30px 0 8px}
 .top .meta{color:var(--muted);margin-top:8px;max-width:80ch}
+.top .engine-badge{margin-top:10px;max-width:80ch;padding:10px 14px;border-left:4px solid var(--gold);background:var(--wash);border-radius:6px;color:var(--ink);font-size:.95em}
 .top .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
 .btn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer}
 .btn:hover{border-color:var(--muted)}
@@ -671,7 +672,17 @@ function renderHeader(N){
   const lat=isNum(i.lat)?`${Math.abs(i.lat).toFixed(4)}°${i.lat>=0?"N":"S"}`:"",lon=isNum(i.lon)?`${Math.abs(i.lon).toFixed(4)}°${i.lon>=0?"E":"W"}`:"";
   const top=h("header",{class:"top wrap"});
   top.innerHTML=`<h1>${esc(N.name)}</h1>
-   <p class="meta">Born ${esc(born)} at ${pad(i.hour??0)}:${pad(i.minute??0)} local time (${tz}), ${lat} ${lon}. ${esc(d.ayanamsa_name||i.ayanamsa||"")} ayanāṃśa of ${dms(d.ayanamsha_deg)}, ${esc(d.node_mode||i.node||"")} nodes, ${esc(houseName(d,i))} houses.</p>`;
+   <p class="meta">Born ${esc(born)} at ${pad(i.hour??0)}:${pad(i.minute??0)} local time (${tz}), ${lat} ${lon}. ${esc(d.ayanamsa_name||i.ayanamsa||"")} ayanāṃśa of ${dms(d.ayanamsha_deg)}, ${esc(d.node_mode||i.node||"")} nodes${d.node_note?" (true node asked for; this engine has only the mean)":""}, ${esc(houseName(d,i))} houses, ${esc((d.engine&&d.engine.name)||"Modern ephemeris")}.</p>`;
+  /* a chart cast with a Siddhānta engine says so where the reader looks first */
+  if(d.engine&&d.engine.mode&&d.engine.mode!=="modern"){
+    const V=d.engine.vs_modern, sp=x=>{x=Math.abs(x);return x<1?"under a day":x<60?Math.round(x)+" days":x<730?(x/30.44).toFixed(1)+" months":(x/365.25).toFixed(1)+" years";};
+    const b=h("p",{class:"engine-badge",id:"engine-badge"});
+    b.innerHTML=`<b>Cast with the ${esc(d.engine.name)}, not the modern ephemeris.</b> `+
+      (V?`Its Moon is ${(Math.abs(V.moon_deg)*60).toFixed(1)}′ from the modern Moon here, moving every Viṃśottarī date by about ${sp(V.dasha_shift_days)}`+
+         (V.typical?` (typically ${V.typical.moon_arcmin}′ and ${sp(V.typical.dasha_days_cycle_avg)}).`:"."):"")+
+      ` For study and comparison; choose the modern engine to cast from the measured sky.`;
+    top.append(b);
+  }
   const act=h("div",{class:"actions"});
   const b1=h("button",{class:"btn",type:"button"},"Load another chart");b1.onclick=()=>$("#filepick").click();
   const bP=h("button",{class:"btn",type:"button"},"Save as PDF");
@@ -786,11 +797,35 @@ function secCharts(N){
   const cw=card(g,{title:"Zodiac wheel",sub:"Sidereal longitudes with the ascendant on the left. Inner dashed lines are the Śrīpati house cusps; the outer ring holds the transits.",span:"s6"});
   let showT=true;
   cw.querySelector(".ch").append(seg([{v:1,l:"With transits"},{v:0,l:"Natal only"}],v=>{showT=!!v;dw()},1));
+  /* LETTERS OR PLANET IMAGES. Letters stay the default — at 12 px they read
+     faster than any picture — and the choice is remembered in this browser
+     only. The images are the site's own renderer (bodies.js), the same
+     discs the ceremony and Motion draw; offered only where it is loaded. */
+  let imgs=false; try{imgs=localStorage.getItem("nirayana.wheelImages")==="1"}catch(e){}
+  if(typeof window.__moDisc==="function")
+    cw.querySelector(".ch").append(seg([{v:0,l:"Letters"},{v:1,l:"Planet images"}],v=>{imgs=!!v;try{localStorage.setItem("nirayana.wheelImages",imgs?"1":"0")}catch(e){}dw()},imgs?1:0));
+  else imgs=false;
   const wb=h("div",{class:"wheel"});cw.append(wb);
-  function dw(){wb.innerHTML="";wb.append(wheelSVG(N,showT))}
+  function dw(){wb.innerHTML="";wb.append(wheelSVG(N,showT,imgs))}
   dw();
 }
-function wheelSVG(N,showT){
+/* a planet image for the wheel, as a data URI, cached per body and phase */
+const WIMG={};
+function wheelImg(p,phase){
+  const k=p+"|"+(phase==null?"":Math.round(phase/6));
+  if(k in WIMG)return WIMG[k];
+  let u=null;
+  try{ if(p!=="Rahu"&&p!=="Ketu"){const cv=window.__moDisc(p,48,phase==null?{}:{phase});u=cv?cv.toDataURL("image/png"):null;} }catch(e){u=null}
+  return WIMG[k]=u;
+}
+/* Rāhu and Ketu have no surface — they are where the Moon's path crosses the
+   Sun's — so, as everywhere else on the site, they are drawn as shadow discs */
+function nodeDisc(cx,cy,r,ring){
+  const g=s("g");
+  g.append(s("circle",{cx,cy,r,fill:"#2B2140","fill-opacity":.9,stroke:ring||"rgba(176,152,220,.6)","stroke-width":ring?2:1.4}));
+  return g;
+}
+function wheelSVG(N,showT,imgs){
   const {d,D,G}=N,asc=d.lagna?.sidereal_deg??N.lagSign*30;
   const S=640,c=320,svg=s("svg",{viewBox:`0 0 ${S} ${S}`,role:"img","aria-label":"Zodiac wheel"});
   const th=l=>(180+l-asc)*Math.PI/180;const P=(r,l)=>[c+r*Math.cos(th(l)),c-r*Math.sin(th(l))];
@@ -841,13 +876,25 @@ function wheelSVG(N,showT){
   // natal
   const nat=spread(N.planets.map(p=>({p,lon:G[p].lon})).filter(x=>isNum(x.lon)),9);
   nat.forEach(x=>{const [x1,y1]=P(RN[0],x.lon),[x2,y2]=P(RN[0]-8,x.lon);svg.append(s("line",{x1,y1,x2,y2,stroke:pc(x.p),"stroke-width":2.5}));
-    const r=200-x.L*24;const [cx2,cy2]=P(r,x.lon);const gg=s("g");gg.append(s("circle",{cx:cx2,cy:cy2,r:12,fill:pc(x.p)}));gg.append(s("text",{x:cx2,y:cy2+.5,"text-anchor":"middle","dominant-baseline":"middle",style:"font-size:10.5px;font-weight:600;fill:#fff"},AB[x.p]));gg.append(s("title",{},`${x.p} ${lonTxt(x.lon)}${G[x.p].r?" retrograde":""}`));svg.append(gg)});
+    const r=200-x.L*24;const [cx2,cy2]=P(r,x.lon);const gg=s("g");
+    /* the natal Moon in the phase it had at birth: its elongation from the Sun */
+    const ph=(x.p==="Moon"&&isNum(G.Sun?.lon))?((G.Moon.lon-G.Sun.lon)%360+360)%360:null;
+    const u=imgs?wheelImg(x.p,ph):null;
+    if(imgs&&(x.p==="Rahu"||x.p==="Ketu"))gg.append(nodeDisc(cx2,cy2,11));
+    else if(u)gg.append(s("image",{href:u,x:cx2-14,y:cy2-14,width:28,height:28}));
+    else{gg.append(s("circle",{cx:cx2,cy:cy2,r:12,fill:pc(x.p)}));gg.append(s("text",{x:cx2,y:cy2+.5,"text-anchor":"middle","dominant-baseline":"middle",style:"font-size:10.5px;font-weight:600;fill:#fff"},AB[x.p]))}
+    gg.append(s("title",{},`${x.p} ${lonTxt(x.lon)}${G[x.p].r?" retrograde":""}`));svg.append(gg)});
   // special points
   const sp=[...(D.special_lagnas||[]).map(x=>({lab:x.abbr,lon:x.lon,full:x.name})),...((D.upagrahas?.dhumadi)||[]).map(x=>({lab:x.name.slice(0,2),lon:x.longitude,full:x.name}))];
   spread(sp,8).forEach(x=>{const [px,py]=P(126-x.L*16,x.lon);const gg=s("g");gg.append(s("rect",{x:px-4,y:py-4,width:8,height:8,transform:`rotate(45 ${px} ${py})`,fill:"var(--gold)"}));gg.append(s("text",{x:px+8,y:py,"dominant-baseline":"middle",style:"font-size:10px;fill:var(--muted)"},x.lab));gg.append(s("title",{},`${x.full} ${lonTxt(x.lon)}`));svg.append(gg)});
   // transits
   if(showT&&N.transits.length){spread(N.transits.filter(t=>isNum(t.lon)).map(t=>({...t})),9).forEach(t=>{const [x1,y1]=P(RS[1],t.lon),[x2,y2]=P(RS[1]+6,t.lon);svg.append(s("line",{x1,y1,x2,y2,stroke:pc(t.n),"stroke-width":2}));
-    const [cx2,cy2]=P(294+(t.L%2)*0,t.lon);const gg=s("g");gg.append(s("circle",{cx:cx2,cy:cy2,r:11,fill:"var(--surface)",stroke:pc(t.n),"stroke-width":2}));gg.append(s("text",{x:cx2,y:cy2+.5,"text-anchor":"middle","dominant-baseline":"middle",style:`font-size:10px;font-weight:600;fill:${pc(t.n)}`},AB[t.n]||t.n.slice(0,2)));gg.append(s("title",{},`Transit ${t.n} ${lonTxt(t.lon)}${t.r?" retrograde":""}`));svg.append(gg)})}
+    const [cx2,cy2]=P(294+(t.L%2)*0,t.lon);const gg=s("g");
+    /* a transit keeps a ring in its planet's colour, so it is never mistaken for a natal position */
+    const tu=imgs?wheelImg(t.n,null):null;
+    if(imgs&&(t.n==="Rahu"||t.n==="Ketu"))gg.append(nodeDisc(cx2,cy2,10,pc(t.n)));
+    else if(tu){gg.append(s("circle",{cx:cx2,cy:cy2,r:12,fill:"var(--surface)",stroke:pc(t.n),"stroke-width":2}));gg.append(s("image",{href:tu,x:cx2-10,y:cy2-10,width:20,height:20}))}
+    else{gg.append(s("circle",{cx:cx2,cy:cy2,r:11,fill:"var(--surface)",stroke:pc(t.n),"stroke-width":2}));gg.append(s("text",{x:cx2,y:cy2+.5,"text-anchor":"middle","dominant-baseline":"middle",style:`font-size:10px;font-weight:600;fill:${pc(t.n)}`},AB[t.n]||t.n.slice(0,2)))}gg.append(s("title",{},`Transit ${t.n} ${lonTxt(t.lon)}${t.r?" retrograde":""}`));svg.append(gg)})}
   svg.append(s("text",{x:c,y:c-8,"text-anchor":"middle",style:"font-family:var(--serif);font-size:15px;font-weight:600;fill:var(--ink)"},SIGNS[N.lagSign]));
   svg.append(s("text",{x:c,y:c+12,"text-anchor":"middle",style:"font-size:11px;fill:var(--muted)"},"ascendant"));
   return svg;
@@ -900,15 +947,16 @@ function secPlanets(N){
     xAxis:axis(t,{type:"value"}),yAxis:axis(t,{type:"category",data:N.planets,inverse:true,splitLine:{show:false}}),
     series:[{type:"bar",barWidth:14,data:N.planets.map(p=>({value:D.speed?.[p]??G[p].speed,itemStyle:{color:pc(p),borderRadius:4}})),label:{show:true,position:"right",color:t.muted,fontSize:11,formatter:p=>p.value.toFixed(3)}}]}));
 
-  const c3=card(g,{title:"Age state (bālādi)",sub:"Strength percentage of each planet by its bālādi avasthā.",span:"s6"});
+  const c3=card(g,{title:"Age state (bālādi)",sub:"The share of its results BPHS gives each bālādi state: one fourth, half, full, negligible, nil (Vol. 1, Ch. 45, v. 4).",span:"s6"});
+  const grd=p=>AF[p]?.baladi_grade??AV[p]?.grade;
   const pls=N.planets.filter(p=>AF[p]||AV[p]);
   chart(c3,300,t=>({grid:{left:70,right:90,top:10,bottom:24},tooltip:{trigger:"axis",axisPointer:{type:"shadow"}},
     xAxis:axis(t,{type:"value",max:100}),yAxis:axis(t,{type:"category",data:pls,inverse:true,splitLine:{show:false}}),
-    series:[{type:"bar",barWidth:14,data:pls.map(p=>({value:AF[p]?.baladi_strength_percent??AV[p]?.strength_percent,itemStyle:{color:pc(p),borderRadius:4}})),label:{show:true,position:"right",color:t.ink,fontSize:11.5,formatter:x=>`${x.value}% ${AF[x.name]?.baladi||AV[x.name]?.avastha_iast||""}`}}]}));
+    series:[{type:"bar",barWidth:14,data:pls.map(p=>({value:AF[p]?.baladi_strength_percent??AV[p]?.strength_percent,itemStyle:{color:pc(p),borderRadius:4}})),label:{show:true,position:"right",color:t.ink,fontSize:11.5,formatter:x=>{const gr=grd(x.name),nm=AF[x.name]?.baladi||AV[x.name]?.avastha_iast||"";return gr?`${gr} · ${nm}`:`${x.value}% ${nm}`;}}}]}));
 
   if(D.avasthas_full||d.avasthas){
     const c4=card(g,{title:"Avasthās",sub:"The five classical state schemes for each planet."});
-    table(c4,[{h:"Graha",f:r=>pname(r)},{h:"Bālādi",f:r=>esc(AF[r]?.baladi??AV[r]?.avastha_iast??"")},{h:"%",f:r=>AF[r]?.baladi_strength_percent??AV[r]?.strength_percent??"",num:1},{h:"Jāgradādi",f:r=>esc(AF[r]?.jagradadi??"")},{h:"Dīptādi",f:r=>esc(AF[r]?.deeptadi??"")},{h:"Lajjitādi",wrap:1,f:r=>(AF[r]?.lajjitadi||[]).map(esc).join("<br>")}],pls);
+    table(c4,[{h:"Graha",f:r=>pname(r)},{h:"Bālādi",f:r=>esc(AF[r]?.baladi??AV[r]?.avastha_iast??"")},{h:"Share (Ch. 45 v. 4)",f:r=>{const gr=AF[r]?.baladi_grade??AV[r]?.grade;const v=AF[r]?.baladi_strength_percent??AV[r]?.strength_percent;return gr?esc(gr)+(v?` (${v}%)`:""):(v??"");}},{h:"Jāgradādi",f:r=>esc(AF[r]?.jagradadi??"")},{h:"Dīptādi",f:r=>esc(AF[r]?.deeptadi??"")},{h:"Lajjitādi",wrap:1,f:r=>(AF[r]?.lajjitadi||[]).map(esc).join("<br>")}],pls);
   }
   if(d.chara_karakas){
     const c5=card(g,{title:"Chara kārakas",sub:"Ranked by degree within sign; the highest becomes the Ātmakāraka.",span:"s6"});
@@ -1812,7 +1860,10 @@ window.__nsHonours = ["ayan","house","node","degfmt","engine"];
       ayan: (d && ((d.engine && d.engine.requested_ayanamsa) || d.ayanamsa_mode || (d.input&&d.input.ayanamsa))) || null,
       house: hs ? (typeof hs==="string" ? hs : (hs.mode||null))
                 : ((d&&d.input&&d.input.houseSystem) || null),
-      node: (d && (d.node_mode || (d.input&&d.input.node))) || null,
+      /* the node ASKED for. node_mode is the node USED, which under a
+         Siddhānta engine is always the mean; comparing the setting with that
+         would announce a "nodes" difference on every load that is not one. */
+      node: (d && (d.node_requested || d.node_mode || (d.input&&d.input.node))) || null,
       engine: (d && ((d.engine&&d.engine.mode) || (d.input&&d.input.engine))) || "modern",
       ssframe: (d && ((d.engine&&d.engine.frame) || (d.input&&d.input.ssframe))) || "own"
     };

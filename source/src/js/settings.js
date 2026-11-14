@@ -353,6 +353,13 @@
     EL.addEventListener("click", function (e) {
       var t = e.target;
       if (t && t.getAttribute && t.getAttribute("data-nset-close")) { close(); return; }
+      if (t && t.getAttribute && t.getAttribute("data-nset-engine-ok")) {
+        set({ engine: t.getAttribute("data-nset-engine-ok") });
+        var bx = t.closest(".nsconfirm"); if (bx) bx.remove(); refresh(); return;
+      }
+      if (t && t.getAttribute && t.getAttribute("data-nset-engine-no")) {
+        var bx2 = t.closest(".nsconfirm"); if (bx2) bx2.remove(); refresh(); return;
+      }
       if (t && t.getAttribute && t.getAttribute("data-nset-reset")) {
         set(DEF); refresh(); return;
       }
@@ -360,6 +367,33 @@
     EL.addEventListener("change", function (e) {
       var t = e.target, k = t && t.getAttribute && t.getAttribute("data-nset");
       if (!k) return;
+      /* A SIDDHĀNTA ENGINE AS THE DEFAULT IS ASKED ABOUT ONCE, IN PLACE.
+         Choosing it here recasts every chart on the site with an engine whose
+         Moon is typically about a degree off (the fitted tier) or several
+         (the text as written) — a year or more of Viṃśottarī. A reader did
+         exactly this and then could not tell from their chart that it had
+         happened. So the choice waits for a second, explicit click that says
+         what it costs; until then the stored setting does not change. No
+         browser dialog: the question sits under the control it is about. */
+      if (k === "engine" && t.value !== "modern" && t.value !== get().engine) {
+        var want = t.value, row = t.parentNode, old = row.querySelector(".nsconfirm");
+        if (old) old.remove();
+        var FD = window.__SS_FIT_DATA, R = FD && FD.residuals && FD.residuals["Candra"];
+        var arc = R ? (want === "ssfit" ? R.holdout.rms : R.bare.rms) : null;
+        var days = arc != null ? arc * 60 * 365.2425 / 3600 : null;
+        var cost = arc == null ? "" : " Its Moon is typically " + (arc / 60).toFixed(1) + "° off the measured sky, " +
+          "which moves Viṃśottarī dates by about " + (days < 730 ? (days / 30.44).toFixed(0) + " months" : (days / 365.25).toFixed(1) + " years") +
+          " on average.";
+        var box = document.createElement("div");
+        box.className = "nsconfirm"; box.setAttribute("role", "group");
+        box.innerHTML = "<p><b>Cast every chart with the " + esc((window.__engineModes || {})[want] || want) + "?</b>" + cost +
+          " It is meant for study and comparison; charts cast with it will say so at the top.</p>" +
+          '<button type="button" data-nset-engine-ok="' + esc(want) + '">Yes, use it for every chart</button> ' +
+          '<button type="button" data-nset-engine-no="1">Keep the modern ephemeris</button>';
+        row.appendChild(box);
+        t.value = get().engine;                  /* nothing is stored until confirmed */
+        return;
+      }
       set.call(null, (function () { var p = {}; p[k] = t.value; return p; })());
     });
     /* Escape closes, and focus goes back to the button that opened it —

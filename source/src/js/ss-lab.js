@@ -168,7 +168,7 @@
     /* The Pañcasiddhāntikā tier is a CONSTANTS tier, not a fitted one: it
        carries an older recension's own numbers and takes no bīja, so it goes
        through bare() first and never touches setMeasured(). Four of its
-       quantities are the Later SS's because the OCR never reached them, and
+       quantities USED to be the Later SS's (closed from Ch. IX on 14 Nov 2026), and
        the page prints that list from panchaSauraInfo().borrowed — a tier that
        is partly someone else's numbers under Varāhamihira's name would be a
        worse object than no tier at all. */
