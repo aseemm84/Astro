@@ -97,6 +97,9 @@
        grahas inside 29.9° (searched with this engine, 15 Nov 2026) */
     ["Nearest all-in-Meṣa · 15 Oct 12142 BCE", function () { return msFor(-12141, 10, 15, 20, 0); }],
     ["Deep gives way to Early · 8500 BCE", function () { return msFor(-8499, 6, 21, 6, 0); }],
+    /* all seven grahas and Rāhu in Meṣa (Ketu in Tulā), for about 42 hours from
+       2 Jan 7016 BCE 13:00 UT; this is the middle of it (searched 15 Nov 2026) */
+    ["All but Ketu in Meṣa · 3 Jan 7016 BCE", function () { return msFor(-7015, 1, 3, 10, 0); }],
     ["Early gives way to Core · 4000 BCE", function () { return msFor(-3999, 6, 21, 6, 0); }],
     ["The Kali epoch · Ujjain midnight, JD 588465.5", function () { return (588465.5 - 2440587.5) * 86400000; }],
     ["Āryabhaṭa's zero · 21 Mar 499 CE", function () { return (1903396.75 - 2440587.5) * 86400000; }],
