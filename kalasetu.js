@@ -1552,6 +1552,10 @@
   }
   var PRESETS = [
     ["The span opens · 1 Jan 13000 BCE", function () { return msFor(-12999, 1, 1, 6, 0); }],
+    /* the nearest the sky came, in all sixteen millennia, to every graha but
+       Rāhu in Meṣa: Mercury and Mars 1.6° over into Vṛṣabha, the seven non-lunar
+       grahas inside 29.9° (searched with this engine, 15 Nov 2026) */
+    ["Nearest all-in-Meṣa · 15 Oct 12142 BCE", function () { return msFor(-12141, 10, 15, 20, 0); }],
     ["Deep gives way to Early · 8500 BCE", function () { return msFor(-8499, 6, 21, 6, 0); }],
     ["Early gives way to Core · 4000 BCE", function () { return msFor(-3999, 6, 21, 6, 0); }],
     ["The Kali epoch · Ujjain midnight, JD 588465.5", function () { return (588465.5 - 2440587.5) * 86400000; }],
