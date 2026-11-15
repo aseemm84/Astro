@@ -1552,14 +1552,25 @@
   }
   var PRESETS = [
     ["The span opens · 1 Jan 13000 BCE", function () { return msFor(-12999, 1, 1, 6, 0); }],
+    /* EVERY MEṢA GATHERING in 13000 BCE – 3600 CE: the six grahas other than the
+       Moon (Sun, Mercury, Venus, Mars, Jupiter, Saturn) all in Meṣa at once —
+       seven times in sixteen millennia (searched with this engine, every 3 hours,
+       15 Nov 2026). Each preset is the middle of the hours when the Moon joins
+       them, if it does, else the middle of the gathering; "+ Rāhu" when Rāhu is
+       in Meṣa too (Ketu then in Tulā). On 3 Jan 7016 BCE all seven grahas and
+       Rāhu are in Meṣa together for about 42 hours. */
+    ["Meṣa gathering · 28 Sep 12556 BCE", function () { return msFor(-12555, 9, 28, 12, 0); }],
+    ["Meṣa gathering + Moon · 9 Oct 11465 BCE", function () { return msFor(-11464, 10, 9, 15, 0); }],
+    ["Meṣa gathering + Moon + Rāhu · 6 Dec 8785 BCE", function () { return msFor(-8784, 12, 6, 20, 0); }],
+    ["Meṣa gathering + Moon + Rāhu · 3 Jan 7016 BCE", function () { return msFor(-7015, 1, 3, 10, 0); }],
+    ["Meṣa gathering + Rāhu · 11 Jan 6162 BCE", function () { return msFor(-6161, 1, 11, 0, 0); }],
+    ["Meṣa gathering · 29 Mar 232 CE", function () { return msFor(232, 3, 29, 19, 0); }],
+    ["Meṣa gathering · 31 May 3589 CE", function () { return msFor(3589, 5, 31, 18, 0); }],
     /* the nearest the sky came, in all sixteen millennia, to every graha but
        Rāhu in Meṣa: Mercury and Mars 1.6° over into Vṛṣabha, the seven non-lunar
        grahas inside 29.9° (searched with this engine, 15 Nov 2026) */
-    ["Nearest all-in-Meṣa · 15 Oct 12142 BCE", function () { return msFor(-12141, 10, 15, 20, 0); }],
+    ["Nearest with Ketu in Meṣa · 15 Oct 12142 BCE", function () { return msFor(-12141, 10, 15, 20, 0); }],
     ["Deep gives way to Early · 8500 BCE", function () { return msFor(-8499, 6, 21, 6, 0); }],
-    /* all seven grahas and Rāhu in Meṣa (Ketu in Tulā), for about 42 hours from
-       2 Jan 7016 BCE 13:00 UT; this is the middle of it (searched 15 Nov 2026) */
-    ["All but Ketu in Meṣa · 3 Jan 7016 BCE", function () { return msFor(-7015, 1, 3, 10, 0); }],
     ["Early gives way to Core · 4000 BCE", function () { return msFor(-3999, 6, 21, 6, 0); }],
     ["The Kali epoch · Ujjain midnight, JD 588465.5", function () { return (588465.5 - 2440587.5) * 86400000; }],
     ["Āryabhaṭa's zero · 21 Mar 499 CE", function () { return (1903396.75 - 2440587.5) * 86400000; }],
