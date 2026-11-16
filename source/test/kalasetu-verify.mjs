@@ -421,6 +421,18 @@ head("The Kālasetu page");
     abhi: !!document.querySelector("#ks-wheel .ks-abhijit") }));
   is(wh.dots === 9 && wh.yt === 27 && wh.naks >= 27, `the wheel draws 9 grahas, 27 nakṣatra labels (${wh.naks}) and 27 yogatāras (${wh.yt})`);
   is(wh.art === 9, `the grahas are drawn with the site's graha images (${wh.art} of 9)`);
+  /* the modern engine's ring: absent where the engines agree, drawn and labelled where they part, all nine on request */
+  const md = await p.evaluate(() => {
+    const n = () => document.querySelectorAll("#ks-wheel .ks-mod").length, out = { now: n(), leg: document.querySelector("#ks-wheel .ks-legend").textContent };
+    window.__ksPage.setMoment(Date.UTC(-4999, 0, 1, 6, 0));
+    out.old = n(); out.lab = [...document.querySelectorAll("#ks-wheel .ks-modk")].map(t => t.textContent);
+    const c = document.getElementById("ks-modall"); c.checked = true; c.dispatchEvent(new Event("change")); out.all = n();
+    const c2 = document.getElementById("ks-modall"); c2.checked = false; c2.dispatchEvent(new Event("change"));
+    window.__ksPage.setMoment(Date.UTC(2026, 10, 16, 6, 0)); return out; });
+  is(md.now === 0 && /agrees within 1°/.test(md.leg), "in 2026 the engines agree within 1°, so no modern-engine rings are drawn and the legend says so");
+  is(md.old >= 1 && md.lab.length === md.old && md.lab.every(t => /^[+−]\d+\.\d°$/.test(t)),
+     `at 5000 BCE the rings that part from Kālasetu are drawn and labelled (${md.lab.join(", ")})`);
+  is(md.all === 9, "ticking 'compare every graha' draws all nine rings");
   /* the conventions: today's pañcāṅga, the Julian Kali epoch, and switches that keep the table whole */
   const cv = await p.evaluate(() => {
     const out = { today: document.getElementById("ks-panc").textContent };

@@ -1833,7 +1833,7 @@
     YTCACHE = { key: key, v: out };
     return out;
   }
-  var ABHIJIT = false;
+  var ABHIJIT = false, MODALL = false, MODLIM = 1;   /* the modern engine's ring: drawn only past 1° unless asked for */
   /* the grahas' relative sizes, the convention the site's other wheels use
      (37-ecliptic-wheel.js): legible, not to scale */
   var ART_R = { Sun: 1.45, Moon: 1.15, Jupiter: 1.25, Saturn: 1.2, Venus: 1.0, Mars: 0.88, Mercury: 0.8, Rahu: 0.8, Ketu: 0.8 };
@@ -1904,14 +1904,31 @@
       });
       return { out: out, clash: clash };
     }
-    var packed = null;
+    var packed = null, modN = 0;
     [1, 0.82, 0.68, 0.56].some(function (sc) { packed = pack(sc); return !packed.clash; });
     packed.out.forEach(function (q) {
       var g = q.g, L = q.L, rr = q.rr, r = q.r, k = P(L, r), m = P(pos[g[0]].m, r);
       var src = art ? window.NSprite.href(g[1], Math.max(6, rr), g[1] === "Moon" ? phase : null) : null;
       var tip = esc(g[0] + " (" + g[1] + ") · " + inSign(L).replace(/<[^>]+>/g, "") + " · " + nakOf(L));
       h.push('<g class="ks-graha"><title>' + tip + "</title>");
-      h.push('<circle class="ks-mod" cx="' + f1(m[0]) + '" cy="' + f1(m[1]) + '" r="' + f1(rr + 2.5) + '"/>');
+      /* the modern engine's place for the same graha, drawn only where it says
+         something: past MODLIM, or always if the reader asks to compare */
+      var d = isFinite(pos[g[0]].m) ? ((pos[g[0]].m - L + 540) % 360) - 180 : NaN;
+      if (isFinite(d) && (MODALL || Math.abs(d) > MODLIM)) {
+        modN += Math.abs(d) > MODLIM ? 1 : 0;
+        var dx = m[0] - k[0], dy = m[1] - k[1], dd = Math.sqrt(dx * dx + dy * dy);
+        if (dd > 2 * rr + 2.5) {
+          var ux = dx / dd, uy = dy / dd;
+          h.push('<line class="ks-modln" x1="' + f1(k[0] + ux * rr) + '" y1="' + f1(k[1] + uy * rr) + '" x2="' + f1(m[0] - ux * (rr + 2.5)) +
+            '" y2="' + f1(m[1] - uy * (rr + 2.5)) + '"/>');
+        }
+        h.push('<circle class="ks-mod" cx="' + f1(m[0]) + '" cy="' + f1(m[1]) + '" r="' + f1(rr + 2.5) + '"/>');
+        /* the label sits beyond the ring, on the side away from Kālasetu's image */
+        var lx = dd > 0.01 ? dx / dd : 1, ly = dd > 0.01 ? dy / dd : 0;
+        if (Math.abs(d) > MODLIM) h.push('<text class="ks-modk" text-anchor="' + (lx >= 0 ? "start" : "end") + '" x="' + f1(m[0] + lx * (rr + 4.5)) +
+          '" y="' + f1(m[1] + ly * (rr + 4.5) + 2) + '">' +
+          (d > 0 ? "+" : "−") + Math.abs(d).toFixed(1) + "°</text>");
+      }
       if (src) h.push('<image class="ks-dot ks-art" href="' + src + '" x="' + f1(k[0] - rr) + '" y="' + f1(k[1] - rr) + '" width="' + f1(2 * rr) +
         '" height="' + f1(2 * rr) + '"/>');
       else h.push('<circle class="ks-dot" cx="' + f1(k[0]) + '" cy="' + f1(k[1]) + '" r="' + f1(Math.min(7.5, rr)) + '" style="fill:' + COL[g[0]] + '"/>');
@@ -1919,11 +1936,14 @@
     });
     h.push("</svg>");
     var outN = ys.filter(function (y) { return y.nak !== "Abhijit" && Math.floor(y.lon / (40 / 3)) !== y.i; }).length;
-    $("ks-wheel").innerHTML = h.join("") + '<p class="ks-legend"><span>image: Kālasetu</span><span>thin ring: the modern engine</span>' +
+    $("ks-wheel").innerHTML = h.join("") + '<p class="ks-legend"><span>image: Kālasetu</span><span>' + (modN ? "dotted ring: the modern engine, drawn where it differs by more than 1°, with the difference (" + modN + ")" :
+      "the modern engine agrees within 1° for every graha") + "</span>" +
       "<span>As: the lagna</span><span>Meṣa at the left, counter-clockwise</span>" +
       '<span><b class="ks-ytk">✦</b> the 27 junction stars on this date' + (outN ? " — <b class=\"ks-ytk out\">✦</b> " + outN + " stand outside their own division" : "") + "</span>" +
-      '<label class="ks-abhi"><input type="checkbox" id="ks-abhijit"' + (ABHIJIT ? " checked" : "") + "> show Abhijit</label></p>";
+      '<label class="ks-abhi"><input type="checkbox" id="ks-abhijit"' + (ABHIJIT ? " checked" : "") + "> show Abhijit</label>" +
+      '<label class="ks-abhi"><input type="checkbox" id="ks-modall"' + (MODALL ? " checked" : "") + "> compare every graha with the modern engine</label></p>";
     var cb = $("ks-abhijit"); if (cb) cb.onchange = function () { ABHIJIT = cb.checked; wheel(pos); };
+    var cm = $("ks-modall"); if (cm) cm.onchange = function () { MODALL = cm.checked; wheel(pos); };
   }
   /* a four-pointed star, so a junction star reads as a star and not a graha */
   function star(x, y, r) {
