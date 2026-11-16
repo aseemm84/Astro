@@ -5067,11 +5067,21 @@ function moOwn(src){
   /* The Viṃśottarī sequence from the Moon. See the note at the head of the
      file: this duplicates the report bundle's version and sp-verify.mjs
      asserts the two agree to the day. */
+  /* the site's nakṣatra system (nak-system.js): equal unless chosen unequal */
+  function NKs(m) { if (window.NNak) return window.NNak.at(m);
+    var seg = 40 / 3, x = norm(m), i = Math.floor(x / seg), f = (x - i * seg) / seg;
+    return { i: i, d: i, frac: f, dfrac: f, start: i * seg, end: (i + 1) * seg, mode: "equal" }; }
+  function nakArc(i) { var E = window.NNak ? window.NNak.edges() : null;
+    if (E) for (var q = 0; q < E.length; q++) if (E[q].i === i) return E[q];
+    return { start: i * (40 / 3), end: (i + 1) * (40 / 3) }; }
+  function nakWork(m) { var k = NKs(m);
+    return k.mode === "equal" ? norm(m).toFixed(2) + "° ÷ 13°20′"
+      : norm(m).toFixed(2) + "° in " + (k.i === 27 ? "Abhijit" : NAK[k.i]) + "'s arc " + k.start.toFixed(2) + "°–" + k.end.toFixed(2) + "° (unequal)"; }
   function vimshottari(C) {
     var mn = natalLon(C, "Candra");
     if (mn == null || !C.J || C.J.jd_utc == null) return null;
-    var seg = 40 / 3, m = norm(mn), ni = Math.floor(m / seg);
-    var lord = VSEQ[ni % 9], frac = (m - ni * seg) / seg;
+    var K = NKs(mn), ni = K.d;
+    var lord = VSEQ[ni % 9], frac = K.dfrac;
     var out = [], jd = C.J.jd_utc, i0 = VSEQ.indexOf(lord);
     for (var i = 0; i < 9; i++) {
       var lo = VSEQ[(i0 + i) % 9];
@@ -5255,9 +5265,9 @@ function moOwn(src){
     });
   });
   NAK.forEach(function (nm, i) {
-    add("nak." + i, "nakshatra", nm, "the 13°20′ arc", ["lon"], function () {
-      return lon(i * (40 / 3) + (20 / 3), nm, "dim",
-                 { from: i * (40 / 3), to: (i + 1) * (40 / 3) });
+    add("nak." + i, "nakshatra", nm, "the nakṣatra's arc", ["lon"], function () {
+      var A = nakArc(i);
+      return lon((A.start + A.end) / 2, nm, "dim", { from: A.start, to: A.end });
     });
   });
 
@@ -5733,11 +5743,11 @@ function moOwn(src){
     var el = norm(m - s);
     return scalar(el / 12, "tithis", "tithi", 30, el.toFixed(2) + "° ÷ 12°");
   });
-  add("pan.nak", "panchanga", "Nakṣatra", "Moon ÷ 13°20′", ["scalar"],
+  add("pan.nak", "panchanga", "Nakṣatra", "the Moon's nakṣatra", ["scalar"],
       function (C) {
     var m = anyLon(C, "Candra"); if (m == null) return null;
-    return scalar(norm(m) / (40 / 3), "nakṣatras", "nakṣatra", 27,
-                  norm(m).toFixed(2) + "° ÷ 13°20′");
+    var K = NKs(m);
+    return scalar(K.i + K.frac, "nakṣatras", "nakṣatra", window.NNak ? window.NNak.count() : 27, nakWork(m));
   });
   add("pan.yoga", "panchanga", "Nitya Yoga", "(Sun + Moon) ÷ 13°20′",
       ["scalar"], function (C) {
@@ -5761,7 +5771,7 @@ function moOwn(src){
     return sset([
       { k: "Tithi", v: el / 12, work: el.toFixed(2) + "° ÷ 12°" },
       { k: "Karaṇa", v: el / 6, work: el.toFixed(2) + "° ÷ 6°" },
-      { k: "Nakṣatra", v: norm(m) / (40 / 3), work: norm(m).toFixed(2) + "° ÷ 13°20′" },
+      { k: "Nakṣatra", v: NKs(m).i + NKs(m).frac, work: nakWork(m) },
       { k: "Nitya yoga", v: sum / (40 / 3), work: sum.toFixed(2) + "° ÷ 13°20′" }
     ], "index", "the five limbs", 60);
   });
@@ -9216,10 +9226,16 @@ function moOwn(src){
     var s = sidAt("Sun", ms), m = sidAt("Moon", ms);
     return (s == null || m == null) ? null : Math.floor((((m - s) % 360) + 360) % 360 / 12);
   }
+  /* the nakṣatra follows the site's system (nak-system.js); 27 is Abhijit under the 28 scheme */
+  function nakAt(m) { return window.NNak ? window.NNak.at(m) : null; }
   function nakIdx(ms) {
     var m = sidAt("Moon", ms);
-    return m == null ? null : Math.floor((((m % 360) + 360) % 360) / (40 / 3));
+    if (m == null) return null;
+    var k = nakAt(m);
+    return k ? k.i : Math.floor((((m % 360) + 360) % 360) / (40 / 3));
   }
+  function nakNm(i) { return i === 27 ? "Abhijit" : NAK[i]; }
+  function padaOf(mo) { var k = nakAt(mo); return k ? k.pada : Math.floor(((((mo % 360) + 360) % 360) % (40 / 3)) / (10 / 3)) + 1; }
   function yogaIdx(ms) {
     var s = sidAt("Sun", ms), m = sidAt("Moon", ms);
     return (s == null || m == null) ? null : Math.floor((((m + s) % 360) + 360) % 360 / (800 / 60));
@@ -9544,8 +9560,7 @@ function moOwn(src){
       /* --- at sunrise: this is what names the day --- */
       at: {
         tithi: { i: ti, n: (ti % 15) + 1, name: tiName, paksha: paksha },
-        nak: { i: nk, name: NAK[nk], pada: Math.floor(((((mo % 360) + 360) % 360) %
-                (40 / 3)) / (10 / 3)) + 1 },
+        nak: { i: nk, name: nakNm(nk), pada: padaOf(mo) },
         yoga: { i: yg, name: YOGA[yg] },
         karana: { i: kr, name: karanaName(kr) }
       },
@@ -10125,7 +10140,10 @@ function moOwn(src){
      birth star, which is the one thing most people do know. */
   NP.taraGrid = function (D) {
     if (!D || !D.at) return null;
-    var today = D.at.nak.i, sign = Math.floor((D.moonDeg % 360) / 30);
+    /* tārā counts the 27; Abhijit (28 scheme) counts as Uttarāṣāḍhā, the star it was cut from */
+    var today = D.at.nak.i === 27 ? 20 : D.at.nak.i, sign = Math.floor((D.moonDeg % 360) / 30);
+    var ED = window.NNak ? window.NNak.edges() : null, startOf = function (n) {
+      if (!ED) return n * (40 / 3); for (var q = 0; q < ED.length; q++) if (ED[q].i === n) return ED[q].start; return n * (40 / 3); };
     var rows = [];
     for (var n = 0; n < 27; n++) {
       var t = NP.taraBala(today, n);
@@ -10134,10 +10152,10 @@ function moOwn(src){
                      for the sign this nakṣatra falls in rather than per star —
                      a nakṣatra can straddle two signs, and the grid says which
                      one it used instead of quietly picking. */
-                  sign: Math.floor(n * (40 / 3) / 30),
-                  ashtama: ((((sign - Math.floor(n * (40 / 3) / 30)) % 12) + 12) % 12) + 1 === 8 });
+                  sign: Math.floor(startOf(n) / 30),
+                  ashtama: ((((sign - Math.floor(startOf(n) / 30)) % 12) + 12) % 12) + 1 === 8 });
     }
-    return { today: today, todayName: NAK[today], moonSign: sign,
+    return { today: today, todayName: nakNm(D.at.nak.i), moonSign: sign,
              rows: rows, src: "tradition" };
   };
 
@@ -10411,8 +10429,7 @@ function moOwn(src){
       ms: atMs,
       tithi: { i: ti, n: (ti % 15) + 1, paksha: ti < 15 ? "śukla" : "kṛṣṇa",
                name: ti < 15 ? TITHI[ti] : TITHI_K[ti - 15] },
-      nak: { i: nk, name: NAK[nk],
-             pada: Math.floor(((((mo % 360) + 360) % 360) % (40 / 3)) / (10 / 3)) + 1 },
+      nak: { i: nk, name: nakNm(nk), pada: padaOf(mo) },
       yoga: { i: yg, name: YOGA[yg] },
       karana: { i: kr, name: karanaName(kr) },
       /* The two longitudes themselves, not only their difference. Anything
@@ -18258,11 +18275,15 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
     if (Y && window.__framedStars) Y = window.__framedStars(Y);   /* into the page's frame */
     return (Y && Y.length === 27) ? Y : null;
   }
-  function insideOwn(y) { return Math.floor(norm360(y.sid) / SEG) === y.id; }
+  /* a division's arc under the site's nakṣatra system (nak-system.js) */
+  function ARC(i) { var E = window.NNak ? window.NNak.edges() : null;
+    if (E) for (var q = 0; q < E.length; q++) if (E[q].i === i) return [E[q].start, E[q].end];
+    return [i * SEG, (i + 1) * SEG]; }
+  function insideOwn(y) { return (window.NNak ? window.NNak.at(y.sid).i : Math.floor(norm360(y.sid) / SEG)) === y.id; }
   function norm360(x) { return ((x % 360) + 360) % 360; }
   /* the gap from the division named after it to the star, signed, in degrees */
   function strayBy(y) {
-    var lo = y.id * SEG, hi = lo + SEG, x = norm360(y.sid);
+    var A = ARC(y.id), lo = A[0], hi = A[1], x = norm360(y.sid);
     if (x >= lo && x < hi) return 0;
     var a = x - lo, b = x - hi;
     if (a < -180) a += 360; if (a > 180) a -= 360;
@@ -18284,14 +18305,14 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
   function nakshatraStory(i) {
     var Y = nakList();
     if (!Y) return null;
-    var y = Y[i], lo = i * SEG, hi = lo + SEG;
+    var y = Y[i], A = ARC(i), lo = A[0], hi = A[1], W = hi - lo;
     var inside = insideOwn(y), off = strayBy(y);
     var lord = VIMS[i % 9];
     var prev = Y[(i + 26) % 27], next = Y[(i + 1) % 27];
 
     /* the window the strip shows: the arc, plus a third of it either side,
        so the neighbours are visible and the boundaries are not at the edge */
-    var pad = SEG * 0.38, from = norm360(lo - pad), span = SEG + 2 * pad;
+    var pad = W * 0.38, from = norm360(lo - pad), span = W + 2 * pad;
     /* THE BAND HAS TO HOLD THE STAR THE DIVISION IS NAMED FOR. Nine degrees
        either side of the ecliptic covers most of the zodiac's traffic, and
        leaves Śravaṇa's Altair at +29° and Mūla's Shaula at −14° off the
@@ -18301,7 +18322,7 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
 
     var inWin = starsIn(from, norm360(from + span), latLim);
     var inArc = inWin.filter(function (s) {
-      return norm360(s.sid - lo) < SEG;
+      return norm360(s.sid - lo) < W;
     });
 
     /* which rāśi, and whether the arc straddles two of them */
@@ -18327,20 +18348,20 @@ if (typeof module === "object" && typeof module.exports === "object") Object.ass
               text: inArc.length + " of " + inWin.length +
                     " in this stretch fall inside" });
     for (var q = 1; q < 4; q++)
-      st.push({ beat: 4, type: "divide", at: lo + q * SEG / 4 });
+      st.push({ beat: 4, type: "divide", at: lo + q * W / 4 });
     for (q = 0; q < 4; q++)
-      st.push({ beat: 4, type: "name", at: lo + (q + 0.5) * SEG / 4,
-                text: SIGN[padaSign(lo + (q + 0.5) * SEG / 4)],
+      st.push({ beat: 4, type: "name", at: lo + (q + 0.5) * W / 4,
+                text: SIGN[padaSign(lo + (q + 0.5) * W / 4)],
                 size: 0.024, yf: 0.955 });
     st.push({ beat: 5, type: "span", from: s0 * 30, to: (s0 + 1) * 30,
               cool: true });
-    st.push({ beat: 5, type: "name", at: lo + SEG * 0.5, text: signText.split(" ")[0],
+    st.push({ beat: 5, type: "name", at: lo + W * 0.5, text: signText.split(" ")[0],
               size: 0.026, yf: 0.17, cool: true });
 
     return {
       kicker: "Nirayana",
       title: y.nak,
-      subtitle: "Division " + (i + 1) + " of twenty-seven — " + dms(lo) +
+      subtitle: "Division " + (i + 1) + " of twenty-seven" + (window.NNak && !window.NNak.isEqual() ? " (unequal)" : "") + " — " + dms(lo) +
                 " to " + dms(hi) + " — against the sky that is actually there.",
       stage: "strip",
       palette: "gold",

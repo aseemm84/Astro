@@ -166,9 +166,9 @@ function ayanSnap(D,a){
   var out={a:a,lagSid:lag,LS:LS,lagDeg:lag-LS*30,P:P,
            d9:vargaLagna("D9",lag),d10:vargaLagna("D10",lag),d12:vargaLagna("D12",lag)};
   if(P.Moon){
-    var mn=P.Moon.sid, ni=Math.floor(mn/seg);
-    out.nakIdx=ni; out.nak=NAKS[ni]; out.nakLord=NL9[ni%9];
-    out.balance=VY[out.nakLord]*(1-(mn-ni*seg)/seg);
+    var mn=P.Moon.sid, nks=NK(mn), ni=nks.i;
+    out.nakIdx=ni; out.nak=nakName(nks); out.nakLord=NL9[nks.d%9];
+    out.balance=VY[out.nakLord]*(1-nks.dfrac);
   }
   return out;
 }
@@ -195,6 +195,8 @@ function ayanDashaAt(D,snap,jd){
    nakṣatra). Raising the ayanāṃśa lowers the longitude, so the room above is
    the degrees already travelled into the division. */
 function ayanWindow(sid,width){
+  /* a nakṣatra's window follows the site's nakṣatra system (NK) */
+  if(width===40/3){ var k=NK(sid); return {up:k.into,down:k.span-k.into}; }
   var x=((sid%360)+360)%360, into=x-Math.floor(x/width)*width;
   return {up:into,down:width-into};
 }
@@ -371,7 +373,7 @@ function ayanPane(D,J){
     var w=ayanWindow(D.P.Moon.sid,40/3);
     var reach=L.filter(function(m){ return m.deg>=D.ayan+w.up||m.deg<=D.ayan-w.down; });
     var spd=(D.P.Moon.speed!=null?D.P.Moon.speed:13.2);
-    var perDeg=VY[D.birthNak.lord]/(40/3)*DPY;   // days a daśā boundary moves per degree
+    var perDeg=VY[D.birthNak.lord]/NK(D.P.Moon.sid).dspan*DPY;   // days a daśā boundary moves per degree
     /* Both edges of the window are real, but one of them is routinely dozens of
        degrees away — a nakṣatra is 13°20′ wide, so a Moon late in one has an
        upper bound no ayanāṃśa could ever reach. Printing "between 22.833° and

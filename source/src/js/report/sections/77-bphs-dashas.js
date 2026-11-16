@@ -50,7 +50,8 @@ function bdOddSign(s) { return s % 2 === 0; }        /* Meṣa is the 1st, an od
 function bdOddPada(s) { return BD_CHARA_ODD_PADA.indexOf(bdMod(s, 12)) >= 0; }
 function bdSthiraYears(s) { return [7, 8, 9][bdModality(s)]; }
 function bdStep(from, k, fwd) { return fwd ? bdMod(from + k, 12) : bdMod(from - k, 12); }
-function bdNak(lon) { var seg = 40 / 3, m = bdMod(lon, 360), i = Math.floor(m / seg); return { i: i, frac: (m - i * seg) / seg }; }
+/* the daśā's nakṣatra under the site's system (NK, 01-helpers.js): its 27-count index and fraction */
+function bdNak(lon) { var k = NK(lon); return { i: k.d, frac: k.dfrac }; }
 function bdExalted(p, sign) { return EXALT[p] != null && EXALT[p] === sign; }
 function bdDebil(p, sign) { return EXALT[p] != null && bdMod(EXALT[p] + 6, 12) === sign; }
 

@@ -1,13 +1,15 @@
 /* --- Vimshottari balance --- */
 function gbBalance(D,J){
   if(!D.birthNak) return "";
-  var seg=40/3, mn=((D.P.Moon.sid%360)+360)%360, ni=Math.floor(mn/seg);
-  var into=mn-ni*seg, frac=into/seg, lord=D.birthNak.lord, full=VY[lord];
+  var mn=((D.P.Moon.sid%360)+360)%360, k=NK(mn), ni=k.i;
+  var into=mn-k.dstart, frac=k.dfrac, lord=D.birthNak.lord, full=VY[lord], sp=k.dspan;
+  var eq=!window.NNak||window.NNak.isEqual();
   var rows="";
   rows+=gbRow("Moon’s longitude", gbFmt(mn,4)+"°", SA[Math.floor(mn/30)%12]+" "+gbFmt(mn%30,4)+"°");
-  rows+=gbRow("Nakṣatra", NAKS[ni]+" (no. "+(ni+1)+")", "each spans 13°20′");
-  rows+=gbRow("Arc already travelled", gbFmt(into,4)+"°", "of 13.3333°");
-  rows+=gbRow("Fraction elapsed", gbFmt(frac*100,2)+"%", gbFmt(into,4)+" ÷ 13.3333");
+  rows+=gbRow("Nakṣatra", nakName(k)+(ni<27?" (no. "+(ni+1)+")":""), eq?"each spans 13°20′":
+    "this one spans "+gbFmt(k.span,4)+"° under "+esc(window.NNak.label())+(k.d!==k.i?"; for the daśā its arc is counted with Uttarāṣāḍhā":""));
+  rows+=gbRow("Arc already travelled", gbFmt(into,4)+"°", "of "+gbFmt(sp,4)+"°");
+  rows+=gbRow("Fraction elapsed", gbFmt(frac*100,2)+"%", gbFmt(into,4)+" ÷ "+gbFmt(sp,4));
   rows+=gbRow("Lord of the nakṣatra", esc(lord), "full term "+full+" years");
   rows+=gbRow("<b>Balance at birth</b>","<b>"+gbFmt(full*(1-frac),4)+"</b> years",
     full+" × (1 − "+gbFmt(frac,4)+")");
@@ -63,9 +65,8 @@ function sensSnapshot(inp){
   J.grahas.forEach(function(g){ s.sign[g.key]=g.rashi.idx;
     s.pada[g.key]=nakOf(g.sidereal_deg).name+"-"+nakOf(g.sidereal_deg).pada; });
   J.vargas.forEach(function(v){ s.varga[v.varga]=vargaLagna(v.varga,J.lagna.sidereal_deg); });
-  var seg=40/3, mn=J.grahas.filter(function(g){return g.key==="Candra";})[0].sidereal_deg;
-  var ni=Math.floor(((mn%360)+360)%360/seg);
-  s.bal=(1-((((mn%360)+360)%360)-ni*seg)/seg);
+  var mn=J.grahas.filter(function(g){return g.key==="Candra";})[0].sidereal_deg;
+  s.bal=1-NK(mn).dfrac;
   s.houses={}; J.grahas.forEach(function(g){
     s.houses[g.key]=((g.rashi.idx-J.lagna.rashi.idx)%12+12)%12+1; });
   return s;
@@ -146,7 +147,7 @@ function sensBoundaries(J, spanMin){
       var asc=window.__kAsc(inp,off), d=dateAt(off), moon=window.__kSidAt("Moon",d);
       var s={lagna:Math.floor(asc/30)%12, D9:vargaLagna("D9",asc), D10:vargaLagna("D10",asc),
              D60:vargaLagna("D60",asc),
-             moon_nakshatra:Math.floor(moon/(40/3))%27, moon_pada:Math.floor(moon/(10/3))%108};
+             moon_nakshatra:NK(moon).i, moon_pada:NK(moon).i*4+NK(moon).pada-1};
       if(sp){
         var jd=d.getTime()/86400000+2440587.5, T=(jd-2451545)/36525;
         var eps=23.439291111-0.0130041667*T;

@@ -155,8 +155,8 @@
   }
   function tithiIdx(ms){ var s=sidAt("Sun",ms), m=sidAt("Moon",ms);
     return (s==null||m==null)?null:Math.floor((((m-s)%360)+360)%360/12); }
-  function nakIdx(ms){ var m=sidAt("Moon",ms);
-    return m==null?null:Math.floor((((m%360)+360)%360)/(40/3)); }
+  function nakIdx(ms){ var m=sidAt("Moon",ms);   /* follows the site's nakṣatra system */
+    return m==null?null:(window.NNak?window.NNak.at(m).i:Math.floor((((m%360)+360)%360)/(40/3))); }
   function yogaIdx(ms){ var s=sidAt("Sun",ms), m=sidAt("Moon",ms);
     return (s==null||m==null)?null:Math.floor((((m+s)%360)+360)%360/(800/60)); }
   function karanaIdx(ms){ var s=sidAt("Sun",ms), m=sidAt("Moon",ms);

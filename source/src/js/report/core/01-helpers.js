@@ -89,8 +89,16 @@ function dm(x){
   }
   return d+"°"+(m<10?"0":"")+m+"′";
 }
-function nakOf(deg){var seg=40/3,x=((deg%360)+360)%360,i=Math.min(Math.floor(x/seg),26);
-  return {name:NAKS[i],pada:Math.floor((x-i*seg)/(seg/4))+1,lord:NL9[i%9],idx:i};}
+/* the site's nakṣatra system (nak-system.js): equal unless chosen unequal in Settings.
+   NK() returns {i, name, start, end, span, frac, pada, into, d, dfrac, dspan}; d and dfrac
+   are what a daśā counts (Abhijit, under the 28 scheme, is counted with Uttarāṣāḍhā). */
+function NK(lon){ if(window.NNak) return window.NNak.at(lon);
+  var seg=40/3,x=((lon%360)+360)%360,i=Math.min(Math.floor(x/seg),26),f=(x-i*seg)/seg;
+  return {i:i,start:i*seg,end:(i+1)*seg,span:seg,frac:f,pada:Math.floor(f*4)+1,into:x-i*seg,mode:"equal",d:i,dfrac:f,dstart:i*seg,dspan:seg}; }
+function nakName(k){ return k.i===27?"Abhijit":NAKS[k.i]; }
+function nakSysNote(){ return (window.NNak&&!window.NNak.isEqual())?window.NNak.label():""; }
+function nakOf(deg){var k=NK(deg);
+  return {name:nakName(k),pada:k.pada,lord:NL9[k.d%9],idx:k.i};}
 function dignity(pl,sign,deg){
   if(pl==="Rahu"||pl==="Ketu")return "node";
   if(sign===EXALT[pl])return "exalted";

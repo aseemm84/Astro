@@ -470,7 +470,8 @@ const lonTxt=l=>isNum(l)?`${SIGNS[Math.floor(((l%360)+360)%360/30)]} ${dms(((l%3
 const hrs=x=>{if(!isNum(x))return"";const H=Math.floor(x),M=Math.round((x-H)*60);return `${String(H+(M===60?1:0)).padStart(2,"0")}:${String(M%60).padStart(2,"0")}`};
 const ord=n=>isNum(n)?n+(["th","st","nd","rd"][(n%100>10&&n%100<14)?0:(n%10<4?n%10:0)]||"th"):"";
 const cap=t=>t?String(t).charAt(0).toUpperCase()+String(t).slice(1):"";
-const nakOf=l=>NAKS[Math.floor((((l%360)+360)%360)/(360/27))];
+/* the site's nakṣatra system (nak-system.js, inlined with the panel) */
+const nakOf=l=>{ if(window.NNak){ const k=window.NNak.at(l); return k.i===27?"Abhijit":NAKS[k.i]; } return NAKS[Math.floor((((l%360)+360)%360)/(360/27))]; };
 const signElem=i=>ELEM[i%4];
 const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const pname=p=>`<span class="dot" style="background:${pc(p)}"></span>${esc(en(p))}`;
@@ -842,8 +843,9 @@ function wheelSVG(N,showT,imgs){
     svg.append(s("path",{d:arc(RS[0],RS[1],i*30,i*30+30),fill:`color-mix(in srgb, var(--${signElem(i)}) ${i===N.lagSign?42:20}%, var(--surface))`,stroke:"var(--surface)","stroke-width":1.5}));
     const [x,y]=P((RS[0]+RS[1])/2,i*30+15);svg.append(s("text",{x,y,"text-anchor":"middle","dominant-baseline":"middle",style:"font-size:13px;font-weight:600;fill:var(--ink)"},SG[i]));
   }
-  for(let k=0;k<27;k++){const l=k*360/27,[x1,y1]=P(RN[0],l),[x2,y2]=P(RN[1],l);const ln=s("line",{x1,y1,x2,y2,stroke:"var(--muted)","stroke-width":.7});svg.append(ln);
-    const p=s("path",{d:arc(RN[0],RN[1],l,l+360/27),fill:"transparent"});p.append(s("title",{},NAKS[k]));svg.append(p)}
+  const NE=window.NNak?window.NNak.edges():Array.from({length:27},(_,k)=>({i:k,start:k*360/27,end:(k+1)*360/27}));
+  for(const e of NE){const l=e.start,[x1,y1]=P(RN[0],l),[x2,y2]=P(RN[1],l);const ln=s("line",{x1,y1,x2,y2,stroke:"var(--muted)","stroke-width":.7});svg.append(ln);
+    const p=s("path",{d:arc(RN[0],RN[1],l,e.end),fill:"transparent"});p.append(s("title",{},e.i===27?"Abhijit":NAKS[e.i]));svg.append(p)}
   [RN[0],RS[1]].forEach(r=>svg.append(s("circle",{cx:c,cy:c,r,fill:"none",stroke:"var(--line)"})));
   svg.append(s("circle",{cx:c,cy:c,r:70,fill:"var(--wash)",stroke:"var(--line)"}));
   /* THE CUSPS AND THE MERIDIAN COME FROM THE ENGINE'S OWN FIELDS.
@@ -1847,10 +1849,13 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>retheme
    Sunrise picker here would change a stored key and nothing on the page.
    Palette is absent for its own reason: these pages carry their own styling
    and load neither theme.js nor theme.css. */
-window.__nsHonours = ["ayan","house","node","degfmt","engine"];
+window.__nsHonours = ["ayan","house","node","degfmt","engine","nak","naksch"];
 
+/* this page re-casts itself on a nakṣatra-system change, so settings.js need not reload it */
+window.__nakLive = true;
 (function(){
-  const castKeys = ["ayan","house","node","engine","ssframe"];
+  const castKeys = ["ayan","house","node","engine","ssframe","nak","naksch"];
+  const nakModeOf = (S) => S && S.nak === "unequal" ? (S.naksch === "u28" ? "u28" : "u27") : "equal";
   const readS = () => { try { return window.NSettings && window.NSettings.get(); }
                         catch(e){ return null; } };
   const sig = (S) => S ? castKeys.map(k=>String(S[k])).join("|") : "";
@@ -1871,10 +1876,13 @@ window.__nsHonours = ["ayan","house","node","degfmt","engine"];
          would announce a "nodes" difference on every load that is not one. */
       node: (d && (d.node_requested || d.node_mode || (d.input&&d.input.node))) || null,
       engine: (d && ((d.engine&&d.engine.mode) || (d.input&&d.input.engine))) || "modern",
-      ssframe: (d && ((d.engine&&d.engine.frame) || (d.input&&d.input.ssframe))) || "own"
+      ssframe: (d && ((d.engine&&d.engine.frame) || (d.input&&d.input.ssframe))) || "own",
+      /* a chart from before the setting existed was read in equal nakṣatras */
+      nak: (d && d.nakshatra_system && d.nakshatra_system.mode) || "equal"
     };
   }
   function recast(){
+    try { if(window.NNak) window.NNak.refresh(); } catch(e){}
     if(!LAST_DATA || !LAST_DATA.input || !window.buildLocalChart) return false;
     const S = readS(); if(!S) return false;
     /* Overlay the settings on the ORIGINAL birth data. D.input round-trips
@@ -1914,6 +1922,7 @@ window.__nsHonours = ["ayan","house","node","degfmt","engine"];
     /* The ayanāṃśa is compared by MODE KEY, which is what the setting holds;
        the payload's ayanamsa_mode is the same vocabulary. */
     if(was.ayan && String(S.ayan) !== String(was.ayan)) diff.unshift("ayanāṃśa");
+    if(nakModeOf(S) !== String(was.nak)) diff.push("nakṣatra system");
     if(String(S.engine||"modern") !== String(was.engine||"modern")) diff.push("engine");
     else if((S.engine||"modern") !== "modern" && String(S.ssframe||"own") !== String(was.ssframe||"own")) diff.push("Siddhānta frame");
     if(!diff.length) return;

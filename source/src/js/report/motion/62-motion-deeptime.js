@@ -91,10 +91,10 @@ MO_DEEP.push({
       var seg = 40 / 3, out = {};
       /* when the winter solstice stood at the START of Dhaniṣṭhā — the Vedāṅga
          Jyotiṣa's own statement, turned into a year by this engine */
-      out.dhanishthaStart = mdYearWhen(270, 22 * seg);
-      out.dhanishthaEnd   = mdYearWhen(270, 23 * seg);
-      out.krittikaFrom    = mdYearWhen(0, 3 * seg);
-      out.krittikaTo      = mdYearWhen(0, 2 * seg);
+      out.dhanishthaStart = mdYearWhen(270, moNakArc(22).start);
+      out.dhanishthaEnd   = mdYearWhen(270, moNakArc(22).end);
+      out.krittikaFrom    = mdYearWhen(0, moNakArc(2).end);
+      out.krittikaTo      = mdYearWhen(0, moNakArc(2).start);
       /* how far the quadratic ayanāṃśa has strayed from a flat rate at the far
          end — the honest size of the uncertainty, in years of precession */
       var T = (Y0 - 2000) / 100;
@@ -113,16 +113,17 @@ MO_DEEP.push({
     var seg = 40 / 3;
     function Y(lon) { return y0 + (y1 - y0) * (1 - (((lon % 360) + 360) % 360) / 360); }
 
-    for (var n = 0; n < 27; n++) {
-      var ya = Y((n + 1) * seg), yb = Y(n * seg);
+    var NEd = moNakEdges();
+    for (var nq = 0; nq < NEd.length; nq++) {
+      var n = NEd[nq].i, ya = Y(NEd[nq].end), yb = Y(NEd[nq].start);
       c.fillStyle = (n % 2) ? P.line : P.bg2;
       c.globalAlpha = 0.55; c.fillRect(x0, ya, x1 - x0, yb - ya); c.globalAlpha = 1;
       if (yb - ya > U * 0.016)
-        moText(MD_NAK[n], x0 - U * 0.012, (ya + yb) / 2, U * 0.0155,
+        moText(n === 27 ? "Abhijit" : MD_NAK[n], x0 - U * 0.012, (ya + yb) / 2, U * 0.0155,
                P.dim, "right", 500);
     }
     /* Dhaniṣṭhā picked out, because it is the one the text names */
-    var dA = Y(23 * seg), dB = Y(22 * seg);
+    var dA = Y(moNakArc(22).end), dB = Y(moNakArc(22).start);
     c.strokeStyle = P.gold; c.lineWidth = Math.max(2, U * 0.004);
     c.strokeRect(x0, dA, x1 - x0, dB - dA);
 
@@ -143,8 +144,8 @@ MO_DEEP.push({
            (ayan < 0 ? "−" : "+") + Math.abs(ayan).toFixed(2) + "°",
            st.cx, st.y + st.h * 0.126, U * 0.021, P.dim, "center", 500);
 
-    var nakOfSol = Math.floor(wsol / seg);
-    moText((moLangHi() ? "शिशिर अयन: " : "solstice in ") + MD_NAK[nakOfSol],
+    var nakOfSol = moNakAt(wsol).i;
+    moText((moLangHi() ? "शिशिर अयन: " : "solstice in ") + (nakOfSol === 27 ? "Abhijit" : MD_NAK[nakOfSol]),
            st.cx, st.y + st.h * 0.905, U * 0.026, P.glow, "center", 600);
     if (M.dhanishthaStart != null)
       moText((moLangHi() ? "धनिष्ठा का आरम्भ: लगभग " : "at the start of Dhaniṣṭhā around ") +

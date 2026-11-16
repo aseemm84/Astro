@@ -144,9 +144,9 @@ function derive(J){
   }catch(e){ D.specialLagnas=[]; }
   // vimshottari from birth
   if(D.P.Moon){
-    var seg=40/3,mn=((D.P.Moon.sid%360)+360)%360,ni=Math.floor(mn/seg),lb=NL9[ni%9];
-    var frac=(mn-ni*seg)/seg,bal=VY[lb]*(1-frac);
-    D.birthNak={nak:NAKS[ni],lord:lb,frac:frac,balance:bal};
+    var nkm=NK(D.P.Moon.sid),lb=NL9[nkm.d%9];
+    var frac=nkm.dfrac,bal=VY[lb]*(1-frac);
+    D.birthNak={nak:nakName(nkm),lord:lb,frac:frac,balance:bal,system:(window.NNak?window.NNak.mode():"equal")};
     var mds=[],jd=J.jd_utc,i0=VSEQ.indexOf(lb);
     for(var i=0;i<9;i++){var lo=VSEQ[(i0+i)%9],yr=(i===0)?bal:VY[lo];
       mds.push({lord:lo,start:jd,end:jd+yr*DPY,years:yr,partial:i===0});jd+=yr*DPY;}

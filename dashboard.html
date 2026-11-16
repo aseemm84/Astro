@@ -873,6 +873,113 @@ return new kd(this.curr.time,a,b)};$jscomp.global.Object.defineProperties(H.prot
 
 </script>
 <script>
+/* ===== the nakṣatra system: equal or unequal, one answer for the whole site ====
+
+   Every page asks this module which nakṣatra a sidereal longitude is in, how far
+   through it, and which pāda, so a single setting in the master panel decides it
+   everywhere: names, pādas, the Vimśottarī balance, wheels, the pañcāṅga.
+
+   EQUAL (the default, and BPHS's own): 27 divisions of 13°20′ from Aśvinī 0°.
+
+   UNEQUAL: the older scheme in which six nakṣatras are half the normal width,
+   fifteen normal and six one-and-a-half (the 15-, 30- and 45-muhūrta classes of
+   Garga, used in Brahmagupta's Khaṇḍakhādyaka and by later siddhāntins).
+     short (½): Bharaṇī, Ārdrā, Āśleṣā, Svātī, Jyeṣṭhā, Śatabhiṣā
+     long  (1½): Rohiṇī, Punarvasu, Uttara Phalgunī, Viśākhā, Uttarāṣāḍhā, Uttara Bhādrapadā
+   Two ways of fixing the unit, chosen by a sub-setting:
+     u27 — scaled to fill the circle: the units add to 27, so a unit is 13°20′
+           (short 6°40′, normal 13°20′, long 20°). No Abhijit.
+     u28 — the unit is the Moon's mean daily motion, 13°10′35″; the 4°14′ left
+           over is Abhijit, placed after Uttarāṣāḍhā (28 nakṣatras).
+
+   DAŚĀS. Vimśottarī and the other nakṣatra daśās count 27 nakṣatras. Under u28,
+   Abhijit has no daśā lord of its own, so for a daśā its arc is counted with
+   Uttarāṣāḍhā, the nakṣatra it was cut from: `d` and `dfrac` below give the
+   27-nakṣatra index and the fraction through that merged arc. Under the other
+   systems `d` and `dfrac` equal `i` and `frac`.
+
+   PĀDAS. Each nakṣatra, whatever its width, is quartered.
+
+   This file is concatenated into engine.js, site.js and the adopted pages'
+   panel; the first copy to run defines window.NNak and the rest step aside. */
+(function () {
+  "use strict";
+  var G = typeof window !== "undefined" ? window : globalThis;
+  if (G.NNak) return;
+
+  var NAMES = ["Aśvinī", "Bharaṇī", "Kṛttikā", "Rohiṇī", "Mṛgaśira", "Ārdrā", "Punarvasu", "Puṣya", "Āśleṣā", "Maghā",
+    "Pūrva Phalgunī", "Uttara Phalgunī", "Hasta", "Citrā", "Svātī", "Viśākhā", "Anurādhā", "Jyeṣṭhā", "Mūla",
+    "Pūrva Āṣāḍhā", "Uttara Āṣāḍhā", "Śravaṇa", "Dhaniṣṭhā", "Śatabhiṣā", "Pūrva Bhādrapadā", "Uttara Bhādrapadā", "Revatī"];
+  var SHORT = [1, 5, 8, 14, 17, 23], LONG = [3, 6, 11, 15, 20, 25];
+  var EQ = 40 / 3, MEAN = 13 + 10 / 60 + 35 / 3600;
+
+  function readMode() {
+    try {
+      var st = JSON.parse(G.localStorage.getItem("nirayana.settings") || "{}") || {};
+      if (st.nak !== "unequal") return "equal";
+      return st.naksch === "u28" ? "u28" : "u27";
+    } catch (e) { return "equal"; }
+  }
+  /* the edges for a system: [{i, start, end}], i = 27 for Abhijit */
+  var TABLES = {};
+  function table(m) {
+    if (TABLES[m]) return TABLES[m];
+    var out = [], a = 0;
+    if (m === "equal") { for (var k = 0; k < 27; k++) out.push({ i: k, start: k * EQ, end: (k + 1) * EQ }); }
+    else {
+      var u = m === "u28" ? MEAN : EQ;
+      for (var j = 0; j < 27; j++) {
+        var w = SHORT.indexOf(j) >= 0 ? u / 2 : LONG.indexOf(j) >= 0 ? 1.5 * u : u;
+        out.push({ i: j, start: a, end: a + w }); a += w;
+        if (m === "u28" && j === 20) { out.push({ i: 27, start: a, end: a + (360 - 27 * MEAN) }); a += 360 - 27 * MEAN; }
+      }
+      out[out.length - 1].end = 360;            /* close the circle exactly */
+    }
+    TABLES[m] = out;
+    return out;
+  }
+  var MODE = null;
+  function mode() { if (MODE === null) MODE = readMode(); return MODE; }
+  function norm(x) { x = x % 360; return x < 0 ? x + 360 : x; }
+  function find(T, x) {
+    for (var k = 0; k < T.length; k++) if (x < T[k].end) return T[k];
+    return T[T.length - 1];
+  }
+  /* everything a page may want about a longitude */
+  function at(lon, m) {
+    m = m || mode();
+    var T = table(m), x = norm(lon), e = find(T, x), span = e.end - e.start, frac = (x - e.start) / span;
+    var r = { i: e.i, name: e.i === 27 ? "Abhijit" : NAMES[e.i], start: e.start, end: e.end, span: span,
+              frac: frac, pada: Math.min(4, Math.floor(frac * 4) + 1), into: x - e.start, mode: m, d: e.i, dfrac: frac, dstart: e.start, dspan: span };
+    if (m === "u28" && (e.i === 27 || e.i === 20)) {
+      var U = T.filter(function (q) { return q.i === 20; })[0], A = T.filter(function (q) { return q.i === 27; })[0];
+      r.d = 20; r.dstart = U.start; r.dspan = A.end - U.start; r.dfrac = (x - U.start) / r.dspan;
+    }
+    return r;
+  }
+  var LABEL = {
+    equal: "equal nakṣatras (27 × 13°20′, BPHS)",
+    u27: "unequal nakṣatras (Garga's ½·1·1½ widths, scaled to 360°)",
+    u28: "unequal nakṣatras (Garga's ½·1·1½ widths on the Moon's mean motion, with Abhijit)"
+  };
+  G.NNak = {
+    mode: mode,
+    /* re-read the store, after the panel changes it */
+    refresh: function () { MODE = null; return mode(); },
+    at: at,
+    idx: function (lon) { return at(lon).i; },
+    edges: function (m) { return table(m || mode()).slice(); },
+    names: NAMES.slice(),
+    name: function (i) { return i === 27 ? "Abhijit" : NAMES[i]; },
+    label: function (m) { return LABEL[m || mode()]; },
+    count: function (m) { return (m || mode()) === "u28" ? 28 : 27; },
+    isEqual: function () { return mode() === "equal"; },
+    EQ: EQ, MEAN: MEAN, SHORT: SHORT.slice(), LONG: LONG.slice()
+  };
+  try { G.addEventListener("nirayana:settings", function () { MODE = null; }); } catch (e) {}
+})();
+;
+
 /* ===== The Sūrya Siddhānta engine =========================================
 
    A SECOND, OLDER WAY OF COMPUTING THE SAME SKY — and now a reasonably
@@ -9886,6 +9993,12 @@ var VCODES=[["D1","राशि","Body"],["D2","होरा","Wealth"],["D3","�
 ["D27","सप्तविंशांश","Strength"],["D30","त्रिंशांश","Evil / Misfortune"],["D40","खवेदांश","Maternal heritage"],
 ["D45","अक्षवेदांश","Paternal heritage"],["D60","षष्ट्यंश","Past karma"]];
 var NAKL=["Ketu","Venus","Sun","Moon","Mars","Rahu","Jupiter","Saturn","Mercury"];
+/* the site's nakṣatra system (nak-system.js, concatenated ahead of this file):
+   equal unless the reader has chosen unequal in Settings */
+function NKAT(lon){ var G=(typeof window!=="undefined")?window:globalThis;
+  if(G.NNak) return G.NNak.at(lon);
+  var seg=40/3,x=((lon%360)+360)%360,i=Math.min(Math.floor(x/seg),26),f=(x-i*seg)/seg;
+  return {i:i,name:null,start:i*seg,end:(i+1)*seg,span:seg,frac:f,pada:Math.floor(f*4)+1,into:x-i*seg,mode:"equal",d:i,dfrac:f,dstart:i*seg,dspan:seg}; }
 var NAKN=["Ashwini","Bharani","Krittika","Rohini","Mrigashira","Ardra","Punarvasu","Pushya","Ashlesha","Magha","Purva Phalguni","Uttara Phalguni","Hasta","Chitra","Swati","Vishakha","Anuradha","Jyeshtha","Mula","Purva Ashadha","Uttara Ashadha","Shravana","Dhanishta","Shatabhisha","Purva Bhadrapada","Uttara Bhadrapada","Revati"];
 var norm=function(x){return ((x%360)+360)%360;};
 var D2R=Math.PI/180, R2D=180/Math.PI;
@@ -10356,8 +10469,8 @@ function engineVsModern(moonSid,date,jd){
   try{
     var modern=norm(tropLonModern("Moon",date)-ayanamsa(jd));
     var d=((moonSid-modern+540)%360)-180, as=Math.abs(d)*3600;
-    var lord=VIM_LORD[Math.floor(norm(moonSid)/(40/3))%9];
-    var days=as*VIM_YRS[lord]*365.2425/48000;
+    var nk0=NKAT(moonSid), lord=VIM_LORD[nk0.d%9];
+    var days=as*VIM_YRS[lord]*365.2425/(nk0.dspan*3600);
     var FD=(typeof window!=="undefined"&&window.__SS_FIT_DATA)||null, typ=null;
     var SD=(typeof window!=="undefined"&&window.__KALASETU_DATA)||null;
     if(ENGINE_MODE==="kalasetu"){
@@ -10510,8 +10623,8 @@ function ascendant(jd,date,lat,lon,ay){
   if(!isRisingPoint(a,ramc,eps,phi)) a+=Math.PI;
   return norm(norm(a*R2D)-ay);
 }
-function nak(deg){var seg=40/3,x=norm(deg),i=Math.min(Math.floor(x/seg),26);
-  return {idx:i,name:NAKN[i],pada:Math.floor((x-i*seg)/(seg/4))+1,lord:NAKL[i%9]};}
+function nak(deg){var k=NKAT(deg);
+  return {idx:k.i,name:k.i===27?"Abhijit":NAKN[k.i],pada:k.pada,lord:NAKL[k.d%9]};}
 function rashiObj(sid){var i=Math.floor(norm(sid)/30)%12;
   return {idx:i,saName:SA[i],saDev:SA[i],iast:SA[i],sa:SA[i],enName:SIGN[i],degInSign:norm(sid)-i*30};}
 /* varga sign for a longitude — formulas verified against the reference engine (9/9 on all 16) */
@@ -11255,8 +11368,8 @@ function yogaList(ctx){
 /* ---- Bhayāt / Bhabhoga (needs the Moon's daily speed) ---- */
 function bhayat(moonSid,moonSpeed,jd,date,ay){
   if(!moonSpeed||moonSpeed<=0) return null;
-  var seg=40/3, x=((moonSid%360)+360)%360, i=Math.floor(x/seg);
-  var start=i*seg, end=(i+1)*seg;
+  var x=((moonSid%360)+360)%360, nkb=NKAT(x);
+  var start=nkb.start, end=nkb.end;
   // solve for the instants the Moon actually crosses the nakshatra boundaries
   function moonAt(ms){ var d=new Date(ms);
     var jd2=jd+(ms-date.getTime())/86400000;
@@ -12095,7 +12208,7 @@ try{ window.__AVT=AVT; window.__ayan=ayanamsa;
      window.__framedStars=function(list,mode,jd){ var d=window.__starShift(mode,jd);
        if(!list||Math.abs(d)<1e-9) return list;
        return list.map(function(y){ var o={},k; for(k in y) o[k]=y[k]; o.sid=norm(y.sid+d);
-         if(y.id!=null&&y.nak) o.inside=Math.floor(o.sid/(40/3))===y.id; return o; }); };
+         if(y.id!=null&&y.nak) o.inside=NKAT(o.sid).i===y.id; return o; }); };
      /* The divisional formulas exist twice: here, where a graha's varga sign is
         computed, and in the report's vargaLagna, which does the same arithmetic
         for the lagna. Two copies of sixteen formulas is two chances to diverge,
@@ -12290,9 +12403,9 @@ window.__kVims={
   lordOfNak:function(i){ return VIMS_ORDER[((i%27)+27)%27%9]; },
   /* the mahādaśā running at birth and its unspent remainder, in years */
   atMoon:function(sid){
-    var seg=40/3, mn=((sid%360)+360)%360, ni=Math.floor(mn/seg);
+    var k=NKAT(sid), ni=k.d;
     var lord=VIMS_ORDER[ni%9], full=VIMS_YEARS[lord];
-    var frac=(mn-ni*seg)/seg;
+    var frac=k.dfrac;
     return {nak:ni, lord:lord, full:full, elapsed:frac,
             balance:full*(1-frac)};
   }
@@ -12924,6 +13037,9 @@ window.buildLocalChart=function(inp){
        omission turns every bhāva in the file into a guess. mc_sidereal_deg is
        null under whole-sign because the meridian is not computed there — it is
        not a missing value but an unused one. */
+    /* the nakṣatra system every nakṣatra, pāda and daśā below was read in */
+    nakshatra_system:(function(){ var m=NKAT(0).mode; return {mode:m,
+      name:(typeof window!=="undefined"&&window.NNak)?window.NNak.label(m):"equal nakṣatras (27 × 13°20′, BPHS)"}; })(),
     house_system:{mode:FRAME.mode,
       name:FRAME.mode==="sripati"?"Śrīpati bhāva-chalita (quadrant, trisected)"
                                  :"whole-sign (rāśi = bhāva, counted from the lagna)",
@@ -13184,8 +13300,16 @@ function dm(x){
   }
   return d+"°"+(m<10?"0":"")+m+"′";
 }
-function nakOf(deg){var seg=40/3,x=((deg%360)+360)%360,i=Math.min(Math.floor(x/seg),26);
-  return {name:NAKS[i],pada:Math.floor((x-i*seg)/(seg/4))+1,lord:NL9[i%9],idx:i};}
+/* the site's nakṣatra system (nak-system.js): equal unless chosen unequal in Settings.
+   NK() returns {i, name, start, end, span, frac, pada, into, d, dfrac, dspan}; d and dfrac
+   are what a daśā counts (Abhijit, under the 28 scheme, is counted with Uttarāṣāḍhā). */
+function NK(lon){ if(window.NNak) return window.NNak.at(lon);
+  var seg=40/3,x=((lon%360)+360)%360,i=Math.min(Math.floor(x/seg),26),f=(x-i*seg)/seg;
+  return {i:i,start:i*seg,end:(i+1)*seg,span:seg,frac:f,pada:Math.floor(f*4)+1,into:x-i*seg,mode:"equal",d:i,dfrac:f,dstart:i*seg,dspan:seg}; }
+function nakName(k){ return k.i===27?"Abhijit":NAKS[k.i]; }
+function nakSysNote(){ return (window.NNak&&!window.NNak.isEqual())?window.NNak.label():""; }
+function nakOf(deg){var k=NK(deg);
+  return {name:nakName(k),pada:k.pada,lord:NL9[k.d%9],idx:k.i};}
 function dignity(pl,sign,deg){
   if(pl==="Rahu"||pl==="Ketu")return "node";
   if(sign===EXALT[pl])return "exalted";
@@ -13457,9 +13581,9 @@ function derive(J){
   }catch(e){ D.specialLagnas=[]; }
   // vimshottari from birth
   if(D.P.Moon){
-    var seg=40/3,mn=((D.P.Moon.sid%360)+360)%360,ni=Math.floor(mn/seg),lb=NL9[ni%9];
-    var frac=(mn-ni*seg)/seg,bal=VY[lb]*(1-frac);
-    D.birthNak={nak:NAKS[ni],lord:lb,frac:frac,balance:bal};
+    var nkm=NK(D.P.Moon.sid),lb=NL9[nkm.d%9];
+    var frac=nkm.dfrac,bal=VY[lb]*(1-frac);
+    D.birthNak={nak:nakName(nkm),lord:lb,frac:frac,balance:bal,system:(window.NNak?window.NNak.mode():"equal")};
     var mds=[],jd=J.jd_utc,i0=VSEQ.indexOf(lb);
     for(var i=0;i<9;i++){var lo=VSEQ[(i0+i)%9],yr=(i===0)?bal:VY[lo];
       mds.push({lord:lo,start:jd,end:jd+yr*DPY,years:yr,partial:i===0});jd+=yr*DPY;}
@@ -14632,7 +14756,7 @@ function specialLagnaSection(D,J){
              "vitality; used in birth-time rectification",pp]);
   // Sree lagna: lagna + the fraction of the Moon's nakshatra traversed, in signs
   if(D.P.Moon){
-    var seg=40/3, mn=((D.P.Moon.sid%360)+360)%360, frac=(mn-Math.floor(mn/seg)*seg)/seg;
+    var frac=NK(D.P.Moon.sid).frac;
     defs.push(["Śrī Lagna","lagna advanced by the part of the Moon's nakṣatra already travelled",
                "prosperity and the goddess of fortune",((D.lagna.sidereal_deg+frac*360)%360+360)%360]);
   }
@@ -15010,12 +15134,12 @@ var ASHT_GROUP=[["Sun",[5,6,7]],["Moon",[8,9,10,11]],["Mars",[12,13,14]],["Mercu
   ["Saturn",[19,20,21]],["Jupiter",[22,23,24,25]],["Rahu",[26,0,1]],["Venus",[2,3,4]]];
 function ashtottariSection(D){
   if(!D.P.Moon||!D.mds) return "";
-  var seg=40/3, mn=((D.P.Moon.sid%360)+360)%360, ni=Math.floor(mn/seg);
+  var nka=NK(D.P.Moon.sid), ni=nka.d;
   var grp=null,pos=0;
   ASHT_GROUP.forEach(function(g){ var k=g[1].indexOf(ni); if(k>=0){ grp=g[0]; pos=k; } });
   if(!grp) return "";
   var size=ASHT_GROUP.filter(function(g){return g[0]===grp;})[0][1].length;
-  var within=(mn-ni*seg)/seg;
+  var within=nka.dfrac;
   var frac=(pos+within)/size;
   var bal=ASHT_YEARS[grp]*(1-frac);
   var birth=D.mds[0].start, jd=birth, rows=[], i0=ASHT_SEQ.indexOf(grp);
@@ -15605,8 +15729,8 @@ var YOGINI=[["Maṅgalā","Moon",1],["Piṅgalā","Sun",2],["Dhānyā","Jupiter"
             ["Bhadrikā","Mercury",5],["Ulkā","Saturn",6],["Siddhā","Venus",7],["Saṅkaṭā","Rahu",8]];
 function yoginiSection(D){
   if(!D.P.Moon||!D.mds) return "";
-  var seg=40/3, mn=((D.P.Moon.sid%360)+360)%360, ni=Math.floor(mn/seg);
-  var within=(mn-ni*seg)/seg, idx=((ni+1+3)%8+8)%8, start=(idx===0)?7:idx-1;
+  var nky=NK(D.P.Moon.sid), ni=nky.d;
+  var within=nky.dfrac, idx=((ni+1+3)%8+8)%8, start=(idx===0)?7:idx-1;
   var bal=YOGINI[start][2]*(1-within), jd=D.mds[0].start, rows=[], elapsed=0, k=0, cyc=0;
   /* Thirty-six years means the cycle repeats within a life, so one pass would stop
      the table in the native's thirties. Run it to the same 120-year frame as
@@ -17093,8 +17217,8 @@ function varshaPravesha(natalJd, natalSunSid, n) {
    would give it. */
 function muddaDasha(moonSid, startJd, yearDays) {
   if (moonSid == null) return [];
-  var seg = 40 / 3, ni = Math.floor((((moonSid % 360) + 360) % 360) / seg);
-  var lord = NL9[ni % 9], frac = ((((moonSid % 360) + 360) % 360) - ni * seg) / seg;
+  var nkv = NK(moonSid), ni = nkv.d;
+  var lord = NL9[ni % 9], frac = nkv.dfrac;
   var i0 = VSEQ.indexOf(lord), out = [], t = startJd;
   for (var i = 0; i < 9; i++) {
     var l = VSEQ[(i0 + i) % 9];
@@ -17756,7 +17880,8 @@ function bdOddSign(s) { return s % 2 === 0; }        /* Meṣa is the 1st, an od
 function bdOddPada(s) { return BD_CHARA_ODD_PADA.indexOf(bdMod(s, 12)) >= 0; }
 function bdSthiraYears(s) { return [7, 8, 9][bdModality(s)]; }
 function bdStep(from, k, fwd) { return fwd ? bdMod(from + k, 12) : bdMod(from - k, 12); }
-function bdNak(lon) { var seg = 40 / 3, m = bdMod(lon, 360), i = Math.floor(m / seg); return { i: i, frac: (m - i * seg) / seg }; }
+/* the daśā's nakṣatra under the site's system (NK, 01-helpers.js): its 27-count index and fraction */
+function bdNak(lon) { var k = NK(lon); return { i: k.d, frac: k.dfrac }; }
 function bdExalted(p, sign) { return EXALT[p] != null && EXALT[p] === sign; }
 function bdDebil(p, sign) { return EXALT[p] != null && bdMod(EXALT[p] + 6, 12) === sign; }
 
@@ -18725,7 +18850,7 @@ function birthTimePane(D){
       for(var k=0;k<12;k++){ var c=(a+b)/2; if(pAt(c)===p0) a=c; else b=c; } return Math.abs(b);} } return null; };
     var mb=edgeM(-1), ma=edgeM(1);
     var spd=(mo.speed!=null?mo.speed:13.2), lord=D.birthNak.lord;
-    var shift=(1/1440-VY[lord]*spd/1440/(40/3)*DPY)*10;   // days the daśā dates move per 10 minutes later
+    var shift=(1/1440-VY[lord]*spd/1440/NK(D.P.Moon.sid).dspan*DPY)*10;   // days the daśā dates move per 10 minutes later
     mtxt='<h4 class="ksub">The Moon and the daśā dates</h4><p class="knote">The Moon stays in <b>'+esc(mo.nak)+' pāda '+mo.pada+'</b> for birth times '+
       (mb!=null?'from '+fmtMin(inp,-mb):'')+(ma!=null?' to '+fmtMin(inp,ma):'')+', so the daśā <i>sequence</i> is settled unless the time is off by '+
       (Math.min(mb||9e9,ma||9e9)/60).toFixed(1)+' hours or more. The daśā <i>dates</i> move with every minute: each 10 minutes later '+
@@ -19157,9 +19282,9 @@ function ayanSnap(D,a){
   var out={a:a,lagSid:lag,LS:LS,lagDeg:lag-LS*30,P:P,
            d9:vargaLagna("D9",lag),d10:vargaLagna("D10",lag),d12:vargaLagna("D12",lag)};
   if(P.Moon){
-    var mn=P.Moon.sid, ni=Math.floor(mn/seg);
-    out.nakIdx=ni; out.nak=NAKS[ni]; out.nakLord=NL9[ni%9];
-    out.balance=VY[out.nakLord]*(1-(mn-ni*seg)/seg);
+    var mn=P.Moon.sid, nks=NK(mn), ni=nks.i;
+    out.nakIdx=ni; out.nak=nakName(nks); out.nakLord=NL9[nks.d%9];
+    out.balance=VY[out.nakLord]*(1-nks.dfrac);
   }
   return out;
 }
@@ -19186,6 +19311,8 @@ function ayanDashaAt(D,snap,jd){
    nakṣatra). Raising the ayanāṃśa lowers the longitude, so the room above is
    the degrees already travelled into the division. */
 function ayanWindow(sid,width){
+  /* a nakṣatra's window follows the site's nakṣatra system (NK) */
+  if(width===40/3){ var k=NK(sid); return {up:k.into,down:k.span-k.into}; }
   var x=((sid%360)+360)%360, into=x-Math.floor(x/width)*width;
   return {up:into,down:width-into};
 }
@@ -19362,7 +19489,7 @@ function ayanPane(D,J){
     var w=ayanWindow(D.P.Moon.sid,40/3);
     var reach=L.filter(function(m){ return m.deg>=D.ayan+w.up||m.deg<=D.ayan-w.down; });
     var spd=(D.P.Moon.speed!=null?D.P.Moon.speed:13.2);
-    var perDeg=VY[D.birthNak.lord]/(40/3)*DPY;   // days a daśā boundary moves per degree
+    var perDeg=VY[D.birthNak.lord]/NK(D.P.Moon.sid).dspan*DPY;   // days a daśā boundary moves per degree
     /* Both edges of the window are real, but one of them is routinely dozens of
        degrees away — a nakṣatra is 13°20′ wide, so a Moon late in one has an
        upper bound no ayanāṃśa could ever reach. Printing "between 22.833° and
@@ -19642,13 +19769,15 @@ function gbVimsopaka(D,J,p){
 /* --- Vimshottari balance --- */
 function gbBalance(D,J){
   if(!D.birthNak) return "";
-  var seg=40/3, mn=((D.P.Moon.sid%360)+360)%360, ni=Math.floor(mn/seg);
-  var into=mn-ni*seg, frac=into/seg, lord=D.birthNak.lord, full=VY[lord];
+  var mn=((D.P.Moon.sid%360)+360)%360, k=NK(mn), ni=k.i;
+  var into=mn-k.dstart, frac=k.dfrac, lord=D.birthNak.lord, full=VY[lord], sp=k.dspan;
+  var eq=!window.NNak||window.NNak.isEqual();
   var rows="";
   rows+=gbRow("Moon’s longitude", gbFmt(mn,4)+"°", SA[Math.floor(mn/30)%12]+" "+gbFmt(mn%30,4)+"°");
-  rows+=gbRow("Nakṣatra", NAKS[ni]+" (no. "+(ni+1)+")", "each spans 13°20′");
-  rows+=gbRow("Arc already travelled", gbFmt(into,4)+"°", "of 13.3333°");
-  rows+=gbRow("Fraction elapsed", gbFmt(frac*100,2)+"%", gbFmt(into,4)+" ÷ 13.3333");
+  rows+=gbRow("Nakṣatra", nakName(k)+(ni<27?" (no. "+(ni+1)+")":""), eq?"each spans 13°20′":
+    "this one spans "+gbFmt(k.span,4)+"° under "+esc(window.NNak.label())+(k.d!==k.i?"; for the daśā its arc is counted with Uttarāṣāḍhā":""));
+  rows+=gbRow("Arc already travelled", gbFmt(into,4)+"°", "of "+gbFmt(sp,4)+"°");
+  rows+=gbRow("Fraction elapsed", gbFmt(frac*100,2)+"%", gbFmt(into,4)+" ÷ "+gbFmt(sp,4));
   rows+=gbRow("Lord of the nakṣatra", esc(lord), "full term "+full+" years");
   rows+=gbRow("<b>Balance at birth</b>","<b>"+gbFmt(full*(1-frac),4)+"</b> years",
     full+" × (1 − "+gbFmt(frac,4)+")");
@@ -19704,9 +19833,8 @@ function sensSnapshot(inp){
   J.grahas.forEach(function(g){ s.sign[g.key]=g.rashi.idx;
     s.pada[g.key]=nakOf(g.sidereal_deg).name+"-"+nakOf(g.sidereal_deg).pada; });
   J.vargas.forEach(function(v){ s.varga[v.varga]=vargaLagna(v.varga,J.lagna.sidereal_deg); });
-  var seg=40/3, mn=J.grahas.filter(function(g){return g.key==="Candra";})[0].sidereal_deg;
-  var ni=Math.floor(((mn%360)+360)%360/seg);
-  s.bal=(1-((((mn%360)+360)%360)-ni*seg)/seg);
+  var mn=J.grahas.filter(function(g){return g.key==="Candra";})[0].sidereal_deg;
+  s.bal=1-NK(mn).dfrac;
   s.houses={}; J.grahas.forEach(function(g){
     s.houses[g.key]=((g.rashi.idx-J.lagna.rashi.idx)%12+12)%12+1; });
   return s;
@@ -19787,7 +19915,7 @@ function sensBoundaries(J, spanMin){
       var asc=window.__kAsc(inp,off), d=dateAt(off), moon=window.__kSidAt("Moon",d);
       var s={lagna:Math.floor(asc/30)%12, D9:vargaLagna("D9",asc), D10:vargaLagna("D10",asc),
              D60:vargaLagna("D60",asc),
-             moon_nakshatra:Math.floor(moon/(40/3))%27, moon_pada:Math.floor(moon/(10/3))%108};
+             moon_nakshatra:NK(moon).i, moon_pada:NK(moon).i*4+NK(moon).pada-1};
       if(sp){
         var jd=d.getTime()/86400000+2440587.5, T=(jd-2451545)/36525;
         var eps=23.439291111-0.0130041667*T;
@@ -20238,9 +20366,10 @@ function skyFurniture(S,showNak){
   /* Nakṣatras and pādas divide the actual ecliptic. A divisional chart is a derived
      circle, so drawing them there would imply a correspondence that classical practice
      does not make. They are shown for the rāśi chart only. */
-  var seg=40/3;
-  for(var n=0;showNak&&n<27;n++){
-    var b0=n*seg;
+  /* the divisions follow the site's nakṣatra system (nak-system.js) */
+  var NE=window.NNak?window.NNak.edges():null, nN=NE?NE.length:27;
+  for(var n=0;showNak&&n<nN;n++){
+    var b0=NE?NE[n].start:n*40/3, seg=NE?NE[n].end-NE[n].start:40/3, ni=NE?NE[n].i:n;
     if(n%2===0) o+=skyWedge(cx,cy,252,300,b0,b0+seg,"#1d2340",0.05,"sk-nakband");
     o+='<line x1="'+skyXY(cx,cy,252,b0)[0].toFixed(1)+'" y1="'+skyXY(cx,cy,252,b0)[1].toFixed(1)+
        '" x2="'+skyXY(cx,cy,300,b0)[0].toFixed(1)+'" y2="'+skyXY(cx,cy,300,b0)[1].toFixed(1)+
@@ -20254,7 +20383,7 @@ function skyFurniture(S,showNak){
     var nm=skyXY(cx,cy,276,b0+seg/2);
     o+='<text x="'+nm[0].toFixed(1)+'" y="'+nm[1].toFixed(1)+'" class="sk-nak" transform="rotate('+
        (((b0+seg/2)>90&&(b0+seg/2)<270)?(180-(b0+seg/2)-90):(-(b0+seg/2)+90)).toFixed(1)+
-       ' '+nm[0].toFixed(1)+' '+nm[1].toFixed(1)+')">'+SKY_NAKA[n]+'</text>';
+       ' '+nm[0].toFixed(1)+' '+nm[1].toFixed(1)+')">'+(ni===27?"Abh":SKY_NAKA[ni])+'</text>';
   }
   o+='<circle cx="360" cy="360" r="252" fill="none" stroke="#1d2340" stroke-width="1" class="sk-inner"/>';
   // degree ticks every 10°
@@ -21363,15 +21492,17 @@ function swhRender(S,natal){
        (11.5*sp.scale).toFixed(1)+'">'+SA[s]+'</text>';
   }
   /* --- nakṣatra ring and pāda ticks --- */
-  var seg=40/3;
-  for(var n=0;n<27;n++){
-    o+='<path d="'+swBandPath(n*seg,(n+1)*seg,R*0.755,R*0.87,lag,SWH_CX,SWH_CY,SW_TILT_DEG,10)+
+  /* the ring follows the site's nakṣatra system (nak-system.js) */
+  var NE=window.NNak?window.NNak.edges():null, nN=NE?NE.length:27;
+  for(var n=0;n<nN;n++){
+    var b0=NE?NE[n].start:n*40/3, seg=NE?NE[n].end-NE[n].start:40/3, ni=NE?NE[n].i:n;
+    o+='<path d="'+swBandPath(b0,b0+seg,R*0.755,R*0.87,lag,SWH_CX,SWH_CY,SW_TILT_DEG,10)+
        '" fill="'+((n%2)?PAL.nak[0]:PAL.nak[1])+'" stroke="'+PAL.nstroke+'" stroke-width="0.45"/>';
-    var np=swhPt(n*seg+seg/2,lag,0,R*0.812);
+    var np=swhPt(b0+seg/2,lag,0,R*0.812);
     o+='<text x="'+np.x.toFixed(1)+'" y="'+(np.y+2.5).toFixed(1)+'" class="swh-nak" font-size="'+
-       (7.6*np.scale).toFixed(1)+'">'+SWH_NAK[n]+'</text>';
+       (7.6*np.scale).toFixed(1)+'">'+(ni===27?"Abhijit":SWH_NAK[ni])+'</text>';
     for(var q=1;q<4;q++){
-      var t=n*seg+q*seg/4, a=swhPt(t,lag,0,R*0.755), b=swhPt(t,lag,0,R*0.785);
+      var t=b0+q*seg/4, a=swhPt(t,lag,0,R*0.755), b=swhPt(t,lag,0,R*0.785);
       o+='<line x1="'+a.x.toFixed(1)+'" y1="'+a.y.toFixed(1)+'" x2="'+b.x.toFixed(1)+'" y2="'+
          b.y.toFixed(1)+'" stroke="'+PAL.tick+'" stroke-width="0.45"/>';
     }
@@ -21796,7 +21927,7 @@ ui:{
 function moTcol(e){ return (moLangHi() && e && e.hi) ? e.hi : (e && e.en); }
 function moT(key){ var e=MO_STR.ui[key]; return moTcol(e)||key; }
 function moTrasi(i){ var t=MO_STR.rasi; return (moLangHi()?t.hi:t.en)[((i%12)+12)%12]; }
-function moTnak(i){ var t=MO_STR.nak;  return (moLangHi()?t.hi:t.en)[((i%27)+27)%27]; }
+function moTnak(i){ if(i===27) return moLangHi()?"अभिजित्":"Abhijit"; var t=MO_STR.nak;  return (moLangHi()?t.hi:t.en)[((i%27)+27)%27]; }
 function moTgraha(en){ var t=MO_STR.graha; return (moLangHi()?t.hi:t.en)[en]||en; }
 /* The engine writes graha names in its own IAST ("Śukra"). EN maps those back to
    the English key everything here is built on; without the round trip a Hindi frame
@@ -23088,7 +23219,15 @@ var MO_RSYM=["\u2648","\u2649","\u264A","\u264B","\u264C","\u264D",
 /* The nakṣatra a longitude falls in, named in the current language. The engine's
    nak() carries its own English spelling; the index is what the language table
    needs, so this re-derives it rather than matching on the name. */
-function moNakIdx(lon){ return Math.min(26,Math.floor(((lon%360)+360)%360/(40/3))); }
+/* the site's nakṣatra system (nak-system.js): equal unless chosen unequal in Settings */
+function moNakAt(lon){ if(window.NNak) return window.NNak.at(lon);
+  var seg=40/3,x=((lon%360)+360)%360,i=Math.min(26,Math.floor(x/seg)),f=(x-i*seg)/seg;
+  return {i:i,start:i*seg,end:(i+1)*seg,span:seg,frac:f,pada:Math.floor(f*4)+1,into:x-i*seg,mode:"equal",d:i,dfrac:f}; }
+function moNakEdges(){ if(window.NNak) return window.NNak.edges();
+  var o=[]; for(var k=0;k<27;k++) o.push({i:k,start:k*40/3,end:(k+1)*40/3}); return o; }
+function moNakArc(i){ var E=moNakEdges(); for(var k=0;k<E.length;k++) if(E[k].i===i) return E[k]; return {i:i,start:i*40/3,end:(i+1)*40/3}; }
+function moNakEq(){ return !window.NNak||window.NNak.isEqual(); }
+function moNakIdx(lon){ return moNakAt(lon).i; }
 function moNakName(lon){ return moTnak(moNakIdx(lon)); }
 function moG(en){ return MO.opt.symbols?(MO_SYM[en]||moTgl(en)):moTgl(en); }
 function moSign(i){ var k=((i%12)+12)%12; return MO.opt.symbols?MO_RSYM[k]:moTrasi(k); }
@@ -23785,9 +23924,11 @@ var MO_SCENES=[
   c.setLineDash([]); c.globalAlpha=1;
   moText(moP("ecliptic"),cx+bw/2,Yy(0)-S.w*0.024,S.w*0.021,P.dim,"right",500);
   /* nakṣatra boundaries, named */
-  var seg=40/3;
+  var NEs=moNakEdges(), pNow=0;
+  for(var pq=0;pq<NEs.length;pq++) if(NEs[pq].i===idx) pNow=pq;
   for(var k=-2;k<=2;k++){
-    var ni=((idx+k)%27+27)%27, b0=ni*seg, b1=b0+seg;
+    var Eq=NEs[((pNow+k)%NEs.length+NEs.length)%NEs.length], ni=Eq.i, b0=Eq.start, b1=Eq.end;
+    if(k<0&&b0>star.sid+180){ b0-=360; b1-=360; } if(k>0&&b1<star.sid-180){ b0+=360; b1+=360; }
     var x0=X(b0), x1=X(b1);
     if(x1<cx-bw/2-40||x0>cx+bw/2+40) continue;
     c.strokeStyle=P.gold; c.globalAlpha=.42; c.lineWidth=2; c.setLineDash([5,8]);
@@ -24297,9 +24438,9 @@ var MO_INCL=5.145, MO_SOLZONE=1.58, MO_LUNZONE=1.03, MO_PENZONE=1.57;
    separate flat ring would read as a second, contradictory plane. */
 var MO_NAKW=40/3;                               /* 13 deg 20' */
 function moNak(lon){
-  var l=((lon%360)+360)%360, n=Math.floor(l/MO_NAKW);
-  return {n:n, pada:Math.floor((l-n*MO_NAKW)/(MO_NAKW/4))+1,
-          name:moTnak(n)};
+  var k=moNakAt(lon);
+  return {n:k.i, pada:k.pada, start:k.start, end:k.end,
+          name:moTnak(k.i)};
 }
 function moRasiOf(lon){
   var l=((lon%360)+360)%360, i=Math.floor(l/30);
@@ -24363,8 +24504,9 @@ var MO_MORE=[
   /* Five rings, outermost to innermost, each a limb. The lit wedge is the division the
      day is in; the brighter sliver inside it is how far through that division we are. */
   var LIMBS=[
-    {n:27, i:nk.idx,            f:(mo%(40/3))/(40/3),          col:"#6f7cc0",
-     lab:moP("limbNak"), val:moNakName(mo)+" · "+moP("padaN",nk.pada)},
+    (function(){ var E=moNakEdges(), K=moNakAt(mo), p=0; for(var q=0;q<E.length;q++) if(E[q].i===K.i) p=q;
+      return {n:E.length, i:p, E:E, f:K.frac, col:"#6f7cc0",
+     lab:moP("limbNak"), val:moNakName(mo)+" · "+moP("padaN",nk.pada)}; })(),
     {n:27, i:Math.floor(yogaRaw/(800/60)), f:(yogaRaw%(800/60))/(800/60), col:"#5fbf8f",
      lab:moP("limbYoga"),     val:moTyoga(pc.yoga)},
     {n:30, i:Math.floor(elong/12), f:(elong%12)/12,            col:"#d9b668",
@@ -24380,7 +24522,8 @@ var MO_MORE=[
     var a=R*(rOut-k*th), b=R*(rOut-(k+1)*th+gap);
     var step=360/L.n;
     for(var j=0;j<L.n;j++){
-      var a0=(180-j*step)*Math.PI/180, a1=(180-(j+1)*step)*Math.PI/180;
+      /* a limb may carry its own edges (the nakṣatra ring under unequal widths) */
+      var a0=(180-(L.E?L.E[j].start:j*step))*Math.PI/180, a1=(180-(L.E?L.E[j].end:(j+1)*step))*Math.PI/180;
       c.beginPath(); c.arc(cx,cy,a,-a0,-a1,false); c.arc(cx,cy,b,-a1,-a0,true); c.closePath();
       if(j===L.i){ c.fillStyle=L.col; c.globalAlpha=0.38; }
       else { c.fillStyle="#ffffff"; c.globalAlpha=(j%2)?0.055:0.022; }
@@ -24390,7 +24533,8 @@ var MO_MORE=[
       }
     }
     /* how far through the current division */
-    var s0=(180-L.i*step)*Math.PI/180, s1=(180-(L.i+L.f)*step)*Math.PI/180;
+    var s0=(180-(L.E?L.E[L.i].start:L.i*step))*Math.PI/180,
+        s1=(180-(L.E?L.E[L.i].start+L.f*(L.E[L.i].end-L.E[L.i].start):(L.i+L.f)*step))*Math.PI/180;
     c.beginPath(); c.arc(cx,cy,a,-s0,-s1,false); c.arc(cx,cy,b,-s1,-s0,true); c.closePath();
     c.fillStyle=L.col; c.globalAlpha=0.85; c.fill(); c.globalAlpha=1;
     c.strokeStyle=L.col; c.lineWidth=2; c.globalAlpha=.9;
@@ -24548,8 +24692,9 @@ var MO_MORE=[
       });
     });
     if(tring==="nak"){
-      for(var nk=0;nk<27;nk++){
-        var nl=nk*MO_NAKW, qa=proj(nl,0,RI), qb=proj(nl,0,RI+(RO-RI)*0.45);
+      var NEr=moNakEdges();
+      for(var nk=0;nk<NEr.length;nk++){
+        var nl=NEr[nk].start, qa=proj(nl,0,RI), qb=proj(nl,0,RI+(RO-RI)*0.45);
         c.strokeStyle=P.line; c.lineWidth=1; c.globalAlpha=far(nl)?0.18:0.45;
         c.beginPath(); c.moveTo(qa[0],qa[1]); c.lineTo(qb[0],qb[1]); c.stroke();
         c.globalAlpha=1;
@@ -24575,7 +24720,7 @@ var MO_MORE=[
       var rr=moRasiOf(lon), nn=moNak(lon), a=far(lon)?0.35:1;
       moBandArc(proj, rr.i*30, rr.i*30+30, RM, B.col, R*0.052, a*0.20);
       if(tring==="nak")
-        moBandArc(proj, nn.n*MO_NAKW, (nn.n+1)*MO_NAKW, RM, B.col, R*0.052, a*0.60);
+        moBandArc(proj, nn.start, nn.end, RM, B.col, R*0.052, a*0.60);
       /* a stub pointing from the ring out to the band, so the arc is unambiguously
          this body's and not its neighbour's */
       var s0=proj(lon,0,R*1.0), s1=proj(lon,0,RO);
@@ -25399,11 +25544,11 @@ function moSceneSheets(){
     out.push({name:"Yogatārās",
       cols:["#","Nakṣatra","Star","Bayer","HR","Sidereal longitude °","Rāśi","Ecliptic latitude °",
             "Magnitude","Falls within its own division"], rows:rows4});
-    out.push({name:"Equal divisions",
+    out.push({name:moNakEq()?"Equal divisions":"Unequal divisions",
       cols:["#","Nakṣatra","Starts °","Ends °","Rāśi at start"],
-      rows:(function(){ var seg=40/3, r=[];
-        for(var n=0;n<27;n++) r.push([n+1,moTnak(n),+(n*seg).toFixed(4),+((n+1)*seg).toFixed(4),
-          moSignOf(n*seg)]);
+      rows:(function(){ var r=[], E=moNakEdges();
+        for(var n=0;n<E.length;n++) r.push([n+1,moTnak(E[n].i),+(E[n].start).toFixed(4),+(E[n].end).toFixed(4),
+          moSignOf(E[n].start)]);
         return r; })()});
   } else if(k==="frames"){
     var i5=MO.J&&MO.J.input||{}, b5=moBirthMs(), rows5=[], N5=144;
@@ -25868,7 +26013,7 @@ function moSceneSheets(){
       cols:["#","Nakṣatra","From °","To °","Viṃśottarī lord","Deity","Gaṇa",
             "Pāda 1","Pāda 2","Pāda 3","Pāda 4","Your grahas here"],
       rows:MT_NKN.map(function(nm,i){
-        var b0=i*seg, b1=b0+seg, nav0=Math.floor(b0/(30/9));
+        var A=moNakArc(i), b0=A.start, b1=A.end, nav0=Math.floor(b0/(30/9));
         var mine=gs.filter(function(g){ var d=((g.sid%360)+360)%360; return d>=b0&&d<b1; })
                    .map(function(g){ return g.full+" "+(((g.sid%360)+360)%360).toFixed(2)+"°"; });
         return [i+1,nm,Number(b0.toFixed(4)),Number(b1.toFixed(4)),mtNLord(i),
@@ -27754,7 +27899,7 @@ var MO_TEACH=[
   var J=MO.J; if(!J) throw new Error("no chart");
   var s=mtStep(p,27,MO.opt.npin), i=s.i;
   moStars();
-  var seg=40/3, b0=i*seg, b1=b0+seg;
+  var A=moNakArc(i), b0=A.start, b1=A.end, seg=b1-b0;
   var lord=mtNLord(i);
   var cx=st.cx;
 
@@ -28213,12 +28358,12 @@ MO_CONTENT.push({
 
     var cx = st.cx, cy = st.y + st.h * 0.46;
     var R = Math.min(S.w * 0.37, st.h * 0.37), band = R * 0.20;
-    var cur = Math.floor((((mo % 360) + 360) % 360) / (40 / 3));
-    var pada = Math.floor(((((mo % 360) + 360) % 360) % (40 / 3)) / (10 / 3)) + 1;
+    var KM = moNakAt(mo), cur = KM.i, pada = KM.pada, NEc = moNakEdges();
 
-    for (var i = 0; i < 27; i++) {
-      var a0 = (i * (40 / 3) - 90) * Math.PI / 180;
-      var a1 = ((i + 1) * (40 / 3) - 90) * Math.PI / 180;
+    for (var ii = 0; ii < NEc.length; ii++) {
+      var EE = NEc[ii], i = EE.i, w = EE.end - EE.start;
+      var a0 = (EE.start - 90) * Math.PI / 180;
+      var a1 = (EE.end - 90) * Math.PI / 180;
       var on = i === cur;
       c.beginPath();
       c.arc(cx, cy, R + band / 2, a0, a1);
@@ -28236,15 +28381,15 @@ MO_CONTENT.push({
          navāṃśa, drawn only on the lit one so the ring stays readable */
       if (on) {
         for (var q = 1; q < 4; q++) {
-          var aq = ((i * (40 / 3)) + q * (10 / 3) - 90) * Math.PI / 180;
+          var aq = (EE.start + q * w / 4 - 90) * Math.PI / 180;
           c.beginPath();
           c.moveTo(cx + Math.cos(aq) * R, cy + Math.sin(aq) * R);
           c.lineTo(cx + Math.cos(aq) * (R + band), cy + Math.sin(aq) * (R + band));
           c.strokeStyle = P.bg; c.lineWidth = Math.max(1.5, U * 0.004); c.stroke();
         }
       }
-      var am = ((i + 0.5) * (40 / 3) - 90) * Math.PI / 180;
-      moText(String(i + 1), cx + Math.cos(am) * (R + band * 1.62),
+      var am = (EE.start + w / 2 - 90) * Math.PI / 180;
+      moText(i === 27 ? "Abh" : String(i + 1), cx + Math.cos(am) * (R + band * 1.62),
              cy + Math.sin(am) * (R + band * 1.62),
              U * 0.0152, on ? P.gold : P.ink, "center", on ? 700 : 500);
     }
@@ -29442,10 +29587,10 @@ MO_DEEP.push({
       var seg = 40 / 3, out = {};
       /* when the winter solstice stood at the START of Dhaniṣṭhā — the Vedāṅga
          Jyotiṣa's own statement, turned into a year by this engine */
-      out.dhanishthaStart = mdYearWhen(270, 22 * seg);
-      out.dhanishthaEnd   = mdYearWhen(270, 23 * seg);
-      out.krittikaFrom    = mdYearWhen(0, 3 * seg);
-      out.krittikaTo      = mdYearWhen(0, 2 * seg);
+      out.dhanishthaStart = mdYearWhen(270, moNakArc(22).start);
+      out.dhanishthaEnd   = mdYearWhen(270, moNakArc(22).end);
+      out.krittikaFrom    = mdYearWhen(0, moNakArc(2).end);
+      out.krittikaTo      = mdYearWhen(0, moNakArc(2).start);
       /* how far the quadratic ayanāṃśa has strayed from a flat rate at the far
          end — the honest size of the uncertainty, in years of precession */
       var T = (Y0 - 2000) / 100;
@@ -29464,16 +29609,17 @@ MO_DEEP.push({
     var seg = 40 / 3;
     function Y(lon) { return y0 + (y1 - y0) * (1 - (((lon % 360) + 360) % 360) / 360); }
 
-    for (var n = 0; n < 27; n++) {
-      var ya = Y((n + 1) * seg), yb = Y(n * seg);
+    var NEd = moNakEdges();
+    for (var nq = 0; nq < NEd.length; nq++) {
+      var n = NEd[nq].i, ya = Y(NEd[nq].end), yb = Y(NEd[nq].start);
       c.fillStyle = (n % 2) ? P.line : P.bg2;
       c.globalAlpha = 0.55; c.fillRect(x0, ya, x1 - x0, yb - ya); c.globalAlpha = 1;
       if (yb - ya > U * 0.016)
-        moText(MD_NAK[n], x0 - U * 0.012, (ya + yb) / 2, U * 0.0155,
+        moText(n === 27 ? "Abhijit" : MD_NAK[n], x0 - U * 0.012, (ya + yb) / 2, U * 0.0155,
                P.dim, "right", 500);
     }
     /* Dhaniṣṭhā picked out, because it is the one the text names */
-    var dA = Y(23 * seg), dB = Y(22 * seg);
+    var dA = Y(moNakArc(22).end), dB = Y(moNakArc(22).start);
     c.strokeStyle = P.gold; c.lineWidth = Math.max(2, U * 0.004);
     c.strokeRect(x0, dA, x1 - x0, dB - dA);
 
@@ -29494,8 +29640,8 @@ MO_DEEP.push({
            (ayan < 0 ? "−" : "+") + Math.abs(ayan).toFixed(2) + "°",
            st.cx, st.y + st.h * 0.126, U * 0.021, P.dim, "center", 500);
 
-    var nakOfSol = Math.floor(wsol / seg);
-    moText((moLangHi() ? "शिशिर अयन: " : "solstice in ") + MD_NAK[nakOfSol],
+    var nakOfSol = moNakAt(wsol).i;
+    moText((moLangHi() ? "शिशिर अयन: " : "solstice in ") + (nakOfSol === 27 ? "Abhijit" : MD_NAK[nakOfSol]),
            st.cx, st.y + st.h * 0.905, U * 0.026, P.glow, "center", 600);
     if (M.dhanishthaStart != null)
       moText((moLangHi() ? "धनिष्ठा का आरम्भ: लगभग " : "at the start of Dhaniṣṭhā around ") +
@@ -29697,7 +29843,8 @@ function mgLimbs(ms) {
   var jd = ms / 86400000 + 2440587.5;
   var elong = mgNorm(mo - su);
   var sum = mgNorm(mo + su);
-  var ti = elong / 12, ki = elong / 6, ni = mgNorm(mo) / (40 / 3), yi = sum / (40 / 3);
+  var KG = moNakAt(mo);
+  var ti = elong / 12, ki = elong / 6, ni = KG.i + KG.frac, yi = sum / (40 / 3);
   var kn = Math.floor(ki);
   return {
     sun: mgNorm(su), moon: mgNorm(mo), elong: elong, sum: sum,
@@ -29712,7 +29859,7 @@ function mgLimbs(ms) {
                      kn <= 56 ? MG_KMOV[(kn - 1) % 7] : MG_KFIX[kn - 57]),
               work: elong.toFixed(2) + "° ÷ 6°" },
     nak: { v: ni, i: Math.floor(ni), f: ni - Math.floor(ni),
-           name: MG_NAK[Math.floor(ni)],
+           name: KG.i === 27 ? "Abhijit" : MG_NAK[Math.floor(ni)], span: KG.span,
            pada: Math.floor((ni - Math.floor(ni)) * 4) + 1,
            work: "Moon " + mgNorm(mo).toFixed(2) + "° ÷ 13°20′" },
     yoga: { v: yi, i: Math.floor(yi), f: yi - Math.floor(yi),
@@ -29856,9 +30003,9 @@ MO_GLASS.push({
     }
 
     /* the 27 beads, each at the middle of its own segment */
-    var seg = 40 / 3;
-    for (var n = 0; n < 27; n++) {
-      var q = at(n * seg + seg / 2);
+    var NEb = moNakEdges();
+    for (var nb = 0; nb < NEb.length; nb++) {
+      var n = NEb[nb].i, q = at((NEb[nb].start + NEb[nb].end) / 2);
       var here = n === L.nak.i;
       c.beginPath(); c.arc(q[0], q[1], here ? U * 0.019 : U * 0.0115, 0, 6.2832);
       c.fillStyle = here ? P.gold : "rgba(255,255,255,0.22)"; c.fill();
@@ -29872,7 +30019,7 @@ MO_GLASS.push({
       c.save();
       c.translate(lq[0], lq[1]);
       c.rotate(a2 + (Math.cos(a2) < 0 ? Math.PI : 0));
-      moText(MG_NAK[n], 0, 0, U * 0.0155,
+      moText(n === 27 ? "Abhijit" : MG_NAK[n], 0, 0, U * 0.0155,
              here ? P.gold : P.dim, Math.cos(a2) < 0 ? "right" : "left", here ? 700 : 500);
       c.restore();
     }
@@ -29894,8 +30041,8 @@ MO_GLASS.push({
     /* the centre reading */
     moText(moLangHi() ? "चन्द्र" : "Moon in", cx, cy - U * 0.042, U * 0.017, P.dim, "center", 500);
     moText(L.nak.name, cx, cy - U * 0.010, U * 0.032, P.gold, "center", 700);
-    moText((L.nak.f * (40 / 3)).toFixed(2) + "° " +
-           (moLangHi() ? "में से " : "of ") + "13°20′ · pāda " + L.nak.pada,
+    moText((L.nak.f * (L.nak.span || 40 / 3)).toFixed(2) + "° " +
+           (moLangHi() ? "में से " : "of ") + (moNakEq() ? "13°20′" : (L.nak.span || 40 / 3).toFixed(2) + "°") + " · pāda " + L.nak.pada,
            cx, cy + U * 0.022, U * 0.0165, P.ink, "center", 500);
     moText(L.tithi.paksha + " " + L.tithi.name, cx, cy + U * 0.046,
            U * 0.0165, P.dim, "center", 500);
@@ -29903,13 +30050,15 @@ MO_GLASS.push({
     /* when the next bead starts — the fact worth posting */
     var end = mgEndOf(ms, function (t) {
       var mm = moSidAt("Moon", t);
-      return mm == null ? null : Math.floor(mgNorm(mm) / seg);
+      return mm == null ? null : moNakAt(mm).i;
     });
     if (end != null)
-      moText(moP("entersAt", MG_NAK[(L.nak.i + 1) % 27],
+      moText(moP("entersAt", (function () { var E = moNakEdges(), p = 0; for (var q = 0; q < E.length; q++) if (E[q].i === L.nak.i) p = q;
+                 var nx = E[(p + 1) % E.length].i; return nx === 27 ? "Abhijit" : MG_NAK[nx]; })(),
                  moDateShort(end, W.tz).replace(/ \d{4}$/, "") + " " + moHM(end, W.tz)),
              st.cx, st.y + st.h * 0.875, U * 0.0215, P.glow, "center", 600);
-    moText(moP("nakWorking", L.moon.toFixed(2), L.nak.v.toFixed(2)),
+    moText(moNakEq() ? moP("nakWorking", L.moon.toFixed(2), L.nak.v.toFixed(2))
+           : "Moon " + L.moon.toFixed(2) + "° in " + L.nak.name + " (" + moNakArc(L.nak.i).start.toFixed(2) + "°–" + moNakArc(L.nak.i).end.toFixed(2) + "°, unequal)",
            st.cx, st.y + st.h * 0.925, U * 0.0175, P.dim, "center", 500);
     moText(moP("goldBand"), st.cx, st.y + st.h * 0.968, U * 0.0165, P.gold, "center", 500);
     return { ms: ms };
@@ -30339,8 +30488,9 @@ MO_TWOCLOCK.push({
     c.save();
     c.strokeStyle = P.dim; c.lineWidth = Math.max(1, U * 0.0016);
     c.globalAlpha = 0.55;
-    for (var n = 0; n < 27; n++) {
-      var a = (n * (40 / 3) - 90) * R;
+    var NEt = moNakEdges();
+    for (var nt = 0; nt < NEt.length; nt++) {
+      var a = (NEt[nt].start - 90) * R;
       c.beginPath();
       c.moveTo(cx + Math.cos(a) * rad * 1.00, cy + Math.sin(a) * rad * 1.00);
       c.lineTo(cx + Math.cos(a) * rad * 1.13, cy + Math.sin(a) * rad * 1.13);
@@ -30348,7 +30498,7 @@ MO_TWOCLOCK.push({
     }
     c.globalAlpha = 1;
     /* the nakṣatra the Moon is in now */
-    var na0 = (r.ni * (40 / 3) - 90) * R, na1 = ((r.ni + 1) * (40 / 3) - 90) * R;
+    var AR = moNakArc(r.ni), na0 = (AR.start - 90) * R, na1 = (AR.end - 90) * R;
     c.beginPath();
     c.arc(cx, cy, rad * 1.065, na0, na1);
     c.strokeStyle = P.glow; c.lineWidth = Math.max(4, U * 0.017);
@@ -30441,8 +30591,8 @@ MO_TWOCLOCK.push({
     moText("Moon " + r.moon.toFixed(2) + "° − Sun " + r.sun.toFixed(2) + "° = " +
            r.elong.toFixed(2) + "°  ÷ 12° = " + (r.elong / 12).toFixed(2),
            cx, by + st.h * 0.137, U * 0.0170, P.gold, "center", 500);
-    moText("Moon " + r.moon.toFixed(2) + "° ÷ 13°20′ = " +
-           (r.moon / (40 / 3)).toFixed(2),
+    moText(moNakEq() ? "Moon " + r.moon.toFixed(2) + "° ÷ 13°20′ = " + (r.moon / (40 / 3)).toFixed(2)
+           : "Moon " + r.moon.toFixed(2) + "° in " + moTnak(r.ni) + " (" + moNakArc(r.ni).start.toFixed(2) + "°–" + moNakArc(r.ni).end.toFixed(2) + "°)",
            cx, by + st.h * 0.168, U * 0.0170, P.glow, "center", 500);
 
     /* --- what the span contained, counted ------------------------------- */
@@ -31152,8 +31302,9 @@ MO_CYC.push({
     c.save();
     c.strokeStyle = P.dim; c.globalAlpha = 0.45;
     c.lineWidth = Math.max(1, U * 0.0014);
-    for (var n2 = 0; n2 < 27; n2++) {
-      var a2 = (n2 * (40 / 3) - 90) * R;
+    var NEy = moNakEdges();
+    for (var n2q = 0; n2q < NEy.length; n2q++) {
+      var a2 = (NEy[n2q].start - 90) * R;
       c.beginPath();
       c.moveTo(cx + Math.cos(a2) * rad, cy + Math.sin(a2) * rad);
       c.lineTo(cx + Math.cos(a2) * rad * 1.085, cy + Math.sin(a2) * rad * 1.085);
@@ -32902,11 +33053,11 @@ function jxDashaTree(D){
 }
 function jxAshtottari(D){
   if(!D.P.Moon||!D.mds) return null;
-  var seg=40/3, mn=((D.P.Moon.sid%360)+360)%360, ni=Math.floor(mn/seg), grp=null, pos=0;
+  var nka=NK(D.P.Moon.sid), ni=nka.d, grp=null, pos=0;
   ASHT_GROUP.forEach(function(g){ var k=g[1].indexOf(ni); if(k>=0){ grp=g[0]; pos=k; } });
   if(!grp) return null;
   var size=ASHT_GROUP.filter(function(g){return g[0]===grp;})[0][1].length;
-  var frac=(pos+(mn-ni*seg)/seg)/size, bal=ASHT_YEARS[grp]*(1-frac);
+  var frac=(pos+nka.dfrac)/size, bal=ASHT_YEARS[grp]*(1-frac);
   var jd=D.mds[0].start, i0=ASHT_SEQ.indexOf(grp), out=[];
   for(var k=0;k<8;k++){
     var lord=ASHT_SEQ[(i0+k)%8], yrs=(k===0)?bal:ASHT_YEARS[lord], end=jd+yrs*365.2564;
@@ -32918,8 +33069,8 @@ function jxAshtottari(D){
 }
 function jxYogini(D){
   if(!D.P.Moon||!D.mds) return null;
-  var seg=40/3, mn=((D.P.Moon.sid%360)+360)%360, ni=Math.floor(mn/seg);
-  var within=(mn-ni*seg)/seg, idx=((ni+1+3)%8+8)%8, start=(idx===0)?7:idx-1;
+  var nky=NK(D.P.Moon.sid), ni=nky.d;
+  var within=nky.dfrac, idx=((ni+1+3)%8+8)%8, start=(idx===0)?7:idx-1;
   var bal=YOGINI[start][2]*(1-within), jd=D.mds[0].start, out=[];
   /* The cycle totals 36 years, so unlike Vimśottarī it repeats within a lifetime.
      Showing one pass stops the table in the native's thirties and hides the very
@@ -32972,6 +33123,7 @@ function jxConventions(J){
   var HS=J.house_system||{};
   var out={ayanamsa_in_use:J.ayanamsa_name, ayanamsa_mode:J.ayanamsa_mode,
            node_mode:J.node_mode||"mean",
+           nakshatra_system:J.nakshatra_system||{mode:"equal"},
            house_system:HS.name||(HS.mode==="sripati"?"Śrīpati bhāva-chalita":"whole sign"),
            house_system_mode:HS.mode||"whole",
            house_system_detail:J.house_system||null,
@@ -34889,6 +35041,112 @@ window.buildKundliReport=function(J){
 
 </script>
 <script>
+/* ===== the nakṣatra system: equal or unequal, one answer for the whole site ====
+
+   Every page asks this module which nakṣatra a sidereal longitude is in, how far
+   through it, and which pāda, so a single setting in the master panel decides it
+   everywhere: names, pādas, the Vimśottarī balance, wheels, the pañcāṅga.
+
+   EQUAL (the default, and BPHS's own): 27 divisions of 13°20′ from Aśvinī 0°.
+
+   UNEQUAL: the older scheme in which six nakṣatras are half the normal width,
+   fifteen normal and six one-and-a-half (the 15-, 30- and 45-muhūrta classes of
+   Garga, used in Brahmagupta's Khaṇḍakhādyaka and by later siddhāntins).
+     short (½): Bharaṇī, Ārdrā, Āśleṣā, Svātī, Jyeṣṭhā, Śatabhiṣā
+     long  (1½): Rohiṇī, Punarvasu, Uttara Phalgunī, Viśākhā, Uttarāṣāḍhā, Uttara Bhādrapadā
+   Two ways of fixing the unit, chosen by a sub-setting:
+     u27 — scaled to fill the circle: the units add to 27, so a unit is 13°20′
+           (short 6°40′, normal 13°20′, long 20°). No Abhijit.
+     u28 — the unit is the Moon's mean daily motion, 13°10′35″; the 4°14′ left
+           over is Abhijit, placed after Uttarāṣāḍhā (28 nakṣatras).
+
+   DAŚĀS. Vimśottarī and the other nakṣatra daśās count 27 nakṣatras. Under u28,
+   Abhijit has no daśā lord of its own, so for a daśā its arc is counted with
+   Uttarāṣāḍhā, the nakṣatra it was cut from: `d` and `dfrac` below give the
+   27-nakṣatra index and the fraction through that merged arc. Under the other
+   systems `d` and `dfrac` equal `i` and `frac`.
+
+   PĀDAS. Each nakṣatra, whatever its width, is quartered.
+
+   This file is concatenated into engine.js, site.js and the adopted pages'
+   panel; the first copy to run defines window.NNak and the rest step aside. */
+(function () {
+  "use strict";
+  var G = typeof window !== "undefined" ? window : globalThis;
+  if (G.NNak) return;
+
+  var NAMES = ["Aśvinī", "Bharaṇī", "Kṛttikā", "Rohiṇī", "Mṛgaśira", "Ārdrā", "Punarvasu", "Puṣya", "Āśleṣā", "Maghā",
+    "Pūrva Phalgunī", "Uttara Phalgunī", "Hasta", "Citrā", "Svātī", "Viśākhā", "Anurādhā", "Jyeṣṭhā", "Mūla",
+    "Pūrva Āṣāḍhā", "Uttara Āṣāḍhā", "Śravaṇa", "Dhaniṣṭhā", "Śatabhiṣā", "Pūrva Bhādrapadā", "Uttara Bhādrapadā", "Revatī"];
+  var SHORT = [1, 5, 8, 14, 17, 23], LONG = [3, 6, 11, 15, 20, 25];
+  var EQ = 40 / 3, MEAN = 13 + 10 / 60 + 35 / 3600;
+
+  function readMode() {
+    try {
+      var st = JSON.parse(G.localStorage.getItem("nirayana.settings") || "{}") || {};
+      if (st.nak !== "unequal") return "equal";
+      return st.naksch === "u28" ? "u28" : "u27";
+    } catch (e) { return "equal"; }
+  }
+  /* the edges for a system: [{i, start, end}], i = 27 for Abhijit */
+  var TABLES = {};
+  function table(m) {
+    if (TABLES[m]) return TABLES[m];
+    var out = [], a = 0;
+    if (m === "equal") { for (var k = 0; k < 27; k++) out.push({ i: k, start: k * EQ, end: (k + 1) * EQ }); }
+    else {
+      var u = m === "u28" ? MEAN : EQ;
+      for (var j = 0; j < 27; j++) {
+        var w = SHORT.indexOf(j) >= 0 ? u / 2 : LONG.indexOf(j) >= 0 ? 1.5 * u : u;
+        out.push({ i: j, start: a, end: a + w }); a += w;
+        if (m === "u28" && j === 20) { out.push({ i: 27, start: a, end: a + (360 - 27 * MEAN) }); a += 360 - 27 * MEAN; }
+      }
+      out[out.length - 1].end = 360;            /* close the circle exactly */
+    }
+    TABLES[m] = out;
+    return out;
+  }
+  var MODE = null;
+  function mode() { if (MODE === null) MODE = readMode(); return MODE; }
+  function norm(x) { x = x % 360; return x < 0 ? x + 360 : x; }
+  function find(T, x) {
+    for (var k = 0; k < T.length; k++) if (x < T[k].end) return T[k];
+    return T[T.length - 1];
+  }
+  /* everything a page may want about a longitude */
+  function at(lon, m) {
+    m = m || mode();
+    var T = table(m), x = norm(lon), e = find(T, x), span = e.end - e.start, frac = (x - e.start) / span;
+    var r = { i: e.i, name: e.i === 27 ? "Abhijit" : NAMES[e.i], start: e.start, end: e.end, span: span,
+              frac: frac, pada: Math.min(4, Math.floor(frac * 4) + 1), into: x - e.start, mode: m, d: e.i, dfrac: frac, dstart: e.start, dspan: span };
+    if (m === "u28" && (e.i === 27 || e.i === 20)) {
+      var U = T.filter(function (q) { return q.i === 20; })[0], A = T.filter(function (q) { return q.i === 27; })[0];
+      r.d = 20; r.dstart = U.start; r.dspan = A.end - U.start; r.dfrac = (x - U.start) / r.dspan;
+    }
+    return r;
+  }
+  var LABEL = {
+    equal: "equal nakṣatras (27 × 13°20′, BPHS)",
+    u27: "unequal nakṣatras (Garga's ½·1·1½ widths, scaled to 360°)",
+    u28: "unequal nakṣatras (Garga's ½·1·1½ widths on the Moon's mean motion, with Abhijit)"
+  };
+  G.NNak = {
+    mode: mode,
+    /* re-read the store, after the panel changes it */
+    refresh: function () { MODE = null; return mode(); },
+    at: at,
+    idx: function (lon) { return at(lon).i; },
+    edges: function (m) { return table(m || mode()).slice(); },
+    names: NAMES.slice(),
+    name: function (i) { return i === 27 ? "Abhijit" : NAMES[i]; },
+    label: function (m) { return LABEL[m || mode()]; },
+    count: function (m) { return (m || mode()) === "u28" ? 28 : 27; },
+    isEqual: function () { return mode() === "equal"; },
+    EQ: EQ, MEAN: MEAN, SHORT: SHORT.slice(), LONG: LONG.slice()
+  };
+  try { G.addEventListener("nirayana:settings", function () { MODE = null; }); } catch (e) {}
+})();
+
 /* ===== the master settings panel =========================================
 
    One overlay, reachable from every page, holding the settings that used to
@@ -34936,7 +35194,10 @@ window.buildKundliReport=function(J){
               riseconv: "limb", degfmt: "dm", caution: "on",
               /* the engine that places the grahas, and the frame a Siddhānta
                  engine's positions are read in (engine.js, "THE ENGINE") */
-              engine: "modern", ssframe: "own" };
+              engine: "modern", ssframe: "own",
+              /* the nakṣatra system (nak-system.js): BPHS's equal 13°20′, or
+                 Garga's unequal widths in one of two forms */
+              nak: "equal", naksch: "u27" };
 
   var OPTS = {
     house: [["whole", "Whole-sign — rāśi is bhāva, from the lagna (BPHS)"],
@@ -34955,6 +35216,10 @@ window.buildKundliReport=function(J){
              ["kalasetu", "Kālasetu Siddhānta — long span: the text's time-count, a modern geometry, fitted over 13000 BCE – 3600 CE"]],
     ssframe: [["own", "The engine's own zero — the text's for 'as written', Lahiri for 'fitted', Samanvaya–Ecliptic for 'long span'"],
               ["ayan", "The ayanāṃśa chosen above"]],
+    nak: [["equal", "Equal — 27 × 13°20′ (BPHS)"],
+          ["unequal", "Unequal — six half-width, fifteen normal, six one-and-a-half (Garga)"]],
+    naksch: [["u27", "Scaled to fill 360° — 27 nakṣatras, no Abhijit"],
+             ["u28", "On the Moon's mean motion (13°10′35″) — Abhijit takes the 4°14′ left over, 28 nakṣatras"]],
     caution: [["on", "Show rectification cautions"],
               ["off", "Hide them — I know the birth time is approximate"]]
   };
@@ -35166,6 +35431,19 @@ window.buildKundliReport=function(J){
             'BPHS reckons Rāhu and Ketu as the mean node. The true node can sit up to about ' +
             '1½° away.')
             : frozenRow("Lunar nodes", get().node, "node")) +
+          row("nak", "Nakṣatras",
+            'Decides every nakṣatra on the site: names, pādas, the Vimśottarī and other ' +
+            'nakṣatra daśās, the pañcāṅga and every wheel. <b>Equal</b> is what BPHS uses. ' +
+            '<b>Unequal</b> is the older scheme of Garga, used in Brahmagupta’s ' +
+            'Khaṇḍakhādyaka: Bharaṇī, Ārdrā, Āśleṣā, Svātī, Jyeṣṭhā and Śatabhiṣā are half ' +
+            'width; Rohiṇī, Punarvasu, Uttara Phalgunī, Viśākhā, Uttarāṣāḍhā and Uttara ' +
+            'Bhādrapadā one and a half. Each nakṣatra is quartered into pādas whatever its ' +
+            'width. Navāṃśa and the other vargas divide the rāśi and are not affected.') +
+          row("naksch", "Unequal scheme",
+            'Only used when Unequal is chosen. <b>Scaled</b> makes the widths 6°40′, 13°20′ ' +
+            'and 20°. <b>Mean motion</b> uses the Moon’s mean day, 13°10′35″, as the unit and ' +
+            'gives the remaining 4°14′ to Abhijit after Uttarāṣāḍhā; for a daśā, Abhijit’s arc ' +
+            'is counted with Uttarāṣāḍhā, since Abhijit has no daśā lord.') +
           (canHonour("engine") ? row("engine", "Engine",
             'Which calculation places the nine grahas, for every page and every new chart. ' +
             '<b>Modern</b> is today’s astronomy. <b>Sūrya Siddhānta as written</b> computes ' +
@@ -35522,6 +35800,12 @@ window.buildKundliReport=function(J){
   try {
     window.addEventListener("nirayana:settings", function (e) {
       var ch = e && e.detail && e.detail.changed;
+      /* the nakṣatra system reaches every page; one that cannot redraw itself
+         in place (all but the Kundli builder, ui.js) reloads */
+      if (ch && (ch.indexOf("nak") >= 0 || ch.indexOf("naksch") >= 0)) {
+        try { if (window.NNak) window.NNak.refresh(); } catch (er) {}
+        if (!window.__nakLive) { location.reload(); return; }
+      }
       if (ch && ch.indexOf("ayan") >= 0 && document.getElementById("np-ayan") && !pageOverride() && pageRule() !== "lahiri") location.reload();
       /* a page following the site's engine follows a change to it; the
          Kundli builder and the Workstation recast instead (ui.js) */
@@ -35606,7 +35890,8 @@ const lonTxt=l=>isNum(l)?`${SIGNS[Math.floor(((l%360)+360)%360/30)]} ${dms(((l%3
 const hrs=x=>{if(!isNum(x))return"";const H=Math.floor(x),M=Math.round((x-H)*60);return `${String(H+(M===60?1:0)).padStart(2,"0")}:${String(M%60).padStart(2,"0")}`};
 const ord=n=>isNum(n)?n+(["th","st","nd","rd"][(n%100>10&&n%100<14)?0:(n%10<4?n%10:0)]||"th"):"";
 const cap=t=>t?String(t).charAt(0).toUpperCase()+String(t).slice(1):"";
-const nakOf=l=>NAKS[Math.floor((((l%360)+360)%360)/(360/27))];
+/* the site's nakṣatra system (nak-system.js, inlined with the panel) */
+const nakOf=l=>{ if(window.NNak){ const k=window.NNak.at(l); return k.i===27?"Abhijit":NAKS[k.i]; } return NAKS[Math.floor((((l%360)+360)%360)/(360/27))]; };
 const signElem=i=>ELEM[i%4];
 const cssv=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 const pname=p=>`<span class="dot" style="background:${pc(p)}"></span>${esc(en(p))}`;
@@ -35978,8 +36263,9 @@ function wheelSVG(N,showT,imgs){
     svg.append(s("path",{d:arc(RS[0],RS[1],i*30,i*30+30),fill:`color-mix(in srgb, var(--${signElem(i)}) ${i===N.lagSign?42:20}%, var(--surface))`,stroke:"var(--surface)","stroke-width":1.5}));
     const [x,y]=P((RS[0]+RS[1])/2,i*30+15);svg.append(s("text",{x,y,"text-anchor":"middle","dominant-baseline":"middle",style:"font-size:13px;font-weight:600;fill:var(--ink)"},SG[i]));
   }
-  for(let k=0;k<27;k++){const l=k*360/27,[x1,y1]=P(RN[0],l),[x2,y2]=P(RN[1],l);const ln=s("line",{x1,y1,x2,y2,stroke:"var(--muted)","stroke-width":.7});svg.append(ln);
-    const p=s("path",{d:arc(RN[0],RN[1],l,l+360/27),fill:"transparent"});p.append(s("title",{},NAKS[k]));svg.append(p)}
+  const NE=window.NNak?window.NNak.edges():Array.from({length:27},(_,k)=>({i:k,start:k*360/27,end:(k+1)*360/27}));
+  for(const e of NE){const l=e.start,[x1,y1]=P(RN[0],l),[x2,y2]=P(RN[1],l);const ln=s("line",{x1,y1,x2,y2,stroke:"var(--muted)","stroke-width":.7});svg.append(ln);
+    const p=s("path",{d:arc(RN[0],RN[1],l,e.end),fill:"transparent"});p.append(s("title",{},e.i===27?"Abhijit":NAKS[e.i]));svg.append(p)}
   [RN[0],RS[1]].forEach(r=>svg.append(s("circle",{cx:c,cy:c,r,fill:"none",stroke:"var(--line)"})));
   svg.append(s("circle",{cx:c,cy:c,r:70,fill:"var(--wash)",stroke:"var(--line)"}));
   /* THE CUSPS AND THE MERIDIAN COME FROM THE ENGINE'S OWN FIELDS.
@@ -36983,10 +37269,13 @@ matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>retheme
    Sunrise picker here would change a stored key and nothing on the page.
    Palette is absent for its own reason: these pages carry their own styling
    and load neither theme.js nor theme.css. */
-window.__nsHonours = ["ayan","house","node","degfmt","engine"];
+window.__nsHonours = ["ayan","house","node","degfmt","engine","nak","naksch"];
 
+/* this page re-casts itself on a nakṣatra-system change, so settings.js need not reload it */
+window.__nakLive = true;
 (function(){
-  const castKeys = ["ayan","house","node","engine","ssframe"];
+  const castKeys = ["ayan","house","node","engine","ssframe","nak","naksch"];
+  const nakModeOf = (S) => S && S.nak === "unequal" ? (S.naksch === "u28" ? "u28" : "u27") : "equal";
   const readS = () => { try { return window.NSettings && window.NSettings.get(); }
                         catch(e){ return null; } };
   const sig = (S) => S ? castKeys.map(k=>String(S[k])).join("|") : "";
@@ -37007,10 +37296,13 @@ window.__nsHonours = ["ayan","house","node","degfmt","engine"];
          would announce a "nodes" difference on every load that is not one. */
       node: (d && (d.node_requested || d.node_mode || (d.input&&d.input.node))) || null,
       engine: (d && ((d.engine&&d.engine.mode) || (d.input&&d.input.engine))) || "modern",
-      ssframe: (d && ((d.engine&&d.engine.frame) || (d.input&&d.input.ssframe))) || "own"
+      ssframe: (d && ((d.engine&&d.engine.frame) || (d.input&&d.input.ssframe))) || "own",
+      /* a chart from before the setting existed was read in equal nakṣatras */
+      nak: (d && d.nakshatra_system && d.nakshatra_system.mode) || "equal"
     };
   }
   function recast(){
+    try { if(window.NNak) window.NNak.refresh(); } catch(e){}
     if(!LAST_DATA || !LAST_DATA.input || !window.buildLocalChart) return false;
     const S = readS(); if(!S) return false;
     /* Overlay the settings on the ORIGINAL birth data. D.input round-trips
@@ -37050,6 +37342,7 @@ window.__nsHonours = ["ayan","house","node","degfmt","engine"];
     /* The ayanāṃśa is compared by MODE KEY, which is what the setting holds;
        the payload's ayanamsa_mode is the same vocabulary. */
     if(was.ayan && String(S.ayan) !== String(was.ayan)) diff.unshift("ayanāṃśa");
+    if(nakModeOf(S) !== String(was.nak)) diff.push("nakṣatra system");
     if(String(S.engine||"modern") !== String(was.engine||"modern")) diff.push("engine");
     else if((S.engine||"modern") !== "modern" && String(S.ssframe||"own") !== String(was.ssframe||"own")) diff.push("Siddhānta frame");
     if(!diff.length) return;

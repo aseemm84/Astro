@@ -147,12 +147,12 @@ MO_CONTENT.push({
 
     var cx = st.cx, cy = st.y + st.h * 0.46;
     var R = Math.min(S.w * 0.37, st.h * 0.37), band = R * 0.20;
-    var cur = Math.floor((((mo % 360) + 360) % 360) / (40 / 3));
-    var pada = Math.floor(((((mo % 360) + 360) % 360) % (40 / 3)) / (10 / 3)) + 1;
+    var KM = moNakAt(mo), cur = KM.i, pada = KM.pada, NEc = moNakEdges();
 
-    for (var i = 0; i < 27; i++) {
-      var a0 = (i * (40 / 3) - 90) * Math.PI / 180;
-      var a1 = ((i + 1) * (40 / 3) - 90) * Math.PI / 180;
+    for (var ii = 0; ii < NEc.length; ii++) {
+      var EE = NEc[ii], i = EE.i, w = EE.end - EE.start;
+      var a0 = (EE.start - 90) * Math.PI / 180;
+      var a1 = (EE.end - 90) * Math.PI / 180;
       var on = i === cur;
       c.beginPath();
       c.arc(cx, cy, R + band / 2, a0, a1);
@@ -170,15 +170,15 @@ MO_CONTENT.push({
          navāṃśa, drawn only on the lit one so the ring stays readable */
       if (on) {
         for (var q = 1; q < 4; q++) {
-          var aq = ((i * (40 / 3)) + q * (10 / 3) - 90) * Math.PI / 180;
+          var aq = (EE.start + q * w / 4 - 90) * Math.PI / 180;
           c.beginPath();
           c.moveTo(cx + Math.cos(aq) * R, cy + Math.sin(aq) * R);
           c.lineTo(cx + Math.cos(aq) * (R + band), cy + Math.sin(aq) * (R + band));
           c.strokeStyle = P.bg; c.lineWidth = Math.max(1.5, U * 0.004); c.stroke();
         }
       }
-      var am = ((i + 0.5) * (40 / 3) - 90) * Math.PI / 180;
-      moText(String(i + 1), cx + Math.cos(am) * (R + band * 1.62),
+      var am = (EE.start + w / 2 - 90) * Math.PI / 180;
+      moText(i === 27 ? "Abh" : String(i + 1), cx + Math.cos(am) * (R + band * 1.62),
              cy + Math.sin(am) * (R + band * 1.62),
              U * 0.0152, on ? P.gold : P.ink, "center", on ? 700 : 500);
     }

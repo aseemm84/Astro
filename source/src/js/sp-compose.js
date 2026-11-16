@@ -256,10 +256,11 @@
   function placeWords(deg) {
     var NK = window.SPNodes.NAK, RS = window.SPNodes.RASHI;
     var d = norm(deg);
-    var ni = Math.floor(d / (40 / 3));
-    var pada = Math.floor((d % (40 / 3)) / (10 / 3)) + 1;
+    var K = window.NNak ? window.NNak.at(d) : null;          /* the site's nakṣatra system */
+    var ni = K ? K.i : Math.floor(d / (40 / 3));
+    var pada = K ? K.pada : Math.floor((d % (40 / 3)) / (10 / 3)) + 1;
     return RS[Math.floor(d / 30)] + " " + (d % 30).toFixed(2) + "°   ·   " +
-           NK[ni] + " pāda " + pada;
+           (ni === 27 ? "Abhijit" : NK[ni]) + " pāda " + pada;
   }
 
   /* =======================================================================

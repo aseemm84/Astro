@@ -269,7 +269,10 @@
   function nakLink(name,pada){ if(!name) return "&mdash;"; return '<a href="108-nakshatra-padas.html#q='+encodeURIComponent(name)+'">'+esc(name)+" &middot; "+(pada||"?")+"</a>"; }
   var NAKS=["Ashwini","Bharani","Krittika","Rohini","Mrigashira","Ardra","Punarvasu","Pushya","Ashlesha","Magha","Purva Phalguni","Uttara Phalguni","Hasta","Chitra","Swati","Vishakha","Anuradha","Jyeshtha","Mula","Purva Ashadha","Uttara Ashadha","Shravana","Dhanishta","Shatabhisha","Purva Bhadrapada","Uttara Bhadrapada","Revati"];
   function rashiName(r){ if(r==null) return "?"; if(typeof r==="string") return r; return r.enName||r.saName||r.iast||r.sa||"?"; }
-  function nakInfo(deg,padaFallback){ if(deg==null) return {name:null,pada:padaFallback}; var seg=40/3, x=(((deg%360)+360)%360), i=Math.floor(x/seg); if(i>26)i=26; var pada=Math.floor((x-i*seg)/(seg/4))+1; return {name:NAKS[i], pada:padaFallback||pada}; }
+  function nakInfo(deg,padaFallback){ if(deg==null) return {name:null,pada:padaFallback};
+    /* the site's nakṣatra system (nak-system.js, in engine.js) */
+    if(window.NNak){ var K=window.NNak.at(deg); return {name:K.i===27?"Abhijit":NAKS[K.i], pada:padaFallback||K.pada}; }
+    var seg=40/3, x=(((deg%360)+360)%360), i=Math.floor(x/seg); if(i>26)i=26; var pada=Math.floor((x-i*seg)/(seg/4))+1; return {name:NAKS[i], pada:padaFallback||pada}; }
   function scalars(o){var out=[]; if(o&&typeof o==="object"){for(var k in o){var v=o[k]; if(v==null||typeof v==="object")continue; out.push("<b>"+esc(k)+":</b> "+esc(v));}} return out.join(" &middot; ");}
   function render(d){
     /* A fallback must be impossible to miss. Śrīpati needs a meridian and
@@ -488,8 +491,12 @@
   if($("k-engine")) $("k-engine").addEventListener("change",convStrip);
   if($("k-ssframe")) $("k-ssframe").addEventListener("change",convStrip);
   /* the master panel is the other way in: when it changes, the form follows */
+  /* the Kundli builder re-casts in place on a nakṣatra-system change (below),
+     so settings.js need not reload it */
+  try{ window.__nakLive=true; }catch(e){}
   try{
     window.addEventListener("nirayana:settings",function(ev){
+      try{ if(window.NNak) window.NNak.refresh(); }catch(e){}
       var S=(ev&&ev.detail&&ev.detail.settings)||null; if(!S) return;
       if($("k-ayan")&&S.ayan) $("k-ayan").value=S.ayan;
       if($("k-house")&&S.house) $("k-house").value=S.house;
@@ -506,7 +513,7 @@
          trigger it — theme and degrees do not change a longitude. */
       var ch=(ev.detail&&ev.detail.changed)||[];
       var needs=ch.some(function(k){
-        return k==="ayan"||k==="house"||k==="node"||k==="riseconv"||k==="engine"||k==="ssframe"; });
+        return k==="ayan"||k==="house"||k==="node"||k==="riseconv"||k==="engine"||k==="ssframe"||k==="nak"||k==="naksch"; });
       var out=$("k-out");
       if(needs && out && out.innerHTML && out.innerHTML.length>200){
         var g=$("k-go"); if(g) g.click();

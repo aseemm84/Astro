@@ -166,7 +166,7 @@
       tithi: function (i) {
         return (i < 15 ? NP.NAMES.tithi[i] : NP.NAMES.tithiK[i - 15]) || String((i % 15) + 1);
       },
-      nakshatra: function (i) { return NP.NAMES.nak[i] || String(i + 1); },
+      nakshatra: function (i) { return i === 27 ? "Abhijit" : (NP.NAMES.nak[i] || String(i + 1)); },
       yoga: function (i) { return NP.NAMES.yoga[i] || String(i + 1); },
       /* NP.NAMES.karana is a FUNCTION, not a table — the karaṇa cycle has four
          fixed members (Kiṃstughna first, then Śakuni, Catuṣpada and Nāga last)

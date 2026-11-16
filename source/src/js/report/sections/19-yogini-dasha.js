@@ -3,8 +3,8 @@ var YOGINI=[["Maṅgalā","Moon",1],["Piṅgalā","Sun",2],["Dhānyā","Jupiter"
             ["Bhadrikā","Mercury",5],["Ulkā","Saturn",6],["Siddhā","Venus",7],["Saṅkaṭā","Rahu",8]];
 function yoginiSection(D){
   if(!D.P.Moon||!D.mds) return "";
-  var seg=40/3, mn=((D.P.Moon.sid%360)+360)%360, ni=Math.floor(mn/seg);
-  var within=(mn-ni*seg)/seg, idx=((ni+1+3)%8+8)%8, start=(idx===0)?7:idx-1;
+  var nky=NK(D.P.Moon.sid), ni=nky.d;
+  var within=nky.dfrac, idx=((ni+1+3)%8+8)%8, start=(idx===0)?7:idx-1;
   var bal=YOGINI[start][2]*(1-within), jd=D.mds[0].start, rows=[], elapsed=0, k=0, cyc=0;
   /* Thirty-six years means the cycle repeats within a life, so one pass would stop
      the table in the native's thirties. Run it to the same 120-year frame as

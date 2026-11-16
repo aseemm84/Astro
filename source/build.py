@@ -62,7 +62,8 @@ def engine_js():
             t = read(os.path.dirname(SRC), "data", "kalasetu-" + nm + ".json").strip()
             json.loads(t)
             sets.append('"' + nm + '":' + t)
-    return (jsread(SRC, "js", "ss-engine.js") + "\n" +
+    return (jsread(SRC, "js", "nak-system.js") + "\n" +
+            jsread(SRC, "js", "ss-engine.js") + "\n" +
             "window.__SS_FIT_DATA=" + fit + ";\n" +
             jsread(SRC, "js", "kalasetu-engine.js") + "\n" +
             "window.__KALASETU_DATA=" + sl + ";\n" +
@@ -618,7 +619,7 @@ def build_adopted():
                       "\n</script>\n")
         panel = ("<style>\n" + read(SRC, "css", "settings.css") + "\n</style>\n"
                  + engine +
-                 "<script>\n" + read(SRC, "js", "settings.js") + "\n</script>\n")
+                 "<script>\n" + read(SRC, "js", "nak-system.js") + "\n" + read(SRC, "js", "settings.js") + "\n</script>\n")
         plain = plain_block(name, plain_entries()[name], adopted=True)
         out[name] = brandify(text[:i] + "\n" + strip + panel + plain + text[i:])
     return out
@@ -722,6 +723,7 @@ def build_shared():
         # that gets forgotten is the service worker - which then serves a
         # previous build's pages against a new build's script.
         "site.js":   brandify(app_sitejs(jsread(SRC, "js", "site.js") + "\n" +
+                                         jsread(SRC, "js", "nak-system.js") + "\n" +
                                          jsread(SRC, "js", "settings.js"))),
         # now.html's own script. Referenced rather than inlined for the same reason
         # site.js is: it is wanted on one page and the rest should not carry it.

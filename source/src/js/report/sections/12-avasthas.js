@@ -147,7 +147,7 @@ function specialLagnaSection(D,J){
              "vitality; used in birth-time rectification",pp]);
   // Sree lagna: lagna + the fraction of the Moon's nakshatra traversed, in signs
   if(D.P.Moon){
-    var seg=40/3, mn=((D.P.Moon.sid%360)+360)%360, frac=(mn-Math.floor(mn/seg)*seg)/seg;
+    var frac=NK(D.P.Moon.sid).frac;
     defs.push(["Śrī Lagna","lagna advanced by the part of the Moon's nakṣatra already travelled",
                "prosperity and the goddess of fortune",((D.lagna.sidereal_deg+frac*360)%360+360)%360]);
   }
@@ -525,12 +525,12 @@ var ASHT_GROUP=[["Sun",[5,6,7]],["Moon",[8,9,10,11]],["Mars",[12,13,14]],["Mercu
   ["Saturn",[19,20,21]],["Jupiter",[22,23,24,25]],["Rahu",[26,0,1]],["Venus",[2,3,4]]];
 function ashtottariSection(D){
   if(!D.P.Moon||!D.mds) return "";
-  var seg=40/3, mn=((D.P.Moon.sid%360)+360)%360, ni=Math.floor(mn/seg);
+  var nka=NK(D.P.Moon.sid), ni=nka.d;
   var grp=null,pos=0;
   ASHT_GROUP.forEach(function(g){ var k=g[1].indexOf(ni); if(k>=0){ grp=g[0]; pos=k; } });
   if(!grp) return "";
   var size=ASHT_GROUP.filter(function(g){return g[0]===grp;})[0][1].length;
-  var within=(mn-ni*seg)/seg;
+  var within=nka.dfrac;
   var frac=(pos+within)/size;
   var bal=ASHT_YEARS[grp]*(1-frac);
   var birth=D.mds[0].start, jd=birth, rows=[], i0=ASHT_SEQ.indexOf(grp);

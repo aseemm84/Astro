@@ -214,7 +214,15 @@ var MO_RSYM=["\u2648","\u2649","\u264A","\u264B","\u264C","\u264D",
 /* The nakṣatra a longitude falls in, named in the current language. The engine's
    nak() carries its own English spelling; the index is what the language table
    needs, so this re-derives it rather than matching on the name. */
-function moNakIdx(lon){ return Math.min(26,Math.floor(((lon%360)+360)%360/(40/3))); }
+/* the site's nakṣatra system (nak-system.js): equal unless chosen unequal in Settings */
+function moNakAt(lon){ if(window.NNak) return window.NNak.at(lon);
+  var seg=40/3,x=((lon%360)+360)%360,i=Math.min(26,Math.floor(x/seg)),f=(x-i*seg)/seg;
+  return {i:i,start:i*seg,end:(i+1)*seg,span:seg,frac:f,pada:Math.floor(f*4)+1,into:x-i*seg,mode:"equal",d:i,dfrac:f}; }
+function moNakEdges(){ if(window.NNak) return window.NNak.edges();
+  var o=[]; for(var k=0;k<27;k++) o.push({i:k,start:k*40/3,end:(k+1)*40/3}); return o; }
+function moNakArc(i){ var E=moNakEdges(); for(var k=0;k<E.length;k++) if(E[k].i===i) return E[k]; return {i:i,start:i*40/3,end:(i+1)*40/3}; }
+function moNakEq(){ return !window.NNak||window.NNak.isEqual(); }
+function moNakIdx(lon){ return moNakAt(lon).i; }
 function moNakName(lon){ return moTnak(moNakIdx(lon)); }
 function moG(en){ return MO.opt.symbols?(MO_SYM[en]||moTgl(en)):moTgl(en); }
 function moSign(i){ var k=((i%12)+12)%12; return MO.opt.symbols?MO_RSYM[k]:moTrasi(k); }

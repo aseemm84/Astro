@@ -120,7 +120,7 @@ ui:{
 function moTcol(e){ return (moLangHi() && e && e.hi) ? e.hi : (e && e.en); }
 function moT(key){ var e=MO_STR.ui[key]; return moTcol(e)||key; }
 function moTrasi(i){ var t=MO_STR.rasi; return (moLangHi()?t.hi:t.en)[((i%12)+12)%12]; }
-function moTnak(i){ var t=MO_STR.nak;  return (moLangHi()?t.hi:t.en)[((i%27)+27)%27]; }
+function moTnak(i){ if(i===27) return moLangHi()?"अभिजित्":"Abhijit"; var t=MO_STR.nak;  return (moLangHi()?t.hi:t.en)[((i%27)+27)%27]; }
 function moTgraha(en){ var t=MO_STR.graha; return (moLangHi()?t.hi:t.en)[en]||en; }
 /* The engine writes graha names in its own IAST ("Śukra"). EN maps those back to
    the English key everything here is built on; without the round trip a Hindi frame

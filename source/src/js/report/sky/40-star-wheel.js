@@ -149,15 +149,17 @@ function swhRender(S,natal){
        (11.5*sp.scale).toFixed(1)+'">'+SA[s]+'</text>';
   }
   /* --- nakṣatra ring and pāda ticks --- */
-  var seg=40/3;
-  for(var n=0;n<27;n++){
-    o+='<path d="'+swBandPath(n*seg,(n+1)*seg,R*0.755,R*0.87,lag,SWH_CX,SWH_CY,SW_TILT_DEG,10)+
+  /* the ring follows the site's nakṣatra system (nak-system.js) */
+  var NE=window.NNak?window.NNak.edges():null, nN=NE?NE.length:27;
+  for(var n=0;n<nN;n++){
+    var b0=NE?NE[n].start:n*40/3, seg=NE?NE[n].end-NE[n].start:40/3, ni=NE?NE[n].i:n;
+    o+='<path d="'+swBandPath(b0,b0+seg,R*0.755,R*0.87,lag,SWH_CX,SWH_CY,SW_TILT_DEG,10)+
        '" fill="'+((n%2)?PAL.nak[0]:PAL.nak[1])+'" stroke="'+PAL.nstroke+'" stroke-width="0.45"/>';
-    var np=swhPt(n*seg+seg/2,lag,0,R*0.812);
+    var np=swhPt(b0+seg/2,lag,0,R*0.812);
     o+='<text x="'+np.x.toFixed(1)+'" y="'+(np.y+2.5).toFixed(1)+'" class="swh-nak" font-size="'+
-       (7.6*np.scale).toFixed(1)+'">'+SWH_NAK[n]+'</text>';
+       (7.6*np.scale).toFixed(1)+'">'+(ni===27?"Abhijit":SWH_NAK[ni])+'</text>';
     for(var q=1;q<4;q++){
-      var t=n*seg+q*seg/4, a=swhPt(t,lag,0,R*0.755), b=swhPt(t,lag,0,R*0.785);
+      var t=b0+q*seg/4, a=swhPt(t,lag,0,R*0.755), b=swhPt(t,lag,0,R*0.785);
       o+='<line x1="'+a.x.toFixed(1)+'" y1="'+a.y.toFixed(1)+'" x2="'+b.x.toFixed(1)+'" y2="'+
          b.y.toFixed(1)+'" stroke="'+PAL.tick+'" stroke-width="0.45"/>';
     }

@@ -294,11 +294,11 @@ function jxDashaTree(D){
 }
 function jxAshtottari(D){
   if(!D.P.Moon||!D.mds) return null;
-  var seg=40/3, mn=((D.P.Moon.sid%360)+360)%360, ni=Math.floor(mn/seg), grp=null, pos=0;
+  var nka=NK(D.P.Moon.sid), ni=nka.d, grp=null, pos=0;
   ASHT_GROUP.forEach(function(g){ var k=g[1].indexOf(ni); if(k>=0){ grp=g[0]; pos=k; } });
   if(!grp) return null;
   var size=ASHT_GROUP.filter(function(g){return g[0]===grp;})[0][1].length;
-  var frac=(pos+(mn-ni*seg)/seg)/size, bal=ASHT_YEARS[grp]*(1-frac);
+  var frac=(pos+nka.dfrac)/size, bal=ASHT_YEARS[grp]*(1-frac);
   var jd=D.mds[0].start, i0=ASHT_SEQ.indexOf(grp), out=[];
   for(var k=0;k<8;k++){
     var lord=ASHT_SEQ[(i0+k)%8], yrs=(k===0)?bal:ASHT_YEARS[lord], end=jd+yrs*365.2564;
@@ -310,8 +310,8 @@ function jxAshtottari(D){
 }
 function jxYogini(D){
   if(!D.P.Moon||!D.mds) return null;
-  var seg=40/3, mn=((D.P.Moon.sid%360)+360)%360, ni=Math.floor(mn/seg);
-  var within=(mn-ni*seg)/seg, idx=((ni+1+3)%8+8)%8, start=(idx===0)?7:idx-1;
+  var nky=NK(D.P.Moon.sid), ni=nky.d;
+  var within=nky.dfrac, idx=((ni+1+3)%8+8)%8, start=(idx===0)?7:idx-1;
   var bal=YOGINI[start][2]*(1-within), jd=D.mds[0].start, out=[];
   /* The cycle totals 36 years, so unlike Vimśottarī it repeats within a lifetime.
      Showing one pass stops the table in the native's thirties and hides the very
@@ -364,6 +364,7 @@ function jxConventions(J){
   var HS=J.house_system||{};
   var out={ayanamsa_in_use:J.ayanamsa_name, ayanamsa_mode:J.ayanamsa_mode,
            node_mode:J.node_mode||"mean",
+           nakshatra_system:J.nakshatra_system||{mode:"equal"},
            house_system:HS.name||(HS.mode==="sripati"?"Śrīpati bhāva-chalita":"whole sign"),
            house_system_mode:HS.mode||"whole",
            house_system_detail:J.house_system||null,

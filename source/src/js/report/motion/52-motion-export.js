@@ -295,11 +295,11 @@ function moSceneSheets(){
     out.push({name:"Yogatārās",
       cols:["#","Nakṣatra","Star","Bayer","HR","Sidereal longitude °","Rāśi","Ecliptic latitude °",
             "Magnitude","Falls within its own division"], rows:rows4});
-    out.push({name:"Equal divisions",
+    out.push({name:moNakEq()?"Equal divisions":"Unequal divisions",
       cols:["#","Nakṣatra","Starts °","Ends °","Rāśi at start"],
-      rows:(function(){ var seg=40/3, r=[];
-        for(var n=0;n<27;n++) r.push([n+1,moTnak(n),+(n*seg).toFixed(4),+((n+1)*seg).toFixed(4),
-          moSignOf(n*seg)]);
+      rows:(function(){ var r=[], E=moNakEdges();
+        for(var n=0;n<E.length;n++) r.push([n+1,moTnak(E[n].i),+(E[n].start).toFixed(4),+(E[n].end).toFixed(4),
+          moSignOf(E[n].start)]);
         return r; })()});
   } else if(k==="frames"){
     var i5=MO.J&&MO.J.input||{}, b5=moBirthMs(), rows5=[], N5=144;
@@ -764,7 +764,7 @@ function moSceneSheets(){
       cols:["#","Nakṣatra","From °","To °","Viṃśottarī lord","Deity","Gaṇa",
             "Pāda 1","Pāda 2","Pāda 3","Pāda 4","Your grahas here"],
       rows:MT_NKN.map(function(nm,i){
-        var b0=i*seg, b1=b0+seg, nav0=Math.floor(b0/(30/9));
+        var A=moNakArc(i), b0=A.start, b1=A.end, nav0=Math.floor(b0/(30/9));
         var mine=gs.filter(function(g){ var d=((g.sid%360)+360)%360; return d>=b0&&d<b1; })
                    .map(function(g){ return g.full+" "+(((g.sid%360)+360)%360).toFixed(2)+"°"; });
         return [i+1,nm,Number(b0.toFixed(4)),Number(b1.toFixed(4)),mtNLord(i),

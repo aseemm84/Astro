@@ -89,8 +89,8 @@ function varshaPravesha(natalJd, natalSunSid, n) {
    would give it. */
 function muddaDasha(moonSid, startJd, yearDays) {
   if (moonSid == null) return [];
-  var seg = 40 / 3, ni = Math.floor((((moonSid % 360) + 360) % 360) / seg);
-  var lord = NL9[ni % 9], frac = ((((moonSid % 360) + 360) % 360) - ni * seg) / seg;
+  var nkv = NK(moonSid), ni = nkv.d;
+  var lord = NL9[ni % 9], frac = nkv.dfrac;
   var i0 = VSEQ.indexOf(lord), out = [], t = startJd;
   for (var i = 0; i < 9; i++) {
     var l = VSEQ[(i0 + i) % 9];

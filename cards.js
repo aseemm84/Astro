@@ -738,8 +738,10 @@
       if (stroke) { c.strokeStyle = stroke; c.lineWidth = 1; c.stroke(); }
     }
     var rNakIn = R * 0.80, rNakOut = R * 0.92, rRasIn = R * 0.92, rRasOut = R;
-    for (var k = 0; k < 27; k++)
-      band(k * (40 / 3), (k + 1) * (40 / 3), rNakIn, rNakOut,
+    /* the nakṣatra ring follows the site's system (nak-system.js) */
+    var NE = window.NNak ? window.NNak.edges() : null;
+    for (var k = 0; k < (NE ? NE.length : 27); k++)
+      band(NE ? NE[k].start : k * (40 / 3), NE ? NE[k].end : (k + 1) * (40 / 3), rNakIn, rNakOut,
            k % 2 ? "rgba(17,26,52,0.85)" : "rgba(13,21,41,0.85)", "rgba(38,50,90,0.9)");
     for (var s = 0; s < 12; s++)
       band(s * 30, (s + 1) * 30, rRasIn, rRasOut,
@@ -2229,14 +2231,15 @@
     function n(x) { return ((x % 360) + 360) % 360; }
     var su = n(D.sunDeg), mo = n(D.moonDeg);
     var el = n(mo - su), sum = n(mo + su);
-    var ti = el / 12, ki = el / 6, ni = mo / (40 / 3), yi = sum / (40 / 3);
+    var NKm = window.NNak ? window.NNak.at(mo) : null;
+    var ti = el / 12, ki = el / 6, ni = NKm ? NKm.i + NKm.frac : mo / (40 / 3), yi = sum / (40 / 3);
     return {
       sun: su, moon: mo, elong: el,
       tithi: { v: ti, name: (D.at.tithi.paksha === "śukla" ? "Śukla " : "Kṛṣṇa ") + D.at.tithi.name,
                work: "(Moon " + mo.toFixed(2) + "° − Sun " + su.toFixed(2) + "°) ÷ 12°" },
       karana: { v: ki, name: D.at.karana.name, work: el.toFixed(2) + "° ÷ 6°" },
       nak: { v: ni, name: D.at.nak.name, pada: D.at.nak.pada,
-             work: "Moon " + mo.toFixed(2) + "° ÷ 13°20′" },
+             work: NKm && NKm.mode !== "equal" ? "Moon " + mo.toFixed(2) + "° in the arc " + NKm.start.toFixed(2) + "°–" + NKm.end.toFixed(2) + "° (unequal nakṣatras)" : "Moon " + mo.toFixed(2) + "° ÷ 13°20′" },
       yoga: { v: yi, name: D.at.yoga.name,
               work: "(Sun + Moon" + (su + mo >= 360 ? " − 360°" : "") + ") ÷ 13°20′" }
     };

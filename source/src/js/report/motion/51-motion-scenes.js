@@ -524,9 +524,11 @@ var MO_SCENES=[
   c.setLineDash([]); c.globalAlpha=1;
   moText(moP("ecliptic"),cx+bw/2,Yy(0)-S.w*0.024,S.w*0.021,P.dim,"right",500);
   /* nakṣatra boundaries, named */
-  var seg=40/3;
+  var NEs=moNakEdges(), pNow=0;
+  for(var pq=0;pq<NEs.length;pq++) if(NEs[pq].i===idx) pNow=pq;
   for(var k=-2;k<=2;k++){
-    var ni=((idx+k)%27+27)%27, b0=ni*seg, b1=b0+seg;
+    var Eq=NEs[((pNow+k)%NEs.length+NEs.length)%NEs.length], ni=Eq.i, b0=Eq.start, b1=Eq.end;
+    if(k<0&&b0>star.sid+180){ b0-=360; b1-=360; } if(k>0&&b1<star.sid-180){ b0+=360; b1+=360; }
     var x0=X(b0), x1=X(b1);
     if(x1<cx-bw/2-40||x0>cx+bw/2+40) continue;
     c.strokeStyle=P.gold; c.globalAlpha=.42; c.lineWidth=2; c.setLineDash([5,8]);
@@ -1036,9 +1038,9 @@ var MO_INCL=5.145, MO_SOLZONE=1.58, MO_LUNZONE=1.03, MO_PENZONE=1.57;
    separate flat ring would read as a second, contradictory plane. */
 var MO_NAKW=40/3;                               /* 13 deg 20' */
 function moNak(lon){
-  var l=((lon%360)+360)%360, n=Math.floor(l/MO_NAKW);
-  return {n:n, pada:Math.floor((l-n*MO_NAKW)/(MO_NAKW/4))+1,
-          name:moTnak(n)};
+  var k=moNakAt(lon);
+  return {n:k.i, pada:k.pada, start:k.start, end:k.end,
+          name:moTnak(k.i)};
 }
 function moRasiOf(lon){
   var l=((lon%360)+360)%360, i=Math.floor(l/30);
@@ -1102,8 +1104,9 @@ var MO_MORE=[
   /* Five rings, outermost to innermost, each a limb. The lit wedge is the division the
      day is in; the brighter sliver inside it is how far through that division we are. */
   var LIMBS=[
-    {n:27, i:nk.idx,            f:(mo%(40/3))/(40/3),          col:"#6f7cc0",
-     lab:moP("limbNak"), val:moNakName(mo)+" · "+moP("padaN",nk.pada)},
+    (function(){ var E=moNakEdges(), K=moNakAt(mo), p=0; for(var q=0;q<E.length;q++) if(E[q].i===K.i) p=q;
+      return {n:E.length, i:p, E:E, f:K.frac, col:"#6f7cc0",
+     lab:moP("limbNak"), val:moNakName(mo)+" · "+moP("padaN",nk.pada)}; })(),
     {n:27, i:Math.floor(yogaRaw/(800/60)), f:(yogaRaw%(800/60))/(800/60), col:"#5fbf8f",
      lab:moP("limbYoga"),     val:moTyoga(pc.yoga)},
     {n:30, i:Math.floor(elong/12), f:(elong%12)/12,            col:"#d9b668",
@@ -1119,7 +1122,8 @@ var MO_MORE=[
     var a=R*(rOut-k*th), b=R*(rOut-(k+1)*th+gap);
     var step=360/L.n;
     for(var j=0;j<L.n;j++){
-      var a0=(180-j*step)*Math.PI/180, a1=(180-(j+1)*step)*Math.PI/180;
+      /* a limb may carry its own edges (the nakṣatra ring under unequal widths) */
+      var a0=(180-(L.E?L.E[j].start:j*step))*Math.PI/180, a1=(180-(L.E?L.E[j].end:(j+1)*step))*Math.PI/180;
       c.beginPath(); c.arc(cx,cy,a,-a0,-a1,false); c.arc(cx,cy,b,-a1,-a0,true); c.closePath();
       if(j===L.i){ c.fillStyle=L.col; c.globalAlpha=0.38; }
       else { c.fillStyle="#ffffff"; c.globalAlpha=(j%2)?0.055:0.022; }
@@ -1129,7 +1133,8 @@ var MO_MORE=[
       }
     }
     /* how far through the current division */
-    var s0=(180-L.i*step)*Math.PI/180, s1=(180-(L.i+L.f)*step)*Math.PI/180;
+    var s0=(180-(L.E?L.E[L.i].start:L.i*step))*Math.PI/180,
+        s1=(180-(L.E?L.E[L.i].start+L.f*(L.E[L.i].end-L.E[L.i].start):(L.i+L.f)*step))*Math.PI/180;
     c.beginPath(); c.arc(cx,cy,a,-s0,-s1,false); c.arc(cx,cy,b,-s1,-s0,true); c.closePath();
     c.fillStyle=L.col; c.globalAlpha=0.85; c.fill(); c.globalAlpha=1;
     c.strokeStyle=L.col; c.lineWidth=2; c.globalAlpha=.9;
@@ -1287,8 +1292,9 @@ var MO_MORE=[
       });
     });
     if(tring==="nak"){
-      for(var nk=0;nk<27;nk++){
-        var nl=nk*MO_NAKW, qa=proj(nl,0,RI), qb=proj(nl,0,RI+(RO-RI)*0.45);
+      var NEr=moNakEdges();
+      for(var nk=0;nk<NEr.length;nk++){
+        var nl=NEr[nk].start, qa=proj(nl,0,RI), qb=proj(nl,0,RI+(RO-RI)*0.45);
         c.strokeStyle=P.line; c.lineWidth=1; c.globalAlpha=far(nl)?0.18:0.45;
         c.beginPath(); c.moveTo(qa[0],qa[1]); c.lineTo(qb[0],qb[1]); c.stroke();
         c.globalAlpha=1;
@@ -1314,7 +1320,7 @@ var MO_MORE=[
       var rr=moRasiOf(lon), nn=moNak(lon), a=far(lon)?0.35:1;
       moBandArc(proj, rr.i*30, rr.i*30+30, RM, B.col, R*0.052, a*0.20);
       if(tring==="nak")
-        moBandArc(proj, nn.n*MO_NAKW, (nn.n+1)*MO_NAKW, RM, B.col, R*0.052, a*0.60);
+        moBandArc(proj, nn.start, nn.end, RM, B.col, R*0.052, a*0.60);
       /* a stub pointing from the ring out to the band, so the arc is unambiguously
          this body's and not its neighbour's */
       var s0=proj(lon,0,R*1.0), s1=proj(lon,0,RO);

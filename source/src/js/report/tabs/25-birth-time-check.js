@@ -61,7 +61,7 @@ function birthTimePane(D){
       for(var k=0;k<12;k++){ var c=(a+b)/2; if(pAt(c)===p0) a=c; else b=c; } return Math.abs(b);} } return null; };
     var mb=edgeM(-1), ma=edgeM(1);
     var spd=(mo.speed!=null?mo.speed:13.2), lord=D.birthNak.lord;
-    var shift=(1/1440-VY[lord]*spd/1440/(40/3)*DPY)*10;   // days the daśā dates move per 10 minutes later
+    var shift=(1/1440-VY[lord]*spd/1440/NK(D.P.Moon.sid).dspan*DPY)*10;   // days the daśā dates move per 10 minutes later
     mtxt='<h4 class="ksub">The Moon and the daśā dates</h4><p class="knote">The Moon stays in <b>'+esc(mo.nak)+' pāda '+mo.pada+'</b> for birth times '+
       (mb!=null?'from '+fmtMin(inp,-mb):'')+(ma!=null?' to '+fmtMin(inp,ma):'')+', so the daśā <i>sequence</i> is settled unless the time is off by '+
       (Math.min(mb||9e9,ma||9e9)/60).toFixed(1)+' hours or more. The daśā <i>dates</i> move with every minute: each 10 minutes later '+

@@ -325,8 +325,9 @@ MO_CYC.push({
     c.save();
     c.strokeStyle = P.dim; c.globalAlpha = 0.45;
     c.lineWidth = Math.max(1, U * 0.0014);
-    for (var n2 = 0; n2 < 27; n2++) {
-      var a2 = (n2 * (40 / 3) - 90) * R;
+    var NEy = moNakEdges();
+    for (var n2q = 0; n2q < NEy.length; n2q++) {
+      var a2 = (NEy[n2q].start - 90) * R;
       c.beginPath();
       c.moveTo(cx + Math.cos(a2) * rad, cy + Math.sin(a2) * rad);
       c.lineTo(cx + Math.cos(a2) * rad * 1.085, cy + Math.sin(a2) * rad * 1.085);

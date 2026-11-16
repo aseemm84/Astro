@@ -237,10 +237,11 @@ var VD=[["Ketu",7],["Venus",20],["Sun",6],["Moon",10],["Mars",7],
 PAGE.dashas=function(J){
   var moon=J.grahas.filter(function(g){ return /Candra|Moon/.test(g.key||g.sa||""); })[0];
   if(!moon) return "";
-  var lon=moon.sidereal_deg, seg=40/3;          /* 13°20′ */
-  var nk=Math.floor(lon/seg), frac=(lon-nk*seg)/seg;
+  /* the site's nakṣatra system (nak-system.js, bundled into site.js) */
+  var lon=moon.sidereal_deg, K=window.NNak?window.NNak.at(lon):null, seg=40/3;
+  var nk=K?K.d:Math.floor(lon/seg), frac=K?K.dfrac:(lon-nk*seg)/seg;
   var start=nk%9, lord=VD[start], bal=lord[1]*(1-frac);
-  var o=li("Moon in <b>"+esc(rname(moon.rashi))+"</b>, nakṣatra "+(nk+1)+" of 27, "+
+  var o=li("Moon in <b>"+esc(rname(moon.rashi))+"</b>, nakṣatra "+(nk+1)+" of 27"+(K&&K.mode!=="equal"?(K.mode==="u28"?" (unequal, with Abhijit)":" (unequal)"):"")+", "+
     Math.round(frac*100)+"% elapsed.");
   o+=li("The sequence opens with <b>"+lord[0]+"</b>, with "+bal.toFixed(2)+
     " years of its "+lord[1]+" remaining at birth.");

@@ -70,7 +70,8 @@ function mgLimbs(ms) {
   var jd = ms / 86400000 + 2440587.5;
   var elong = mgNorm(mo - su);
   var sum = mgNorm(mo + su);
-  var ti = elong / 12, ki = elong / 6, ni = mgNorm(mo) / (40 / 3), yi = sum / (40 / 3);
+  var KG = moNakAt(mo);
+  var ti = elong / 12, ki = elong / 6, ni = KG.i + KG.frac, yi = sum / (40 / 3);
   var kn = Math.floor(ki);
   return {
     sun: mgNorm(su), moon: mgNorm(mo), elong: elong, sum: sum,
@@ -85,7 +86,7 @@ function mgLimbs(ms) {
                      kn <= 56 ? MG_KMOV[(kn - 1) % 7] : MG_KFIX[kn - 57]),
               work: elong.toFixed(2) + "° ÷ 6°" },
     nak: { v: ni, i: Math.floor(ni), f: ni - Math.floor(ni),
-           name: MG_NAK[Math.floor(ni)],
+           name: KG.i === 27 ? "Abhijit" : MG_NAK[Math.floor(ni)], span: KG.span,
            pada: Math.floor((ni - Math.floor(ni)) * 4) + 1,
            work: "Moon " + mgNorm(mo).toFixed(2) + "° ÷ 13°20′" },
     yoga: { v: yi, i: Math.floor(yi), f: yi - Math.floor(yi),
@@ -229,9 +230,9 @@ MO_GLASS.push({
     }
 
     /* the 27 beads, each at the middle of its own segment */
-    var seg = 40 / 3;
-    for (var n = 0; n < 27; n++) {
-      var q = at(n * seg + seg / 2);
+    var NEb = moNakEdges();
+    for (var nb = 0; nb < NEb.length; nb++) {
+      var n = NEb[nb].i, q = at((NEb[nb].start + NEb[nb].end) / 2);
       var here = n === L.nak.i;
       c.beginPath(); c.arc(q[0], q[1], here ? U * 0.019 : U * 0.0115, 0, 6.2832);
       c.fillStyle = here ? P.gold : "rgba(255,255,255,0.22)"; c.fill();
@@ -245,7 +246,7 @@ MO_GLASS.push({
       c.save();
       c.translate(lq[0], lq[1]);
       c.rotate(a2 + (Math.cos(a2) < 0 ? Math.PI : 0));
-      moText(MG_NAK[n], 0, 0, U * 0.0155,
+      moText(n === 27 ? "Abhijit" : MG_NAK[n], 0, 0, U * 0.0155,
              here ? P.gold : P.dim, Math.cos(a2) < 0 ? "right" : "left", here ? 700 : 500);
       c.restore();
     }
@@ -267,8 +268,8 @@ MO_GLASS.push({
     /* the centre reading */
     moText(moLangHi() ? "चन्द्र" : "Moon in", cx, cy - U * 0.042, U * 0.017, P.dim, "center", 500);
     moText(L.nak.name, cx, cy - U * 0.010, U * 0.032, P.gold, "center", 700);
-    moText((L.nak.f * (40 / 3)).toFixed(2) + "° " +
-           (moLangHi() ? "में से " : "of ") + "13°20′ · pāda " + L.nak.pada,
+    moText((L.nak.f * (L.nak.span || 40 / 3)).toFixed(2) + "° " +
+           (moLangHi() ? "में से " : "of ") + (moNakEq() ? "13°20′" : (L.nak.span || 40 / 3).toFixed(2) + "°") + " · pāda " + L.nak.pada,
            cx, cy + U * 0.022, U * 0.0165, P.ink, "center", 500);
     moText(L.tithi.paksha + " " + L.tithi.name, cx, cy + U * 0.046,
            U * 0.0165, P.dim, "center", 500);
@@ -276,13 +277,15 @@ MO_GLASS.push({
     /* when the next bead starts — the fact worth posting */
     var end = mgEndOf(ms, function (t) {
       var mm = moSidAt("Moon", t);
-      return mm == null ? null : Math.floor(mgNorm(mm) / seg);
+      return mm == null ? null : moNakAt(mm).i;
     });
     if (end != null)
-      moText(moP("entersAt", MG_NAK[(L.nak.i + 1) % 27],
+      moText(moP("entersAt", (function () { var E = moNakEdges(), p = 0; for (var q = 0; q < E.length; q++) if (E[q].i === L.nak.i) p = q;
+                 var nx = E[(p + 1) % E.length].i; return nx === 27 ? "Abhijit" : MG_NAK[nx]; })(),
                  moDateShort(end, W.tz).replace(/ \d{4}$/, "") + " " + moHM(end, W.tz)),
              st.cx, st.y + st.h * 0.875, U * 0.0215, P.glow, "center", 600);
-    moText(moP("nakWorking", L.moon.toFixed(2), L.nak.v.toFixed(2)),
+    moText(moNakEq() ? moP("nakWorking", L.moon.toFixed(2), L.nak.v.toFixed(2))
+           : "Moon " + L.moon.toFixed(2) + "° in " + L.nak.name + " (" + moNakArc(L.nak.i).start.toFixed(2) + "°–" + moNakArc(L.nak.i).end.toFixed(2) + "°, unequal)",
            st.cx, st.y + st.h * 0.925, U * 0.0175, P.dim, "center", 500);
     moText(moP("goldBand"), st.cx, st.y + st.h * 0.968, U * 0.0165, P.gold, "center", 500);
     return { ms: ms };

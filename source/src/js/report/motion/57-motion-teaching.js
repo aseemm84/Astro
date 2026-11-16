@@ -458,7 +458,7 @@ var MO_TEACH=[
   var J=MO.J; if(!J) throw new Error("no chart");
   var s=mtStep(p,27,MO.opt.npin), i=s.i;
   moStars();
-  var seg=40/3, b0=i*seg, b1=b0+seg;
+  var A=moNakArc(i), b0=A.start, b1=A.end, seg=b1-b0;
   var lord=mtNLord(i);
   var cx=st.cx;
 

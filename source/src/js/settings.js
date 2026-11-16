@@ -45,7 +45,10 @@
               riseconv: "limb", degfmt: "dm", caution: "on",
               /* the engine that places the grahas, and the frame a Siddhānta
                  engine's positions are read in (engine.js, "THE ENGINE") */
-              engine: "modern", ssframe: "own" };
+              engine: "modern", ssframe: "own",
+              /* the nakṣatra system (nak-system.js): BPHS's equal 13°20′, or
+                 Garga's unequal widths in one of two forms */
+              nak: "equal", naksch: "u27" };
 
   var OPTS = {
     house: [["whole", "Whole-sign — rāśi is bhāva, from the lagna (BPHS)"],
@@ -64,6 +67,10 @@
              ["kalasetu", "Kālasetu Siddhānta — long span: the text's time-count, a modern geometry, fitted over 13000 BCE – 3600 CE"]],
     ssframe: [["own", "The engine's own zero — the text's for 'as written', Lahiri for 'fitted', Samanvaya–Ecliptic for 'long span'"],
               ["ayan", "The ayanāṃśa chosen above"]],
+    nak: [["equal", "Equal — 27 × 13°20′ (BPHS)"],
+          ["unequal", "Unequal — six half-width, fifteen normal, six one-and-a-half (Garga)"]],
+    naksch: [["u27", "Scaled to fill 360° — 27 nakṣatras, no Abhijit"],
+             ["u28", "On the Moon's mean motion (13°10′35″) — Abhijit takes the 4°14′ left over, 28 nakṣatras"]],
     caution: [["on", "Show rectification cautions"],
               ["off", "Hide them — I know the birth time is approximate"]]
   };
@@ -275,6 +282,19 @@
             'BPHS reckons Rāhu and Ketu as the mean node. The true node can sit up to about ' +
             '1½° away.')
             : frozenRow("Lunar nodes", get().node, "node")) +
+          row("nak", "Nakṣatras",
+            'Decides every nakṣatra on the site: names, pādas, the Vimśottarī and other ' +
+            'nakṣatra daśās, the pañcāṅga and every wheel. <b>Equal</b> is what BPHS uses. ' +
+            '<b>Unequal</b> is the older scheme of Garga, used in Brahmagupta’s ' +
+            'Khaṇḍakhādyaka: Bharaṇī, Ārdrā, Āśleṣā, Svātī, Jyeṣṭhā and Śatabhiṣā are half ' +
+            'width; Rohiṇī, Punarvasu, Uttara Phalgunī, Viśākhā, Uttarāṣāḍhā and Uttara ' +
+            'Bhādrapadā one and a half. Each nakṣatra is quartered into pādas whatever its ' +
+            'width. Navāṃśa and the other vargas divide the rāśi and are not affected.') +
+          row("naksch", "Unequal scheme",
+            'Only used when Unequal is chosen. <b>Scaled</b> makes the widths 6°40′, 13°20′ ' +
+            'and 20°. <b>Mean motion</b> uses the Moon’s mean day, 13°10′35″, as the unit and ' +
+            'gives the remaining 4°14′ to Abhijit after Uttarāṣāḍhā; for a daśā, Abhijit’s arc ' +
+            'is counted with Uttarāṣāḍhā, since Abhijit has no daśā lord.') +
           (canHonour("engine") ? row("engine", "Engine",
             'Which calculation places the nine grahas, for every page and every new chart. ' +
             '<b>Modern</b> is today’s astronomy. <b>Sūrya Siddhānta as written</b> computes ' +
@@ -631,6 +651,12 @@
   try {
     window.addEventListener("nirayana:settings", function (e) {
       var ch = e && e.detail && e.detail.changed;
+      /* the nakṣatra system reaches every page; one that cannot redraw itself
+         in place (all but the Kundli builder, ui.js) reloads */
+      if (ch && (ch.indexOf("nak") >= 0 || ch.indexOf("naksch") >= 0)) {
+        try { if (window.NNak) window.NNak.refresh(); } catch (er) {}
+        if (!window.__nakLive) { location.reload(); return; }
+      }
       if (ch && ch.indexOf("ayan") >= 0 && document.getElementById("np-ayan") && !pageOverride() && pageRule() !== "lahiri") location.reload();
       /* a page following the site's engine follows a change to it; the
          Kundli builder and the Workstation recast instead (ui.js) */

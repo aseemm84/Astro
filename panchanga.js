@@ -184,10 +184,16 @@
     var s = sidAt("Sun", ms), m = sidAt("Moon", ms);
     return (s == null || m == null) ? null : Math.floor((((m - s) % 360) + 360) % 360 / 12);
   }
+  /* the nakṣatra follows the site's system (nak-system.js); 27 is Abhijit under the 28 scheme */
+  function nakAt(m) { return window.NNak ? window.NNak.at(m) : null; }
   function nakIdx(ms) {
     var m = sidAt("Moon", ms);
-    return m == null ? null : Math.floor((((m % 360) + 360) % 360) / (40 / 3));
+    if (m == null) return null;
+    var k = nakAt(m);
+    return k ? k.i : Math.floor((((m % 360) + 360) % 360) / (40 / 3));
   }
+  function nakNm(i) { return i === 27 ? "Abhijit" : NAK[i]; }
+  function padaOf(mo) { var k = nakAt(mo); return k ? k.pada : Math.floor(((((mo % 360) + 360) % 360) % (40 / 3)) / (10 / 3)) + 1; }
   function yogaIdx(ms) {
     var s = sidAt("Sun", ms), m = sidAt("Moon", ms);
     return (s == null || m == null) ? null : Math.floor((((m + s) % 360) + 360) % 360 / (800 / 60));
@@ -512,8 +518,7 @@
       /* --- at sunrise: this is what names the day --- */
       at: {
         tithi: { i: ti, n: (ti % 15) + 1, name: tiName, paksha: paksha },
-        nak: { i: nk, name: NAK[nk], pada: Math.floor(((((mo % 360) + 360) % 360) %
-                (40 / 3)) / (10 / 3)) + 1 },
+        nak: { i: nk, name: nakNm(nk), pada: padaOf(mo) },
         yoga: { i: yg, name: YOGA[yg] },
         karana: { i: kr, name: karanaName(kr) }
       },
@@ -1093,7 +1098,10 @@
      birth star, which is the one thing most people do know. */
   NP.taraGrid = function (D) {
     if (!D || !D.at) return null;
-    var today = D.at.nak.i, sign = Math.floor((D.moonDeg % 360) / 30);
+    /* tārā counts the 27; Abhijit (28 scheme) counts as Uttarāṣāḍhā, the star it was cut from */
+    var today = D.at.nak.i === 27 ? 20 : D.at.nak.i, sign = Math.floor((D.moonDeg % 360) / 30);
+    var ED = window.NNak ? window.NNak.edges() : null, startOf = function (n) {
+      if (!ED) return n * (40 / 3); for (var q = 0; q < ED.length; q++) if (ED[q].i === n) return ED[q].start; return n * (40 / 3); };
     var rows = [];
     for (var n = 0; n < 27; n++) {
       var t = NP.taraBala(today, n);
@@ -1102,10 +1110,10 @@
                      for the sign this nakṣatra falls in rather than per star —
                      a nakṣatra can straddle two signs, and the grid says which
                      one it used instead of quietly picking. */
-                  sign: Math.floor(n * (40 / 3) / 30),
-                  ashtama: ((((sign - Math.floor(n * (40 / 3) / 30)) % 12) + 12) % 12) + 1 === 8 });
+                  sign: Math.floor(startOf(n) / 30),
+                  ashtama: ((((sign - Math.floor(startOf(n) / 30)) % 12) + 12) % 12) + 1 === 8 });
     }
-    return { today: today, todayName: NAK[today], moonSign: sign,
+    return { today: today, todayName: nakNm(D.at.nak.i), moonSign: sign,
              rows: rows, src: "tradition" };
   };
 
@@ -1379,8 +1387,7 @@
       ms: atMs,
       tithi: { i: ti, n: (ti % 15) + 1, paksha: ti < 15 ? "śukla" : "kṛṣṇa",
                name: ti < 15 ? TITHI[ti] : TITHI_K[ti - 15] },
-      nak: { i: nk, name: NAK[nk],
-             pada: Math.floor(((((mo % 360) + 360) % 360) % (40 / 3)) / (10 / 3)) + 1 },
+      nak: { i: nk, name: nakNm(nk), pada: padaOf(mo) },
       yoga: { i: yg, name: YOGA[yg] },
       karana: { i: kr, name: karanaName(kr) },
       /* The two longitudes themselves, not only their difference. Anything

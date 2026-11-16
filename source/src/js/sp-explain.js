@@ -1794,11 +1794,15 @@
     if (Y && window.__framedStars) Y = window.__framedStars(Y);   /* into the page's frame */
     return (Y && Y.length === 27) ? Y : null;
   }
-  function insideOwn(y) { return Math.floor(norm360(y.sid) / SEG) === y.id; }
+  /* a division's arc under the site's nakṣatra system (nak-system.js) */
+  function ARC(i) { var E = window.NNak ? window.NNak.edges() : null;
+    if (E) for (var q = 0; q < E.length; q++) if (E[q].i === i) return [E[q].start, E[q].end];
+    return [i * SEG, (i + 1) * SEG]; }
+  function insideOwn(y) { return (window.NNak ? window.NNak.at(y.sid).i : Math.floor(norm360(y.sid) / SEG)) === y.id; }
   function norm360(x) { return ((x % 360) + 360) % 360; }
   /* the gap from the division named after it to the star, signed, in degrees */
   function strayBy(y) {
-    var lo = y.id * SEG, hi = lo + SEG, x = norm360(y.sid);
+    var A = ARC(y.id), lo = A[0], hi = A[1], x = norm360(y.sid);
     if (x >= lo && x < hi) return 0;
     var a = x - lo, b = x - hi;
     if (a < -180) a += 360; if (a > 180) a -= 360;
@@ -1820,14 +1824,14 @@
   function nakshatraStory(i) {
     var Y = nakList();
     if (!Y) return null;
-    var y = Y[i], lo = i * SEG, hi = lo + SEG;
+    var y = Y[i], A = ARC(i), lo = A[0], hi = A[1], W = hi - lo;
     var inside = insideOwn(y), off = strayBy(y);
     var lord = VIMS[i % 9];
     var prev = Y[(i + 26) % 27], next = Y[(i + 1) % 27];
 
     /* the window the strip shows: the arc, plus a third of it either side,
        so the neighbours are visible and the boundaries are not at the edge */
-    var pad = SEG * 0.38, from = norm360(lo - pad), span = SEG + 2 * pad;
+    var pad = W * 0.38, from = norm360(lo - pad), span = W + 2 * pad;
     /* THE BAND HAS TO HOLD THE STAR THE DIVISION IS NAMED FOR. Nine degrees
        either side of the ecliptic covers most of the zodiac's traffic, and
        leaves Śravaṇa's Altair at +29° and Mūla's Shaula at −14° off the
@@ -1837,7 +1841,7 @@
 
     var inWin = starsIn(from, norm360(from + span), latLim);
     var inArc = inWin.filter(function (s) {
-      return norm360(s.sid - lo) < SEG;
+      return norm360(s.sid - lo) < W;
     });
 
     /* which rāśi, and whether the arc straddles two of them */
@@ -1863,20 +1867,20 @@
               text: inArc.length + " of " + inWin.length +
                     " in this stretch fall inside" });
     for (var q = 1; q < 4; q++)
-      st.push({ beat: 4, type: "divide", at: lo + q * SEG / 4 });
+      st.push({ beat: 4, type: "divide", at: lo + q * W / 4 });
     for (q = 0; q < 4; q++)
-      st.push({ beat: 4, type: "name", at: lo + (q + 0.5) * SEG / 4,
-                text: SIGN[padaSign(lo + (q + 0.5) * SEG / 4)],
+      st.push({ beat: 4, type: "name", at: lo + (q + 0.5) * W / 4,
+                text: SIGN[padaSign(lo + (q + 0.5) * W / 4)],
                 size: 0.024, yf: 0.955 });
     st.push({ beat: 5, type: "span", from: s0 * 30, to: (s0 + 1) * 30,
               cool: true });
-    st.push({ beat: 5, type: "name", at: lo + SEG * 0.5, text: signText.split(" ")[0],
+    st.push({ beat: 5, type: "name", at: lo + W * 0.5, text: signText.split(" ")[0],
               size: 0.026, yf: 0.17, cool: true });
 
     return {
       kicker: "Nirayana",
       title: y.nak,
-      subtitle: "Division " + (i + 1) + " of twenty-seven — " + dms(lo) +
+      subtitle: "Division " + (i + 1) + " of twenty-seven" + (window.NNak && !window.NNak.isEqual() ? " (unequal)" : "") + " — " + dms(lo) +
                 " to " + dms(hi) + " — against the sky that is actually there.",
       stage: "strip",
       palette: "gold",

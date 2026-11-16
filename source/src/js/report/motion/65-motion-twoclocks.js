@@ -101,8 +101,9 @@ MO_TWOCLOCK.push({
     c.save();
     c.strokeStyle = P.dim; c.lineWidth = Math.max(1, U * 0.0016);
     c.globalAlpha = 0.55;
-    for (var n = 0; n < 27; n++) {
-      var a = (n * (40 / 3) - 90) * R;
+    var NEt = moNakEdges();
+    for (var nt = 0; nt < NEt.length; nt++) {
+      var a = (NEt[nt].start - 90) * R;
       c.beginPath();
       c.moveTo(cx + Math.cos(a) * rad * 1.00, cy + Math.sin(a) * rad * 1.00);
       c.lineTo(cx + Math.cos(a) * rad * 1.13, cy + Math.sin(a) * rad * 1.13);
@@ -110,7 +111,7 @@ MO_TWOCLOCK.push({
     }
     c.globalAlpha = 1;
     /* the nakṣatra the Moon is in now */
-    var na0 = (r.ni * (40 / 3) - 90) * R, na1 = ((r.ni + 1) * (40 / 3) - 90) * R;
+    var AR = moNakArc(r.ni), na0 = (AR.start - 90) * R, na1 = (AR.end - 90) * R;
     c.beginPath();
     c.arc(cx, cy, rad * 1.065, na0, na1);
     c.strokeStyle = P.glow; c.lineWidth = Math.max(4, U * 0.017);
@@ -203,8 +204,8 @@ MO_TWOCLOCK.push({
     moText("Moon " + r.moon.toFixed(2) + "° − Sun " + r.sun.toFixed(2) + "° = " +
            r.elong.toFixed(2) + "°  ÷ 12° = " + (r.elong / 12).toFixed(2),
            cx, by + st.h * 0.137, U * 0.0170, P.gold, "center", 500);
-    moText("Moon " + r.moon.toFixed(2) + "° ÷ 13°20′ = " +
-           (r.moon / (40 / 3)).toFixed(2),
+    moText(moNakEq() ? "Moon " + r.moon.toFixed(2) + "° ÷ 13°20′ = " + (r.moon / (40 / 3)).toFixed(2)
+           : "Moon " + r.moon.toFixed(2) + "° in " + moTnak(r.ni) + " (" + moNakArc(r.ni).start.toFixed(2) + "°–" + moNakArc(r.ni).end.toFixed(2) + "°)",
            cx, by + st.h * 0.168, U * 0.0170, P.glow, "center", 500);
 
     /* --- what the span contained, counted ------------------------------- */

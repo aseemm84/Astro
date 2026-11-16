@@ -242,9 +242,10 @@ function skyFurniture(S,showNak){
   /* Nakṣatras and pādas divide the actual ecliptic. A divisional chart is a derived
      circle, so drawing them there would imply a correspondence that classical practice
      does not make. They are shown for the rāśi chart only. */
-  var seg=40/3;
-  for(var n=0;showNak&&n<27;n++){
-    var b0=n*seg;
+  /* the divisions follow the site's nakṣatra system (nak-system.js) */
+  var NE=window.NNak?window.NNak.edges():null, nN=NE?NE.length:27;
+  for(var n=0;showNak&&n<nN;n++){
+    var b0=NE?NE[n].start:n*40/3, seg=NE?NE[n].end-NE[n].start:40/3, ni=NE?NE[n].i:n;
     if(n%2===0) o+=skyWedge(cx,cy,252,300,b0,b0+seg,"#1d2340",0.05,"sk-nakband");
     o+='<line x1="'+skyXY(cx,cy,252,b0)[0].toFixed(1)+'" y1="'+skyXY(cx,cy,252,b0)[1].toFixed(1)+
        '" x2="'+skyXY(cx,cy,300,b0)[0].toFixed(1)+'" y2="'+skyXY(cx,cy,300,b0)[1].toFixed(1)+
@@ -258,7 +259,7 @@ function skyFurniture(S,showNak){
     var nm=skyXY(cx,cy,276,b0+seg/2);
     o+='<text x="'+nm[0].toFixed(1)+'" y="'+nm[1].toFixed(1)+'" class="sk-nak" transform="rotate('+
        (((b0+seg/2)>90&&(b0+seg/2)<270)?(180-(b0+seg/2)-90):(-(b0+seg/2)+90)).toFixed(1)+
-       ' '+nm[0].toFixed(1)+' '+nm[1].toFixed(1)+')">'+SKY_NAKA[n]+'</text>';
+       ' '+nm[0].toFixed(1)+' '+nm[1].toFixed(1)+')">'+(ni===27?"Abh":SKY_NAKA[ni])+'</text>';
   }
   o+='<circle cx="360" cy="360" r="252" fill="none" stroke="#1d2340" stroke-width="1" class="sk-inner"/>';
   // degree ticks every 10°

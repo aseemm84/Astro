@@ -213,11 +213,21 @@
   /* The Viṃśottarī sequence from the Moon. See the note at the head of the
      file: this duplicates the report bundle's version and sp-verify.mjs
      asserts the two agree to the day. */
+  /* the site's nakṣatra system (nak-system.js): equal unless chosen unequal */
+  function NKs(m) { if (window.NNak) return window.NNak.at(m);
+    var seg = 40 / 3, x = norm(m), i = Math.floor(x / seg), f = (x - i * seg) / seg;
+    return { i: i, d: i, frac: f, dfrac: f, start: i * seg, end: (i + 1) * seg, mode: "equal" }; }
+  function nakArc(i) { var E = window.NNak ? window.NNak.edges() : null;
+    if (E) for (var q = 0; q < E.length; q++) if (E[q].i === i) return E[q];
+    return { start: i * (40 / 3), end: (i + 1) * (40 / 3) }; }
+  function nakWork(m) { var k = NKs(m);
+    return k.mode === "equal" ? norm(m).toFixed(2) + "° ÷ 13°20′"
+      : norm(m).toFixed(2) + "° in " + (k.i === 27 ? "Abhijit" : NAK[k.i]) + "'s arc " + k.start.toFixed(2) + "°–" + k.end.toFixed(2) + "° (unequal)"; }
   function vimshottari(C) {
     var mn = natalLon(C, "Candra");
     if (mn == null || !C.J || C.J.jd_utc == null) return null;
-    var seg = 40 / 3, m = norm(mn), ni = Math.floor(m / seg);
-    var lord = VSEQ[ni % 9], frac = (m - ni * seg) / seg;
+    var K = NKs(mn), ni = K.d;
+    var lord = VSEQ[ni % 9], frac = K.dfrac;
     var out = [], jd = C.J.jd_utc, i0 = VSEQ.indexOf(lord);
     for (var i = 0; i < 9; i++) {
       var lo = VSEQ[(i0 + i) % 9];
@@ -401,9 +411,9 @@
     });
   });
   NAK.forEach(function (nm, i) {
-    add("nak." + i, "nakshatra", nm, "the 13°20′ arc", ["lon"], function () {
-      return lon(i * (40 / 3) + (20 / 3), nm, "dim",
-                 { from: i * (40 / 3), to: (i + 1) * (40 / 3) });
+    add("nak." + i, "nakshatra", nm, "the nakṣatra's arc", ["lon"], function () {
+      var A = nakArc(i);
+      return lon((A.start + A.end) / 2, nm, "dim", { from: A.start, to: A.end });
     });
   });
 
@@ -879,11 +889,11 @@
     var el = norm(m - s);
     return scalar(el / 12, "tithis", "tithi", 30, el.toFixed(2) + "° ÷ 12°");
   });
-  add("pan.nak", "panchanga", "Nakṣatra", "Moon ÷ 13°20′", ["scalar"],
+  add("pan.nak", "panchanga", "Nakṣatra", "the Moon's nakṣatra", ["scalar"],
       function (C) {
     var m = anyLon(C, "Candra"); if (m == null) return null;
-    return scalar(norm(m) / (40 / 3), "nakṣatras", "nakṣatra", 27,
-                  norm(m).toFixed(2) + "° ÷ 13°20′");
+    var K = NKs(m);
+    return scalar(K.i + K.frac, "nakṣatras", "nakṣatra", window.NNak ? window.NNak.count() : 27, nakWork(m));
   });
   add("pan.yoga", "panchanga", "Nitya Yoga", "(Sun + Moon) ÷ 13°20′",
       ["scalar"], function (C) {
@@ -907,7 +917,7 @@
     return sset([
       { k: "Tithi", v: el / 12, work: el.toFixed(2) + "° ÷ 12°" },
       { k: "Karaṇa", v: el / 6, work: el.toFixed(2) + "° ÷ 6°" },
-      { k: "Nakṣatra", v: norm(m) / (40 / 3), work: norm(m).toFixed(2) + "° ÷ 13°20′" },
+      { k: "Nakṣatra", v: NKs(m).i + NKs(m).frac, work: nakWork(m) },
       { k: "Nitya yoga", v: sum / (40 / 3), work: sum.toFixed(2) + "° ÷ 13°20′" }
     ], "index", "the five limbs", 60);
   });

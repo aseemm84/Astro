@@ -32,7 +32,16 @@
   var NAK = ["Aśvinī", "Bharaṇī", "Kṛttikā", "Rohiṇī", "Mṛgaśira", "Ārdrā", "Punarvasu", "Puṣya", "Āśleṣā", "Maghā",
     "Pūrva Phalgunī", "Uttara Phalgunī", "Hasta", "Citrā", "Svātī", "Viśākhā", "Anurādhā", "Jyeṣṭhā", "Mūla",
     "Pūrva Āṣāḍhā", "Uttara Āṣāḍhā", "Śravaṇa", "Dhaniṣṭhā", "Śatabhiṣā", "Pūrva Bhādrapadā", "Uttara Bhādrapadā", "Revatī"];
-  function nakOf(L) { L = norm(L); var i = Math.floor(L / (40 / 3)); return NAK[i] + " " + (Math.floor((L % (40 / 3)) / (10 / 3)) + 1); }
+  /* the site's nakṣatra system (nak-system.js, in engine.js): equal unless the
+     reader chose unequal in Settings. The page's own "nearest star" and
+     "Abhijit-28" conventions sit on top of it. */
+  function NKS(L) { if (window.NNak) return window.NNak.at(L);
+    var w = 40 / 3, x = norm(L), i = Math.floor(x / w), f = (x - i * w) / w;
+    return { i: i, d: i, start: i * w, end: (i + 1) * w, frac: f, pada: Math.floor(f * 4) + 1 }; }
+  function NKE() { if (window.NNak) return window.NNak.edges();
+    var o = []; for (var k = 0; k < 27; k++) o.push({ i: k, start: k * 40 / 3, end: (k + 1) * 40 / 3 }); return o; }
+  function nakNm(i) { return i === 27 ? "Abhijit" : NAK[i]; }
+  function nakOf(L) { var k = NKS(L); return nakNm(k.i) + " " + k.pada; }
   var G = [["Sūrya", "Sun", "Su"], ["Candra", "Moon", "Mo"], ["Maṅgala", "Mars", "Ma"], ["Budha", "Mercury", "Me"],
            ["Guru", "Jupiter", "Ju"], ["Śukra", "Venus", "Ve"], ["Śani", "Saturn", "Sa"], ["Rāhu", "Rahu", "Ra"], ["Ketu", "Ketu", "Ke"]];
   var COL = { "Sūrya": "#d08a1e", "Candra": "#8a93a8", "Maṅgala": "#c0392b", "Budha": "#2e8b57", "Guru": "#c9a24b",
@@ -285,7 +294,7 @@
         return { i: s1, adhika: false, ksaya: (s1 - s0 + 12) % 12 > 1 };
       }
       var fm = syzygy(a + DAY, 180, +1);
-      var nq = fm ? Math.floor(norm(K.longitude("Candra", fm) + shiftOf(fm)) / (40 / 3)) : 0;
+      var nq = fm ? NKS(norm(K.longitude("Candra", fm) + shiftOf(fm))).d : 0;
       return { i: NAK2MON[nq], adhika: false, fm: fm, nak: NAK[nq] };
     };
     var amM = nm0 && nm1 ? monthOf(nm0, nm1) : null, mon = amM;
@@ -394,20 +403,21 @@
       h.push('<line class="ks-ring" x1="' + f1(a[0]) + '" y1="' + f1(a[1]) + '" x2="' + f1(b[0]) + '" y2="' + f1(b[1]) + '"/>');
       h.push('<text class="ks-sign" x="' + f1(t[0]) + '" y="' + f1(t[1]) + '">' + esc(RS[s].slice(0, 3)) + "</text>");
     }
-    for (var n = 0; n < 27; n++) {
-      var L0 = n * 40 / 3, u = P(L0, R1), v = P(L0, R2), tn = P(L0 + 20 / 3, (R1 + R2) / 2);
+    /* the divisions as the site's nakṣatra system draws them (equal or unequal) */
+    NKE().forEach(function (e) {
+      var n = e.i, L0 = e.start, u = P(L0, R1), v = P(L0, R2), tn = P((e.start + e.end) / 2, (R1 + R2) / 2);
       h.push('<line class="ks-nakline" x1="' + f1(u[0]) + '" y1="' + f1(u[1]) + '" x2="' + f1(v[0]) + '" y2="' + f1(v[1]) + '"/>');
-      h.push('<text class="ks-nak" x="' + f1(tn[0]) + '" y="' + f1(tn[1]) + '"><title>' + esc(NAK[n]) + ": " + (n * 40 / 3).toFixed(2) + "° – " +
-        ((n + 1) * 40 / 3).toFixed(2) + "°</title>" + esc(NAKS[n]) + "</text>");
-    }
+      h.push('<text class="ks-nak" x="' + f1(tn[0]) + '" y="' + f1(tn[1]) + '"><title>' + esc(nakNm(n)) + ": " + e.start.toFixed(2) + "° – " +
+        e.end.toFixed(2) + "°</title>" + esc(n === 27 ? "Abh" : NAKS[n]) + "</text>");
+    });
     /* the junction stars, where they stood on this date; one outside its own
        13°20′ division is marked, since that is where "nakṣatra" as a star and
        "nakṣatra" as a division part company */
     var ys = (yogataras(ST.ms) || []).map(function (y) { var o = {}; for (var q in y) o[q] = y[q]; o.lon = norm(y.lon + (ST.shift || 0)); return o; });
     ys.forEach(function (y) {
       if (y.nak === "Abhijit" && !ABHIJIT) return;
-      var own = y.nak === "Abhijit" ? true : Math.floor(y.lon / (40 / 3)) === y.i, k0 = P(y.lon, R2), k1 = P(y.lon, R2 + 6), sp = P(y.lon, R2 + 11);
-      var where = NAK[Math.floor(y.lon / (40 / 3))];
+      var own = y.nak === "Abhijit" ? true : NKS(y.lon).i === y.i, k0 = P(y.lon, R2), k1 = P(y.lon, R2 + 6), sp = P(y.lon, R2 + 11);
+      var where = nakNm(NKS(y.lon).i);
       h.push('<g class="ks-yt' + (own ? "" : " out") + '"><title>' + esc(y.nak + " · " + y.star + " (" + y.bayer + ", mag " + y.mag.toFixed(1) + ") · " +
         y.lon.toFixed(2) + "°, latitude " + y.lat.toFixed(1) + "° · " + (y.nak === "Abhijit" ? "Abhijit's star" : own ? "inside its own division" :
         "outside its own division: it stands in " + where)) + "</title>" +
@@ -475,7 +485,7 @@
       h.push('<text class="ks-glyph" x="' + f1(k[0]) + '" y="' + f1(k[1] - rr - 5) + '">' + g[2] + "</text></g>");
     });
     h.push("</svg>");
-    var outN = ys.filter(function (y) { return y.nak !== "Abhijit" && Math.floor(y.lon / (40 / 3)) !== y.i; }).length;
+    var outN = ys.filter(function (y) { return y.nak !== "Abhijit" && NKS(y.lon).i !== y.i; }).length;
     $("ks-wheel").innerHTML = h.join("") + '<p class="ks-legend"><span>image: Kālasetu</span><span>' + (modN ? "dotted ring: the modern engine, drawn where it differs by more than 1°, with the difference (" + modN + ")" :
       "the modern engine agrees within 1° for every graha") + "</span>" +
       "<span>As: the lagna</span><span>Meṣa at the left, counter-clockwise</span>" +
@@ -1159,16 +1169,17 @@
       d.sort(function (a, b) { return a.d - b.d; });
       if (d.length > 1) return { i: d[0].i, m: (d[1].d - d[0].d) / 2 };
     }
-    var w = 40 / 3, i = Math.floor(L / w), x = L - i * w;
-    return { i: i, m: Math.min(x, w - x) };
+    var k = NKS(L);
+    return { i: k.i, m: Math.min(L - k.start, k.end - L) };
   }
   /* the shortest arc from L into the arc [a, a + w) */
   function arcTo(L, a, w) { var x = norm(L - a); return x < w ? 0 : Math.min(x - w, 360 - x); }
   function nakDist(L, i, ms) {
     /* by the nearest star the divisions are uneven, so the skip is kept small */
     if (CONV.nak === "star") { var n = nakAt(L, ms); return n.i === i ? 0 : Math.max(0.01, Math.abs(sdiff(L, (i + 0.5) * 40 / 3)) - 30); }
-    if (i === 27) return arcTo(L, 276 + 40 / 60, 4 + 13 / 60 + 20 / 3600);
-    return arcTo(L, i * 40 / 3, 40 / 3);
+    if (i === 27 && CONV.nak === "abhijit") return arcTo(L, 276 + 40 / 60, 4 + 13 / 60 + 20 / 3600);
+    var e = NKE().filter(function (q) { return q.i === i; })[0];
+    return e ? arcTo(L, e.start, e.end - e.start) : 360;
   }
   var MONTH_CACHE = { a: 0, b: -1, i: -1 }, ECL_CACHE = {};
   /* the next (dir +1) or previous (dir −1) instant the elongation reaches tgt:
@@ -1189,7 +1200,7 @@
         return s0 === s1 ? -1 : s1;                     /* an adhika month matches no name */
       }
       var fm = syz(x + DAY, 180, +1);
-      return fm ? NAK2MON[Math.floor(norm(K.longitude("Candra", fm) + shiftOf(fm)) / (40 / 3))] : -1;
+      return fm ? NAK2MON[NKS(norm(K.longitude("Candra", fm) + shiftOf(fm))).d] : -1;
     };
     var i = nameOf(nm0, nm1);
     if (CONV.msys === "purnimanta") {
@@ -1541,7 +1552,7 @@
       if (stopped) { $("ks-clsum").innerHTML = "<b>Stopped.</b> Nothing below is complete."; }
       else $("ks-clsum").innerHTML = "Searched " + esc(yearLabel(new Date(a).getUTCFullYear())) + " – " + esc(yearLabel(new Date(b).getUTCFullYear())) +
         " (" + Math.round(yrs).toLocaleString("en") + " years) in " + secs + " s, under " + FRAME_NAME[CONV.frame] + ", " +
-        { equal: "equal nakṣatras", star: "nakṣatra by the nearest junction star", abhijit: "28 nakṣatras with Abhijit" }[CONV.nak] + ", the " + CONV.node + " node, " +
+        { equal: (window.NNak ? window.NNak.label() : "equal nakṣatras"), star: "nakṣatra by the nearest junction star", abhijit: "28 nakṣatras with Abhijit" }[CONV.nak] + ", the " + CONV.node + " node, " +
         (CONV.msys === "amanta" ? "amānta" : "pūrṇimānta") + " months named by " + (CONV.mname === "solar" ? "saṅkrānti" : "the full moon's nakṣatra") + ".";
       $("ks-clres").innerHTML = out.map(function (o) {
         var rd = o.rd, eps = o.res.episodes, per = eps.length / yrs * 1000;
