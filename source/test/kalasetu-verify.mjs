@@ -429,9 +429,9 @@ head("The Kālasetu page");
     const names = pts.map((q) => q[2]);
     const c = document.getElementById("ks-starnames"); c.checked = false; c.dispatchEvent(new Event("change")); const off = T().length;
     const c2 = document.getElementById("ks-starnames"); c2.checked = true; c2.dispatchEvent(new Event("change"));
-    return { n: names.length, close, off, has: ["Aldebaran", "Spica", "Regulus", "Antares", "Pollux"].every((x) => names.includes(x)) }; });
+    return { n: names.length, close, off, has: ["Rohiṇī / Aldebaran", "Citrā / Spica", "Maghā / Regulus", "Jyeṣṭhā / Antares", "Punarvasu / Pollux", "Āśleṣā / ε Hya", "Bharaṇī / 41 Ari"].every((x) => names.includes(x)) }; });
   is(sn.n === 27 && sn.has && sn.close > 6 && sn.off === 0,
-     `the wheel names all 27 junction stars (Aldebaran, Spica, Regulus …), no two names closer than ${sn.close.toFixed(1)} units, and the names can be switched off`);
+     `the wheel names all 27 junction stars, Sanskrit / English (Rohiṇī / Aldebaran, Citrā / Spica …; Āśleṣā / ε Hya where the English is the Sanskrit again), no two names closer than ${sn.close.toFixed(1)} units, and the names can be switched off`);
   /* the modern engine's ring: absent where the engines agree, drawn and labelled where they part, all nine on request */
   const md = await p.evaluate(() => {
     const n = () => document.querySelectorAll("#ks-wheel .ks-mod").length, out = { now: n(), leg: document.querySelector("#ks-wheel .ks-legend").textContent };

@@ -392,7 +392,7 @@
     var P = function (L, r) { var a = (180 + L) * Math.PI / 180; return [c + r * Math.cos(a), c - r * Math.sin(a)]; };
     var f1 = function (v) { return v.toFixed(1); };
     /* a margin round the wheel for the stars' names */
-    var M = STARNAMES ? 44 : 0;
+    var M = STARNAMES ? 74 : 0;
     h.push('<svg viewBox="' + (-M) + " " + (-M) + " " + (W + 2 * M) + " " + (W + 2 * M) + '" role="img" aria-label="The grahas, the rāśis, the 27 nakṣatras and their junction stars on one wheel">');
     [R0, R1, R2].forEach(function (r) { h.push('<circle class="ks-ring" cx="' + c + '" cy="' + c + '" r="' + r + '"/>'); });
     /* Abhijit, between Uttara Āṣāḍhā's last quarter and Śravaṇa's first fifteenth */
@@ -418,6 +418,13 @@
        "nakṣatra" as a division part company */
     var ys = (yogataras(ST.ms) || []).map(function (y) { var o = {}; for (var q in y) o[q] = y[q]; o.lon = norm(y.lon + (ST.shift || 0)); return o; });
     /* the name runs outward along the star's radius, turned on the left half so it never reads upside down */
+    /* "Sanskrit / English": the nakṣatra the star marks, then its Western name;
+       where that name is only the Sanskrit one again (Bharani, Ashlesha, Revati),
+       the catalogue designation instead */
+    var starLabel = function (y) {
+      var sanskritAgain = { Bharani: 1, Ashlesha: 1, Revati: 1 };
+      return y.nak + " / " + (sanskritAgain[y.star] ? y.bayer : y.star);
+    };
     /* names closer than GAP degrees are pushed apart (the star stays where it is) */
     var GAP = 3.6, shown = ys.filter(function (y) { return y.nak !== "Abhijit" || ABHIJIT; }).sort(function (a, b) { return a.lon - b.lon; });
     shown.forEach(function (y) { y.tl = y.lon; });
@@ -434,7 +441,7 @@
       var L = y.tl != null ? y.tl : y.lon, q = P(L, R2 + 17), ang = ((-(180 + L)) % 360 + 360) % 360, end = ang > 90 && ang < 270;
       if (end) ang -= 180;
       return '<text class="ks-ytn" x="' + f1(q[0]) + '" y="' + f1(q[1]) + '" text-anchor="' + (end ? "end" : "start") +
-        '" transform="rotate(' + f1(ang) + " " + f1(q[0]) + " " + f1(q[1]) + ')">' + esc(y.star) + "</text>";
+        '" transform="rotate(' + f1(ang) + " " + f1(q[0]) + " " + f1(q[1]) + ')">' + esc(starLabel(y)) + "</text>";
     };
     ys.forEach(function (y) {
       if (y.nak === "Abhijit" && !ABHIJIT) return;
