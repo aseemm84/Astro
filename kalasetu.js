@@ -2481,7 +2481,7 @@
   var OWN = { "Sūrya": [4], "Candra": [3], "Maṅgala": [0, 7], "Budha": [2, 5], "Guru": [8, 11], "Śukra": [1, 6], "Śani": [9, 10] };
   var GN = G.map(function (g) { return g[0]; });
   /* the catalogue's searchable readings; the ids, references and wording follow
-     the sheet. Claims that no search can test are listed with the reason. */
+     the sheet. Claims no search can test stay in the sheet and are not offered here. */
   var CLAIMS = [
     { id: "C01", ref: "MBh 5.141.7", sky: "Saturn afflicts Rohiṇī", readings: [
       { id: "A", label: "Śani inside Rohiṇī's division", conds: [{ g: "Śani", rel: "nak", v: 3 }] },
@@ -2505,7 +2505,6 @@
         conds: [{ g: "", rel: "eclipse", v: "solar" }, { g: "Śukra", rel: "nak", v: 14 }] },
       { id: "B", label: "a solar eclipse, and Ketu in Svātī, within 30 days", mode: "within", days: 30,
         conds: [{ g: "", rel: "eclipse", v: "solar" }, { g: "Ketu", rel: "nak", v: 14 }] }] },
-    { id: "C08", ref: "MBh 6.3.12", sky: "A dhūmaketu assails Puṣya", none: "a comet cannot be computed this far back" },
     { id: "C09", ref: "MBh 6.3.13", sky: "Mars retrograde in Maghā; Jupiter in Śravaṇa", readings: [
       { id: "A", label: "Maṅgala retrograde in Maghā while Guru is in Śravaṇa", conds: [{ g: "Maṅgala", rel: "retro", v: 9 }, { g: "Guru", rel: "nak", v: 21 }] }] },
     { id: "C10", ref: "MBh 6.3.14", sky: "Saturn afflicts Pūrva Phalgunī; Venus on Pūrva Bhādrapadā", readings: [
@@ -2518,7 +2517,6 @@
         conds: [{ g: "Śani", rel: "nearstar", v: 15, tol: 6 }, { g: "Guru", rel: "nearstar", v: 15, tol: 6 }] },
       { id: "B", label: "Guru within 6° of Śani, both in Viśākhā's division",
         conds: [{ g: "Śani", rel: "nak", v: 15 }, { g: "Guru", rel: "nak", v: 15 }, { g: "Guru", rel: "neargraha", v: "Śani", tol: 6 }] }] },
-    { id: "C13", ref: "MBh 6.3.26", sky: "Kṛttikā called the first nakṣatra", none: "a list order or an equinox epoch, not a graha position" },
     { id: "C14", ref: "MBh 6.3.28–29", sky: "Sun and Moon both eclipsed in one month", readings: [
       { id: "A", label: "a lunar and a solar eclipse within 15 days", mode: "within", days: 15,
         conds: [{ g: "", rel: "eclipse", v: "lunar" }, { g: "", rel: "eclipse", v: "solar" }] }] },
@@ -2527,16 +2525,11 @@
     { id: "C16", ref: "MBh 14.86.4, 14.86.8", sky: "Māgha dvādaśī; Māgha full moon", readings: [
       { id: "A", label: "Śukla Dvādaśī in Māgha (yearly)", conds: [{ g: "", rel: "month", v: 10 }, { g: "", rel: "tithi", v: 12 }] },
       { id: "B", label: "Pūrṇimā in Māgha (yearly)", conds: [{ g: "", rel: "month", v: 10 }, { g: "", rel: "tithi", v: 15 }] }] },
-    { id: "C17", ref: "MBh 6.114.88–94", sky: "Bhīṣma waits for uttarāyaṇa", none: "needs a war date first; then read the days to each kind of uttarāyaṇa" },
     { id: "C18", ref: "Bhāgavata 12.2.24", sky: "Moon, Sun, Tiṣya and Jupiter in one rāśi", readings: [
       { id: "A", label: "new moon with Sūrya, Candra and Guru in Karka (the rāśi holding Puṣya)",
         conds: [{ g: "Guru", rel: "rasi", v: 3 }, { g: "Sūrya", rel: "rasi", v: 3 }, { g: "", rel: "tithi", v: 30 }, { g: "Candra", rel: "rasi", v: 3 }] },
       { id: "B", label: "Sūrya, Candra and Guru all in Puṣya",
         conds: [{ g: "Guru", rel: "nak", v: 7 }, { g: "Sūrya", rel: "nak", v: 7 }, { g: "Candra", rel: "nak", v: 7 }] }] },
-    { id: "C19", ref: "Bhāgavata 12.2.27–28", sky: "Saptarṣis 100 years per nakṣatra", none: "a counting convention, not a motion of the sky" },
-    { id: "C20", ref: "Bhāgavata 12.2.29–33", sky: "Kali begins as Kṛṣṇa departs", none: "the epoch is a computed date: see the Kali row under “Checked against recorded history”" },
-    { id: "C21", ref: "Bhāgavata 12.2.32", sky: "Saptarṣis from Maghā to Pūrvāṣāḍhā", none: "arithmetic on the Saptarṣi count, not a search" },
-    { id: "C22", ref: "MBh 13.88.12; Bhāgavata 7.14.20–21", sky: "Rites on set tithis", none: "a rule for when rites are good, not a dated event" },
     /* the Vālmīki Rāmāyaṇa: the Baroda Critical Edition (GRETIL, Tokunaga/Smith),
        except R01, which that edition leaves out and the vulgate gives */
     { id: "R01", ref: "Rāmāyaṇa 1.18.8–10 (vulgate; not in the critical edition)", sky: "Rāma's birth: Caitra navamī, Punarvasu, five grahas exalted, Guru with the Moon", readings: [
@@ -2555,15 +2548,12 @@
         conds: [{ g: "Rāhu", rel: "neargraha", v: "Sūrya", tol: 13.3 }, { g: "Maṅgala", rel: "neargraha", v: "Sūrya", tol: 13.3 }] },
       { id: "B", label: "reading A, at the same moment as R02 (Caitra, Candra in Punarvasu)",
         conds: [{ g: "Rāhu", rel: "neargraha", v: "Sūrya", tol: 13.3 }, { g: "Maṅgala", rel: "neargraha", v: "Sūrya", tol: 13.3 }, { g: "", rel: "month", v: 0 }, { g: "Candra", rel: "nak", v: 6 }] }] },
-    { id: "R04", ref: "Rāmāyaṇa 3.22.11", sky: "Svarbhānu seized the Sun before the battle with Khara", none: "the text says it happened apārvaṇi, not at a new moon, so it is an omen; no eclipse can happen then" },
-    { id: "R05", ref: "Rāmāyaṇa 4.26.18", sky: "Rāma waits for śarad as the rains begin", none: "a season, not a position of the grahas" },
     { id: "R06", ref: "Rāmāyaṇa 6.4.3–4", sky: "The army sets out: Uttara Phalgunī today, Hasta tomorrow", readings: [
       { id: "A", label: "Candra in Uttara Phalgunī (monthly: useful once a year and month are fixed)", conds: [{ g: "Candra", rel: "nak", v: 11 }] }] },
     { id: "R07", ref: "Rāmāyaṇa 6.4.46", sky: "Mūla, the rākṣasas' nakṣatra, touched by a dhūmaketu", readings: [
       { id: "A", label: "Ketu in Mūla (reading dhūmaketu as the node; a comet cannot be computed)", conds: [{ g: "Ketu", rel: "nak", v: 18 }] }] },
     { id: "R08", ref: "Rāmāyaṇa 6.90.27", sky: "Budha stands assailing Rohiṇī during the last battle", readings: [
-      { id: "A", label: "Budha in Rohiṇī", conds: [{ g: "Budha", rel: "nak", v: 3 }] }] },
-    { id: "R09", ref: "Rāmāyaṇa 3.44.9; 5.17.8; 5.31.6", sky: "Śani approaching Citrā; Rohiṇī afflicted by a graha", none: "similes describing Sītā, not the sky on a day" }
+      { id: "A", label: "Budha in Rohiṇī", conds: [{ g: "Budha", rel: "nak", v: 3 }] }] }
   ];
   CLAIMS.forEach(function (c) { c.src = /^Rāmāyaṇa/.test(c.ref) ? "Rāmāyaṇa" : /^Bhāgavata/.test(c.ref) ? "Bhāgavata" : "Mahābhārata"; });
   /* what each relation means, how the builder offers it, and how it reads aloud */
@@ -2939,14 +2929,13 @@
     return CLAIMS.filter(function (c) { return c.id === sel; })[0];
   }
   function drawPicker() {
-    /* grouped by text; the claims no search can test sit in their own group at
-       the end, each with the reason, so the catalogue stays complete */
+    /* grouped by text; only claims a search can test are offered (the sheet
+       keeps the rest: comets, similes, seasons, rites, counting conventions) */
     var grp = function (label, list) { return list.length ? '<optgroup label="' + esc(label) + '">' + list.map(function (c) {
       return '<option value="' + c.id + '"' + (c.none ? " disabled" : "") + ">" + esc(c.id + " · " + c.ref + " · " + c.sky + (c.none ? " — " + c.none : "")) + "</option>"; }).join("") + "</optgroup>" : ""; };
     var can = CLAIMS.filter(function (c) { return !c.none; });
     $("ks-claim").innerHTML = opt("mine", "Your own claim (build it below)", false) +
-      ["Mahābhārata", "Bhāgavata", "Rāmāyaṇa"].map(function (t) { return grp(t, can.filter(function (c) { return c.src === t; })); }).join("") +
-      grp("In the catalogue, but no search can test these", CLAIMS.filter(function (c) { return c.none; }));
+      ["Mahābhārata", "Bhāgavata", "Rāmāyaṇa"].map(function (t) { return grp(t, can.filter(function (c) { return c.src === t; })); }).join("");
     $("ks-claim").value = "C12";
     pickerChanged();
   }
