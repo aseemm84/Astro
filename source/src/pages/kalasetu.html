@@ -74,6 +74,37 @@ longitude &mdash; so for an ancient moment that is the natural choice.</p>
     <option value="deep">Deep &middot; 13000 &ndash; 8000 BCE</option></select></label>
   <span class="ayread" id="ks-fitread"></span>
 </div>
+<details class="ks-conv" id="ks-convbox" open>
+  <summary><b>Conventions</b> &mdash; every choice the readings below depend on, made explicit</summary>
+  <div class="aybar ks-convgrid">
+    <label>Calendar <select id="ks-cal" class="swin">
+      <option value="greg" selected>proleptic Gregorian</option><option value="jul">Julian</option></select></label>
+    <label>Frame <select id="ks-frame" class="swin">
+      <option value="samanvaya_ecliptic" selected>Samanvaya&ndash;Ecliptic (K&amacr;lasetu&rsquo;s own; &Amacr;ryabha&#7789;a&rsquo;s)</option>
+      <option value="lahiri">Lahiri (Citrāpak&#7779;a, by formula)</option>
+      <option value="citra_star">Citrā at 180&deg; by the star itself, on the date</option></select></label>
+    <label>Rāhu&ndash;Ketu <select id="ks-nodeconv" class="swin">
+      <option value="mean" selected>mean node</option><option value="true">true node</option></select></label>
+    <label>Nak&#7779;atra <select id="ks-nakconv" class="swin">
+      <option value="equal" selected>equal division, 13&deg;20&prime;</option>
+      <option value="star">nearest junction star</option>
+      <option value="abhijit">28, with Abhijit</option></select></label>
+    <label>Month ends at <select id="ks-msys" class="swin">
+      <option value="amanta" selected>new moon (amānta)</option><option value="purnimanta">full moon (pūr&#7751;imānta)</option></select></label>
+    <label>Month named by <select id="ks-mname" class="swin">
+      <option value="fullmoon" selected>the full moon&rsquo;s nak&#7779;atra</option><option value="solar">the Sun&rsquo;s entry into a rāśi (sa&#7749;krānti)</option></select></label>
+    <label>&#7770;tu <select id="ks-rtu" class="swin">
+      <option value="lunar" selected>by lunar month (Vasanta = Caitra, Vaiśākha)</option>
+      <option value="sayana330">by the Sun, sāyana (Vasanta from 330&deg;)</option>
+      <option value="sayana0">by the Sun, sāyana (Vasanta from 0&deg;)</option>
+      <option value="nirayana">by the Sun, nirayana (Vasanta = Me&#7779;a, V&#7771;&#7779;abha)</option></select></label>
+  </div>
+  <p class="k-note">Each of these changes what a text&rsquo;s words point to in the sky. The frame moves every
+  sign and nak&#7779;atra boundary by up to a few degrees. Whether a nak&#7779;atra is a division or a star
+  decides which one a graha is &ldquo;in&rdquo;. Lunar months drift against the seasons by precession,
+  about 1&deg; in 72 years. So the same month name means a different season ten thousand years ago,
+  and the &#7771;tu choice shows by how much. Nothing on this page assumes one answer.</p>
+</details>
 <div class="aybar ks-when">
   <label>Era <select id="ks-era" class="swin"><option value="CE">CE</option><option value="BCE">BCE</option></select></label>
   <label>Year <input type="number" id="ks-year" class="swin" min="1" max="13000" step="1" value="2026"></label>
@@ -119,6 +150,7 @@ longitude &mdash; so for an ancient moment that is the natural choice.</p>
   </div>
 </div>
 <p class="k-note" id="ks-skynote"></p>
+<p class="k-note ks-panc" id="ks-panc"></p>
 
 <h2 id="pipeline">How one longitude is made<span class="kdeva">गणित-क्रमः</span></h2>
 
@@ -154,6 +186,19 @@ error against the same reference, and how well the Earth&rsquo;s clock is known.
 </div>
 <div id="ks-eras"></div>
 <p class="k-note" id="ks-erasnote"></p>
+
+<h2 id="history">Checked against recorded history<span class="kdeva">इतिहास-परीक्षा</span></h2>
+
+<p>An ephemeris fitted to another ephemeris still has to meet the sky people actually saw. These are
+events written down at the time, or soon after, whose dates historians fix independently of any
+ephemeris: eclipses in Assyrian, Babylonian and Greek records, a planetary gathering, and one claim
+from the Indian tradition itself. Every row is computed by K&amacr;lasetu in your browser now. Dates are
+in the Julian calendar, as the records use them. For an eclipse, a new or full moon on the recorded day
+with the Moon this close to the ecliptic means the eclipse happened, and the altitude says the
+Sun or Moon was up where it was seen. Exactly when in the day carries &Delta;T&rsquo;s uncertainty,
+given beside each.</p>
+<div id="ks-history"></div>
+<p class="k-note" id="ks-historynote"></p>
 
 <h2 id="accuracy">How close, across the span<span class="kdeva">सूक्ष्मता</span></h2>
 
@@ -310,5 +355,8 @@ for the Samanvaya&ndash;Ecliptic frame, and <a href="kundli.html">Kundli 2.0</a>
 with K&amacr;lasetu (Engine &rarr; K&amacr;lasetu Siddh&amacr;nta).</p>
 
 <script src="engine.js" defer></script>
+<!-- the lit graha surfaces Kundli and the workstation draw (54-motion-bodies.js,
+     sp-bodies.js, graha-sprite.js); the wheel falls back to lettered discs without it -->
+<script src="bodies.js" defer></script>
 <script src="places.js" defer></script>
 <script src="kalasetu.js" defer></script>

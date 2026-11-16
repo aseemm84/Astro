@@ -413,6 +413,36 @@ head("The Kālasetu page");
     return [before, document.getElementById("ks-moonerr").textContent]; });
   const num = t => { const m = t.match(/typically ([\d.]+)(°|′)/); return m ? (+m[1]) * (m[2] === "°" ? 60 : 1) : NaN; };
   is(num(mo[1]) > 20 * num(mo[0]), `without Candraśekhara's three terms the Moon goes from ${num(mo[0]).toFixed(2)}′ to ${num(mo[1]).toFixed(0)}′`);
+  /* the wheel: nakṣatra ring, 27 yogatāras, Abhijit, graha images */
+  await p.waitForFunction(() => window.NSprite && window.NSprite.ready(), null, { timeout: 30000 }).catch(() => {});
+  await p.evaluate(() => window.__ksPage.setMoment(Date.UTC(2026, 10, 16, 6, 0)));
+  const wh = await p.evaluate(() => ({ dots: document.querySelectorAll("#ks-wheel .ks-dot").length, art: document.querySelectorAll("#ks-wheel image.ks-art").length,
+    yt: document.querySelectorAll("#ks-wheel .ks-yt").length, naks: document.querySelectorAll("#ks-wheel .ks-nak").length,
+    abhi: !!document.querySelector("#ks-wheel .ks-abhijit") }));
+  is(wh.dots === 9 && wh.yt === 27 && wh.naks >= 27, `the wheel draws 9 grahas, 27 nakṣatra labels (${wh.naks}) and 27 yogatāras (${wh.yt})`);
+  is(wh.art === 9, `the grahas are drawn with the site's graha images (${wh.art} of 9)`);
+  /* the conventions: today's pañcāṅga, the Julian Kali epoch, and switches that keep the table whole */
+  const cv = await p.evaluate(() => {
+    const out = { today: document.getElementById("ks-panc").textContent };
+    window.__ksPage.conv("msys", "purnimanta"); out.purn = document.getElementById("ks-panc").textContent; window.__ksPage.conv("msys", "amanta");
+    window.__ksPage.conv("cal", "jul");
+    const set = (id, v) => { const el = document.getElementById(id); el.value = v; el.dispatchEvent(new Event("change", { bubbles: true })); };
+    set("ks-tmode", "ut"); set("ks-era", "BCE"); set("ks-year", "3102"); set("ks-month", "2"); set("ks-day", "18"); set("ks-time", "00:00");
+    out.kali = document.getElementById("ks-panc").textContent; out.kalims = window.__ksPage.state().ms;
+    out.rows = [];
+    for (const [k, v] of [["node", "true"], ["frame", "lahiri"], ["frame", "citra_star"], ["nak", "star"]]) {
+      window.__ksPage.conv(k, v); out.rows.push(document.querySelectorAll("#ks-skytab tbody tr").length); }
+    for (const [k, v] of [["node", "mean"], ["frame", "samanvaya_ecliptic"], ["nak", "equal"], ["cal", "greg"]]) window.__ksPage.conv(k, v);
+    return out; });
+  is(/Kārttika/.test(cv.today) && /Śukla/.test(cv.today) && /Saptamī/.test(cv.today), `16 Nov 2026 reads Kārttika Śukla Saptamī (${cv.today.slice(0, 60)})`);
+  is(/Kārttika|Mārgaśīrṣa/.test(cv.purn), "the pūrṇimānta month system renames the month");
+  is(Math.abs(cv.kalims / 86400000 + 2440587.5 - 588465.5) < 0.01 && /Caitra/.test(cv.kali) && /Pratipadā/.test(cv.kali),
+     `Julian 18 Feb 3102 BCE, 0h UT, is the Kali epoch and reads Caitra … Pratipadā (${cv.kali.slice(0, 60)})`);
+  is(cv.rows.every(n => n === 11), `switching node, frame and nakṣatra conventions keeps all 11 sky rows (${cv.rows.join(", ")})`);
+  /* checked against recorded history */
+  const hi = await p.evaluate(() => { const tr = [...document.querySelectorAll("#ks-history tbody tr")];
+    return { n: tr.length, ok: tr.filter(r => /^reproduced$/.test(r.lastElementChild.textContent.trim())).length }; });
+  is(hi.n === 7 && hi.ok === 6, `the history table has 5 eclipses, the 7 BCE triple conjunction and the Kali epoch, with ${hi.ok} reproduced`);
   is(errs.length === 0, `no page errors (${errs.join("; ")})`);
   const ph = await browser.newPage({ viewport: { width: 400, height: 900 } });
   await ph.goto("file://" + ROOT + "/kalasetu.html");

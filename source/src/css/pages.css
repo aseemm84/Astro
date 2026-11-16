@@ -2635,3 +2635,23 @@ html[data-caution="off"] .krect{display:none}
 .ks-bar.ex{opacity:.45}
 .ks-fitbar{display:flex;flex-wrap:wrap;gap:.5rem 1rem;align-items:center}
 .ks-era td:first-child{white-space:nowrap}
+
+/* Kālasetu wheel: the nakṣatra ring, its junction stars, the graha surfaces */
+.ks-nakline{stroke:var(--border-2,#d8d8e6);stroke-width:.6}
+.ks-nak{font-size:6.4px;fill:var(--text-soft,#4a4e68);text-anchor:middle;dominant-baseline:central}
+.ks-yt line{stroke:var(--accent,#c9a24b);stroke-width:1}
+.ks-yt polygon{fill:var(--accent,#c9a24b)}
+.ks-yt.out line{stroke:var(--sem-bad,#a1493a)}
+.ks-yt.out polygon{fill:var(--sem-bad,#a1493a)}
+.ks-ytk{color:var(--accent,#c9a24b)}
+.ks-ytk.out{color:var(--sem-bad,#a1493a)}
+.ks-abhijit{fill:color-mix(in srgb,var(--sem-info,#3f6fa6) 22%,transparent);stroke:var(--sem-info,#3f6fa6);stroke-width:.6}
+.ks-abhi{display:inline-flex;gap:.3rem;align-items:center;cursor:pointer}
+.ks-graha .ks-mod{stroke-dasharray:2 1.6;stroke-width:.9;opacity:.75}
+.ks-asct{font-size:7.5px}
+.ks-conv{border:1px solid var(--border-2,#d8d8e6);border-radius:8px;padding:.5rem .8rem;margin:.6rem 0}
+.ks-conv summary{cursor:pointer}
+.ks-convgrid{display:flex;flex-wrap:wrap;gap:.5rem 1rem;margin-top:.5rem}
+.ks-convgrid label{display:flex;flex-direction:column;gap:.15rem;font-size:.85rem;min-width:0}
+.ks-convgrid select{max-width:100%}
+.ks-panc{border-left:3px solid var(--accent,#c9a24b);padding-left:.6rem}
