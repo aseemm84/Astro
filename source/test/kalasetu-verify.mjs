@@ -455,6 +455,68 @@ head("The Kālasetu page");
   const hi = await p.evaluate(() => { const tr = [...document.querySelectorAll("#ks-history tbody tr")];
     return { n: tr.length, ok: tr.filter(r => /^reproduced$/.test(r.lastElementChild.textContent.trim())).length }; });
   is(hi.n === 7 && hi.ok === 6, `the history table has 5 eclipses, the 7 BCE triple conjunction and the Kali epoch, with ${hi.ok} reproduced`);
+  /* the claim search: known modern events found on their days, then the panel */
+  const cs = await p.evaluate(async () => {
+    const S = (conds, a, b, mode, days) => window.__ksPage.search({ conds, mode, days }, Date.UTC(a, 0, 1), Date.UTC(b, 11, 31))
+      .then(r => r.episodes.map(e => new Date(e.best).toISOString().slice(0, 10)));
+    const C = window.__ksPage.claims(), Y = y => { const t = new Date(Date.UTC(2000, 0, 1)); t.setUTCFullYear(y); return t.getTime(); };
+    const c12 = await window.__ksPage.search(C.find(c => c.id === "C12").readings[0], Y(-3999), Y(-1999));
+    return {
+      solar: await S([{ g: "", rel: "eclipse", v: "solar" }], 2017, 2017),
+      lunar: await S([{ g: "", rel: "eclipse", v: "lunar" }], 2018, 2018),
+      gc: await S([{ g: "Guru", rel: "neargraha", v: "Śani", tol: 1 }], 2019, 2021),
+      station: await S([{ g: "Maṅgala", rel: "station", v: -1 }], 2024, 2024),
+      caitra: await S([{ g: "", rel: "month", v: 0 }, { g: "", rel: "tithi", v: 15 }], 2025, 2025),
+      pair: await S([{ g: "", rel: "eclipse", v: "lunar" }, { g: "", rel: "eclipse", v: "solar" }], 2018, 2018, "within", 15),
+      c12: c12.episodes.length, c12cap: c12.capped,
+      n: C.length, none: C.filter(c => c.none).length,
+      opts: document.querySelectorAll("#ks-claim option").length, dis: document.querySelectorAll("#ks-claim option:disabled").length };
+  });
+  is(cs.solar.join() === "2017-02-26,2017-08-21", `the solar eclipses of 2017 are found on their days (${cs.solar.join(", ")})`);
+  is(cs.lunar.join() === "2018-01-31,2018-07-27", `the lunar eclipses of 2018 are found, and penumbral-only ones are not (${cs.lunar.join(", ")})`);
+  is(cs.gc.length === 1 && /^2020-12-2[01]/.test(cs.gc[0]), `the great conjunction of December 2020 is found (${cs.gc.join(", ")})`);
+  is(cs.station.length === 1 && /^2024-12-0[4-8]/.test(cs.station[0]), `Mars turning retrograde in December 2024 is found (${cs.station.join(", ")})`);
+  is(cs.caitra.join() === "2025-04-12", `Caitra Pūrṇimā 2025 is 12 April (${cs.caitra.join(", ")})`);
+  is(cs.pair.join() === "2018-01-31,2018-07-27", `"within 15 days" pairs each 2018 lunar eclipse with a solar eclipse a fortnight away (${cs.pair.join(", ")})`);
+  is(cs.c12 > 0 && cs.c12 < 100 && !cs.c12cap, `C12 reading A (Guru and Śani near Viśākhā's star) is found ${cs.c12} times in 4000 – 2000 BCE`);
+  is(cs.n === 22 && cs.opts === 23 && cs.dis === cs.none && cs.none === 7, `the picker offers your own claim and the 22 catalogue claims, 7 greyed out as not searchable`);
+  /* the panel: a catalogue claim through the buttons, then your own claim */
+  const ui = await p.evaluate(async () => {
+    const s = id => document.getElementById(id), out = {};
+    const wait = () => new Promise(r => { (function w() { if (!s("ks-clgo").disabled) r(); else setTimeout(w, 50); })(); });
+    s("ks-claim").value = "C01"; s("ks-claim").dispatchEvent(new Event("change"));
+    s("ks-cly0").value = "3000"; s("ks-clera0").value = "BCE"; s("ks-cly1").value = "2500"; s("ks-clera1").value = "BCE";
+    s("ks-clgo").click(); await wait();
+    out.heads = document.querySelectorAll(".ks-clh").length; out.rows = document.querySelectorAll(".ks-cltab tbody tr").length; out.sum = s("ks-clsum").textContent;
+    const btn = document.querySelector("[data-clshow]"); out.want = +btn.getAttribute("data-clshow"); btn.click(); out.got = window.__ksPage.state().ms;
+    s("ks-cledit").click(); out.edit = s("ks-claim").value + " " + document.querySelectorAll(".ks-cbrow").length + " " + s("ks-cbname").value;
+    /* a contradiction is refused before searching */
+    s("ks-cbadd").click();
+    const rows = document.querySelectorAll(".ks-cbrow");
+    const last = rows[rows.length - 1].querySelectorAll("select");
+    last[0].value = "Śani"; last[0].dispatchEvent(new Event("change", { bubbles: true }));
+    const l2 = document.querySelectorAll(".ks-cbrow")[1].querySelectorAll("select");
+    l2[2].value = "10"; l2[2].dispatchEvent(new Event("change", { bubbles: true }));
+    out.warn = s("ks-cbwarn").textContent;
+    s("ks-clgo").click(); out.refused = s("ks-clsum").textContent;
+    /* copy as text, change it, load it back */
+    s("ks-cbcopy").click(); await new Promise(r => setTimeout(r, 200));
+    out.text = s("ks-cbtext").value;
+    s("ks-cbtext").value = out.text.replace('"v":10', '"v":3'); s("ks-cbload").click(); out.loaded = s("ks-cbmsg").textContent; out.warn2 = s("ks-cbwarn").textContent;
+    s("ks-cbtext").value = "not a claim"; s("ks-cbload").click(); out.bad = s("ks-cbmsg").textContent;
+    /* kept only when ticked, and forgotten on request */
+    const has = () => { try { return localStorage.getItem("learnhoro.kalasetu.myclaim") != null; } catch (e) { return null; } };
+    out.before = has();
+    s("ks-cbkeep").checked = true; s("ks-cbkeep").dispatchEvent(new Event("change")); out.kept = has();
+    s("ks-cbforget").click(); out.forgot = has();
+    return out; });
+  is(ui.heads === 2 && ui.rows > 0 && /Searched 3000 BCE – 2500 BCE/.test(ui.sum), `searching C01 gives both readings their own list (${ui.rows} rows) and names the conventions used`);
+  is(ui.got === ui.want, "a match's Show button moves the wheel to its best moment");
+  is(/^mine 1 C01 A \(edited\)/.test(ui.edit), `"Edit as my own" copies the reading into the builder (${ui.edit})`);
+  is(/can never hold/.test(ui.warn) && /Not searched/.test(ui.refused), "a claim that puts Śani in Rohiṇī and Pūrva Phalgunī at once is flagged and not searched");
+  is(/^kalasetu-claim:1 \{/.test(ui.text) && ui.loaded === "Loaded." && ui.warn2 === "" && /not a Kālasetu claim/.test(ui.bad),
+     "copy as text gives a claim line that loads back, and other text is refused");
+  is(ui.before === false && ui.kept === true && ui.forgot === false, "your claim is kept in this browser only when ticked, and Forget removes it");
   is(errs.length === 0, `no page errors (${errs.join("; ")})`);
   const ph = await browser.newPage({ viewport: { width: 400, height: 900 } });
   await ph.goto("file://" + ROOT + "/kalasetu.html");

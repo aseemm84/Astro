@@ -2657,3 +2657,20 @@ html[data-caution="off"] .krect{display:none}
 .ks-convgrid label{display:flex;flex-direction:column;gap:.15rem;font-size:.85rem;min-width:0}
 .ks-convgrid select{max-width:100%}
 .ks-panc{border-left:3px solid var(--accent,#c9a24b);padding-left:.6rem}
+
+/* Kālasetu claim search */
+.ks-clbar{flex-wrap:wrap;gap:.5rem .9rem}
+#ks-claim{max-width:100%;min-width:0}
+#ks-reading{max-width:100%;min-width:0}
+.ks-clbar label{display:inline-flex;flex-wrap:wrap;gap:.35rem;align-items:center;min-width:0;max-width:100%}
+.ks-clbar input[type=number]{width:6.5em}
+#ks-clbar{width:12rem;max-width:100%}
+.ks-cbrow{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center;margin:.35rem 0}
+.ks-cbrow select{max-width:100%;min-width:0}
+.ks-cbrow input[type=number]{width:5.5em}
+.ks-cbtol{display:inline-flex;gap:.3rem;align-items:center}
+.ks-cbmeta{display:flex;flex-wrap:wrap;gap:.5rem 1rem}
+.ks-cbmeta label{display:flex;flex-direction:column;gap:.2rem;min-width:0;flex:1 1 12rem}
+.ks-cbtext{width:100%;box-sizing:border-box;font-family:ui-monospace,monospace;font-size:.8rem}
+.ks-clh{font-size:1rem;margin:1.1rem 0 .2rem}
+.ks-cltab td{vertical-align:top}

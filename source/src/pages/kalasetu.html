@@ -200,6 +200,67 @@ given beside each.</p>
 <div id="ks-history"></div>
 <p class="k-note" id="ks-historynote"></p>
 
+<h2 id="claims">Search the claims<span class="kdeva">वचन-परीक्षा</span></h2>
+
+<p>Pick a claim from the catalogue of what the Mah&amacr;bh&amacr;rata and the Bh&amacr;gavata say about the
+sky, or build one of your own, choose a range of years, and K&amacr;lasetu finds every stretch of time
+in it when the sky matched. Each reading of a claim is searched on its own; a verse that can be read
+two ways gives two lists, never one. The search uses the conventions set above (frame, nak&#7779;atra rule,
+node, month system), runs in your browser, and sends nothing anywhere.</p>
+
+<div class="aybar ks-clbar">
+  <label>Claim <select id="ks-claim" class="swin"></select></label>
+  <label>Reading <select id="ks-reading" class="swin"></select></label>
+  <button type="button" class="swbtn" id="ks-cledit">Edit as my own</button>
+</div>
+<div class="aybar ks-clbar">
+  <label>From <input id="ks-cly0" class="swin" type="number" min="1" max="13000" value="4000">
+    <select id="ks-clera0" class="swin"><option value="BCE" selected>BCE</option><option value="CE">CE</option></select></label>
+  <label>to <input id="ks-cly1" class="swin" type="number" min="1" max="13000" value="2000">
+    <select id="ks-clera1" class="swin"><option value="BCE" selected>BCE</option><option value="CE">CE</option></select></label>
+  <button type="button" class="swbtn" id="ks-clgo">Search</button>
+  <button type="button" class="swbtn" id="ks-clstop" disabled>Stop</button>
+  <progress id="ks-clbar" max="1" value="0" hidden></progress>
+</div>
+<p class="k-note" id="ks-cladvice"></p>
+
+<details class="ks-conv ks-cbox" id="ks-cbox">
+  <summary>Your own claim</summary>
+  <p class="k-note">Build a claim from conditions. It is not added to the catalogue or the engine. It lasts
+  for this visit unless you tick &ldquo;keep in this browser&rdquo;, and then it is kept only in your own browser.
+  &ldquo;Copy as text&rdquo; gives a line you can paste back here later, on another device, or into a chat to have
+  it added to the catalogue.</p>
+  <div class="ks-cbmeta">
+    <label>Name <input id="ks-cbname" class="swin" type="text" maxlength="120" placeholder="e.g. Saturn near Aldebaran"></label>
+    <label>Reference <input id="ks-cbref" class="swin" type="text" maxlength="120" placeholder="e.g. MBh 6.3.14"></label>
+    <label>Notes <input id="ks-cbnote" class="swin" type="text" maxlength="300"></label>
+  </div>
+  <div id="ks-cbrows"></div>
+  <div class="aybar">
+    <button type="button" class="swbtn" id="ks-cbadd">Add a condition</button>
+    <label>Conditions hold <select id="ks-cbmode" class="swin"><option value="same">all at the same moment</option><option value="within">all within</option></select></label>
+    <label><input id="ks-cbdays" class="swin" type="number" min="1" max="3650" value="30"> days of each other</label>
+  </div>
+  <p class="k-note" id="ks-cbwarn"></p>
+  <div class="aybar">
+    <label class="ks-abhi"><input type="checkbox" id="ks-cbkeep"> keep in this browser</label>
+    <button type="button" class="swbtn" id="ks-cbforget">Forget</button>
+    <button type="button" class="swbtn" id="ks-cbcopy">Copy as text</button>
+    <button type="button" class="swbtn" id="ks-cbload">Load from the box</button>
+  </div>
+  <textarea id="ks-cbtext" class="swin ks-cbtext" rows="2" placeholder="kalasetu-claim:1 { … }"></textarea>
+  <p class="k-note" id="ks-cbmsg" aria-live="polite"></p>
+</details>
+
+<p class="k-note" id="ks-clsum" aria-live="polite"></p>
+<div id="ks-clres"></div>
+<p class="k-note">A match says the sky fitted the chosen reading under the chosen conventions; it does not say
+the verse describes that year. Many readings recur every few years, so the count per 1000 years matters
+as much as the list. Before 3000&nbsp;BCE the Moon is extrapolated, and before 1000&nbsp;CE the day of a new
+moon, a tithi or an eclipse carries &Delta;T&rsquo;s uncertainty; the caution column says so for each match.
+Eclipses here are found from the Moon&rsquo;s distance from the ecliptic at the new or full moon: a solar one
+was seen somewhere on Earth, not necessarily at Kuruk&#7779;etra.</p>
+
 <h2 id="accuracy">How close, across the span<span class="kdeva">सूक्ष्मता</span></h2>
 
 <p>Each fit was given about three thousand moments across its own span. Half were kept

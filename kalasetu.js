@@ -2462,6 +2462,607 @@
     document.querySelectorAll("[data-ks-play]").forEach(function (b) { b.textContent = "Pause"; b.setAttribute("aria-pressed", "true"); });
     ST.play = setInterval(function () { if (!stepBy(1)) stopPlay(); }, 400);
   }
+  /* ---- the claim search ----------------------------------------------------------
+     A claim from the catalogue (the "Kālasetu Claim Catalogue" sheet), or one the
+     reader builds, is a list of exact conditions. Each reading of a catalogue
+     claim is searched on its own and never merged with another. The search walks
+     the range one condition at a time, slowest graha first, and keeps only the
+     stretches where that condition holds; every later, faster condition is
+     looked for only inside them. A condition that is false says how far its
+     graha is from making it true, so the walk skips ahead by that distance over
+     the graha's fastest motion and never steps over a match. Everything runs in
+     this browser; a reader's own claim is kept only if they tick the box, and
+     then only in their own browser. */
+  var CL_RS = RS, CL_NAKX = NAK.concat(["Abhijit"]);
+  var VMAX = { "Sūrya": 1.03, "Candra": 15.6, "Maṅgala": 0.8, "Budha": 2.25, "Guru": 0.25, "Śukra": 1.3, "Śani": 0.14, "Rāhu": 0.25, "Ketu": 0.25 };
+  var STEP = { "Sūrya": 1, "Candra": 0.1, "Maṅgala": 1, "Budha": 0.5, "Guru": 4, "Śukra": 1, "Śani": 4, "Rāhu": 4, "Ketu": 4 };
+  /* the usual exaltation and own signs of the seven; the nodes have none here, as sources disagree on them */
+  var EXALT = { "Sūrya": 0, "Candra": 1, "Maṅgala": 9, "Budha": 5, "Guru": 3, "Śukra": 11, "Śani": 6 };
+  var OWN = { "Sūrya": [4], "Candra": [3], "Maṅgala": [0, 7], "Budha": [2, 5], "Guru": [8, 11], "Śukra": [1, 6], "Śani": [9, 10] };
+  var GN = G.map(function (g) { return g[0]; });
+  /* the catalogue's searchable readings; the ids, references and wording follow
+     the sheet. Claims that no search can test are listed with the reason. */
+  var CLAIMS = [
+    { id: "C01", ref: "MBh 5.141.7", sky: "Saturn afflicts Rohiṇī", readings: [
+      { id: "A", label: "Śani inside Rohiṇī's division", conds: [{ g: "Śani", rel: "nak", v: 3 }] },
+      { id: "B", label: "Śani within 5° of Aldebaran, Rohiṇī's junction star", conds: [{ g: "Śani", rel: "nearstar", v: 3, tol: 5 }] }] },
+    { id: "C02", ref: "MBh 5.141.8", sky: "Mars retrograde at Jyeṣṭhā, moving toward Anurādhā", readings: [
+      { id: "A", label: "Maṅgala turns retrograde in Jyeṣṭhā", conds: [{ g: "Maṅgala", rel: "station", v: 17 }] },
+      { id: "B", label: "Maṅgala retrograde in Jyeṣṭhā, then retrograde in Anurādhā within 120 days", mode: "within", days: 120,
+        conds: [{ g: "Maṅgala", rel: "retro", v: 17 }, { g: "Maṅgala", rel: "retro", v: 16 }] }] },
+    { id: "C03", ref: "MBh 5.141.9", sky: "A graha afflicts Citrā", readings: [
+      { id: "A", label: "any graha in Citrā (the results say which)", conds: [{ g: "any", rel: "nak", v: 13 }] }] },
+    { id: "C04", ref: "MBh 5.141.10", sky: "Rāhu will approach the Sun", readings: [
+      { id: "A", label: "a solar eclipse (somewhere on Earth)", conds: [{ g: "", rel: "eclipse", v: "solar" }] },
+      { id: "B", label: "eclipse season: Sūrya within 18° of Rāhu or Ketu", conds: [{ g: "Sūrya", rel: "nearnode", tol: 18 }] }] },
+    { id: "C05", ref: "MBh 6.2.23", sky: "Moon fire-coloured on the Kārttika full moon", readings: [
+      { id: "A", label: "a lunar eclipse in Kārttika", conds: [{ g: "", rel: "month", v: 7 }, { g: "", rel: "eclipse", v: "lunar" }] }] },
+    { id: "C06", ref: "MBh 6.2.32", sky: "Saturn stands afflicting Rohiṇī (as C01)", readings: [
+      { id: "A", label: "Śani inside Rohiṇī's division", conds: [{ g: "Śani", rel: "nak", v: 3 }] },
+      { id: "B", label: "Śani within 5° of Aldebaran", conds: [{ g: "Śani", rel: "nearstar", v: 3, tol: 5 }] }] },
+    { id: "C07", ref: "MBh 6.3.11", sky: "Rāhu seized the Sun; a white graha has passed beyond Citrā", readings: [
+      { id: "A", label: "a solar eclipse, and Śukra in Svātī, within 30 days", mode: "within", days: 30,
+        conds: [{ g: "", rel: "eclipse", v: "solar" }, { g: "Śukra", rel: "nak", v: 14 }] },
+      { id: "B", label: "a solar eclipse, and Ketu in Svātī, within 30 days", mode: "within", days: 30,
+        conds: [{ g: "", rel: "eclipse", v: "solar" }, { g: "Ketu", rel: "nak", v: 14 }] }] },
+    { id: "C08", ref: "MBh 6.3.12", sky: "A dhūmaketu assails Puṣya", none: "a comet cannot be computed this far back" },
+    { id: "C09", ref: "MBh 6.3.13", sky: "Mars retrograde in Maghā; Jupiter in Śravaṇa", readings: [
+      { id: "A", label: "Maṅgala retrograde in Maghā while Guru is in Śravaṇa", conds: [{ g: "Maṅgala", rel: "retro", v: 9 }, { g: "Guru", rel: "nak", v: 21 }] }] },
+    { id: "C10", ref: "MBh 6.3.14", sky: "Saturn afflicts Pūrva Phalgunī; Venus on Pūrva Bhādrapadā", readings: [
+      { id: "A", label: "Śani in Pūrva Phalgunī while Śukra is in Pūrva Bhādrapadā", conds: [{ g: "Śani", rel: "nak", v: 10 }, { g: "Śukra", rel: "nak", v: 24 }] },
+      { id: "B", label: "Śani in Pūrva Phalgunī while Śukra is in Uttara Bhādrapadā", conds: [{ g: "Śani", rel: "nak", v: 10 }, { g: "Śukra", rel: "nak", v: 25 }] }] },
+    { id: "C11", ref: "MBh 6.3.17", sky: "Mars makes vakra-anuvakra in Śravaṇa", readings: [
+      { id: "A", label: "Maṅgala retrograde in Śravaṇa", conds: [{ g: "Maṅgala", rel: "retro", v: 21 }] }] },
+    { id: "C12", ref: "MBh 6.3.25", sky: "Jupiter and Saturn near Viśākhā", readings: [
+      { id: "A", label: "Guru and Śani both within 6° of Zubenelgenubi, Viśākhā's junction star",
+        conds: [{ g: "Śani", rel: "nearstar", v: 15, tol: 6 }, { g: "Guru", rel: "nearstar", v: 15, tol: 6 }] },
+      { id: "B", label: "Guru within 6° of Śani, both in Viśākhā's division",
+        conds: [{ g: "Śani", rel: "nak", v: 15 }, { g: "Guru", rel: "nak", v: 15 }, { g: "Guru", rel: "neargraha", v: "Śani", tol: 6 }] }] },
+    { id: "C13", ref: "MBh 6.3.26", sky: "Kṛttikā called the first nakṣatra", none: "a list order or an equinox epoch, not a graha position" },
+    { id: "C14", ref: "MBh 6.3.28–29", sky: "Sun and Moon both eclipsed in one month", readings: [
+      { id: "A", label: "a lunar and a solar eclipse within 15 days", mode: "within", days: 15,
+        conds: [{ g: "", rel: "eclipse", v: "lunar" }, { g: "", rel: "eclipse", v: "solar" }] }] },
+    { id: "C15", ref: "MBh 14.71.4", sky: "Caitra full moon", readings: [
+      { id: "A", label: "Pūrṇimā in Caitra (recurs every year: useful once a year is fixed)", conds: [{ g: "", rel: "month", v: 0 }, { g: "", rel: "tithi", v: 15 }] }] },
+    { id: "C16", ref: "MBh 14.86.4, 14.86.8", sky: "Māgha dvādaśī; Māgha full moon", readings: [
+      { id: "A", label: "Śukla Dvādaśī in Māgha (yearly)", conds: [{ g: "", rel: "month", v: 10 }, { g: "", rel: "tithi", v: 12 }] },
+      { id: "B", label: "Pūrṇimā in Māgha (yearly)", conds: [{ g: "", rel: "month", v: 10 }, { g: "", rel: "tithi", v: 15 }] }] },
+    { id: "C17", ref: "MBh 6.114.88–94", sky: "Bhīṣma waits for uttarāyaṇa", none: "needs a war date first; then read the days to each kind of uttarāyaṇa" },
+    { id: "C18", ref: "Bhāgavata 12.2.24", sky: "Moon, Sun, Tiṣya and Jupiter in one rāśi", readings: [
+      { id: "A", label: "new moon with Sūrya, Candra and Guru in Karka (the rāśi holding Puṣya)",
+        conds: [{ g: "Guru", rel: "rasi", v: 3 }, { g: "Sūrya", rel: "rasi", v: 3 }, { g: "", rel: "tithi", v: 30 }, { g: "Candra", rel: "rasi", v: 3 }] },
+      { id: "B", label: "Sūrya, Candra and Guru all in Puṣya",
+        conds: [{ g: "Guru", rel: "nak", v: 7 }, { g: "Sūrya", rel: "nak", v: 7 }, { g: "Candra", rel: "nak", v: 7 }] }] },
+    { id: "C19", ref: "Bhāgavata 12.2.27–28", sky: "Saptarṣis 100 years per nakṣatra", none: "a counting convention, not a motion of the sky" },
+    { id: "C20", ref: "Bhāgavata 12.2.29–33", sky: "Kali begins as Kṛṣṇa departs", none: "the epoch is a computed date: see the Kali row under “Checked against recorded history”" },
+    { id: "C21", ref: "Bhāgavata 12.2.32", sky: "Saptarṣis from Maghā to Pūrvāṣāḍhā", none: "arithmetic on the Saptarṣi count, not a search" },
+    { id: "C22", ref: "MBh 13.88.12; Bhāgavata 7.14.20–21", sky: "Rites on set tithis", none: "a rule for when rites are good, not a dated event" }
+  ];
+  /* what each relation means, how the builder offers it, and how it reads aloud */
+  var REL = {
+    nak: { label: "is in nakṣatra", target: "nak", graha: true },
+    rasi: { label: "is in rāśi", target: "rasi", graha: true },
+    nearstar: { label: "is within … of a junction star", target: "star", tol: 5, graha: true },
+    neargraha: { label: "is within … of another graha", target: "graha", tol: 6, graha: true },
+    nearnode: { label: "is within … of Rāhu or Ketu", target: "", tol: 18, graha: true },
+    nearlon: { label: "is within … of a longitude", target: "lon", tol: 5, graha: true },
+    opp: { label: "is opposite another graha", target: "graha", tol: 6, graha: true },
+    exalt: { label: "is exalted", target: "", graha: true },
+    debil: { label: "is debilitated", target: "", graha: true },
+    own: { label: "is in its own sign", target: "", graha: true },
+    retro: { label: "is retrograde, in nakṣatra", target: "nakany", graha: true },
+    station: { label: "turns retrograde, in nakṣatra", target: "nakany", graha: true },
+    tithi: { label: "the tithi is", target: "tithi", graha: false },
+    month: { label: "the lunar month is", target: "month", graha: false },
+    eclipse: { label: "an eclipse", target: "eclipse", graha: false },
+    ayana: { label: "the Sun's ayana is", target: "ayana", graha: false }
+  };
+  var TITHI30 = []; for (var ti0 = 0; ti0 < 30; ti0++) TITHI30.push((ti0 < 15 ? "Śukla " : "Kṛṣṇa ") + (ti0 % 15 === 14 ? (ti0 < 15 ? "Pūrṇimā" : "Amāvāsyā") : TNAME[ti0 % 15]));
+  function condText(c) {
+    var g = c.g === "any" ? "any graha" : c.g, tv = c.tol != null ? c.tol + "°" : "";
+    switch (c.rel) {
+      case "nak": return g + " in " + CL_NAKX[c.v];
+      case "rasi": return g + " in " + CL_RS[c.v];
+      case "nearstar": return g + " within " + tv + " of " + YOGA[c.v][1] + " (" + YOGA[c.v][0] + ")";
+      case "neargraha": return g + " within " + tv + " of " + c.v;
+      case "nearnode": return g + " within " + tv + " of Rāhu or Ketu";
+      case "nearlon": return g + " within " + tv + " of " + (+c.v).toFixed(1) + "°";
+      case "opp": return g + " opposite " + c.v + " (±" + tv + ")";
+      case "exalt": return g + " exalted";
+      case "debil": return g + " debilitated";
+      case "own": return g + " in its own sign";
+      case "retro": return g + " retrograde" + (c.v >= 0 ? " in " + CL_NAKX[c.v] : "");
+      case "station": return g + " turns retrograde" + (c.v >= 0 ? " in " + CL_NAKX[c.v] : "");
+      case "tithi": return "tithi " + TITHI30[c.v - 1];
+      case "month": return "lunar month " + LMON[c.v];
+      case "eclipse": return (c.v === "solar" ? "a solar" : "a lunar") + " eclipse";
+      case "ayana": return c.v === "uttara" ? "uttarāyaṇa" : "dakṣiṇāyana";
+    }
+    return "?";
+  }
+
+  /* ---- evaluating one condition at one instant --------------------------------
+     returns { ok, m, skip, who }: m is the margin in degrees (how far inside),
+     skip how many days the walk may jump when it is false, who the graha that
+     met it for "any graha" */
+  function lonOf(g, ms, S) {
+    var L;
+    if (g === "Rāhu" || g === "Ketu") L = (CONV.node === "true" ? K.trueNode(ms) : K.longitude("Rāhu", ms)) + (g === "Ketu" ? 180 : 0);
+    else L = K.longitude(g, ms);
+    return norm(L + S);
+  }
+  /* the nakṣatra index (27 = Abhijit) and the margin to its edge, under the chosen meaning */
+  function nakAt(L, ms) {
+    if (CONV.nak === "abhijit" && L >= 276 + 40 / 60 && L < 280 + 53 / 60 + 20 / 3600)
+      return { i: 27, m: Math.min(L - 276 - 40 / 60, 280 + 53 / 60 + 20 / 3600 - L) };
+    if (CONV.nak === "star") {
+      var ys = yogataras(ms), S2 = shiftOf(ms), d = [];
+      (ys || []).forEach(function (y) { if (y.nak !== "Abhijit") d.push({ i: y.i, d: Math.abs(sdiff(y.lon + S2, L)) }); });
+      d.sort(function (a, b) { return a.d - b.d; });
+      if (d.length > 1) return { i: d[0].i, m: (d[1].d - d[0].d) / 2 };
+    }
+    var w = 40 / 3, i = Math.floor(L / w), x = L - i * w;
+    return { i: i, m: Math.min(x, w - x) };
+  }
+  /* the shortest arc from L into the arc [a, a + w) */
+  function arcTo(L, a, w) { var x = norm(L - a); return x < w ? 0 : Math.min(x - w, 360 - x); }
+  function nakDist(L, i, ms) {
+    /* by the nearest star the divisions are uneven, so the skip is kept small */
+    if (CONV.nak === "star") { var n = nakAt(L, ms); return n.i === i ? 0 : Math.max(0.01, Math.abs(sdiff(L, (i + 0.5) * 40 / 3)) - 30); }
+    if (i === 27) return arcTo(L, 276 + 40 / 60, 4 + 13 / 60 + 20 / 3600);
+    return arcTo(L, i * 40 / 3, 40 / 3);
+  }
+  var MONTH_CACHE = { a: 0, b: -1, i: -1 }, ECL_CACHE = {};
+  /* the next (dir +1) or previous (dir −1) instant the elongation reaches tgt:
+     a start from the mean rate, then Newton steps on the true elongation */
+  function syz(ms, tgt, dir) {
+    var e = elong(ms), gap = dir > 0 ? norm(tgt - e) : -norm(e - tgt), t = ms + gap / 12.19 * DAY;
+    for (var k = 0; k < 8; k++) { var d = sdiff(elong(t), tgt), dt = -d / 12.19 * DAY; t += dt; if (Math.abs(dt) < 20000) break; }
+    return t;
+  }
+  function lunarMonthAt(ms) {
+    if (ms >= MONTH_CACHE.a && ms < MONTH_CACHE.b) return MONTH_CACHE;
+    var nm0 = syz(ms + 1, 0, -1), nm1 = nm0 != null ? syz(nm0 + DAY, 0, +1) : null;
+    if (nm0 == null || nm1 == null) return { a: ms, b: ms + DAY, i: -1 };
+    var e = elong(ms), sukla = e < 180, a = nm0, b = nm1;
+    var nameOf = function (x, y) {
+      if (CONV.mname === "solar") {
+        var s0 = Math.floor(norm(K.longitude("Sūrya", x) + shiftOf(x)) / 30), s1 = Math.floor(norm(K.longitude("Sūrya", y) + shiftOf(y)) / 30);
+        return s0 === s1 ? -1 : s1;                     /* an adhika month matches no name */
+      }
+      var fm = syz(x + DAY, 180, +1);
+      return fm ? NAK2MON[Math.floor(norm(K.longitude("Candra", fm) + shiftOf(fm)) / (40 / 3))] : -1;
+    };
+    var i = nameOf(nm0, nm1);
+    if (CONV.msys === "purnimanta") {
+      /* the dark fortnight carries the next month's name: split at the full moon */
+      var fmx = syz(nm0 + DAY, 180, +1);
+      if (fmx != null && ms >= fmx) { var nm2 = syz(nm1 + DAY, 0, +1); i = nm2 ? nameOf(nm1, nm2) : i; a = fmx; b = nm1; }
+      else if (fmx != null) b = fmx;
+    }
+    MONTH_CACHE = { a: a, b: b, i: i, sukla: sukla };
+    return MONTH_CACHE;
+  }
+  /* an eclipse at the syzygy nearest ms: the Moon's distance from the ecliptic
+     there against the usual limits (solar: seen somewhere on Earth; lunar: the
+     umbra) */
+  var SYN = 29.530588853 * DAY, NM2000 = Date.UTC(2000, 0, 6, 18, 14);
+  function eclipseNear(ms, kind) {
+    var tgt = kind === "solar" ? 0 : 180, e = sdiff(elong(ms), tgt);
+    if (Math.abs(e) > 14) return { ok: false, skip: (Math.abs(e) - 13) / 13.2 };
+    /* one check per lunation: the exact syzygy and the Moon's latitude there */
+    var key = kind + Math.round((ms - NM2000) / SYN - tgt / 360);
+    if (!(key in ECL_CACHE)) {
+      var t = syz(ms - 1.5 * DAY, tgt, +1);
+      ECL_CACHE[key] = t == null ? null : { t: t, b: Math.abs(K.latitude("Candra", t)) };
+    }
+    var q = ECL_CACHE[key];
+    if (!q || Math.abs(q.t - ms) > 1.6 * DAY) return { ok: false, skip: q && q.t > ms ? Math.max(0.25, (q.t - ms) / DAY - 1.5) : 0.5 };
+    /* 0.95°: checked on 2016–2023 eclipses, every penumbral-only one lies beyond 0.98°, the smallest partial at 0.93° */
+    var lim = kind === "solar" ? 1.55 : 0.95;
+    return q.b < lim ? { ok: true, m: lim - q.b, at: q.t, lat: q.b } : { ok: false, skip: 20 };
+  }
+  /* one junction star's longitude on the date (Samanvaya), kept for 50 days at a
+     time: it moves under a minute of arc in that while */
+  var STARC = {};
+  function starLon(i, ms) {
+    var key = i + ":" + Math.round(ms / (50 * DAY));
+    if (key in STARC) return STARC[key];
+    var A = window.Astronomy, s = YOGA[i]; if (!A || !A.DefineStar || !s) return null;
+    var yrs = (ms - Date.UTC(2000, 0, 1, 12)) / DAY / 365.25, x = s[4] + s[7] * yrs, y = s[5] + s[8] * yrs, z = s[6] + s[9] * yrs, r = Math.sqrt(x * x + y * y + z * z);
+    try {
+      A.DefineStar(A.Body.Star8, ((Math.atan2(y, x) * 12 / Math.PI) + 24) % 24, Math.asin(z / r) * 180 / Math.PI, r * 3.26156);
+      var e = A.Ecliptic(A.GeoVector(A.Body.Star8, new Date(ms), true));
+      STARC[key] = norm(e.elon - window.__ayanFor("samanvaya_ecliptic", jdOf(ms)));
+    } catch (err) { STARC[key] = null; }
+    return STARC[key];
+  }
+  function speed(g, ms) { return sdiff(lonOf(g, ms + DAY / 2, 0), lonOf(g, ms - DAY / 2, 0)); }
+  function evalOne(c, ms, S) {
+    if (c.g === "any") {
+      var best = null, minSkip = Infinity;
+      GN.forEach(function (g) { var r = evalOne(Object.assign({}, c, { g: g }), ms, S);
+        if (r.ok && (!best || r.m > best.m)) best = Object.assign(r, { who: g });
+        if (!r.ok) minSkip = Math.min(minSkip, r.skip || 0); });
+      return best || { ok: false, skip: minSkip };
+    }
+    var v = VMAX[c.g] || 1, L, d, s;
+    switch (c.rel) {
+      case "nak": L = lonOf(c.g, ms, S); d = nakDist(L, c.v, ms);
+        return d === 0 ? { ok: true, m: nakAt(L, ms).m } : { ok: false, skip: d / v };
+      case "rasi": L = lonOf(c.g, ms, S); d = arcTo(L, c.v * 30, 30);
+        return d === 0 ? { ok: true, m: Math.min(L - c.v * 30, (c.v + 1) * 30 - L) } : { ok: false, skip: d / v };
+      case "nearstar": L = lonOf(c.g, ms, S);
+        var yl = starLon(c.v, ms); if (yl == null) return { ok: false, skip: 10 };
+        d = Math.abs(sdiff(L, yl + S));
+        return d <= c.tol ? { ok: true, m: c.tol - d, sep: d } : { ok: false, skip: (d - c.tol) / v };
+      case "neargraha": case "opp": L = lonOf(c.g, ms, S);
+        var L2 = lonOf(c.v, ms, S); d = Math.abs(sdiff(L, L2)); if (c.rel === "opp") d = 180 - d;
+        return d <= c.tol ? { ok: true, m: c.tol - d, sep: d } : { ok: false, skip: (d - c.tol) / (v + (VMAX[c.v] || 1)) };
+      case "nearnode": L = lonOf(c.g, ms, S);
+        var R = lonOf("Rāhu", ms, S); d = Math.min(Math.abs(sdiff(L, R)), Math.abs(sdiff(L, R + 180)));
+        return d <= c.tol ? { ok: true, m: c.tol - d, sep: d } : { ok: false, skip: (d - c.tol) / (v + 0.25) };
+      case "nearlon": L = lonOf(c.g, ms, S); d = Math.abs(sdiff(L, +c.v));
+        return d <= c.tol ? { ok: true, m: c.tol - d, sep: d } : { ok: false, skip: (d - c.tol) / v };
+      case "exalt": case "debil": case "own":
+        if (!(c.g in EXALT)) return { ok: false, skip: 1e9 };
+        var signs = c.rel === "exalt" ? [EXALT[c.g]] : c.rel === "debil" ? [(EXALT[c.g] + 6) % 12] : OWN[c.g];
+        L = lonOf(c.g, ms, S); d = Math.min.apply(null, signs.map(function (q) { return arcTo(L, q * 30, 30); }));
+        return d === 0 ? { ok: true, m: Math.min(L % 30, 30 - L % 30) } : { ok: false, skip: d / v };
+      case "retro": case "station":
+        L = lonOf(c.g, ms, S);
+        if (c.v >= 0) { d = nakDist(L, c.v, ms); if (d > 0) return { ok: false, skip: d / v }; }
+        if (c.rel === "retro") { s = speed(c.g, ms); return s < 0 ? { ok: true, m: c.v >= 0 ? nakAt(L, ms).m : -s } : { ok: false, skip: 0 }; }
+        var a = speed(c.g, ms - 2 * DAY), b = speed(c.g, ms + 2 * DAY);
+        return a > 0 && b <= 0 ? { ok: true, m: c.v >= 0 ? nakAt(L, ms).m : 1 } : { ok: false, skip: 0 };
+      case "tithi":
+        var e = elong(ms), lo = (c.v - 1) * 12; d = arcTo(e, lo, 12);
+        return d === 0 ? { ok: true, m: Math.min(e - lo, lo + 12 - e) } : { ok: false, skip: d / 15.4 };
+      case "month":
+        var mo = lunarMonthAt(ms);
+        return mo.i === c.v ? { ok: true, m: 1 } : { ok: false, skip: Math.max(0, (mo.b - ms) / DAY - 0.05) };
+      case "eclipse":
+        return eclipseNear(ms, c.v);
+      case "ayana":
+        var tr = norm(K.longitude("Sūrya", ms) + window.__ayanFor("samanvaya_ecliptic", jdOf(ms))), uttara = tr >= 270 || tr < 90;
+        d = c.v === "uttara" ? arcTo(tr, 270, 180) : arcTo(tr, 90, 180);
+        return d === 0 ? { ok: true, m: 1 } : { ok: false, skip: d / 1.03 };
+    }
+    return { ok: false, skip: 1 };
+  }
+  function stepOf(c) {
+    if (c.rel === "tithi" || c.rel === "eclipse") return 0.25;
+    if (c.rel === "month") return 1;
+    if (c.rel === "ayana") return 2;
+    if (c.g === "any") return 0.1;
+    return STEP[c.g] || 1;
+  }
+  /* is a claim self-contradictory before any search? */
+  function contradictions(cl) {
+    if (cl.mode === "within") return [];
+    var out = [], seen = {};
+    cl.conds.forEach(function (c) {
+      if ((c.rel === "nak" || c.rel === "rasi") && c.g && c.g !== "any") {
+        var k = c.g + c.rel; if (k in seen && seen[k] !== c.v) out.push(c.g + " cannot be in " + (c.rel === "nak" ? CL_NAKX[seen[k]] + " and " + CL_NAKX[c.v] : CL_RS[seen[k]] + " and " + CL_RS[c.v]) + " at once");
+        seen[k] = c.v;
+      }
+      if (c.rel === "tithi") { if ("tithi" in seen && seen.tithi !== c.v) out.push("two different tithis cannot hold at once"); seen.tithi = c.v; }
+      if (c.rel === "month") { if ("month" in seen && seen.month !== c.v) out.push("two different months cannot hold at once"); seen.month = c.v; }
+      if (["exalt", "debil", "own"].indexOf(c.rel) >= 0 && !(c.g in EXALT)) out.push("this page gives the nodes no exaltation or own sign");
+    });
+    return out;
+  }
+
+  /* ---- the walk ------------------------------------------------------------------ */
+  var CS = { run: 0, stop: false };
+  /* walk windows for one condition, in slices that give the page back to the
+     reader; resolves to the runs where it holds, as [start, end, bestMs, bestR] */
+  function walk(c, wins, onProgress, limit) {
+    var st = stepOf(c) * DAY, runs = [], wi = 0, t = wins.length ? wins[0][0] : 0, cur = null, total = 0, done = 0, my = CS.run;
+    wins.forEach(function (w) { total += w[1] - w[0]; });
+    return new Promise(function (res, rej) {
+      (function slice() {
+        if (CS.stop || my !== CS.run) return rej("stopped");
+        var t0 = Date.now();
+        while (wi < wins.length) {
+          var w = wins[wi];
+          if (t > w[1]) { if (cur) { runs.push(cur); cur = null; } wi++; if (wi < wins.length) t = wins[wi][0]; continue; }
+          var S = shiftOf(t), r = evalOne(c, t, S);
+          if (r.ok) {
+            if (!cur) cur = [t, t, t, r]; cur[1] = t; if (r.m > cur[3].m) { cur[2] = t; cur[3] = r; }
+            t += r.who ? Math.max(st, STEP[r.who] * DAY) : st;      /* "any graha": at the pace of the one that holds it */
+          } else {
+            if (cur) { runs.push(cur); cur = null; if (limit && runs.length > limit) return res(runs); }
+            t += Math.max(st, 0.92 * (r.skip || 0) * DAY);
+          }
+          if (Date.now() - t0 > 30) {
+            var dn = 0; for (var k = 0; k < wi; k++) dn += wins[k][1] - wins[k][0];
+            dn += Math.max(0, Math.min(t, w[1]) - w[0]);
+            onProgress(total ? dn / total : 1);
+            return setTimeout(slice, 0);
+          }
+        }
+        if (cur) runs.push(cur);
+        res(runs);
+      })();
+    });
+  }
+  /* merge, pad and clip a list of runs into windows */
+  function toWins(runs, pad, outer) {
+    var w = runs.map(function (r) { return [Math.max(outer[0], r[0] - pad), Math.min(outer[1], r[1] + pad)]; }).sort(function (a, b) { return a[0] - b[0]; }), out = [];
+    w.forEach(function (x) { if (out.length && x[0] <= out[out.length - 1][1]) out[out.length - 1][1] = Math.max(out[out.length - 1][1], x[1]); else out.push(x); });
+    return out;
+  }
+  var CAP = 200;
+  /* search one claim reading over [a, b]: resolves to { episodes, capped } */
+  function searchClaim(cl, a, b, onProgress) {
+    var conds = cl.conds.map(function (c, i) { return Object.assign({ i: i }, c); }).sort(function (p, q) { return stepOf(q) - stepOf(p); });
+    var within = cl.mode === "within", N = (within ? (+cl.days || 0) : 0) * DAY, wins = [[a, b]], runsBy = {}, k = 0;
+    MONTH_CACHE = { a: 0, b: -1, i: -1 }; ECL_CACHE = {};
+    function next() {
+      if (k >= conds.length) return Promise.resolve();
+      var c = conds[k], frac0 = k / conds.length;
+      /* the last condition of a same-moment search may stop once the reading is plainly too common */
+      var lim = !within && k === conds.length - 1 ? 3 * CAP : 0;
+      return walk(c, wins, function (f) { onProgress(frac0 + f / conds.length); }, lim).then(function (runs) {
+        runsBy[c.i] = runs;
+        wins = toWins(runs, stepOf(c) * DAY + N, [a, b]);
+        k++;
+        if (!wins.length) return;
+        return next();
+      });
+    }
+    return next().then(function () {
+      if (conds.some(function (c) { return !runsBy[c.i] || !runsBy[c.i].length; })) return { episodes: [], capped: false };
+      var eps = [];
+      if (!within) {
+        /* the final pass: every condition at the finest step, inside what is left */
+        var all = { rel: "_all" }, fine = Math.min.apply(null, conds.map(stepOf)) * DAY;
+        return new Promise(function (res, rej) {
+          var wi = 0, t = wins[0][0], cur = null, my = CS.run;
+          (function slice() {
+            if (CS.stop || my !== CS.run) return rej("stopped");
+            var t0 = Date.now();
+            while (wi < wins.length) {
+              var w = wins[wi];
+              if (t > w[1]) { if (cur) { eps.push(cur); cur = null; } wi++; if (wi < wins.length) t = wins[wi][0]; continue; }
+              var S = shiftOf(t), rs = cl.conds.map(function (c) { return evalOne(c, t, S); }), ok = rs.every(function (r) { return r.ok; });
+              if (ok) {
+                var mm = Math.min.apply(null, rs.map(function (r) { return r.m; }));
+                if (!cur) cur = { from: t, to: t, best: t, mm: mm, rs: rs }; cur.to = t;
+                if (mm > cur.mm) { cur.best = t; cur.mm = mm; cur.rs = rs; }
+                t += Math.min.apply(null, rs.map(function (r, j) { return r.who ? Math.max(fine, STEP[r.who] * DAY) : stepOf(cl.conds[j]) * DAY; }));
+              } else {
+                if (cur) { eps.push(cur); cur = null; if (eps.length > CAP) break; }
+                t += Math.max(fine, 0.92 * Math.max.apply(null, rs.filter(function (r) { return !r.ok; }).map(function (r) { return r.skip || 0; })) * DAY);
+              }
+              if (Date.now() - t0 > 30) { onProgress(0.99); return setTimeout(slice, 0); }
+            }
+            if (cur) eps.push(cur);
+            /* an eclipse's best moment is the eclipse itself */
+            eps.forEach(function (e) { var q = e.rs.filter(function (r) { return r.at; })[0]; if (q) e.best = q.at; });
+            res({ episodes: eps.slice(0, CAP), capped: eps.length > CAP });
+          })();
+        });
+      }
+      /* within N days: each run of the slowest condition, with a run of every
+         other condition no more than N days from it */
+      var anchor = conds[0];
+      runsBy[anchor.i].forEach(function (R) {
+        var rs = [], from = R[0], to = R[1], ok = true;
+        cl.conds.forEach(function (c, i) {
+          if (i === anchor.i) { rs[i] = Object.assign({ at: R[2] }, R[3]); return; }
+          var hit = null;
+          (runsBy[i] || []).forEach(function (q) { if (q[1] >= R[0] - N && q[0] <= R[1] + N && (!hit || q[3].m > hit[3].m)) hit = q; });
+          if (!hit) { ok = false; return; }
+          rs[i] = Object.assign({ at: hit[2] }, hit[3]); from = Math.min(from, hit[0]); to = Math.max(to, hit[1]);
+        });
+        if (ok) eps.push({ from: from, to: to, best: rs[anchor.i].at || R[2], rs: rs, mm: Math.min.apply(null, rs.map(function (r) { return r.m; })) });
+      });
+      return { episodes: eps.slice(0, CAP), capped: eps.length > CAP };
+    });
+  }
+
+  /* ---- the panel ------------------------------------------------------------------ */
+  var MY_KEY = "learnhoro.kalasetu.myclaim";
+  var MY = { n: "", ref: "", note: "", mode: "same", days: 30, conds: [{ g: "Śani", rel: "nak", v: 3 }] };
+  var MYKEEP = false;
+  try { var mk = JSON.parse(localStorage.getItem(MY_KEY) || "null"); if (mk && mk.conds) { MY = mk; MYKEEP = true; } } catch (e) {}
+  function opt(v, t, sel) { return '<option value="' + esc(v) + '"' + (sel ? " selected" : "") + ">" + esc(t) + "</option>"; }
+  function targetCtl(c, i) {
+    var r = REL[c.rel], t = r.target, h = "";
+    if (t === "nak" || t === "nakany") h = '<select class="swin" data-cb="v" data-i="' + i + '">' + (t === "nakany" ? opt(-1, "anywhere", c.v < 0) : "") +
+      CL_NAKX.map(function (n, k) { return opt(k, n, +c.v === k); }).join("") + "</select>";
+    else if (t === "rasi") h = '<select class="swin" data-cb="v" data-i="' + i + '">' + CL_RS.map(function (n, k) { return opt(k, n, +c.v === k); }).join("") + "</select>";
+    else if (t === "star") h = '<select class="swin" data-cb="v" data-i="' + i + '">' + YOGA.map(function (y, k) { return opt(k, y[1] + " (" + y[0] + ")", +c.v === k); }).join("") + "</select>";
+    else if (t === "graha") h = '<select class="swin" data-cb="v" data-i="' + i + '">' + GN.map(function (g) { return opt(g, g, c.v === g); }).join("") + "</select>";
+    else if (t === "lon") h = '<input class="swin" type="number" min="0" max="359.9" step="0.1" data-cb="v" data-i="' + i + '" value="' + esc(c.v == null ? 0 : c.v) + '"> °';
+    else if (t === "tithi") h = '<select class="swin" data-cb="v" data-i="' + i + '">' + TITHI30.map(function (n, k) { return opt(k + 1, n, +c.v === k + 1); }).join("") + "</select>";
+    else if (t === "month") h = '<select class="swin" data-cb="v" data-i="' + i + '">' + LMON.map(function (n, k) { return opt(k, n, +c.v === k); }).join("") + "</select>";
+    else if (t === "eclipse") h = '<select class="swin" data-cb="v" data-i="' + i + '">' + opt("solar", "solar (somewhere on Earth)", c.v === "solar") + opt("lunar", "lunar (umbral)", c.v === "lunar") + "</select>";
+    else if (t === "ayana") h = '<select class="swin" data-cb="v" data-i="' + i + '">' + opt("uttara", "uttarāyaṇa", c.v === "uttara") + opt("dakshina", "dakṣiṇāyana", c.v === "dakshina") + "</select>";
+    if (r.tol != null) h += ' <label class="ks-cbtol">within <input class="swin" type="number" min="0.1" max="90" step="0.1" data-cb="tol" data-i="' + i + '" value="' + esc(c.tol == null ? r.tol : c.tol) + '">°</label>';
+    return h;
+  }
+  function defaultV(rel) {
+    var t = REL[rel].target;
+    return { nak: 3, nakany: -1, rasi: 0, star: 3, graha: "Śani", lon: 0, tithi: 15, month: 0, eclipse: "solar", ayana: "uttara" }[t];
+  }
+  function drawBuilder() {
+    var host = $("ks-cbrows"); if (!host) return;
+    host.innerHTML = MY.conds.map(function (c, i) {
+      var r = REL[c.rel];
+      return '<div class="ks-cbrow"><select class="swin" data-cb="g" data-i="' + i + '"' + (r.graha ? "" : " disabled") + ">" +
+        (r.graha ? GN.map(function (g) { return opt(g, g, c.g === g); }).join("") + opt("any", "any graha", c.g === "any") : opt("", "—", true)) + "</select>" +
+        '<select class="swin" data-cb="rel" data-i="' + i + '">' + Object.keys(REL).map(function (k) { return opt(k, REL[k].label, c.rel === k); }).join("") + "</select>" +
+        targetCtl(c, i) +
+        ' <button type="button" class="swbtn" data-cbdel="' + i + '" aria-label="Remove this condition"' + (MY.conds.length < 2 ? " disabled" : "") + ">Remove</button></div>";
+    }).join("");
+    $("ks-cbmode").value = MY.mode; $("ks-cbdays").value = MY.days; $("ks-cbdays").disabled = MY.mode !== "within";
+    $("ks-cbname").value = MY.n || ""; $("ks-cbref").value = MY.ref || ""; $("ks-cbnote").value = MY.note || "";
+    $("ks-cbkeep").checked = MYKEEP;
+    var bad = contradictions(MY);
+    $("ks-cbwarn").innerHTML = bad.length ? "<b>This claim can never hold:</b> " + esc(bad.join("; ")) + "." : "";
+    keepMy();
+  }
+  function keepMy() { try { if (MYKEEP) localStorage.setItem(MY_KEY, JSON.stringify(MY)); } catch (e) {} }
+  function claimOf(sel) {
+    if (sel === "mine") return null;
+    return CLAIMS.filter(function (c) { return c.id === sel; })[0];
+  }
+  function drawPicker() {
+    $("ks-claim").innerHTML = opt("mine", "Your own claim (build it below)", false) + CLAIMS.map(function (c) {
+      return '<option value="' + c.id + '"' + (c.none ? " disabled" : "") + ">" + esc(c.id + " · " + c.ref + " · " + c.sky + (c.none ? " — not searchable: " + c.none : "")) + "</option>";
+    }).join("");
+    $("ks-claim").value = "C12";
+    pickerChanged();
+  }
+  function pickerChanged() {
+    var cl = claimOf($("ks-claim").value);
+    $("ks-cbox").open = !cl;
+    $("ks-reading").innerHTML = cl ? opt("all", "all readings, each on its own", true) + cl.readings.map(function (r) { return opt(r.id, r.id + ": " + r.label, false); }).join("") : opt("mine", "your conditions", true);
+    $("ks-reading").disabled = !cl; $("ks-cledit").disabled = !cl;
+    adviseRange();
+  }
+  function readingsNow() {
+    var cl = claimOf($("ks-claim").value);
+    if (!cl) return [{ id: "", label: MY.n || "your claim", conds: MY.conds, mode: MY.mode, days: MY.days, mine: true }];
+    var r = $("ks-reading").value;
+    return cl.readings.filter(function (x) { return r === "all" || x.id === r; }).map(function (x) { return Object.assign({ claim: cl }, x); });
+  }
+  /* advice on the range, from the fastest thing the claim leans on */
+  function adviseRange() {
+    var rs = readingsNow(), moon = rs.some(function (r) { return r.conds.some(function (c) { return c.g === "Candra" || c.g === "any" || ["tithi", "month", "eclipse"].indexOf(c.rel) >= 0; }); });
+    $("ks-cladvice").innerHTML = moon ? "This claim leans on the Moon (or a tithi, month or eclipse): search <b>1000–2000 years</b> at a time, best inside 3000 BCE – 3000 CE, where the Moon is measured rather than extrapolated."
+      : "This claim uses only the slower grahas: the <b>whole span</b>, 13000 BCE – 3600 CE, is quick to search and trusted to under a minute of arc.";
+  }
+  function yearMs(eraId, yId, end) {
+    var era = $(eraId).value, y = Math.max(1, Math.min(era === "BCE" ? 13000 : 3600, Math.round(+$(yId).value || 1))), Y = era === "BCE" ? 1 - y : y;
+    var t = new Date(end ? Date.UTC(2000, 11, 31, 23, 59) : Date.UTC(2000, 0, 1)); t.setUTCFullYear(Y); return t.getTime();
+  }
+  function fmtSep(r) {
+    if (r.sep != null) return r.sep.toFixed(1) + "° apart";
+    if (r.lat != null) return "Moon " + r.lat.toFixed(2) + "° from the ecliptic";
+    if (r.m != null && isFinite(r.m)) return r.m.toFixed(1) + "° inside";
+    return "";
+  }
+  function flagsFor(rd, ms) {
+    var y = new Date(ms).getUTCFullYear(), f = [], moon = rd.conds.some(function (c) { return c.g === "Candra" || ["tithi", "month", "eclipse"].indexOf(c.rel) >= 0; });
+    if (moon && y < -2999) f.push("Moon extrapolated");
+    if (moon && y < 1000) f.push("day ±ΔT");
+    if (!K.inSpan(ms)) f.push("outside the span");
+    return f.join(" · ");
+  }
+  function runSearch() {
+    var a = yearMs("ks-clera0", "ks-cly0"), b = yearMs("ks-clera1", "ks-cly1", true);
+    if (b <= a) { $("ks-clsum").innerHTML = "<b>The end of the range must come after its start.</b>"; return; }
+    var rds = readingsNow(), bad = [];
+    rds.forEach(function (r) { var x = contradictions(r); if (x.length) bad.push((r.id ? r.id + ": " : "") + x.join("; ")); });
+    if (bad.length) { $("ks-clsum").innerHTML = "<b>Not searched: this can never hold.</b> " + esc(bad.join(" · ")); $("ks-clres").innerHTML = ""; return; }
+    CS.run++; CS.stop = false;
+    var my = CS.run, out = [], yrs = (b - a) / DAY / 365.2425, t0 = Date.now();
+    $("ks-clgo").disabled = true; $("ks-clstop").disabled = false; $("ks-clres").innerHTML = "";
+    var bar = $("ks-clbar"); bar.hidden = false; bar.value = 0;
+    var i = 0;
+    (function nextReading() {
+      if (i >= rds.length) return finish();
+      var rd = rds[i];
+      $("ks-clsum").textContent = "Searching" + (rds.length > 1 ? " reading " + rd.id + " (" + (i + 1) + " of " + rds.length + ")" : "") + "…";
+      searchClaim(rd, a, b, function (f) { if (my === CS.run) bar.value = (i + Math.min(1, f)) / rds.length; }).then(function (res) {
+        out.push({ rd: rd, res: res }); i++; nextReading();
+      }, function () { finish(true); });
+    })();
+    function finish(stopped) {
+      if (my !== CS.run) return;
+      $("ks-clgo").disabled = false; $("ks-clstop").disabled = true; bar.hidden = true;
+      var secs = ((Date.now() - t0) / 1000).toFixed(1);
+      if (stopped) { $("ks-clsum").innerHTML = "<b>Stopped.</b> Nothing below is complete."; }
+      else $("ks-clsum").innerHTML = "Searched " + esc(yearLabel(new Date(a).getUTCFullYear())) + " – " + esc(yearLabel(new Date(b).getUTCFullYear())) +
+        " (" + Math.round(yrs).toLocaleString("en") + " years) in " + secs + " s, under " + FRAME_NAME[CONV.frame] + ", " +
+        { equal: "equal nakṣatras", star: "nakṣatra by the nearest junction star", abhijit: "28 nakṣatras with Abhijit" }[CONV.nak] + ", the " + CONV.node + " node, " +
+        (CONV.msys === "amanta" ? "amānta" : "pūrṇimānta") + " months named by " + (CONV.mname === "solar" ? "saṅkrānti" : "the full moon's nakṣatra") + ".";
+      $("ks-clres").innerHTML = out.map(function (o) {
+        var rd = o.rd, eps = o.res.episodes, per = eps.length / yrs * 1000;
+        var head = "<h3 class=\"ks-clh\">" + esc(rd.mine ? "Your claim" + (MY.n ? ": " + MY.n : "") : rd.claim.id + " reading " + rd.id) + " <span class=\"elw\">" + esc(rd.conds.map(condText).join(rd.mode === "within" ? "; within " + rd.days + " days, " : " · ")) + "</span></h3>";
+        var verdict = o.res.capped ? "<p class=\"k-note\"><b>More than " + CAP + " matches: this reading is too common to date anything by itself.</b> The first " + CAP + " are listed.</p>"
+          : "<p class=\"k-note\"><b>" + eps.length + (eps.length === 1 ? " match" : " matches") + "</b>, about " + (per < 10 ? per.toFixed(1) : Math.round(per)) + " per 1000 years" +
+            (eps.length && per > 20 ? ": common, so it narrows a date only together with other claims." : eps.length ? "." : ": nothing in this range meets it.") + (rd.mine ? " <i>Your claim, not from the catalogue.</i>" : "") + "</p>";
+        if (!eps.length) return head + verdict;
+        return head + verdict + '<div class="eltblwrap"><table class="aytab ks-cltab"><thead><tr><th>#</th><th>from</th><th>to</th><th>best moment (UT)</th><th>how each condition is met</th><th>caution</th><th></th></tr></thead><tbody>' +
+          eps.map(function (e, k) {
+            return "<tr><td class=\"num\">" + (k + 1) + "</td><td>" + civilText(e.from) + "</td><td>" + civilText(e.to) + "</td><td>" + civilText(e.best) + " " + hm(e.best) + "</td><td>" +
+              rd.conds.map(function (c, j) { var r = e.rs[j] || {}; return esc(condText(c).replace(/^any graha/, r.who || "any graha")) + ' <span class="elw">' + esc(fmtSep(r)) + "</span>"; }).join("<br>") +
+              "</td><td class=\"elw\">" + esc(flagsFor(rd, e.best)) + '</td><td><button type="button" class="swbtn" data-clshow="' + e.best + '">Show</button></td></tr>';
+          }).join("") + "</tbody></table></div>";
+      }).join("");
+    }
+  }
+  function claimText() { return "kalasetu-claim:1 " + JSON.stringify({ n: MY.n, ref: MY.ref, note: MY.note, mode: MY.mode, days: MY.days, conds: MY.conds }); }
+  function loadText(s) {
+    var m = String(s || "").trim().match(/^kalasetu-claim:1\s+(\{[\s\S]*\})$/);
+    if (!m) return "That text is not a Kālasetu claim. It should start with kalasetu-claim:1.";
+    try {
+      var o = JSON.parse(m[1]);
+      if (!o.conds || !o.conds.length || o.conds.some(function (c) { return !REL[c.rel]; })) return "That claim has a condition this page does not know.";
+      MY = { n: String(o.n || ""), ref: String(o.ref || ""), note: String(o.note || ""), mode: o.mode === "within" ? "within" : "same", days: Math.max(1, Math.min(3650, +o.days || 30)),
+             conds: o.conds.map(function (c) { return { g: GN.indexOf(c.g) >= 0 || c.g === "any" ? c.g : "", rel: c.rel, v: c.v, tol: c.tol == null ? undefined : +c.tol }; }) };
+      return null;
+    } catch (e) { return "That claim text is damaged and could not be read."; }
+  }
+  function claimsInit() {
+    if (!$("ks-claim")) return;
+    drawPicker(); drawBuilder();
+    $("ks-claim").addEventListener("change", pickerChanged);
+    $("ks-reading").addEventListener("change", adviseRange);
+    $("ks-clgo").addEventListener("click", runSearch);
+    $("ks-clstop").addEventListener("click", function () { CS.stop = true; });
+    $("ks-cledit").addEventListener("click", function () {
+      var cl = claimOf($("ks-claim").value); if (!cl) return;
+      var r = $("ks-reading").value, rd = cl.readings.filter(function (x) { return r === "all" ? true : x.id === r; })[0];
+      MY = { n: cl.id + " " + rd.id + " (edited)", ref: cl.ref, note: rd.label, mode: rd.mode || "same", days: rd.days || 30, conds: JSON.parse(JSON.stringify(rd.conds)) };
+      $("ks-claim").value = "mine"; pickerChanged(); drawBuilder();
+    });
+    $("ks-cbrows").addEventListener("change", function (ev) {
+      var el = ev.target, i = +el.getAttribute("data-i"), k = el.getAttribute("data-cb"); if (!k || !MY.conds[i]) return;
+      var c = MY.conds[i];
+      if (k === "rel") { c.rel = el.value; c.v = defaultV(c.rel); c.tol = REL[c.rel].tol; if (!REL[c.rel].graha) c.g = ""; else if (!c.g) c.g = "Śani"; }
+      else if (k === "g") c.g = el.value;
+      else if (k === "tol") c.tol = Math.max(0.1, Math.min(90, +el.value || 1));
+      else c.v = /^(nak|nakany|rasi|star|tithi|month)$/.test(REL[c.rel].target) ? +el.value : REL[c.rel].target === "lon" ? norm(+el.value || 0) : el.value;
+      drawBuilder(); adviseRange();
+    });
+    $("ks-cbrows").addEventListener("click", function (ev) {
+      var d = ev.target.getAttribute && ev.target.getAttribute("data-cbdel"); if (d == null) return;
+      MY.conds.splice(+d, 1); drawBuilder(); adviseRange();
+    });
+    $("ks-cbadd").addEventListener("click", function () { if (MY.conds.length >= 8) return; MY.conds.push({ g: "Guru", rel: "nak", v: 15 }); drawBuilder(); });
+    $("ks-cbmode").addEventListener("change", function () { MY.mode = $("ks-cbmode").value; drawBuilder(); });
+    $("ks-cbdays").addEventListener("change", function () { MY.days = Math.max(1, Math.min(3650, Math.round(+$("ks-cbdays").value || 30))); drawBuilder(); });
+    ["n", "ref", "note"].forEach(function (k) { var el = $({ n: "ks-cbname", ref: "ks-cbref", note: "ks-cbnote" }[k]); el.addEventListener("input", function () { MY[k] = el.value; keepMy(); }); });
+    $("ks-cbkeep").addEventListener("change", function () { MYKEEP = $("ks-cbkeep").checked; if (MYKEEP) keepMy(); else { try { localStorage.removeItem(MY_KEY); } catch (e) {} } });
+    $("ks-cbforget").addEventListener("click", function () {
+      try { localStorage.removeItem(MY_KEY); } catch (e) {}
+      MYKEEP = false; MY = { n: "", ref: "", note: "", mode: "same", days: 30, conds: [{ g: "Śani", rel: "nak", v: 3 }] }; drawBuilder();
+      $("ks-cbmsg").textContent = "Forgotten: nothing of your claim is kept in this browser.";
+    });
+    $("ks-cbcopy").addEventListener("click", function () {
+      var tx = claimText(), ta = $("ks-cbtext"); ta.value = tx;
+      var done = function () { $("ks-cbmsg").textContent = "Copied. Paste it here later, on another device, or into a chat to have it added to the catalogue."; };
+      var fallback = function () { ta.focus(); ta.select(); $("ks-cbmsg").textContent = "Selected in the box below: copy it from there."; };
+      try { navigator.clipboard.writeText(tx).then(done, fallback); } catch (e) { fallback(); }
+    });
+    $("ks-cbload").addEventListener("click", function () {
+      var err = loadText($("ks-cbtext").value);
+      $("ks-cbmsg").textContent = err || "Loaded.";
+      if (!err) { $("ks-claim").value = "mine"; pickerChanged(); drawBuilder(); }
+    });
+    $("ks-clres").addEventListener("click", function (ev) {
+      var v = ev.target.getAttribute && ev.target.getAttribute("data-clshow"); if (v == null) return;
+      writeWhen(+v); redrawMoment();
+      var w = $("ks-wheel"); if (w && w.scrollIntoView) w.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }
+
   function bind() {
     K = window.KalasetuEngine; D = window.__KALASETU_DATA;
     if (!K || !D || !K.isFitted() || !window.__kEclipModern || !window.__ayanFor || !window.__kNodesModern) {
@@ -2526,13 +3127,14 @@
     scrub.addEventListener("change", function () { ST.scrubbing = false; resetScrub(); });
     $("ks-accbody").addEventListener("change", bands);
     $("ks-groups").addEventListener("change", moonTerms);
-    tiles(); accTable(); bands(); eras(); history(); cost(); built();
+    tiles(); accTable(); bands(); eras(); history(); claimsInit(); cost(); built();
     redrawMoment(); clearTimeout(ST.heavy); deltaT(); nodes(); gi(); moonTerms(); measure();
     window.__ksPage = { setMoment: function (ms) { writeWhen(ms); redrawMoment(); }, measure: measure, moonTerms: moonTerms,
       step: stepBy, eras: eras, conv: function (k, v) { if (v === undefined) return CONV[k]; CONV[k] = v;
         var id = { cal: "ks-cal", frame: "ks-frame", node: "ks-nodeconv", nak: "ks-nakconv", msys: "ks-msys", mname: "ks-mname", rtu: "ks-rtu" }[k];
         if ($(id)) $(id).value = v; if (k === "cal") writeWhen(ST.ms); redrawMoment(); }, useFit: function (m) { $("ks-fit").value = m; if (K.use) K.use(m); redrawMoment(); },
-      state: function () { return { ms: ST.ms, place: ST.place, mode: $("ks-tmode").value }; } };
+      state: function () { return { ms: ST.ms, place: ST.place, mode: $("ks-tmode").value }; },
+      claims: function () { return CLAIMS; }, search: function (rd, a, b) { CS.run++; CS.stop = false; return searchClaim(rd, a, b, function () {}); } };
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind); else bind();
 })();
