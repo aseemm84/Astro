@@ -382,6 +382,7 @@
     YTCACHE = { key: key, v: out };
     return out;
   }
+  var STARNAMES = true;   /* the junction stars' names around the wheel */
   var ABHIJIT = false, MODALL = false, MODLIM = 1;   /* the modern engine's ring: drawn only past 1° unless asked for */
   /* the grahas' relative sizes, the convention the site's other wheels use
      (37-ecliptic-wheel.js): legible, not to scale */
@@ -390,7 +391,9 @@
     var W = 360, c = W / 2, R0 = 100, R1 = 122, R2 = 146, h = [];
     var P = function (L, r) { var a = (180 + L) * Math.PI / 180; return [c + r * Math.cos(a), c - r * Math.sin(a)]; };
     var f1 = function (v) { return v.toFixed(1); };
-    h.push('<svg viewBox="0 0 ' + W + " " + W + '" role="img" aria-label="The grahas, the rāśis, the 27 nakṣatras and their junction stars on one wheel">');
+    /* a margin round the wheel for the stars' names */
+    var M = STARNAMES ? 44 : 0;
+    h.push('<svg viewBox="' + (-M) + " " + (-M) + " " + (W + 2 * M) + " " + (W + 2 * M) + '" role="img" aria-label="The grahas, the rāśis, the 27 nakṣatras and their junction stars on one wheel">');
     [R0, R1, R2].forEach(function (r) { h.push('<circle class="ks-ring" cx="' + c + '" cy="' + c + '" r="' + r + '"/>'); });
     /* Abhijit, between Uttara Āṣāḍhā's last quarter and Śravaṇa's first fifteenth */
     if (ABHIJIT) {
@@ -414,6 +417,25 @@
        13°20′ division is marked, since that is where "nakṣatra" as a star and
        "nakṣatra" as a division part company */
     var ys = (yogataras(ST.ms) || []).map(function (y) { var o = {}; for (var q in y) o[q] = y[q]; o.lon = norm(y.lon + (ST.shift || 0)); return o; });
+    /* the name runs outward along the star's radius, turned on the left half so it never reads upside down */
+    /* names closer than GAP degrees are pushed apart (the star stays where it is) */
+    var GAP = 3.6, shown = ys.filter(function (y) { return y.nak !== "Abhijit" || ABHIJIT; }).sort(function (a, b) { return a.lon - b.lon; });
+    shown.forEach(function (y) { y.tl = y.lon; });
+    for (var it = 0; it < 30; it++) {
+      var moved = false;
+      for (var j = 0; j < shown.length; j++) {
+        var a = shown[j], b = shown[(j + 1) % shown.length], d = sdiff(b.tl, a.tl);
+        if (d >= 0 && d < GAP) { var push = (GAP - d) / 2; a.tl -= push; b.tl += push; moved = true; }
+      }
+      if (!moved) break;
+    }
+    var nameAt = function (y) {
+      if (!STARNAMES) return "";
+      var L = y.tl != null ? y.tl : y.lon, q = P(L, R2 + 17), ang = ((-(180 + L)) % 360 + 360) % 360, end = ang > 90 && ang < 270;
+      if (end) ang -= 180;
+      return '<text class="ks-ytn" x="' + f1(q[0]) + '" y="' + f1(q[1]) + '" text-anchor="' + (end ? "end" : "start") +
+        '" transform="rotate(' + f1(ang) + " " + f1(q[0]) + " " + f1(q[1]) + ')">' + esc(y.star) + "</text>";
+    };
     ys.forEach(function (y) {
       if (y.nak === "Abhijit" && !ABHIJIT) return;
       var own = y.nak === "Abhijit" ? true : NKS(y.lon).i === y.i, k0 = P(y.lon, R2), k1 = P(y.lon, R2 + 6), sp = P(y.lon, R2 + 11);
@@ -421,7 +443,7 @@
       h.push('<g class="ks-yt' + (own ? "" : " out") + '"><title>' + esc(y.nak + " · " + y.star + " (" + y.bayer + ", mag " + y.mag.toFixed(1) + ") · " +
         y.lon.toFixed(2) + "°, latitude " + y.lat.toFixed(1) + "° · " + (y.nak === "Abhijit" ? "Abhijit's star" : own ? "inside its own division" :
         "outside its own division: it stands in " + where)) + "</title>" +
-        '<line x1="' + f1(k0[0]) + '" y1="' + f1(k0[1]) + '" x2="' + f1(k1[0]) + '" y2="' + f1(k1[1]) + '"/>' + star(sp[0], sp[1], y.mag < 1.5 ? 4.4 : 3.4) + "</g>");
+        '<line x1="' + f1(k0[0]) + '" y1="' + f1(k0[1]) + '" x2="' + f1(k1[0]) + '" y2="' + f1(k1[1]) + '"/>' + star(sp[0], sp[1], y.mag < 1.5 ? 4.4 : 3.4) + nameAt(y) + "</g>");
     });
     if (pos.Lagna != null) {
       var la = P(pos.Lagna, 26), lb = P(pos.Lagna, R0), lt = P(pos.Lagna, R0 - 9);
@@ -491,9 +513,11 @@
       "<span>As: the lagna</span><span>Meṣa at the left, counter-clockwise</span>" +
       '<span><b class="ks-ytk">✦</b> the 27 junction stars on this date' + (outN ? " — <b class=\"ks-ytk out\">✦</b> " + outN + " stand outside their own division" : "") + "</span>" +
       '<label class="ks-abhi"><input type="checkbox" id="ks-abhijit"' + (ABHIJIT ? " checked" : "") + "> show Abhijit</label>" +
+      '<label class="ks-abhi"><input type="checkbox" id="ks-starnames"' + (STARNAMES ? " checked" : "") + "> star names</label>" +
       '<label class="ks-abhi"><input type="checkbox" id="ks-modall"' + (MODALL ? " checked" : "") + "> compare every graha with the modern engine</label></p>";
     var cb = $("ks-abhijit"); if (cb) cb.onchange = function () { ABHIJIT = cb.checked; wheel(pos); };
     var cm = $("ks-modall"); if (cm) cm.onchange = function () { MODALL = cm.checked; wheel(pos); };
+    var cn = $("ks-starnames"); if (cn) cn.onchange = function () { STARNAMES = cn.checked; wheel(pos); };
   }
   /* a four-pointed star, so a junction star reads as a star and not a graha */
   function star(x, y, r) {

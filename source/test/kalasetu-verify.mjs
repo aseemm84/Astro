@@ -421,6 +421,17 @@ head("The Kālasetu page");
     abhi: !!document.querySelector("#ks-wheel .ks-abhijit") }));
   is(wh.dots === 9 && wh.yt === 27 && wh.naks >= 27, `the wheel draws 9 grahas, 27 nakṣatra labels (${wh.naks}) and 27 yogatāras (${wh.yt})`);
   is(wh.art === 9, `the grahas are drawn with the site's graha images (${wh.art} of 9)`);
+  /* the junction stars' names: one per star, pushed apart where stars crowd, and switchable */
+  const sn = await p.evaluate(() => {
+    const T = () => [...document.querySelectorAll("#ks-wheel .ks-ytn")];
+    const pts = T().map((t) => [+t.getAttribute("x"), +t.getAttribute("y"), t.textContent]);
+    let close = Infinity; for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) close = Math.min(close, Math.hypot(pts[i][0] - pts[j][0], pts[i][1] - pts[j][1]));
+    const names = pts.map((q) => q[2]);
+    const c = document.getElementById("ks-starnames"); c.checked = false; c.dispatchEvent(new Event("change")); const off = T().length;
+    const c2 = document.getElementById("ks-starnames"); c2.checked = true; c2.dispatchEvent(new Event("change"));
+    return { n: names.length, close, off, has: ["Aldebaran", "Spica", "Regulus", "Antares", "Pollux"].every((x) => names.includes(x)) }; });
+  is(sn.n === 27 && sn.has && sn.close > 6 && sn.off === 0,
+     `the wheel names all 27 junction stars (Aldebaran, Spica, Regulus …), no two names closer than ${sn.close.toFixed(1)} units, and the names can be switched off`);
   /* the modern engine's ring: absent where the engines agree, drawn and labelled where they part, all nine on request */
   const md = await p.evaluate(() => {
     const n = () => document.querySelectorAll("#ks-wheel .ks-mod").length, out = { now: n(), leg: document.querySelector("#ks-wheel .ks-legend").textContent };
