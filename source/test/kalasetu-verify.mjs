@@ -470,7 +470,10 @@ head("The Kālasetu page");
       pair: await S([{ g: "", rel: "eclipse", v: "lunar" }, { g: "", rel: "eclipse", v: "solar" }], 2018, 2018, "within", 15),
       c12: c12.episodes.length, c12cap: c12.capped,
       n: C.length, none: C.filter(c => c.none).length,
-      opts: document.querySelectorAll("#ks-claim option").length, dis: document.querySelectorAll("#ks-claim option:disabled").length };
+      opts: document.querySelectorAll("#ks-claim option").length, dis: document.querySelectorAll("#ks-claim option:disabled").length,
+      groups: [...document.querySelectorAll("#ks-claim optgroup")].map(g => g.label).join(),
+      r01a: (await window.__ksPage.search(C.find(c => c.id === "R01").readings[0], Y(-7499), Y(-4999))).episodes.length,
+      r01c: (await window.__ksPage.search(C.find(c => c.id === "R01").readings[2], Y(-7499), Y(-4999))).episodes.length };
   });
   is(cs.solar.join() === "2017-02-26,2017-08-21", `the solar eclipses of 2017 are found on their days (${cs.solar.join(", ")})`);
   is(cs.lunar.join() === "2018-01-31,2018-07-27", `the lunar eclipses of 2018 are found, and penumbral-only ones are not (${cs.lunar.join(", ")})`);
@@ -479,7 +482,9 @@ head("The Kālasetu page");
   is(cs.caitra.join() === "2025-04-12", `Caitra Pūrṇimā 2025 is 12 April (${cs.caitra.join(", ")})`);
   is(cs.pair.join() === "2018-01-31,2018-07-27", `"within 15 days" pairs each 2018 lunar eclipse with a solar eclipse a fortnight away (${cs.pair.join(", ")})`);
   is(cs.c12 > 0 && cs.c12 < 100 && !cs.c12cap, `C12 reading A (Guru and Śani near Viśākhā's star) is found ${cs.c12} times in 4000 – 2000 BCE`);
-  is(cs.n === 22 && cs.opts === 23 && cs.dis === cs.none && cs.none === 7, `the picker offers your own claim and the 22 catalogue claims, 7 greyed out as not searchable`);
+  is(cs.n === 31 && cs.opts === 32 && cs.dis === cs.none && cs.none === 10 && cs.groups === "Mahābhārata,Bhāgavata,Rāmāyaṇa,In the catalogue, but no search can test these",
+     `the picker offers your own claim and the 31 catalogue claims by text, the 10 that cannot be searched grouped last (${cs.groups})`);
+  is(cs.r01c >= 1 && cs.r01a === 0, `Rāma's birth chart (R01): the five exalted occur ${cs.r01c} time(s) in 7500 – 5000 BCE, but never with Punarvasu on Caitra Śukla Navamī`);
   /* the panel: a catalogue claim through the buttons, then your own claim */
   const ui = await p.evaluate(async () => {
     const s = id => document.getElementById(id), out = {};

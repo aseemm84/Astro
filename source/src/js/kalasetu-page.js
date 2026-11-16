@@ -1076,8 +1076,36 @@
     { id: "C19", ref: "Bhāgavata 12.2.27–28", sky: "Saptarṣis 100 years per nakṣatra", none: "a counting convention, not a motion of the sky" },
     { id: "C20", ref: "Bhāgavata 12.2.29–33", sky: "Kali begins as Kṛṣṇa departs", none: "the epoch is a computed date: see the Kali row under “Checked against recorded history”" },
     { id: "C21", ref: "Bhāgavata 12.2.32", sky: "Saptarṣis from Maghā to Pūrvāṣāḍhā", none: "arithmetic on the Saptarṣi count, not a search" },
-    { id: "C22", ref: "MBh 13.88.12; Bhāgavata 7.14.20–21", sky: "Rites on set tithis", none: "a rule for when rites are good, not a dated event" }
+    { id: "C22", ref: "MBh 13.88.12; Bhāgavata 7.14.20–21", sky: "Rites on set tithis", none: "a rule for when rites are good, not a dated event" },
+    /* the Vālmīki Rāmāyaṇa: the Baroda Critical Edition (GRETIL, Tokunaga/Smith),
+       except R01, which that edition leaves out and the vulgate gives */
+    { id: "R01", ref: "Rāmāyaṇa 1.18.8–10 (vulgate; not in the critical edition)", sky: "Rāma's birth: Caitra navamī, Punarvasu, five grahas exalted, Guru with the Moon", readings: [
+      { id: "A", label: "the five exalted (Sūrya, Maṅgala, Guru, Śukra, Śani), Candra in Punarvasu in Karka, Śukla Navamī of Caitra (the Karka lagna needs a clock time, so it is not searched)",
+        conds: [{ g: "Śani", rel: "exalt" }, { g: "Guru", rel: "exalt" }, { g: "Maṅgala", rel: "exalt" }, { g: "Śukra", rel: "exalt" }, { g: "Sūrya", rel: "exalt" },
+                { g: "", rel: "month", v: 0 }, { g: "", rel: "tithi", v: 9 }, { g: "Candra", rel: "nak", v: 6 }, { g: "Candra", rel: "rasi", v: 3 }] },
+      { id: "B", label: "the five exalted, Candra in Punarvasu in Karka (no tithi or month)",
+        conds: [{ g: "Śani", rel: "exalt" }, { g: "Guru", rel: "exalt" }, { g: "Maṅgala", rel: "exalt" }, { g: "Śukra", rel: "exalt" }, { g: "Sūrya", rel: "exalt" },
+                { g: "Candra", rel: "nak", v: 6 }, { g: "Candra", rel: "rasi", v: 3 }] },
+      { id: "C", label: "the five exalted only",
+        conds: [{ g: "Śani", rel: "exalt" }, { g: "Guru", rel: "exalt" }, { g: "Maṅgala", rel: "exalt" }, { g: "Śukra", rel: "exalt" }, { g: "Sūrya", rel: "exalt" }] }] },
+    { id: "R02", ref: "Rāmāyaṇa 2.3.4; 2.4.2, 2.4.21", sky: "Caitra; the Moon in Punarvasu, Puṣya tomorrow (the planned coronation)", readings: [
+      { id: "A", label: "Candra in Punarvasu in Caitra (yearly: useful once a year is fixed)", conds: [{ g: "", rel: "month", v: 0 }, { g: "Candra", rel: "nak", v: 6 }] }] },
+    { id: "R03", ref: "Rāmāyaṇa 2.4.18", sky: "Daśaratha's nakṣatra oppressed by the Sun, Mars and Rāhu", readings: [
+      { id: "A", label: "Sūrya, Maṅgala and Rāhu together (within 13°20′, one nakṣatra's width); the text does not name Daśaratha's nakṣatra",
+        conds: [{ g: "Rāhu", rel: "neargraha", v: "Sūrya", tol: 13.3 }, { g: "Maṅgala", rel: "neargraha", v: "Sūrya", tol: 13.3 }] },
+      { id: "B", label: "reading A, at the same moment as R02 (Caitra, Candra in Punarvasu)",
+        conds: [{ g: "Rāhu", rel: "neargraha", v: "Sūrya", tol: 13.3 }, { g: "Maṅgala", rel: "neargraha", v: "Sūrya", tol: 13.3 }, { g: "", rel: "month", v: 0 }, { g: "Candra", rel: "nak", v: 6 }] }] },
+    { id: "R04", ref: "Rāmāyaṇa 3.22.11", sky: "Svarbhānu seized the Sun before the battle with Khara", none: "the text says it happened apārvaṇi, not at a new moon, so it is an omen; no eclipse can happen then" },
+    { id: "R05", ref: "Rāmāyaṇa 4.26.18", sky: "Rāma waits for śarad as the rains begin", none: "a season, not a position of the grahas" },
+    { id: "R06", ref: "Rāmāyaṇa 6.4.3–4", sky: "The army sets out: Uttara Phalgunī today, Hasta tomorrow", readings: [
+      { id: "A", label: "Candra in Uttara Phalgunī (monthly: useful once a year and month are fixed)", conds: [{ g: "Candra", rel: "nak", v: 11 }] }] },
+    { id: "R07", ref: "Rāmāyaṇa 6.4.46", sky: "Mūla, the rākṣasas' nakṣatra, touched by a dhūmaketu", readings: [
+      { id: "A", label: "Ketu in Mūla (reading dhūmaketu as the node; a comet cannot be computed)", conds: [{ g: "Ketu", rel: "nak", v: 18 }] }] },
+    { id: "R08", ref: "Rāmāyaṇa 6.90.27", sky: "Budha stands assailing Rohiṇī during the last battle", readings: [
+      { id: "A", label: "Budha in Rohiṇī", conds: [{ g: "Budha", rel: "nak", v: 3 }] }] },
+    { id: "R09", ref: "Rāmāyaṇa 3.44.9; 5.17.8; 5.31.6", sky: "Śani approaching Citrā; Rohiṇī afflicted by a graha", none: "similes describing Sītā, not the sky on a day" }
   ];
+  CLAIMS.forEach(function (c) { c.src = /^Rāmāyaṇa/.test(c.ref) ? "Rāmāyaṇa" : /^Bhāgavata/.test(c.ref) ? "Bhāgavata" : "Mahābhārata"; });
   /* what each relation means, how the builder offers it, and how it reads aloud */
   var REL = {
     nak: { label: "is in nakṣatra", target: "nak", graha: true },
@@ -1451,9 +1479,14 @@
     return CLAIMS.filter(function (c) { return c.id === sel; })[0];
   }
   function drawPicker() {
-    $("ks-claim").innerHTML = opt("mine", "Your own claim (build it below)", false) + CLAIMS.map(function (c) {
-      return '<option value="' + c.id + '"' + (c.none ? " disabled" : "") + ">" + esc(c.id + " · " + c.ref + " · " + c.sky + (c.none ? " — not searchable: " + c.none : "")) + "</option>";
-    }).join("");
+    /* grouped by text; the claims no search can test sit in their own group at
+       the end, each with the reason, so the catalogue stays complete */
+    var grp = function (label, list) { return list.length ? '<optgroup label="' + esc(label) + '">' + list.map(function (c) {
+      return '<option value="' + c.id + '"' + (c.none ? " disabled" : "") + ">" + esc(c.id + " · " + c.ref + " · " + c.sky + (c.none ? " — " + c.none : "")) + "</option>"; }).join("") + "</optgroup>" : ""; };
+    var can = CLAIMS.filter(function (c) { return !c.none; });
+    $("ks-claim").innerHTML = opt("mine", "Your own claim (build it below)", false) +
+      ["Mahābhārata", "Bhāgavata", "Rāmāyaṇa"].map(function (t) { return grp(t, can.filter(function (c) { return c.src === t; })); }).join("") +
+      grp("In the catalogue, but no search can test these", CLAIMS.filter(function (c) { return c.none; }));
     $("ks-claim").value = "C12";
     pickerChanged();
   }
