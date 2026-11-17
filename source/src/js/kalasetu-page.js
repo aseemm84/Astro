@@ -1064,56 +1064,56 @@
   /* the catalogue's searchable readings; the ids, references and wording follow
      the sheet. Claims no search can test stay in the sheet and are not offered here. */
   var CLAIMS = [
-    { id: "C01", ref: "MBh 5.141.7", sky: "Saturn afflicts Rohiṇī", readings: [
+    { id: "C01", event: "Before the war: Karṇa tells Kṛṣṇa the omens, after the peace embassy fails", ref: "MBh 5.141.7", sky: "Saturn afflicts Rohiṇī", readings: [
       { id: "A", label: "Śani inside Rohiṇī's division", conds: [{ g: "Śani", rel: "nak", v: 3 }] },
       { id: "B", label: "Śani within 5° of Aldebaran, Rohiṇī's junction star", conds: [{ g: "Śani", rel: "nearstar", v: 3, tol: 5 }] }] },
-    { id: "C02", ref: "MBh 5.141.8", sky: "Mars retrograde at Jyeṣṭhā, moving toward Anurādhā", readings: [
+    { id: "C02", event: "Before the war: Karṇa tells Kṛṣṇa the omens, after the peace embassy fails", ref: "MBh 5.141.8", sky: "Mars retrograde at Jyeṣṭhā, moving toward Anurādhā", readings: [
       { id: "A", label: "Maṅgala turns retrograde in Jyeṣṭhā", conds: [{ g: "Maṅgala", rel: "station", v: 17 }] },
       { id: "B", label: "Maṅgala retrograde in Jyeṣṭhā, then retrograde in Anurādhā within 120 days", mode: "within", days: 120,
         conds: [{ g: "Maṅgala", rel: "retro", v: 17 }, { g: "Maṅgala", rel: "retro", v: 16 }] }] },
-    { id: "C03", ref: "MBh 5.141.9", sky: "A graha afflicts Citrā", readings: [
+    { id: "C03", event: "Before the war: Karṇa tells Kṛṣṇa the omens, after the peace embassy fails", ref: "MBh 5.141.9", sky: "A graha afflicts Citrā", readings: [
       { id: "A", label: "any graha in Citrā (the results say which)", conds: [{ g: "any", rel: "nak", v: 13 }] }] },
-    { id: "C04", ref: "MBh 5.141.10", sky: "Rāhu will approach the Sun", readings: [
+    { id: "C04", event: "Before the war: Karṇa tells Kṛṣṇa the omens, after the peace embassy fails", ref: "MBh 5.141.10", sky: "Rāhu will approach the Sun", readings: [
       { id: "A", label: "a solar eclipse (somewhere on Earth)", conds: [{ g: "", rel: "eclipse", v: "solar" }] },
       { id: "B", label: "eclipse season: Sūrya within 18° of Rāhu or Ketu", conds: [{ g: "Sūrya", rel: "nearnode", tol: 18 }] }] },
-    { id: "C05", ref: "MBh 6.2.23", sky: "Moon fire-coloured on the Kārttika full moon", readings: [
+    { id: "C05", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.2.23", sky: "Moon fire-coloured on the Kārttika full moon", readings: [
       { id: "A", label: "a lunar eclipse in Kārttika", conds: [{ g: "", rel: "month", v: 7 }, { g: "", rel: "eclipse", v: "lunar" }] }] },
-    { id: "C06", ref: "MBh 6.2.32", sky: "Saturn stands afflicting Rohiṇī (as C01)", readings: [
+    { id: "C06", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.2.32", sky: "Saturn stands afflicting Rohiṇī (as C01)", readings: [
       { id: "A", label: "Śani inside Rohiṇī's division", conds: [{ g: "Śani", rel: "nak", v: 3 }] },
       { id: "B", label: "Śani within 5° of Aldebaran", conds: [{ g: "Śani", rel: "nearstar", v: 3, tol: 5 }] }] },
-    { id: "C07", ref: "MBh 6.3.11", sky: "Rāhu seized the Sun; a white graha has passed beyond Citrā", readings: [
+    { id: "C07", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.3.11", sky: "Rāhu seized the Sun; a white graha has passed beyond Citrā", readings: [
       { id: "A", label: "a solar eclipse, and Śukra in Svātī, within 30 days", mode: "within", days: 30,
         conds: [{ g: "", rel: "eclipse", v: "solar" }, { g: "Śukra", rel: "nak", v: 14 }] },
       { id: "B", label: "a solar eclipse, and Ketu in Svātī, within 30 days", mode: "within", days: 30,
         conds: [{ g: "", rel: "eclipse", v: "solar" }, { g: "Ketu", rel: "nak", v: 14 }] }] },
-    { id: "C09", ref: "MBh 6.3.13", sky: "Mars retrograde in Maghā; Jupiter in Śravaṇa", readings: [
+    { id: "C09", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.3.13", sky: "Mars retrograde in Maghā; Jupiter in Śravaṇa", readings: [
       { id: "A", label: "Maṅgala retrograde in Maghā while Guru is in Śravaṇa", conds: [{ g: "Maṅgala", rel: "retro", v: 9 }, { g: "Guru", rel: "nak", v: 21 }] }] },
-    { id: "C10", ref: "MBh 6.3.14", sky: "Saturn afflicts Pūrva Phalgunī; Venus on Pūrva Bhādrapadā", readings: [
+    { id: "C10", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.3.14", sky: "Saturn afflicts Pūrva Phalgunī; Venus on Pūrva Bhādrapadā", readings: [
       { id: "A", label: "Śani in Pūrva Phalgunī while Śukra is in Pūrva Bhādrapadā", conds: [{ g: "Śani", rel: "nak", v: 10 }, { g: "Śukra", rel: "nak", v: 24 }] },
       { id: "B", label: "Śani in Pūrva Phalgunī while Śukra is in Uttara Bhādrapadā", conds: [{ g: "Śani", rel: "nak", v: 10 }, { g: "Śukra", rel: "nak", v: 25 }] }] },
-    { id: "C11", ref: "MBh 6.3.17", sky: "Mars makes vakra-anuvakra in Śravaṇa", readings: [
+    { id: "C11", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.3.17", sky: "Mars makes vakra-anuvakra in Śravaṇa", readings: [
       { id: "A", label: "Maṅgala retrograde in Śravaṇa", conds: [{ g: "Maṅgala", rel: "retro", v: 21 }] }] },
-    { id: "C12", ref: "MBh 6.3.25", sky: "Jupiter and Saturn near Viśākhā", readings: [
+    { id: "C12", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.3.25", sky: "Jupiter and Saturn near Viśākhā", readings: [
       { id: "A", label: "Guru and Śani both within 6° of Zubenelgenubi, Viśākhā's junction star",
         conds: [{ g: "Śani", rel: "nearstar", v: 15, tol: 6 }, { g: "Guru", rel: "nearstar", v: 15, tol: 6 }] },
       { id: "B", label: "Guru within 6° of Śani, both in Viśākhā's division",
         conds: [{ g: "Śani", rel: "nak", v: 15 }, { g: "Guru", rel: "nak", v: 15 }, { g: "Guru", rel: "neargraha", v: "Śani", tol: 6 }] }] },
-    { id: "C14", ref: "MBh 6.3.28–29", sky: "Sun and Moon both eclipsed in one month", readings: [
+    { id: "C14", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.3.28–29", sky: "Sun and Moon both eclipsed in one month", readings: [
       { id: "A", label: "a lunar and a solar eclipse within 15 days", mode: "within", days: 15,
         conds: [{ g: "", rel: "eclipse", v: "lunar" }, { g: "", rel: "eclipse", v: "solar" }] }] },
-    { id: "C15", ref: "MBh 14.71.4", sky: "Caitra full moon", readings: [
+    { id: "C15", event: "After the war: Vyāsa fixes Yudhiṣṭhira's consecration for the Aśvamedha", ref: "MBh 14.71.4", sky: "Caitra full moon", readings: [
       { id: "A", label: "Pūrṇimā in Caitra (recurs every year: useful once a year is fixed)", conds: [{ g: "", rel: "month", v: 0 }, { g: "", rel: "tithi", v: 15 }] }] },
-    { id: "C16", ref: "MBh 14.86.4, 14.86.8", sky: "Māgha dvādaśī; Māgha full moon", readings: [
+    { id: "C16", event: "After the war: the Aśvamedha horse turns home; Yudhiṣṭhira fixes the day and readies the sacrifice", ref: "MBh 14.86.4, 14.86.8", sky: "Māgha dvādaśī; Māgha full moon", readings: [
       { id: "A", label: "Śukla Dvādaśī in Māgha (yearly)", conds: [{ g: "", rel: "month", v: 10 }, { g: "", rel: "tithi", v: 12 }] },
       { id: "B", label: "Pūrṇimā in Māgha (yearly)", conds: [{ g: "", rel: "month", v: 10 }, { g: "", rel: "tithi", v: 15 }] }] },
-    { id: "C18", ref: "Bhāgavata 12.2.24", sky: "Moon, Sun, Tiṣya and Jupiter in one rāśi", readings: [
+    { id: "C18", event: "Śuka's prophecy to Parīkṣit: the sign that the Kṛta age returns", ref: "Bhāgavata 12.2.24", sky: "Moon, Sun, Tiṣya and Jupiter in one rāśi", readings: [
       { id: "A", label: "new moon with Sūrya, Candra and Guru in Karka (the rāśi holding Puṣya)",
         conds: [{ g: "Guru", rel: "rasi", v: 3 }, { g: "Sūrya", rel: "rasi", v: 3 }, { g: "", rel: "tithi", v: 30 }, { g: "Candra", rel: "rasi", v: 3 }] },
       { id: "B", label: "Sūrya, Candra and Guru all in Puṣya",
         conds: [{ g: "Guru", rel: "nak", v: 7 }, { g: "Sūrya", rel: "nak", v: 7 }, { g: "Candra", rel: "nak", v: 7 }] }] },
     /* the Vālmīki Rāmāyaṇa: the Baroda Critical Edition (GRETIL, Tokunaga/Smith),
        except R01, which that edition leaves out and the vulgate gives */
-    { id: "R01", ref: "Rāmāyaṇa 1.18.8–10 (vulgate; not in the critical edition)", sky: "Rāma's birth: Caitra navamī, Punarvasu, five grahas exalted, Guru with the Moon", readings: [
+    { id: "R01", event: "Rāma's birth", ref: "Rāmāyaṇa 1.18.8–10 (vulgate; not in the critical edition)", sky: "Caitra navamī, Punarvasu, five grahas exalted, Guru with the Moon", readings: [
       { id: "A", label: "the five exalted (Sūrya, Maṅgala, Guru, Śukra, Śani), Candra in Punarvasu in Karka, Śukla Navamī of Caitra (the Karka lagna needs a clock time, so it is not searched)",
         conds: [{ g: "Śani", rel: "exalt" }, { g: "Guru", rel: "exalt" }, { g: "Maṅgala", rel: "exalt" }, { g: "Śukra", rel: "exalt" }, { g: "Sūrya", rel: "exalt" },
                 { g: "", rel: "month", v: 0 }, { g: "", rel: "tithi", v: 9 }, { g: "Candra", rel: "nak", v: 6 }, { g: "Candra", rel: "rasi", v: 3 }] },
@@ -1122,18 +1122,18 @@
                 { g: "Candra", rel: "nak", v: 6 }, { g: "Candra", rel: "rasi", v: 3 }] },
       { id: "C", label: "the five exalted only",
         conds: [{ g: "Śani", rel: "exalt" }, { g: "Guru", rel: "exalt" }, { g: "Maṅgala", rel: "exalt" }, { g: "Śukra", rel: "exalt" }, { g: "Sūrya", rel: "exalt" }] }] },
-    { id: "R02", ref: "Rāmāyaṇa 2.3.4; 2.4.2, 2.4.21", sky: "Caitra; the Moon in Punarvasu, Puṣya tomorrow (the planned coronation)", readings: [
+    { id: "R02", event: "Daśaratha fixes Rāma's coronation as heir for the next day, Puṣya", ref: "Rāmāyaṇa 2.3.4; 2.4.2, 2.4.21", sky: "Caitra; the Moon in Punarvasu, Puṣya tomorrow", readings: [
       { id: "A", label: "Candra in Punarvasu in Caitra (yearly: useful once a year is fixed)", conds: [{ g: "", rel: "month", v: 0 }, { g: "Candra", rel: "nak", v: 6 }] }] },
-    { id: "R03", ref: "Rāmāyaṇa 2.4.18", sky: "Daśaratha's nakṣatra oppressed by the Sun, Mars and Rāhu", readings: [
+    { id: "R03", event: "Daśaratha tells Rāma the omens that make him hurry the coronation", ref: "Rāmāyaṇa 2.4.18", sky: "Daśaratha's nakṣatra oppressed by the Sun, Mars and Rāhu", readings: [
       { id: "A", label: "Sūrya, Maṅgala and Rāhu together (within 13°20′, one nakṣatra's width); the text does not name Daśaratha's nakṣatra",
         conds: [{ g: "Rāhu", rel: "neargraha", v: "Sūrya", tol: 13.3 }, { g: "Maṅgala", rel: "neargraha", v: "Sūrya", tol: 13.3 }] },
       { id: "B", label: "reading A, at the same moment as R02 (Caitra, Candra in Punarvasu)",
         conds: [{ g: "Rāhu", rel: "neargraha", v: "Sūrya", tol: 13.3 }, { g: "Maṅgala", rel: "neargraha", v: "Sūrya", tol: 13.3 }, { g: "", rel: "month", v: 0 }, { g: "Candra", rel: "nak", v: 6 }] }] },
-    { id: "R06", ref: "Rāmāyaṇa 6.4.3–4", sky: "The army sets out: Uttara Phalgunī today, Hasta tomorrow", readings: [
+    { id: "R06", event: "Rāma's army sets out from Kiṣkindhā for Laṅkā", ref: "Rāmāyaṇa 6.4.3–4", sky: "Uttara Phalgunī today, Hasta tomorrow", readings: [
       { id: "A", label: "Candra in Uttara Phalgunī (monthly: useful once a year and month are fixed)", conds: [{ g: "Candra", rel: "nak", v: 11 }] }] },
-    { id: "R07", ref: "Rāmāyaṇa 6.4.46", sky: "Mūla, the rākṣasas' nakṣatra, touched by a dhūmaketu", readings: [
+    { id: "R07", event: "Rāma's army sets out for Laṅkā: omens on the march", ref: "Rāmāyaṇa 6.4.46", sky: "Mūla, the rākṣasas' nakṣatra, touched by a dhūmaketu", readings: [
       { id: "A", label: "Ketu in Mūla (reading dhūmaketu as the node; a comet cannot be computed)", conds: [{ g: "Ketu", rel: "nak", v: 18 }] }] },
-    { id: "R08", ref: "Rāmāyaṇa 6.90.27", sky: "Budha stands assailing Rohiṇī during the last battle", readings: [
+    { id: "R08", event: "Rāma's last battle with Rāvaṇa: omens during the duel", ref: "Rāmāyaṇa 6.90.27", sky: "Budha stands assailing Rohiṇī", readings: [
       { id: "A", label: "Budha in Rohiṇī", conds: [{ g: "Budha", rel: "nak", v: 3 }] }] }
   ];
   CLAIMS.forEach(function (c) { c.src = /^Rāmāyaṇa/.test(c.ref) ? "Rāmāyaṇa" : /^Bhāgavata/.test(c.ref) ? "Bhāgavata" : "Mahābhārata"; });
@@ -1514,7 +1514,8 @@
     /* grouped by text; only claims a search can test are offered (the sheet
        keeps the rest: comets, similes, seasons, rites, counting conventions) */
     var grp = function (label, list) { return list.length ? '<optgroup label="' + esc(label) + '">' + list.map(function (c) {
-      return '<option value="' + c.id + '"' + (c.none ? " disabled" : "") + ">" + esc(c.id + " · " + c.ref + " · " + c.sky + (c.none ? " — " + c.none : "")) + "</option>"; }).join("") + "</optgroup>" : ""; };
+      /* the event in the epic first, then what the verse says of the sky */
+      return '<option value="' + c.id + '"' + (c.none ? " disabled" : "") + ">" + esc(c.id + " · " + (c.event ? c.event + " — " : "") + c.sky + (c.none ? " — " + c.none : "")) + "</option>"; }).join("") + "</optgroup>" : ""; };
     var can = CLAIMS.filter(function (c) { return !c.none; });
     $("ks-claim").innerHTML = opt("mine", "Your own claim (build it below)", false) +
       ["Mahābhārata", "Bhāgavata", "Rāmāyaṇa"].map(function (t) { return grp(t, can.filter(function (c) { return c.src === t; })); }).join("");
@@ -1526,6 +1527,8 @@
     $("ks-cbox").open = !cl;
     $("ks-reading").innerHTML = cl ? opt("all", "all readings, each on its own", true) + cl.readings.map(function (r) { return opt(r.id, r.id + ": " + r.label, false); }).join("") : opt("mine", "your conditions", true);
     $("ks-reading").disabled = !cl; $("ks-cledit").disabled = !cl;
+    var inf = $("ks-clinfo");
+    if (inf) inf.innerHTML = cl ? "<b>" + esc(cl.event || "") + "</b> · " + esc(cl.ref) + " · " + esc(cl.sky) : "";
     adviseRange();
   }
   function readingsNow() {
@@ -1587,7 +1590,7 @@
         (CONV.msys === "amanta" ? "amānta" : "pūrṇimānta") + " months named by " + (CONV.mname === "solar" ? "saṅkrānti" : "the full moon's nakṣatra") + ".";
       $("ks-clres").innerHTML = out.map(function (o) {
         var rd = o.rd, eps = o.res.episodes, per = eps.length / yrs * 1000;
-        var head = "<h3 class=\"ks-clh\">" + esc(rd.mine ? "Your claim" + (MY.n ? ": " + MY.n : "") : rd.claim.id + " reading " + rd.id) + " <span class=\"elw\">" + esc(rd.conds.map(condText).join(rd.mode === "within" ? "; within " + rd.days + " days, " : " · ")) + "</span></h3>";
+        var head = "<h3 class=\"ks-clh\">" + esc(rd.mine ? "Your claim" + (MY.n ? ": " + MY.n : "") : rd.claim.id + " reading " + rd.id + (rd.claim.event ? " · " + rd.claim.event : "")) + " <span class=\"elw\">" + esc(rd.conds.map(condText).join(rd.mode === "within" ? "; within " + rd.days + " days, " : " · ")) + "</span></h3>";
         var verdict = o.res.capped ? "<p class=\"k-note\"><b>More than " + CAP + " matches: this reading is too common to date anything by itself.</b> The first " + CAP + " are listed.</p>"
           : "<p class=\"k-note\"><b>" + eps.length + (eps.length === 1 ? " match" : " matches") + "</b>, about " + (per < 10 ? per.toFixed(1) : Math.round(per)) + " per 1000 years" +
             (eps.length && per > 20 ? ": common, so it narrows a date only together with other claims." : eps.length ? "." : ": nothing in this range meets it.") + (rd.mine ? " <i>Your claim, not from the catalogue.</i>" : "") + "</p>";

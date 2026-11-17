@@ -483,6 +483,11 @@ head("The Kālasetu page");
       n: C.length, none: C.filter(c => c.none).length,
       opts: document.querySelectorAll("#ks-claim option").length, dis: document.querySelectorAll("#ks-claim option:disabled").length,
       groups: [...document.querySelectorAll("#ks-claim optgroup")].map(g => g.label).join(),
+      events: C.filter(c => c.event).length,
+      r01opt: document.querySelector('#ks-claim option[value="R01"]').textContent,
+      c01opt: document.querySelector('#ks-claim option[value="C01"]').textContent,
+      info: (() => { const s = document.getElementById("ks-claim"); s.value = "R01"; s.dispatchEvent(new Event("change"));
+        const t = document.getElementById("ks-clinfo").textContent; s.value = "C12"; s.dispatchEvent(new Event("change")); return t; })(),
       r01a: (await window.__ksPage.search(C.find(c => c.id === "R01").readings[0], Y(-7499), Y(-4999))).episodes.length,
       r01c: (await window.__ksPage.search(C.find(c => c.id === "R01").readings[2], Y(-7499), Y(-4999))).episodes.length };
   });
@@ -493,6 +498,8 @@ head("The Kālasetu page");
   is(cs.caitra.join() === "2025-04-12", `Caitra Pūrṇimā 2025 is 12 April (${cs.caitra.join(", ")})`);
   is(cs.pair.join() === "2018-01-31,2018-07-27", `"within 15 days" pairs each 2018 lunar eclipse with a solar eclipse a fortnight away (${cs.pair.join(", ")})`);
   is(cs.c12 > 0 && cs.c12 < 100 && !cs.c12cap, `C12 reading A (Guru and Śani near Viśākhā's star) is found ${cs.c12} times in 4000 – 2000 BCE`);
+  is(cs.events === cs.n && /Rāma's birth/.test(cs.r01opt) && /Karṇa tells Kṛṣṇa/.test(cs.c01opt) && /Rāma's birth/.test(cs.info),
+     `every claim in the list names its event in the epic first (R01: "${cs.r01opt.slice(0, 40)}…"), and the line under the list repeats it in full`);
   is(cs.n === 21 && cs.opts === 22 && cs.dis === 0 && cs.none === 0 && cs.groups === "Mahābhārata,Bhāgavata,Rāmāyaṇa",
      `the picker offers your own claim and only the 21 claims a search can test, grouped by text (${cs.groups})`);
   is(cs.r01c >= 1 && cs.r01a === 0, `Rāma's birth chart (R01): the five exalted occur ${cs.r01c} time(s) in 7500 – 5000 BCE, but never with Punarvasu on Caitra Śukla Navamī`);
