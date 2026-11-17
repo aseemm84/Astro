@@ -200,10 +200,12 @@
       "typical " + am(a.rms) + ", bias " + am(a.bias) + ", worst " + am(a.worst) + ", from " + a.n + " held-back moments") + '">±' + am(a.rms) +
       ' <span class="elw">bias ' + am(a.bias) + " · worst " + am(a.worst) + (ex ? " · extrapolated" : "") + "</span></td>";
   }
-  /* the Moon and the nodes have no independent reference outside DE422 */
+  /* since 17 Nov 2026 the Moon and true node are measured against JPL DE431
+     over the whole span; nothing is extrapolated unless a set says so */
   function extrapolated(key, ms) {
-    var y = new Date(ms).getUTCFullYear();
-    return (key === "Candra" || key === "Rāhu (true)") && (y < -2999 || y > 2999);
+    if (key !== "Candra" && key !== "Rāhu (true)") return false;
+    var f = K.setAt ? K.setAt(ms) : null, d = f && docOf ? docOf(f.set) : null;
+    return !!(d && d.moon && d.moon.fitted === false);
   }
   function grade(x) { return x == null ? "" : x < 1 ? "ks-g1" : x < 5 ? "ks-g2" : x < 30 ? "ks-g3" : "ks-g4"; }
   function sky() {
@@ -248,7 +250,7 @@
       (dt != null ? " · ΔT " + (Math.abs(dt) < 600 ? dt.toFixed(0) + " s" : (dt / 3600).toFixed(1) + " hours") : "") +
       " · Kali day " + Math.floor(K.ahargana(ms)).toLocaleString("en") +
       (K.inSpan(ms) ? "" : " · <b>outside the fitted span — no accuracy is claimed here</b>") +
-      (function () { var y = new Date(ms).getUTCFullYear(); return y < -2999 ? " · <b>the Moon and nodes here are extrapolated from DE422, not measured</b>" : ""; })() +
+      (function () { var y = new Date(ms).getUTCFullYear(); return y < -2999 ? " · the Moon here is fitted on JPL DE431's integrated lunar orbit; ΔT, not the Moon, sets the error in the time of day" : ""; })() +
       (function () {
         /* the lagna turns a full circle a day, so ΔT's own uncertainty (see the
            Earth's clock, below) moves it 15° an hour for a clock-time moment */
@@ -316,7 +318,7 @@
       " <span class=\"elw\">(by lunar month " + rtuBy.lunar + "; sāyana " + rtuBy.sayana330 + "; nirayana " + rtuBy.nirayana + ")</span>" +
       " · the Sun is " + trop.toFixed(1) + "° past the vernal equinox: astronomical " + season +
       (nm0 && nm1 ? " · this lunar month runs " + civilText(nm0) + " – " + civilText(nm1) + " (new moons, UT)" : "") +
-      (soft ? ". <b>Before 1000 CE the tithi and the day of a new or full moon carry ΔT's uncertainty" + (y < -2999 ? ", and the Moon is extrapolated" : "") +
+      (soft ? ". <b>Before 1000 CE the tithi and the day of a new or full moon carry ΔT's uncertainty"  +
         "; read them as ±1 tithi or more far back.</b>" : "");
   }
 
@@ -618,7 +620,7 @@
     var R = D.residuals;
     $("ks-tiles").innerHTML = ROWS.map(function (b) {
       return R[b] ? '<div class="ks-tile"><b>' + am((R[b].de || R[b].holdout).rms) + "</b><span>" + esc(b === "Rāhu" ? "Rāhu · Ketu (mean)" :
-        b === "Rāhu (true)" ? "Rāhu · Ketu (true)" : b) + (b === "Rāhu" ? ", against the published polynomial" : ", against DE422") + "</span></div>" : "";
+        b === "Rāhu (true)" ? "Rāhu · Ketu (true)" : b) + (b === "Rāhu" ? ", against the published polynomial" : b === "Candra" || b === "Rāhu (true)" ? ", against JPL DE431" : ", against DE422") + "</span></div>" : "";
     }).join("") + '<div class="ks-tile"><b>16,600</b><span>years fitted, 13000 BCE – 3600 CE, in three fits</span></div>';
   }
   function bands() {
@@ -653,10 +655,10 @@
         return "<tr><td><b>" + esc(b) + "</b></td>" + SETN.map(function (n) { var d = docOf(n); if (!d) return "";
           var x = d.residuals[b]; if (!x) return "<td>—</td>";
           var lunar = b === "Candra" || b === "Rāhu (true)", spread = lunar && d.moon && d.moon.fitted === false;
-          /* the Core fit's Moon is quoted where it is measured, inside DE422 */
-          var q = n === "core" && lunar && x.de ? x.de : x.holdout;
+          /* the Moon is measured against DE431 in every set */
+          var q = lunar && x.de ? x.de : x.holdout;
           return '<td class="' + grade(q.rms) + '">' + am(q.rms) + ' <span class="elw">worst ' + am(q.worst) +
-            (spread ? " · spread, not measured" : n === "core" && lunar && x.de ? " · within DE422" : "") + "</span></td>"; }).join("") +
+            (spread ? " · spread, not measured" : lunar && x.de ? " · vs DE431" : "") + "</span></td>"; }).join("") +
           "<td>" + (D.residuals[b].latitude ? am(D.residuals[b].latitude.rms) : "—") + "</td></tr>";
       }).join("") + "</tbody></table></div>";
   }
@@ -671,7 +673,7 @@
       "<th>worst</th><th>measured against</th><th>modern engine, typical</th><th>ΔT known to</th></tr></thead><tbody>" +
       ERAS.map(function (y0, i) {
         var ms = eraMid(y0), a = K.accuracyAt(b, ms), f = K.setAt(ms), ex = extrapolated(b, ms), y = new Date(ms).getUTCFullYear();
-        var basis = ex ? "nothing independent: the spread between two extrapolations" : (y >= -2999 && y <= 2999 ? "JPL DE422" :
+        var basis = ex ? "nothing independent: the spread between two extrapolations" : (b === "Candra" || b === "Rāhu (true)" ? "JPL DE431" : y >= -2999 && y <= 2999 ? "JPL DE422" :
           (b === "Rāhu" ? "the published mean-node polynomial" : "the integration from DE422"));
         var m = mrows && mrows[i] && mrows[i].rms != null ? mrows[i].rms : null;
         var sH = sigmaHuber(y), sM = sigmaMS(y), dt = y >= 1600 ? "seconds" : y >= 1000 ? "minutes" :
@@ -746,7 +748,7 @@
       '</td><td class="num" colspan="3">—</td><td class="ks-g2">a loose gathering about Meṣa 0°, not a conjunction at it</td></tr>');
     host.innerHTML = '<div class="eltblwrap"><table class="aytab"><thead><tr><th>event</th><th>the record</th><th>Kālasetu</th><th>Moon from the ecliptic</th>' +
       "<th>altitude there</th><th>ΔT then</th><th>verdict</th></tr></thead><tbody>" + rows.join("") + "</tbody></table></div>";
-    $("ks-historynote").innerHTML = "These records lie in 763 – 7 BCE, inside DE422's span, so the Moon here is measured, not extrapolated. " +
+    $("ks-historynote").innerHTML = "These records lie in 763 – 7 BCE, inside DE422's span; the Moon everywhere is measured against JPL DE431. " +
       "A caveat: ΔT for these centuries was itself worked out from eclipse records like these, so the time of day is not an independent test; " +
       "the day, and the Moon's distance from the ecliptic that makes it an eclipse at all, are. " +
       "Before 3000 BCE no written record survives that dates itself independently, so the deep fits are checked against the integration " +
@@ -970,7 +972,7 @@
       "started from DE422's states, with DE422's masses, the Sun's relativistic term, the Earth's oblateness and the Moon's tidal slowing. " +
       sets.map(function (d) { return d.samples.total.toLocaleString("en") + " moments across " + esc(d.span.label); }).join("; ") +
       ", each split by a hash of the instant into halves to fit and to hold back; every accuracy on this page is a held-back half. " +
-      "The Moon and true node are fitted on DE422's moments only and carried into the older fits, re-centred.</li>" +
+      "The Moon and true node in every set are fitted on JPL DE431 (Folkner et al. 2014, an integrated lunar orbit with the tidal dissipation, 13201 BCE – 17191 CE), read from the Swiss Ephemeris files; it differs from DE422's Moon by about 4′ at 3000 BCE. The Moon and node take the Sun's frame tilt, the correction for an ecliptic of date that is itself extrapolated before 3000 BCE.</li>" +
       "<li><b>The optimiser:</b> Levenberg–Marquardt, staged per graha — epoch and bīja first, then the orbit, then everything. The linear amplitudes take " +
       "their derivatives in closed form from the engine itself, which is what makes fitting 172 Jupiter–Saturn terms a matter of seconds.</li>" +
       "<li><b>The check:</b> <code>kalasetu-verify</code> holds every graha under a ceiling on a fresh 1,800 moments across all sixteen millennia, drawn with a " +
@@ -1555,7 +1557,6 @@
   }
   function flagsFor(rd, ms) {
     var y = new Date(ms).getUTCFullYear(), f = [], moon = rd.conds.some(function (c) { return c.g === "Candra" || ["tithi", "month", "eclipse"].indexOf(c.rel) >= 0; });
-    if (moon && y < -2999) f.push("Moon extrapolated");
     if (moon && y < 1000) f.push("day ±ΔT");
     if (!K.inSpan(ms)) f.push("outside the span");
     return f.join(" · ");

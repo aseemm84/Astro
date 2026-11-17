@@ -369,6 +369,15 @@
       lon += p["L" + i] * Math.sin(t[0] * D + t[1] * M + t[2] * Ms + t[3] * F); }
     for (i = 0; i < LUNAR_LAT.length; i++) { t = LUNAR_LAT[i];
       lat += p["B" + i] * Math.sin(t[0] * D + t[1] * M + t[2] * Ms + t[3] * F); }
+    /* the frame's tilt (see tilt()) belongs to the frame, not to a body, so the
+       Moon takes the Sun's: in the older sets the ecliptic of date is tipped up
+       to 2° from the Earth's orbit, which against an orbit inclined only 5°
+       moves the Moon's latitude by degrees and its longitude by minutes */
+    var sp2 = P["Sūrya"];
+    if (sp2.fa0 || sp2.fa1 || sp2.fa2 || sp2.fb0 || sp2.fb1 || sp2.fb2) {
+      var cl = Math.cos(lat * D2R), v = tilt({ x: cl * Math.cos(lon * D2R), y: cl * Math.sin(lon * D2R), z: Math.sin(lat * D2R) }, sp2, Tm);
+      lon = Math.atan2(v.y, v.x) / D2R; lat = Math.atan2(v.z, Math.hypot(v.x, v.y)) / D2R;
+    }
     return { lon: norm(lon + nutation(c.TmJ)), lat: lat };
   }
   /* the mean places the lunar terms are read on */
@@ -387,11 +396,20 @@
        ecliptic of date, and far from the present the two drift apart */
     /* the osculating node is measured in the true ecliptic of date, so it
        nods too; the mean node (a published polynomial) does not */
-    var a = lunarArgs(ms), p = P["Rāhu"], L = a.node + poly(p, "t_", a.Tm) + nutation(a.Tm + TC);
+    var a = lunarArgs(ms), p = P["Rāhu"], L = a.node + poly(p, "t_", a.Tm);
     for (var i = 0; i < NODE_TRUE.length; i++) { var t = NODE_TRUE[i];
       var g = t[0] * a.D + t[1] * a.M + t[2] * a.Ms + t[3] * a.F;
       L += (p["t" + i] || 0) * (t[5] ? Math.pow(a.Tm, t[5]) : 1) * (t[4] ? Math.cos(g) : Math.sin(g)); }
-    return norm(L);
+    /* in a tilted frame (the older sets) the node is where the tilted orbit
+       crosses it: tip the orbit's pole (node L, inclination 5.145°) by the
+       Sun's frame rotation and read the node back, as the reference does */
+    var sp2 = P["Sūrya"];
+    if (sp2.fa0 || sp2.fa1 || sp2.fa2 || sp2.fb0 || sp2.fb1 || sp2.fb2) {
+      var inc = 5.145396 * D2R, Lr = L * D2R;
+      var n = tilt({ x: Math.sin(inc) * Math.sin(Lr), y: -Math.sin(inc) * Math.cos(Lr), z: Math.cos(inc) }, sp2, a.Tm);
+      L = Math.atan2(n.x, -n.y) / D2R;
+    }
+    return norm(L + nutation(a.Tm + TC));
   }
   /* a planet or the Sun: the śīghra step, as vectors with true distances,
      and with the light-time the modern engine also applies */

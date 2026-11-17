@@ -43,6 +43,8 @@ export const SETCFG = {
   early: { file: "kalasetu-early.json", y0: -8999,  y1: -2999, tc: -8,    n: 3400, seed: 20261116, label: "9000 – 3000 BCE" },
   deep:  { file: "kalasetu-deep.json",  y0: -12999, y1: -7999, tc: -12.5, n: 3000, seed: 20261117, label: "13000 – 8000 BCE" } };
 const SET = arg("--set", "core"), CFG = SETCFG[SET];
+/* set by loadStoredReference: the reference's Moon is JPL DE431 on every row */
+let MOON431 = false;
 if (!CFG) throw new Error("--set must be core, early or deep");
 const DATA = ROOT + "/source/data/" + CFG.file;
 const only = (() => { const i = process.argv.indexOf("--bodies"); return i > 0 ? process.argv[i + 1].split(",") : null; })();
@@ -125,6 +127,9 @@ export const REF_FILE = ROOT + "/source/data/kalasetu-reference.json";
 export function loadStoredReference(set, file = REF_FILE) {
   const J = JSON.parse(readFileSync(file, "utf8")), S = J.sets[set];
   if (!S) throw new Error("no set " + set + " in " + file);
+  /* since 17 Nov 2026 the reference's Moon and true node are JPL DE431 on every
+     row (source/tools/kalasetu-moon431.mjs): an independent Moon everywhere */
+  MOON431 = !!(J.moon_de431 && J.moon_de431.everywhere);
   return S.rows.map(row => { const ref = {}, lat = {};
     REF_LON.forEach((b, i) => { ref[b] = row[2 + i]; });
     REF_LAT.forEach((b, i) => { lat[b] = row[2 + REF_LON.length + i]; });
@@ -301,7 +306,7 @@ if (import.meta.url === "file://" + process.argv[1]) {
      cubic a lunar theory carries (Chapront's mean elements are cubic and
      quartic, the quartic negligible), and every set beyond DE422 takes that
      same Moon re-centred, not a fit of its own (--moon-from). */
-  const MOON_ORDER = 3, inDE = s => s.src === "de422";
+  const MOON_ORDER = 3, inDE = s => MOON431 || s.src === "de422";
   /* --iters N: N times the usual Levenberg–Marquardt iterations, for a set
      started far from its answer */
   const IT = Math.max(1, +arg("--iters", 1));
@@ -316,7 +321,8 @@ if (import.meta.url === "file://" + process.argv[1]) {
     }
     console.log("the Sun's frame tilt from the planets' median: " + ["fa0", "fa1", "fa2", "fb0", "fb1", "fb2"].map(k => k + " " + P["Sūrya"][k].toFixed(4)).join(", "));
   }
-  const MOON_FROM = arg("--moon-from", SET === "core" || MODERN ? null : ROOT + "/source/data/kalasetu.json");
+  /* with DE431 every set fits a Moon of its own; before it, Early and Deep took Core's */
+  const MOON_FROM = arg("--moon-from", SET === "core" || MODERN || MOON431 ? null : ROOT + "/source/data/kalasetu.json");
   if (MOON_FROM) {
     const Q = JSON.parse(readFileSync(MOON_FROM, "utf8")), keep = JSON.parse(JSON.stringify(SL.params()));
     recentre(SL, Q, Q.tc || 0, CFG.tc, 99);
@@ -371,7 +377,7 @@ if (import.meta.url === "file://" + process.argv[1]) {
                                               worst: +worst(a).toFixed(3), n: a.length })) };
     /* within DE422 alone (about 3000 BCE – 3000 CE), where every body has an
        independent reference: the one figure to quote for the Moon */
-    { const dl = HOLD.map((s, i) => s.src === "de422" ? lon[i] : null).filter(x => x != null);
+    { const dl = HOLD.map((s, i) => (s.src === "de422" || (MOON431 && b === "Candra")) ? lon[i] : null).filter(x => x != null);
       if (!MODERN && dl.length) o.de = { rms: +rms(dl).toFixed(3), bias: +mean(dl).toFixed(3), worst: +worst(dl).toFixed(3), n: dl.length }; }
     if (LAT(b)) { const la = HOLD.map(s => (SL.latitude(b, s.ms) - s.lat[b]) * 60);
       o.latitude = { rms: +rms(la).toFixed(3), worst: +worst(la).toFixed(3) }; }
@@ -385,9 +391,9 @@ if (import.meta.url === "file://" + process.argv[1]) {
     resid["Rāhu (true)"] = { fit: { rms: +rms(f).toFixed(3) }, holdout: { rms: +rms(h).toFixed(3), bias: +mean(h).toFixed(3), worst: +worst(h).toFixed(3), n: h.length },
       bands: tb.map((a, i) => ({ from: BANDS[i], rms: +rms(a).toFixed(3), bias: +mean(a).toFixed(3), worst: +worst(a).toFixed(3), n: a.length })),
       against: "engine.js trueNodeAt(), the modern branch: the osculating node" };
-    { const dl = HOLD.map((s, i) => s.src === "de422" ? h[i] : null).filter(x => x != null);
+    { const dl = HOLD.map((s, i) => (s.src === "de422" || MOON431) ? h[i] : null).filter(x => x != null);
       if (!MODERN && dl.length) resid["Rāhu (true)"].de = { rms: +rms(dl).toFixed(3), bias: +mean(dl).toFixed(3), worst: +worst(dl).toFixed(3), n: dl.length };
-      resid["Rāhu (true)"].against = MODERN ? resid["Rāhu (true)"].against : "the osculating node of DE422's Moon (beyond DE422: of astronomy-engine's, corrected)"; }
+      resid["Rāhu (true)"].against = MODERN ? resid["Rāhu (true)"].against : MOON431 ? "the osculating node of JPL DE431's Moon" : "the osculating node of DE422's Moon (beyond DE422: of astronomy-engine's, corrected)"; }
     console.log(`true node lon ${rms(h).toFixed(2)}′ / ${worst(h).toFixed(2)}′`); }
   const P = SL.params(), params = {};
   /* keys the file never had stay out of it while they are zero, so a
@@ -400,11 +406,11 @@ if (import.meta.url === "file://" + process.argv[1]) {
     _provenance: {
       what: "The Kālasetu Siddhānta long-span engine's fitted numbers: corrections on the Later Sūrya Siddhānta's own mean-motion count, the orbit of each body, and the measured amplitudes of the further terms.",
       target: MODERN ? "This site's modern engine (astronomy-engine v2 with deltat.js), apparent geocentric ecliptic of date, in the Samanvaya–Ecliptic frame (engine.js AYAN_MODES.samanvaya_ecliptic). The mean node against the published polynomial engine.js meanNodeModern() uses."
-        : "source/data/kalasetu-reference.json: JPL DE422 over about 3000 BCE – 3000 CE; beyond it, the Sun and planets from a numerical integration started from DE422's own states (source/tools/nbody.mjs), and the Moon and true node from astronomy-engine brought onto DE422's tidal acceleration. Apparent geocentric, true ecliptic of date, Samanvaya–Ecliptic frame; the mean node against the published polynomial.",
+        : "source/data/kalasetu-reference.json: JPL DE422 over about 3000 BCE – 3000 CE; beyond it, the Sun and planets from a numerical integration started from DE422's own states (source/tools/nbody.mjs), " + (MOON431 ? "and the Moon and true node from JPL DE431 over the whole span." : "and the Moon and true node from astronomy-engine brought onto DE422's tidal acceleration.") + " Apparent geocentric, true ecliptic of date, Samanvaya–Ecliptic frame; the mean node against the published polynomial.",
       span: `${CFG.label} (astronomical years ${CFG.y0} to ${CFG.y1}), ${CFG.n.toLocaleString("en")} instants, hashed half held back. Every residual below is the held-back half's unless labelled fit. Bias is the mean signed residual (engine − reference).`,
       notTheText: "Not the Sūrya Siddhānta's answer. The time-count is the text's; the geometry is not — see the header of kalasetu-engine.js for exactly what was added and from where.",
       limits: MODERN ? "Agreement with the modern engine, not with the sky. The modern engine is checked against an independent reference only over 1000–3000 CE; before about 5000 BCE its own series are extrapolated. ΔT is uncertain by hours at 5000 BCE and by most of a day at 13000 BCE."
-        : "Agreement with the reference above. Before 3000 BCE the planets rest on the integration (checked against DE422 across DE422's own 6000 years) and the Moon on a corrected extrapolation whose uncertainty grows as the square of the time; ΔT is uncertain by hours at 5000 BCE and by most of a day at 13000 BCE.",
+        : "Agreement with the reference above. Before 3000 BCE the planets rest on the integration (checked against DE422 across DE422's own 6000 years) " + (MOON431 ? "and the Moon on JPL DE431's integrated lunar orbit (Folkner et al. 2014), an independent reference across the whole span;" : "and the Moon on a corrected extrapolation whose uncertainty grows as the square of the time;") + " ΔT is uncertain by hours at 5000 BCE and by most of a day at 13000 BCE.",
       units: "residuals in arcminutes of longitude (latitude where given)"
     },
     generated: new Date().toISOString().slice(0, 10),
@@ -412,6 +418,7 @@ if (import.meta.url === "file://" + process.argv[1]) {
     set: SET, tc: CFG.tc,
     moon: MODERN ? null : (MOON_FROM
       ? { fitted: false, from: MOON_FROM.replace(ROOT + "/", ""), note: "the Moon and the true node are the core set's, re-centred: fitted on DE422 (about 3000 BCE – 3000 CE) and carried here by their own secular terms. Their residuals below are against astronomy-engine's Moon brought onto DE422's tides, which is not an independent reference; read them as the spread between two extrapolations." }
+      : MOON431 ? { fitted: true, on: "JPL DE431 at every instant of this set", secular_order: MOON_ORDER, note: "fitted on JPL DE431's Moon (an integrated lunar orbit with tidal dissipation, 13201 BCE – 17191 CE) at this set's own instants; its residuals are against DE431, an independent reference, across the whole span" }
       : { fitted: true, on: "DE422 instants only", secular_order: MOON_ORDER, note: "fitted on DE422's instants; outside about 3000 BCE – 3000 CE the Moon is this fit's own extrapolation, and its residuals there are against astronomy-engine's corrected Moon, not an independent reference" }),
     span: { from: `${CFG.y0}-01-01`, to: `${CFG.y1}-12-31`, label: CFG.label },
     samples: { total: REF.length, fit: FIT.length, holdout: HOLD.length, seed: CFG.seed },

@@ -44,6 +44,7 @@ const worst = a => Math.max(...a.map(Math.abs));
 const DOC = JSON.parse(readFileSync(ROOT + "/source/data/kalasetu.json", "utf8"));
 const DOCS = { core: DOC, early: JSON.parse(readFileSync(ROOT + "/source/data/kalasetu-early.json", "utf8")),
                deep: JSON.parse(readFileSync(ROOT + "/source/data/kalasetu-deep.json", "utf8")) };
+const REFJ = JSON.parse(readFileSync(ROOT + "/source/data/kalasetu-reference.json", "utf8"));
 const A = loadAstro(), SL = loadSL(A);
 
 /* ---- 1. the data files, and the engine reading them ---------------------- */
@@ -58,8 +59,10 @@ is(Object.entries(DOCS).every(([n, d]) => d.set === n && SL.BODIES.every(b => d.
    "every set names itself, and the older sets carry every parameter the engine has");
 is(/notTheText/.test(JSON.stringify(DOC._provenance)) && /DE422/.test(DOC._provenance.target) && /Agreement with the reference/.test(DOC._provenance.limits),
    "the provenance says it is not the text's answer, that the reference is DE422 and an integration, and that it agrees with that reference");
-is(DOC.moon && DOC.moon.fitted === true && DOCS.early.moon.fitted === false && DOCS.deep.moon.fitted === false,
-   "the Moon is fitted on DE422 in the core set and carried, not refitted, into the older sets");
+is(Object.values(DOCS).every(d => d.moon && d.moon.fitted === true && /DE431/.test(d.moon.on)),
+   "every set fits its own Moon, on JPL DE431 at that set's own moments");
+is(REFJ.moon_de431 && REFJ.moon_de431.everywhere === true && REFJ.sets && Object.values(REFJ.sets).every(z => z.rows.every(r => r[1] !== 1)),
+   "the reference's Moon and true node are DE431 on every row (no row left on the old corrected extrapolation)");
 {
   const R = JSON.parse(readFileSync(ROOT + "/source/data/kalasetu-reference.json", "utf8"));
   const IC = R.integrator_check.bodies;
@@ -85,19 +88,24 @@ for (const b of Object.keys(CEIL)) {
   is(fresh[b].rms <= CEIL[b], `${b}: ${fresh[b].rms.toFixed(2)}′ rms across the whole span (ceiling ${CEIL[b]}′), worst ${fresh[b].worst.toFixed(1)}′`);
 }
 {
-  const de = FRESH.filter(inDE), m = de.map(s => sdiff(SL.longitude("Candra", s.ms), s.ref.Candra) * 60);
-  const pub = DOC.residuals["Candra"].de.rms;
-  is(rms(m) <= Math.max(pub * 1.35, pub + 0.15) && rms(m) < 1,
-     `the Moon within DE422: ${rms(m).toFixed(2)}′ rms on ${de.length} fresh moments (published ${pub.toFixed(2)}′), worst ${worst(m).toFixed(1)}′`);
-  const t = de.map(s => sdiff(SL.trueNode(s.ms), s.ref["Rāhu-true"]) * 60), tp = DOC.residuals["Rāhu (true)"].de.rms;
-  is(rms(t) <= Math.max(tp * 1.35, tp + 0.15) && rms(t) < 2.5,
-     `the true node within DE422: ${rms(t).toFixed(2)}′ rms (published ${tp.toFixed(2)}′) — the 1.5° wobble the Siddhānta tiers cannot give`);
-  const out = FRESH.filter(s => !inDE(s) && new Date(s.ms).getUTCFullYear() < -2999).map(s => sdiff(SL.longitude("Candra", s.ms), s.ref.Candra) * 60);
-  console.log(`       (before 3000 BCE the Moon is extrapolated: it differs from the corrected modern Moon by ${rms(out).toFixed(0)}′ rms — reported, not held to a ceiling)`);
+  /* the Moon is DE431 on every row, so it is measured over the whole span */
+  const m = FRESH.map(s => sdiff(SL.longitude("Candra", s.ms), s.ref.Candra) * 60);
+  is(rms(m) < 1 && worst(m) < 5,
+     `the Moon against JPL DE431 across all sixteen millennia: ${rms(m).toFixed(2)}′ rms on ${m.length} fresh moments, worst ${worst(m).toFixed(1)}′`);
+  for (const [lo, hi, lab] of [[-13000, -8000, "13000 – 8000 BCE"], [-7999, -3000, "8000 – 3000 BCE"], [-2999, 3600, "3000 BCE – 3600 CE"]]) {
+    const x = FRESH.filter(s => { const y = new Date(s.ms).getUTCFullYear(); return y >= lo && y <= hi; }).map(s => sdiff(SL.longitude("Candra", s.ms), s.ref.Candra) * 60);
+    is(rms(x) < 1.2, `the Moon, ${lab}: ${rms(x).toFixed(2)}′ rms on ${x.length} moments`);
+  }
+  const de = FRESH.filter(inDE), t = de.map(s => sdiff(SL.trueNode(s.ms), s.ref["Rāhu-true"]) * 60);
+  is(rms(t) < 5, `the true node within 3000 BCE – 3000 CE: ${rms(t).toFixed(2)}′ rms — the 1.5° wobble the Siddhānta tiers cannot give`);
+  const to = FRESH.filter(s => new Date(s.ms).getUTCFullYear() < -2999).map(s => sdiff(SL.trueNode(s.ms), s.ref["Rāhu-true"]) * 60);
+  is(rms(to) < 200, `the true node before 3000 BCE: ${rms(to).toFixed(0)}′ rms — measured against DE431, looser because the ecliptic of date is itself extrapolated there (the mean node, the default, is unaffected)`);
 }
 {
   const lat = FRESH.filter(inDE).map(s => (SL.latitude("Candra", s.ms) - s.lat["Candra"]) * 60);
-  is(rms(lat) < 2, `the Moon's latitude within DE422: ${rms(lat).toFixed(2)}′ rms`);
+  is(rms(lat) < 2, `the Moon's latitude within 3000 BCE – 3000 CE: ${rms(lat).toFixed(2)}′ rms`);
+  const lato = FRESH.map(s => (SL.latitude("Candra", s.ms) - s.lat["Candra"]) * 60);
+  is(rms(lato) < 15, `the Moon's latitude across the whole span: ${rms(lato).toFixed(2)}′ rms (eclipse limits are 57′–93′)`);
   const pl = ["Maṅgala", "Budha", "Guru", "Śukra", "Śani"].map(b => rms(FRESH.map(s => (SL.latitude(b, s.ms) - s.lat[b]) * 60)));
   /* latitude is fitted alongside longitude but weighs on nothing a chart
      prints except planetary war; the older fits' planes, against an ecliptic
@@ -290,11 +298,11 @@ head("Settings: what choosing it as the default costs");
       s.value = "kalasetu"; s.dispatchEvent(new Event("change", { bubbles: true })); });
     await p.waitForTimeout(200);
     const t = await p.evaluate(() => (document.querySelector(".nsconfirm") || {}).textContent || "");
-    is(/′ from JPL DE422 over 3000 BCE – 3000 CE/.test(t) && /13000 BCE – 3600 CE/.test(t),
-       "the confirm box states its Moon in arcminutes against DE422, and the span");
+    is(/′ from JPL DE431/.test(t) && /13000 BCE – 3600 CE/.test(t),
+       "the confirm box states its Moon in arcminutes against DE431, and the span");
   } else {
     const src = readFileSync(ROOT + "/source/src/js/settings.js", "utf8");
-    is(/\["kalasetu", "Kālasetu Siddhānta — long span/.test(src) && /from JPL DE422 over/.test(src),
+    is(/\["kalasetu", "Kālasetu Siddhānta — long span/.test(src) && /from JPL DE431/.test(src),
        "Settings offers it and its confirm states the cost (checked in source; the panel did not open here)");
   }
 }
@@ -356,8 +364,8 @@ head("The Kālasetu page");
     set("ks-era", "BCE"); set("ks-year", "12500"); set("ks-month", "3"); set("ks-day", "21"); set("ks-time", "06:00");
     return { note: document.getElementById("ks-skynote").textContent, fit: document.getElementById("ks-fitread").textContent,
              moon: document.querySelector("#ks-skytab tbody tr:nth-child(2) td:nth-child(4)").textContent }; });
-  is(/12500 BCE/.test(deep.note) && /Deep/.test(deep.fit) && /extrapolated/.test(deep.moon) && /extrapolated from DE422/.test(deep.note),
-     "12500 BCE typed in: read from the Deep fit, and the Moon's error bar and the note say it is extrapolated");
+  is(/12500 BCE/.test(deep.note) && /Deep/.test(deep.fit) && !/extrapolated/.test(deep.moon) && /DE431/.test(deep.note),
+     "12500 BCE typed in: read from the Deep fit, and the note says the Moon there is DE431's, not extrapolated");
   const forced = await p.evaluate(() => { window.__ksPage.useFit("core"); const t = document.getElementById("ks-fitread").textContent;
     window.__ksPage.useFit("auto"); return t; });
   is(/Forced to the Core fit/.test(forced) && /outside that fit's own span/.test(forced), "forcing the Core fit at 12500 BCE says its error bars do not apply there");

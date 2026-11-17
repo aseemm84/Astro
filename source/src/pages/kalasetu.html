@@ -3,7 +3,8 @@ across time&rdquo; &mdash; is this site&rsquo;s fourth engine. It keeps the S&um
 Siddh&amacr;nta&rsquo;s own way of counting time and carries a modern geometry on it, and
 it is fitted across <b>sixteen thousand six hundred years</b>, from 13000&nbsp;BCE to
 3600&nbsp;CE, in the Samanvaya&ndash;Ecliptic frame, against NASA JPL&rsquo;s DE422
-ephemeris and a numerical integration of the Solar System started from it. Every
+ephemeris and a numerical integration of the Solar System started from it, with the Moon
+against JPL&rsquo;s DE431 lunar orbit over the whole span. Every
 number carries its own error bar for its era. Everything on this page is computed in
 your browser from the engine itself, as you read; no birth chart is needed.</p>
 
@@ -46,8 +47,9 @@ speaks of, from before the Kali epoch to sixteen centuries from now.</p>
 that, for the Sun and planets it means how close to a <b>numerical integration</b> of the
 Solar System started from DE422&rsquo;s own positions; run across DE422&rsquo;s own six thousand
 years, that integration never strays more than 9&Prime; from it. For the <b>Moon</b> and
-R&amacr;hu&ndash;Ketu before 3000&nbsp;BCE there is no independent reference at all, and the page says
-so wherever it applies. K&amacr;lasetu was first fitted to the site&rsquo;s modern engine; that
+the true R&amacr;hu&ndash;Ketu it means how close to <b>JPL DE431</b>, whose integrated lunar orbit
+(with the tides) runs from 13201&nbsp;BCE; until 17&nbsp;November&nbsp;2026 the Moon before 3000&nbsp;BCE
+was an extrapolation. K&amacr;lasetu was first fitted to the site&rsquo;s modern engine; that
 engine&rsquo;s own error before 1000&nbsp;BCE turned out to be large, and is shown below beside
 K&amacr;lasetu&rsquo;s.</p>
 
@@ -211,7 +213,7 @@ Bh&amacr;gavata in GRETIL&rsquo;s text; R01, R&amacr;ma&rsquo;s birth chart, is 
 <div id="ks-clres"></div>
 <p class="k-note">A match says the sky fitted the chosen reading under the chosen conventions; it does not say
 the verse describes that year. Many readings recur every few years, so the count per 1000 years matters
-as much as the list. Before 3000&nbsp;BCE the Moon is extrapolated, and before 1000&nbsp;CE the day of a new
+as much as the list. The Moon is measured against JPL DE431 over the whole span, but before 1000&nbsp;CE the day of a new
 moon, a tithi or an eclipse carries &Delta;T&rsquo;s uncertainty; the caution column says so for each match.
 Eclipses here are found from the Moon&rsquo;s distance from the ecliptic at the new or full moon: a solar one
 was seen somewhere on Earth, not necessarily at Kuruk&#7779;etra.</p>
@@ -361,12 +363,13 @@ time by which it would move the date that graha changes sign or nak&#7779;atra.<
 integration started from DE422; it has no asteroids, and across DE422&rsquo;s own span it
 stayed within 9&Prime; (Mars) and 3&Prime; (the rest). Over ten more millennia that error
 grows, but on any reasonable estimate it stays under an arcminute.</li>
-<li><b>The Moon and R&amacr;hu&ndash;Ketu before 3000&nbsp;BCE are extrapolated, not measured.</b>
-K&amacr;lasetu&rsquo;s Moon is fitted to DE422 and carried back by its own secular terms. The only
-other long Moon to hand, the modern engine&rsquo;s brought onto DE422&rsquo;s tides, differs from it by
-about a degree at 5000&nbsp;BCE and several by 13000&nbsp;BCE. That spread is printed as the
-Moon&rsquo;s error there, and it is a real limit: how fast the tides slowed the Moon in the
-Ice Age is not known to that precision.</li>
+<li><b>The Moon is JPL DE431&rsquo;s, everywhere.</b> Each of the three fits takes its Moon and
+true node from DE431 (Folkner et&nbsp;al. 2014), an integration of the lunar orbit with the tidal
+dissipation fitted to lunar laser ranging; it differs from DE422&rsquo;s Moon by about 4&prime; at
+3000&nbsp;BCE. K&amacr;lasetu now follows it to under an arcminute in longitude from 13000&nbsp;BCE to
+3600&nbsp;CE. Two limits remain: DE431 itself rests on a tidal model that cannot be checked in
+the Ice Age, and before 3000&nbsp;BCE the ecliptic of date is extrapolated, so the Moon&rsquo;s latitude
+(several arcminutes) and the true node (one to three degrees; the mean node, the default, is unaffected) are looser than its longitude.</li>
 <li><b>A clock-time moment in the far past is not knowable to arcminutes by anyone.</b>
 The Earth&rsquo;s clock, &Delta;T, is measured from timed eclipses only back to 720&nbsp;BCE.
 Before that it is extrapolated, and the two published estimates of its error disagree:
@@ -407,7 +410,8 @@ the evection, variation and annual equation independently; the true-distance &#3
 after N&imacr;laka&#7751;&#7789;ha Somay&amacr;j&imacr;&rsquo;s <i>Tantrasa&#7749;graha</i> (c.&nbsp;1500). Textbook lunar
 amplitudes from J. Meeus, <i>Astronomical Algorithms</i>, Table 47.A. The reference is
 JPL DE422 (Folkner 2009; read from the <code>de422</code> package&rsquo;s Chebyshev arrays by
-<code>source/tools/de422.py</code>), extended by <code>source/tools/nbody.mjs</code>: the Sun, Moon
+<code>source/tools/de422.py</code>); the Moon and true node are JPL DE431 (Folkner et&nbsp;al. 2014),
+read from the Swiss Ephemeris files by <code>source/tools/de431-moon.py</code>; the planets are extended by <code>source/tools/nbody.mjs</code>: the Sun, Moon
 and nine planets with DE422&rsquo;s masses, the Sun&rsquo;s relativistic term, the Earth&rsquo;s J2 and the
 Moon&rsquo;s tidal slowing, integrated with Yoshida&rsquo;s sixth-order method (1990). Nutation is
 IAU&nbsp;1980&rsquo;s. The comparison engine is astronomy-engine v2 (MIT, vendored), with the
