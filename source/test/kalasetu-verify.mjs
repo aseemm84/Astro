@@ -548,6 +548,47 @@ head("The Kālasetu page");
   is(/^kalasetu-claim:1 \{/.test(ui.text) && ui.loaded === "Loaded." && ui.warn2 === "" && /not a Kālasetu claim/.test(ui.bad),
      "copy as text gives a claim line that loads back, and other text is refused");
   is(ui.before === false && ui.kept === true && ui.forgot === false, "your claim is kept in this browser only when ticked, and Forget removes it");
+  /* the add-ons of 18 Nov: chain, chance test, ΔT needed */
+  const ch = await p.evaluate(async () => {
+    const P = window.__ksPage, s = id => document.getElementById(id), out = {};
+    const Y = y => { const t = new Date(Date.UTC(2000, 0, 1)); t.setUTCFullYear(y); return t.getTime(); };
+    P.conv("frame", "samanvaya_ecliptic"); P.conv("nak", "equal"); P.conv("node", "mean");
+    const set = (id, v) => { const el = s(id); el.value = v; el.dispatchEvent(new Event("change", { bubbles: true })); };
+    set("ks-lat", "26.7922"); set("ks-lon", "82.1998");
+    out.section = !!s("chain") && !!s("ks-chlinks") && document.querySelectorAll(".ks-chlink").length === 2;
+    s("ks-chrama").click(); out.preset = document.querySelectorAll(".ks-chlink").length + " " + s("ks-chy0").value + " " + /Preset/.test(s("ks-chlinks").textContent);
+    const one = await P.chain(P.rama.links.slice(0, 1), Y(-12999), Y(-2999));
+    out.n1 = one.chains.length;
+    const e = one.chains[0] && one.chains[0][0];
+    out.y1 = e ? new Date(e.best).getUTCFullYear() : null;
+    out.dt = e && e.dt ? [e.dt.lo / 6e4, e.dt.hi / 6e4, e.dt.holds] : null;
+    out.edge = e ? (e.exact.to - e.exact.from) / 6e4 : null;
+    const two = await P.chain(P.rama.links, Y(-12999), Y(-2999));
+    out.n2 = two.chains.length; out.per = two.perLink.join(",");
+    /* a chain that must hold: Caitra Pūrṇimā 2025, then the next Pūrṇimā 25–35 days later */
+    const c15 = { src: "cat", id: "C15", rd: "A", lagna: -1 }, fm = { src: "preset", label: "the next Pūrṇimā", conds: [{ g: "", rel: "tithi", v: 15 }], min: 25, max: 35, unit: "d" };
+    const yr = await P.chain([c15, fm], Date.UTC(2025, 0, 1), Date.UTC(2025, 11, 31));
+    out.yr = yr.chains.map(c => c.map(x => new Date(x.best).toISOString().slice(0, 10)).join(" → "));
+    /* the chance test is seeded: the same numbers twice */
+    const c12 = P.claims().find(c => c.id === "C12").readings[0];
+    const a1 = await P.chance(c12, Y(-3999), Y(-2999), 3), a2 = await P.chance(c12, Y(-3999), Y(-2999), 3);
+    out.ch = [a1.real.n, a1.versions.map(v => v.n).join(","), a2.versions.map(v => v.n).join(","), a1.versions[0].conds.map(c => c.rel).join(",")];
+    /* ΔT needed on a made-up 1-hour match: zero needed when the sign is rising, a shift when it is not */
+    const t0 = Date.UTC(2024, 2, 21, 0, 0), lat = 26.7922, lon = 82.1998;
+    out.dtHold = P.dtNeeded(t0, t0 + 36e5, Math.floor(((window.__kAscTrop(t0 + 18e5, lat, lon) - window.__ayanFor("samanvaya_ecliptic", (t0 + 18e5) / 864e5 + 2440587.5)) % 360 + 360) % 360 / 30), lat, lon).holds;
+    const far = P.dtNeeded(t0, t0 + 36e5, (Math.floor(((window.__kAscTrop(t0, lat, lon) - window.__ayanFor("samanvaya_ecliptic", t0 / 864e5 + 2440587.5)) % 360 + 360) % 360 / 30) + 6) % 12, lat, lon);
+    out.dtFar = [far.holds, Math.round(Math.abs(far.need) / 36e5)];
+    out.session = +s("ks-chsession").textContent;
+    return out; });
+  is(ch.section && /^2 13000 true$/.test(ch.preset), `the chain section is new, beside the claim search; the Rāma preset loads two links and 13000 BCE (${ch.preset})`);
+  is(ch.n1 === 2 && ch.y1 === -11568 && ch.dt && ch.dt[0] > 0 && ch.dt[0] < 30 && ch.dt[1] > 150 && ch.dt[1] < 240 && !ch.dt[2],
+     `your seven conditions: 2 dates in 13000–3000 BCE; 11569 BCE needs ΔT ${ch.dt && ch.dt[0].toFixed(0)} min to ${ch.dt && (ch.dt[1] / 60).toFixed(1)} h off the model for a Karka lagna at Ayodhya`);
+  is(ch.edge > 60 && ch.edge < 100, `a match's edges are found to the minute (11569 BCE holds ${ch.edge && ch.edge.toFixed(0)} min)`);
+  is(ch.n2 === 0 && ch.per === "2,0", "no date survives the birth with Daśaratha's omens (R03 B) 24–27 years later");
+  is(ch.yr.length === 1 && /^2025-04-1[23] → 2025-05-1[123]$/.test(ch.yr[0]), `a chain that must hold does: Caitra Pūrṇimā 2025 → the next Pūrṇimā (${ch.yr.join("; ")})`);
+  is(ch.ch[1] === ch.ch[2] && /nearlon/.test(ch.ch[3]), `the chance test is seeded (C12 A: the reading ${ch.ch[0]}, random ${ch.ch[1]}) and moves star targets`);
+  is(ch.dtHold === true && ch.dtFar[0] === false && ch.dtFar[1] >= 6 && ch.dtFar[1] <= 18, `ΔT needed: zero when the sign is rising, about ${ch.dtFar[1]} h for the opposite sign`);
+  is(ch.session >= 0, "the page counts the readings searched this visit");
   is(errs.length === 0, `no page errors (${errs.join("; ")})`);
   const ph = await browser.newPage({ viewport: { width: 400, height: 900 } });
   await ph.goto("file://" + ROOT + "/kalasetu.html");

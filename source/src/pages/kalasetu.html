@@ -219,6 +219,60 @@ Eclipses here are found from the Moon&rsquo;s distance from the ecliptic at the 
 was seen somewhere on Earth, not necessarily at Kuruk&#7779;etra.</p>
 
 
+<h2 id="chain">Date an event from the whole story<span class="kdeva">कथा-क्रमः</span></h2>
+
+<p>A verse never gives its own year: the year is what we are looking for. One verse matched
+in the sky proves little, because skies recur and a verse can be read several ways. A real date
+has to fit the <b>whole story</b>: every sky the epic describes, each the right number of years
+after the last. Build a chain of claims below and K&amacr;lasetu keeps only the dates where every
+link holds. Two more tools sit with it: a <b>chance test</b>, which shows how often a sky this
+specific turns up by itself, and the <b>lagna as &Delta;T needed</b>, which reports how far the
+Earth&rsquo;s clock would have to be from the model for a stated lagna to fit, instead of
+pretending the lagna is known. These add to the claim search above and leave it as it was.</p>
+
+<div class="aybar ks-clbar">
+  <button type="button" class="swbtn" id="ks-chrama">Preset: R&amacr;ma&rsquo;s birth (seven conditions) &rarr; Da&#347;aratha&rsquo;s omens 24&ndash;27 years later</button>
+</div>
+<div id="ks-chlinks"></div>
+<div class="aybar ks-clbar">
+  <button type="button" class="swbtn" id="ks-chadd">Add a link</button>
+  <label>Link 1 from <input id="ks-chy0" class="swin" type="number" min="1" max="13000" value="4000">
+    <select id="ks-chera0" class="swin"><option value="BCE" selected>BCE</option><option value="CE">CE</option></select></label>
+  <label>to <input id="ks-chy1" class="swin" type="number" min="1" max="13000" value="2000">
+    <select id="ks-chera1" class="swin"><option value="BCE" selected>BCE</option><option value="CE">CE</option></select></label>
+  <button type="button" class="swbtn" id="ks-chgo">Search the chain</button>
+  <button type="button" class="swbtn" id="ks-chstop" disabled>Stop</button>
+  <progress id="ks-chbar" max="1" value="0" hidden></progress>
+</div>
+<p class="k-note" id="ks-chsum" aria-live="polite"></p>
+<div id="ks-chres"></div>
+<p class="k-note">Each link after the first is searched only in its window after the link before, so a
+long chain costs little more than its first link. The intervals are yours to set: the epic&rsquo;s
+own ages and durations (R&amacr;ma&rsquo;s age at the coronation, the fourteen years of exile) are
+readings too, and should be fixed before the search. The <b>lagna</b> is never used to find a date:
+its clock is &Delta;T&rsquo;s, uncertain by hours before 700&nbsp;BCE. It is reported as the shift in &Delta;T
+it would need, against the two published estimates of &Delta;T&rsquo;s error (Morrison &amp; Stephenson;
+Huber). Each match&rsquo;s edges are found to the minute for this.</p>
+
+<h3 id="chance">How likely by chance</h3>
+<p>The test searches a reading, then the same reading with every graha&rsquo;s targets moved by a
+random angle (one per graha, so conditions that go together stay together; the tithi and month
+follow the Moon and Sun moved; conjunctions and eclipses are kept as they are). If skies of the
+same make-up match about as often as the verse&rsquo;s own, a match says little. The random draws are
+seeded, so a rerun gives the same numbers. Readings searched this visit, in the claim search and
+the chain: <b id="ks-chsession">0</b>.</p>
+<div class="aybar ks-clbar">
+  <label>Test <select id="ks-chwhat" class="swin"><option value="chain" selected>link 1 of the chain</option><option value="claim">the claim and reading chosen in the search above</option></select></label>
+  <label>with <select id="ks-chn" class="swin"><option value="5">5</option><option value="10" selected>10</option><option value="20">20</option></select> random versions</label>
+  <button type="button" class="swbtn" id="ks-chancego">Run the test</button>
+  <button type="button" class="swbtn" id="ks-chancestop" disabled>Stop</button>
+  <progress id="ks-chancebar" max="1" value="0" hidden></progress>
+</div>
+<p class="k-note">It uses the chain&rsquo;s range above. A slow reading over a long range takes a few minutes per version.</p>
+<p class="k-note" id="ks-chancesum" aria-live="polite"></p>
+<div id="ks-chanceres"></div>
+
+
 <h2 id="pipeline">How one longitude is made<span class="kdeva">गणित-क्रमः</span></h2>
 
 <p>Pick a graha and follow its place at the moment above from the day count to the

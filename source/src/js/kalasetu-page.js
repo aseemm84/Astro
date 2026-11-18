@@ -1163,7 +1163,8 @@
     var g = c.g === "any" ? "any graha" : c.g, tv = c.tol != null ? c.tol + "°" : "";
     switch (c.rel) {
       case "nak": return g + " in " + CL_NAKX[c.v];
-      case "rasi": return g + " in " + CL_RS[c.v];
+      case "rasi": return g + " in " + (Array.isArray(c.v) ? c.v.map(function (q) { return CL_RS[q]; }).join(" or ") : CL_RS[c.v]);
+      case "_arcs": return g + " in " + c.v.map(function (q) { return norm(q[0]).toFixed(1) + "°–" + norm(q[0] + q[1]).toFixed(1) + "°"; }).join(" or ");
       case "nearstar": return g + " within " + tv + " of " + YOGA[c.v][1] + " (" + YOGA[c.v][0] + ")";
       case "neargraha": return g + " within " + tv + " of " + c.v;
       case "nearnode": return g + " within " + tv + " of Rāhu or Ketu";
@@ -1289,6 +1290,14 @@
       return best || { ok: false, skip: minSkip };
     }
     var v = VMAX[c.g] || 1, L, d, s;
+    /* internal forms used by the chain and chance add-ons; the builder never makes them */
+    if (c.rel === "rasi" && Array.isArray(c.v)) return evalOne({ g: c.g, rel: "_arcs", v: c.v.map(function (q) { return [q * 30, 30]; }) }, ms, S);
+    if (c.rel === "_arcs") {
+      L = lonOf(c.g, ms, S); d = Math.min.apply(null, c.v.map(function (q) { return arcTo(L, q[0], q[1]); }));
+      if (d > 0) return { ok: false, skip: d / v };
+      var inn = c.v.filter(function (q) { return arcTo(L, q[0], q[1]) === 0; })[0], x0 = norm(L - inn[0]);
+      return { ok: true, m: Math.min(x0, inn[1] - x0) };
+    }
     switch (c.rel) {
       case "nak": L = lonOf(c.g, ms, S); d = nakDist(L, c.v, ms);
         return d === 0 ? { ok: true, m: nakAt(L, ms).m } : { ok: false, skip: d / v };
@@ -1344,7 +1353,7 @@
     if (cl.mode === "within") return [];
     var out = [], seen = {};
     cl.conds.forEach(function (c) {
-      if ((c.rel === "nak" || c.rel === "rasi") && c.g && c.g !== "any") {
+      if ((c.rel === "nak" || c.rel === "rasi") && c.g && c.g !== "any" && typeof c.v === "number") {
         var k = c.g + c.rel; if (k in seen && seen[k] !== c.v) out.push(c.g + " cannot be in " + (c.rel === "nak" ? CL_NAKX[seen[k]] + " and " + CL_NAKX[c.v] : CL_RS[seen[k]] + " and " + CL_RS[c.v]) + " at once");
         seen[k] = c.v;
       }
@@ -1542,7 +1551,7 @@
   /* advice on the range, from the fastest thing the claim leans on */
   function adviseRange() {
     var rs = readingsNow(), moon = rs.some(function (r) { return r.conds.some(function (c) { return c.g === "Candra" || c.g === "any" || ["tithi", "month", "eclipse"].indexOf(c.rel) >= 0; }); });
-    $("ks-cladvice").innerHTML = moon ? "This claim leans on the Moon (or a tithi, month or eclipse): search <b>1000–2000 years</b> at a time, best inside 3000 BCE – 3000 CE, where the Moon is measured rather than extrapolated."
+    $("ks-cladvice").innerHTML = moon ? "This claim leans on the Moon (or a tithi, month or eclipse): search <b>1000–2000 years</b> at a time, as the Moon makes the search slower. The Moon is measured against JPL DE431 over the whole span; the day and the lagna still carry ΔT's uncertainty."
       : "This claim uses only the slower grahas: the <b>whole span</b>, 13000 BCE – 3600 CE, is quick to search and trusted to under a minute of arc.";
   }
   function yearMs(eraId, yId, end) {
@@ -1576,6 +1585,7 @@
       if (i >= rds.length) return finish();
       var rd = rds[i];
       $("ks-clsum").textContent = "Searching" + (rds.length > 1 ? " reading " + rd.id + " (" + (i + 1) + " of " + rds.length + ")" : "") + "…";
+      SESSION.readings++;
       searchClaim(rd, a, b, function (f) { if (my === CS.run) bar.value = (i + Math.min(1, f)) / rds.length; }).then(function (res) {
         out.push({ rd: rd, res: res }); i++; nextReading();
       }, function () { finish(true); });
@@ -1671,6 +1681,317 @@
     });
   }
 
+  /* ==== add-ons, 18 Nov 2026: date an event from the whole story ================
+     Three tools beside the claim search, which they leave as it was:
+     1. the chain: several claims, each a set interval after the one before, so
+        only dates where the whole story holds survive;
+     2. the chance test: the same claim with its targets moved at random, to see
+        how often a sky this tight turns up by itself;
+     3. ΔT needed: the lagna is never a filter (its clock is ΔT's), it is reported
+        as how far ΔT would have to be from the model for the lagna to fit. */
+  var RAMA_PRESET = {
+    range: [-12999, -2999],
+    links: [
+      { src: "preset", label: "Your seven conditions: Śukla Navamī with Sūrya in Mīna or Meṣa; Candra in Punarvasu and Karka; Guru in Puṣya and Karka; Maṅgala, Śani and Śukra each exalted or in an own sign",
+        ref: "Rāmāyaṇa 1.18.8–10 (vulgate), as read in this project", lagna: 3,
+        conds: [{ g: "Guru", rel: "nak", v: 7 }, { g: "Guru", rel: "rasi", v: 3 }, { g: "Śani", rel: "rasi", v: [6, 9, 10] }, { g: "Maṅgala", rel: "rasi", v: [9, 0, 7] },
+                { g: "Śukra", rel: "rasi", v: [11, 1, 6] }, { g: "Sūrya", rel: "rasi", v: [11, 0] }, { g: "", rel: "tithi", v: 9 }, { g: "Candra", rel: "nak", v: 6 }, { g: "Candra", rel: "rasi", v: 3 }] },
+      { src: "cat", id: "R03", rd: "B", min: 24, max: 27, unit: "y", lagna: -1 }]
+  };
+  var CH = { links: [], last: null }, SESSION = { readings: 0 };
+  var YEAR = 365.2425 * DAY;
+  function newLink(first) { return first ? { src: "cat", id: "R01", rd: "A", lagna: -1 } : { src: "cat", id: "R03", rd: "B", min: 24, max: 27, unit: "y", lagna: -1 }; }
+  function linkReading(L) {
+    if (L.src === "preset") return { id: "", label: L.label, conds: L.conds, mode: L.mode || "same", days: L.days || 30, preset: true, ref: L.ref };
+    if (L.src === "mine") return { id: "", label: MY.n || "your own claim", conds: MY.conds, mode: MY.mode, days: MY.days, mine: true };
+    var cl = claimOf(L.id), rd = cl && (cl.readings.filter(function (x) { return x.id === L.rd; })[0] || cl.readings[0]);
+    return rd ? Object.assign({ claim: cl }, rd) : null;
+  }
+  function linkName(L) {
+    var r = linkReading(L); if (!r) return "?";
+    return r.preset ? r.label : r.mine ? "Your claim" + (MY.n ? ": " + MY.n : "") : r.claim.id + " " + r.id + " · " + (r.claim.event || r.claim.sky);
+  }
+  /* does every condition of a same-moment reading hold at t? */
+  function holds(rd, t) { var S = shiftOf(t); return rd.conds.every(function (c) { return evalOne(c, t, S).ok; }); }
+  /* the search steps at up to a quarter of a day; the edges of a match are found to the minute */
+  function refine(rd, e) {
+    if (rd.mode === "within") return { from: e.from, to: e.to, exact: false };
+    var st = Math.min.apply(null, rd.conds.map(stepOf)) * DAY;
+    function edge(tin, tout) { for (var i = 0; i < 40 && Math.abs(tin - tout) > 30000; i++) { var m = (tin + tout) / 2; if (holds(rd, m)) tin = m; else tout = m; } return tin; }
+    return { from: edge(e.from, e.from - st), to: edge(e.to, e.to + st), exact: true };
+  }
+  function lagnaSign(ms, lat, lon) {
+    return Math.floor(norm(window.__kAscTrop(ms, lat, lon) - window.__ayanFor("samanvaya_ecliptic", jdOf(ms)) + shiftOf(ms)) / 30);
+  }
+  /* how far ΔT must be from the model for the lagna to be in sign `sg` while
+     the match holds. The match is fixed in uniform time; a ΔT larger by δ puts
+     the same moment δ earlier on Earth's clock. So with the lagna in the sign
+     over [k0, k1] (clock time, model ΔT), δ must lie in [from − k1, to − k0]. */
+  function dtNeeded(from, to, sg, lat, lon) {
+    var y = new Date((from + to) / 2).getUTCFullYear(), sM = sigmaMS(y), sH = sigmaHuber(y);
+    var out = { sign: sg, sigmaMS: sM, sigmaHuber: sH, longMatch: to - from >= DAY };
+    if (out.longMatch) { out.lo = out.hi = 0; out.holds = true; return out; }
+    var M = 120000, a = from - 1.6 * DAY, b = to + 1.6 * DAY, runs = [], cur = null, prev = null;
+    function bis(t0, t1, in0) { for (var i = 0; i < 20 && t1 - t0 > 15000; i++) { var m = (t0 + t1) / 2; if ((lagnaSign(m, lat, lon) === sg) === in0) t0 = m; else t1 = m; } return in0 ? t0 : t1; }
+    for (var t = a; t <= b; t += M) {
+      var k = lagnaSign(t, lat, lon) === sg;
+      if (k && !cur) cur = [prev == null ? t : bis(t - M, t, false), t];
+      if (k) cur[1] = t;
+      if (!k && cur) { cur[1] = bis(cur[1], t, true); runs.push(cur); cur = null; }
+      prev = t;
+    }
+    if (cur) runs.push(cur);
+    var cand = runs.map(function (r) { return { lo: from - r[1], hi: to - r[0], k0: r[0], k1: r[1] }; });
+    cand.forEach(function (c) { c.d = c.lo <= 0 && c.hi >= 0 ? 0 : Math.min(Math.abs(c.lo), Math.abs(c.hi)); });
+    cand.sort(function (p, q) { return p.d - q.d; });
+    out.options = cand.slice(0, 3);
+    var best = cand[0];
+    if (best) { out.lo = best.lo; out.hi = best.hi; out.holds = best.d === 0; out.need = best.d; out.k0 = best.k0; out.k1 = best.k1; }
+    return out;
+  }
+  function hrs(ms) {
+    var s = ms < 0 ? "−" : "+", m = Math.round(Math.abs(ms) / 60000);
+    return s + (m >= 60 ? Math.floor(m / 60) + " h " + String(m % 60).padStart(2, "0") + " m" : m + " min");
+  }
+  function dtVerdict(x) {
+    if (!x || x.lo == null) return "no rising of that sign found near the match";
+    if (x.longMatch) return "the match lasts more than a day, so that lagna rises within it at any ΔT";
+    if (x.holds) return "fits at the model's ΔT (any shift from " + hrs(x.lo) + " to " + hrs(x.hi) + " keeps it)";
+    var z = x.need / 1000 / x.sigmaMS, zh = x.sigmaHuber ? x.need / 1000 / x.sigmaHuber : null;
+    var w = function (q) { return q < 1 ? "well within" : q < 2 ? "within 2σ of" : q < 3 ? "a stretch for" : "far outside"; }, f = function (q) { return q.toFixed(q < 0.1 ? 2 : 1); };
+    return "needs ΔT " + hrs(x.lo) + " to " + hrs(x.hi) + " from the model · " + w(z) + " Morrison–Stephenson (±" + (x.sigmaMS / 3600).toFixed(1) + " h, " + f(z) + "σ)" +
+      (zh != null ? "; " + w(zh) + " Huber (±" + (x.sigmaHuber / 3600).toFixed(1) + " h, " + f(zh) + "σ)" : "");
+  }
+
+  /* ---- 1. the chain ---------------------------------------------------------------- */
+  var CHAIN_CAP = 300;
+  function chainSearch(links, a, b, onProgress) {
+    var rds = links.map(linkReading), chains = [], perLink = [], capped = false;
+    if (rds.some(function (r) { return !r; })) return Promise.reject("a link has no reading");
+    var lo = K.SPAN.from, hi = K.SPAN.to;
+    function stepK(k) {
+      if (k >= links.length) return Promise.resolve();
+      var rd = rds[k], L = links[k], unit = L.unit === "d" ? DAY : YEAR;
+      SESSION.readings++;
+      if (k === 0) {
+        return searchClaim(rd, a, b, function (f) { onProgress(f / links.length); }).then(function (res) {
+          capped = capped || res.capped; perLink.push(res.episodes.length);
+          chains = res.episodes.map(function (e) { return [e]; });
+          return chains.length ? stepK(1) : null;
+        });
+      }
+      /* the windows where link k may fall, one per surviving chain, merged */
+      var w = chains.map(function (ch) { var p = ch[ch.length - 1].best; return [Math.max(lo, p + L.min * unit), Math.min(hi, p + L.max * unit)]; })
+        .filter(function (x) { return x[1] > x[0]; }).sort(function (p, q) { return p[0] - q[0]; }), mw = [];
+      w.forEach(function (x) { if (mw.length && x[0] <= mw[mw.length - 1][1]) mw[mw.length - 1][1] = Math.max(mw[mw.length - 1][1], x[1]); else mw.push(x.slice()); });
+      var found = [], j = 0;
+      function nextWin() {
+        if (j >= mw.length) return Promise.resolve();
+        var W = mw[j];
+        return searchClaim(rd, W[0], W[1], function (f) { onProgress((k + (j + f) / mw.length) / links.length); }).then(function (res) {
+          found = found.concat(res.episodes); capped = capped || res.capped; j++; return nextWin();
+        });
+      }
+      return nextWin().then(function () {
+        perLink.push(found.length);
+        var next = [];
+        chains.forEach(function (ch) {
+          var p = ch[ch.length - 1].best, w0 = p + L.min * unit, w1 = p + L.max * unit;
+          found.forEach(function (e) { if (e.to >= w0 && e.from <= w1 && next.length < CHAIN_CAP) next.push(ch.concat([e])); });
+        });
+        if (next.length >= CHAIN_CAP) capped = true;
+        chains = next;
+        return chains.length ? stepK(k + 1) : null;
+      });
+    }
+    return stepK(0).then(function () {
+      var lat = latNow(), lon = lonNow();
+      chains.forEach(function (ch) {
+        ch.forEach(function (e, k) {
+          var r = refine(rds[k], e); e.exact = r;
+          if (links[k].lagna >= 0) e.dt = dtNeeded(r.from, r.to, links[k].lagna, lat, lon);
+        });
+      });
+      return { chains: chains, perLink: perLink, capped: capped, place: { lat: lat, lon: lon } };
+    });
+  }
+  function chainRow(L, k) {
+    var cats = CLAIMS.filter(function (c) { return !c.none; });
+    var src = L.src === "preset" ? "preset" : L.src === "mine" ? "mine" : L.id;
+    var h = '<div class="ks-chlink" data-k="' + k + '"><span class="ks-chn">' + (k + 1) + "</span>";
+    if (k > 0) h += '<label>from <input class="swin" type="number" step="0.5" min="0" max="5000" data-ch="min" value="' + esc(L.min) + '"></label>' +
+      '<label>to <input class="swin" type="number" step="0.5" min="0" max="5000" data-ch="max" value="' + esc(L.max) + '"></label>' +
+      '<select class="swin" data-ch="unit">' + opt("y", "years", L.unit !== "d") + opt("d", "days", L.unit === "d") + "</select><span>after link " + k + ":</span>";
+    h += '<select class="swin" data-ch="src">' + (L.src === "preset" ? opt("preset", "Preset: " + L.label, true) : "") + opt("mine", "Your own claim (the builder above)", src === "mine") +
+      ["Mahābhārata", "Bhāgavata", "Rāmāyaṇa"].map(function (t) { return '<optgroup label="' + t + '">' + cats.filter(function (c) { return c.src === t; }).map(function (c) {
+        return opt(c.id, c.id + " · " + (c.event ? c.event + " — " : "") + c.sky, src === c.id); }).join("") + "</optgroup>"; }).join("") + "</select>";
+    var cl = L.src === "cat" ? claimOf(L.id) : null;
+    if (cl) h += '<select class="swin" data-ch="rd">' + cl.readings.map(function (r) { return opt(r.id, r.id + ": " + r.label, L.rd === r.id); }).join("") + "</select>";
+    h += '<label>lagna <select class="swin" data-ch="lagna">' + opt(-1, "not asked", L.lagna < 0) + CL_RS.map(function (n, i) { return opt(i, n + " (reported as ΔT needed)", +L.lagna === i); }).join("") + "</select></label>";
+    h += ' <button type="button" class="swbtn" data-chdel="' + k + '"' + (CH.links.length < 2 ? " disabled" : "") + ">Remove</button></div>";
+    return h;
+  }
+  function drawChain() {
+    var host = $("ks-chlinks"); if (!host) return;
+    host.innerHTML = CH.links.map(chainRow).join("");
+    $("ks-chadd").disabled = CH.links.length >= 5;
+    $("ks-chsession").textContent = SESSION.readings;
+  }
+  function chainYears(id0, e0, end) { return yearMs(e0, id0, end); }
+  function runChain() {
+    var a = chainYears("ks-chy0", "ks-chera0"), b = chainYears("ks-chy1", "ks-chera1", true);
+    if (b <= a) { $("ks-chsum").innerHTML = "<b>The end of the range must come after its start.</b>"; return; }
+    var bad = CH.links.map(function (L, k) { var r = linkReading(L); return r ? contradictions(r).map(function (x) { return "link " + (k + 1) + ": " + x; }) : ["link " + (k + 1) + " has no reading"]; })
+      .reduce(function (p, q) { return p.concat(q); }, []).concat(CH.links.slice(1).filter(function (L) { return !(L.max > L.min); }).map(function () { return "an interval must end after it starts"; }));
+    if (bad.length) { $("ks-chsum").innerHTML = "<b>Not searched:</b> " + esc(bad.join(" · ")); $("ks-chres").innerHTML = ""; return; }
+    CS.run++; CS.stop = false;
+    var my = CS.run, t0 = Date.now(), bar = $("ks-chbar");
+    $("ks-chgo").disabled = true; $("ks-chstop").disabled = false; bar.hidden = false; bar.value = 0; $("ks-chres").innerHTML = "";
+    $("ks-chsum").textContent = "Searching the chain…";
+    var links = JSON.parse(JSON.stringify(CH.links));
+    chainSearch(links, a, b, function (f) { if (my === CS.run) bar.value = Math.min(1, f); }).then(function (res) {
+      if (my !== CS.run) return; CH.last = { res: res, links: links, a: a, b: b }; done();
+      drawChainResult(CH.last, ((Date.now() - t0) / 1000).toFixed(1));
+    }, function () { done(); $("ks-chsum").innerHTML = "<b>Stopped.</b> Nothing below is complete."; });
+    function done() { $("ks-chgo").disabled = false; $("ks-chstop").disabled = true; bar.hidden = true; $("ks-chsession").textContent = SESSION.readings; }
+  }
+  function drawChainResult(o, secs) {
+    var r = o.res, L = o.links;
+    $("ks-chsum").innerHTML = "Searched " + esc(yearLabel(new Date(o.a).getUTCFullYear())) + " – " + esc(yearLabel(new Date(o.b).getUTCFullYear())) + " for link 1" +
+      (secs ? " in " + secs + " s" : "") + ", under " + FRAME_NAME[CONV.frame] + ", " + { equal: (window.NNak ? window.NNak.label() : "equal nakṣatras"), star: "nakṣatra by the nearest junction star", abhijit: "28 nakṣatras with Abhijit" }[CONV.nak] +
+      ", the " + CONV.node + " node. Link by link, matches found: " + r.perLink.map(function (n, k) { return "link " + (k + 1) + " " + n; }).join(", ") +
+      ". <b>" + r.chains.length + (r.chains.length === 1 ? " date survives" : " dates survive") + " the whole chain.</b>" + (r.capped ? " <b>Some list was capped: the chain is too loose to narrow a date.</b>" : "") +
+      (L.some(function (x) { return x.lagna >= 0; }) ? " Lagna at " + latNow().toFixed(2) + "°, " + lonNow().toFixed(2) + "° (the place set above)." : "");
+    if (!r.chains.length) { $("ks-chres").innerHTML = '<p class="k-note">No date in this range satisfies every link. That is a result: under these readings and intervals, the story\'s sky did not happen here.</p>'; return; }
+    $("ks-chres").innerHTML = '<div class="eltblwrap"><table class="aytab ks-cltab"><thead><tr><th>#</th>' + L.map(function (x, k) { return "<th>link " + (k + 1) + ": " + esc(linkName(x)) + "</th>"; }).join("") + "</tr></thead><tbody>" +
+      r.chains.map(function (ch, i) {
+        return "<tr><td class=\"num\">" + (i + 1) + "</td>" + ch.map(function (e, k) {
+          var ex = e.exact || {}, gap = k ? (e.best - ch[k - 1].best) / YEAR : null;
+          return "<td>" + civilText(e.best) + " " + hm(e.best) + " UT" +
+            (ex.exact ? '<br><span class="elw">holds ' + civilText(ex.from) + " " + hm(ex.from) + " – " + (civilText(ex.to) === civilText(ex.from) ? "" : civilText(ex.to) + " ") + hm(ex.to) + " UT</span>" : "") +
+            (gap != null ? '<br><span class="elw">' + gap.toFixed(2) + " years after link " + k + "</span>" : "") +
+            (e.dt ? '<br><span class="ks-dtn">Lagna ' + esc(CL_RS[e.dt.sign]) + ": " + esc(dtVerdict(e.dt)) + "</span>" : "") +
+            ' <button type="button" class="swbtn" data-clshow="' + e.best + '">Show</button></td>';
+        }).join("") + "</tr>";
+      }).join("") + "</tbody></table></div>";
+  }
+
+  /* ---- 2. the chance test ------------------------------------------------------------ */
+  function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; var t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+  /* the same reading with every graha's targets moved by one random angle per
+     graha: the structure (how many conditions, how wide, which go together) is
+     kept, the places are not. Tithi and month follow the Moon and Sun moved. */
+  function randomized(rd, R, mid) {
+    var th = {}; GN.concat(["any"]).forEach(function (g) { th[g] = R() * 360; }); th["Ketu"] = th["Rāhu"];
+    var arcsOfNak = function (i) { var e = NKE().filter(function (q) { return q.i === i; })[0]; return e ? [e.start, e.end - e.start] : [i * 40 / 3, 40 / 3]; };
+    var conds = rd.conds.map(function (c) {
+      var t = th[c.g] || 0, x = Object.assign({}, c);
+      switch (c.rel) {
+        case "nak": if (c.g === "any") return x; var A = arcsOfNak(c.v); return { g: c.g, rel: "_arcs", v: [[norm(A[0] + t), A[1]]] };
+        case "rasi": return { g: c.g, rel: "_arcs", v: (Array.isArray(c.v) ? c.v : [c.v]).map(function (q) { return [norm(q * 30 + t), 30]; }) };
+        case "exalt": case "own": case "debil":
+          if (!(c.g in EXALT)) return x;
+          var sg = c.rel === "exalt" ? [EXALT[c.g]] : c.rel === "debil" ? [(EXALT[c.g] + 6) % 12] : OWN[c.g];
+          return { g: c.g, rel: "_arcs", v: sg.map(function (q) { return [norm(q * 30 + t), 30]; }) };
+        case "nearstar": var yl = starLon(c.v, mid); return yl == null ? x : { g: c.g, rel: "nearlon", v: norm(yl + t), tol: c.tol };
+        case "nearlon": x.v = norm(+c.v + t); return x;
+        case "tithi": x.v = ((c.v - 1 + Math.round((th["Candra"] - th["Sūrya"]) / 12)) % 30 + 30) % 30 + 1; return x;
+        case "month": x.v = ((c.v + Math.round(th["Sūrya"] / 30)) % 12 + 12) % 12; return x;
+        case "retro": case "station": if (c.v >= 0) x.v = ((c.v + Math.round(t / (40 / 3))) % 27 + 27) % 27; return x;
+      }
+      return x;                                   /* conjunctions, eclipses, ayana: kept as they are */
+    });
+    return { id: "", label: "randomised", conds: conds, mode: rd.mode, days: rd.days };
+  }
+  function chanceTest(rd, a, b, n, onProgress) {
+    var mid = (a + b) / 2, out = { real: null, versions: [] }, i = -1, R = rng(20261118);
+    function one() {
+      if (i >= n) return Promise.resolve(out);
+      var r = i < 0 ? rd : randomized(rd, R, mid), k = i + 1;
+      return searchClaim(r, a, b, function (f) { onProgress((k + f) / (n + 1)); }).then(function (res) {
+        var x = { n: res.episodes.length, capped: res.capped, conds: r.conds };
+        if (i < 0) out.real = x; else out.versions.push(x);
+        i++; return one();
+      });
+    }
+    return one().then(function () {
+      var v = out.versions, hits = v.filter(function (x) { return x.n > 0; }).length;
+      out.mean = v.reduce(function (p, x) { return p + x.n; }, 0) / Math.max(1, v.length);
+      out.pAny = hits / Math.max(1, v.length);
+      out.years = (b - a) / YEAR;
+      return out;
+    });
+  }
+  function chanceTarget() {
+    if ($("ks-chwhat").value === "chain") return { rd: linkReading(CH.links[0]), name: "link 1 of the chain" };
+    var rds = readingsNow(); return { rd: rds[0], name: rds[0].mine ? "your own claim" : rds[0].claim.id + " reading " + rds[0].id };
+  }
+  function runChance() {
+    var a = chainYears("ks-chy0", "ks-chera0"), b = chainYears("ks-chy1", "ks-chera1", true);
+    if (b <= a) { $("ks-chancesum").innerHTML = "<b>The end of the range must come after its start.</b>"; return; }
+    var T = chanceTarget(), n = +$("ks-chn").value || 10;
+    if (!T.rd || contradictions(T.rd).length) { $("ks-chancesum").innerHTML = "<b>That reading can never hold, so there is nothing to test.</b>"; return; }
+    CS.run++; CS.stop = false;
+    var my = CS.run, bar = $("ks-chancebar"), t0 = Date.now();
+    $("ks-chancego").disabled = true; $("ks-chancestop").disabled = false; bar.hidden = false; bar.value = 0; $("ks-chanceres").innerHTML = "";
+    $("ks-chancesum").textContent = "Searching the reading, then " + n + " randomised versions of it…";
+    chanceTest(T.rd, a, b, n, function (f) { if (my === CS.run) bar.value = Math.min(1, f); }).then(function (o) {
+      if (my !== CS.run) return; fin();
+      var N = Math.max(1, SESSION.readings), pAll = 1 - Math.pow(1 - o.pAny, N), per = function (k) { return (k / o.years * 10000).toFixed(k / o.years * 10000 < 10 ? 1 : 0); };
+      $("ks-chancesum").innerHTML = "<b>" + esc(T.name) + "</b> over " + Math.round(o.years).toLocaleString("en") + " years (" + ((Date.now() - t0) / 1000).toFixed(0) + " s): the reading itself matches <b>" + o.real.n + "</b> time" + (o.real.n === 1 ? "" : "s") +
+        " (" + per(o.real.n) + " per 10,000 years). With its targets moved at random, a sky of the same make-up matched <b>" + o.mean.toFixed(1) + "</b> times on average, and <b>" +
+        Math.round(o.pAny * 100) + "%</b> of the " + n + " versions matched at least once.";
+      $("ks-chanceres").innerHTML = '<p class="k-note"><b>What this means.</b> ' +
+        (o.pAny >= 0.5 ? "A sky this specific turns up somewhere in this range more often than not, whatever its targets: finding a match proves little by itself. "
+          : o.pAny > 0 ? "A sky this specific is uncommon in this range, but not rare enough that a match must be meaningful. "
+          : "None of the randomised versions matched: in this range a sky this specific is rare, so a match carries weight — if the reading was fixed before searching. ") +
+        "You have searched <b>" + SESSION.readings + "</b> reading" + (SESSION.readings === 1 ? "" : "s") + " this visit; if every one were a sky of this make-up, the chance that at least one matched by coincidence is about <b>" +
+        Math.round(pAll * 100) + "%</b>. Every reading tried counts, which is why the reading should be fixed before the search, not chosen after it.</p>" +
+        '<div class="eltblwrap"><table class="aytab ks-cltab"><thead><tr><th>version</th><th>matches</th><th>targets</th></tr></thead><tbody>' +
+        [["the reading", o.real]].concat(o.versions.map(function (x, k) { return ["random " + (k + 1), x]; })).map(function (q) {
+          return "<tr><td>" + q[0] + "</td><td class=\"num\">" + q[1].n + (q[1].capped ? "+" : "") + '</td><td class="elw">' + esc(q[1].conds.map(condText).join(" · ")) + "</td></tr>"; }).join("") +
+        "</tbody></table></div>";
+    }, function () { fin(); $("ks-chancesum").innerHTML = "<b>Stopped.</b>"; });
+    function fin() { $("ks-chancego").disabled = false; $("ks-chancestop").disabled = true; bar.hidden = true; }
+  }
+
+  function chainInit() {
+    if (!$("ks-chlinks")) return;
+    CH.links = [newLink(true), newLink(false)];
+    drawChain();
+    $("ks-chlinks").addEventListener("change", function (ev) {
+      var el = ev.target, row = el.closest && el.closest(".ks-chlink"), k2 = el.getAttribute("data-ch"); if (!row || !k2) return;
+      var L = CH.links[+row.getAttribute("data-k")];
+      if (k2 === "src") { var v = el.value; if (v === "preset") return; if (v === "mine") { L.src = "mine"; } else { L.src = "cat"; L.id = v; L.rd = claimOf(v).readings[0].id; } delete L.conds; }
+      else if (k2 === "rd") L.rd = el.value;
+      else if (k2 === "lagna") L.lagna = +el.value;
+      else if (k2 === "unit") L.unit = el.value;
+      else L[k2] = Math.max(0, Math.min(5000, +el.value || 0));
+      drawChain();
+    });
+    $("ks-chlinks").addEventListener("click", function (ev) {
+      var d = ev.target.getAttribute && ev.target.getAttribute("data-chdel"); if (d == null) return;
+      CH.links.splice(+d, 1); if (CH.links[0]) { delete CH.links[0].min; delete CH.links[0].max; } drawChain();
+    });
+    $("ks-chadd").addEventListener("click", function () { if (CH.links.length < 5) { CH.links.push(newLink(false)); drawChain(); } });
+    $("ks-chrama").addEventListener("click", function () {
+      CH.links = JSON.parse(JSON.stringify(RAMA_PRESET.links));
+      $("ks-chy0").value = 13000; $("ks-chera0").value = "BCE"; $("ks-chy1").value = 3000; $("ks-chera1").value = "BCE";
+      drawChain();
+      $("ks-chsum").innerHTML = "Preset loaded: link 1 is your seven conditions, with the Karka lagna reported as ΔT needed at the place set above (set it to Ayodhya); link 2 is Daśaratha's omens on the coronation day (R03 B), 24–27 years later. Search when ready.";
+    });
+    $("ks-chgo").addEventListener("click", runChain);
+    $("ks-chstop").addEventListener("click", function () { CS.stop = true; });
+    $("ks-chancego").addEventListener("click", runChance);
+    $("ks-chancestop").addEventListener("click", function () { CS.stop = true; });
+    $("ks-chres").addEventListener("click", function (ev) {
+      var v = ev.target.getAttribute && ev.target.getAttribute("data-clshow"); if (v == null) return;
+      writeWhen(+v); redrawMoment();
+      var w = $("ks-wheel"); if (w && w.scrollIntoView) w.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  }
+
+
   function bind() {
     K = window.KalasetuEngine; D = window.__KALASETU_DATA;
     if (!K || !D || !K.isFitted() || !window.__kEclipModern || !window.__ayanFor || !window.__kNodesModern) {
@@ -1735,14 +2056,17 @@
     scrub.addEventListener("change", function () { ST.scrubbing = false; resetScrub(); });
     $("ks-accbody").addEventListener("change", bands);
     $("ks-groups").addEventListener("change", moonTerms);
-    tiles(); accTable(); bands(); eras(); history(); claimsInit(); cost(); built();
+    tiles(); accTable(); bands(); eras(); history(); claimsInit(); chainInit(); cost(); built();
     redrawMoment(); clearTimeout(ST.heavy); deltaT(); nodes(); gi(); moonTerms(); measure();
     window.__ksPage = { setMoment: function (ms) { writeWhen(ms); redrawMoment(); }, measure: measure, moonTerms: moonTerms,
       step: stepBy, eras: eras, conv: function (k, v) { if (v === undefined) return CONV[k]; CONV[k] = v;
         var id = { cal: "ks-cal", frame: "ks-frame", node: "ks-nodeconv", nak: "ks-nakconv", msys: "ks-msys", mname: "ks-mname", rtu: "ks-rtu" }[k];
         if ($(id)) $(id).value = v; if (k === "cal") writeWhen(ST.ms); redrawMoment(); }, useFit: function (m) { $("ks-fit").value = m; if (K.use) K.use(m); redrawMoment(); },
       state: function () { return { ms: ST.ms, place: ST.place, mode: $("ks-tmode").value }; },
-      claims: function () { return CLAIMS; }, search: function (rd, a, b) { CS.run++; CS.stop = false; return searchClaim(rd, a, b, function () {}); } };
+      claims: function () { return CLAIMS; }, search: function (rd, a, b) { CS.run++; CS.stop = false; return searchClaim(rd, a, b, function () {}); },
+      chain: function (links, a, b) { CS.run++; CS.stop = false; return chainSearch(links, a, b, function () {}); },
+      chance: function (rd, a, b, n) { CS.run++; CS.stop = false; return chanceTest(rd, a, b, n, function () {}); },
+      dtNeeded: dtNeeded, rama: RAMA_PRESET };
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind); else bind();
 })();
