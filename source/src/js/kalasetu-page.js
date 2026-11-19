@@ -384,6 +384,32 @@
     YTCACHE = { key: key, v: out };
     return out;
   }
+  /* Arundhatī and Vasiṣṭha: Alcor (80 UMa, HIP 65477) and Mizar (ζ UMa, HIP 65378), J2000 RA°, Dec°,
+     parallax mas, proper motion μα* and μδ mas/yr, radial velocity km/s (SIMBAD; Hipparcos 2007). Carried by
+     their space motion like the junction stars, then put in the equator of date by the modern engine.
+     "Arundhatī ahead" = Alcor turns first in the daily motion: west of Mizar, its position angle from Mizar
+     (north of date through east) between 180° and 360°. What changes it is precession turning the equator;
+     the pair's own relative motion moves Alcor about 1.5′ in 15,000 years, against an 11.7′ separation. */
+  var PAIR = { Vasiṣṭha: [200.98142, 54.92535, 38.01, 121.23, -22.01, -6.31], Arundhatī: [201.30640, 54.98796, 39.91, 120.21, -16.04, -8.90] };
+  var PAIRCACHE = { key: null, v: null };
+  function pairPA(ms) {
+    var key = Math.round(ms / (30 * DAY));
+    if (PAIRCACHE.key === key) return PAIRCACHE.v;
+    var A = window.Astronomy; if (!A || !A.DefineStar) return null;
+    var D = Math.PI / 180, yrs = (ms - Date.UTC(2000, 0, 1, 12)) / DAY / 365.25, obs = new A.Observer(29.97, 76.85, 0), eq = {};
+    ["Vasiṣṭha", "Arundhatī"].forEach(function (nm, i) {
+      var q = PAIR[nm], r = 1000 / q[2], a = q[0] * D, d = q[1] * D, k = r * 4.84813681e-9, kv = 1.0227121650537077e-6;
+      var u = [Math.cos(d) * Math.cos(a), Math.cos(d) * Math.sin(a), Math.sin(d)], ea = [-Math.sin(a), Math.cos(a), 0], ed = [-Math.sin(d) * Math.cos(a), -Math.sin(d) * Math.sin(a), Math.cos(d)];
+      var x = [0, 1, 2].map(function (j) { return u[j] * r + (u[j] * q[5] * kv + ea[j] * q[3] * k + ed[j] * q[4] * k) * yrs; }), rr = Math.sqrt(x[0] * x[0] + x[1] * x[1] + x[2] * x[2]);
+      var body = A.Body["Star" + (7 + i)];
+      A.DefineStar(body, norm(Math.atan2(x[1], x[0]) / D) / 15, Math.asin(x[2] / rr) / D, rr * 3.26156);
+      var e = A.Equator(body, new Date(ms), obs, true, false); eq[nm] = { ra: e.ra * 15 * D, de: e.dec * D };
+    });
+    var m = eq["Vasiṣṭha"], c = eq["Arundhatī"], dra = c.ra - m.ra;
+    var pa = norm(Math.atan2(Math.sin(dra) * Math.cos(c.de), Math.cos(m.de) * Math.sin(c.de) - Math.sin(m.de) * Math.cos(c.de) * Math.cos(dra)) / D);
+    PAIRCACHE = { key: key, v: pa };
+    return pa;
+  }
   var STARNAMES = true;   /* the junction stars' names around the wheel */
   var ABHIJIT = false, MODALL = false, MODLIM = 1;   /* the modern engine's ring: drawn only past 1° unless asked for */
   /* the grahas' relative sizes, the convention the site's other wheels use
@@ -1107,7 +1133,7 @@
         conds: [{ g: "Śani", rel: "nak", v: 3 }, { g: "Maṅgala", rel: "nak", v: [16, 17] }, { g: "any", rel: "nak", v: 13 },
                 { g: "", rel: "_and", conds: [{ g: "", rel: "tithi", v: 30 }, { g: "Candra", rel: "nak", v: 17 }] }] }] },
     { id: "C05", def: "N", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.2.23 – 6.3.29", sky: "the omens of one speech: a fire-coloured Kārttika full moon; Saturn on Rohiṇī, on Pūrva Phalgunī, near Viśākhā; Mars retrograde in Maghā and in Śravaṇa; Jupiter in Śravaṇa; two eclipses in one month",
-      note: "One conversation, one speech: until 19 Nov 2026 these verses were eight claims (C05, C06, C07, C09, C10, C11, C12, C14). Each verse keeps its own readings; the eclipse readings are also checked as seen from the place set above (Kurukṣetra is 29.97°, 76.85°). They cannot all hold at once — the speech puts Saturn in three nakṣatras (Rohiṇī, Pūrva Phalgunī, Viśākhā), Mars in two (Maghā, Śravaṇa) and Jupiter in two (Śravaṇa, near Viśākhā) — so N, everything together, is refused before searching (it is what the claim opens on, so the reason is shown), and M, the two eclipse verses, is the part that can hold together.", readings: [
+      note: "One conversation, one speech: until 19 Nov 2026 these verses were eight claims (C05, C06, C07, C09, C10, C11, C12, C14). Each verse keeps its own readings; the eclipse readings are also checked as seen from the place set above (Kurukṣetra is 29.97°, 76.85°). They cannot all hold at once — the speech puts Saturn in three nakṣatras (Rohiṇī, Pūrva Phalgunī, Viśākhā), Mars in two (Maghā, Śravaṇa) and Jupiter in two (Śravaṇa, near Viśākhā) — so N, everything together, is refused before searching (it is what the claim opens on, so the reason is shown), and M, the two eclipse verses, is the part that can hold together. O and P (6.2.31) read Arundhatī and Vasiṣṭha as Alcor and Mizar: Alcor ahead means it turns first in the daily motion. Precession, not the stars\u2019 own motion, swings it: now Alcor follows (position angle 71°); it led only in about 11140–4550 BCE, and then by a hair, never more than about 15° west of due north (some 3′ at the eye), so P, plainly ahead, never holds. The site\u2019s precession is IAU 2006, which drifts by degrees before about 8000 BCE; a constant 50.29″ a year gives 10380–4700 BCE.", readings: [
       { id: "A", label: "6.2.23 · a lunar eclipse in Kārttika", conds: [{ g: "", rel: "month", v: 7 }, { g: "", rel: "eclipse", v: "lunar" }] },
       { id: "B", label: "6.2.32 · Śani inside Rohiṇī's division", conds: [{ g: "Śani", rel: "nak", v: 3 }] },
       { id: "C", label: "6.2.32 · Śani within 5° of Aldebaran", conds: [{ g: "Śani", rel: "nearstar", v: 3, tol: 5 }] },
@@ -1131,7 +1157,11 @@
         conds: [{ g: "", rel: "_and", conds: [{ g: "", rel: "month", v: 7 }, { g: "", rel: "eclipse", v: "lunar" }] }, { g: "Śani", rel: "nak", v: 3 },
                 { g: "", rel: "eclipse", v: "solar" }, { g: "Śukra", rel: "nak", v: 14 }, { g: "", rel: "_and", conds: [{ g: "Maṅgala", rel: "retro", v: 9 }, { g: "Guru", rel: "nak", v: 21 }] },
                 { g: "Śani", rel: "nak", v: 10 }, { g: "Śukra", rel: "nak", v: 24 }, { g: "Maṅgala", rel: "retro", v: 21 },
-                { g: "Śani", rel: "nak", v: 15 }, { g: "Guru", rel: "nak", v: 15 }] }] },
+                { g: "Śani", rel: "nak", v: 15 }, { g: "Guru", rel: "nak", v: 15 }] },
+      { id: "O", label: "6.2.31 · Arundhatī has put Vasiṣṭha behind her: Alcor ahead of Mizar in the daily turn (west of it, position angle of date 180°–360°)", cap: 20000,
+        conds: [{ g: "", rel: "pair", v: [180, 180] }] },
+      { id: "P", label: "6.2.31 · read as plainly ahead: Alcor at least 30° west of due north from Mizar (position angle 180°–330°), not merely level with it", cap: 20000,
+        conds: [{ g: "", rel: "pair", v: [180, 150] }] }] },
     { id: "C25", event: "The war's first day: the armies stand ready", ref: "MBh 6.17.2 (Ganguli §17)", sky: "the Moon had gone to the region of Maghā",
       note: "Alone it recurs every month: its use is in a chain, after the new moon of C01 I (which it contradicts: from a new moon in Jyeṣṭhā the Moon needs about 19 days to reach Maghā).", readings: [
       { id: "A", label: "Candra in Maghā", conds: [{ g: "Candra", rel: "nak", v: 9 }] }] },
@@ -1230,6 +1260,7 @@
       case "tithi": return "tithi " + (Array.isArray(c.v) ? c.v.map(function (q) { return TITHI30[q - 1]; }).join(" or ") : TITHI30[c.v - 1]);
       case "rtu": return "the season is " + RTU[c.v];
       case "pt": return "the " + (c.g || PTS[0]) + " in " + (c.part ? "the first " + (c.part[1] === 0.25 ? "quarter" : Math.round(c.part[1] * 100) + "%") + " of " : "") + CL_NAKX[c.v];
+      case "pair": return "Arundhatī (Alcor) at position angle " + c.v[0] + "°–" + norm(c.v[0] + c.v[1]) + "° from Vasiṣṭha (Mizar)" + (c.v[0] === 180 && c.v[1] === 180 ? ", west of it: ahead in the daily turn" : "");
       case "_and": return "at one moment: " + c.conds.map(condText).join(" and ");
       case "_trop": return "Sūrya " + c.v[0] + "°–" + norm(c.v[0] + c.v[1]) + "° tropical";
       case "month": return "lunar month " + LMON[c.v];
@@ -1366,6 +1397,12 @@
       d = arcTo(P, st0, wd);
       return d === 0 ? { ok: true, m: Math.min(norm(P - st0), wd - norm(P - st0)) } : { ok: false, skip: d * 26150 * 0.9 };
     }
+    if (c.rel === "pair") {
+      /* Arundhatī's position angle from Vasiṣṭha in the arc [v0, v0 + v1); it moves well under 0.1° a year */
+      var pa = pairPA(ms); if (pa == null) return { ok: false, skip: 3650 };
+      d = arcTo(pa, c.v[0], c.v[1]);
+      return d === 0 ? { ok: true, m: Math.min(norm(pa - c.v[0]), c.v[1] - norm(pa - c.v[0])) } : { ok: false, skip: d * 3650 * 0.9 };
+    }
     if (c.rel === "_trop") {
       L = norm(K.longitude("Sūrya", ms) + window.__ayanFor("samanvaya_ecliptic", jdOf(ms))); d = arcTo(L, c.v[0], c.v[1]);
       return d === 0 ? { ok: true, m: Math.min(norm(L - c.v[0]), c.v[1] - norm(L - c.v[0])) } : { ok: false, skip: d / 1.03 };
@@ -1422,6 +1459,7 @@
   function stepOf(c) {
     if (c.rel === "_and") return Math.min.apply(null, c.conds.map(stepOf));
     if (c.rel === "pt") return 730;
+    if (c.rel === "pair") return 730;
     if (c.rel === "rtu") return STEP["Sūrya"] || 1;
     if (c.rel === "tithi" || c.rel === "eclipse") return 0.25;
     if (c.rel === "month") return 1;

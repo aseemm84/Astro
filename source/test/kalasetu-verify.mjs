@@ -513,7 +513,7 @@ head("The Kālasetu page");
   is(cs.n === 18 && cs.opts === 19 && cs.dis === 0 && cs.none === 0 && cs.groups === "Mahābhārata,Bhāgavata,Rāmāyaṇa",
      `the picker offers your own claim and only the 18 claims a search can test, grouped by text (${cs.groups})`);
   is(cs.added === "C24,C25,C26,C27", `the Mahābhārata's other testable verses are in: Kṛṣṇa's embassy (Revatī), the first day (Maghā), Balarāma's return (Śravaṇa), Bhīṣma's death (Māgha after the solstice) — ${cs.added}`);
-  is(cs.vyasa === "C05:14:MBh 6.2.23 – 6.3.29" && !cs.oldV, "Vyāsa's omens to Dhṛtarāṣṭra (one speech, MBh 6.2–6.3) are one claim, C05, with each verse's readings; C15, after the war, stays its own");
+  is(cs.vyasa === "C05:16:MBh 6.2.23 – 6.3.29" && !cs.oldV, "Vyāsa's omens to Dhṛtarāṣṭra (one speech, MBh 6.2–6.3) are one claim, C05, with each verse's readings; C15, after the war, stays its own");
   is(cs.karna === "C01:11:MBh 5.141.7–10" && !cs.oldIds, "Karṇa's four omens to Kṛṣṇa (one speech, MBh 5.141.7–10) are one claim, C01, with each verse's readings, two together, and Kṛṣṇa's new-moon line from the same meeting");
   is(cs.r01c >= 1 && cs.r01a === 0, `Rāma's birth chart (R01): the five exalted occur ${cs.r01c} time(s) in 7500 – 5000 BCE, but never with Punarvasu on Caitra Śukla Navamī`);
   /* the panel: a catalogue claim through the buttons, then your own claim */
@@ -603,6 +603,7 @@ head("The Kālasetu page");
     out.r10 = Math.min(...r10.episodes.map(e => new Date(e.best).getUTCFullYear()));
     const C29 = P.claims().find(c => c.id === "C29");
     out.c29 = { A: await span(C29.readings[0], -12999, 3000), B: await span(C29.readings[1], -12999, 3000), C: await span(C29.readings[2], -12999, 3000) };
+    out.arun = { O: await span(C5.readings.find(x => x.id === "O"), -12999, 3600), P: await span(C5.readings.find(x => x.id === "P"), -12999, 3600) };
     const f = x => x.lo == null ? "never" : x.holds ? "seen" : "need";
     const sol = Date.UTC(2024, 3, 8, 18, 18), lun = Date.UTC(2025, 8, 7, 18, 12);
     out.ecl = [f(P.eclSeen("solar", sol, 32.78, -96.8)), f(P.eclSeen("solar", sol, 28.61, 77.2)), f(P.eclSeen("lunar", lun, 28.61, 77.2)), f(P.eclSeen("lunar", lun, 40.7, -74)), f(P.eclSeen("solar", Date.UTC(2023, 3, 20, 4, 17), 51.5, -0.1))];
@@ -627,6 +628,8 @@ head("The Kālasetu page");
      `C28 B then C: the vernal equinox leaves Rohiṇī (${ch.c28.B[0].join("…")}) for Kṛttikā (${ch.c28.C[0].join("…")})`);
   is(ch.c29.A.length === 1 && ch.c29.B.length === 1 && ch.c29.C.length === 1 && ch.c29.B[0][0] >= ch.c29.A[0][0] && ch.c29.B[0][1] <= ch.c29.A[0][1] + 1 && ch.c29.C[0][0] >= ch.c29.A[0][1] - 1,
      `C29 (MBh 14.44.2): the solstice in Dhaniṣṭhā ${ch.c29.A[0].join("…")}, in its first quarter ${ch.c29.B[0].join("…")}, in Śravaṇa (the vulgate) ${ch.c29.C[0].join("…")}`);
+  is(ch.arun.O.length === 1 && Math.abs(ch.arun.O[0][0] + 11139) < 60 && Math.abs(ch.arun.O[0][1] + 4549) < 60 && ch.arun.P.length === 0,
+     `C05 O (6.2.31): Arundhatī (Alcor) leads Vasiṣṭha (Mizar) only in ${ch.arun.O.map(r => r.join("…")).join()}; P, plainly ahead, never`);
   is(ch.r10 > -3500 && ch.r10 < -2500, `R10 A: Śrāvaṇa first falls in the rains in ${ch.r10} (a month tied to a season gives an era)`);
   is(ch.ecl.join() === "seen,need,seen,need,never", `eclipses from a place: 2024 seen from Dallas, not Delhi; 2025 lunar from Delhi, not New York; 2023 never from London (${ch.ecl.join()})`);
   is(ch.builder[0] && ch.builder[1] && ch.builder[2] === "vernal equinox|summer solstice|autumn equinox|winter solstice", "the builder offers the season and the equinox or solstice point");
