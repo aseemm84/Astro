@@ -2527,9 +2527,19 @@
      the sheet. Claims no search can test stay in the sheet and are not offered here. */
   var CLAIMS = [
     { id: "C24", event: "Kṛṣṇa sets out on the peace embassy to Hastināpura", ref: "MBh 5.83.7 (Ganguli §83; numbered 5.81 in the critical edition)", sky: "the Kaumuda month, Moon in Revatī, at the end of autumn",
-      note: "Kaumuda is read as Kārttika by most, as Āśvina (the Kaumudī full moon) by some; both are offered. Alone it recurs every year: its use is in a chain, before C01's meeting.", readings: [
+      note: "Kaumuda is read as Kārttika by most, as Āśvina (the Kaumudī full moon) by some; both are offered. A and B recur every year; C and D add the season the verse names (śaradante himāgame, the end of autumn as winter comes), which ties the month to the Sun's tropical place and so to an era.", readings: [
       { id: "A", label: "Kārttika, with Candra in Revatī", conds: [{ g: "", rel: "month", v: 7 }, { g: "Candra", rel: "nak", v: 26 }] },
-      { id: "B", label: "Āśvina, with Candra in Revatī", conds: [{ g: "", rel: "month", v: 6 }, { g: "Candra", rel: "nak", v: 26 }] }] },
+      { id: "B", label: "Āśvina, with Candra in Revatī", conds: [{ g: "", rel: "month", v: 6 }, { g: "Candra", rel: "nak", v: 26 }] },
+      { id: "C", label: "Kārttika, Candra in Revatī, at the end of śarad: the Sun within 15° of the śarad–hemanta boundary (tropical 195°–225°)", cap: 20000,
+        conds: [{ g: "", rel: "month", v: 7 }, { g: "Candra", rel: "nak", v: 26 }, { g: "Sūrya", rel: "_trop", v: [195, 30] }] },
+      { id: "D", label: "Āśvina, Candra in Revatī, at the end of śarad (the Sun at tropical 195°–225°)", cap: 20000,
+        conds: [{ g: "", rel: "month", v: 6 }, { g: "Candra", rel: "nak", v: 26 }, { g: "Sūrya", rel: "_trop", v: [195, 30] }] }] },
+    { id: "C28", event: "Indra and Skanda: Abhijit has fallen from the sky, Dhaniṣṭhā is made the start of time", ref: "MBh 3.219.8–11 (critical edition; Ganguli §230)", sky: "Abhijit fell; time was made to begin with Dhaniṣṭhā; Rohiṇī was first before; the Kṛttikās went to heaven",
+      note: "A myth whose sky meaning is an interpretation: the start of the year, or of the nakṣatra list, moving with the solstices and equinoxes (precession). Each reading is one interpretation, chosen before searching; each gives an era of centuries, not a day.", readings: [
+      { id: "A", label: "time begins with Dhaniṣṭhā: the winter solstice in Dhaniṣṭhā (the Vedāṅga Jyotiṣa's year-start)", cap: 20000, conds: [{ g: "winter solstice", rel: "pt", v: 22 }] },
+      { id: "B", label: "Rohiṇī was first before: the vernal equinox in Rohiṇī", cap: 20000, conds: [{ g: "vernal equinox", rel: "pt", v: 3 }] },
+      { id: "C", label: "the Kṛttikās head the list: the vernal equinox in Kṛttikā", cap: 20000, conds: [{ g: "vernal equinox", rel: "pt", v: 2 }] },
+      { id: "D", label: "A and C together: the winter solstice in Dhaniṣṭhā and the vernal equinox in Kṛttikā", cap: 20000, conds: [{ g: "winter solstice", rel: "pt", v: 22 }, { g: "vernal equinox", rel: "pt", v: 2 }] }] },
     { id: "C01", def: "J", event: "Before the war: Karṇa tells Kṛṣṇa the omens, after the peace embassy fails", ref: "MBh 5.141.7–10", sky: "four omens in one speech: Saturn afflicts Rohiṇī; Mars retrograde at Jyeṣṭhā toward Anurādhā; a graha afflicts Citrā; Rāhu will approach the Sun",
       note: "One meeting, one continuous speech: until 19 Nov 2026 these four verses were four claims (C01–C04). Each verse keeps its own readings; G and H ask for some of them together; J asks for everything the meeting states (opened by default), K the same with Maṅgala read without retrograde. Not testable, so left out: the Moon's spot turned, meteors, a black ring round the Sun, red horizons. I is Kṛṣṇa's line just before Karṇa's reply, in the same conversation. It cannot hold with C or D a week apart: Maṅgala retrograde stands opposite the Sun, so with Maṅgala in Jyeṣṭhā the Sun is near Rohiṇī, and a new moon in Jyeṣṭhā needs the Sun there.", readings: [
       { id: "A", label: "5.141.7 · Śani inside Rohiṇī's division", conds: [{ g: "Śani", rel: "nak", v: 3 }] },
@@ -2552,7 +2562,7 @@
         conds: [{ g: "Śani", rel: "nak", v: 3 }, { g: "Maṅgala", rel: "nak", v: [16, 17] }, { g: "any", rel: "nak", v: 13 },
                 { g: "", rel: "_and", conds: [{ g: "", rel: "tithi", v: 30 }, { g: "Candra", rel: "nak", v: 17 }] }] }] },
     { id: "C05", def: "N", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.2.23 – 6.3.29", sky: "the omens of one speech: a fire-coloured Kārttika full moon; Saturn on Rohiṇī, on Pūrva Phalgunī, near Viśākhā; Mars retrograde in Maghā and in Śravaṇa; Jupiter in Śravaṇa; two eclipses in one month",
-      note: "One conversation, one speech: until 19 Nov 2026 these verses were eight claims (C05, C06, C07, C09, C10, C11, C12, C14). Each verse keeps its own readings. They cannot all hold at once — the speech puts Saturn in three nakṣatras (Rohiṇī, Pūrva Phalgunī, Viśākhā), Mars in two (Maghā, Śravaṇa) and Jupiter in two (Śravaṇa, near Viśākhā) — so N, everything together, is refused before searching (it is what the claim opens on, so the reason is shown), and M, the two eclipse verses, is the part that can hold together.", readings: [
+      note: "One conversation, one speech: until 19 Nov 2026 these verses were eight claims (C05, C06, C07, C09, C10, C11, C12, C14). Each verse keeps its own readings; the eclipse readings are also checked as seen from the place set above (Kurukṣetra is 29.97°, 76.85°). They cannot all hold at once — the speech puts Saturn in three nakṣatras (Rohiṇī, Pūrva Phalgunī, Viśākhā), Mars in two (Maghā, Śravaṇa) and Jupiter in two (Śravaṇa, near Viśākhā) — so N, everything together, is refused before searching (it is what the claim opens on, so the reason is shown), and M, the two eclipse verses, is the part that can hold together.", readings: [
       { id: "A", label: "6.2.23 · a lunar eclipse in Kārttika", conds: [{ g: "", rel: "month", v: 7 }, { g: "", rel: "eclipse", v: "lunar" }] },
       { id: "B", label: "6.2.32 · Śani inside Rohiṇī's division", conds: [{ g: "Śani", rel: "nak", v: 3 }] },
       { id: "C", label: "6.2.32 · Śani within 5° of Aldebaran", conds: [{ g: "Śani", rel: "nearstar", v: 3, tol: 5 }] },
@@ -2571,7 +2581,7 @@
       { id: "L", label: "6.3.28–29 · a lunar and a solar eclipse within 15 days", mode: "within", days: 15,
         conds: [{ g: "", rel: "eclipse", v: "lunar" }, { g: "", rel: "eclipse", v: "solar" }] },
       { id: "M", label: "together (6.2.23 with 6.3.28–29): a lunar eclipse in Kārttika and a solar eclipse within 15 days", mode: "within", days: 15,
-        conds: [{ g: "", rel: "month", v: 7 }, { g: "", rel: "eclipse", v: "lunar" }, { g: "", rel: "eclipse", v: "solar" }] },
+        conds: [{ g: "", rel: "_and", conds: [{ g: "", rel: "month", v: 7 }, { g: "", rel: "eclipse", v: "lunar" }] }, { g: "", rel: "eclipse", v: "solar" }] },
       { id: "N", label: "the whole speech, together (literal), within 30 days: every position above at once — the page refuses it, because the speech puts Śani and Guru in nakṣatras far apart", mode: "within", days: 30,
         conds: [{ g: "", rel: "_and", conds: [{ g: "", rel: "month", v: 7 }, { g: "", rel: "eclipse", v: "lunar" }] }, { g: "Śani", rel: "nak", v: 3 },
                 { g: "", rel: "eclipse", v: "solar" }, { g: "Śukra", rel: "nak", v: 14 }, { g: "", rel: "_and", conds: [{ g: "Maṅgala", rel: "retro", v: 9 }, { g: "Guru", rel: "nak", v: 21 }] },
@@ -2618,6 +2628,10 @@
         conds: [{ g: "Rāhu", rel: "neargraha", v: "Sūrya", tol: 13.3 }, { g: "Maṅgala", rel: "neargraha", v: "Sūrya", tol: 13.3 }] },
       { id: "B", label: "reading A, at the same moment as R02 (Caitra, Candra in Punarvasu)",
         conds: [{ g: "Rāhu", rel: "neargraha", v: "Sūrya", tol: 13.3 }, { g: "Maṅgala", rel: "neargraha", v: "Sūrya", tol: 13.3 }, { g: "", rel: "month", v: 0 }, { g: "Candra", rel: "nak", v: 6 }] }] },
+    { id: "R10", event: "Rāma waits out the rains at Kiṣkindhā, with Sugrīva", ref: "Rāmāyaṇa 4.26.14", sky: "this is Śrāvaṇa, the first month of the rains; the four rainy months have begun",
+      note: "A month named with its season ties the lunar calendar to the Sun's tropical place, which drifts against the months by about a month in 2,000 years: so it gives an era. The four rainy months are the cāturmāsya; the ṛtu varṣā is two of them.", readings: [
+      { id: "A", label: "Śrāvaṇa falls in the ṛtu varṣā (the Sun at tropical 90°–150°)", cap: 20000, conds: [{ g: "", rel: "month", v: 4 }, { g: "", rel: "rtu", v: 2 }] },
+      { id: "B", label: "Śrāvaṇa opens the rains: the Sun at tropical 90°–120°, the first half of varṣā", cap: 20000, conds: [{ g: "", rel: "month", v: 4 }, { g: "Sūrya", rel: "_trop", v: [90, 30] }] }] },
     { id: "R06", event: "Rāma's army sets out from Kiṣkindhā for Laṅkā", ref: "Rāmāyaṇa 6.4.3–4", sky: "Uttara Phalgunī today, Hasta tomorrow", readings: [
       { id: "A", label: "Candra in Uttara Phalgunī (monthly: useful once a year and month are fixed)", conds: [{ g: "Candra", rel: "nak", v: 11 }] }] },
     { id: "R07", event: "Rāma's army sets out for Laṅkā: omens on the march", ref: "Rāmāyaṇa 6.4.46", sky: "Mūla, the rākṣasas' nakṣatra, touched by a dhūmaketu", readings: [
@@ -2643,8 +2657,14 @@
     tithi: { label: "the tithi is", target: "tithi", graha: false },
     month: { label: "the lunar month is", target: "month", graha: false },
     eclipse: { label: "an eclipse", target: "eclipse", graha: false },
-    ayana: { label: "the Sun's ayana is", target: "ayana", graha: false }
+    ayana: { label: "the Sun's ayana is", target: "ayana", graha: false },
+    rtu: { label: "the season (ṛtu, by the Sun's tropical longitude) is", target: "rtu", graha: false },
+    pt: { label: "lies in nakṣatra (equinox or solstice point)", target: "nak", graha: false, points: true }
   };
+  /* the six ṛtus as 60° arcs of the Sun's tropical longitude (vasanta about the vernal equinox) */
+  var RTU = ["vasanta (spring)", "grīṣma (summer)", "varṣā (rains)", "śarad (autumn)", "hemanta (early winter)", "śiśira (late winter)"], RTU0 = [330, 30, 90, 150, 210, 270];
+  /* the four cardinal points and their tropical longitudes */
+  var PTS = ["vernal equinox", "summer solstice", "autumn equinox", "winter solstice"], PT0 = [0, 90, 180, 270];
   var TITHI30 = []; for (var ti0 = 0; ti0 < 30; ti0++) TITHI30.push((ti0 < 15 ? "Śukla " : "Kṛṣṇa ") + (ti0 % 15 === 14 ? (ti0 < 15 ? "Pūrṇimā" : "Amāvāsyā") : TNAME[ti0 % 15]));
   function condText(c) {
     var g = c.g === "any" ? "any graha" : c.g, tv = c.tol != null ? c.tol + "°" : "";
@@ -2663,6 +2683,8 @@
       case "retro": return g + " retrograde" + (c.v >= 0 ? " in " + CL_NAKX[c.v] : "");
       case "station": return g + " turns retrograde" + (c.v >= 0 ? " in " + CL_NAKX[c.v] : "");
       case "tithi": return "tithi " + (Array.isArray(c.v) ? c.v.map(function (q) { return TITHI30[q - 1]; }).join(" or ") : TITHI30[c.v - 1]);
+      case "rtu": return "the season is " + RTU[c.v];
+      case "pt": return "the " + (c.g || PTS[0]) + " in " + CL_NAKX[c.v];
       case "_and": return "at one moment: " + c.conds.map(condText).join(" and ");
       case "_trop": return "Sūrya " + c.v[0] + "°–" + norm(c.v[0] + c.v[1]) + "° tropical";
       case "month": return "lunar month " + LMON[c.v];
@@ -2790,6 +2812,14 @@
       if (bad.length) return { ok: false, skip: Math.max.apply(null, bad.map(function (r) { return r.skip || 0; })) };
       return { ok: true, m: Math.min.apply(null, ra.map(function (r) { return r.m; })), who: ra.map(function (r) { return r.who; }).filter(Boolean)[0] };
     }
+    if (c.rel === "rtu") return evalOne({ g: "Sūrya", rel: "_trop", v: [RTU0[c.v], 60] }, ms, S);
+    if (c.rel === "pt") {
+      /* the point's place among the nakṣatras: its tropical longitude less the ayanāṃśa, in this frame; it moves 1° in about 72 years */
+      var P = norm(PT0[Math.max(0, PTS.indexOf(c.g))] - window.__ayanFor("samanvaya_ecliptic", jdOf(ms)) + S), E = NKE().filter(function (q) { return q.i === c.v; })[0];
+      var st0 = E ? E.start : c.v * 40 / 3, wd = E ? E.end - E.start : 40 / 3;
+      d = arcTo(P, st0, wd);
+      return d === 0 ? { ok: true, m: Math.min(norm(P - st0), wd - norm(P - st0)) } : { ok: false, skip: d * 26150 * 0.9 };
+    }
     if (c.rel === "_trop") {
       L = norm(K.longitude("Sūrya", ms) + window.__ayanFor("samanvaya_ecliptic", jdOf(ms))); d = arcTo(L, c.v[0], c.v[1]);
       return d === 0 ? { ok: true, m: Math.min(norm(L - c.v[0]), c.v[1] - norm(L - c.v[0])) } : { ok: false, skip: d / 1.03 };
@@ -2845,6 +2875,8 @@
   }
   function stepOf(c) {
     if (c.rel === "_and") return Math.min.apply(null, c.conds.map(stepOf));
+    if (c.rel === "pt") return 730;
+    if (c.rel === "rtu") return STEP["Sūrya"] || 1;
     if (c.rel === "tithi" || c.rel === "eclipse") return 0.25;
     if (c.rel === "month") return 1;
     if (c.rel === "ayana") return 2;
@@ -3004,20 +3036,21 @@
     else if (t === "tithi") h = '<select class="swin" data-cb="v" data-i="' + i + '">' + TITHI30.map(function (n, k) { return opt(k + 1, n, +c.v === k + 1); }).join("") + "</select>";
     else if (t === "month") h = '<select class="swin" data-cb="v" data-i="' + i + '">' + LMON.map(function (n, k) { return opt(k, n, +c.v === k); }).join("") + "</select>";
     else if (t === "eclipse") h = '<select class="swin" data-cb="v" data-i="' + i + '">' + opt("solar", "solar (somewhere on Earth)", c.v === "solar") + opt("lunar", "lunar (umbral)", c.v === "lunar") + "</select>";
+    else if (t === "rtu") h = '<select class="swin" data-cb="v" data-i="' + i + '">' + RTU.map(function (n, k) { return opt(k, n, +c.v === k); }).join("") + "</select>";
     else if (t === "ayana") h = '<select class="swin" data-cb="v" data-i="' + i + '">' + opt("uttara", "uttarāyaṇa", c.v === "uttara") + opt("dakshina", "dakṣiṇāyana", c.v === "dakshina") + "</select>";
     if (r.tol != null) h += ' <label class="ks-cbtol">within <input class="swin" type="number" min="0.1" max="90" step="0.1" data-cb="tol" data-i="' + i + '" value="' + esc(c.tol == null ? r.tol : c.tol) + '">°</label>';
     return h;
   }
   function defaultV(rel) {
     var t = REL[rel].target;
-    return { nak: 3, nakany: -1, rasi: 0, star: 3, graha: "Śani", lon: 0, tithi: 15, month: 0, eclipse: "solar", ayana: "uttara" }[t];
+    return { nak: 3, nakany: -1, rasi: 0, star: 3, graha: "Śani", lon: 0, tithi: 15, month: 0, eclipse: "solar", ayana: "uttara", rtu: 0 }[t];
   }
   function drawBuilder() {
     var host = $("ks-cbrows"); if (!host) return;
     host.innerHTML = MY.conds.map(function (c, i) {
       var r = REL[c.rel];
-      return '<div class="ks-cbrow"><select class="swin" data-cb="g" data-i="' + i + '"' + (r.graha ? "" : " disabled") + ">" +
-        (r.graha ? GN.map(function (g) { return opt(g, g, c.g === g); }).join("") + opt("any", "any graha", c.g === "any") : opt("", "—", true)) + "</select>" +
+      return '<div class="ks-cbrow"><select class="swin" data-cb="g" data-i="' + i + '"' + (r.graha || r.points ? "" : " disabled") + ">" +
+        (r.points ? PTS.map(function (q) { return opt(q, "the " + q, c.g === q); }).join("") : r.graha ? GN.map(function (g) { return opt(g, g, c.g === g); }).join("") + opt("any", "any graha", c.g === "any") : opt("", "—", true)) + "</select>" +
         '<select class="swin" data-cb="rel" data-i="' + i + '">' + Object.keys(REL).map(function (k) { return opt(k, REL[k].label, c.rel === k); }).join("") + "</select>" +
         targetCtl(c, i) +
         ' <button type="button" class="swbtn" data-cbdel="' + i + '" aria-label="Remove this condition"' + (MY.conds.length < 2 ? " disabled" : "") + ">Remove</button></div>";
@@ -3116,14 +3149,22 @@
       $("ks-clres").innerHTML = out.map(function (o) {
         var rd = o.rd, eps = o.res.episodes, per = eps.length / yrs * 1000;
         var head = "<h3 class=\"ks-clh\">" + esc(rd.mine ? "Your claim" + (MY.n ? ": " + MY.n : "") : rd.claim.id + " reading " + rd.id + (rd.claim.event ? " · " + rd.claim.event : "")) + " <span class=\"elw\">" + esc(rd.conds.map(condText).join(rd.mode === "within" ? "; within " + rd.days + " days, " : " · ")) + "</span></h3>";
-        var verdict = o.res.capped ? "<p class=\"k-note\"><b>More than " + CAP + " matches: this reading is too common to date anything by itself.</b> The first " + CAP + " are listed.</p>"
+        var cap = rd.cap || CAP;
+        var verdict = o.res.capped ? "<p class=\"k-note\"><b>More than " + cap + " matches: this reading is too common to date anything by itself.</b> The first " + Math.min(cap, 200) + " are listed.</p>"
           : "<p class=\"k-note\"><b>" + eps.length + (eps.length === 1 ? " match" : " matches") + "</b>, about " + (per < 10 ? per.toFixed(1) : Math.round(per)) + " per 1000 years" +
             (eps.length && per > 20 ? ": common, so it narrows a date only together with other claims." : eps.length ? "." : ": nothing in this range meets it.") + (rd.mine ? " <i>Your claim, not from the catalogue.</i>" : "") + "</p>";
         if (!eps.length) return head + verdict;
+        /* where in time the matches fall: runs split by gaps of more than 100 years */
+        var yl = eps.map(function (e) { return new Date(e.best).getUTCFullYear(); }).sort(function (p, q) { return p - q; }), rn = [];
+        yl.forEach(function (y) { var R = rn[rn.length - 1]; if (R && y - R[1] <= 100) { R[1] = y; R[2]++; } else rn.push([y, y, 1]); });
+        if (eps.length > 30) verdict += '<p class="k-note"><b>Where the matches fall:</b> ' + rn.map(function (R) {
+          return (R[0] === R[1] ? esc(yearLabel(R[0])) : esc(yearLabel(R[0])) + " – " + esc(yearLabel(R[1]))) + " (" + R[2] + ")"; }).join(" · ") + ".</p>";
+        if (JSON.stringify(rd.conds).match(/"eclipse"/)) verdict += '<p class="k-note">Each eclipse is also checked from the place set above (' + latNow().toFixed(2) + "°, " + lonNow().toFixed(2) +
+          "°), for the first 60 matches: whether it was seen there, as the shift in ΔT that would make it so. Before 700 BCE ΔT is uncertain by hours, so visibility at a place is never used as a filter.</p>";
         return head + verdict + '<div class="eltblwrap"><table class="aytab ks-cltab"><thead><tr><th>#</th><th>from</th><th>to</th><th>best moment (UT)</th><th>how each condition is met</th><th>caution</th><th></th></tr></thead><tbody>' +
-          eps.map(function (e, k) {
+          eps.slice(0, 200).map(function (e, k) {
             return "<tr><td class=\"num\">" + (k + 1) + "</td><td>" + civilText(e.from) + "</td><td>" + civilText(e.to) + "</td><td>" + civilText(e.best) + " " + hm(e.best) + "</td><td>" +
-              rd.conds.map(function (c, j) { var r = e.rs[j] || {}; return esc(condText(c).replace(/^any graha/, r.who || "any graha")) + ' <span class="elw">' + esc(fmtSep(r)) + "</span>"; }).join("<br>") +
+              rd.conds.map(function (c, j) { var r = e.rs[j] || {}; return esc(condText(c).replace(/^any graha/, r.who || "any graha")) + ' <span class="elw">' + esc(fmtSep(r)) + "</span>"; }).join("<br>") + (k < 60 ? eclLines(rd, e) : "") +
               "</td><td class=\"elw\">" + esc(flagsFor(rd, e.best)) + '</td><td><button type="button" class="swbtn" data-clshow="' + e.best + '">Show</button></td></tr>';
           }).join("") + "</tbody></table></div>";
       }).join("");
@@ -3137,7 +3178,7 @@
       var o = JSON.parse(m[1]);
       if (!o.conds || !o.conds.length || o.conds.some(function (c) { return !REL[c.rel]; })) return "That claim has a condition this page does not know.";
       MY = { n: String(o.n || ""), ref: String(o.ref || ""), note: String(o.note || ""), mode: o.mode === "within" ? "within" : "same", days: Math.max(1, Math.min(3650, +o.days || 30)),
-             conds: o.conds.map(function (c) { return { g: GN.indexOf(c.g) >= 0 || c.g === "any" ? c.g : "", rel: c.rel, v: c.v, tol: c.tol == null ? undefined : +c.tol }; }) };
+             conds: o.conds.map(function (c) { return { g: GN.indexOf(c.g) >= 0 || PTS.indexOf(c.g) >= 0 || c.g === "any" ? c.g : "", rel: c.rel, v: c.v, tol: c.tol == null ? undefined : +c.tol }; }) };
       return null;
     } catch (e) { return "That claim text is damaged and could not be read."; }
   }
@@ -3157,10 +3198,10 @@
     $("ks-cbrows").addEventListener("change", function (ev) {
       var el = ev.target, i = +el.getAttribute("data-i"), k = el.getAttribute("data-cb"); if (!k || !MY.conds[i]) return;
       var c = MY.conds[i];
-      if (k === "rel") { c.rel = el.value; c.v = defaultV(c.rel); c.tol = REL[c.rel].tol; if (!REL[c.rel].graha) c.g = ""; else if (!c.g) c.g = "Śani"; }
+      if (k === "rel") { c.rel = el.value; c.v = defaultV(c.rel); c.tol = REL[c.rel].tol; if (REL[c.rel].points) c.g = PTS.indexOf(c.g) >= 0 ? c.g : PTS[0]; else if (!REL[c.rel].graha) c.g = ""; else if (!c.g || PTS.indexOf(c.g) >= 0) c.g = "Śani"; }
       else if (k === "g") c.g = el.value;
       else if (k === "tol") c.tol = Math.max(0.1, Math.min(90, +el.value || 1));
-      else c.v = /^(nak|nakany|rasi|star|tithi|month)$/.test(REL[c.rel].target) ? +el.value : REL[c.rel].target === "lon" ? norm(+el.value || 0) : el.value;
+      else c.v = /^(nak|nakany|rasi|star|tithi|month|rtu)$/.test(REL[c.rel].target) ? +el.value : REL[c.rel].target === "lon" ? norm(+el.value || 0) : el.value;
       drawBuilder(); adviseRange();
     });
     $("ks-cbrows").addEventListener("click", function (ev) {
@@ -3283,6 +3324,83 @@
       (zh != null ? "; " + w(zh) + " Huber (±" + (x.sigmaHuber / 3600).toFixed(1) + " h, " + f(zh) + "σ)" : "");
   }
 
+
+  /* ---- eclipses seen from a place (19 Nov 2026) ------------------------------------
+     Whether an eclipse the engine finds was visible at the place set above. The
+     eclipse is fixed in uniform time; a ΔT larger by δ turns the Earth as if the
+     place stood 15.04°·δ (hours) further west. So visibility is reported, like the
+     lagna, as the range of ΔT shifts under which the place saw it. Sun and Moon
+     come from Kālasetu; the Moon's distance (for parallax) from astronomy-engine. */
+  var RE = 6378.14, RM = 1737.4, SUNR = 0.2666, D2R = Math.PI / 180;
+  function eqVec(lamTrop, beta, t) {
+    var A = window.Astronomy, tm = A.MakeTime(new Date(t)), cb = Math.cos(beta * D2R);
+    var v = A.RotateVector(A.Rotation_ECT_EQD(tm), new A.Vector(cb * Math.cos(lamTrop * D2R), cb * Math.sin(lamTrop * D2R), Math.sin(beta * D2R), tm));
+    return [v.x, v.y, v.z];
+  }
+  function eclipseInstants(rd, e) {
+    var kinds = [], walkC = function (cs) { cs.forEach(function (c) { if (c.rel === "eclipse") kinds.push(c.v); if (c.rel === "_and") walkC(c.conds); }); };
+    walkC(rd.conds);
+    var pad = (rd.mode === "within" ? (+rd.days || 0) : 0) * DAY + 1.6 * DAY, out = [];
+    kinds.forEach(function (kind) {
+      var tgt = kind === "solar" ? 0 : 180, t = syzygy(e.from - pad - DAY, tgt, +1), n = 0;
+      while (t != null && t <= e.to + pad && n++ < 20) {
+        if (Math.abs(K.latitude("Candra", t)) < (kind === "solar" ? 1.55 : 0.95)) out.push({ kind: kind, t: t });
+        t = syzygy(t + 2 * DAY, tgt, +1);
+      }
+    });
+    return out;
+  }
+  function eclSeen(kind, tz, lat, lon) {
+    var A = window.Astronomy; if (!A) return null;
+    var phi = lat * D2R, cphi = Math.cos(phi), sphi = Math.sin(phi), G = [];
+    for (var j = -60; j <= 60; j++) {
+      var t = tz + j * 4 * 60000, ay = window.__ayanFor("samanvaya_ecliptic", jdOf(t));
+      var sv = eqVec(norm(K.longitude("Sūrya", t) + ay), 0, t), mv = eqVec(norm(K.longitude("Candra", t) + ay), K.latitude("Candra", t), t);
+      var dkm = 384400; try { var gm = A.GeoMoon(new Date(t)); dkm = Math.sqrt(gm.x * gm.x + gm.y * gm.y + gm.z * gm.z) * 149597870.7; } catch (er) {}
+      G.push({ s: sv, m: mv, d: dkm, th: A.SiderealTime(new Date(t)) * 15 + lon });
+    }
+    var dot = function (a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; };
+    function seen(dh) {
+      for (var j = 0; j < G.length; j++) {
+        var g = G[j], th = (g.th - 15.04107 * dh) * D2R, O = [cphi * Math.cos(th), cphi * Math.sin(th), sphi];
+        if (kind === "solar") {
+          if (dot(g.s, O) < -0.0145) continue;                          /* the Sun below the horizon */
+          var M = [g.m[0] * g.d - O[0] * RE, g.m[1] * g.d - O[1] * RE, g.m[2] * g.d - O[2] * RE], L = Math.sqrt(dot(M, M));
+          var sep = Math.acos(Math.max(-1, Math.min(1, dot(M, g.s) / L))) / D2R;
+          if (sep < SUNR + Math.asin(RM / L) / D2R) return true;
+        } else {
+          var pm = Math.asin(RE / g.d) / D2R, um = 1.02 * (pm + 0.00244 - SUNR) + Math.asin(RM / g.d) / D2R;
+          var dist = Math.acos(Math.max(-1, Math.min(1, -dot(g.m, g.s)))) / D2R;
+          if (dist < um && Math.asin(dot(g.m, O)) / D2R - pm * 0.98 > 0) return true;
+        }
+      }
+      return false;
+    }
+    var runs = [], cur = null, H = 48, st = 0.05;
+    for (var dh = -H; dh <= H + 1e-9; dh += st) {
+      var k = seen(dh);
+      if (k && !cur) cur = [dh, dh]; if (k) cur[1] = dh;
+      if (!k && cur) { runs.push(cur); cur = null; }
+    }
+    if (cur) runs.push(cur);
+    var y = new Date(tz).getUTCFullYear(), out = { kind: kind, t: tz, sigmaMS: sigmaMS(y), sigmaHuber: sigmaHuber(y), runs: runs };
+    var c = runs.map(function (r) { return { lo: r[0] * 3600000, hi: r[1] * 3600000, d: r[0] <= 0 && r[1] >= 0 ? 0 : Math.min(Math.abs(r[0]), Math.abs(r[1])) * 3600000 }; })
+      .sort(function (p, q) { return p.d - q.d; })[0];
+    if (c) { out.lo = c.lo; out.hi = c.hi; out.holds = c.d === 0; out.need = c.d; }
+    return out;
+  }
+  function eclSeenText(x, lat, lon) {
+    var where = "seen from " + lat.toFixed(2) + "°, " + lon.toFixed(2) + "°";
+    if (!x) return "";
+    if (x.lo == null) return "the " + x.kind + " eclipse of " + civilText(x.t) + ": not " + where + " under any ΔT within ±48 h";
+    return "the " + x.kind + " eclipse of " + civilText(x.t) + ", " + where + ": " + dtVerdict(x).replace("fits at the model's ΔT", "seen at the model's ΔT");
+  }
+  function eclLines(rd, e) {
+    if (!JSON.stringify(rd.conds).match(/"eclipse"/)) return "";
+    var lat = latNow(), lon = lonNow();
+    return eclipseInstants(rd, e).map(function (q) { return '<br><span class="ks-dtn">' + esc(eclSeenText(eclSeen(q.kind, q.t, lat, lon), lat, lon)) + "</span>"; }).join("");
+  }
+
   /* ---- 1. the chain ---------------------------------------------------------------- */
   var CHAIN_CAP = 20000, CHAIN_SHOW = 300, LINK_CAP = 20000;
   function chainSearch(links, a, b, onProgress) {
@@ -3396,7 +3514,7 @@
           return "<td>" + civilText(e.best) + " " + hm(e.best) + " UT" +
             (ex.exact ? '<br><span class="elw">holds ' + civilText(ex.from) + " " + hm(ex.from) + " – " + (civilText(ex.to) === civilText(ex.from) ? "" : civilText(ex.to) + " ") + hm(ex.to) + " UT</span>" : "") +
             (gap != null ? '<br><span class="elw">' + gap.toFixed(2) + " years after link " + k + "</span>" : "") +
-            (e.dt ? '<br><span class="ks-dtn">Lagna ' + esc(CL_RS[e.dt.sign]) + ": " + esc(dtVerdict(e.dt)) + "</span>" : "") +
+            (e.dt ? '<br><span class="ks-dtn">Lagna ' + esc(CL_RS[e.dt.sign]) + ": " + esc(dtVerdict(e.dt)) + "</span>" : "") + (i < 60 ? eclLines(linkReading(L[k]), e) : "") +
             ' <button type="button" class="swbtn" data-clshow="' + e.best + '">Show</button></td>';
         }).join("") + "</tr>";
       }).join("") + "</tbody></table></div>";
@@ -3425,6 +3543,7 @@
         case "tithi": var sh = function (q) { return ((q - 1 + Math.round((th["Candra"] - th["Sūrya"]) / 12)) % 30 + 30) % 30 + 1; }; x.v = Array.isArray(c.v) ? c.v.map(sh) : sh(c.v); return x;
         case "month": var sm = function (q) { return ((q + Math.round(th["Sūrya"] / 30)) % 12 + 12) % 12; }; x.v = Array.isArray(c.v) ? c.v.map(sm) : sm(c.v); return x;
         case "_trop": x.v = [norm(c.v[0] + th["Sūrya"]), c.v[1]]; return x;
+        case "rtu": return { g: "Sūrya", rel: "_trop", v: [norm(RTU0[c.v] + th["Sūrya"]), 60] };
         case "retro": case "station": if (c.v >= 0) x.v = ((c.v + Math.round(t / (40 / 3))) % 27 + 27) % 27; return x;
       }
       return x;                                   /* conjunctions, eclipses, ayana: kept as they are */
@@ -3602,7 +3721,7 @@
       claims: function () { return CLAIMS; }, search: function (rd, a, b) { CS.run++; CS.stop = false; return searchClaim(rd, a, b, function () {}); },
       chain: function (links, a, b) { CS.run++; CS.stop = false; return chainSearch(links, a, b, function () {}); },
       chance: function (rd, a, b, n) { CS.run++; CS.stop = false; return chanceTest(rd, a, b, n, function () {}); },
-      dtNeeded: dtNeeded, rama: RAMA_PRESET, mbh: MBH_PRESETS };
+      dtNeeded: dtNeeded, rama: RAMA_PRESET, mbh: MBH_PRESETS, eclSeen: eclSeen };
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind); else bind();
 })();

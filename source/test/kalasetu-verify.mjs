@@ -510,8 +510,8 @@ head("The Kālasetu page");
   is(cs.c12 > 0 && cs.c12 < 100 && !cs.c12cap, `C05 reading J (6.3.25: Guru and Śani near Viśākhā's star) is found ${cs.c12} times in 4000 – 2000 BCE`);
   is(cs.events === cs.n && /Rāma's birth/.test(cs.r01opt) && /Karṇa tells Kṛṣṇa/.test(cs.c01opt) && /Rāma's birth/.test(cs.info),
      `every claim in the list names its event in the epic first (R01: "${cs.r01opt.slice(0, 40)}…"), and the line under the list repeats it in full`);
-  is(cs.n === 15 && cs.opts === 16 && cs.dis === 0 && cs.none === 0 && cs.groups === "Mahābhārata,Bhāgavata,Rāmāyaṇa",
-     `the picker offers your own claim and only the 15 claims a search can test, grouped by text (${cs.groups})`);
+  is(cs.n === 17 && cs.opts === 18 && cs.dis === 0 && cs.none === 0 && cs.groups === "Mahābhārata,Bhāgavata,Rāmāyaṇa",
+     `the picker offers your own claim and only the 17 claims a search can test, grouped by text (${cs.groups})`);
   is(cs.added === "C24,C25,C26,C27", `the Mahābhārata's other testable verses are in: Kṛṣṇa's embassy (Revatī), the first day (Maghā), Balarāma's return (Śravaṇa), Bhīṣma's death (Māgha after the solstice) — ${cs.added}`);
   is(cs.vyasa === "C05:14:MBh 6.2.23 – 6.3.29" && !cs.oldV, "Vyāsa's omens to Dhṛtarāṣṭra (one speech, MBh 6.2–6.3) are one claim, C05, with each verse's readings; C15, after the war, stays its own");
   is(cs.karna === "C01:11:MBh 5.141.7–10" && !cs.oldIds, "Karṇa's four omens to Kṛṣṇa (one speech, MBh 5.141.7–10) are one claim, C01, with each verse's readings, two together, and Kṛṣṇa's new-moon line from the same meeting");
@@ -596,6 +596,19 @@ head("The Kālasetu page");
     const by = bhi.chains.map(c => new Date(c[0].best).getUTCFullYear());
     out.bhi = [bhi.chains.length, Math.min(...by), bhi.perLink[0]];
     s("ks-chbhi").click(); out.bhibtn = document.querySelectorAll(".ks-chlink").length + " " + s("ks-chy0").value + s("ks-chera0").value;
+    const C28 = P.claims().find(c => c.id === "C28"), R10 = P.claims().find(c => c.id === "R10");
+    const span = async (rd, a, b) => (await P.search(rd, Y(a), Y(b))).episodes.map(e => [new Date(e.from).getUTCFullYear(), new Date(e.to).getUTCFullYear()]);
+    out.c28 = { A: await span(C28.readings[0], -12999, 3000), B: await span(C28.readings[1], -12999, 3000), C: await span(C28.readings[2], -12999, 3000) };
+    const r10 = await P.search(R10.readings[0], Y(-3999), Y(-2499));
+    out.r10 = Math.min(...r10.episodes.map(e => new Date(e.best).getUTCFullYear()));
+    const f = x => x.lo == null ? "never" : x.holds ? "seen" : "need";
+    const sol = Date.UTC(2024, 3, 8, 18, 18), lun = Date.UTC(2025, 8, 7, 18, 12);
+    out.ecl = [f(P.eclSeen("solar", sol, 32.78, -96.8)), f(P.eclSeen("solar", sol, 28.61, 77.2)), f(P.eclSeen("lunar", lun, 28.61, 77.2)), f(P.eclSeen("lunar", lun, 40.7, -74)), f(P.eclSeen("solar", Date.UTC(2023, 3, 20, 4, 17), 51.5, -0.1))];
+    /* the builder offers the two new conditions */
+    s("ks-claim").value = "mine"; s("ks-claim").dispatchEvent(new Event("change"));
+    const rels = [...document.querySelector('.ks-cbrow select[data-cb="rel"]').options].map(o => o.value);
+    const rel0 = document.querySelector('.ks-cbrow select[data-cb="rel"]'); rel0.value = "pt"; rel0.dispatchEvent(new Event("change", { bubbles: true }));
+    out.builder = [rels.includes("rtu"), rels.includes("pt"), [...document.querySelector('.ks-cbrow select[data-cb="g"]').options].map(o => o.value).join("|")];
     out.session = +s("ks-chsession").textContent;
     return out; });
   is(ch.section && /^2 13000 true$/.test(ch.preset), `the chain section is new, beside the claim search; the Rāma preset loads two links and 13000 BCE (${ch.preset})`);
@@ -607,6 +620,12 @@ head("The Kālasetu page");
   is(ch.ch[1] === ch.ch[2] && /nearlon/.test(ch.ch[3]), `the chance test is seeded (C05 J: the reading ${ch.ch[0]}, random ${ch.ch[1]}) and moves star targets`);
   is(ch.dtHold === true && ch.dtFar[0] === false && ch.dtFar[1] >= 6 && ch.dtFar[1] <= 18, `ΔT needed: zero when the sign is rising, about ${ch.dtFar[1]} h for the opposite sign`);
   is(ch.session >= 0, "the page counts the readings searched this visit");
+  is(ch.c28.A.length === 1 && ch.c28.A[0][0] > -2400 && ch.c28.A[0][1] < -1000, `C28 A: the winter solstice in Dhaniṣṭhā is one era in 13000 BCE – 3000 CE (${ch.c28.A.map(r => r.join("…")).join()})`);
+  is(ch.c28.B.length === 1 && ch.c28.C.length === 1 && ch.c28.B[0][0] < ch.c28.C[0][0] && Math.abs(ch.c28.B[0][1] - ch.c28.C[0][0]) < 10,
+     `C28 B then C: the vernal equinox leaves Rohiṇī (${ch.c28.B[0].join("…")}) for Kṛttikā (${ch.c28.C[0].join("…")})`);
+  is(ch.r10 > -3500 && ch.r10 < -2500, `R10 A: Śrāvaṇa first falls in the rains in ${ch.r10} (a month tied to a season gives an era)`);
+  is(ch.ecl.join() === "seen,need,seen,need,never", `eclipses from a place: 2024 seen from Dallas, not Delhi; 2025 lunar from Delhi, not New York; 2023 never from London (${ch.ecl.join()})`);
+  is(ch.builder[0] && ch.builder[1] && ch.builder[2] === "vernal equinox|summer solstice|autumn equinox|winter solstice", "the builder offers the season and the equinox or solstice point");
   is(/^0:\d{3}$/.test(ch.bal), `Balarāma's return on Śravaṇa on the war's eighteenth day never follows a new moon in Jyeṣṭhā (3000–2000 BCE: ${ch.bal.replace(":", " chains from ")} new moons)`);
   is(ch.bhi[0] > 0 && ch.bhi[1] > -1900 && ch.bhi[2] > 500, `Bhīṣma's death in Māgha just past the solstice, 64–70 days after the war's new moon, first fits in ${ch.bhi[1]} (2500–1500 BCE: ${ch.bhi[0]} dates)`);
   is(ch.bhibtn === "2 6000BCE", "the Bhīṣma preset loads two links over 6000 BCE – 1000 CE");
