@@ -479,7 +479,7 @@ head("The Kālasetu page");
     const S = (conds, a, b, mode, days) => window.__ksPage.search({ conds, mode, days }, Date.UTC(a, 0, 1), Date.UTC(b, 11, 31))
       .then(r => r.episodes.map(e => new Date(e.best).toISOString().slice(0, 10)));
     const C = window.__ksPage.claims(), Y = y => { const t = new Date(Date.UTC(2000, 0, 1)); t.setUTCFullYear(y); return t.getTime(); };
-    const c12 = await window.__ksPage.search(C.find(c => c.id === "C12").readings[0], Y(-3999), Y(-1999));
+    const c12 = await window.__ksPage.search(C.find(c => c.id === "C05").readings.find(r => r.id === "J"), Y(-3999), Y(-1999));
     return {
       solar: await S([{ g: "", rel: "eclipse", v: "solar" }], 2017, 2017),
       lunar: await S([{ g: "", rel: "eclipse", v: "lunar" }], 2018, 2018),
@@ -489,13 +489,15 @@ head("The Kālasetu page");
       pair: await S([{ g: "", rel: "eclipse", v: "lunar" }, { g: "", rel: "eclipse", v: "solar" }], 2018, 2018, "within", 15),
       c12: c12.episodes.length, c12cap: c12.capped,
       n: C.length, none: C.filter(c => c.none).length,
+      karna: (c => c.id + ":" + c.readings.length + ":" + c.ref)(C.find(c => c.id === "C01")), added: C.filter(c => /^C2[4-7]$/.test(c.id)).map(c => c.id).join(), oldIds: C.some(c => /^C0[234]$/.test(c.id)),
+      vyasa: (c => c.id + ":" + c.readings.length + ":" + c.ref)(C.find(c => c.id === "C05")), oldV: C.some(c => /^C(0[6-9]|1[0-4])$/.test(c.id)) || !C.some(c => c.id === "C15"),
       opts: document.querySelectorAll("#ks-claim option").length, dis: document.querySelectorAll("#ks-claim option:disabled").length,
       groups: [...document.querySelectorAll("#ks-claim optgroup")].map(g => g.label).join(),
       events: C.filter(c => c.event).length,
       r01opt: document.querySelector('#ks-claim option[value="R01"]').textContent,
       c01opt: document.querySelector('#ks-claim option[value="C01"]').textContent,
       info: (() => { const s = document.getElementById("ks-claim"); s.value = "R01"; s.dispatchEvent(new Event("change"));
-        const t = document.getElementById("ks-clinfo").textContent; s.value = "C12"; s.dispatchEvent(new Event("change")); return t; })(),
+        const t = document.getElementById("ks-clinfo").textContent; s.value = "C05"; s.dispatchEvent(new Event("change")); return t; })(),
       r01a: (await window.__ksPage.search(C.find(c => c.id === "R01").readings[0], Y(-7499), Y(-4999))).episodes.length,
       r01c: (await window.__ksPage.search(C.find(c => c.id === "R01").readings[2], Y(-7499), Y(-4999))).episodes.length };
   });
@@ -505,11 +507,14 @@ head("The Kālasetu page");
   is(cs.station.length === 1 && /^2024-12-0[4-8]/.test(cs.station[0]), `Mars turning retrograde in December 2024 is found (${cs.station.join(", ")})`);
   is(cs.caitra.join() === "2025-04-12", `Caitra Pūrṇimā 2025 is 12 April (${cs.caitra.join(", ")})`);
   is(cs.pair.join() === "2018-01-31,2018-07-27", `"within 15 days" pairs each 2018 lunar eclipse with a solar eclipse a fortnight away (${cs.pair.join(", ")})`);
-  is(cs.c12 > 0 && cs.c12 < 100 && !cs.c12cap, `C12 reading A (Guru and Śani near Viśākhā's star) is found ${cs.c12} times in 4000 – 2000 BCE`);
+  is(cs.c12 > 0 && cs.c12 < 100 && !cs.c12cap, `C05 reading J (6.3.25: Guru and Śani near Viśākhā's star) is found ${cs.c12} times in 4000 – 2000 BCE`);
   is(cs.events === cs.n && /Rāma's birth/.test(cs.r01opt) && /Karṇa tells Kṛṣṇa/.test(cs.c01opt) && /Rāma's birth/.test(cs.info),
      `every claim in the list names its event in the epic first (R01: "${cs.r01opt.slice(0, 40)}…"), and the line under the list repeats it in full`);
-  is(cs.n === 21 && cs.opts === 22 && cs.dis === 0 && cs.none === 0 && cs.groups === "Mahābhārata,Bhāgavata,Rāmāyaṇa",
-     `the picker offers your own claim and only the 21 claims a search can test, grouped by text (${cs.groups})`);
+  is(cs.n === 15 && cs.opts === 16 && cs.dis === 0 && cs.none === 0 && cs.groups === "Mahābhārata,Bhāgavata,Rāmāyaṇa",
+     `the picker offers your own claim and only the 15 claims a search can test, grouped by text (${cs.groups})`);
+  is(cs.added === "C24,C25,C26,C27", `the Mahābhārata's other testable verses are in: Kṛṣṇa's embassy (Revatī), the first day (Maghā), Balarāma's return (Śravaṇa), Bhīṣma's death (Māgha after the solstice) — ${cs.added}`);
+  is(cs.vyasa === "C05:13:MBh 6.2.23 – 6.3.29" && !cs.oldV, "Vyāsa's omens to Dhṛtarāṣṭra (one speech, MBh 6.2–6.3) are one claim, C05, with each verse's readings; C15, after the war, stays its own");
+  is(cs.karna === "C01:9:MBh 5.141.7–10" && !cs.oldIds, "Karṇa's four omens to Kṛṣṇa (one speech, MBh 5.141.7–10) are one claim, C01, with each verse's readings, two together, and Kṛṣṇa's new-moon line from the same meeting");
   is(cs.r01c >= 1 && cs.r01a === 0, `Rāma's birth chart (R01): the five exalted occur ${cs.r01c} time(s) in 7500 – 5000 BCE, but never with Punarvasu on Caitra Śukla Navamī`);
   /* the panel: a catalogue claim through the buttons, then your own claim */
   const ui = await p.evaluate(async () => {
@@ -541,7 +546,7 @@ head("The Kālasetu page");
     s("ks-cbkeep").checked = true; s("ks-cbkeep").dispatchEvent(new Event("change")); out.kept = has();
     s("ks-cbforget").click(); out.forgot = has();
     return out; });
-  is(ui.heads === 2 && ui.rows > 0 && /Searched 3000 BCE – 2500 BCE/.test(ui.sum), `searching C01 gives both readings their own list (${ui.rows} rows) and names the conventions used`);
+  is(ui.heads === 9 && ui.rows > 0 && /Searched 3000 BCE – 2500 BCE/.test(ui.sum), `searching C01 gives each of its nine readings its own list (${ui.rows} rows) and names the conventions used`);
   is(ui.got === ui.want, "a match's Show button moves the wheel to its best moment");
   is(/^mine 1 C01 A \(edited\)/.test(ui.edit), `"Edit as my own" copies the reading into the builder (${ui.edit})`);
   is(/can never hold/.test(ui.warn) && /Not searched/.test(ui.refused), "a claim that puts Śani in Rohiṇī and Pūrva Phalgunī at once is flagged and not searched");
@@ -570,7 +575,7 @@ head("The Kālasetu page");
     const yr = await P.chain([c15, fm], Date.UTC(2025, 0, 1), Date.UTC(2025, 11, 31));
     out.yr = yr.chains.map(c => c.map(x => new Date(x.best).toISOString().slice(0, 10)).join(" → "));
     /* the chance test is seeded: the same numbers twice */
-    const c12 = P.claims().find(c => c.id === "C12").readings[0];
+    const c12 = P.claims().find(c => c.id === "C05").readings.find(r => r.id === "J");
     const a1 = await P.chance(c12, Y(-3999), Y(-2999), 3), a2 = await P.chance(c12, Y(-3999), Y(-2999), 3);
     out.ch = [a1.real.n, a1.versions.map(v => v.n).join(","), a2.versions.map(v => v.n).join(","), a1.versions[0].conds.map(c => c.rel).join(",")];
     /* ΔT needed on a made-up 1-hour match: zero needed when the sign is rising, a shift when it is not */
@@ -578,6 +583,11 @@ head("The Kālasetu page");
     out.dtHold = P.dtNeeded(t0, t0 + 36e5, Math.floor(((window.__kAscTrop(t0 + 18e5, lat, lon) - window.__ayanFor("samanvaya_ecliptic", (t0 + 18e5) / 864e5 + 2440587.5)) % 360 + 360) % 360 / 30), lat, lon).holds;
     const far = P.dtNeeded(t0, t0 + 36e5, (Math.floor(((window.__kAscTrop(t0, lat, lon) - window.__ayanFor("samanvaya_ecliptic", t0 / 864e5 + 2440587.5)) % 360 + 360) % 360 / 30) + 6) % 12, lat, lon);
     out.dtFar = [far.holds, Math.round(Math.abs(far.need) / 36e5)];
+    const bal = await P.chain(P.mbh.bal.links, Y(-2999), Y(-1999)), bhi = await P.chain(P.mbh.bhi.links, Y(-2499), Y(-1499));
+    out.bal = bal.chains.length + ":" + bal.perLink[0];
+    const by = bhi.chains.map(c => new Date(c[0].best).getUTCFullYear());
+    out.bhi = [bhi.chains.length, Math.min(...by), bhi.perLink[0]];
+    s("ks-chbhi").click(); out.bhibtn = document.querySelectorAll(".ks-chlink").length + " " + s("ks-chy0").value + s("ks-chera0").value;
     out.session = +s("ks-chsession").textContent;
     return out; });
   is(ch.section && /^2 13000 true$/.test(ch.preset), `the chain section is new, beside the claim search; the Rāma preset loads two links and 13000 BCE (${ch.preset})`);
@@ -586,9 +596,12 @@ head("The Kālasetu page");
   is(ch.edge > 60 && ch.edge < 100, `a match's edges are found to the minute (11569 BCE holds ${ch.edge && ch.edge.toFixed(0)} min)`);
   is(ch.n2 === 0 && ch.per === "2,0", "no date survives the birth with Daśaratha's omens (R03 B) 24–27 years later");
   is(ch.yr.length === 1 && /^2025-04-1[23] → 2025-05-1[123]$/.test(ch.yr[0]), `a chain that must hold does: Caitra Pūrṇimā 2025 → the next Pūrṇimā (${ch.yr.join("; ")})`);
-  is(ch.ch[1] === ch.ch[2] && /nearlon/.test(ch.ch[3]), `the chance test is seeded (C12 A: the reading ${ch.ch[0]}, random ${ch.ch[1]}) and moves star targets`);
+  is(ch.ch[1] === ch.ch[2] && /nearlon/.test(ch.ch[3]), `the chance test is seeded (C05 J: the reading ${ch.ch[0]}, random ${ch.ch[1]}) and moves star targets`);
   is(ch.dtHold === true && ch.dtFar[0] === false && ch.dtFar[1] >= 6 && ch.dtFar[1] <= 18, `ΔT needed: zero when the sign is rising, about ${ch.dtFar[1]} h for the opposite sign`);
   is(ch.session >= 0, "the page counts the readings searched this visit");
+  is(/^0:\d{3}$/.test(ch.bal), `Balarāma's return on Śravaṇa on the war's eighteenth day never follows a new moon in Jyeṣṭhā (3000–2000 BCE: ${ch.bal.replace(":", " chains from ")} new moons)`);
+  is(ch.bhi[0] > 0 && ch.bhi[1] > -1900 && ch.bhi[2] > 500, `Bhīṣma's death in Māgha just past the solstice, 64–70 days after the war's new moon, first fits in ${ch.bhi[1]} (2500–1500 BCE: ${ch.bhi[0]} dates)`);
+  is(ch.bhibtn === "2 6000BCE", "the Bhīṣma preset loads two links over 6000 BCE – 1000 CE");
   is(errs.length === 0, `no page errors (${errs.join("; ")})`);
   const ph = await browser.newPage({ viewport: { width: 400, height: 900 } });
   await ph.goto("file://" + ROOT + "/kalasetu.html");

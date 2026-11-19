@@ -2526,43 +2526,59 @@
   /* the catalogue's searchable readings; the ids, references and wording follow
      the sheet. Claims no search can test stay in the sheet and are not offered here. */
   var CLAIMS = [
-    { id: "C01", event: "Before the war: Karṇa tells Kṛṣṇa the omens, after the peace embassy fails", ref: "MBh 5.141.7", sky: "Saturn afflicts Rohiṇī", readings: [
-      { id: "A", label: "Śani inside Rohiṇī's division", conds: [{ g: "Śani", rel: "nak", v: 3 }] },
-      { id: "B", label: "Śani within 5° of Aldebaran, Rohiṇī's junction star", conds: [{ g: "Śani", rel: "nearstar", v: 3, tol: 5 }] }] },
-    { id: "C02", event: "Before the war: Karṇa tells Kṛṣṇa the omens, after the peace embassy fails", ref: "MBh 5.141.8", sky: "Mars retrograde at Jyeṣṭhā, moving toward Anurādhā", readings: [
-      { id: "A", label: "Maṅgala turns retrograde in Jyeṣṭhā", conds: [{ g: "Maṅgala", rel: "station", v: 17 }] },
-      { id: "B", label: "Maṅgala retrograde in Jyeṣṭhā, then retrograde in Anurādhā within 120 days", mode: "within", days: 120,
-        conds: [{ g: "Maṅgala", rel: "retro", v: 17 }, { g: "Maṅgala", rel: "retro", v: 16 }] }] },
-    { id: "C03", event: "Before the war: Karṇa tells Kṛṣṇa the omens, after the peace embassy fails", ref: "MBh 5.141.9", sky: "A graha afflicts Citrā", readings: [
-      { id: "A", label: "any graha in Citrā (the results say which)", conds: [{ g: "any", rel: "nak", v: 13 }] }] },
-    { id: "C04", event: "Before the war: Karṇa tells Kṛṣṇa the omens, after the peace embassy fails", ref: "MBh 5.141.10", sky: "Rāhu will approach the Sun", readings: [
-      { id: "A", label: "a solar eclipse (somewhere on Earth)", conds: [{ g: "", rel: "eclipse", v: "solar" }] },
-      { id: "B", label: "eclipse season: Sūrya within 18° of Rāhu or Ketu", conds: [{ g: "Sūrya", rel: "nearnode", tol: 18 }] }] },
-    { id: "C05", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.2.23", sky: "Moon fire-coloured on the Kārttika full moon", readings: [
-      { id: "A", label: "a lunar eclipse in Kārttika", conds: [{ g: "", rel: "month", v: 7 }, { g: "", rel: "eclipse", v: "lunar" }] }] },
-    { id: "C06", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.2.32", sky: "Saturn stands afflicting Rohiṇī (as C01)", readings: [
-      { id: "A", label: "Śani inside Rohiṇī's division", conds: [{ g: "Śani", rel: "nak", v: 3 }] },
-      { id: "B", label: "Śani within 5° of Aldebaran", conds: [{ g: "Śani", rel: "nearstar", v: 3, tol: 5 }] }] },
-    { id: "C07", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.3.11", sky: "Rāhu seized the Sun; a white graha has passed beyond Citrā", readings: [
-      { id: "A", label: "a solar eclipse, and Śukra in Svātī, within 30 days", mode: "within", days: 30,
+    { id: "C24", event: "Kṛṣṇa sets out on the peace embassy to Hastināpura", ref: "MBh 5.83.7 (Ganguli §83; numbered 5.81 in the critical edition)", sky: "the Kaumuda month, Moon in Revatī, at the end of autumn",
+      note: "Kaumuda is read as Kārttika by most, as Āśvina (the Kaumudī full moon) by some; both are offered. Alone it recurs every year: its use is in a chain, before C01's meeting.", readings: [
+      { id: "A", label: "Kārttika, with Candra in Revatī", conds: [{ g: "", rel: "month", v: 7 }, { g: "Candra", rel: "nak", v: 26 }] },
+      { id: "B", label: "Āśvina, with Candra in Revatī", conds: [{ g: "", rel: "month", v: 6 }, { g: "Candra", rel: "nak", v: 26 }] }] },
+    { id: "C01", event: "Before the war: Karṇa tells Kṛṣṇa the omens, after the peace embassy fails", ref: "MBh 5.141.7–10", sky: "four omens in one speech: Saturn afflicts Rohiṇī; Mars retrograde at Jyeṣṭhā toward Anurādhā; a graha afflicts Citrā; Rāhu will approach the Sun",
+      note: "One meeting, one continuous speech: until 19 Nov 2026 these four verses were four claims (C01–C04). Each verse keeps its own readings; G and H ask for them together. I is Kṛṣṇa's line just before Karṇa's reply, in the same conversation. It cannot hold with C or D a week apart: Maṅgala retrograde stands opposite the Sun, so with Maṅgala in Jyeṣṭhā the Sun is near Rohiṇī, and a new moon in Jyeṣṭhā needs the Sun there.", readings: [
+      { id: "A", label: "5.141.7 · Śani inside Rohiṇī's division", conds: [{ g: "Śani", rel: "nak", v: 3 }] },
+      { id: "B", label: "5.141.7 · Śani within 5° of Aldebaran, Rohiṇī's junction star", conds: [{ g: "Śani", rel: "nearstar", v: 3, tol: 5 }] },
+      { id: "C", label: "5.141.8 · Maṅgala turns retrograde in Jyeṣṭhā", conds: [{ g: "Maṅgala", rel: "station", v: 17 }] },
+      { id: "D", label: "5.141.8 · Maṅgala retrograde in Jyeṣṭhā, then retrograde in Anurādhā within 120 days", mode: "within", days: 120,
+        conds: [{ g: "Maṅgala", rel: "retro", v: 17 }, { g: "Maṅgala", rel: "retro", v: 16 }] },
+      { id: "E", label: "5.141.9 · any graha in Citrā (the results say which)", conds: [{ g: "any", rel: "nak", v: 13 }] },
+      { id: "F", label: "5.141.10 · a solar eclipse (somewhere on Earth)", conds: [{ g: "", rel: "eclipse", v: "solar" }] },
+      { id: "G", label: "together, at one moment: Śani in Rohiṇī's division and Maṅgala retrograde in Jyeṣṭhā (Citrā is left out: the Moon passes it every month)",
+        conds: [{ g: "Śani", rel: "nak", v: 3 }, { g: "Maṅgala", rel: "retro", v: 17 }] },
+      { id: "H", label: "together, within 180 days: Śani in Rohiṇī's division, Maṅgala retrograde in Jyeṣṭhā, and a solar eclipse (Rāhu \"will approach\" the Sun)", mode: "within", days: 180,
+        conds: [{ g: "Śani", rel: "nak", v: 3 }, { g: "Maṅgala", rel: "retro", v: 17 }, { g: "", rel: "eclipse", v: "solar" }] },
+      { id: "I", label: "Kṛṣṇa's line in the same meeting (5.140.18 in the critical edition; Ganguli §142): the new moon seven days on, in Śakra's nakṣatra — Amāvāsyā with Candra in Jyeṣṭhā",
+        conds: [{ g: "", rel: "tithi", v: 30 }, { g: "Candra", rel: "nak", v: 17 }] }] },
+    { id: "C05", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.2.23 – 6.3.29", sky: "the omens of one speech: a fire-coloured Kārttika full moon; Saturn on Rohiṇī, on Pūrva Phalgunī, near Viśākhā; Mars retrograde in Maghā and in Śravaṇa; Jupiter in Śravaṇa; two eclipses in one month",
+      note: "One conversation, one speech: until 19 Nov 2026 these verses were eight claims (C05, C06, C07, C09, C10, C11, C12, C14). Each verse keeps its own readings. They cannot all hold at once — the speech puts Saturn in three nakṣatras (Rohiṇī, Pūrva Phalgunī, Viśākhā), Mars in two (Maghā, Śravaṇa) and Jupiter in two (Śravaṇa, near Viśākhā) — so only M, the two eclipse verses, is offered together.", readings: [
+      { id: "A", label: "6.2.23 · a lunar eclipse in Kārttika", conds: [{ g: "", rel: "month", v: 7 }, { g: "", rel: "eclipse", v: "lunar" }] },
+      { id: "B", label: "6.2.32 · Śani inside Rohiṇī's division", conds: [{ g: "Śani", rel: "nak", v: 3 }] },
+      { id: "C", label: "6.2.32 · Śani within 5° of Aldebaran", conds: [{ g: "Śani", rel: "nearstar", v: 3, tol: 5 }] },
+      { id: "D", label: "6.3.11 · a solar eclipse, and Śukra in Svātī, within 30 days", mode: "within", days: 30,
         conds: [{ g: "", rel: "eclipse", v: "solar" }, { g: "Śukra", rel: "nak", v: 14 }] },
-      { id: "B", label: "a solar eclipse, and Ketu in Svātī, within 30 days", mode: "within", days: 30,
-        conds: [{ g: "", rel: "eclipse", v: "solar" }, { g: "Ketu", rel: "nak", v: 14 }] }] },
-    { id: "C09", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.3.13", sky: "Mars retrograde in Maghā; Jupiter in Śravaṇa", readings: [
-      { id: "A", label: "Maṅgala retrograde in Maghā while Guru is in Śravaṇa", conds: [{ g: "Maṅgala", rel: "retro", v: 9 }, { g: "Guru", rel: "nak", v: 21 }] }] },
-    { id: "C10", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.3.14", sky: "Saturn afflicts Pūrva Phalgunī; Venus on Pūrva Bhādrapadā", readings: [
-      { id: "A", label: "Śani in Pūrva Phalgunī while Śukra is in Pūrva Bhādrapadā", conds: [{ g: "Śani", rel: "nak", v: 10 }, { g: "Śukra", rel: "nak", v: 24 }] },
-      { id: "B", label: "Śani in Pūrva Phalgunī while Śukra is in Uttara Bhādrapadā", conds: [{ g: "Śani", rel: "nak", v: 10 }, { g: "Śukra", rel: "nak", v: 25 }] }] },
-    { id: "C11", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.3.17", sky: "Mars makes vakra-anuvakra in Śravaṇa", readings: [
-      { id: "A", label: "Maṅgala retrograde in Śravaṇa", conds: [{ g: "Maṅgala", rel: "retro", v: 21 }] }] },
-    { id: "C12", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.3.25", sky: "Jupiter and Saturn near Viśākhā", readings: [
-      { id: "A", label: "Guru and Śani both within 6° of Zubenelgenubi, Viśākhā's junction star",
+      { id: "E", label: "6.3.11 · a solar eclipse, and Ketu in Svātī, within 30 days", mode: "within", days: 30,
+        conds: [{ g: "", rel: "eclipse", v: "solar" }, { g: "Ketu", rel: "nak", v: 14 }] },
+      { id: "F", label: "6.3.13 · Maṅgala retrograde in Maghā while Guru is in Śravaṇa", conds: [{ g: "Maṅgala", rel: "retro", v: 9 }, { g: "Guru", rel: "nak", v: 21 }] },
+      { id: "G", label: "6.3.14 · Śani in Pūrva Phalgunī while Śukra is in Pūrva Bhādrapadā", conds: [{ g: "Śani", rel: "nak", v: 10 }, { g: "Śukra", rel: "nak", v: 24 }] },
+      { id: "H", label: "6.3.14 · Śani in Pūrva Phalgunī while Śukra is in Uttara Bhādrapadā", conds: [{ g: "Śani", rel: "nak", v: 10 }, { g: "Śukra", rel: "nak", v: 25 }] },
+      { id: "I", label: "6.3.17 · Maṅgala retrograde in Śravaṇa", conds: [{ g: "Maṅgala", rel: "retro", v: 21 }] },
+      { id: "J", label: "6.3.25 · Guru and Śani both within 6° of Zubenelgenubi, Viśākhā's junction star",
         conds: [{ g: "Śani", rel: "nearstar", v: 15, tol: 6 }, { g: "Guru", rel: "nearstar", v: 15, tol: 6 }] },
-      { id: "B", label: "Guru within 6° of Śani, both in Viśākhā's division",
-        conds: [{ g: "Śani", rel: "nak", v: 15 }, { g: "Guru", rel: "nak", v: 15 }, { g: "Guru", rel: "neargraha", v: "Śani", tol: 6 }] }] },
-    { id: "C14", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.3.28–29", sky: "Sun and Moon both eclipsed in one month", readings: [
-      { id: "A", label: "a lunar and a solar eclipse within 15 days", mode: "within", days: 15,
-        conds: [{ g: "", rel: "eclipse", v: "lunar" }, { g: "", rel: "eclipse", v: "solar" }] }] },
+      { id: "K", label: "6.3.25 · Guru within 6° of Śani, both in Viśākhā's division",
+        conds: [{ g: "Śani", rel: "nak", v: 15 }, { g: "Guru", rel: "nak", v: 15 }, { g: "Guru", rel: "neargraha", v: "Śani", tol: 6 }] },
+      { id: "L", label: "6.3.28–29 · a lunar and a solar eclipse within 15 days", mode: "within", days: 15,
+        conds: [{ g: "", rel: "eclipse", v: "lunar" }, { g: "", rel: "eclipse", v: "solar" }] },
+      { id: "M", label: "together (6.2.23 with 6.3.28–29): a lunar eclipse in Kārttika and a solar eclipse within 15 days", mode: "within", days: 15,
+        conds: [{ g: "", rel: "month", v: 7 }, { g: "", rel: "eclipse", v: "lunar" }, { g: "", rel: "eclipse", v: "solar" }] }] },
+    { id: "C25", event: "The war's first day: the armies stand ready", ref: "MBh 6.17.2 (Ganguli §17)", sky: "the Moon had gone to the region of Maghā",
+      note: "Alone it recurs every month: its use is in a chain, after the new moon of C01 I (which it contradicts: from a new moon in Jyeṣṭhā the Moon needs about 19 days to reach Maghā).", readings: [
+      { id: "A", label: "Candra in Maghā", conds: [{ g: "Candra", rel: "nak", v: 9 }] }] },
+    { id: "C26", event: "The war's last day: Balarāma returns from his pilgrimage to watch Bhīma and Duryodhana fight", ref: "MBh 9.34.6 (Ganguli §34)", sky: "forty-two days gone; he left on Puṣya and returned on Śravaṇa",
+      note: "Alone each recurs every month: test it in the chain (Puṣya, then Śravaṇa 41–43 days later; or the war's new moon, then Śravaṇa on the eighteenth day).", readings: [
+      { id: "A", label: "the return: Candra in Śravaṇa", conds: [{ g: "Candra", rel: "nak", v: 21 }] },
+      { id: "B", label: "the departure, 42 days before: Candra in Puṣya", conds: [{ g: "Candra", rel: "nak", v: 7 }] }] },
+    { id: "C27", event: "After the war: Bhīṣma gives up his life on the bed of arrows", ref: "MBh 13.167.26–28 (Ganguli §167; 13.153 in the critical edition)", sky: "the Sun has turned north; Māgha has come; the bright fortnight with a part remaining; fifty-eight nights on the arrows",
+      note: "'Tribhāgaśeṣa' is read either as a quarter of the bright fortnight gone (Nīlakaṇṭha) or as a third of it left. 'The Sun has turned north' is read loosely (uttarāyaṇa) or as just past the winter solstice (within 30°). The fifty-eight nights belong in the chain: Bhīṣma fell on the tenth day of the war.", readings: [
+      { id: "A", label: "Māgha, Śukla 3–5 (a quarter gone), in uttarāyaṇa", conds: [{ g: "", rel: "month", v: 10 }, { g: "", rel: "tithi", v: [3, 4, 5] }, { g: "", rel: "ayana", v: "uttara" }] },
+      { id: "B", label: "Māgha, Śukla 9–11 (a third left), in uttarāyaṇa", conds: [{ g: "", rel: "month", v: 10 }, { g: "", rel: "tithi", v: [9, 10, 11] }, { g: "", rel: "ayana", v: "uttara" }] },
+      { id: "C", label: "Māgha, Śukla 3–5, the Sun within 30° past the winter solstice", conds: [{ g: "", rel: "month", v: 10 }, { g: "", rel: "tithi", v: [3, 4, 5] }, { g: "Sūrya", rel: "_trop", v: [270, 30] }] },
+      { id: "D", label: "Māgha, Śukla 9–11, the Sun within 30° past the winter solstice", conds: [{ g: "", rel: "month", v: 10 }, { g: "", rel: "tithi", v: [9, 10, 11] }, { g: "Sūrya", rel: "_trop", v: [270, 30] }] }] },
     { id: "C15", event: "After the war: Vyāsa fixes Yudhiṣṭhira's consecration for the Aśvamedha", ref: "MBh 14.71.4", sky: "Caitra full moon", readings: [
       { id: "A", label: "Pūrṇimā in Caitra (recurs every year: useful once a year is fixed)", conds: [{ g: "", rel: "month", v: 0 }, { g: "", rel: "tithi", v: 15 }] }] },
     { id: "C16", event: "After the war: the Aśvamedha horse turns home; Yudhiṣṭhira fixes the day and readies the sacrifice", ref: "MBh 14.86.4, 14.86.8", sky: "Māgha dvādaśī; Māgha full moon", readings: [
@@ -2622,7 +2638,7 @@
   function condText(c) {
     var g = c.g === "any" ? "any graha" : c.g, tv = c.tol != null ? c.tol + "°" : "";
     switch (c.rel) {
-      case "nak": return g + " in " + CL_NAKX[c.v];
+      case "nak": return g + " in " + (Array.isArray(c.v) ? c.v.map(function (q) { return CL_NAKX[q]; }).join(" or ") : CL_NAKX[c.v]);
       case "rasi": return g + " in " + (Array.isArray(c.v) ? c.v.map(function (q) { return CL_RS[q]; }).join(" or ") : CL_RS[c.v]);
       case "_arcs": return g + " in " + c.v.map(function (q) { return norm(q[0]).toFixed(1) + "°–" + norm(q[0] + q[1]).toFixed(1) + "°"; }).join(" or ");
       case "nearstar": return g + " within " + tv + " of " + YOGA[c.v][1] + " (" + YOGA[c.v][0] + ")";
@@ -2635,7 +2651,8 @@
       case "own": return g + " in its own sign";
       case "retro": return g + " retrograde" + (c.v >= 0 ? " in " + CL_NAKX[c.v] : "");
       case "station": return g + " turns retrograde" + (c.v >= 0 ? " in " + CL_NAKX[c.v] : "");
-      case "tithi": return "tithi " + TITHI30[c.v - 1];
+      case "tithi": return "tithi " + (Array.isArray(c.v) ? c.v.map(function (q) { return TITHI30[q - 1]; }).join(" or ") : TITHI30[c.v - 1]);
+      case "_trop": return "Sūrya " + c.v[0] + "°–" + norm(c.v[0] + c.v[1]) + "° tropical";
       case "month": return "lunar month " + LMON[c.v];
       case "eclipse": return (c.v === "solar" ? "a solar" : "a lunar") + " eclipse";
       case "ayana": return c.v === "uttara" ? "uttarāyaṇa" : "dakṣiṇāyana";
@@ -2752,6 +2769,14 @@
     var v = VMAX[c.g] || 1, L, d, s;
     /* internal forms used by the chain and chance add-ons; the builder never makes them */
     if (c.rel === "rasi" && Array.isArray(c.v)) return evalOne({ g: c.g, rel: "_arcs", v: c.v.map(function (q) { return [q * 30, 30]; }) }, ms, S);
+    if (Array.isArray(c.v) && (c.rel === "tithi" || c.rel === "nak" || c.rel === "month")) {
+      var rs = c.v.map(function (q) { return evalOne(Object.assign({}, c, { v: q }), ms, S); }), hit = rs.filter(function (r) { return r.ok; });
+      return hit.length ? hit[0] : { ok: false, skip: Math.min.apply(null, rs.map(function (r) { return r.skip; })) };
+    }
+    if (c.rel === "_trop") {
+      L = norm(K.longitude("Sūrya", ms) + window.__ayanFor("samanvaya_ecliptic", jdOf(ms))); d = arcTo(L, c.v[0], c.v[1]);
+      return d === 0 ? { ok: true, m: Math.min(norm(L - c.v[0]), c.v[1] - norm(L - c.v[0])) } : { ok: false, skip: d / 1.03 };
+    }
     if (c.rel === "_arcs") {
       L = lonOf(c.g, ms, S); d = Math.min.apply(null, c.v.map(function (q) { return arcTo(L, q[0], q[1]); }));
       if (d > 0) return { ok: false, skip: d / v };
@@ -2874,7 +2899,7 @@
       if (k >= conds.length) return Promise.resolve();
       var c = conds[k], frac0 = k / conds.length;
       /* the last condition of a same-moment search may stop once the reading is plainly too common */
-      var lim = !within && k === conds.length - 1 ? 3 * CAP : 0;
+      var lim = !within && k === conds.length - 1 ? 3 * (cl.cap || CAP) : 0;
       return walk(c, wins, function (f) { onProgress(frac0 + f / conds.length); }, lim).then(function (runs) {
         runsBy[c.i] = runs;
         wins = toWins(runs, stepOf(c) * DAY + N, [a, b]);
@@ -2904,7 +2929,7 @@
                 if (mm > cur.mm) { cur.best = t; cur.mm = mm; cur.rs = rs; }
                 t += Math.min.apply(null, rs.map(function (r, j) { return r.who ? Math.max(fine, STEP[r.who] * DAY) : stepOf(cl.conds[j]) * DAY; }));
               } else {
-                if (cur) { eps.push(cur); cur = null; if (eps.length > CAP) break; }
+                if (cur) { eps.push(cur); cur = null; if (eps.length > (cl.cap || CAP)) break; }
                 t += Math.max(fine, 0.92 * Math.max.apply(null, rs.filter(function (r) { return !r.ok; }).map(function (r) { return r.skip || 0; })) * DAY);
               }
               if (Date.now() - t0 > 30) { onProgress(0.99); return setTimeout(slice, 0); }
@@ -2912,7 +2937,7 @@
             if (cur) eps.push(cur);
             /* an eclipse's best moment is the eclipse itself */
             eps.forEach(function (e) { var q = e.rs.filter(function (r) { return r.at; })[0]; if (q) e.best = q.at; });
-            res({ episodes: eps.slice(0, CAP), capped: eps.length > CAP });
+            res({ episodes: eps.slice(0, (cl.cap || CAP)), capped: eps.length > (cl.cap || CAP) });
           })();
         });
       }
@@ -2930,7 +2955,7 @@
         });
         if (ok) eps.push({ from: from, to: to, best: rs[anchor.i].at || R[2], rs: rs, mm: Math.min.apply(null, rs.map(function (r) { return r.m; })) });
       });
-      return { episodes: eps.slice(0, CAP), capped: eps.length > CAP };
+      return { episodes: eps.slice(0, (cl.cap || CAP)), capped: eps.length > (cl.cap || CAP) };
     });
   }
 
@@ -2990,8 +3015,9 @@
     var can = CLAIMS.filter(function (c) { return !c.none; });
     $("ks-claim").innerHTML = opt("mine", "Your own claim (build it below)", false) +
       ["Mahābhārata", "Bhāgavata", "Rāmāyaṇa"].map(function (t) { return grp(t, can.filter(function (c) { return c.src === t; })); }).join("");
-    $("ks-claim").value = "C12";
+    $("ks-claim").value = "C05";
     pickerChanged();
+    $("ks-reading").value = "J"; adviseRange();
   }
   function pickerChanged() {
     var cl = claimOf($("ks-claim").value);
@@ -2999,7 +3025,7 @@
     $("ks-reading").innerHTML = cl ? opt("all", "all readings, each on its own", true) + cl.readings.map(function (r) { return opt(r.id, r.id + ": " + r.label, false); }).join("") : opt("mine", "your conditions", true);
     $("ks-reading").disabled = !cl; $("ks-cledit").disabled = !cl;
     var inf = $("ks-clinfo");
-    if (inf) inf.innerHTML = cl ? "<b>" + esc(cl.event || "") + "</b> · " + esc(cl.ref) + " · " + esc(cl.sky) : "";
+    if (inf) inf.innerHTML = cl ? "<b>" + esc(cl.event || "") + "</b> · " + esc(cl.ref) + " · " + esc(cl.sky) + (cl.note ? "<br>" + esc(cl.note) : "") : "";
     adviseRange();
   }
   function readingsNow() {
@@ -3158,6 +3184,12 @@
                 { g: "Śukra", rel: "rasi", v: [11, 1, 6] }, { g: "Sūrya", rel: "rasi", v: [11, 0] }, { g: "", rel: "tithi", v: 9 }, { g: "Candra", rel: "nak", v: 6 }, { g: "Candra", rel: "rasi", v: 3 }] },
       { src: "cat", id: "R03", rd: "B", min: 24, max: 27, unit: "y", lagna: -1 }]
   };
+  var MBH_PRESETS = {
+    bal: { range: [-5999, 999], note: "Preset loaded: the war's new moon in Jyeṣṭhā (C01 I, Kṛṣṇa's line), then Balarāma's return with the Moon in Śravaṇa (C26 A) 16–18 days later, the war's eighteenth day.",
+      links: [{ src: "cat", id: "C01", rd: "I", lagna: -1 }, { src: "cat", id: "C26", rd: "A", min: 16, max: 18, unit: "d", lagna: -1 }] },
+    bhi: { range: [-5999, 999], note: "Preset loaded: the war's new moon in Jyeṣṭhā (C01 I), then Bhīṣma's death (C27 C: Māgha, Śukla 3–5, the Sun within 30° past the winter solstice) 64–70 days later — he fell on the tenth day and lay fifty-eight nights.",
+      links: [{ src: "cat", id: "C01", rd: "I", lagna: -1 }, { src: "cat", id: "C27", rd: "C", min: 64, max: 70, unit: "d", lagna: -1 }] }
+  };
   var CH = { links: [], last: null }, SESSION = { readings: 0 };
   var YEAR = 365.2425 * DAY;
   function newLink(first) { return first ? { src: "cat", id: "R01", rd: "A", lagna: -1 } : { src: "cat", id: "R03", rd: "B", min: 24, max: 27, unit: "y", lagna: -1 }; }
@@ -3224,9 +3256,9 @@
   }
 
   /* ---- 1. the chain ---------------------------------------------------------------- */
-  var CHAIN_CAP = 300;
+  var CHAIN_CAP = 20000, CHAIN_SHOW = 300, LINK_CAP = 20000;
   function chainSearch(links, a, b, onProgress) {
-    var rds = links.map(linkReading), chains = [], perLink = [], capped = false;
+    var rds = links.map(function (L) { var r = linkReading(L); return r ? Object.assign({}, r, { cap: LINK_CAP }) : r; }), chains = [], perLink = [], capped = false;
     if (rds.some(function (r) { return !r; })) return Promise.reject("a link has no reading");
     var lo = K.SPAN.from, hi = K.SPAN.to;
     function stepK(k) {
@@ -3266,7 +3298,7 @@
     }
     return stepK(0).then(function () {
       var lat = latNow(), lon = lonNow();
-      chains.forEach(function (ch) {
+      chains.slice(0, CHAIN_SHOW).forEach(function (ch) {
         ch.forEach(function (e, k) {
           var r = refine(rds[k], e); e.exact = r;
           if (links[k].lagna >= 0) e.dt = dtNeeded(r.from, r.to, links[k].lagna, lat, lon);
@@ -3320,11 +3352,17 @@
     $("ks-chsum").innerHTML = "Searched " + esc(yearLabel(new Date(o.a).getUTCFullYear())) + " – " + esc(yearLabel(new Date(o.b).getUTCFullYear())) + " for link 1" +
       (secs ? " in " + secs + " s" : "") + ", under " + FRAME_NAME[CONV.frame] + ", " + { equal: (window.NNak ? window.NNak.label() : "equal nakṣatras"), star: "nakṣatra by the nearest junction star", abhijit: "28 nakṣatras with Abhijit" }[CONV.nak] +
       ", the " + CONV.node + " node. Link by link, matches found: " + r.perLink.map(function (n, k) { return "link " + (k + 1) + " " + n; }).join(", ") +
-      ". <b>" + r.chains.length + (r.chains.length === 1 ? " date survives" : " dates survive") + " the whole chain.</b>" + (r.capped ? " <b>Some list was capped: the chain is too loose to narrow a date.</b>" : "") +
+      ". <b>" + r.chains.length + (r.chains.length === 1 ? " date survives" : " dates survive") + " the whole chain.</b>" + (r.capped ? " <b>A list reached its limit (" + LINK_CAP + "): search a shorter range.</b>" : "") +
       (L.some(function (x) { return x.lagna >= 0; }) ? " Lagna at " + latNow().toFixed(2) + "°, " + lonNow().toFixed(2) + "° (the place set above)." : "");
     if (!r.chains.length) { $("ks-chres").innerHTML = '<p class="k-note">No date in this range satisfies every link. That is a result: under these readings and intervals, the story\'s sky did not happen here.</p>'; return; }
-    $("ks-chres").innerHTML = '<div class="eltblwrap"><table class="aytab ks-cltab"><thead><tr><th>#</th>' + L.map(function (x, k) { return "<th>link " + (k + 1) + ": " + esc(linkName(x)) + "</th>"; }).join("") + "</tr></thead><tbody>" +
-      r.chains.map(function (ch, i) {
+    /* where in time the surviving dates fall: runs split by gaps of more than 100 years */
+    var ys = r.chains.map(function (ch) { return new Date(ch[0].best).getUTCFullYear(); }).sort(function (p, q) { return p - q; }), runs = [];
+    ys.forEach(function (y) { var R = runs[runs.length - 1]; if (R && y - R[1] <= 100) { R[1] = y; R[2]++; } else runs.push([y, y, 1]); });
+    var spread = runs.length > 1 || r.chains.length > 20 ? '<p class="k-note"><b>Where the surviving dates fall:</b> ' + runs.map(function (R) {
+      return (R[0] === R[1] ? esc(yearLabel(R[0])) : esc(yearLabel(R[0])) + " – " + esc(yearLabel(R[1]))) + " (" + R[2] + ")"; }).join(" · ") +
+      (r.chains.length > CHAIN_SHOW ? ". The table lists the first " + CHAIN_SHOW + "." : ".") + "</p>" : "";
+    $("ks-chres").innerHTML = spread + '<div class="eltblwrap"><table class="aytab ks-cltab"><thead><tr><th>#</th>' + L.map(function (x, k) { return "<th>link " + (k + 1) + ": " + esc(linkName(x)) + "</th>"; }).join("") + "</tr></thead><tbody>" +
+      r.chains.slice(0, CHAIN_SHOW).map(function (ch, i) {
         return "<tr><td class=\"num\">" + (i + 1) + "</td>" + ch.map(function (e, k) {
           var ex = e.exact || {}, gap = k ? (e.best - ch[k - 1].best) / YEAR : null;
           return "<td>" + civilText(e.best) + " " + hm(e.best) + " UT" +
@@ -3347,7 +3385,7 @@
     var conds = rd.conds.map(function (c) {
       var t = th[c.g] || 0, x = Object.assign({}, c);
       switch (c.rel) {
-        case "nak": if (c.g === "any") return x; var A = arcsOfNak(c.v); return { g: c.g, rel: "_arcs", v: [[norm(A[0] + t), A[1]]] };
+        case "nak": if (c.g === "any") return x; return { g: c.g, rel: "_arcs", v: (Array.isArray(c.v) ? c.v : [c.v]).map(function (q) { var A = arcsOfNak(q); return [norm(A[0] + t), A[1]]; }) };
         case "rasi": return { g: c.g, rel: "_arcs", v: (Array.isArray(c.v) ? c.v : [c.v]).map(function (q) { return [norm(q * 30 + t), 30]; }) };
         case "exalt": case "own": case "debil":
           if (!(c.g in EXALT)) return x;
@@ -3355,8 +3393,9 @@
           return { g: c.g, rel: "_arcs", v: sg.map(function (q) { return [norm(q * 30 + t), 30]; }) };
         case "nearstar": var yl = starLon(c.v, mid); return yl == null ? x : { g: c.g, rel: "nearlon", v: norm(yl + t), tol: c.tol };
         case "nearlon": x.v = norm(+c.v + t); return x;
-        case "tithi": x.v = ((c.v - 1 + Math.round((th["Candra"] - th["Sūrya"]) / 12)) % 30 + 30) % 30 + 1; return x;
-        case "month": x.v = ((c.v + Math.round(th["Sūrya"] / 30)) % 12 + 12) % 12; return x;
+        case "tithi": var sh = function (q) { return ((q - 1 + Math.round((th["Candra"] - th["Sūrya"]) / 12)) % 30 + 30) % 30 + 1; }; x.v = Array.isArray(c.v) ? c.v.map(sh) : sh(c.v); return x;
+        case "month": var sm = function (q) { return ((q + Math.round(th["Sūrya"] / 30)) % 12 + 12) % 12; }; x.v = Array.isArray(c.v) ? c.v.map(sm) : sm(c.v); return x;
+        case "_trop": x.v = [norm(c.v[0] + th["Sūrya"]), c.v[1]]; return x;
         case "retro": case "station": if (c.v >= 0) x.v = ((c.v + Math.round(t / (40 / 3))) % 27 + 27) % 27; return x;
       }
       return x;                                   /* conjunctions, eclipses, ayana: kept as they are */
@@ -3439,6 +3478,14 @@
       $("ks-chy0").value = 13000; $("ks-chera0").value = "BCE"; $("ks-chy1").value = 3000; $("ks-chera1").value = "BCE";
       drawChain();
       $("ks-chsum").innerHTML = "Preset loaded: link 1 is your seven conditions, with the Karka lagna reported as ΔT needed at the place set above (set it to Ayodhya); link 2 is Daśaratha's omens on the coronation day (R03 B), 24–27 years later. Search when ready.";
+    });
+    ["bal", "bhi"].forEach(function (k) {
+      var bt = $("ks-ch" + k); if (!bt) return;
+      bt.addEventListener("click", function () {
+        var P = MBH_PRESETS[k]; CH.links = JSON.parse(JSON.stringify(P.links));
+        $("ks-chy0").value = 6000; $("ks-chera0").value = "BCE"; $("ks-chy1").value = 1000; $("ks-chera1").value = "CE";
+        drawChain(); $("ks-chsum").innerHTML = esc(P.note) + " Search when ready.";
+      });
     });
     $("ks-chgo").addEventListener("click", runChain);
     $("ks-chstop").addEventListener("click", function () { CS.stop = true; });
@@ -3526,7 +3573,7 @@
       claims: function () { return CLAIMS; }, search: function (rd, a, b) { CS.run++; CS.stop = false; return searchClaim(rd, a, b, function () {}); },
       chain: function (links, a, b) { CS.run++; CS.stop = false; return chainSearch(links, a, b, function () {}); },
       chance: function (rd, a, b, n) { CS.run++; CS.stop = false; return chanceTest(rd, a, b, n, function () {}); },
-      dtNeeded: dtNeeded, rama: RAMA_PRESET };
+      dtNeeded: dtNeeded, rama: RAMA_PRESET, mbh: MBH_PRESETS };
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind); else bind();
 })();

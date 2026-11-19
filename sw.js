@@ -28,9 +28,9 @@
  *   served by this one even in principle, which is a stronger guarantee than
  *   hoping the revalidation ran.
  *
- * 2026-11-18.fe42d15 is replaced by build.py, which is what makes all of the above true.
+ * 2026-11-19.007bc99 is replaced by build.py, which is what makes all of the above true.
  */
-var CACHE = "nirayana-2026-11-18.fe42d15";
+var CACHE = "nirayana-2026-11-19.007bc99";
 
 /* Precached on install: the shell a reader needs to have ANY page work offline.
    Deliberately not cities.json — three megabytes is not something to download on
