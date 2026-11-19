@@ -2540,6 +2540,11 @@
       { id: "B", label: "Rohiṇī was first before: the vernal equinox in Rohiṇī", cap: 20000, conds: [{ g: "vernal equinox", rel: "pt", v: 3 }] },
       { id: "C", label: "the Kṛttikās head the list: the vernal equinox in Kṛttikā", cap: 20000, conds: [{ g: "vernal equinox", rel: "pt", v: 2 }] },
       { id: "D", label: "A and C together: the winter solstice in Dhaniṣṭhā and the vernal equinox in Kṛttikā", cap: 20000, conds: [{ g: "winter solstice", rel: "pt", v: 22 }, { g: "vernal equinox", rel: "pt", v: 2 }] }] },
+    { id: "C29", event: "The Anugītā: Brahmā on what comes first — day before night, the bright fortnight first, the nakṣatras from Śraviṣṭhā, the seasons from śiśira", ref: "MBh 14.44.2 (critical edition; the vulgate reads śravaṇādīni)", sky: "the nakṣatras begin with Śraviṣṭhā (Dhaniṣṭhā), the seasons with śiśira",
+      note: "Śiśira begins at the winter solstice, so a year that starts with śiśira and with Śraviṣṭhā puts the solstice there, as the Vedāṅga Jyotiṣa does ('at the beginning of Śraviṣṭhā'). The critical edition reads Śraviṣṭhā; the vulgate Śravaṇa, a later position. Eras, not days; they move by about a century with the frame and the nakṣatra boundaries.", readings: [
+      { id: "A", label: "the critical edition: the winter solstice in Dhaniṣṭhā (Śraviṣṭhā)", cap: 20000, conds: [{ g: "winter solstice", rel: "pt", v: 22 }] },
+      { id: "B", label: "\"beginning with\" read strictly: the winter solstice in the first quarter of Dhaniṣṭhā", cap: 20000, conds: [{ g: "winter solstice", rel: "pt", v: 22, part: [0, 0.25] }] },
+      { id: "C", label: "the vulgate: the winter solstice in Śravaṇa", cap: 20000, conds: [{ g: "winter solstice", rel: "pt", v: 21 }] }] },
     { id: "C01", def: "J", event: "Before the war: Karṇa tells Kṛṣṇa the omens, after the peace embassy fails", ref: "MBh 5.141.7–10", sky: "four omens in one speech: Saturn afflicts Rohiṇī; Mars retrograde at Jyeṣṭhā toward Anurādhā; a graha afflicts Citrā; Rāhu will approach the Sun",
       note: "One meeting, one continuous speech: until 19 Nov 2026 these four verses were four claims (C01–C04). Each verse keeps its own readings; G and H ask for some of them together; J asks for everything the meeting states (opened by default), K the same with Maṅgala read without retrograde. Not testable, so left out: the Moon's spot turned, meteors, a black ring round the Sun, red horizons. I is Kṛṣṇa's line just before Karṇa's reply, in the same conversation. It cannot hold with C or D a week apart: Maṅgala retrograde stands opposite the Sun, so with Maṅgala in Jyeṣṭhā the Sun is near Rohiṇī, and a new moon in Jyeṣṭhā needs the Sun there.", readings: [
       { id: "A", label: "5.141.7 · Śani inside Rohiṇī's division", conds: [{ g: "Śani", rel: "nak", v: 3 }] },
@@ -2684,7 +2689,7 @@
       case "station": return g + " turns retrograde" + (c.v >= 0 ? " in " + CL_NAKX[c.v] : "");
       case "tithi": return "tithi " + (Array.isArray(c.v) ? c.v.map(function (q) { return TITHI30[q - 1]; }).join(" or ") : TITHI30[c.v - 1]);
       case "rtu": return "the season is " + RTU[c.v];
-      case "pt": return "the " + (c.g || PTS[0]) + " in " + CL_NAKX[c.v];
+      case "pt": return "the " + (c.g || PTS[0]) + " in " + (c.part ? "the first " + (c.part[1] === 0.25 ? "quarter" : Math.round(c.part[1] * 100) + "%") + " of " : "") + CL_NAKX[c.v];
       case "_and": return "at one moment: " + c.conds.map(condText).join(" and ");
       case "_trop": return "Sūrya " + c.v[0] + "°–" + norm(c.v[0] + c.v[1]) + "° tropical";
       case "month": return "lunar month " + LMON[c.v];
@@ -2817,6 +2822,7 @@
       /* the point's place among the nakṣatras: its tropical longitude less the ayanāṃśa, in this frame; it moves 1° in about 72 years */
       var P = norm(PT0[Math.max(0, PTS.indexOf(c.g))] - window.__ayanFor("samanvaya_ecliptic", jdOf(ms)) + S), E = NKE().filter(function (q) { return q.i === c.v; })[0];
       var st0 = E ? E.start : c.v * 40 / 3, wd = E ? E.end - E.start : 40 / 3;
+      if (c.part) { st0 += wd * c.part[0]; wd *= c.part[1] - c.part[0]; }      /* a part of the nakṣatra, e.g. its first quarter */
       d = arcTo(P, st0, wd);
       return d === 0 ? { ok: true, m: Math.min(norm(P - st0), wd - norm(P - st0)) } : { ok: false, skip: d * 26150 * 0.9 };
     }
