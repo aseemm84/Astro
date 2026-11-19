@@ -2270,7 +2270,11 @@
       claims: function () { return CLAIMS; }, search: function (rd, a, b) { CS.run++; CS.stop = false; return searchClaim(rd, a, b, function () {}); },
       chain: function (links, a, b) { CS.run++; CS.stop = false; return chainSearch(links, a, b, function () {}); },
       chance: function (rd, a, b, n) { CS.run++; CS.stop = false; return chanceTest(rd, a, b, n, function () {}); },
-      dtNeeded: dtNeeded, rama: RAMA_PRESET, mbh: MBH_PRESETS, eclSeen: eclSeen };
+      dtNeeded: dtNeeded, rama: RAMA_PRESET, mbh: MBH_PRESETS, eclSeen: eclSeen,
+      /* the lunar month at a moment under a given naming rule (read-only; the page's own conventions are restored) */
+      monthAt: function (ms, mname) { var keep = CONV.mname; CONV.mname = mname || keep; MONTH_CACHE = { a: 0, b: -1, i: -1 };
+        var m = lunarMonthAt(ms), r = { i: m.i, name: m.i >= 0 ? LMON[m.i] : "adhika (unnamed)", sukla: m.sukla };
+        CONV.mname = keep; MONTH_CACHE = { a: 0, b: -1, i: -1 }; return r; } };
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", bind); else bind();
 })();
