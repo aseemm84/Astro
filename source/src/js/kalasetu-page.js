@@ -1519,7 +1519,10 @@
       var eps = [];
       if (!within) {
         /* the final pass: every condition at the finest step, inside what is left */
-        var all = { rel: "_all" }, fine = Math.min.apply(null, conds.map(stepOf)) * DAY;
+        /* the final pass steps at a twelfth of the finest condition's step (at least 5 minutes): coarser,
+           it could jump over a coincidence shorter than an hour (found 19 Nov 2026: a 30-minute overlap of
+           the Moon entering Karka with the end of a navamī). Skips from false conditions still speed it up. */
+        var all = { rel: "_all" }, fine = Math.max(300000, Math.min.apply(null, conds.map(stepOf)) * DAY / 12);
         return new Promise(function (res, rej) {
           var wi = 0, t = wins[0][0], cur = null, my = CS.run;
           (function slice() {
@@ -1533,7 +1536,7 @@
                 var mm = Math.min.apply(null, rs.map(function (r) { return r.m; }));
                 if (!cur) cur = { from: t, to: t, best: t, mm: mm, rs: rs }; cur.to = t;
                 if (mm > cur.mm) { cur.best = t; cur.mm = mm; cur.rs = rs; }
-                t += Math.min.apply(null, rs.map(function (r, j) { return r.who ? Math.max(fine, STEP[r.who] * DAY) : stepOf(cl.conds[j]) * DAY; }));
+                t += Math.max(fine, Math.min.apply(null, rs.map(function (r, j) { return Math.min(r.m != null ? r.m / (VMAX[r.who || cl.conds[j].g] || 13.2) * DAY : Infinity, r.who ? STEP[r.who] * DAY : stepOf(cl.conds[j]) * DAY); })));
               } else {
                 if (cur) { eps.push(cur); cur = null; if (eps.length > (cl.cap || CAP)) break; }
                 t += Math.max(fine, 0.92 * Math.max.apply(null, rs.filter(function (r) { return !r.ok; }).map(function (r) { return r.skip || 0; })) * DAY);
