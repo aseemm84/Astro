@@ -2530,8 +2530,8 @@
       note: "Kaumuda is read as Kārttika by most, as Āśvina (the Kaumudī full moon) by some; both are offered. Alone it recurs every year: its use is in a chain, before C01's meeting.", readings: [
       { id: "A", label: "Kārttika, with Candra in Revatī", conds: [{ g: "", rel: "month", v: 7 }, { g: "Candra", rel: "nak", v: 26 }] },
       { id: "B", label: "Āśvina, with Candra in Revatī", conds: [{ g: "", rel: "month", v: 6 }, { g: "Candra", rel: "nak", v: 26 }] }] },
-    { id: "C01", event: "Before the war: Karṇa tells Kṛṣṇa the omens, after the peace embassy fails", ref: "MBh 5.141.7–10", sky: "four omens in one speech: Saturn afflicts Rohiṇī; Mars retrograde at Jyeṣṭhā toward Anurādhā; a graha afflicts Citrā; Rāhu will approach the Sun",
-      note: "One meeting, one continuous speech: until 19 Nov 2026 these four verses were four claims (C01–C04). Each verse keeps its own readings; G and H ask for them together. I is Kṛṣṇa's line just before Karṇa's reply, in the same conversation. It cannot hold with C or D a week apart: Maṅgala retrograde stands opposite the Sun, so with Maṅgala in Jyeṣṭhā the Sun is near Rohiṇī, and a new moon in Jyeṣṭhā needs the Sun there.", readings: [
+    { id: "C01", def: "J", event: "Before the war: Karṇa tells Kṛṣṇa the omens, after the peace embassy fails", ref: "MBh 5.141.7–10", sky: "four omens in one speech: Saturn afflicts Rohiṇī; Mars retrograde at Jyeṣṭhā toward Anurādhā; a graha afflicts Citrā; Rāhu will approach the Sun",
+      note: "One meeting, one continuous speech: until 19 Nov 2026 these four verses were four claims (C01–C04). Each verse keeps its own readings; G and H ask for some of them together; J asks for everything the meeting states (opened by default), K the same with Maṅgala read without retrograde. Not testable, so left out: the Moon's spot turned, meteors, a black ring round the Sun, red horizons. I is Kṛṣṇa's line just before Karṇa's reply, in the same conversation. It cannot hold with C or D a week apart: Maṅgala retrograde stands opposite the Sun, so with Maṅgala in Jyeṣṭhā the Sun is near Rohiṇī, and a new moon in Jyeṣṭhā needs the Sun there.", readings: [
       { id: "A", label: "5.141.7 · Śani inside Rohiṇī's division", conds: [{ g: "Śani", rel: "nak", v: 3 }] },
       { id: "B", label: "5.141.7 · Śani within 5° of Aldebaran, Rohiṇī's junction star", conds: [{ g: "Śani", rel: "nearstar", v: 3, tol: 5 }] },
       { id: "C", label: "5.141.8 · Maṅgala turns retrograde in Jyeṣṭhā", conds: [{ g: "Maṅgala", rel: "station", v: 17 }] },
@@ -2544,9 +2544,15 @@
       { id: "H", label: "together, within 180 days: Śani in Rohiṇī's division, Maṅgala retrograde in Jyeṣṭhā, and a solar eclipse (Rāhu \"will approach\" the Sun)", mode: "within", days: 180,
         conds: [{ g: "Śani", rel: "nak", v: 3 }, { g: "Maṅgala", rel: "retro", v: 17 }, { g: "", rel: "eclipse", v: "solar" }] },
       { id: "I", label: "Kṛṣṇa's line in the same meeting (5.140.18 in the critical edition; Ganguli §142): the new moon seven days on, in Śakra's nakṣatra — Amāvāsyā with Candra in Jyeṣṭhā",
-        conds: [{ g: "", rel: "tithi", v: 30 }, { g: "Candra", rel: "nak", v: 17 }] }] },
-    { id: "C05", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.2.23 – 6.3.29", sky: "the omens of one speech: a fire-coloured Kārttika full moon; Saturn on Rohiṇī, on Pūrva Phalgunī, near Viśākhā; Mars retrograde in Maghā and in Śravaṇa; Jupiter in Śravaṇa; two eclipses in one month",
-      note: "One conversation, one speech: until 19 Nov 2026 these verses were eight claims (C05, C06, C07, C09, C10, C11, C12, C14). Each verse keeps its own readings. They cannot all hold at once — the speech puts Saturn in three nakṣatras (Rohiṇī, Pūrva Phalgunī, Viśākhā), Mars in two (Maghā, Śravaṇa) and Jupiter in two (Śravaṇa, near Viśākhā) — so only M, the two eclipse verses, is offered together.", readings: [
+        conds: [{ g: "", rel: "tithi", v: 30 }, { g: "Candra", rel: "nak", v: 17 }] },
+      { id: "J", label: "the whole meeting, together (literal): within 10 days, Śani in Rohiṇī, Maṅgala retrograde in Jyeṣṭhā, a graha in Citrā, and the new moon in Jyeṣṭhā (Amāvāsyā with Candra in Jyeṣṭhā at one moment)", mode: "within", days: 10,
+        conds: [{ g: "Śani", rel: "nak", v: 3 }, { g: "Maṅgala", rel: "retro", v: 17 }, { g: "any", rel: "nak", v: 13 },
+                { g: "", rel: "_and", conds: [{ g: "", rel: "tithi", v: 30 }, { g: "Candra", rel: "nak", v: 17 }] }] },
+      { id: "K", label: "the whole meeting, together, Maṅgala read as near Jyeṣṭhā and Anurādhā without retrograde: within 10 days, Śani in Rohiṇī, Maṅgala in Jyeṣṭhā or Anurādhā, a graha in Citrā, the new moon in Jyeṣṭhā", mode: "within", days: 10,
+        conds: [{ g: "Śani", rel: "nak", v: 3 }, { g: "Maṅgala", rel: "nak", v: [16, 17] }, { g: "any", rel: "nak", v: 13 },
+                { g: "", rel: "_and", conds: [{ g: "", rel: "tithi", v: 30 }, { g: "Candra", rel: "nak", v: 17 }] }] }] },
+    { id: "C05", def: "N", event: "Eve of the Kurukṣetra war: Vyāsa tells Dhṛtarāṣṭra the omens", ref: "MBh 6.2.23 – 6.3.29", sky: "the omens of one speech: a fire-coloured Kārttika full moon; Saturn on Rohiṇī, on Pūrva Phalgunī, near Viśākhā; Mars retrograde in Maghā and in Śravaṇa; Jupiter in Śravaṇa; two eclipses in one month",
+      note: "One conversation, one speech: until 19 Nov 2026 these verses were eight claims (C05, C06, C07, C09, C10, C11, C12, C14). Each verse keeps its own readings. They cannot all hold at once — the speech puts Saturn in three nakṣatras (Rohiṇī, Pūrva Phalgunī, Viśākhā), Mars in two (Maghā, Śravaṇa) and Jupiter in two (Śravaṇa, near Viśākhā) — so N, everything together, is refused before searching (it is what the claim opens on, so the reason is shown), and M, the two eclipse verses, is the part that can hold together.", readings: [
       { id: "A", label: "6.2.23 · a lunar eclipse in Kārttika", conds: [{ g: "", rel: "month", v: 7 }, { g: "", rel: "eclipse", v: "lunar" }] },
       { id: "B", label: "6.2.32 · Śani inside Rohiṇī's division", conds: [{ g: "Śani", rel: "nak", v: 3 }] },
       { id: "C", label: "6.2.32 · Śani within 5° of Aldebaran", conds: [{ g: "Śani", rel: "nearstar", v: 3, tol: 5 }] },
@@ -2565,7 +2571,12 @@
       { id: "L", label: "6.3.28–29 · a lunar and a solar eclipse within 15 days", mode: "within", days: 15,
         conds: [{ g: "", rel: "eclipse", v: "lunar" }, { g: "", rel: "eclipse", v: "solar" }] },
       { id: "M", label: "together (6.2.23 with 6.3.28–29): a lunar eclipse in Kārttika and a solar eclipse within 15 days", mode: "within", days: 15,
-        conds: [{ g: "", rel: "month", v: 7 }, { g: "", rel: "eclipse", v: "lunar" }, { g: "", rel: "eclipse", v: "solar" }] }] },
+        conds: [{ g: "", rel: "month", v: 7 }, { g: "", rel: "eclipse", v: "lunar" }, { g: "", rel: "eclipse", v: "solar" }] },
+      { id: "N", label: "the whole speech, together (literal), within 30 days: every position above at once — the page refuses it, because the speech puts Śani and Guru in nakṣatras far apart", mode: "within", days: 30,
+        conds: [{ g: "", rel: "_and", conds: [{ g: "", rel: "month", v: 7 }, { g: "", rel: "eclipse", v: "lunar" }] }, { g: "Śani", rel: "nak", v: 3 },
+                { g: "", rel: "eclipse", v: "solar" }, { g: "Śukra", rel: "nak", v: 14 }, { g: "", rel: "_and", conds: [{ g: "Maṅgala", rel: "retro", v: 9 }, { g: "Guru", rel: "nak", v: 21 }] },
+                { g: "Śani", rel: "nak", v: 10 }, { g: "Śukra", rel: "nak", v: 24 }, { g: "Maṅgala", rel: "retro", v: 21 },
+                { g: "Śani", rel: "nak", v: 15 }, { g: "Guru", rel: "nak", v: 15 }] }] },
     { id: "C25", event: "The war's first day: the armies stand ready", ref: "MBh 6.17.2 (Ganguli §17)", sky: "the Moon had gone to the region of Maghā",
       note: "Alone it recurs every month: its use is in a chain, after the new moon of C01 I (which it contradicts: from a new moon in Jyeṣṭhā the Moon needs about 19 days to reach Maghā).", readings: [
       { id: "A", label: "Candra in Maghā", conds: [{ g: "Candra", rel: "nak", v: 9 }] }] },
@@ -2652,6 +2663,7 @@
       case "retro": return g + " retrograde" + (c.v >= 0 ? " in " + CL_NAKX[c.v] : "");
       case "station": return g + " turns retrograde" + (c.v >= 0 ? " in " + CL_NAKX[c.v] : "");
       case "tithi": return "tithi " + (Array.isArray(c.v) ? c.v.map(function (q) { return TITHI30[q - 1]; }).join(" or ") : TITHI30[c.v - 1]);
+      case "_and": return "at one moment: " + c.conds.map(condText).join(" and ");
       case "_trop": return "Sūrya " + c.v[0] + "°–" + norm(c.v[0] + c.v[1]) + "° tropical";
       case "month": return "lunar month " + LMON[c.v];
       case "eclipse": return (c.v === "solar" ? "a solar" : "a lunar") + " eclipse";
@@ -2773,6 +2785,11 @@
       var rs = c.v.map(function (q) { return evalOne(Object.assign({}, c, { v: q }), ms, S); }), hit = rs.filter(function (r) { return r.ok; });
       return hit.length ? hit[0] : { ok: false, skip: Math.min.apply(null, rs.map(function (r) { return r.skip; })) };
     }
+    if (c.rel === "_and") {
+      var ra = c.conds.map(function (q) { return evalOne(q, ms, S); }), bad = ra.filter(function (r) { return !r.ok; });
+      if (bad.length) return { ok: false, skip: Math.max.apply(null, bad.map(function (r) { return r.skip || 0; })) };
+      return { ok: true, m: Math.min.apply(null, ra.map(function (r) { return r.m; })), who: ra.map(function (r) { return r.who; }).filter(Boolean)[0] };
+    }
     if (c.rel === "_trop") {
       L = norm(K.longitude("Sūrya", ms) + window.__ayanFor("samanvaya_ecliptic", jdOf(ms))); d = arcTo(L, c.v[0], c.v[1]);
       return d === 0 ? { ok: true, m: Math.min(norm(L - c.v[0]), c.v[1] - norm(L - c.v[0])) } : { ok: false, skip: d / 1.03 };
@@ -2827,6 +2844,7 @@
     return { ok: false, skip: 1 };
   }
   function stepOf(c) {
+    if (c.rel === "_and") return Math.min.apply(null, c.conds.map(stepOf));
     if (c.rel === "tithi" || c.rel === "eclipse") return 0.25;
     if (c.rel === "month") return 1;
     if (c.rel === "ayana") return 2;
@@ -2835,7 +2853,17 @@
   }
   /* is a claim self-contradictory before any search? */
   function contradictions(cl) {
-    if (cl.mode === "within") return [];
+    if (cl.mode === "within") {
+      /* Śani and Guru cannot visit two nakṣatras that are not neighbours within a few months */
+      var w = [], at = {};
+      if ((+cl.days || 0) <= 120) cl.conds.forEach(function (c) {
+        if (c.rel === "nak" && (c.g === "Śani" || c.g === "Guru") && typeof c.v === "number") {
+          (at[c.g] = at[c.g] || []).forEach(function (v) { var d = Math.abs(v - c.v) % 27; if (Math.min(d, 27 - d) > 1) w.push(c.g + " cannot be in " + CL_NAKX[v] + " and in " + CL_NAKX[c.v] + " within " + cl.days + " days"); });
+          at[c.g].push(c.v);
+        }
+      });
+      return w;
+    }
     var out = [], seen = {};
     cl.conds.forEach(function (c) {
       if ((c.rel === "nak" || c.rel === "rasi") && c.g && c.g !== "any" && typeof c.v === "number") {
@@ -3015,14 +3043,14 @@
     var can = CLAIMS.filter(function (c) { return !c.none; });
     $("ks-claim").innerHTML = opt("mine", "Your own claim (build it below)", false) +
       ["Mahābhārata", "Bhāgavata", "Rāmāyaṇa"].map(function (t) { return grp(t, can.filter(function (c) { return c.src === t; })); }).join("");
-    $("ks-claim").value = "C05";
+    $("ks-claim").value = "C01";
     pickerChanged();
-    $("ks-reading").value = "J"; adviseRange();
   }
   function pickerChanged() {
     var cl = claimOf($("ks-claim").value);
     $("ks-cbox").open = !cl;
     $("ks-reading").innerHTML = cl ? opt("all", "all readings, each on its own", true) + cl.readings.map(function (r) { return opt(r.id, r.id + ": " + r.label, false); }).join("") : opt("mine", "your conditions", true);
+    if (cl && cl.def) $("ks-reading").value = cl.def;
     $("ks-reading").disabled = !cl; $("ks-cledit").disabled = !cl;
     var inf = $("ks-clinfo");
     if (inf) inf.innerHTML = cl ? "<b>" + esc(cl.event || "") + "</b> · " + esc(cl.ref) + " · " + esc(cl.sky) + (cl.note ? "<br>" + esc(cl.note) : "") : "";
@@ -3379,11 +3407,12 @@
   /* the same reading with every graha's targets moved by one random angle per
      graha: the structure (how many conditions, how wide, which go together) is
      kept, the places are not. Tithi and month follow the Moon and Sun moved. */
-  function randomized(rd, R, mid) {
-    var th = {}; GN.concat(["any"]).forEach(function (g) { th[g] = R() * 360; }); th["Ketu"] = th["Rāhu"];
+  function randomized(rd, R, mid, th0) {
+    var th = th0 || {}; if (!th0) { GN.concat(["any"]).forEach(function (g) { th[g] = R() * 360; }); th["Ketu"] = th["Rāhu"]; }
     var arcsOfNak = function (i) { var e = NKE().filter(function (q) { return q.i === i; })[0]; return e ? [e.start, e.end - e.start] : [i * 40 / 3, 40 / 3]; };
     var conds = rd.conds.map(function (c) {
       var t = th[c.g] || 0, x = Object.assign({}, c);
+      if (c.rel === "_and") return { g: "", rel: "_and", conds: randomized({ conds: c.conds }, R, mid, th).conds };
       switch (c.rel) {
         case "nak": if (c.g === "any") return x; return { g: c.g, rel: "_arcs", v: (Array.isArray(c.v) ? c.v : [c.v]).map(function (q) { var A = arcsOfNak(q); return [norm(A[0] + t), A[1]]; }) };
         case "rasi": return { g: c.g, rel: "_arcs", v: (Array.isArray(c.v) ? c.v : [c.v]).map(function (q) { return [norm(q * 30 + t), 30]; }) };
