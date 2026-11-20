@@ -1758,7 +1758,7 @@ function vargaCharts(D){
           '<i class="n" style="width:' + wn.toFixed(1) + '%"></i></span>' +
           '<span class="ayminival">' + esc(dm(r.toSign)) + ' to the rāśi, ' +
           esc(dm(r.toNak)) + ' to the nakṣatra' +
-          (contested ? ' <b class="contest">— inside the span of the nineteen</b>' : '') +
+          (contested ? ' <b class="contest">— inside the span of the twenty</b>' : '') +
           '</span></td></tr>';
       }).join("") + '</tbody></table>';
   }
@@ -1810,7 +1810,7 @@ function vargaCharts(D){
       var vals = modeKeys().map(function (k) { return ayanAt(k, S.year); })
                            .filter(function (v) { return v != null; });
       var span = Math.max.apply(null, vals) - Math.min.apply(null, vals);
-      return { head: "Nineteen answers", big: dm(span),
+      return { head: "Twenty answers", big: dm(span),
                sub: "how far the definitions disagree, at " + yearLabel(S.year),
                foot: "The engine's own uncertainty is about one arcsecond." };
     }

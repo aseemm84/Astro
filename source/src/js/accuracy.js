@@ -328,7 +328,7 @@
        that check is for. Conditional, so a build without the data keeps the
        old height rather than a band of empty space. */
     var H = T + (D.ayanamsa.measuredZero ? 112 : 92);
-    var s2 = svg(W, H, "Nineteen ayanamsa conventions spanning nearly six degrees, with the engine's own Moon error drawn to the same scale, and the measured sidereal zero stated beneath.");
+    var s2 = svg(W, H, "Twenty ayanamsa conventions spanning nearly six degrees, with the engine's own Moon error drawn to the same scale, and the measured sidereal zero stated beneath.");
 
     add(s2, "line", { x1: L, y1: T, x2: W - R, y2: T, stroke: C.line, "stroke-width": 1.5 });
     for (var d = Math.ceil(lo); d <= Math.floor(hi); d++) {

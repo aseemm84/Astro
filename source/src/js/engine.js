@@ -346,7 +346,29 @@ var AYAN_MODES={
                     "corroboration by independent derivation rather than a new epoch: the single-star " +
                     "anchors are definitions and not measurements, so they are excluded from that fit, and " +
                     "the textual epochs are withheld from it and scored afterwards",
-               c:[0.00030701309468,1.39688795339,20.895012118]}
+               c:[0.00030701309468,1.39688795339,20.895012118]},
+  /* ADDED 20 Nov 2026 beside Samanvaya–Ecliptic, which is left exactly as it
+     was: the reader's request was to keep built conventions and add changes as
+     new ones. The same IAU 2006 polynomial, constant term 15′ lower, so it
+     sits a fixed 0.25° below Samanvaya–Ecliptic at every date (positions read
+     0.25° further on). The 15′ is a calibration, not a definition: the real
+     mean Sun (Meeus/VSOP87 mean elements) against the mean Sun of the
+     Āryabhaṭīya, the Ārdharātrika / Pañcasiddhāntikā Saura and the Later
+     Sūrya Siddhānta, counted from their own Kali epoch, over 476–530 CE —
+     −0.24° to −0.25° at 499–505 CE in the first two, −0.22° in the third,
+     −0.16° to −0.31° across the window. Hence ±0.1°. Project note
+     claude/mesha-cluster.md, "Text-calibrated frame". */
+  samanvaya_kali: {name:"Samanvaya–Ecliptic, Kali-calibrated (क्रान्तिवृत्त-समन्वय · कलि-संशोधित)", s:"Sam. Kali",
+               note:"this site's own, added beside Samanvaya–Ecliptic: the same precession, with its sidereal zero " +
+                    "set where the classical texts' own mean Sun says it was. Take the Kali epoch and the mean " +
+                    "motions of the Āryabhaṭīya, the Ārdharātrika (Varāhamihira's Saura) and the Later Sūrya " +
+                    "Siddhānta as given, count forward to their authors' own time, and compare with the real mean " +
+                    "Sun over 476–530 CE: the texts' Sun runs 0.25° ahead (±0.1° across that window). Moving the " +
+                    "zero by that much makes their Sun the real one. Sidereal zero about 518 CE; a constant 15′ " +
+                    "below Samanvaya–Ecliptic at every date. A CALIBRATION TO THE TEXTS' MEAN SUN, NOT A STAR " +
+                    "ANCHOR: it inherits whatever error those texts carry, and a 15′ difference decides only " +
+                    "boundary cases (a saṅkrānti minutes from a new moon, a graha on a nakṣatra edge)",
+               c:[0.00030701309468,1.39688795339,20.645012118]}
 };
 /* WHICH PAGES CHOOSE THEIR OWN AYANĀṂŚA, and what each starts on.
    "site" pages follow the ayanāṃśa in Settings; the two comparison pages start
@@ -523,7 +545,7 @@ function ayanYearOf(jd){
 function ayanamsaFor(mode,jd){
   /* "ss_engine": the Sūrya Siddhānta's own ayanāṃśa (its libration of the
      asterisms), the zero a Siddhānta engine counts from when its positions
-     are read in the text's own frame. Not one of the nineteen conventions and
+     are read in the text's own frame. Not one of the twenty conventions and
      not offered in their pickers — it exists only for that engine. */
   if(mode==="ss_engine") return ssTextAyan(jd);
   var M=AYAN_MODES[mode]||AYAN_MODES.lahiri, v=0;

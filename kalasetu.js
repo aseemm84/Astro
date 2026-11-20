@@ -1575,12 +1575,14 @@
   function shiftOf(ms) {
     var jd = jdOf(ms), sam = window.__ayanFor("samanvaya_ecliptic", jd);
     if (CONV.frame === "lahiri") return sam - window.__ayanFor("lahiri", jd);
+    /* added 20 Nov 2026: a fixed 0.25° on from Samanvaya–Ecliptic (engine.js AYAN_MODES.samanvaya_kali) */
+    if (CONV.frame === "samanvaya_kali") return sam - window.__ayanFor("samanvaya_kali", jd);
     if (CONV.frame === "citra_star") { var y = yogataras(ms), c = y && y.filter(function (q) { return q.nak === "Citrā"; })[0];
       return c ? 180 - c.lon : 0; }
     return 0;
   }
   function ayanNow(ms) { return window.__ayanFor("samanvaya_ecliptic", jdOf(ms)) - shiftOf(ms); }
-  var FRAME_NAME = { samanvaya_ecliptic: "Samanvaya–Ecliptic", lahiri: "Lahiri", citra_star: "Citrā-by-the-star" };
+  var FRAME_NAME = { samanvaya_ecliptic: "Samanvaya–Ecliptic", samanvaya_kali: "Samanvaya–Ecliptic, Kali-calibrated", lahiri: "Lahiri", citra_star: "Citrā-by-the-star" };
   /* the nakṣatra a longitude is "in", under the chosen meaning */
   function nakName(L, ms) {
     L = norm(L);

@@ -83,8 +83,8 @@ var AYAN_FAM=[
    ["ss_text","ss_rate","ss_swiss","ss_revati","ss_citra","aryabhata"]],
   ["This site's own","the two classical anchors, derived by one method so the 3.8° between them is the texts disagreeing and nothing else",
    ["nirayana_citra","nirayana_revati"]],
-  ["Samanvaya","a multi-constraint synthesis over the polar dhruvakās and the solar apogee; the ecliptic reading lands on Āryabhaṭa's to under an arcsecond",
-   ["samanvaya_polar","samanvaya_ecliptic"]]
+  ["Samanvaya","a multi-constraint synthesis over the polar dhruvakās and the solar apogee; the ecliptic reading lands on Āryabhaṭa's to under an arcsecond, and the Kali-calibrated one sits a fixed 15′ below it, where the classical texts' own mean Sun puts the zero",
+   ["samanvaya_polar","samanvaya_ecliptic","samanvaya_kali"]]
 ];
 var AYAN_COL={
   lahiri:"#2f6fb5", raman:"#6f93d4", kp:"#1f8a8a", yukteshwar:"#5bb0ae",
@@ -93,7 +93,7 @@ var AYAN_COL={
   ss_text:"#c9922a", ss_rate:"#e0a94a", ss_swiss:"#b5742a",
   ss_revati:"#d9893f", ss_citra:"#a35f2a", aryabhata:"#8d7149",
   nirayana_citra:"#d4635c", nirayana_revati:"#9e2a3a",
-  samanvaya_polar:"#c9a24b", samanvaya_ecliptic:"#3f6fa6"
+  samanvaya_polar:"#c9a24b", samanvaya_ecliptic:"#3f6fa6", samanvaya_kali:"#6f8fbf"
 };
 function ayanColour(k){ return AYAN_COL[k]||"#8b8676"; }
 /* exposed so the suite can assert every declared mode has a colour and a

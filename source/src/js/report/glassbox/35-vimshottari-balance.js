@@ -123,7 +123,7 @@ function sensCompute(J){
    moves every 0.5° of ascendant, two minutes or more anywhere off the poles.
 
    THE CHART'S OWN AYANĀṂŚA. __kAsc and __kSidAt read the engine's current
-   mode, which is whatever was cast last — the export casts all nineteen for
+   mode, which is whatever was cast last — the export casts all twenty for
    its alternatives table — so the mode is set to this chart's for the sweep
    and put back after. */
 function sensBoundaries(J, spanMin){
