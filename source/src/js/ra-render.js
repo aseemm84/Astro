@@ -185,8 +185,15 @@
       }
     }
     stats = RA.loudness.normalise(out, RATE, -14, -1);
-    var buf = RA.voice.blank(n / RATE);
-    buf.getChannelData(0).set(out);
+    /* The audio ends 0.12 s before the picture. An AAC encoder pads its last
+       frame (and primes its first), so an audio track exactly as long as the
+       video comes out ~0.08 s longer, and an MP4's duration is its longest
+       track — measured on the macOS CI job: 35.477 s for a 35.40 s reel. The
+       trimmed part is the silent end hold, so nothing audible is lost and the
+       file is as long as the picture in both containers. */
+    var keep = Math.max(1, n - Math.round(0.12 * RATE));
+    var buf = RA.voice.blank(keep / RATE);
+    buf.getChannelData(0).set(out.subarray(0, keep));
     return { buffer: buf, loudness: stats };
   }
 

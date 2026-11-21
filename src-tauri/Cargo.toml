@@ -54,7 +54,7 @@ window-vibrancy = "0.8"
 window-vibrancy = "0.8"
 # Reel Agent's offline system voice: Windows.Media.SpeechSynthesis. The same
 # version Tauri already pulls in, so it adds features, not a second copy.
-windows = { version = "0.62", features = ["Media_SpeechSynthesis", "Storage_Streams", "Foundation", "Foundation_Collections"] }
+windows = { version = "0.62", features = ["Media_Core", "Media_SpeechSynthesis", "Storage_Streams", "Foundation", "Foundation_Collections"] }
 
 # The release profile matters here: the app is twenty-odd megabytes of content
 # and the binary should not add meaningfully to it.
