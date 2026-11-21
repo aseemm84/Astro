@@ -1558,6 +1558,30 @@
     });
   }
 
+  /* ---- the Reel Agent's handle on the film --------------------------------
+     The same three things film() uses — the live rings, a year to set, the
+     painter — and nothing else. It never saves or reports; the agent does
+     its own encoding, and done() puts the page back exactly as film() does. */
+  window.__ayFilm = {
+    svg: function () { return host && host.querySelector("svg"); },
+    at: function (year) {
+      S.year = Math.round(year); drawRings();
+      host.setAttribute("data-film", "dark");
+    },
+    value: function (year) { return ayanAt(S.ringMode, year); },
+    mode: function () { return S.ringMode; },
+    name: function () { return (modes()[S.ringMode] || {}).name || S.ringMode; },
+    year: function () { return S.year; },
+    paint: function (c, W, H, m, shot) { paintFrame(c, W, H, m, shot); },
+    snapshot: function () {
+      return darkly(function () { return window.SvgFilm.snapshot(host.querySelector("svg")); });
+    },
+    done: function (keep) {
+      host.removeAttribute("data-film");
+      S.year = keep; syncYear(); redraw();
+    }
+  };
+
   /* ---- wiring ------------------------------------------------------------ */
   function fillModeSelect() {
     var sel = $("ay-ringmode");

@@ -79,10 +79,19 @@
   function ease(x) { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); }
 
   /* ---- one output frame at time u --------------------------------------- */
+  /* A surface may draw synchronously (canvas pages) or hand back a promise
+     (SVG pages, which must be rasterised through an <img>). compose returns
+     the caption boxes in the first case and a promise of them in the
+     second, and every caller goes through when() so neither has to care. */
+  function when(x, f) { return x && typeof x.then === "function" ? x.then(f) : f(x); }
   function compose(c, u, st) {
-    var A = st.adapter, Z = st.zones, W = st.W, H = st.H, P = st.plan;
+    var A = st.adapter, P = st.plan;
     var D = A.duration() || 1;
-    A.frame(Math.max(0, Math.min(1, surfaceTime(P, u) / D)), c, { text: false });
+    var r = A.frame(Math.max(0, Math.min(1, surfaceTime(P, u) / D)), c, { text: false });
+    return when(r, function () { return overlay(c, u, st); });
+  }
+  function overlay(c, u, st) {
+    var Z = st.zones, W = st.W, H = st.H, P = st.plan;
     c.setTransform(1, 0, 0, 1, 0, 0);
     c.globalAlpha = 1; c.globalCompositeOperation = "source-over";
     var boxes = [];
@@ -214,16 +223,25 @@
     small.width = 108; small.height = 192;
     var big = document.createElement("canvas"); big.width = W; big.height = H;
     var bc = big.getContext("2d"), best = null, bestScore = -1;
-    st.plan.segs.forEach(function (s) {
-      var u = s.U + s.L * 0.6;
-      compose(bc, u, { adapter: st.adapter, zones: st.zones, W: W, H: H, plan: st.plan, lines: st.lines, captions: false });
-      var sc = small.getContext("2d"); sc.drawImage(big, 0, 0, 108, 192);
-      var d = sc.getImageData(0, 0, 108, 192).data, score = 0;
-      for (var i = 0; i < d.length; i += 4) if (d[i] + d[i + 1] + d[i + 2] > 180) score++;
-      if (score > bestScore) { bestScore = score; best = u; }
-    });
-    compose(bc, best || 0, { adapter: st.adapter, zones: st.zones, W: W, H: H, plan: st.plan, lines: st.lines,
-                             captions: false, title: st.title });
+    var segs = st.plan.segs.slice();
+    function score(u) {
+      return when(compose(bc, u, { adapter: st.adapter, zones: st.zones, W: W, H: H, plan: st.plan, lines: st.lines, captions: false }), function () {
+        var sc = small.getContext("2d"); sc.drawImage(big, 0, 0, 108, 192);
+        var d = sc.getImageData(0, 0, 108, 192).data, n = 0;
+        for (var i = 0; i < d.length; i += 4) if (d[i] + d[i + 1] + d[i + 2] > 180) n++;
+        if (n > bestScore) { bestScore = n; best = u; }
+      });
+    }
+    function each(k) {
+      if (k >= segs.length) return null;
+      return when(score(segs[k].U + segs[k].L * 0.6), function () { return each(k + 1); });
+    }
+    return Promise.resolve(each(0)).then(function () {
+      return compose(bc, best || 0, { adapter: st.adapter, zones: st.zones, W: W, H: H, plan: st.plan, lines: st.lines,
+                                      captions: false, title: st.title });
+    }).then(function () { return finishThumb(bc, big, st, W, H); });
+  }
+  function finishThumb(bc, big, st, W, H) {
     var hook = st.hook || st.title || "";
     if (hook) {
       bc.save();
@@ -314,8 +332,9 @@
       return window.SPEncode.encode(cv, {
         seconds: out.plan.T, fps: FPS, audio: m.buffer, onProgress: prog,
         drawAt: function (p) {
-          var b = compose(c, p * out.plan.T, st);
-          if (fi++ % every === 0 && b.length) out.boxes.push(b[0]);
+          return when(compose(c, p * out.plan.T, st), function (b) {
+            if (fi++ % every === 0 && b && b.length) out.boxes.push(b[0]);
+          });
         }
       }).then(function (r) {
         if (!r || r.cancelled) { var e = new Error("cancelled"); e.cancelled = true; throw e; }
@@ -330,12 +349,15 @@
         step("s_done");
         return out;
       });
-    });
+    }).then(function (o) { release(A); return o; }, function (e) { release(A); throw e; });
   }
+  /* a surface that borrowed the page (the ceremony, the ayanāṃśa rings)
+     puts it back, whether the reel was made or not */
+  function release(A) { if (A && A.release) try { A.release(); } catch (e) {} }
 
   function cancel() { if (window.SPEncode) window.SPEncode.cancel(); }
 
-  RA.render = { plan: plan, surfaceTime: surfaceTime, compose: compose, mix: mix, srt: srt,
+  RA.render = { plan: plan, surfaceTime: surfaceTime, compose: compose, when: when, mix: mix, srt: srt,
                 thumbnail: thumbnail, readDuration: readDuration, run: run, cancel: cancel,
                 GAP: GAP, TAIL: TAIL, FPS: FPS, DEVA: DEVA };
 })();

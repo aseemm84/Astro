@@ -1095,6 +1095,24 @@
     document.addEventListener("DOMContentLoaded", boot);
   else boot();
 
+  /* read-only, for the Reel Agent: the two diamonds as markup, and which
+     grahas change house between them — computed by the same functions the
+     kundli view draws with, so a reel cannot disagree with the page */
+  function reelData() {
+    var D = chart();
+    if (!D) return null;
+    var A = window.SPSripati && window.SPSripati.analyse(D);
+    var moved = [];
+    if (A) A.rows.forEach(function (r) {
+      var p = (D.planets || []).filter(function (q) { return q.en === r.body; })[0];
+      if (!p) return;
+      var hw = wholeHouse(D, p);
+      if (hw !== r.sripati) moved.push({ en: r.body, from: hw, to: r.sripati });
+    });
+    return { lagna: D.LS, lagnaName: SA[D.LS], chalita: !!A, moved: moved,
+             html: viewKundli(D) };
+  }
+
   window.SPWorkstation = { show: show, json: superJson, render: render,
-                           inspect: function () { return HOUSE; } };
+                           inspect: function () { return HOUSE; }, reel: reelData };
 })();

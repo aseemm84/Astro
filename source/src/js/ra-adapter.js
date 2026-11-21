@@ -102,6 +102,11 @@
       if (lang === "hi") {
         var hiL = RA.hi && RA.hi.festLines(REEL, B);
         if (hiL) B.forEach(function (b, i) { b.say = hiL[i]; b.need = window.SPScript.readSecs(b.say, "hi"); });
+        /* the other English-only sets, sentence by sentence (ra-hi.js line) */
+        else B.forEach(function (b) {
+          var h = RA.hi.line && RA.hi.line(b.say);
+          if (h) { b.say = h; b.need = window.SPScript.readSecs(h, "hi"); }
+        });
         B.forEach(function (b) { b.english = !!b.say && RA.hi.devanagariShare(b.say) < 0.5; });
       }
       return B;

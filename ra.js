@@ -157,8 +157,18 @@
   }
 
   /* ---- THE GATE --------------------------------------------------------- */
+  /* HOLD: a surface that draws the reader's own chart (the kundli, the
+     ceremony at their birth moment, a Motion scene that needs the chart)
+     holds the gate shut for as long as its panel is open. Connected mode
+     stays switched on in Settings, but nothing can pass: not the agent,
+     not a cloud voice, not a model list. One flag, read by the one check
+     everything already goes through. */
+  var HOLD = null;
   var net = {
-    allowed: function () { return settings().mode === "connected"; },
+    allowed: function () { return !HOLD && settings().mode === "connected"; },
+    hold: function (why) { HOLD = why || "personal"; },
+    release: function () { HOLD = null; },
+    held: function () { return HOLD; },
     assert: function (what) {
       if (!net.allowed())
         throw new Error("Connected mode is off — " + (what || "a network request") +
@@ -466,8 +476,129 @@
     return d + l ? d / (d + l) : 0;
   }
 
+  /* ---- the other reel sets, sentence by sentence ----------------------
+     The eclipse, thread, asta, vakrī, Siddhānta, simulation, cycle and
+     festival-month reels narrate in sentences the engine writes from a small
+     number of shapes: "Śukra hides in MITHUNA — within 10° of Sūrya". Each
+     shape is translated here as a pattern, with its numbers, grahas and
+     rāśis carried across from the engine's own sentence. Nothing is
+     paraphrased from memory: a sentence no pattern covers stays in English
+     and is marked so, and line() refuses any translation whose numbers are
+     not exactly the original's — a pattern can lose a word, never a value. */
+  var GH = { "Sūrya": "सूर्य", "Candra": "चन्द्र", "Maṅgala": "मंगल", "Budha": "बुध", "Guru": "गुरु",
+             "Śukra": "शुक्र", "Śani": "शनि", "Rāhu": "राहु", "Ketu": "केतु", "Earth": "पृथ्वी" };
+  var RK = { mesa: "मेष", vrsabha: "वृषभ", mithuna: "मिथुन", karka: "कर्क", karkata: "कर्क", simha: "सिंह",
+             kanya: "कन्या", tula: "तुला", vrscika: "वृश्चिक", dhanu: "धनु", dhanus: "धनु", makara: "मकर",
+             kumbha: "कुम्भ", mina: "मीन" };
+  var MONU = { JAN: 0, FEB: 1, MAR: 2, APR: 3, MAY: 4, JUN: 5, JUL: 6, AUG: 7, SEP: 8, OCT: 9, NOV: 10, DEC: 11 };
+  var FN = { "Dīvālī / Lakṣmī Pūjā": "दीवाली / लक्ष्मी पूजा", "Vijayadaśamī / Dussehra": "विजयादशमी / दशहरा",
+             "Holī / Dhuleṭī": "होली / धुलेंडी", "Śāradīya Navarātri begins": "शारदीय नवरात्रि आरंभ",
+             "Ugādi / Gudi Padwa": "उगादि / गुड़ी पड़वा", "Rāma Navamī": "राम नवमी", "Makara Saṅkrānti": "मकर संक्रांति",
+             "Kṛṣṇa Janmāṣṭamī": "कृष्ण जन्माष्टमी", "Mahāśivarātri": "महाशिवरात्रि", "Dīvālī": "दीवाली",
+             "Vijayadaśamī": "विजयादशमी", "Holī": "होली", "Śāradīya Navrātri": "शारदीय नवरात्रि",
+             "Caitra Navrātri": "चैत्र नवरात्रि" };
+  var KALA = { "pradoṣa": "प्रदोष", "aparāhna": "अपराह्न", "niśīta": "निशीथ" };
+  var MOONS = { "Amāvāsyā": "अमावस्या", "Amāvasyā": "अमावस्या", "Pūrṇimā": "पूर्णिमा" };
+  function plain(x) { return String(x).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase(); }
+  function rk(x) { return RK[plain(x)] || null; }
+  function gh(x) { return GH[x] || null; }
+  var G = "(Sūrya|Candra|Maṅgala|Budha|Guru|Śukra|Śani|Rāhu|Ketu|Earth)";
+  var R = "([A-ZĀĪŪṚṢŚṆṬḌṂ]{3,}[A-ZĀĪŪṚṢŚṆṬḌṂ]*)";
+  var N = "([\\d][\\d,]*(?:\\.\\d+)?)";
+  var F = "(" + Object.keys(FN).sort(function (a, b) { return b.length - a.length; })
+              .map(function (k) { return k.replace(/[.*+?^${}()|[\]\\/]/g, "\\$&"); }).join("|") + ")";
+  /* each rule: [regex source, function(m) → Hindi]; applied in order, each
+     to every match, so a beat made of title + subtitle + event translates
+     piece by piece */
+  var RULES = [
+    ["Why isn’t there an eclipse every (Amāvāsyā|Pūrṇimā)\\?", function (m) { return "हर " + MOONS[m[1]] + " पर ग्रहण क्यों नहीं होता?"; }],
+    ["Every (new|full) Moon for " + N + " years, and how far each stood from the node\\.", function (m) {
+      return m[2] + " साल की हर " + (m[1] === "new" ? "अमावस्या" : "पूर्णिमा") + ", और हर बार चन्द्र पात से कितनी दूर था।"; }],
+    [G + " & " + G + "(?= —)", function (m) { return gh(m[1]) + " और " + gh(m[2]); }],
+    ["A line between them every " + N + " days\\. What will they draw in " + N + " years\\?", function (m) {
+      return "हर " + m[1] + " दिन उनके बीच रेखा। " + m[2] + " साल में वे क्या बनाएँगे?"; }],
+    [G + " Asta(?= —)", function (m) { return gh(m[1]) + " अस्त"; }],
+    ["Every time " + G + " hides in the Sun’s glare\\. Where does it hide\\?", function (m) {
+      return "हर बार जब " + gh(m[1]) + " सूर्य की चमक में छिपता है। वह कहाँ छिपता है?"; }],
+    [G + " Vakrī(?= —)", function (m) { return gh(m[1]) + " वक्री"; }],
+    ["Why does a planet go backwards\\? Watch its real path, longitude against distance\\.", function () {
+      return "ग्रह पीछे क्यों चलता है? उसका असली पथ देखिए — भोगांश और दूरी।"; }],
+    ["The Sūrya Siddhānta beside the modern sky — " + G + ", computed twice — once by the Siddhānta's own method and once by a modern ephemeris\\. The gap is drawn\\.", function (m) {
+      return "सूर्य सिद्धांत और आधुनिक आकाश — " + gh(m[1]) + " की दोहरी गणना: सिद्धांत की अपनी विधि से, और आधुनिक सारणी से। अंतर दिखाया गया है।"; }],
+    ["The Siddhānta's eclipses beside the modern list — Every eclipse the fifth-century method computes, beside every one in a modern list\\.", function () {
+      return "सिद्धांत के ग्रहण और आधुनिक सूची — पाँचवीं सदी की विधि का हर ग्रहण, आधुनिक सूची के हर एक ग्रहण के साथ।"; }],
+    ["A solar eclipse in the modern list that the Siddhānta does not compute", function () {
+      return "आधुनिक सूची का सूर्य ग्रहण, जिसकी गणना सिद्धांत नहीं करता"; }],
+    ["The Siddhānta computes a (lunar|solar) eclipse, and the modern list has one within " + N + " hours", function (m) {
+      return "सिद्धांत " + (m[1] === "lunar" ? "चन्द्र" : "सूर्य") + " ग्रहण की गणना करता है, और आधुनिक सूची में भी " + m[2] + " घंटे के भीतर एक ग्रहण है"; }],
+    ["The Moon stops revolving — What happens if the Moon stops revolving\\?", function () { return "चन्द्र परिक्रमा रोक दे — अगर चन्द्र घूमना बंद कर दे तो क्या होगा?"; }],
+    ["The Moon at half its distance — And half as far\\?", function () { return "आधी दूरी पर चन्द्र — और अगर आधा ही दूर हो?"; }],
+    ["The Moon a tenth further out — Ten per cent further out\\.", function () { return "चन्द्र दसवाँ भाग और दूर — दस प्रतिशत और दूर।"; }],
+    ["The Moon at the Roche limit — As close as a body held together by its own gravity can come before it is pulled apart\\.", function () {
+      return "रोश सीमा पर चन्द्र — अपने ही गुरुत्व से बँधा पिंड टूटने से पहले जितना पास आ सकता है।"; }],
+    ["The Moon going the other way — What if the Moon orbited backwards\\?", function () { return "उलटी दिशा में चन्द्र — अगर चन्द्र उलटी दिशा में परिक्रमा करे?"; }],
+    ["The Moon past escape speed — What if the Moon were moving just fast enough to leave\\?", function () {
+      return "पलायन वेग से आगे चन्द्र — अगर चन्द्र इतनी तेज़ चले कि छूटकर निकल जाए?"; }],
+    ["The Moon is " + N + " km away, moving at " + N + " km/s", function (m) {
+      return "चन्द्र " + m[1] + " किलोमीटर दूर है, " + m[2] + " किलोमीटर प्रति सेकंड की गति से"; }],
+    ["The Great Conjunction(?= —)", function () { return "महान युति"; }],
+    [G + " meets " + G + "(?= —)", function (m) { return gh(m[1]) + " और " + gh(m[2]) + " का मिलन"; }],
+    [G + " at opposition(?= —)", function (m) { return gh(m[1]) + " की प्रतियुति"; }],
+    ["Every (Pūrṇimā|Amāvāsyā)(?= —)", function (m) { return "हर " + MOONS[m[1]]; }],
+    ["Every station of " + G + "(?= —)", function (m) { return gh(m[1]) + " का हर स्तंभन"; }],
+    [N + " of them in " + N + " years\\. Where do they fall\\?", function (m) { return m[2] + " साल में " + m[1] + " बार। ये कहाँ पड़ते हैं?"; }],
+    [F + " — Thirty-one tithis with " + F + " at the centre — fifteen before it and fifteen after, each Moon at its real phase\\.", function (m) {
+      return FN[m[1]] + " — इकतीस तिथियाँ, बीच में " + FN[m[2]] + " — पंद्रह पहले और पंद्रह बाद, हर चन्द्र अपनी असली कला में।"; }],
+    ["(Amāvāsyā|Amāvasyā|Pūrṇimā) in " + R + " · " + N + "° from the ecliptic", function (m) {
+      return rk(m[2]) && MOONS[m[1]] + " " + rk(m[2]) + " में · क्रांतिवृत्त से " + m[3] + " अंश"; }],
+    ["(Amāvāsyā|Amāvasyā|Pūrṇimā) in " + R, function (m) { return rk(m[2]) && MOONS[m[1]] + " " + rk(m[2]) + " में"; }],
+    ["Meeting " + N + " — in a line with the Sun, " + G + " in " + R, function (m) {
+      return rk(m[3]) && "भेंट " + m[1] + " — सूर्य की सीध में, " + gh(m[2]) + " " + rk(m[3]) + " में"; }],
+    [G + " hides in " + R + " — within " + N + "° of Sūrya", function (m) {
+      return rk(m[2]) && gh(m[1]) + " " + rk(m[2]) + " में छिपता है — सूर्य से " + m[3] + " अंश के भीतर"; }],
+    [G + " turns (vakrī \\(retrograde\\)|mārgī \\(direct\\)) in " + R, function (m) {
+      return rk(m[3]) && gh(m[1]) + " " + rk(m[3]) + " में " + (/^vakr/.test(m[2]) ? "वक्री" : "मार्गी") + " होता है"; }],
+    ["The Siddhānta puts " + G + " " + N + "° (ahead of|behind) the modern place, in " + R, function (m) {
+      return rk(m[4]) && "सिद्धांत " + gh(m[1]) + " को आधुनिक स्थिति से " + m[2] + " अंश " + (m[3] === "behind" ? "पीछे" : "आगे") + " रखता है, " + rk(m[4]) + " में"; }],
+    [G + " (☌|☍) " + G + " in " + R, function (m) {
+      return rk(m[4]) && gh(m[1]) + " और " + gh(m[3]) + " की " + (m[2] === "☌" ? "युति" : "प्रतियुति") + ", " + rk(m[4]) + " में"; }],
+    [G + " stations in " + R, function (m) { return rk(m[2]) && gh(m[1]) + " " + rk(m[2]) + " में स्तंभित होता है"; }],
+    ["it holds at sunrise on " + N + " ([A-Z]{3}) " + N + ", but the rule asks about (pradoṣa|aparāhna|niśīta)", function (m) {
+      return MONU[m[2]] != null && m[1] + " " + MON[MONU[m[2]]] + " " + m[3] + " को सूर्योदय पर रहती है, पर नियम " + KALA[m[4]] + " काल पूछता है"; }],
+    ["a kṣaya tithi: it begins and ends between two sunrises, so no day carries it", function () {
+      return "क्षय तिथि: दो सूर्योदयों के बीच ही शुरू होकर समाप्त, इसलिए किसी दिन के हिस्से नहीं आती"; }],
+    ["a vṛddhi tithi: it is running at two sunrises, so two days carry it, and another tithi gets none", function () {
+      return "वृद्धि तिथि: दो सूर्योदयों पर चलती है, इसलिए दो दिन इसके हैं, और किसी अन्य तिथि को कोई दिन नहीं मिलता"; }],
+    ["Tithi (śukla|kṛṣṇa) " + N, function (m) { return "तिथि " + (m[1] === "śukla" ? "शुक्ल" : "कृष्ण") + " " + m[2]; }],
+    [F, function (m) { return FN[m[1]]; }]
+  ].map(function (r) { return [new RegExp(r[0], "g"), r[1]]; });
+
+  function sameNumbers(a, b) {
+    if (!RA.facts || !RA.facts.numbersIn) return true;
+    var x = RA.facts.numbersIn(a).map(function (n) { return n.v; }).sort(function (p, q) { return p - q; });
+    var y = RA.facts.numbersIn(b).map(function (n) { return n.v; }).sort(function (p, q) { return p - q; });
+    if (x.length !== y.length) return false;
+    for (var i = 0; i < x.length; i++) if (Math.abs(x[i] - y[i]) > 1e-6) return false;
+    return true;
+  }
+  /* one English engine sentence → Hindi, or null when it cannot be done
+     honestly (a shape no rule knows, or the numbers would not survive) */
+  function line(s) {
+    if (!s || devanagariShare(s) >= 0.5) return null;
+    var out = String(s), bad = false;
+    RULES.forEach(function (r) {
+      out = out.replace(r[0], function () {
+        var m = arguments, v = r[1](m);
+        if (!v) { bad = true; return m[0]; }
+        return v;
+      });
+    });
+    if (bad || devanagariShare(out) < 0.5) return null;
+    return sameNumbers(s, out) ? out : null;
+  }
+
   RA.hi = { MON: MON, FEST: FEST, dateHi: dateHi, festLines: festLines, title: title,
-            devanagariShare: devanagariShare };
+            devanagariShare: devanagariShare, line: line, sameNumbers: sameNumbers };
 })();
 ;
 
@@ -575,6 +706,11 @@
       if (lang === "hi") {
         var hiL = RA.hi && RA.hi.festLines(REEL, B);
         if (hiL) B.forEach(function (b, i) { b.say = hiL[i]; b.need = window.SPScript.readSecs(b.say, "hi"); });
+        /* the other English-only sets, sentence by sentence (ra-hi.js line) */
+        else B.forEach(function (b) {
+          var h = RA.hi.line && RA.hi.line(b.say);
+          if (h) { b.say = h; b.need = window.SPScript.readSecs(h, "hi"); }
+        });
         B.forEach(function (b) { b.english = !!b.say && RA.hi.devanagariShare(b.say) < 0.5; });
       }
       return B;
@@ -1158,10 +1294,19 @@
   function ease(x) { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); }
 
   /* ---- one output frame at time u --------------------------------------- */
+  /* A surface may draw synchronously (canvas pages) or hand back a promise
+     (SVG pages, which must be rasterised through an <img>). compose returns
+     the caption boxes in the first case and a promise of them in the
+     second, and every caller goes through when() so neither has to care. */
+  function when(x, f) { return x && typeof x.then === "function" ? x.then(f) : f(x); }
   function compose(c, u, st) {
-    var A = st.adapter, Z = st.zones, W = st.W, H = st.H, P = st.plan;
+    var A = st.adapter, P = st.plan;
     var D = A.duration() || 1;
-    A.frame(Math.max(0, Math.min(1, surfaceTime(P, u) / D)), c, { text: false });
+    var r = A.frame(Math.max(0, Math.min(1, surfaceTime(P, u) / D)), c, { text: false });
+    return when(r, function () { return overlay(c, u, st); });
+  }
+  function overlay(c, u, st) {
+    var Z = st.zones, W = st.W, H = st.H, P = st.plan;
     c.setTransform(1, 0, 0, 1, 0, 0);
     c.globalAlpha = 1; c.globalCompositeOperation = "source-over";
     var boxes = [];
@@ -1293,16 +1438,25 @@
     small.width = 108; small.height = 192;
     var big = document.createElement("canvas"); big.width = W; big.height = H;
     var bc = big.getContext("2d"), best = null, bestScore = -1;
-    st.plan.segs.forEach(function (s) {
-      var u = s.U + s.L * 0.6;
-      compose(bc, u, { adapter: st.adapter, zones: st.zones, W: W, H: H, plan: st.plan, lines: st.lines, captions: false });
-      var sc = small.getContext("2d"); sc.drawImage(big, 0, 0, 108, 192);
-      var d = sc.getImageData(0, 0, 108, 192).data, score = 0;
-      for (var i = 0; i < d.length; i += 4) if (d[i] + d[i + 1] + d[i + 2] > 180) score++;
-      if (score > bestScore) { bestScore = score; best = u; }
-    });
-    compose(bc, best || 0, { adapter: st.adapter, zones: st.zones, W: W, H: H, plan: st.plan, lines: st.lines,
-                             captions: false, title: st.title });
+    var segs = st.plan.segs.slice();
+    function score(u) {
+      return when(compose(bc, u, { adapter: st.adapter, zones: st.zones, W: W, H: H, plan: st.plan, lines: st.lines, captions: false }), function () {
+        var sc = small.getContext("2d"); sc.drawImage(big, 0, 0, 108, 192);
+        var d = sc.getImageData(0, 0, 108, 192).data, n = 0;
+        for (var i = 0; i < d.length; i += 4) if (d[i] + d[i + 1] + d[i + 2] > 180) n++;
+        if (n > bestScore) { bestScore = n; best = u; }
+      });
+    }
+    function each(k) {
+      if (k >= segs.length) return null;
+      return when(score(segs[k].U + segs[k].L * 0.6), function () { return each(k + 1); });
+    }
+    return Promise.resolve(each(0)).then(function () {
+      return compose(bc, best || 0, { adapter: st.adapter, zones: st.zones, W: W, H: H, plan: st.plan, lines: st.lines,
+                                      captions: false, title: st.title });
+    }).then(function () { return finishThumb(bc, big, st, W, H); });
+  }
+  function finishThumb(bc, big, st, W, H) {
     var hook = st.hook || st.title || "";
     if (hook) {
       bc.save();
@@ -1393,8 +1547,9 @@
       return window.SPEncode.encode(cv, {
         seconds: out.plan.T, fps: FPS, audio: m.buffer, onProgress: prog,
         drawAt: function (p) {
-          var b = compose(c, p * out.plan.T, st);
-          if (fi++ % every === 0 && b.length) out.boxes.push(b[0]);
+          return when(compose(c, p * out.plan.T, st), function (b) {
+            if (fi++ % every === 0 && b && b.length) out.boxes.push(b[0]);
+          });
         }
       }).then(function (r) {
         if (!r || r.cancelled) { var e = new Error("cancelled"); e.cancelled = true; throw e; }
@@ -1409,12 +1564,15 @@
         step("s_done");
         return out;
       });
-    });
+    }).then(function (o) { release(A); return o; }, function (e) { release(A); throw e; });
   }
+  /* a surface that borrowed the page (the ceremony, the ayanāṃśa rings)
+     puts it back, whether the reel was made or not */
+  function release(A) { if (A && A.release) try { A.release(); } catch (e) {} }
 
   function cancel() { if (window.SPEncode) window.SPEncode.cancel(); }
 
-  RA.render = { plan: plan, surfaceTime: surfaceTime, compose: compose, mix: mix, srt: srt,
+  RA.render = { plan: plan, surfaceTime: surfaceTime, compose: compose, when: when, mix: mix, srt: srt,
                 thumbnail: thumbnail, readDuration: readDuration, run: run, cancel: cancel,
                 GAP: GAP, TAIL: TAIL, FPS: FPS, DEVA: DEVA };
 })();
@@ -2300,6 +2458,10 @@
     if (OPEN) close();
     var el = C().el, S = C().settings(), t = C().t;
     var A = opts.adapter;
+    /* a surface showing the reader's own chart keeps everything on this
+       device, whatever Settings say — see RA.net.hold */
+    var PERSONAL = !!(A.describe && A.describe().personal);
+    if (PERSONAL) RA.net.hold(A.describe().surface);
     var ov = el("div", "ra-ov"), pn = el("div", "ra-pn", null, { role: "dialog", "aria-modal": "true", "aria-label": "Make reel" });
     ov.appendChild(pn);
     var hd = el("div", "ra-hd"), h2 = el("h2", null, "Make reel"); h2.appendChild(el("span", "kdeva", "रील बनाएँ"));
@@ -2333,6 +2495,8 @@
       ? "Mode: Connected — " + (RA.keys.PROVIDERS[S.provider] || {}).label + " / मोड: Connected"
       : "Mode: Offline — nothing leaves this device / मोड: ऑफ़लाइन — कुछ भी बाहर नहीं जाता");
     f.appendChild(mode);
+    if (PERSONAL) f.appendChild(el("p", "ra-note ra-warn",
+      "This reel shows your own chart, so it is made on this device only — no agent, no cloud voice, even in Connected mode. / यह रील आपकी अपनी कुण्डली दिखाती है, इसलिए यह केवल इसी डिवाइस पर बनती है — Connected mode में भी कोई एजेंट या क्लाउड आवाज़ नहीं।"));
     var skill = el("select");
     Object.keys(RA.skills || {}).filter(function (k) { return k !== "hindi-voice-style"; }).forEach(function (k) {
       opt(skill, k, RA.skills[k].title, k === "astro-reel"); });
@@ -2731,17 +2895,20 @@
     if (!OPEN) return;
     try { RA.render.cancel(); } catch (e) {}
     OPEN.ov.remove(); document.removeEventListener("keydown", esc);
+    RA.net.release();
     if (OPEN.opts.onClose) OPEN.opts.onClose();
     OPEN = null;
   }
 
   /* the "Make reel" button, placed after an existing control */
-  function mount(afterSel, getLayout, cls) {
+  function mount(afterSel, getLayout, cls, makeAdapter) {
     var at = document.querySelector(afterSel);
     if (!at || document.getElementById("ra-make")) return null;
     var b = C().el("button", cls || "reelbtn", C().t("make"), { type: "button", id: "ra-make" });
     b.addEventListener("click", function () {
-      open({ adapter: window.__bridge || RA.adapter.make("reel-studio"), layout: getLayout ? getLayout() : null });
+      var A = makeAdapter ? makeAdapter() : (window.__bridge || RA.adapter.make("reel-studio"));
+      if (!A) return;
+      open({ adapter: A, layout: getLayout ? getLayout() : null });
     });
     at.parentNode.insertBefore(b, at.nextSibling);
     return b;
@@ -2757,6 +2924,638 @@
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(boot, 120); });
   else setTimeout(boot, 120);
+})();
+;
+
+/* ===== Reel Agent — the other animating surfaces ===========================
+
+   Reel Studio was first because it already had a pure frameAt(p). Every
+   other surface had a frame function too — it was just private, or bound to
+   the page's own canvas, or (for the SVG pages) one image load away from a
+   pixel. Each page now publishes a small READ-ONLY handle (window.__spUI.
+   reelSpec, window.__dp, window.__moRA, SPWorkstation.reel, window.__ayFilm,
+   SPCosmos.frame) and this file turns each into the one adapter contract
+   ra-adapter.js describes. Nothing here draws a second copy of anything: a
+   frame is always the page's own renderer, pointed at the agent's canvas.
+
+   What a reel SAYS comes from what the page computed — node values, scene
+   dates, the ayanāṃśa at a year, which grahas change house — formatted
+   here, never invented here. The facts are harvested from the same strings,
+   so the verifier sees exactly what the narration says.
+
+   PERSONAL. Three surfaces can draw the reader's own chart: the Kinetic
+   Workstation's kuṇḍalī, the ceremony when it is wound to their stored birth
+   moment, and a Motion scene that needs the chart. A Studio or Director
+   selection that reads the chart counts too. Those adapters say personal:
+   true, and the panel holds the network gate shut while they are open
+   (RA.net.hold) — the narration of a kuṇḍalī is the kuṇḍalī. */
+(function () {
+  "use strict";
+  var RA = window.RA = window.RA || {};
+  var W = 1080, H = 1920;
+
+  /* ---- words ------------------------------------------------------------ */
+  var RASI_EN = ["Meṣa", "Vṛṣabha", "Mithuna", "Karka", "Siṃha", "Kanyā",
+                 "Tulā", "Vṛścika", "Dhanus", "Makara", "Kumbha", "Mīna"];
+  var RASI_HI = ["मेष", "वृषभ", "मिथुन", "कर्क", "सिंह", "कन्या", "तुला", "वृश्चिक",
+                 "धनु", "मकर", "कुम्भ", "मीन"];
+  var GRAHA_HI = { Sun: "सूर्य", Moon: "चन्द्र", Mars: "मंगल", Mercury: "बुध", Jupiter: "गुरु",
+                   Venus: "शुक्र", Saturn: "शनि", Rahu: "राहु", Ketu: "केतु" };
+  var GRAHA_SA = { Sun: "Sūrya", Moon: "Candra", Mars: "Maṅgala", Mercury: "Budha", Jupiter: "Guru",
+                   Venus: "Śukra", Saturn: "Śani", Rahu: "Rāhu", Ketu: "Ketu" };
+  /* the Sanskrit names as the pages print them, to Devanāgarī */
+  var SA_HI = { "Sūrya": "सूर्य", "Candra": "चन्द्र", "Maṅgala": "मंगल", "Budha": "बुध", "Guru": "गुरु",
+                "Śukra": "शुक्र", "Śani": "शनि", "Rāhu": "राहु", "Ketu": "केतु", "Lagna": "लग्न",
+                "Graha": "ग्रह", "grahas": "ग्रह", "Yuddha": "युद्ध", "nakṣatra": "नक्षत्र",
+                "Nakṣatra": "नक्षत्र", "rāśi": "राशि", "Rāśi": "राशि", "bhāva": "भाव", "Bhāva": "भाव",
+                "daśā": "दशा", "Daśā": "दशा", "tithi": "तिथि", "Tithi": "तिथि", "yoga": "योग",
+                "Yoga": "योग", "karaṇa": "करण", "vāra": "वार", "ayanāṃśa": "अयनांश",
+                "All": "सभी", "nine": "नौ", "to": "से", "and": "और", "years": "साल", "year": "साल",
+                "months": "महीने", "month": "महीना", "days": "दिन", "day": "दिन", "hours": "घंटे", "hour": "घंटा" };
+  RASI_EN.forEach(function (n, i) { SA_HI[n] = RASI_HI[i]; });
+  Object.keys(GRAHA_HI).forEach(function (k) { SA_HI[k] = GRAHA_HI[k]; });
+  function hiWords(s) {
+    return String(s || "").replace(/[A-Za-zĀ-ſḀ-ỿ]+/g, function (w) { return SA_HI[w] || w; });
+  }
+  function grahaName(en, lang) { return lang === "hi" ? (GRAHA_HI[en] || hiWords(en)) : (GRAHA_SA[en] || en); }
+  function num(x) {
+    var a = Math.abs(x);
+    return a >= 100 ? String(Math.round(x)) : String(Math.round(x * 10) / 10);
+  }
+  function lonText(deg, lang) {
+    var d = ((deg % 360) + 360) % 360, r = Math.floor(d / 30), k = Math.floor(d - r * 30);
+    return lang === "hi" ? RASI_HI[r] + " " + k + " अंश" : RASI_EN[r] + " " + k + "°";
+  }
+  var MON_EN = ["January", "February", "March", "April", "May", "June", "July", "August",
+                "September", "October", "November", "December"];
+  function dateText(ms, lang) {
+    var d = new Date(ms);
+    return lang === "hi" ? d.getDate() + " " + RA.hi.MON[d.getMonth()] + " " + d.getFullYear()
+                         : d.getDate() + " " + MON_EN[d.getMonth()] + " " + d.getFullYear();
+  }
+  function yearText(y, lang) {
+    if (y <= 0) return (1 - y) + (lang === "hi" ? " ईसा पूर्व" : " BCE");
+    return y + (lang === "hi" ? " ईस्वी" : " CE");
+  }
+  function L(lang) { return lang === "hi" ? "hi" : "en"; }
+
+  /* ---- drawing helpers -------------------------------------------------- */
+  function canvas(w, h) { var c = document.createElement("canvas"); c.width = w; c.height = h; return c; }
+  function ground(c) {
+    var g = c.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, "#131a33"); g.addColorStop(0.55, "#0a0e1d"); g.addColorStop(1, "#05070e");
+    c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = 1;
+    c.fillStyle = g; c.fillRect(0, 0, W, H);
+  }
+  /* a source of another shape, fitted to the frame's width and centred —
+     returns the rectangle it landed in so the caption can use the bars */
+  function letterbox(c, src, sw, sh) {
+    var k = Math.min(W / sw, H / sh), w = sw * k, h = sh * k;
+    var x = (W - w) / 2, y = (H - h) / 2;
+    c.drawImage(src, x, y, w, h);
+    return { x: x, y: y, w: w, h: h };
+  }
+  function fitBox(sw, sh) {
+    var k = Math.min(W / sw, H / sh), h = sh * k;
+    return { y: (H - h) / 2, h: h };
+  }
+  function zonesFor(srcW, srcH, capY) {
+    var b = fitBox(srcW, srcH), bot = H - (b.y + b.h);
+    var cap = bot >= H * 0.15 ? { x: W * 0.06, y: b.y + b.h + bot * 0.12, w: W * 0.88, h: Math.min(bot * 0.7, H * 0.16) }
+                              : { x: W * 0.06, y: capY || H * 0.70, w: W * 0.88, h: H * 0.13 };
+    return { title: null, caption: cap, footer: { x: W * 0.05, y: H * 0.90, w: W * 0.90, h: H * 0.10 } };
+  }
+  function readSecs(s, lang) {
+    if (window.SPScript && window.SPScript.readSecs) return window.SPScript.readSecs(s, lang);
+    return 0.6 + String(s || "").length * (lang === "hi" ? 0.075 : 0.065);
+  }
+
+  /* ---- node values (Studio Pro and Director Pro) ------------------------ */
+  function valText(v, lang) {
+    if (!v) return "";
+    switch (v.kind) {
+      case "lon": return lonText(v.deg, lang);
+      case "scalar":
+        if (v.unit === "°") return num(v.v) + (lang === "hi" ? " अंश" : "°");
+        return num(v.v) + (v.unit ? " " + (lang === "hi" ? hiWords(v.unit) : v.unit) : "");
+      case "lonset":
+        return (v.items || []).slice(0, 3).map(function (it) {
+          var nm = it.en || it.label || "";
+          return (nm ? grahaName(nm, lang) + " " : "") + lonText(it.deg, lang);
+        }).join(", ");
+      default: return "";
+    }
+  }
+  function nodeLine(node, v, lang) {
+    var lab = lang === "hi" ? hiWords(node.label) : node.label, val = valText(v, lang);
+    return val ? lab + " — " + val : lab;
+  }
+  /* A node is personal when it answers with a chart and is silent without
+     one. Any failure counts as personal: when unsure, stay on the device. */
+  function nodePersonal(node, C) {
+    if (!C || !C.J) return false;
+    try {
+      var C0 = {}; for (var k in C) C0[k] = C[k]; C0.J = null;
+      return node.get(C) != null && node.get(C0) == null;
+    } catch (e) { return true; }
+  }
+
+  /* ---- the common shell ------------------------------------------------- */
+  function make(cfg) {
+    var ST = null, BUSY = false;
+    var A = {
+      describe: function () {
+        return {
+          surface: cfg.id, label: cfg.label,
+          personal: !!(ST ? ST.personal : (cfg.personalNow && cfg.personalNow())),
+          layouts: [{ id: "current", label: cfg.layoutLabel || "What is on screen / जो स्क्रीन पर है",
+                      group: cfg.label, defaultSeconds: ST ? Math.round(ST.seconds) : 15 }],
+          size: { W: W, H: H },
+          safeZones: ST && cfg.zones ? cfg.zones(ST) : zonesFor(W, H)
+        };
+      },
+      configure: function (spec) {
+        spec = spec || {};
+        if (!cfg.have()) return Promise.reject(new Error(cfg.label + " is not on this page"));
+        BUSY = true;
+        if (ST && cfg.release) try { cfg.release(ST); } catch (e) {}
+        return Promise.resolve().then(function () { return cfg.configure(spec); })
+          .then(function (st) { st.lang = spec.lang || "hi"; ST = st; BUSY = false; return A.describe(); },
+                function (e) { BUSY = false; throw e; });
+      },
+      ready: function () { return !!ST && !BUSY; },
+      duration: function () { return ST ? ST.seconds : 0; },
+      beats: function (lang) {
+        if (!ST) return [];
+        lang = lang || "hi";
+        return cfg.beats(ST, L(lang)).map(function (b, i) {
+          return { i: i, from: b.from, to: b.to, secs: b.to - b.from, say: b.say, need: readSecs(b.say, lang),
+                   english: lang === "hi" && RA.hi.devanagariShare(b.say) < 0.5 };
+        });
+      },
+      facts: function () {
+        if (!ST) return [];
+        var F = RA.facts, out = F.FRAMEWORK.slice();
+        out.push({ id: "surface", label: "surface", value: cfg.label, unit: "", kind: "name", source: "page" });
+        (cfg.facts ? cfg.facts(ST) : []).forEach(function (f) { out.push(f); });
+        ["hi", "en"].forEach(function (lg) {
+          cfg.beats(ST, lg).forEach(function (b, i) { out = out.concat(F.harvest(cfg.id + "." + lg + "." + i, cfg.label, b.say, "page")); });
+        });
+        return out;
+      },
+      frame: function (p, c) { return ST ? cfg.frame(ST, Math.max(0, Math.min(1, p)), c) : null; },
+      title: function () { return ST && cfg.title ? cfg.title(ST) : null; },
+      postCaption: function (lang) {
+        if (!ST) return "";
+        var b = cfg.beats(ST, L(lang || "hi"));
+        return b.map(function (x) { return x.say; }).join("\n");
+      },
+      release: function () { if (ST && cfg.release) try { cfg.release(ST); } catch (e) {} }
+    };
+    return A;
+  }
+
+  /* even beats over [0, T] from a list of sentences */
+  function spread(lines, T) {
+    var n = lines.length || 1;
+    return lines.map(function (s, i) { return { from: T * i / n, to: T * (i + 1) / n, say: s }; });
+  }
+
+  /* ======================================================================
+     Studio Pro — the selection (or the storyboard) the recorder would record
+     ====================================================================== */
+  function studioPro() {
+    return make({
+      id: "studio-pro", label: "Studio Pro",
+      have: function () { return !!(window.SPStage && window.__spUI && window.__spUI.reelSpec && window.SPNodes); },
+      personalNow: function () {
+        var R = window.__spUI && window.__spUI.reelSpec && window.__spUI.reelSpec();
+        if (!R) return false;
+        var ids = R.shots ? [].concat.apply([], R.shots.map(function (s) { return s.sel || []; })) : R.sel;
+        return ids.some(function (id) { var n = window.SPNodes.byId(id); return n && nodePersonal(n, R.ctx); });
+      },
+      configure: function () {
+        var R = window.__spUI.reelSpec(), S = window.SPStage.S;
+        if (!R.sel.length && !R.shots) throw new Error("Pick something from the wall first. / पहले दीवार से कुछ चुनें।");
+        var seconds = R.shots ? window.SPStage.storyTotal(R.shots) : R.dur;
+        var groups = R.shots ? R.shots.map(function (s) { return { sel: s.sel || [], len: Math.max(1, s.seconds || 5) }; })
+                             : [{ sel: R.sel, len: seconds }];
+        var personal = false, items = [], acc = 0;
+        groups.forEach(function (g) {
+          var nodes = g.sel.map(function (id) { return window.SPNodes.byId(id); }).filter(Boolean).slice(0, 4);
+          nodes.forEach(function (n, k) {
+            if (nodePersonal(n, R.ctx)) personal = true;
+            var v = window.SPNodes.resolve(n, R.ctx);
+            items.push({ node: n, v: v, from: acc + g.len * k / nodes.length, to: acc + g.len * (k + 1) / nodes.length });
+          });
+          acc += g.len;
+        });
+        var r = window.SPStage.RATIOS[S.ratio] || window.SPStage.RATIOS["9:16"];
+        var last = window.__spUI.last && window.__spUI.last();
+        return { R: R, seconds: seconds, items: items, personal: personal,
+                 off: canvas(r.w, r.h), sw: r.w, sh: r.h, label: last && last.label };
+      },
+      zones: function (st) { return zonesFor(st.sw, st.sh, H * 0.70); },
+      beats: function (st, lang) {
+        return st.items.map(function (it) { return { from: it.from, to: it.to, say: nodeLine(it.node, it.v, lang) }; });
+      },
+      frame: function (st, p, c) {
+        var S = window.SPStage.S, R = st.R, off = st.off;
+        var keep = { cv: S.cv, ctx: S.ctx, W: S.W, H: S.H, U: S.U, safe: S.safe };
+        S.cv = off; S.ctx = off.getContext("2d"); S.W = off.width; S.H = off.height; S.U = off.width; S.safe = false;
+        try { window.SPStage.frameAt(R.shots || R.sel, R.ctx, p, R.force, R.shots, true); }
+        catch (e) { /* the frame says what failed; the reel carries on */ }
+        finally { S.cv = keep.cv; S.ctx = keep.ctx; S.W = keep.W; S.H = keep.H; S.U = keep.U; S.safe = keep.safe; }
+        ground(c); letterbox(c, off, st.sw, st.sh);
+      }
+    });
+  }
+
+  /* ======================================================================
+     Director Pro — the document on the timeline, through DPRender.renderTo
+     ====================================================================== */
+  function directorPro() {
+    function texts(sc, C) {
+      var out = [];
+      (sc.layers || []).forEach(function (Ly) {
+        if (Ly.hidden) return;
+        [Ly.text, Ly.sub].forEach(function (s) {
+          if (!s) return;
+          var t = window.SPDirector && window.SPDirector.expand ? window.SPDirector.expand(s, C) : s;
+          t = String(t || "").replace(/\s+/g, " ").trim();
+          if (t) out.push(t);
+        });
+      });
+      return out;
+    }
+    return make({
+      id: "director-pro", label: "Director Pro",
+      have: function () { return !!(window.__dp && window.DPRender && window.DPModel); },
+      configure: function () {
+        var d = window.__dp.doc(), C = window.__dp.ctx(), M = window.DPModel;
+        if (!d || !d.scenes || !d.scenes.length) throw new Error("The document has no scenes. / दस्तावेज़ में कोई दृश्य नहीं।");
+        var F = M.FORMATS[d.format] || M.FORMATS.reel, k = Math.min(1, W / F.w, H / F.h);
+        var sw = Math.round(F.w * k), sh = Math.round(F.h * k);
+        var personal = false, scenes = [];
+        d.scenes.forEach(function (sc, i) {
+          var from = M.sceneStart(d, i), to = from + sc.seconds;
+          var tx = texts(sc, C), views = [];
+          (sc.layers || []).forEach(function (Ly) {
+            if (Ly.kind !== "view" || !Ly.sel) return;
+            Ly.sel.forEach(function (id) {
+              var n = window.SPNodes && window.SPNodes.byId(id);
+              if (!n) return;
+              if (nodePersonal(n, C)) personal = true;
+              views.push({ node: n, v: window.SPNodes.resolve(n, C) });
+            });
+          });
+          (sc.layers || []).forEach(function (Ly) {
+            if (C && C.J && /\{[^}]+\}/.test((Ly.text || "") + (Ly.sub || ""))) personal = true;
+          });
+          scenes.push({ from: from, to: to, name: sc.name || ("Scene " + (i + 1)), texts: tx, views: views.slice(0, 3) });
+        });
+        return { d: d, C: C, seconds: M.total(d), scenes: scenes, personal: personal,
+                 off: canvas(sw, sh), sw: sw, sh: sh };
+      },
+      zones: function (st) { return zonesFor(st.sw, st.sh, H * 0.70); },
+      beats: function (st, lang) {
+        return st.scenes.map(function (s) {
+          var say = s.texts.length ? s.texts.join(" — ")
+                  : s.views.length ? s.views.map(function (x) { return nodeLine(x.node, x.v, lang); }).join("; ")
+                  : (lang === "hi" ? hiWords(s.name) : s.name);
+          return { from: s.from, to: s.to, say: say };
+        });
+      },
+      frame: function (st, p, c) {
+        window.DPRender.renderTo(st.off, st.sw, st.sh, st.d, st.C, p * st.seconds);
+        ground(c); letterbox(c, st.off, st.sw, st.sh);
+      }
+    });
+  }
+
+  /* ======================================================================
+     Motion — a scene, stepped on the recorder's own pacing schedule
+     ====================================================================== */
+  function motion() {
+    var FPS = 30, CAP = 90;
+    return make({
+      id: "motion", label: "Motion",
+      have: function () { return !!window.__moRA; },
+      personalNow: function () { return window.__moRA.personal(); },
+      configure: function (spec) {
+        var M = window.__moRA, lang = L(spec.lang || "hi");
+        if (!M.available()) throw new Error("This scene needs a chart. Cast one first. / इस दृश्य के लिए कुण्डली चाहिए।");
+        var sch = M.schedule(FPS, CAP), off = canvas(W, H), n = sch.table.length;
+        var K = Math.max(3, Math.min(6, Math.round(sch.seconds / 6)));
+        var marks = [];
+        for (var k = 1; k < K; k++) {
+          var at = (k + 0.5) / K, p = sch.table[Math.min(n - 1, Math.round(at * (n - 1)))];
+          marks.push({ at: at, p: p, hi: M.info(off, p, "hi"), en: M.info(off, p, "en") });
+        }
+        return { seconds: sch.seconds, table: sch.table, capped: sch.capped, full: sch.full, off: off,
+                 K: K, marks: marks, personal: M.personal(), stage: M.stage(), scene: M.scene(),
+                 words: { hi: M.words("hi"), en: M.words("en") }, spanW: { hi: M.span("hi"), en: M.span("en") }, lang0: lang };
+      },
+      zones: function (st) {
+        var s = st.stage;
+        return { title: null, caption: { x: W * 0.06, y: s.capY - H * 0.12, w: W * 0.88, h: H * 0.105 },
+                 footer: { x: W * 0.05, y: s.capY + s.capH, w: W * 0.90, h: H - s.capY - s.capH } };
+      },
+      beats: function (st, lang) {
+        var T = st.seconds, w = st.words[lang], out = [];
+        var sp = lang === "hi" ? hiWords(st.spanW.en) : st.spanW.en;
+        var head = w.title + (sp ? " — " + sp : "");
+        out.push({ from: 0, to: T / st.K, say: head });
+        st.marks.forEach(function (m, i) {
+          var inf = m[lang], bits = [];
+          if (inf && inf.ms != null && isFinite(inf.ms)) bits.push(dateText(inf.ms, lang));
+          /* the frame's "·" is a separator for the eye; a voice wants a comma */
+          if (inf && inf.sub) bits.push(String(inf.sub).replace(/\s*·\s*/g, ", "));
+          if (!bits.length && i === 0 && w.sub) bits.push(w.sub);
+          if (!bits.length) return;
+          out.push({ from: T * (i + 1) / st.K, to: T * (i + 2) / st.K, say: bits.join(" — ") });
+        });
+        return out;
+      },
+      facts: function (st) {
+        var F = RA.facts, o = [];
+        st.marks.forEach(function (m, i) {
+          if (m.en && m.en.ms != null && isFinite(m.en.ms)) o = o.concat(F.dateFacts("mo" + i, m.en.ms, "scene date"));
+        });
+        return o;
+      },
+      frame: function (st, p, c) {
+        var n = st.table.length, q = st.table[Math.min(n - 1, Math.round(p * (n - 1)))];
+        window.__moRA.draw(st.off, q, st.lang);
+        c.setTransform(1, 0, 0, 1, 0, 0); c.globalAlpha = 1;
+        c.drawImage(st.off, 0, 0, W, H);
+      },
+      title: function () { return null; }
+    });
+  }
+
+  /* ======================================================================
+     Kinetic Workstation — the two kuṇḍalīs, whole-sign then chalita
+     ====================================================================== */
+  function kinetic() {
+    function snap(svg) { return window.SvgFilm.snapshot(svg, { margin: 0.02 }); }
+    return make({
+      id: "kinetic", label: "Kinetic Workstation",
+      have: function () { return !!(window.SPWorkstation && window.SPWorkstation.reel && window.SvgFilm); },
+      personalNow: function () { return true; },
+      configure: function (spec) {
+        var R = window.SPWorkstation.reel();
+        if (!R) throw new Error("Cast a chart first. / पहले कुण्डली बनाएँ।");
+        /* the view's own markup, built off-screen with the draw-in
+           animations stripped, so the snapshot is the finished chart */
+        var box = document.createElement("div");
+        box.setAttribute("aria-hidden", "true");
+        box.style.cssText = "position:fixed;left:-12000px;top:0;width:820px;pointer-events:none";
+        box.innerHTML = R.html.replace(/\bws(draw|pop|flow)\b/g, "").replace(/id="ws-/g, 'id="ra-ws-');
+        document.body.appendChild(box);
+        var svgs = box.querySelectorAll("svg.wssvg");
+        var jobs = Array.prototype.map.call(svgs, snap);
+        return Promise.all(jobs).then(function (shots) {
+          box.remove();
+          var T = Math.max(spec.seconds || 20, R.chalita ? 16 : 9);
+          return { R: R, shots: shots, seconds: T, personal: true };
+        }, function (e) { box.remove(); throw e; });
+      },
+      zones: function () {
+        return { title: { x: W * 0.05, y: H * 0.06, w: W * 0.90, h: H * 0.07 },
+                 caption: { x: W * 0.06, y: H * 0.72, w: W * 0.88, h: H * 0.13 },
+                 footer: { x: W * 0.05, y: H * 0.90, w: W * 0.90, h: H * 0.10 } };
+      },
+      beats: function (st, lang) {
+        var R = st.R, T = st.seconds, hi = lang === "hi";
+        var lines = [hi ? "आपकी कुण्डली — लग्न " + RASI_HI[R.lagna] : "Your chart — lagna in " + RASI_EN[R.lagna],
+                     hi ? "राशि चार्ट में हर राशि एक भाव है" : "In the rāśi chart, each sign is one house"];
+        if (R.chalita) {
+          lines.push(hi ? "श्रीपति भाव-चलित — भाव कोणों के बीच बँटते हैं" : "Śrīpati bhāva-chalita: houses trisected between the angles");
+          var n = R.moved.length, names = R.moved.map(function (m) { return grahaName(m.en, lang); }).join(", ");
+          lines.push(n ? (hi ? n + (n === 1 ? " ग्रह भाव बदलता है: " : " ग्रह भाव बदलते हैं: ") + names : n + (n === 1 ? " graha changes house: " : " grahas change house: ") + names)
+                       : (hi ? "कोई ग्रह भाव नहीं बदलता" : "No graha changes house"));
+        }
+        return spread(lines, T);
+      },
+      frame: function (st, p, c) {
+        ground(c);
+        var two = st.shots.length > 1, half = two ? 0.5 : 1.01;
+        var box = { x: W * 0.06, y: H * 0.22, s: W * 0.88 };
+        function put(shot, a, z) {
+          if (!shot || a <= 0) return;
+          var k = Math.min(box.s / shot.w, box.s / shot.h) * z, w = shot.w * k, h = shot.h * k;
+          c.save(); c.globalAlpha = a;
+          c.drawImage(shot.img, W / 2 - w / 2, box.y + box.s / 2 - h / 2, w, h);
+          c.restore();
+        }
+        var e1 = Math.min(1, p / 0.08), z1 = 0.92 + 0.08 * (1 - Math.pow(1 - e1, 3));
+        var x = two ? Math.max(0, Math.min(1, (p - half) / 0.08)) : 0;
+        /* a dip through the ground rather than a cross-fade: two diamonds
+           superimposed read as one smudged chart */
+        put(st.shots[0], e1 * Math.max(0, 1 - 2 * x), z1);
+        if (two) put(st.shots[1], Math.max(0, 2 * x - 1), 0.96 + 0.04 * x);
+      },
+      title: function (st) { return st.lang === "hi" ? "कुण्डली · भाव-चलित" : "Kuṇḍalī · bhāva-chalita"; }
+    });
+  }
+
+  /* ======================================================================
+     The casting ceremony — wound to the moment in the page's own fields
+     ====================================================================== */
+  function ceremony() {
+    function moment() {
+      var d = document.getElementById("cer-date"), t = document.getElementById("cer-time");
+      if (!d || !d.value) return null;
+      var ms = Date.parse(d.value + "T" + ((t && t.value) || "12:00") + ":00");
+      return isNaN(ms) ? null : new Date(ms);
+    }
+    /* the same record the page reads for "My chart's moment" */
+    function isBirth(m) {
+      var i = null;
+      try { i = JSON.parse(localStorage.getItem("nirayana.birth") || "null"); } catch (e) { return false; }
+      if (!i || i.year == null || !m) return false;
+      var ms = Date.UTC(i.year, (i.month || 1) - 1, i.day || 1, i.hour || 0, i.minute || 0) - (i.tzHours || 0) * 3600000;
+      return Math.abs(ms - m.getTime()) < 120000;
+    }
+    return make({
+      id: "ceremony", label: "The casting ceremony",
+      have: function () { return !!(window.SPCosmos && window.SPCosmos.ceremony && window.SvgFilm); },
+      personalNow: function () { return isBirth(moment()); },
+      configure: function (spec) {
+        var m = moment();
+        if (!m) throw new Error("Pick a date first. / पहले तारीख़ चुनें।");
+        window.SPCosmos.ceremony(m, { hold: true, line: "चुने हुए क्षण की ओर लौट रहा है आकाश…",
+                                     sub: "Winding the sky back to the chosen moment", cta: "End the ceremony" });
+        /* the overlay can take a moment — longer if a previous one is still
+           closing — so wait for it rather than for a fixed time */
+        function live() { var f = window.SPCosmos.frame && window.SPCosmos.frame(); return f && f.svg() ? f : null; }
+        function until(ms) {
+          return live() || ms <= 0 ? Promise.resolve(live()) : RA.core.wait(100).then(function () { return until(ms - 100); });
+        }
+        return RA.core.wait(450).then(function () {
+          try { window.SPCosmos.end(); } catch (e) {}
+          return until(4000);
+        }).then(function (f) {
+          if (!f) {
+            /* raised while the last one was still closing: raise it again */
+            window.SPCosmos.ceremony(m, { hold: true, line: "चुने हुए क्षण की ओर लौट रहा है आकाश…",
+                                         sub: "Winding the sky back to the chosen moment", cta: "End the ceremony" });
+            return RA.core.wait(450).then(function () { try { window.SPCosmos.end(); } catch (e) {} return until(4000); });
+          }
+          return f;
+        }).then(function (f) {
+          if (!f) throw new Error("The ceremony did not open. / समारोह नहीं खुला।");
+          f.pause();
+          var r = f.read();
+          return { m: m, f: f, spin0: r.spin || 0, seconds: Math.max(spec.seconds || 14, 12), personal: isBirth(m) };
+        });
+      },
+      zones: function () {
+        return { title: { x: W * 0.05, y: H * 0.06, w: W * 0.90, h: H * 0.07 },
+                 caption: { x: W * 0.06, y: H * 0.74, w: W * 0.88, h: H * 0.13 },
+                 footer: { x: W * 0.05, y: H * 0.90, w: W * 0.90, h: H * 0.10 } };
+      },
+      beats: function (st, lang) {
+        var hi = lang === "hi", m = st.m, hh = ("0" + m.getHours()).slice(-2), mm = ("0" + m.getMinutes()).slice(-2);
+        return [
+          { from: 0, to: st.seconds * 0.4, say: hi ? "आकाश " + dateText(m, "hi") + " की ओर लौट रहा है" : "The sky winds back to " + dateText(m, "en") },
+          { from: st.seconds * 0.4, to: st.seconds * 0.72, say: hi ? "सत्ताईस नक्षत्र, बारह राशियाँ" : "Twenty-seven nakṣatras, twelve rāśis" },
+          { from: st.seconds * 0.72, to: st.seconds, say: hi ? hh + " बजकर " + mm + " मिनट का आकाश" : "The sky at " + hh + " " + mm + " hours" }
+        ];
+      },
+      facts: function (st) { return RA.facts.dateFacts("cer", st.m.getTime(), "ceremony moment"); },
+      frame: function (st, p, c) {
+        var f = st.f;
+        f.set({ p: Math.min(1, p / 0.7), spin: st.spin0 + p * st.seconds * 4 });
+        var svg = f.svg();
+        if (!svg) { ground(c); return null; }
+        return window.SvgFilm.snapshot(svg).then(function (shot) {
+          ground(c);
+          var top = H * 0.17, avail = H * 0.52, k = Math.min((W * 1.12) / shot.w, avail / shot.h);
+          c.drawImage(shot.img, (W - shot.w * k) / 2, top + (avail - shot.h * k) / 2, shot.w * k, shot.h * k);
+        });
+      },
+      title: function (st) { return st.lang === "hi" ? "नक्षत्र चक्र" : "The nakṣatra ring"; },
+      release: function () { try { window.SPCosmos.abort(); } catch (e) {} }
+    });
+  }
+
+  /* ======================================================================
+     The ayanāṃśa film — the rings across four thousand years, with holds
+     where the narration names a year
+     ====================================================================== */
+  function ayanamsa() {
+    /* playhead → year: hold, sweep, hold, sweep, hold */
+    var P = [0, 0.2, 0.45, 0.6, 0.8, 1], Y = [-500, -500, 2000, 2000, 3500, 3500];
+    function yearAt(p) {
+      for (var i = 1; i < P.length; i++) if (p <= P[i]) {
+        var u = (p - P[i - 1]) / (P[i] - P[i - 1]); u = u * u * (3 - 2 * u);
+        return Y[i - 1] + (Y[i] - Y[i - 1]) * u;
+      }
+      return Y[Y.length - 1];
+    }
+    function deg(v) { return (v < 0 ? "−" : "") + (Math.round(Math.abs(v) * 10) / 10); }
+    function dm(v) {
+      var a = Math.abs(v), d = Math.floor(a), m = Math.round((a - d) * 60);
+      if (m === 60) { d++; m = 0; }
+      return (v < 0 ? "−" : "") + d + "°" + ("0" + m).slice(-2) + "′";
+    }
+    return make({
+      id: "ayanamsa-film", label: "Ayanāṃśa film",
+      have: function () { return !!(window.__ayFilm && window.SvgFilm && window.__ayFilm.svg()); },
+      configure: function (spec) {
+        var F = window.__ayFilm;
+        var a0 = F.value(-500), a1 = F.value(2000), a2 = F.value(3500);
+        if (a0 == null || a1 == null || a2 == null) throw new Error("This ayanāṃśa has no value across that span. / इस अयनांश का मान इस अवधि में नहीं है।");
+        var per = Math.round(2500 / Math.abs(a1 - a0));
+        return { F: F, keep: F.year(), name: F.name(), a: [a0, a1, a2], per: per,
+                 seconds: Math.max(spec.seconds || 16, 14), personal: false };
+      },
+      zones: function () {
+        return { title: { x: W * 0.05, y: H * 0.015, w: W * 0.90, h: H * 0.055 },
+                 caption: { x: W * 0.06, y: H * 0.805, w: W * 0.88, h: H * 0.10 },
+                 footer: { x: W * 0.05, y: H * 0.92, w: W * 0.90, h: H * 0.08 } };
+      },
+      beats: function (st, lang) {
+        var T = st.seconds, hi = lang === "hi", a = st.a;
+        function at(y, v) { return hi ? yearText(y, "hi") + " में: " + deg(v) + " अंश" : "In " + yearText(y, "en") + ": " + deg(v) + "°"; }
+        return [
+          { from: 0, to: P[1] * T, say: (hi ? st.name + " अयनांश — " : st.name + " ayanāṃśa — ") + at(-500, a[0]) },
+          { from: P[1] * T, to: P[2] * T, say: hi ? "हर " + st.per + " साल में लगभग एक अंश" : "About one degree every " + st.per + " years" },
+          { from: P[2] * T, to: P[3] * T, say: at(2000, a[1]) },
+          { from: P[3] * T, to: P[4] * T, say: hi ? "तारे वहीं रहते हैं, ऋतुएँ खिसकती हैं" : "The stars stay. The seasons slip." },
+          { from: P[4] * T, to: T, say: at(3500, a[2]) }
+        ];
+      },
+      facts: function (st) {
+        return [{ id: "ay.-500", label: "ayanāṃśa at 501 BCE (°)", value: st.a[0], unit: "°", kind: "degree", source: "engine" },
+                { id: "ay.2000", label: "ayanāṃśa at 2000 CE (°)", value: st.a[1], unit: "°", kind: "degree", source: "engine" },
+                { id: "ay.3500", label: "ayanāṃśa at 3500 CE (°)", value: st.a[2], unit: "°", kind: "degree", source: "engine" },
+                { id: "ay.per", label: "years per degree, 501 BCE–2000 CE", value: st.per, unit: "", kind: "number", source: "engine" }];
+      },
+      frame: function (st, p, c) {
+        var F = st.F, y = Math.round(yearAt(p));
+        F.at(y);
+        var svg = F.svg();
+        return window.SvgFilm.snapshot(svg).then(function (shot) {
+          var v = F.value(y);
+          F.paint(c, W, H, { head: "", big: v == null ? "" : dm(v), foot: "",
+                             sub: yearText(y, st.lang === "hi" ? "hi" : "en") + " · " + st.name }, shot);
+        });
+      },
+      title: function (st) { return st.lang === "hi" ? "अयनांश — दो राशिचक्रों का अंतर" : "The ayanāṃśa — the gap between two zodiacs"; },
+      release: function (st) { st.F.done(st.keep); }
+    });
+  }
+
+  var MAKERS = { "studio-pro": studioPro, "director-pro": directorPro, motion: motion,
+                 kinetic: kinetic, ceremony: ceremony, "ayanamsa-film": ayanamsa };
+  Object.keys(MAKERS).forEach(function (k) { if (RA.adapter) RA.adapter.register(k, MAKERS[k]); });
+
+  /* ---- the buttons ------------------------------------------------------
+     Each sits beside the page's own record button. Motion and Director
+     build their controls after load (and Motion rebuilds its pane), so the
+     check repeats; it is one querySelector a second and stops looking for a
+     surface that is not on the page. */
+  var PLACES = [
+    { id: "studio-pro", sel: "#sp-rec", cls: "spbtn" },
+    { id: "director-pro", find: function () {
+        var b = document.querySelectorAll("button.dpbtn.primary");
+        for (var i = 0; i < b.length; i++) if (/Record the reel/.test(b[i].textContent)) return b[i];
+        return null; }, cls: "dpbtn", need: function () { return !!window.__dp; } },
+    /* the Workstation carries the report bundle, Motion pane and all, so it
+       is asked first and Motion is the Motion page only */
+    { id: "kinetic", sel: "#wsb-print", cls: "wsact", need: function () { return !!window.SPWorkstation; } },
+    { id: "motion", sel: "#movid", cls: "k-btn sec", need: function () { return !!window.__moRA && !window.SPWorkstation; } },
+    { id: "ceremony", sel: "#cer-save", cls: "k-btn sec" },
+    { id: "ayanamsa-film", sel: "[data-ay=\"film\"]", cls: "swbtn" }
+  ];
+  function place() {
+    if (!RA.panel || document.getElementById("ra-make")) return;
+    for (var i = 0; i < PLACES.length; i++) {
+      var P0 = PLACES[i], at = P0.find ? P0.find() : document.querySelector(P0.sel);
+      if (!at) continue;
+      if (P0.need && !P0.need()) continue;
+      at.setAttribute("data-ra-anchor", P0.id);
+      RA.panel.mount("[data-ra-anchor=\"" + P0.id + "\"]", function () { return "current"; }, P0.cls,
+                     MAKERS[P0.id]);
+      return;
+    }
+  }
+  var TICKS = 0;
+  function loop() {
+    place();
+    if (++TICKS < 600) setTimeout(loop, 1000);
+  }
+  /* Reel Studio has its own button (ra-panel.js); these pages never load
+     reel.js, so the two cannot meet */
+  function boot() { if (!document.getElementById("reel-still")) loop(); }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", function () { setTimeout(boot, 300); });
+  else setTimeout(boot, 300);
+
+  RA.surfaces = { make: function (id) { return MAKERS[id] ? MAKERS[id]() : null; }, list: function () { return Object.keys(MAKERS); },
+                  hiWords: hiWords, yearText: yearText, dateText: dateText, lonText: lonText };
 })();
 ;
 

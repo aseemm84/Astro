@@ -157,8 +157,18 @@
   }
 
   /* ---- THE GATE --------------------------------------------------------- */
+  /* HOLD: a surface that draws the reader's own chart (the kundli, the
+     ceremony at their birth moment, a Motion scene that needs the chart)
+     holds the gate shut for as long as its panel is open. Connected mode
+     stays switched on in Settings, but nothing can pass: not the agent,
+     not a cloud voice, not a model list. One flag, read by the one check
+     everything already goes through. */
+  var HOLD = null;
   var net = {
-    allowed: function () { return settings().mode === "connected"; },
+    allowed: function () { return !HOLD && settings().mode === "connected"; },
+    hold: function (why) { HOLD = why || "personal"; },
+    release: function () { HOLD = null; },
+    held: function () { return HOLD; },
     assert: function (what) {
       if (!net.allowed())
         throw new Error("Connected mode is off — " + (what || "a network request") +

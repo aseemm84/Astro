@@ -242,9 +242,11 @@ catches it.
 
 ## Reel Agent
 
-`reel-agent.html`, and a **Make reel / रील बनाएँ** button on Reel Studio, turn the
-site's own animations into narrated vertical reels, inside the website and the desktop
-app — no separate tool, no terminal.
+`reel-agent.html`, and a **Make reel / रील बनाएँ** button beside the recorder on Reel
+Studio, Studio Pro, Director Pro, Motion, the Kinetic Workstation, the casting ceremony
+and the ayanāṃśa page, turn the site's own animations into narrated vertical reels,
+inside the website and the desktop app — no separate tool, no terminal. Each page's own
+renderer draws the reel's frames; each page's own Record button is unchanged.
 
 - **Ask in plain words** — “रोहिणी नक्षत्र पर 45 सेकंड की रील”, “Shani vakri explained”.
   Offline, the request is matched to a layout on your device; in Connected mode an agent
@@ -264,7 +266,7 @@ app — no separate tool, no terminal.
   in a Reels library on your device. The desktop app can prepare today's reel at 06:30.
 - **Nothing is ever posted.** Publishing is always something you do yourself.
 
-`source/test/reel-agent-verify.mjs` holds it to that: the adapter contract, the fact
+`source/test/reel-agent-verify.mjs` and `reel-surfaces-verify.mjs` hold it to that: the adapter contract, the fact
 check (with invented numbers planted to prove it fires), a whole reel read back to the
 frame, captions inside the safe zone, zero network requests offline, and, with Connected
 mode on, requests only to the chosen provider and never carrying chart data.
@@ -291,8 +293,11 @@ it on:
   neural voice, the narration text. Before the first request the app shows you exactly
   what will be sent and to which service.
 - **Your birth details and your kundli are never sent** — not in Connected mode, not in
-  any mode. The reel tools cannot read them, and a request containing them is refused
-  before it leaves.
+  any mode. A request containing them is refused before it leaves. A reel that *shows*
+  your own chart — the Kinetic Workstation's kuṇḍalī, a Motion scene that needs your
+  chart, the ceremony wound to your birth moment — is made on your device only: while
+  its panel is open, Connected mode is held off (no agent, no cloud voice), even if you
+  have switched it on.
 - **Where your key is kept:** in the desktop app, in your operating system's keychain;
   on the website, in this browser's local storage, which anyone with access to this
   browser profile could read. You can remove it at any time.

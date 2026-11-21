@@ -9796,6 +9796,11 @@
   /* a hook for the page test: drive the whole UI without a mouse */
   try {
     window.__spUI = {
+      /* read-only: what the recorder would record, for the Reel Agent */
+      reelSpec: function () {
+        return { sel: SEL.slice(), force: FORCE, dur: DUR, ctx: C,
+                 shots: (STORY && SHOTS.length) ? SHOTS.slice() : null };
+      },
       select: function (ids) { SEL = ids.slice(); FORCE = null;
         refreshWall(); refreshTray(); draw(); return LAST; },
       last: function () { return LAST; },

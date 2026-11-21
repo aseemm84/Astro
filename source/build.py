@@ -994,7 +994,18 @@ def build_shared():
             "ra-verify.js", "ra-voice.js", "ra-loudness.js", "ra-render.js",
             "ra-native.js", "ra-keys.js", "ra-providers.js", "ra-agent.js",
             "ra-sanitize.js", "ra-kahani.js",
-            "ra-library.js", "ra-panel.js", "ra-page.js")) + "\n" + skills_js()),
+            "ra-library.js", "ra-panel.js", "ra-surfaces.js", "ra-page.js")) + "\n" + skills_js()),
+        # The Reel Agent's kit for pages that do not load reel.js — Studio
+        # Pro, Director Pro, Motion, the Workstation, the ceremony and the
+        # ayanamsa page: the encoder, its two muxers, the script timing and
+        # the local voice. The same files reel.js carries, never a second
+        # copy of them; reel.html and reel-agent.html do not load this.
+        "ra-kit.js": brandify("\n".join(jsread(SRC, "js", *f) for f in (
+            ("vendor", "mp4-muxer.js"), ("vendor", "webm-muxer.js"),
+            ("sp-encode.js",), ("sp-script.js",), ("sp-voice.js",),
+            # the SVG photographer: the Workstation has none of its own; on
+            # the ceremony and ayanamsa pages this is the same file again
+            ("svg-film.js",)))),
         "simulation.js": brandify(jsread(SRC, "js", "sim-engine.js") + "\n" +
                                   jsread(SRC, "js", "sim-scenarios.js") + "\n" +
                                   jsread(SRC, "js", "sim-draw.js") + "\n" +
@@ -1270,6 +1281,32 @@ def no_remote_call_check(built):
     print("  no outbound call in %d emitted files" % len(built))
 
 
+# The pages that host the Reel Agent panel, and the one policy they carry on
+# the website (plan §9.3, option A). Only connect-src is set, so scripts,
+# styles, images, workers and fonts behave exactly as before; what changes is
+# that fetch/XHR/WebSocket can reach this page's own files and the three
+# Connected-mode hosts and nothing else — stricter than the no-policy the site
+# had, and the JS gate still refuses all three unless Connected mode is on.
+# Not in the app build: there Tauri's own CSP governs, and a second policy
+# without its ipc: sources would cut the webview off from Rust.
+PANEL_PAGES = ("reel.html", "reel-agent.html", "studio-pro.html", "director-pro.html",
+               "motion.html", "ceremony.html", "kinetic-workstation.html", "ayanamsa.html")
+PANEL_CSP = ('<meta http-equiv="Content-Security-Policy" content="connect-src \'self\' file: data: blob: '
+             'https://api.anthropic.com https://generativelanguage.googleapis.com https://api.elevenlabs.io">')
+
+
+def panel_csp(built):
+    for name in PANEL_PAGES:
+        text = built.get(name)
+        if text is None:
+            raise SystemExit("panel page %s was not built" % name)
+        m = re.search(r"<meta charset=[^>]*>", text, re.I)
+        if not m:
+            raise SystemExit("%s has no <meta charset> to put the policy after" % name)
+        built[name] = text[:m.end()] + "\n" + PANEL_CSP + text[m.end():]
+    print("  connect-src policy on the %d Reel Agent pages" % len(PANEL_PAGES))
+
+
 def connected_hosts_check(built):
     """Reel Agent's Connected mode may name its three AI hosts — and only it.
 
@@ -1286,6 +1323,9 @@ def connected_hosts_check(built):
         if not name.endswith((".html", ".js")):
             continue
         base = name.split("/")[-1]
+        # the one policy line is the deliberate exception on the panel pages
+        if base in PANEL_PAGES:
+            text = text.replace(PANEL_CSP, "")
         for h in hosts:
             if h in text and base not in allowed:
                 bad.append("%s names %s" % (name, h))
@@ -1546,6 +1586,8 @@ def main():
     built.update(build_adopted())
     inject_plain(built)
     inject_sections(built)
+    if not APP_MODE:
+        panel_csp(built)
     # last, because its cache key is a fingerprint of everything above it
     built.update(build_pwa(built))
     if not APP_MODE:

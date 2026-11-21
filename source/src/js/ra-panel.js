@@ -72,6 +72,10 @@
     if (OPEN) close();
     var el = C().el, S = C().settings(), t = C().t;
     var A = opts.adapter;
+    /* a surface showing the reader's own chart keeps everything on this
+       device, whatever Settings say — see RA.net.hold */
+    var PERSONAL = !!(A.describe && A.describe().personal);
+    if (PERSONAL) RA.net.hold(A.describe().surface);
     var ov = el("div", "ra-ov"), pn = el("div", "ra-pn", null, { role: "dialog", "aria-modal": "true", "aria-label": "Make reel" });
     ov.appendChild(pn);
     var hd = el("div", "ra-hd"), h2 = el("h2", null, "Make reel"); h2.appendChild(el("span", "kdeva", "रील बनाएँ"));
@@ -105,6 +109,8 @@
       ? "Mode: Connected — " + (RA.keys.PROVIDERS[S.provider] || {}).label + " / मोड: Connected"
       : "Mode: Offline — nothing leaves this device / मोड: ऑफ़लाइन — कुछ भी बाहर नहीं जाता");
     f.appendChild(mode);
+    if (PERSONAL) f.appendChild(el("p", "ra-note ra-warn",
+      "This reel shows your own chart, so it is made on this device only — no agent, no cloud voice, even in Connected mode. / यह रील आपकी अपनी कुण्डली दिखाती है, इसलिए यह केवल इसी डिवाइस पर बनती है — Connected mode में भी कोई एजेंट या क्लाउड आवाज़ नहीं।"));
     var skill = el("select");
     Object.keys(RA.skills || {}).filter(function (k) { return k !== "hindi-voice-style"; }).forEach(function (k) {
       opt(skill, k, RA.skills[k].title, k === "astro-reel"); });
@@ -503,17 +509,20 @@
     if (!OPEN) return;
     try { RA.render.cancel(); } catch (e) {}
     OPEN.ov.remove(); document.removeEventListener("keydown", esc);
+    RA.net.release();
     if (OPEN.opts.onClose) OPEN.opts.onClose();
     OPEN = null;
   }
 
   /* the "Make reel" button, placed after an existing control */
-  function mount(afterSel, getLayout, cls) {
+  function mount(afterSel, getLayout, cls, makeAdapter) {
     var at = document.querySelector(afterSel);
     if (!at || document.getElementById("ra-make")) return null;
     var b = C().el("button", cls || "reelbtn", C().t("make"), { type: "button", id: "ra-make" });
     b.addEventListener("click", function () {
-      open({ adapter: window.__bridge || RA.adapter.make("reel-studio"), layout: getLayout ? getLayout() : null });
+      var A = makeAdapter ? makeAdapter() : (window.__bridge || RA.adapter.make("reel-studio"));
+      if (!A) return;
+      open({ adapter: A, layout: getLayout ? getLayout() : null });
     });
     at.parentNode.insertBefore(b, at.nextSibling);
     return b;

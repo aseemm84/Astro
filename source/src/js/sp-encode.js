@@ -176,8 +176,17 @@
           function tick() {
             if (err) { reject(err); return; }
             if (job.cancel || i >= total) { resolve(); return; }
+            /* drawAt may return a promise — a surface drawn in SVG has to
+               be rasterised through an image load first. A plain return
+               keeps the old synchronous path exactly as it was. */
+            var drawn;
+            try { drawn = drawAt(i / total); } catch (e) { reject(e); return; }
+            if (drawn && typeof drawn.then === "function") drawn.then(emit, reject);
+            else emit();
+          }
+          function emit() {
+            if (err) { reject(err); return; }
             try {
-              drawAt(i / total);
               var frame = new VideoFrame(canvas, {
                 timestamp: Math.round(i * 1e6 / fps),
                 duration: Math.round(1e6 / fps)
