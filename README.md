@@ -5,7 +5,9 @@ A static website for learning and applying classical Vedic astrology, grounded i
 a forty-section technical report **entirely in the browser**, and a filterable table of
 the 108 nakṣatra pādas.
 
-No server. No API key. No account. No third-party calls. Works offline.
+**No server. No account. Works offline.** Everything is computed on your machine and
+nothing is sent anywhere — with one exception you have to switch on yourself:
+Reel Agent's optional *Connected mode*, described below.
 
 **Live:** https://aseemm84.github.io/Astro/
 
@@ -235,6 +237,75 @@ Among them:
 
 Where a harness checks for a fault, the fault has been planted to prove the check
 catches it.
+
+---
+
+## Reel Agent
+
+`reel-agent.html`, and a **Make reel / रील बनाएँ** button on Reel Studio, turn the
+site's own animations into narrated vertical reels, inside the website and the desktop
+app — no separate tool, no terminal.
+
+- **Ask in plain words** — “रोहिणी नक्षत्र पर 45 सेकंड की रील”, “Shani vakri explained”.
+  Offline, the request is matched to a layout on your device; in Connected mode an agent
+  chooses it.
+- **The narration is the engine's.** Every number, date and degree in a script is checked
+  against the facts the animation computed — read in digits, Devanagari digits and spoken
+  Hindi number words — and a script is refused until it passes. Pure Hindi is the default;
+  Hinglish and English are offered.
+- **Voice.** Offline: your computer's own Hindi voice in the desktop app (macOS `say`,
+  Windows speech synthesis), or a recording you supply, or captions only. Connected: a
+  neural voice from Gemini (or ElevenLabs) on your own key.
+- **The file.** 1080×1920 at 30 fps, H.264 + AAC in MP4 where the browser can write them
+  (VP9 + Opus WebM where it cannot, and the panel says which), the voice ducking any music
+  by about 12 dB and normalised to about −14 LUFS, plus subtitles (`.srt`), a thumbnail and
+  a post caption. The finished file's duration is read back and checked.
+- **Edit and keep.** Every line can be edited and re-voiced on its own; every reel is kept
+  in a Reels library on your device. The desktop app can prepare today's reel at 06:30.
+- **Nothing is ever posted.** Publishing is always something you do yourself.
+
+`source/test/reel-agent-verify.mjs` holds it to that: the adapter contract, the fact
+check (with invented numbers planted to prove it fires), a whole reel read back to the
+frame, captions inside the safe zone, zero network requests offline, and, with Connected
+mode on, requests only to the chosen provider and never carrying chart data.
+
+---
+
+## Privacy
+
+**By default Nirayana sends nothing anywhere.** Charts, calendars, the reference pages
+and the reel maker all run in your browser or in the desktop app, on your machine. There
+is no server, no account, no analytics and no tracking. You can disconnect from the
+internet and every page keeps working.
+
+**The one exception is Reel Agent's Connected mode, which is off unless you turn it on.**
+It exists because writing a narrated story, choosing a layout from a plain-language
+request, and producing a natural-sounding neural voice need an AI service. If you switch
+it on:
+
+- **You bring your own key** from Anthropic (Claude) or Google (Gemini), and optionally
+  ElevenLabs. Nirayana has no key of its own and no account with these services on your
+  behalf; their terms and their billing apply to you directly.
+- **Only reel material is sent:** the brief you typed and the facts of the animation you
+  chose (for example, “Rohiṇī, the 4th nakṣatra, 40°00′–53°20′ in Vṛṣabha”) and, for a
+  neural voice, the narration text. Before the first request the app shows you exactly
+  what will be sent and to which service.
+- **Your birth details and your kundli are never sent** — not in Connected mode, not in
+  any mode. The reel tools cannot read them, and a request containing them is refused
+  before it leaves.
+- **Where your key is kept:** in the desktop app, in your operating system's keychain;
+  on the website, in this browser's local storage, which anyone with access to this
+  browser profile could read. You can remove it at any time.
+- **Who makes the request:** in the desktop app, the request is made by the app itself
+  (not the web page inside it), and only to `api.anthropic.com`,
+  `generativelanguage.googleapis.com` and `api.elevenlabs.io`; no other address can be
+  reached. On the website, your browser contacts the service you chose directly. There
+  is no Nirayana server in between.
+- **Nothing is posted.** Reels are saved on your machine. Publishing one anywhere is
+  always something you do yourself.
+
+Turning Connected mode off stops all of this immediately; offline reels (the engine's
+own script, your system's voice or a voice file you supply) need no network at all.
 
 ---
 

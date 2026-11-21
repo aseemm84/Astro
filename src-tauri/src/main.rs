@@ -5,24 +5,48 @@
 // lays the system material behind it, and puts a real menu bar above it.
 //
 // What is NOT here is as much the point as what is. There is no HTTP plugin, no
-// shell plugin and no filesystem plugin, so the binary has no capability to
-// reach the network or the disk beyond its own bundle. The site has always said
-// nothing is sent anywhere; in the app that stops being a promise about
-// behaviour and becomes a property of the build.
+// shell plugin and no filesystem plugin, and the web page's own Content Security
+// Policy still gives it no route to the network.
 //
-// Opening a saved chart needs no dialog plugin either: the Kundli page already
-// carries a hidden file input, and the menu item clicks it. The file picker is
-// the system's, the capability is not the app's.
+// Reel Agent (reel_agent.rs) adds the few native pieces a video maker needs, and
+// they change what can be claimed, so they are listed here rather than left to be
+// discovered: the operating system's own offline voice, the system save dialog
+// (the app writes only where the reader chooses, once per click), and "show in
+// folder" for a file the app itself just saved. None of those reaches the network.
+//
+// The one exception is Connected mode, and it is off unless the reader turns it
+// on: then Rust (not the page) makes HTTPS requests to three fixed hosts —
+// api.anthropic.com, generativelanguage.googleapis.com, api.elevenlabs.io —
+// with the reader's own key, read from the system keychain here.
+//
+// Opening a saved chart needs no dialog plugin: the Kundli page already carries a
+// hidden file input, and the menu item clicks it.
 
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use tauri::menu::{MenuBuilder, MenuItemBuilder, SubmenuBuilder};
 use tauri::Manager;
 
+mod reel_agent;
+
 fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_window_state::Builder::default().build())
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_notification::init())
+        .plugin(tauri_plugin_autostart::init(tauri_plugin_autostart::MacosLauncher::LaunchAgent, None))
+        .manage(reel_agent::Saved::default())
+        .invoke_handler(tauri::generate_handler![
+            reel_agent::tts_list_voices,
+            reel_agent::tts_system,
+            reel_agent::save_file,
+            reel_agent::reveal_in_folder,
+            reel_agent::keychain_get,
+            reel_agent::keychain_set,
+            reel_agent::keychain_delete,
+            reel_agent::ai_request
+        ])
         .setup(|app| {
             let handle = app.handle();
 

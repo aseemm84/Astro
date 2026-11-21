@@ -1,0 +1,45 @@
+<h2 id="ask">Ask for a reel<span class="kdeva">रील माँगिए</span></h2>
+
+<p>Say what the reel should be about, in Hindi, Hinglish or English — “रोहिणी नक्षत्र
+पर 45 सेकंड की रील”, “Diwali ki tareekh kyon badalti hai”, “Shani vakri explained”.
+The page chooses the layout, writes the narration from the engine’s own numbers, voices
+it and renders a vertical video you can preview, edit and save.</p>
+
+<div class="ra-ask">
+  <label for="ra-req">Your request / आपका अनुरोध</label>
+  <textarea id="ra-req" rows="3" placeholder="रोहिणी नक्षत्र पर 45 सेकंड की रील"></textarea>
+  <div class="ra-askrow">
+    <button type="button" id="ra-go" class="ra-b">Make reel / रील बनाएँ</button>
+    <span id="ra-match" class="ra-note"></span>
+  </div>
+  <p class="ra-note" id="ra-modeline"></p>
+</div>
+
+<h2 id="how">How it decides<span class="kdeva">कैसे चुनता है</span></h2>
+
+<p><b>Offline (the default).</b> The request is matched on this device against the
+layouts’ names — every nakṣatra and rāśi by its Hindi or English name, the festivals,
+eclipses, retrogrades and the rest — and the engine’s own script is used. No key, no
+network.</p>
+
+<p><b>Connected (only if you switch it on, with your own Claude or Gemini key).</b> An
+agent reads the request, picks the layout, reads that layout’s computed facts and
+writes a short Hindi story over them. Before anything is sent the panel shows exactly
+what will go, and to which service. Every number in its script is checked against the
+facts and the script is refused until it passes. Your birth details and kundli are
+never sent.</p>
+
+<h2 id="library">Your reels<span class="kdeva">आपकी रीलें</span></h2>
+
+<p>Every reel you make is kept in this browser (or in the desktop app) — never on a
+server. Open one to watch it again, re-edit its script or save the file again.</p>
+
+<div id="ra-lib"></div>
+
+<p class="reelintro">Nothing is posted anywhere. Publishing a reel is always something
+you do yourself.</p>
+
+<script src="places.js" defer></script>
+<script src="engine.js" defer></script>
+<script src="reel.js" defer></script>
+<script src="ra.js" defer></script>

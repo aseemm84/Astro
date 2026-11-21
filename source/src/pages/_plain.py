@@ -152,6 +152,13 @@ PLAIN = {
   read="'What was found' lists every event the video shows, with dates, so you can check them.",
   care="Some stories (festivals, sunrise-based ones) depend on the place; the video prints the place it was made for."),
 
+"reel-agent.html": dict(
+  gist="Ask for a short video in plain words — 'रोहिणी नक्षत्र पर 45 सेकंड की रील' — and the site makes it: narration, voice, captions and picture, from its own calculations.",
+  what="It takes one of the Reel Studio animations, writes a spoken script over it in Hindi (or Hinglish or English) using only the numbers the site computed, voices each line, and renders a vertical video. Every number in the script is checked against those calculations before the video is made; a script with a number they do not contain is refused.",
+  how="Type your request and press <b>Make reel</b>. The panel shows each step — choosing the animation, reading the facts, writing, checking, voicing, rendering. Then you can watch it, edit any line (and <b>Re-voice</b> just that line), and save the video, its subtitles, a thumbnail and a ready caption. <b>Settings</b> in the panel switches between Offline (the default) and Connected mode. Every reel you make is kept under <b>Your reels</b>.",
+  read="Offline, the script is the engine's own and the request is matched to an animation on your device; the panel says which one it chose and why. In Connected mode an AI writes a short story over the same facts — and the same check still applies.",
+  care="Nothing is posted anywhere. Offline mode sends nothing at all. Connected mode is off unless you turn it on with your own Claude or Gemini key; it then sends the request and the animation's facts — never your birth details or kundli — and shows you exactly what will be sent first. On the website a key is kept in this browser; in the desktop app, in the system keychain."),
+
 "director-pro.html": dict(
   gist="A full animation editor: build a video scene by scene, and control how every element moves over time.",
   what="This is the advanced version of Studio Pro. You build scenes out of layers (a planet, a ring, a caption), and each property of each layer — position, size, colour — can be set to change over time using 'keyframes'.",

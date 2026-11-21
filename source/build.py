@@ -702,6 +702,40 @@ def appify(text):
     return head + '<script src="app-shell.js" defer></script></body>' + tail
 
 
+def skills_js():
+    """Reel Agent's skills, compiled from src/skills/ into one JS module.
+
+    The skills are Markdown so they can be read and edited as text; the page
+    carries them as data. Each becomes { name, title, meta, body }, and the
+    agent loads the relevant one as its system instructions. The pronunciation
+    lexicon rides along as JSON. Nothing is fetched at run time — the site
+    fetches nothing — so they are inlined like every other piece of code."""
+    d = os.path.join(SRC, "skills")
+    out, lex = {}, {}
+    for fn in sorted(os.listdir(d)):
+        p = os.path.join(d, fn)
+        if fn.endswith(".md"):
+            text = read(p)
+            meta, body = {}, text
+            if text.startswith("---"):
+                head, body = text[3:].split("---", 1)
+                for line in head.strip().splitlines():
+                    if ":" in line:
+                        k, v = line.split(":", 1)
+                        meta[k.strip()] = v.strip()
+            name = meta.get("name") or fn[:-3]
+            out[name] = {"name": name, "title": meta.get("title", name), "meta": meta,
+                         "body": body.strip()}
+        elif fn == "pronunciation-hi.json":
+            lex = json.loads(read(p))
+    if not out:
+        raise SystemExit("no Reel Agent skills found in src/skills")
+    return ("(function(){var RA=window.RA=window.RA||{};RA.skills=" +
+            json.dumps(out, ensure_ascii=False) + ";RA.lexicon=" +
+            json.dumps(lex, ensure_ascii=False) +
+            ";if(RA.voice&&RA.voice.setLexicon)RA.voice.setLexicon(RA.lexicon);})();\n")
+
+
 def build_shared():
     """Files the reference pages reference rather than inline.
 
@@ -823,7 +857,11 @@ def build_shared():
         # studio.html's own script: what is worth posting today, the caption and
         # the image. Loaded only on that page, like now.js and calendar.js.
         "studio.js": brandify(jsread(SRC, "js", "brand-mark.js") + "\n" +
-                              jsread(SRC, "js", "studio.js")),
+                              jsread(SRC, "js", "studio.js") + "\n" +
+                              # Reel Agent's "Make today's reel" on each idea
+                              # card: a link to reel-agent.html, so the Studio
+                              # does not carry the reel engines itself
+                              jsread(SRC, "js", "ra-studio.js")),
         # The reel strip and the card composer. A separate file from studio.js
         # because it is a separate concern and because the Studio's own card
         # keeps working if this one fails to load; it rides on that page because
@@ -947,6 +985,16 @@ def build_shared():
                             jsread(SRC, "js", "sp-explain.js") + "\n" +
                             jsread(SRC, "js", "sp-reelui.js") + "\n" +
                             jsread(SRC, "js", "sp-scriptui.js")),
+        # Reel Agent: one bundle, loaded by every page that hosts the
+        # "Make reel" panel, after that page's own engines. Offline by
+        # default; nothing in it can reach the network unless the reader has
+        # switched Connected mode on (RA.net in ra-core.js).
+        "ra.js": brandify("\n".join(jsread(SRC, "js", f) for f in (
+            "ra-core.js", "ra-facts.js", "ra-hi.js", "ra-adapter.js",
+            "ra-verify.js", "ra-voice.js", "ra-loudness.js", "ra-render.js",
+            "ra-native.js", "ra-keys.js", "ra-providers.js", "ra-agent.js",
+            "ra-sanitize.js", "ra-kahani.js",
+            "ra-library.js", "ra-panel.js", "ra-page.js")) + "\n" + skills_js()),
         "simulation.js": brandify(jsread(SRC, "js", "sim-engine.js") + "\n" +
                                   jsread(SRC, "js", "sim-scenarios.js") + "\n" +
                                   jsread(SRC, "js", "sim-draw.js") + "\n" +
@@ -1222,6 +1270,49 @@ def no_remote_call_check(built):
     print("  no outbound call in %d emitted files" % len(built))
 
 
+def connected_hosts_check(built):
+    """Reel Agent's Connected mode may name its three AI hosts — and only it.
+
+    no_remote_call_check above flags a literal absolute URL handed to fetch().
+    Connected mode builds its URL from a table, so it would pass that check
+    silently; this one makes the exception deliberate instead. The three hosts
+    may appear in ra.js (the website's and the app's copy) and nowhere else, so
+    a host pasted into any other file fails the build, and a fourth host added
+    to ra.js fails it too."""
+    hosts = ("api.anthropic.com", "generativelanguage.googleapis.com", "api.elevenlabs.io")
+    allowed = {"ra.js"}
+    bad = []
+    for name, text in sorted(built.items()):
+        if not name.endswith((".html", ".js")):
+            continue
+        base = name.split("/")[-1]
+        for h in hosts:
+            if h in text and base not in allowed:
+                bad.append("%s names %s" % (name, h))
+        if base in allowed:
+            for m in re.finditer(r"https://([a-z0-9.-]+\.[a-z]{2,})", text):
+                if m.group(1) not in hosts and not m.group(1).endswith(("claude.com", "google.com", "elevenlabs.io", "anthropic.com", "aistudio.google.com")):
+                    bad.append("%s names an unexpected host %s" % (name, m.group(1)))
+    if bad:
+        raise SystemExit("Connected-mode hosts outside the allow-list:\n  " + "\n  ".join(bad[:10]))
+    # and no key, ever: a real-looking Anthropic or Google key in any source or
+    # built file fails the build (the harness's fake "sk-ant-test-0000" is too
+    # short to match on purpose)
+    keypat = re.compile(r"sk-ant-[A-Za-z0-9_-]{24,}|AIza[0-9A-Za-z_-]{35}")
+    leaks = [n for n, t in built.items() if n.endswith((".html", ".js")) and keypat.search(t)]
+    for root, _, files in os.walk(SRC):
+        for fn in files:
+            if fn.endswith((".js", ".md", ".json", ".html", ".py")):
+                try:
+                    if keypat.search(open(os.path.join(root, fn), encoding="utf-8").read()):
+                        leaks.append(os.path.join(root, fn))
+                except UnicodeDecodeError:
+                    pass
+    if leaks:
+        raise SystemExit("something that looks like an API key is in: " + ", ".join(leaks[:5]))
+    print("  connected-mode hosts confined to ra.js; no API key in source or output")
+
+
 def window_export_check(built):
     """No two files may export the same window.__name.
 
@@ -1482,6 +1573,7 @@ def main():
     syntax_check(built)
     window_export_check(built)
     no_remote_call_check(built)
+    connected_hosts_check(built)
 
     if "--check" in args:
         ok = True

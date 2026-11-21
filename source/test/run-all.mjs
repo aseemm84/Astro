@@ -28,6 +28,7 @@ const DIR = "source/test";
 const TIMED = {
   "cosmos-verify":     "the ceremony must be brief — seconds of wall clock",
   "reelstudio-verify": "every template must build in under 9 s",
+  "reel-agent-verify": "a 45 s offline reel must render within its stated budget",
 };
 const EXTRA = ["run-self-test", "page-smoke", "report-contrast", "calendar-nav"];
 const ji = process.argv.indexOf("--jobs");

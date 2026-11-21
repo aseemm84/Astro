@@ -60,6 +60,22 @@ jobs:
         with:
           workspaces: src-tauri
 
+      - name: Rust unit tests (Reel Agent — keychain round-trip, system voice WAV)
+        # The keychain and `say` are the real ones on this runner, which is
+        # the point: the Linux gate can only check the parsing and the guards.
+        run: cargo test --manifest-path src-tauri/Cargo.toml
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Reel Agent in Google Chrome (H.264 + AAC)
+        # The Linux gate's headless Chromium has neither encoder, so the MP4
+        # path can only be proved here. Chrome ships on the runner image.
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1
+          RA_CHANNEL=chrome RA_EXPECT_AAC=1 node source/test/reel-agent-verify.mjs
+
       - name: Build the bundle
         # No --target: build for the host. The runner is Apple silicon, so the
         # host target IS aarch64-apple-darwin, and not naming it means the job

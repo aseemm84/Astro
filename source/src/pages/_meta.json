@@ -167,6 +167,15 @@
   "layout": "",
   "has_aside": true
  },
+ "reel-agent": {
+  "title": "Reel Agent — रील एजेंट — {{BRAND}}",
+  "desc": "Ask for a reel in plain Hindi or English and get a narrated vertical video made from the engine's own numbers — offline by default, with an optional Connected mode on your own key. Nothing is posted.",
+  "h1": "Reel Agent",
+  "sub": "Ask in plain words; get a narrated reel whose every number is the engine’s.",
+  "eyebrow": "रील एजेंट · reels made from real computation",
+  "layout": "",
+  "has_aside": true
+ },
  "director-pro": {
   "title": "Director Pro — the keyframe reel workstation — {{BRAND}}",
   "desc": "A keyframe animation workstation for Vedic-astronomy reels. Scenes, layers, keyframes on every property, effects, masks, blend modes, a camera, transitions, a soundtrack from your own machine, and frame-accurate export up to 4K — all of it in the browser, with nothing uploaded.",

@@ -313,5 +313,45 @@
       },
       print: function () { window.print(); }
     };
+
+    /* ---- Reel Agent: the morning reel ----------------------------------
+       Off unless the reader turns on "Prepare today's reel at 06:30". While
+       the app is open, once a minute: if it is past 06:30 and today's reel
+       has not been made, reel-agent.html#daily runs in a hidden frame (same
+       origin, so it saves into the same Reels library), and when it reports
+       back a native notification says so. Nothing is posted. Offline unless
+       Connected mode is on, exactly like a reel made by hand. */
+    (function dailyReel() {
+      var KEY = "nirayana.reelAgent", RAN = "nirayana.reelAgent.dailyRan";
+      function on() { try { return !!(JSON.parse(localStorage.getItem(KEY) || "{}").daily); } catch (e) { return false; } }
+      function today() { var d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); }
+      var busy = false;
+      function notify(body) {
+        var I = window.__TAURI_INTERNALS__;
+        if (I && I.invoke) I.invoke("plugin:notification|notify", { options: { title: "Nirayana", body: body } }).catch(function () {});
+      }
+      function check() {
+        if (busy || !on() || /reel-agent\.html/.test(location.pathname)) return;
+        var n = new Date(), ran = null;
+        try { ran = localStorage.getItem(RAN); } catch (e) {}
+        if (ran === today() || n.getHours() * 60 + n.getMinutes() < 6 * 60 + 30) return;
+        busy = true;
+        try { localStorage.setItem(RAN, today()); } catch (e) {}
+        var f = document.createElement("iframe");
+        f.setAttribute("aria-hidden", "true"); f.tabIndex = -1;
+        f.style.cssText = "position:fixed;width:2px;height:2px;left:-10px;top:-10px;opacity:0;pointer-events:none;border:0";
+        function done(e) {
+          if (!e.data || !e.data.raDaily) return;
+          window.removeEventListener("message", done); f.remove(); busy = false;
+          if (e.data.raDaily === "ok") notify("आज की रील तैयार है — Today's reel is ready" + (e.data.title ? ": " + e.data.title : ""));
+        }
+        window.addEventListener("message", done);
+        f.src = "reel-agent.html#daily";
+        document.body.appendChild(f);
+        setTimeout(function () { if (busy) { f.remove(); busy = false; window.removeEventListener("message", done); } }, 15 * 60 * 1000);
+      }
+      setInterval(check, 60 * 1000);
+      setTimeout(check, 8000);
+    })();
   });
 })();

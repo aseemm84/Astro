@@ -309,6 +309,12 @@ SECTIONS = {
   "honest": "The patterns in the reels are astronomy, not meanings — for example, Venus draws five petals because of how its cycle fits ours.",
 },
 
+"reel-agent.html": {
+  "ask": "Type what the reel should be about and press Make reel. The page picks the animation, writes the narration from its own numbers, voices it and makes the video.",
+  "how": "Offline it matches your words to an animation on this device and uses the engine's own script; Connected mode, only if you turn it on, lets an AI write a short story over the same checked facts.",
+  "library": "Every reel you make is kept on this device. Open one to watch it again, change its script, or save the file again.",
+},
+
 "kundli.html": {
   "cast": "Enter a name (optional), date, time and place of birth, and press Cast the chart. Settings let you change the ayanāṃśa, house system and node type.",
   "gochara": "A year of planetary movements — every sign change and every turn backwards or forwards — with no birth chart needed.",

@@ -1727,7 +1727,13 @@
      through an additive pipeline would turn the ochre line white. So the
      trail is composited one way or the other, and everything above it is the
      same either way. */
-  function frameAt(c, W, H, reel, p) {
+  /* opts.text === false draws the picture only — sky, stage, grade — and
+     none of the reel's own English type (title, clock, caption, tally,
+     closing, foot). Reel Agent uses it to lay Hindi into the same bands
+     instead of over the English. Every existing caller passes no opts and
+     gets exactly the frame it always did. */
+  function frameAt(c, W, H, reel, p, opts) {
+    var TEXT = !(opts && opts.text === false);
     var G = window.SPGlow, P = reel.pal, B = bands(W, H, reel);
     p = clamp(p, 0, 1);
     var now = clockAt(reel.tl, p);
@@ -1775,6 +1781,7 @@
 
     if (P.dark && reel.grade > 0.002) G.grade(c, W, H, reel.grade);
 
+    if (!TEXT) return now;
     drawTitle(c, W, H, B, reel, P, p);
     if (now.phase !== "close") {
       drawClock(c, W, H, B, reel, P, now);
