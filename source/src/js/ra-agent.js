@@ -13,6 +13,8 @@
      get_today(date)           the Studio's ideas, each with a layout
      write_script(lines)       [{ beats:[a,b], narration, caption }]
      verify_script()           violations — must be empty before finish
+     get_sky(date,time)        the grahas, the Moon's phase and the next month
+                               of events for a date (story reels), as facts
      kahani_scenes(scenes)     kahani mode only
      finish(caption_text, hashtags)
 
@@ -36,8 +38,11 @@
         narration: { type: "string" }, caption: { type: "string" } }, required: ["beats", "narration", "caption"] } } }, required: ["lines"] } },
     { name: "verify_script", description: "Check the submitted script against the facts and the beats. Returns violations; fix them and resubmit until it returns ok.",
       parameters: { type: "object", properties: {} } },
-    { name: "kahani_scenes", description: "Kahani mode only: submit the story's scenes (SVG fragments plus motion).",
-      parameters: { type: "object", properties: { scenes: { type: "array", items: { type: "object" } } }, required: ["scenes"] } },
+    { name: "get_sky", description: "Story reels: the nine grahas' sidereal places (lon, rāśi, nakṣatra, pāda, retrograde), the Moon's phase and the next 30 days of ingresses, stations and new/full moons, for a date (YYYY-MM-DD) and optional time (HH:MM) at the saved place. Every number returned may then be used in a scene or a line.",
+      parameters: { type: "object", properties: { date: { type: "string" }, time: { type: "string" } } } },
+    { name: "kahani_scenes", description: "Story reels: submit the scenes. title (with one *highlighted* word) and kicker are the top band. Each scene: say (the line), caption (2–4 words, one *highlighted*), seconds, and any of: layout {type: wheel|nakshatra|moon|cards|timeline|stat|orb|retro, …data from get_facts/get_sky}, props [moon|mountains|cloud|tree or {p,x,y,s}], svg (a fragment for the character art), motion {entrance: rise|fade|zoom|none, bob, parallax, sway}. A layout showing a number not in the facts is refused.",
+      parameters: { type: "object", properties: { title: { type: "string" }, kicker: { type: "string" },
+        scenes: { type: "array", items: { type: "object" } } }, required: ["scenes"] } },
     { name: "finish", description: "End the run once verify_script returns ok. caption_text is the post caption; hashtags a list.",
       parameters: { type: "object", properties: { caption_text: { type: "string" }, hashtags: { type: "array", items: { type: "string" } } }, required: ["caption_text"] } }
   ];
@@ -54,7 +59,7 @@
 
   var RULES =
     "\n\n---\n\nNON-NEGOTIABLE (enforced in code as well):\n" +
-    "- Every number, date, degree and name in a narration must come from get_facts. The script is checked and refused otherwise.\n" +
+    "- Every number, date, degree and name in a narration — and every number a story layout shows — must come from get_facts or get_sky. Both are checked and refused otherwise.\n" +
     "- Mythology is story, said as story. No predictions about any person, no remedies. Where needed: \"शास्त्रीय अध्ययन का ढाँचा, भविष्यवाणी नहीं\".\n" +
     "- You have no access to anyone's birth data or chart, and must not ask for it.\n" +
     "- Finish only after verify_script returns ok.";
@@ -133,13 +138,23 @@
         state.violations = v.violations;
         return { ok: v.ok, violations: v.violations.map(function (x) { return { line: x.line + 1, kind: x.kind, message: x.en }; }) };
       },
+      get_sky: function (a) {
+        if (!RA.kahani || !RA.kahani.sky) return { error: "the sky is not available on this page" };
+        var r = RA.kahani.sky(a.date, a.time);
+        if (r.error) return r;
+        state.facts = (state.facts || []).concat(r.facts);
+        return r.data;
+      },
       kahani_scenes: function (a) {
         if (!RA.kahani) return { error: "kahani mode is not available on this page" };
-        var r = RA.kahani.accept(a.scenes || []);
+        var facts = (state.facts || []).concat(RA.facts.FRAMEWORK);
+        var r = RA.kahani.accept(a.scenes || [], { title: a.title, kicker: a.kicker }, facts);
         state.scenes = r.scenes; state.kahani = true; state.layout = "kahani";
         state.beats = RA.kahani.surface().beats();
-        state.facts = (state.facts || []).concat(RA.facts.FRAMEWORK);
+        state.facts = facts;
         state.lines = null; state.verified = false;
+        if (r.refused.length) return { ok: false, refused: r.refused,
+          message: "These layouts show numbers that are not in the facts. Use the exact values from get_facts or get_sky, or drop the number, and resubmit all scenes." };
         return { ok: true, scenes: r.scenes.length, removed_by_sanitiser: r.removed,
                  beats: state.beats.map(function (b) { return { i: b.i, from: b.from, to: b.to }; }),
                  next: "write_script with one line per scene (beats [i, i]), then verify_script" };

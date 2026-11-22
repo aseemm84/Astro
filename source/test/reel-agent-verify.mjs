@@ -187,7 +187,7 @@ is(ag.firstVerify && ag.firstVerify.ok === false && ag.firstVerify.violations.so
 is(ag.earlyFinish && /verify_script must return ok/.test(ag.earlyFinish.error || ""), "finish is refused until the script has been verified" + (ag.earlyFinish && ag.earlyFinish.error ? "" : " — got " + JSON.stringify(ag.earlyFinish).slice(0, 160)));
 is(ag.secondVerify && ag.secondVerify.ok === true, "the corrected script passes");
 is(/शास्त्रीय अध्ययन का ढाँचा/.test(ag.sys) && /get_facts/.test(ag.sys), "the system prompt carries the skill and the non-negotiable rules");
-is(ag.tools.join(",") === "list_layouts,get_facts,get_today,write_script,verify_script,kahani_scenes,finish", "all seven tools are offered");
+is(ag.tools.join(",") === "list_layouts,get_facts,get_today,write_script,verify_script,get_sky,kahani_scenes,finish", "all eight tools are offered");
 
 head("Connected mode: requests go only to the chosen host, and never carry the chart");
 const hits = [];
@@ -228,7 +228,7 @@ is(hits.every((h) => h.headers["anthropic-dangerous-direct-browser-access"] === 
 
 head("The skills are bundled as data");
 const sk = await pg.evaluate(() => ({ names: Object.keys(RA.skills || {}), lex: Object.keys(RA.lexicon || {}).length,
-  rules: ["astro-reel", "kahani-reel", "daily-reel", "hindi-voice-style"].every((k) => RA.skills[k] && RA.skills[k].body.length > 300) }));
+  rules: ["astro-reel", "kahani-reel", "nirayana-story", "daily-reel", "hindi-voice-style"].every((k) => RA.skills[k] && RA.skills[k].body.length > 300) }));
 is(sk.rules, "four skills compiled from source/src/skills (" + sk.names.join(", ") + ")");
 is(sk.lex > 10, "the pronunciation lexicon rides along (" + sk.lex + " entries)");
 
@@ -272,9 +272,43 @@ const kh = await pg.evaluate(async () => {
   return { removed: acc.removed, methods, dur: K.duration(), beats: K.beats().length, same: a === b && a === d, ready: K.ready() };
 });
 is(kh.methods.length === 0 && kh.ready, "the kahani surface answers all seven methods");
-is(kh.dur === 11 && kh.beats === 2, "two scenes make two beats over 11 s");
+is(Math.abs(kh.dur - 11.4) < 1e-9 && kh.beats === 2, "two scenes make two beats: (5 + 0.35) + (6 + 0.35) − one 0.3 s crossfade = 11.4 s, as the kit times them");
 is(kh.same, "a kahani frame is deterministic whatever was drawn before it");
 is(kh.removed >= 1, "scene fragments pass through the sanitiser (" + kh.removed + " removed)");
+
+head("Kahani kit port — layouts, the sky, and numbers on the picture");
+const kk = await pg.evaluate(async () => {
+  const sky = RA.kahani.sky("2026-11-21", "06:00");
+  const g = sky.data.grahas, sat = g.find((x) => x.graha === "Saturn");
+  const K = RA.adapter.make("kahani");
+  const good = K.accept([
+    { say: "शनि अभी " + sat.rashi.hi + " में हैं।", caption: "शनि *" + sat.rashi.hi + "*", seconds: 5,
+      layout: { type: "wheel", grahas: g.map((x) => ({ graha: x.graha, lon: x.lon, retro: x.retro })), highlightRashi: sat.rashi.i } },
+    { say: "विंशोत्तरी चक्र 120 वर्ष का है।", caption: "*120* वर्ष", seconds: 5, layout: { type: "stat", value: 120, suffix: " वर्ष", label: "विंशोत्तरी" } },
+    { say: "चन्द्र", caption: "*चन्द्र*", seconds: 5, layout: { type: "moon", illumination: sky.data.moon.illumination, elongation: sky.data.moon.elongation, label: "चन्द्र" }, props: ["cloud", { p: "tree", x: 900, y: 1500 }] }
+  ], { title: "शनि *मार्गी*", kicker: "निरायण · गोचर" }, sky.facts);
+  const bad = K.accept([
+    { say: "x", seconds: 5, layout: { type: "stat", value: 87, suffix: " वर्ष", label: "invented" } },
+    { say: "y", seconds: 5, layout: { type: "timeline", items: [{ date: "31 फ़रवरी 2099", text: "कुछ" }] } }
+  ], null, sky.facts);
+  K.accept(good.scenes.map((s, i) => ({ say: s.say, caption: s.caption, seconds: s.seconds, layout: s.layout, props: s.props })), { title: "शनि *मार्गी*", kicker: "निरायण · गोचर" }, sky.facts);
+  await K.configure({ layout: "kahani" });
+  const c = document.createElement("canvas"); c.width = 1080; c.height = 1920; const x = c.getContext("2d");
+  const px = (p, X, Y) => { K.frame(p, x); return Array.from(x.getImageData(X, Y, 1, 1).data.slice(0, 3)); };
+  const sky0 = px(0.02, 540, 40), deep = px(0.02, 540, 1300);
+  const a = (K.frame(0.4, x), c.toDataURL()), b = (K.frame(0.4, x), c.toDataURL());
+  return { n: g.length, facts: sky.facts.length, goodRefused: good.refused.length, badRefused: bad.refused.map((r) => r.numbers.join(" ")),
+           sky0, deep, same: a === b, pill: K.describe().pill, layouts: RA.kahani.LAYOUTS.join(","), sp: [RA.kahani.spring(0), RA.kahani.spring(300).toFixed(3)] };
+});
+is(kk.n === 9 && kk.facts > 30, "get_sky gives the nine grahas and their numbers as facts (" + kk.facts + ")");
+is(kk.goodRefused === 0, "a wheel, a BigStat and a MoonPhase built from those facts are accepted");
+is(kk.badRefused.length === 2 && /87/.test(kk.badRefused[0]) && /2099/.test(kk.badRefused[1]),
+   "a layout showing an invented number is refused, the number named (" + kk.badRefused.join(" | ") + ")");
+is(kk.sky0[2] > kk.sky0[0] && kk.sky0[2] > 60 && kk.sky0[2] < 110, "the kit's night-blue sky at the top (rgb " + kk.sky0 + ")");
+is(kk.same, "a layout frame is deterministic");
+is(kk.pill && kk.pill.fill === "rgba(8,14,40,0.88)" && kk.pill.size === 58, "the caption pill is the kit's (navy, 800 weight, 58 px)");
+is(kk.layouts === "wheel,nakshatra,moon,cards,timeline,stat,orb,retro", "all eight astro layouts are ported");
+is(kk.sp[0] === 0 && kk.sp[1] === "1.000", "spring() starts at rest and settles at 1");
 
 head("The page behaves");
 is(errs.length === 0, "no console errors" + (errs.length ? " — " + errs[0].slice(0, 140) : ""));

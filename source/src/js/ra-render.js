@@ -115,26 +115,31 @@
       var L = st.lines[s.i], cap = (L.caption || "").trim();
       if (cap) {
         var inT = ease((u - s.U) / 0.18), outT = ease((s.U + s.L - u) / 0.18);
+        /* a surface may give its own pill (the kahani kit's navy pill), and a
+           caption may name its key word in *stars*, as the kit's captions do */
+        var PL = st.pill || {}, PF = PL.font || DEVA, PW = PL.weight || 700;
         var words = cap.split(/\s+/), kw = keyWord(words);
+        words.forEach(function (w, i) { if (/^\*.+\*$/.test(w) || /^\*/.test(w)) kw = i; });
+        words = words.map(function (w) { return w.replace(/\*/g, ""); });
         c.save();
-        var fz = 76; c.font = "700 " + fz + "px " + DEVA;
+        var fz = PL.size || 76; c.font = PW + " " + fz + "px " + PF;
         var sp = c.measureText(" ").width, widths = words.map(function (w) { return c.measureText(w).width; });
         var tw = widths.reduce(function (a, b) { return a + b; }, 0) + sp * (words.length - 1);
         while (tw > Z.caption.w - 80 && fz > 40) {
-          fz -= 4; c.font = "700 " + fz + "px " + DEVA; sp = c.measureText(" ").width;
+          fz -= 4; c.font = PW + " " + fz + "px " + PF; sp = c.measureText(" ").width;
           widths = words.map(function (w) { return c.measureText(w).width; });
           tw = widths.reduce(function (a, b) { return a + b; }, 0) + sp * (words.length - 1);
         }
-        var ph = fz * 1.7, pw = tw + 80;
+        var ph = PL.size ? fz * 1.2 + 32 : fz * 1.7, pw = tw + (PL.size ? 68 : 80);
         var px = Math.round(Z.caption.x + (Z.caption.w - pw) / 2);
-        var py = Math.round(Z.caption.y + Z.caption.h * 0.32 - ph / 2 + (1 - inT) * 24);
+        var py = Math.round(Z.caption.y + Z.caption.h * (PL.centre == null ? 0.32 : PL.centre) - ph / 2 + (1 - inT) * (PL.size ? 40 : 24));
         c.globalAlpha = Math.min(inT, outT);
-        c.fillStyle = "rgba(8,10,20,.78)"; rr(c, px, py, pw, ph, ph / 2); c.fill();
-        c.strokeStyle = "rgba(233,196,106,.55)"; c.lineWidth = 3; c.stroke();
+        c.fillStyle = PL.fill || "rgba(8,10,20,.78)"; rr(c, px, py, pw, ph, PL.radius || ph / 2); c.fill();
+        c.strokeStyle = PL.stroke || "rgba(233,196,106,.55)"; c.lineWidth = 3; c.stroke();
         c.textBaseline = "middle"; c.textAlign = "left";
-        var x = px + 40;
+        var x = px + (PL.size ? 34 : 40);
         words.forEach(function (w, i) {
-          c.fillStyle = i === kw ? "#f4c95d" : "#f5f1e8";
+          c.fillStyle = i === kw ? (PL.key || "#f4c95d") : (PL.text || "#f5f1e8");
           c.fillText(w, x, py + ph / 2 + fz * 0.04);
           x += widths[i] + sp;
         });
@@ -325,7 +330,8 @@
       var c = cv.getContext("2d");
       var st = { adapter: A, zones: A.describe().safeZones, W: W, H: H, plan: out.plan, lines: out.lines,
                  captions: spec.captions !== false, hook: spec.hook === false ? null : (spec.hookText || (A.title ? A.title() : null) || (out.lines[0] && out.lines[0].caption) || null),
-                 title: A.title ? A.title() : null, handle: spec.handle || RA.core.settings().handle };
+                 title: A.title ? A.title() : null, handle: spec.handle || RA.core.settings().handle,
+                 pill: A.describe().pill || null };
       out.boxes = [];
       out.zones = st.zones;
       var every = Math.max(1, Math.round(FPS / 2)), fi = 0;

@@ -255,6 +255,12 @@ renderer draws the reel's frames; each page's own Record button is unchanged.
   against the facts the animation computed — read in digits, Devanagari digits and spoken
   Hindi number words — and a script is refused until it passes. Pure Hindi is the default;
   Hinglish and English are offered.
+- **Story reels.** In Connected mode the agent can also write a *kahani* — a cartoon
+  legend — or a *Nirayana story* built on today's sky, in the look of the
+  [kahani kit](https://github.com/aseemm84/kahani-reels): night-blue storybook sky,
+  diyas, gold-highlighted title, navy caption pills, and animated zodiac wheels,
+  nakṣatra arcs, Moon phases, timelines and counters. Every number a scene shows is
+  checked against the engine's facts exactly as the narration is.
 - **Voice.** Offline: your computer's own Hindi voice in the desktop app (macOS `say`,
   Windows speech synthesis), or a recording you supply, or captions only. Connected: a
   neural voice from Gemini (or ElevenLabs) on your own key.
